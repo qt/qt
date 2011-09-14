@@ -55,256 +55,255 @@ qhp.Qt.extraFiles = index.html \
 
 #QtWebKit Guide files
 qhp.Qt.extraFiles += webkit-guide/anim_accord.htm \
-webkit-guide/anim_demo-rotate.htm \
-webkit-guide/anim_demo-scale.htm \
-webkit-guide/anim_demo-skew.htm \
-webkit-guide/anim_gallery.htm \
-webkit-guide/anim_panel.htm \
-webkit-guide/anim_pulse.htm \
-webkit-guide/anim_skew.htm \
-webkit-guide/anim_slide1.htm \
-webkit-guide/anim_slide2.htm \
-webkit-guide/anim_slide3.htm \
-webkit-guide/anim_tabbedSkew.htm \
-webkit-guide/_copyright.txt \
-webkit-guide/css3_backgrounds.htm \
-webkit-guide/css3_border-img.htm \
-webkit-guide/css3_gradientBack.htm \
-webkit-guide/css3_gradientBackStop.htm \
-webkit-guide/css3_gradientButton.htm \
-webkit-guide/css3_grad-radial.htm \
-webkit-guide/css3_mask-grad.htm \
-webkit-guide/css3_mask-img.htm \
-webkit-guide/css3_multicol.htm \
-webkit-guide/css3_reflect.htm \
-webkit-guide/css3_scroll.htm \
-webkit-guide/css3_sel-nth.htm \
-webkit-guide/css3_shadow.htm \
-webkit-guide/css3_text-overflow.htm \
-webkit-guide/css3_text-shadow.htm \
-webkit-guide/css3_text-stroke.htm \
-webkit-guide/form_tapper.htm \
-webkit-guide/form_toggler.htm \
-webkit-guide/_image_assets.htm \
-webkit-guide/_index.html \
-webkit-guide/layout_link-fmt.htm \
-webkit-guide/layout_tbl-keyhole.htm \
-webkit-guide/mob_condjs.htm \
-webkit-guide/mob_layout.htm \
-webkit-guide/mob_mediaquery.htm \
-webkit-guide/storage.htm \
-webkit-guide/css/anim_accord.css \
-webkit-guide/css/anim_demo-rotate.css \
-webkit-guide/css/anim_demo-scale.css \
-webkit-guide/css/anim_demo-skew.css \
-webkit-guide/css/anim_gallery.css \
-webkit-guide/css/anim_panel.css \
-webkit-guide/css/anim_pulse.css \
-webkit-guide/css/anim_skew.css \
-webkit-guide/css/anim_slide.css \
-webkit-guide/css/anim_tabbedSkew.css \
-webkit-guide/css/css3_backgrounds.css \
-webkit-guide/css/css3_border-img.css \
-webkit-guide/css/css3_gradientBack.css \
-webkit-guide/css/css3_gradientBackStop.css \
-webkit-guide/css/css3_gradientButton.css \
-webkit-guide/css/css3_grad-radial.css \
-webkit-guide/css/css3_mask-grad.css \
-webkit-guide/css/css3_mask-img.css \
-webkit-guide/css/css3_multicol.css \
-webkit-guide/css/css3_reflect.css \
-webkit-guide/css/css3_scroll.css \
-webkit-guide/css/css3_sel-nth.css \
-webkit-guide/css/css3_shadowBlur.css \
-webkit-guide/css/css3_shadow.css \
-webkit-guide/css/css3_text-overflow.css \
-webkit-guide/css/css3_text-shadow.css \
-webkit-guide/css/css3_text-stroke.css \
-webkit-guide/css/form_tapper.css \
-webkit-guide/css/form_toggler.css \
-webkit-guide/css/layout_link-fmt.css \
-webkit-guide/css/layout_tbl-keyhole.css \
-webkit-guide/css/mob_condjs.css \
-webkit-guide/css/mobile.css \
-webkit-guide/css/mob_mediaquery.css \
-webkit-guide/css/mq_desktop.css \
-webkit-guide/css/mqlayout_desktop.css \
-webkit-guide/css/mqlayout_mobile.css \
-webkit-guide/css/mqlayout_touch.css \
-webkit-guide/css/mq_mobile.css \
-webkit-guide/css/mq_touch.css \
-webkit-guide/css/storage.css \
-webkit-guide/img/border-frame.png \
-webkit-guide/img/gal0.png \
-webkit-guide/img/gal1.png \
-webkit-guide/img/gal2.png \
-webkit-guide/img/gal3.png \
-webkit-guide/img/gal4.png \
-webkit-guide/img/gal5.png \
-webkit-guide/img/gal6.png \
-webkit-guide/img/gal7.png \
-webkit-guide/img/gal8.png \
-webkit-guide/img/gradient.jpg \
-webkit-guide/img/gray_icon_close.png \
-webkit-guide/img/ic_ag_016.png \
-webkit-guide/img/ic_ag_032.png \
-webkit-guide/img/ic_ag_036.png \
-webkit-guide/img/ic_ag_048.png \
-webkit-guide/img/ic_al_016.png \
-webkit-guide/img/ic_al_032.png \
-webkit-guide/img/ic_al_036.png \
-webkit-guide/img/ic_al_048.png \
-webkit-guide/img/ic_ar_016.png \
-webkit-guide/img/ic_ar_032.png \
-webkit-guide/img/ic_ar_036.png \
-webkit-guide/img/ic_ar_048.png \
-webkit-guide/img/ic_b_016.png \
-webkit-guide/img/ic_b_032.png \
-webkit-guide/img/ic_b_036.png \
-webkit-guide/img/ic_b_048.png \
-webkit-guide/img/ic_be_016.png \
-webkit-guide/img/ic_be_032.png \
-webkit-guide/img/ic_be_036.png \
-webkit-guide/img/ic_be_048.png \
-webkit-guide/img/ic_c_016.png \
-webkit-guide/img/ic_c_032.png \
-webkit-guide/img/ic_c_036.png \
-webkit-guide/img/ic_c_048.png \
-webkit-guide/img/ic_ca_016.png \
-webkit-guide/img/ic_ca_032.png \
-webkit-guide/img/ic_ca_036.png \
-webkit-guide/img/ic_ca_048.png \
-webkit-guide/img/ic_cl_016.png \
-webkit-guide/img/ic_cl_032.png \
-webkit-guide/img/ic_cl_036.png \
-webkit-guide/img/ic_cl_048.png \
-webkit-guide/img/ic_cu_016.png \
-webkit-guide/img/ic_cu_032.png \
-webkit-guide/img/ic_cu_036.png \
-webkit-guide/img/ic_cu_048.png \
-webkit-guide/img/ic_f_016.png \
-webkit-guide/img/ic_f_032.png \
-webkit-guide/img/ic_f_036.png \
-webkit-guide/img/ic_f_048.png \
-webkit-guide/img/ic_fe_016.png \
-webkit-guide/img/ic_fe_032.png \
-webkit-guide/img/ic_fe_036.png \
-webkit-guide/img/ic_fe_048.png \
-webkit-guide/img/ic_h_016.png \
-webkit-guide/img/ic_h_032.png \
-webkit-guide/img/ic_h_036.png \
-webkit-guide/img/ic_h_048.png \
-webkit-guide/img/ic_he_016.png \
-webkit-guide/img/ic_he_032.png \
-webkit-guide/img/ic_he_036.png \
-webkit-guide/img/ic_he_048.png \
-webkit-guide/img/ic_k_016.png \
-webkit-guide/img/ic_k_032.png \
-webkit-guide/img/ic_k_036.png \
-webkit-guide/img/ic_k_048.png \
-webkit-guide/img/ic_li_016.png \
-webkit-guide/img/ic_li_032.png \
-webkit-guide/img/ic_li_036.png \
-webkit-guide/img/ic_li_048.png \
-webkit-guide/img/ic_mg_016.png \
-webkit-guide/img/ic_mg_032.png \
-webkit-guide/img/ic_mg_036.png \
-webkit-guide/img/ic_mg_048.png \
-webkit-guide/img/ic_n_016.png \
-webkit-guide/img/ic_n_032.png \
-webkit-guide/img/ic_n_036.png \
-webkit-guide/img/ic_n_048.png \
-webkit-guide/img/ic_na_016.png \
-webkit-guide/img/ic_na_032.png \
-webkit-guide/img/ic_na_036.png \
-webkit-guide/img/ic_na_048.png \
-webkit-guide/img/ic_ne_016.png \
-webkit-guide/img/ic_ne_032.png \
-webkit-guide/img/ic_ne_036.png \
-webkit-guide/img/ic_ne_048.png \
-webkit-guide/img/ic_ni_016.png \
-webkit-guide/img/ic_ni_032.png \
-webkit-guide/img/ic_ni_036.png \
-webkit-guide/img/ic_ni_048.png \
-webkit-guide/img/ic_o_016.png \
-webkit-guide/img/ic_o_032.png \
-webkit-guide/img/ic_o_036.png \
-webkit-guide/img/ic_o_048.png \
-webkit-guide/img/icon_check.png \
-webkit-guide/img/icon_check_x24green.png \
-webkit-guide/img/icon_dismiss.png \
-webkit-guide/img/icon_dismiss_x22.png \
-webkit-guide/img/icon_drill-down.png \
-webkit-guide/img/icon_drill-down_x32.png \
-webkit-guide/img/icon_drill-up.png \
-webkit-guide/img/icon_drill-up_x32.png \
-webkit-guide/img/icon_expand-nav.png \
-webkit-guide/img/icon_head-collapsed.png \
-webkit-guide/img/icon_head-collapsed_x13.png \
-webkit-guide/img/icon_head-expanded.png \
-webkit-guide/img/icon_head-expanded_x13.png \
-webkit-guide/img/icon_info.png \
-webkit-guide/img/icon_info_x24.png \
-webkit-guide/img/icon_link-doc.png \
-webkit-guide/img/icon_link-email.png \
-webkit-guide/img/icon_link-external.png \
-webkit-guide/img/icon_link-pdf.png \
-webkit-guide/img/icon_link-ppt.png \
-webkit-guide/img/icon_link-rss.png \
-webkit-guide/img/icon_link-sms.png \
-webkit-guide/img/icon_link-tel.png \
-webkit-guide/img/icon_link-xls.png \
-webkit-guide/img/icon_list-all_circ.png \
-webkit-guide/img/icon_list-all.png \
-webkit-guide/img/icon_nav_end.png \
-webkit-guide/img/icon_nav-start.png \
-webkit-guide/img/icon_nav-top.png \
-webkit-guide/img/icon_nav-up.png \
-webkit-guide/img/icon_question.png \
-webkit-guide/img/icon_scroll-left.png \
-webkit-guide/img/icon_scroll-right.png \
-webkit-guide/img/icon_trash.png \
-webkit-guide/img/ic_pt_016.png \
-webkit-guide/img/ic_pt_032.png \
-webkit-guide/img/ic_pt_036.png \
-webkit-guide/img/ic_pt_048.png \
-webkit-guide/img/ic_si_016.png \
-webkit-guide/img/ic_si_032.png \
-webkit-guide/img/ic_si_036.png \
-webkit-guide/img/ic_si_048.png \
-webkit-guide/img/ic_zn_016.png \
-webkit-guide/img/ic_zn_032.png \
-webkit-guide/img/ic_zn_036.png \
-webkit-guide/img/ic_zn_048.png \
-webkit-guide/img/land1.png \
-webkit-guide/img/land2.png \
-webkit-guide/img/land3.png \
-webkit-guide/img/land4.png \
-webkit-guide/img/land5.png \
-webkit-guide/img/land6.png \
-webkit-guide/img/land7.png \
-webkit-guide/img/land8.png \
-webkit-guide/img/mask.png \
-webkit-guide/img/tnail_gal1.png \
-webkit-guide/img/tnail_gal2.png \
-webkit-guide/img/tnail_gal3.png \
-webkit-guide/img/tnail_gal4.png \
-webkit-guide/img/tnail_gal5.png \
-webkit-guide/img/tnail_gal6.png \
-webkit-guide/img/tnail_gal7.png \
-webkit-guide/img/tnail_gal8.png \
-webkit-guide/js/anim_accord.js \
-webkit-guide/js/anim_gallery.js \
-webkit-guide/js/anim_panel.js \
-webkit-guide/js/anim_skew.js \
-webkit-guide/js/css3_backgrounds.js \
-webkit-guide/js/css3_border-img.js \
-webkit-guide/js/css3_grad-radial.js \
-webkit-guide/js/css3_mask-grad.js \
-webkit-guide/js/css3_mask-img.js \
-webkit-guide/js/css3_text-overflow.js \
-webkit-guide/js/form_tapper.js \
-webkit-guide/js/mob_condjs.js \
-webkit-guide/js/mobile.js \
-webkit-guide/js/storage.js \
-
+                     webkit-guide/anim_demo-rotate.htm \
+                     webkit-guide/anim_demo-scale.htm \
+                     webkit-guide/anim_demo-skew.htm \
+                     webkit-guide/anim_gallery.htm \
+                     webkit-guide/anim_panel.htm \
+                     webkit-guide/anim_pulse.htm \
+                     webkit-guide/anim_skew.htm \
+                     webkit-guide/anim_slide1.htm \
+                     webkit-guide/anim_slide2.htm \
+                     webkit-guide/anim_slide3.htm \
+                     webkit-guide/anim_tabbedSkew.htm \
+                     webkit-guide/_copyright.txt \
+                     webkit-guide/css3_backgrounds.htm \
+                     webkit-guide/css3_border-img.htm \
+                     webkit-guide/css3_gradientBack.htm \
+                     webkit-guide/css3_gradientBackStop.htm \
+                     webkit-guide/css3_gradientButton.htm \
+                     webkit-guide/css3_grad-radial.htm \
+                     webkit-guide/css3_mask-grad.htm \
+                     webkit-guide/css3_mask-img.htm \
+                     webkit-guide/css3_multicol.htm \
+                     webkit-guide/css3_reflect.htm \
+                     webkit-guide/css3_scroll.htm \
+                     webkit-guide/css3_sel-nth.htm \
+                     webkit-guide/css3_shadow.htm \
+                     webkit-guide/css3_text-overflow.htm \
+                     webkit-guide/css3_text-shadow.htm \
+                     webkit-guide/css3_text-stroke.htm \
+                     webkit-guide/form_tapper.htm \
+                     webkit-guide/form_toggler.htm \
+                     webkit-guide/_image_assets.htm \
+                     webkit-guide/_index.html \
+                     webkit-guide/layout_link-fmt.htm \
+                     webkit-guide/layout_tbl-keyhole.htm \
+                     webkit-guide/mob_condjs.htm \
+                     webkit-guide/mob_layout.htm \
+                     webkit-guide/mob_mediaquery.htm \
+                     webkit-guide/storage.htm \
+                     webkit-guide/css/anim_accord.css \
+                     webkit-guide/css/anim_demo-rotate.css \
+                     webkit-guide/css/anim_demo-scale.css \
+                     webkit-guide/css/anim_demo-skew.css \
+                     webkit-guide/css/anim_gallery.css \
+                     webkit-guide/css/anim_panel.css \
+                     webkit-guide/css/anim_pulse.css \
+                     webkit-guide/css/anim_skew.css \
+                     webkit-guide/css/anim_slide.css \
+                     webkit-guide/css/anim_tabbedSkew.css \
+                     webkit-guide/css/css3_backgrounds.css \
+                     webkit-guide/css/css3_border-img.css \
+                     webkit-guide/css/css3_gradientBack.css \
+                     webkit-guide/css/css3_gradientBackStop.css \
+                     webkit-guide/css/css3_gradientButton.css \
+                     webkit-guide/css/css3_grad-radial.css \
+                     webkit-guide/css/css3_mask-grad.css \
+                     webkit-guide/css/css3_mask-img.css \
+                     webkit-guide/css/css3_multicol.css \
+                     webkit-guide/css/css3_reflect.css \
+                     webkit-guide/css/css3_scroll.css \
+                     webkit-guide/css/css3_sel-nth.css \
+                     webkit-guide/css/css3_shadowBlur.css \
+                     webkit-guide/css/css3_shadow.css \
+                     webkit-guide/css/css3_text-overflow.css \
+                     webkit-guide/css/css3_text-shadow.css \
+                     webkit-guide/css/css3_text-stroke.css \
+                     webkit-guide/css/form_tapper.css \
+                     webkit-guide/css/form_toggler.css \
+                     webkit-guide/css/layout_link-fmt.css \
+                     webkit-guide/css/layout_tbl-keyhole.css \
+                     webkit-guide/css/mob_condjs.css \
+                     webkit-guide/css/mobile.css \
+                     webkit-guide/css/mob_mediaquery.css \
+                     webkit-guide/css/mq_desktop.css \
+                     webkit-guide/css/mqlayout_desktop.css \
+                     webkit-guide/css/mqlayout_mobile.css \
+                     webkit-guide/css/mqlayout_touch.css \
+                     webkit-guide/css/mq_mobile.css \
+                     webkit-guide/css/mq_touch.css \
+                     webkit-guide/css/storage.css \
+                     webkit-guide/img/border-frame.png \
+                     webkit-guide/img/gal0.png \
+                     webkit-guide/img/gal1.jpg \
+                     webkit-guide/img/gal2.jpg \
+                     webkit-guide/img/gal3.jpg \
+                     webkit-guide/img/gal4.jpg \
+                     webkit-guide/img/gal5.jpg \
+                     webkit-guide/img/gal6.jpg \
+                     webkit-guide/img/gal7.jpg \
+                     webkit-guide/img/gal8.jpg \
+                     webkit-guide/img/gradient.jpg \
+                     webkit-guide/img/gray_icon_close.png \
+                     webkit-guide/img/ic_ag_016.png \
+                     webkit-guide/img/ic_ag_032.png \
+                     webkit-guide/img/ic_ag_036.png \
+                     webkit-guide/img/ic_ag_048.png \
+                     webkit-guide/img/ic_al_016.png \
+                     webkit-guide/img/ic_al_032.png \
+                     webkit-guide/img/ic_al_036.png \
+                     webkit-guide/img/ic_al_048.png \
+                     webkit-guide/img/ic_ar_016.png \
+                     webkit-guide/img/ic_ar_032.png \
+                     webkit-guide/img/ic_ar_036.png \
+                     webkit-guide/img/ic_ar_048.png \
+                     webkit-guide/img/ic_b_016.png \
+                     webkit-guide/img/ic_b_032.png \
+                     webkit-guide/img/ic_b_036.png \
+                     webkit-guide/img/ic_b_048.png \
+                     webkit-guide/img/ic_be_016.png \
+                     webkit-guide/img/ic_be_032.png \
+                     webkit-guide/img/ic_be_036.png \
+                     webkit-guide/img/ic_be_048.png \
+                     webkit-guide/img/ic_c_016.png \
+                     webkit-guide/img/ic_c_032.png \
+                     webkit-guide/img/ic_c_036.png \
+                     webkit-guide/img/ic_c_048.png \
+                     webkit-guide/img/ic_ca_016.png \
+                     webkit-guide/img/ic_ca_032.png \
+                     webkit-guide/img/ic_ca_036.png \
+                     webkit-guide/img/ic_ca_048.png \
+                     webkit-guide/img/ic_cl_016.png \
+                     webkit-guide/img/ic_cl_032.png \
+                     webkit-guide/img/ic_cl_036.png \
+                     webkit-guide/img/ic_cl_048.png \
+                     webkit-guide/img/ic_cu_016.png \
+                     webkit-guide/img/ic_cu_032.png \
+                     webkit-guide/img/ic_cu_036.png \
+                     webkit-guide/img/ic_cu_048.png \
+                     webkit-guide/img/ic_f_016.png \
+                     webkit-guide/img/ic_f_032.png \
+                     webkit-guide/img/ic_f_036.png \
+                     webkit-guide/img/ic_f_048.png \
+                     webkit-guide/img/ic_fe_016.png \
+                     webkit-guide/img/ic_fe_032.png \
+                     webkit-guide/img/ic_fe_036.png \
+                     webkit-guide/img/ic_fe_048.png \
+                     webkit-guide/img/ic_h_016.png \
+                     webkit-guide/img/ic_h_032.png \
+                     webkit-guide/img/ic_h_036.png \
+                     webkit-guide/img/ic_h_048.png \
+                     webkit-guide/img/ic_he_016.png \
+                     webkit-guide/img/ic_he_032.png \
+                     webkit-guide/img/ic_he_036.png \
+                     webkit-guide/img/ic_he_048.png \
+                     webkit-guide/img/ic_k_016.png \
+                     webkit-guide/img/ic_k_032.png \
+                     webkit-guide/img/ic_k_036.png \
+                     webkit-guide/img/ic_k_048.png \
+                     webkit-guide/img/ic_li_016.png \
+                     webkit-guide/img/ic_li_032.png \
+                     webkit-guide/img/ic_li_036.png \
+                     webkit-guide/img/ic_li_048.png \
+                     webkit-guide/img/ic_mg_016.png \
+                     webkit-guide/img/ic_mg_032.png \
+                     webkit-guide/img/ic_mg_036.png \
+                     webkit-guide/img/ic_mg_048.png \
+                     webkit-guide/img/ic_n_016.png \
+                     webkit-guide/img/ic_n_032.png \
+                     webkit-guide/img/ic_n_036.png \
+                     webkit-guide/img/ic_n_048.png \
+                     webkit-guide/img/ic_na_016.png \
+                     webkit-guide/img/ic_na_032.png \
+                     webkit-guide/img/ic_na_036.png \
+                     webkit-guide/img/ic_na_048.png \
+                     webkit-guide/img/ic_ne_016.png \
+                     webkit-guide/img/ic_ne_032.png \
+                     webkit-guide/img/ic_ne_036.png \
+                     webkit-guide/img/ic_ne_048.png \
+                     webkit-guide/img/ic_ni_016.png \
+                     webkit-guide/img/ic_ni_032.png \
+                     webkit-guide/img/ic_ni_036.png \
+                     webkit-guide/img/ic_ni_048.png \
+                     webkit-guide/img/ic_o_016.png \
+                     webkit-guide/img/ic_o_032.png \
+                     webkit-guide/img/ic_o_036.png \
+                     webkit-guide/img/ic_o_048.png \
+                     webkit-guide/img/icon_check.png \
+                     webkit-guide/img/icon_check_x24green.png \
+                     webkit-guide/img/icon_dismiss.png \
+                     webkit-guide/img/icon_dismiss_x22.png \
+                     webkit-guide/img/icon_drill-down.png \
+                     webkit-guide/img/icon_drill-down_x32.png \
+                     webkit-guide/img/icon_drill-up.png \
+                     webkit-guide/img/icon_drill-up_x32.png \
+                     webkit-guide/img/icon_expand-nav.png \
+                     webkit-guide/img/icon_head-collapsed.png \
+                     webkit-guide/img/icon_head-collapsed_x13.png \
+                     webkit-guide/img/icon_head-expanded.png \
+                     webkit-guide/img/icon_head-expanded_x13.png \
+                     webkit-guide/img/icon_info.png \
+                     webkit-guide/img/icon_info_x24.png \
+                     webkit-guide/img/icon_link-doc.png \
+                     webkit-guide/img/icon_link-email.png \
+                     webkit-guide/img/icon_link-external.png \
+                     webkit-guide/img/icon_link-pdf.png \
+                     webkit-guide/img/icon_link-ppt.png \
+                     webkit-guide/img/icon_link-rss.png \
+                     webkit-guide/img/icon_link-sms.png \
+                     webkit-guide/img/icon_link-tel.png \
+                     webkit-guide/img/icon_link-xls.png \
+                     webkit-guide/img/icon_list-all_circ.png \
+                     webkit-guide/img/icon_list-all.png \
+                     webkit-guide/img/icon_nav_end.png \
+                     webkit-guide/img/icon_nav-start.png \
+                     webkit-guide/img/icon_nav-top.png \
+                     webkit-guide/img/icon_nav-up.png \
+                     webkit-guide/img/icon_question.png \
+                     webkit-guide/img/icon_scroll-left.png \
+                     webkit-guide/img/icon_scroll-right.png \
+                     webkit-guide/img/icon_trash.png \
+                     webkit-guide/img/ic_pt_016.png \
+                     webkit-guide/img/ic_pt_032.png \
+                     webkit-guide/img/ic_pt_036.png \
+                     webkit-guide/img/ic_pt_048.png \
+                     webkit-guide/img/ic_si_016.png \
+                     webkit-guide/img/ic_si_032.png \
+                     webkit-guide/img/ic_si_036.png \
+                     webkit-guide/img/ic_si_048.png \
+                     webkit-guide/img/ic_zn_016.png \
+                     webkit-guide/img/ic_zn_032.png \
+                     webkit-guide/img/ic_zn_036.png \
+                     webkit-guide/img/ic_zn_048.png \
+                     webkit-guide/img/land1.jpg \
+                     webkit-guide/img/land2.jpg \
+                     webkit-guide/img/land3.jpg \
+                     webkit-guide/img/land4.jpg \
+                     webkit-guide/img/land5.jpg \
+                     webkit-guide/img/land6.jpg \
+                     webkit-guide/img/land7.jpg \
+                     webkit-guide/img/land8.jpg \
+                     webkit-guide/img/mask.png \
+                     webkit-guide/img/tnail_gal1.png \
+                     webkit-guide/img/tnail_gal2.png \
+                     webkit-guide/img/tnail_gal3.png \
+                     webkit-guide/img/tnail_gal4.png \
+                     webkit-guide/img/tnail_gal5.png \
+                     webkit-guide/img/tnail_gal6.png \
+                     webkit-guide/img/tnail_gal7.png \
+                     webkit-guide/img/tnail_gal8.png \
+                     webkit-guide/js/anim_accord.js \
+                     webkit-guide/js/anim_gallery.js \
+                     webkit-guide/js/anim_panel.js \
+                     webkit-guide/js/anim_skew.js \
+                     webkit-guide/js/css3_backgrounds.js \
+                     webkit-guide/js/css3_border-img.js \
+                     webkit-guide/js/css3_grad-radial.js \
+                     webkit-guide/js/css3_mask-grad.js \
+                     webkit-guide/js/css3_mask-img.js \
+                     webkit-guide/js/css3_text-overflow.js \
+                     webkit-guide/js/form_tapper.js \
+                     webkit-guide/js/mob_condjs.js \
+                     webkit-guide/js/mobile.js \
+                     webkit-guide/js/storage.js

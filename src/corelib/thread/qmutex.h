@@ -43,6 +43,7 @@
 #define QMUTEX_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qatomic.h>
 #include <new>
 
 QT_BEGIN_HEADER
@@ -53,7 +54,8 @@ QT_MODULE(Core)
 
 #ifndef QT_NO_THREAD
 
-class QMutexPrivate;
+class QAtomicInt;
+class QMutexData;
 
 class Q_CORE_EXPORT QMutex
 {
@@ -66,10 +68,13 @@ public:
     explicit QMutex(RecursionMode mode = NonRecursive);
     ~QMutex();
 
-    void lock();
-    bool tryLock();
+    void lock();     //### Qt5: make inline;
+    inline void lockInline();
+    bool tryLock();  //### Qt5: make inline;
     bool tryLock(int timeout);
-    void unlock();
+    inline bool tryLockInline();
+    void unlock();     //### Qt5: make inline;
+    inline void unlockInline();
 
 #if defined(QT3_SUPPORT)
     inline QT3_SUPPORT bool locked()
@@ -86,9 +91,11 @@ public:
 #endif
 
 private:
+    void lockInternal();
+    void unlockInternal();
     Q_DISABLE_COPY(QMutex)
 
-    QMutexPrivate *d;
+    QMutexData *d;
 };
 
 class Q_CORE_EXPORT QMutexLocker
@@ -99,7 +106,7 @@ public:
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
         if (m) {
-            m->lock();
+            m->lockInline();
             val = reinterpret_cast<quintptr>(m) | quintptr(1u);
         } else {
             val = 0;
@@ -111,7 +118,7 @@ public:
     {
         if ((val & quintptr(1u)) == quintptr(1u)) {
             val &= ~quintptr(1u);
-            mutex()->unlock();
+            mutex()->unlockInline();
         }
     }
 
@@ -119,7 +126,7 @@ public:
     {
         if (val) {
             if ((val & quintptr(1u)) == quintptr(0u)) {
-                mutex()->lock();
+                mutex()->lockInline();
                 val |= quintptr(1u);
             }
         }
@@ -145,6 +152,53 @@ private:
     quintptr val;
 };
 
+class QMutexData
+{
+    public:
+        QAtomicInt contenders;
+        const uint recursive : 1;
+        uint reserved : 31;
+    protected:
+        QMutexData(QMutex::RecursionMode mode);
+        ~QMutexData();
+};
+
+#ifdef QT_NO_DEBUG
+inline void QMutex::unlockInline()
+{
+    if (d->recursive) {
+        unlock();
+    } else if (!d->contenders.testAndSetRelease(1, 0)) {
+        unlockInternal();
+    }
+}
+
+inline bool QMutex::tryLockInline()
+{
+    if (d->recursive) {
+        return tryLock();
+    } else {
+        return d->contenders.testAndSetAcquire(0, 1);
+    }
+}
+
+inline void QMutex::lockInline()
+{
+    if (d->recursive) {
+        lock();
+    } else if(!tryLockInline()) {
+        lockInternal();
+    }
+}
+#else // QT_NO_DEBUG
+//in debug we do not use inline calls in order to allow debugging tools
+// to hook the mutex locking functions.
+inline void QMutex::unlockInline() { unlock(); }
+inline bool QMutex::tryLockInline() { return tryLock(); }
+inline void QMutex::lockInline() { lock(); }
+#endif // QT_NO_DEBUG
+
+
 #else // QT_NO_THREAD
 
 
@@ -157,9 +211,11 @@ public:
     inline ~QMutex() {}
 
     static inline void lock() {}
-    static inline bool tryLock() { return true; }
-    static inline bool tryLock(int timeout) { Q_UNUSED(timeout); return true; }
-    static void unlock() {}
+    static inline void lockInline() {}
+    static inline bool tryLock(int timeout = 0) { Q_UNUSED(timeout); return true; }
+    static inline bool tryLockInline() { return true; }
+    static inline void unlock() {}
+    static inline void unlockInline() {}
 
 #if defined(QT3_SUPPORT)
     static inline QT3_SUPPORT bool locked() { return false; }

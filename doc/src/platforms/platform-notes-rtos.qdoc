@@ -160,7 +160,7 @@
     X11 embedded server is not recommended due to missing support for X11 extensions,
     resulting in poor rendering quality.
 
-    Qt for QNX contains experimental screen and input drivers based on QNX's
+    Qt for QNX contains screen and input drivers based on QNX's
     \c devi-hid and \c io-display. For more information, check the class documentation
     for QQnxScreen, QWSQnxKeyboardHandler and QQnxMouseHandler. See the
     \l{Porting Qt for Embedded Linux to a New Architecture} document for information
@@ -170,7 +170,7 @@
 
     \section1 Supported Versions
 
-    Qt has been tested on QNX 6.4 on i386 and PowerPC targets with QNX's default
+    Qt has been tested on QNX 6.5 on i386, ARM/ARM-v7 and PowerPC targets with QNX's default
     gcc compiler.
 
     \section1 Limitations
@@ -179,16 +179,12 @@
 
     \table
     \header \o Function \o Notes
-    \row \o QProcess
-         \o Not available - QNX doesn't support mixing threads and processes.
-    \row \o QSharedMemory
-         \o Not available - QNX doesn't support SYSV style shared memory.
-    \row \o QSystemSemaphore
-         \o Not available - QNX doesn't support SYSV style system semaphores.
-    \row \o QWS Multi Process
-         \o QT_NO_QWS_MULTIPROCESS is always on due to missing shared memory support.
     \row \o Phonon
          \o There is no standard audio backend, which could be integrated into Phonon.
+    \row \o QtMultimedia
+         \o There is no standard backend, which could be integrated into QtMultimedia.
+    \row \o QtDBus
+         \o The the QtDBus library is not available on QNX.
     \row \o Qt3Support
          \o The Qt3Support library is not available on QNX.
     \endtable
@@ -203,24 +199,25 @@
     i386 QNX target:
 
     \code
-    configure -xplatform unsupported/qws/qnx-i386-g++ -embedded i386 -no-gfx-linuxfb -no-mouse-linuxtp -no-kbd-tty -no-qt3support -qt-gfx-qnx -qt-mouse-qnx -qt-kbd-qnx -no-exceptions
+    configure -xplatform unsupported/qws/qnx-i386-g++ -embedded x86 -no-gfx-linuxfb -no-mouse-linuxtp -no-kbd-tty -no-qt3support -qt-mouse-qnx -qt-kbd-qnx -qt-gfx-qnx -depths 16,24,32,generic -no-exceptions
     \endcode
 
     \list
     \o \c{-xplatform unsupported/qws/qnx-i386-g++} - selects the i386-g++ mkspec for QNX
-    \o \c{-embedded i386} - builds the embedded version of Qt and sets the architecture to i386
+    \o \c{-embedded x86} - builds the embedded version of Qt and sets the architecture to i386
     \o \c{-no-gfx-linuxfb},  \c{-no-mouse-linuxtp} and \c{-no-kbd-tty} are Linux specific and won't work on QNX
     \o \c{-no-qt3support} - required since the Qt3 support classes are not supported on QNX
     \o \c{-no-exceptions} - reduces the size of the library by disabling exception support
-    \o \c{-qt-gfx-qnx} - enables the experimental \c{io-graphics} based display driver
-    \o \c{-qt-mouse-qnx} - enables the experimental \c{devi-hig} based mouse driver
-    \o \c{-qt-kbd-qnx} - enables the experimental \c{devi-hig} based keyboard driver
+    \o \c{-qt-mouse-qnx} - enables the \c{devi-hid} based mouse driver
+    \o \c{-qt-kbd-qnx} - enables the \c{devi-hid} based keyboard driver
+    \o \c{-qt-gfx-qnx} - enables the \c{io-graphics} based screen driver
+    \o \c{-depths 16,24,32,generic} - enables all modes supported by the QNX screen driver
     \endlist
 
     \section1 General Notes
 
     \list
-    \o To enable the experimental QNX display and input drivers, \c{io-display} needs to be
+    \o To enable the QNX screen and input drivers, \c{io-display} needs to be
        up and running. The \c devi-hid based Qt input drivers require \c devi-hid to run
        in resource mode without Photon support. To enable a standard mouse and keyboard
        combination, run \c devi-hid as follows: \c{/usr/photon/bin/devi-hid -Pr kbd mouse}.
@@ -235,8 +232,8 @@
        with a newer version, or disable the TIFF plugin entierly by appending
        \c{QT_CONFIG += no-tiff} to \c{.qmake.cache} after configuring Qt.
 
-    \o Some of the tools, examples and demos do not compile due to dependencies on QProcess
-       or other classes that are not available on QNX.
+    \o Some of the tools, examples and demos do not compile due to dependencies on classes
+       that are not available on QNX.
     \endlist
 
     \section1 Platform Regressions
@@ -244,4 +241,121 @@
     Qt for QNX's behavior is mostly identical with \l{Qt for Embedded Linux}. However,
     some regressions were spotted in QDateTime computation around year 0 and year 1970,
     which have been tracked back to faulty time zone data on some QNX versions.
+
+    QString::localeAwareCompare() only works for C locale.
+
+    QTranslator's default locale-based fallback mechanism doesn't work.
+
+    QSystemSemaphore: Due to POSIX semaphores limitations, the semaphore operations aren't
+    automatically undone when the process terminates. This potentially may lead to unexpected
+    lock-ups in applications which does use the SysV semaphores behavior.
+*/
+
+/*!
+    \page platform-notes-integrity.html
+    \title Platform Notes - INTEGRITY
+    \contentspage Platform Notes
+    \target INTEGRITY
+
+    \note INTEGRITY is a community supported platform. See the
+    \l{Supported Platforms} page for more information.
+
+    This page contains information about the Qt for INTEGRITY port. More
+    information about the combinations of platforms and compilers supported
+    by Qt can be found on the \l{Supported Platforms} page.
+
+    Note that Qt for INTEGRITY is currently based on \l{Qt for Embedded Linux},
+    which contains its own windowing system.
+
+    Qt for INTEGRITY contains experimental screen and input drivers based on the
+    gh_FB Framebuffer API for graphics, a Connection-based mouse and keyboard
+    support. For information about these drivers, please refer to Green Hills
+    Software standard support.
+
+    \tableofcontents
+
+    \section1 Supported Versions
+
+    Qt has been tested on INTEGRITY 10 on various PowerPC, ARM and x86 targets.
+    On some platforms a native graphics FrameBuffer driver is available and has
+    then been used for testing. On all other platforms, the default FrameBuffer
+    VNC driver is used.
+
+    \section1 Limitations
+
+    Some of Qt's functionality is currently not available on INTEGRITY:
+
+    \table
+    \header \o Function \o Notes
+    \row \o QProcess
+         \o Not implemented. Volunteers welcome.
+    \row \o QSharedMemory
+         \o Not available - INTEGRITY doesn't support SYSV style shared memory.
+    \row \o QSystemSemaphore
+         \o Not available - INTEGRITY doesn't support SYSV style system semaphores.
+    \row \o QWS Multi Process
+         \o QT_NO_QWS_MULTIPROCESS is always on due to missing shared memory support.
+    \row \o Phonon
+         \o There is no standard audio backend.
+    \row \o Qt3Support
+         \o The Qt3Support library is not available on INTEGRITY.
+    \row \o QtScript
+         \o Not available - INTEGRITY's mmap() doesn't support allocating memory.
+    \endtable
+
+    \section1 Build Instructions
+
+    Qt for INTEGRITY can be built on either a Linux or Windows (with cygwin) host.
+    In both cases, a standard installation of INTEGRITY is required, with the
+    addition of the FrameBuffer API.
+
+    Example configure line for cross-compiling Qt for INTEGRITY for an
+    ARM INTEGRITY target:
+
+    \code
+    ./configure --hostprefix=$PWD -embedded integrity -xplatform unsupported/qws/integrity-arm-cxarm -static -qt-kbd-integrity -qt-mouse-integrity -no-mouse-linuxtp -no-mouse-pc -no-kbd-tty -qt-gfx-integrityfb -no-qt3support -no-gfx-linuxfb -no-glib -no-openssl -no-largefile -little-endian -arch integrity -prefix / -opensource -no-feature-QWS_MULTIPROCESS -no-feature-SHAREDMEMORY -no-feature-PROCESS -no-feature-SYSTEMSEMAPHORE -no-feature-PRINTER -no-feature-QWS_QPF2 -no-scripttools
+    \endcode
+
+    \list
+    \o \c{--hostprefix=$PWD} - specifies the current directory as the base source for Qt
+    \o \c{-arch integrity} - sets the architecture to INTEGRITY (for atomic operations)
+    \o \c{-embedded integrity} - builds the embedded version of Qt and sets the architecture to INTEGRITY
+    \o \c{-xplatform unsupported/qws/integrity-arm-cxarm} - selects the arm-cxarm mkspec for INTEGRITY
+    \o \c{-static} - specifies a static build of Qt
+    \o \c{-no-gfx-linuxfb},  \c{-no-mouse-linuxtp}, \c{-no-mouse-pc} and \c{-no-kbd-tty} are Linux specific and won't work on INTEGRITY
+    \o \c{-no-qt3support} - required since the Qt3 support classes are not supported on INTEGRITY
+    \o \c{-no-exceptions} - reduces the size of the library by disabling exception support
+    \o \c{-no-openssl} - disable support for OpenSSL
+    \o \c{-no-glib} - disable support for unavailable Glib
+    \o \c{-no-largefile} - disable support for large (> 2TB) files
+    \o \c{-no-scripttools} - disable support for QtScript tools
+    \o \c{-qt-gfx-integrity} - enables the experimental gh_FB based display driver
+    \o \c{-qt-mouse-integrity} - enables the experimental Connection-based mouse driver
+    \o \c{-qt-kbd-integrity} - enables the experimental Connection-based keyboard driver
+    \endlist
+
+    The above script will generate MULTI .gpj Project files, not Makefiles. The
+    main benefit of using these project files is automatic dependency checking,
+    but this also provides an organization known to INTEGRITY customers.
+    For Qt libraries, the top-level file is projects.gpj.
+
+    \section1 General Notes
+
+    \list
+    \o Before you run the above configure line, you may want to modify the values
+       of INTEGRITY_DIR and INTEGRITY_BSP in unsupported/qws/integrity-arm-cxarm/qmake.conf.
+       If you do not do this, you will have to modify the resulting generated projects.gpj
+
+    \o GIF support is currently not enabled.
+
+    \o Default .int files are generated. You may want to modify the amount of heap assigned
+       to each example by modifying the HeapSize declaration in the specific example .int file.
+
+    \o Some of the tools, examples and demos do not compile due to dependencies on QProcess
+       or other classes that are not available on INTEGRITY.
+
+    \endlist
+
+    \section1 Platform Regressions
+
 */

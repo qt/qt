@@ -85,7 +85,7 @@
     reference count (i.e., a reference counter placed outside the
     object). Like its name indicates, the pointer value is shared
     among all instances of QSharedPointer and QWeakPointer. The
-    contents of the object pointed to by the pointer should not
+    contents of the object pointed to by the pointer should not be
     considered shared, however: there is only one object. For that
     reason, QSharedPointer does not provide a way to detach or make
     copies of the pointed object.
@@ -151,7 +151,7 @@
 
     QtSharedPointer::ExternalRefCount implements the actual reference
     counting and introduces the d-pointer for QSharedPointer. That d-pointer
-    itself is shared with with other QSharedPointer objects as well as
+    itself is shared with other QSharedPointer objects as well as
     QWeakPointer.
 
     The reason for keeping the pointer value itself outside the d-pointer is
@@ -213,7 +213,7 @@
     destroyer field must be set to a valid function that \b will delete the
     object tracked.
 
-    This class also adds an operator delete function to ensure that simply
+    This class also adds an operator delete function to ensure that it simply
     calls the global operator delete. That should be the behaviour in all
     compilers already, but to be on the safe side, this class ensures that no
     funny business happens.
@@ -308,7 +308,7 @@
     When initialising the parent class, the create() functions pass the
     address of the static deleter() member function. That is, when the
     virtual destroy() is called by QSharedPointer, the deleter() functions
-    are called instead. These functiosn static_cast the ExternalRefCountData*
+    are called instead. These functions static_cast the ExternalRefCountData*
     parameter to their own type and execute their deletion: for the
     ExternalRefCountWithCustomDeleter::deleter() case, it runs the user's
     custom deleter, then destroys the deleter; for
@@ -318,7 +318,7 @@
     By not calling the constructor of the derived classes, we avoid
     instantiating their virtual tables. Since these classes are
     template-based, there would be one virtual table per \tt T and \tt
-    Deleter type. (This is what Qt 4.5 did)
+    Deleter type. (This is what Qt 4.5 did.)
 
     Instead, only one non-inline function is required per template, which is
     the deleter() static member. All the other functions can be inlined.
@@ -381,7 +381,7 @@
     first promote it to QSharedPointer and verify if the resulting object is
     null or not. QSharedPointer guarantees that the object isn't deleted, so
     if you obtain a non-null object, you may use the pointer. See
-    QWeakPointer::toStrongRef() for more an example.
+    QWeakPointer::toStrongRef() for an example.
 
     QWeakPointer also provides the QWeakPointer::data() method that returns
     the tracked pointer without ensuring that it remains valid. This function
@@ -395,7 +395,7 @@
 
     \section1 Tracking QObject
 
-    QWeakPointer can be used to track deletion classes that derive from QObject,
+    QWeakPointer can be used to track deletion of classes that derive from QObject,
     even if they are not managed by QSharedPointer. When used in that role,
     QWeakPointer replaces the older QPointer in all use-cases. QWeakPointer
     is also more efficient than QPointer, so it should be preferred in all
@@ -483,9 +483,9 @@
     another QSharedPointer object or deleted outside this object.
 
     The \a deleter parameter specifies the custom deleter for this
-    object. The custom deleter is called when the strong reference
-    count drops to 0 instead of the operator delete(). This is useful,
-    for instance, for calling deleteLater() in a QObject instead:
+    object. The custom deleter is called, instead of the operator delete(),
+    when the strong reference count drops to 0. This is useful,
+    for instance, for calling deleteLater() on a QObject instead:
 
     \code
     static void doDeleteLater(MyObject *obj)
@@ -754,7 +754,7 @@
     \fn QWeakPointer &QWeakPointer::operator=(const QObject *obj)
     \since 4.6
 
-    Makes this QWeakPointer hold a weak reference to directly to the QObject
+    Makes this QWeakPointer hold a weak reference directly to the QObject
     \a obj. This function is only available if the template type \tt T is
     QObject or derives from it.
 
@@ -1275,8 +1275,6 @@ QT_END_NAMESPACE
 
 
 
-#if !defined(QT_NO_MEMBER_TEMPLATES)
-
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #  ifdef QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #    if defined(__GLIBC__) && (__GLIBC__ >= 2) && !defined(__UCLIBC__) && !defined(QT_LINUXBASE)
@@ -1501,5 +1499,3 @@ void QtSharedPointer::internalSafetyCheckCleanCheck()
 }
 
 QT_END_NAMESPACE
-
-#endif

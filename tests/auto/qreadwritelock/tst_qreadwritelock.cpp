@@ -362,34 +362,45 @@ void tst_QReadWriteLock::tryWriteLock()
         class Thread : public QThread
         {
         public:
+            Thread() : failureCount(0) { }
             void run()
             {
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(!readWriteLock.tryLockForWrite());
+                if (readWriteLock.tryLockForWrite())
+                    failureCount++;
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(readWriteLock.tryLockForWrite());
-                Q_ASSERT(lockCount.testAndSetRelaxed(0, 1));
-                Q_ASSERT(lockCount.testAndSetRelaxed(1, 0));
+                if (!readWriteLock.tryLockForWrite())
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(0, 1))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(1, 0))
+                    failureCount++;
                 readWriteLock.unlock();
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(!readWriteLock.tryLockForWrite(1000));
+                if (readWriteLock.tryLockForWrite(1000))
+                    failureCount++;
                 testsTurn.release();
 
                 threadsTurn.acquire();
-                Q_ASSERT(readWriteLock.tryLockForWrite(1000));
-                Q_ASSERT(lockCount.testAndSetRelaxed(0, 1));
-                Q_ASSERT(lockCount.testAndSetRelaxed(1, 0));
+                if (!readWriteLock.tryLockForWrite(1000))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(0, 1))
+                    failureCount++;
+                if (!lockCount.testAndSetRelaxed(1, 0))
+                    failureCount++;
                 readWriteLock.unlock();
                 testsTurn.release();
 
                 threadsTurn.acquire();
             }
+
+            int failureCount;
         };
 
         Thread thread;
@@ -419,6 +430,8 @@ void tst_QReadWriteLock::tryWriteLock()
         testsTurn.acquire();
         threadsTurn.release();
         thread.wait();
+
+        QCOMPARE(thread.failureCount, 0);
     }
 }
 
@@ -652,7 +665,7 @@ public:
 
 
 /*
-    A writer aquires a read-lock, a reader locks
+    A writer adquires a read-lock, a reader locks
     the writer releases the lock, the reader gets the lock
 */
 void tst_QReadWriteLock::readLockBlockRelease()
@@ -669,7 +682,7 @@ void tst_QReadWriteLock::readLockBlockRelease()
 }
 
 /*
-    writer1 aquires a read-lock, writer2 blocks,
+    writer1 adquires a read-lock, writer2 blocks,
     writer1 releases the lock, writer2 gets the lock
 */
 void tst_QReadWriteLock::writeLockBlockRelease()
@@ -685,7 +698,7 @@ void tst_QReadWriteLock::writeLockBlockRelease()
     QVERIFY(threadDone);
 }
 /*
-    Two readers aquire a read-lock, one writer attempts a write block,
+    Two readers adquire a read-lock, one writer attempts a write block,
     the readers release their locks, the writer gets the lock.
 */
 void tst_QReadWriteLock::multipleReadersBlockRelease()

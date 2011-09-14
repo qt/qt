@@ -86,6 +86,9 @@ enum triState {
     _False = 0,
     _True = 1
 };
+
+triState operator!(const triState &rhs);
+
 enum addressAwarenessType {
     addrAwareDefault,
     addrAwareNoLarge,
@@ -363,6 +366,7 @@ enum optLinkTimeCodeGenType {
     optLTCGUpdate
 };
 enum pchOption {
+    pchUnset = -1,
     pchNone,
     pchCreateUsingSpecific,
     pchGenerateAuto,
@@ -467,7 +471,7 @@ enum warningLevelOption {
 class VCToolBase {
 protected:
     // Functions
-    VCToolBase(){};
+    VCToolBase(){}
     virtual ~VCToolBase(){}
     virtual bool parseOption(const char* option) = 0;
 public:
@@ -521,6 +525,7 @@ public:
     QStringList             ForcedIncludeFiles;
     QStringList             ForcedUsingFiles;
     preprocessOption        GeneratePreprocessedFile;
+    triState                PreprocessSuppressLineNumbers;
     triState                GlobalOptimizations;
     triState                IgnoreStandardIncludePath;
     triState                ImproveFloatingPointConsistency;
@@ -528,6 +533,7 @@ public:
     triState                KeepComments;
     triState                MinimalRebuild;
     QString                 ObjectFile;
+    triState                OmitDefaultLibName;
     triState                OmitFramePointers;
     triState                OpenMP;
     optimizeOption          Optimization;
@@ -550,11 +556,24 @@ public:
     triState                UndefineAllPreprocessorDefinitions;
     QStringList             UndefinePreprocessorDefinitions;
     pchOption               UsePrecompiledHeader;
+    triState                UseUnicodeForAssemblerListing;
     triState                WarnAsError;
     warningLevelOption      WarningLevel;
     triState                WholeProgramOptimization;
     useOfArchitecture       CompileForArchitecture;
     triState                InterworkCalls;
+
+    // VS2010
+    triState                EnablePREfast;
+    triState                DisplayFullPaths;
+    triState                MultiProcessorCompilation;
+    QString                 MultiProcessorCompilationProcessorCount;
+    triState                GenerateXMLDocumentationFiles;
+    QString                 XMLDocumentationFileName;
+    QString                 ErrorReporting;
+    triState                CreateHotpatchableImage;
+    QString                 PreprocessOutputPath;
+
     VCConfiguration*        config;
 };
 
@@ -572,6 +591,7 @@ public:
     QStringList             AdditionalOptions;
     QStringList             AddModuleNamesToAssembly;
     QString                 BaseAddress;
+    triState                DataExecutionPrevention;
     QStringList             DelayLoadDLLs;
     optFoldingType          EnableCOMDATFolding;
     QString                 EntryPointSymbol;
@@ -602,6 +622,7 @@ public:
     optRefType              OptimizeReferences;
     QString                 OutputFile;
     QString                 ProgramDatabaseFile;
+    triState                RandomizedBaseAddress;
     triState                RegisterOutput;
     triState                ResourceOnlyDLL;
     triState                SetChecksum;
@@ -616,10 +637,33 @@ public:
     triState                SwapRunFromNet;
     machineTypeOption       TargetMachine;
     termSvrAwarenessType    TerminalServerAware;
+    triState                TreatWarningsAsErrors;
     triState                TurnOffAssemblyGeneration;
     QString                 TypeLibraryFile;
     qlonglong               TypeLibraryResourceID;
     QString                 Version;
+
+    // VS2010
+    triState                GenerateManifest;
+    QStringList             AdditionalManifestDependencies;
+    QString                 ManifestFile;
+    triState                EnableUAC;
+    QString                 UACExecutionLevel;
+    triState                UACUIAccess;
+    qlonglong               SectionAlignment;
+    triState                PreventDllBinding;
+    triState                AllowIsolation;
+    triState                AssemblyDebug;
+    QStringList             AssemblyLinkResource;
+    QString                 CLRImageType;
+    QString                 CLRSupportLastError;
+    QString                 CLRThreadAttribute;
+    triState                CLRUnmanagedCodeCheck;
+    triState                DelaySign;
+    QString                 KeyContainer;
+    QString                 KeyFile;
+    QString                 LinkErrorReporting;
+
     VCConfiguration*        config;
 };
 
@@ -662,6 +706,18 @@ public:
     triState                ValidateParameters;
     triState                WarnAsError;
     midlWarningLevelOption  WarningLevel;
+
+    // VS 2010
+    triState                ApplicationConfigurationMode;
+    QString                 GenerateClientFiles;
+    QString                 ClientStubFile;
+    QString                 TypeLibFormat;
+    triState                ValidateAllParameters;
+    triState                SuppressCompilerWarnings;
+    QString                 GenerateServerFiles;
+    QString                 ServerStubFile;
+    qlonglong               LocaleID;
+
     VCConfiguration*        config;
 };
 
@@ -671,7 +727,7 @@ public:
     // Functions
     VCLibrarianTool();
     virtual ~VCLibrarianTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalDependencies;
@@ -692,7 +748,7 @@ public:
     // Functions
     VCCustomBuildTool();
     virtual ~VCCustomBuildTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalDependencies;
@@ -701,6 +757,8 @@ public:
     QStringList             Outputs;
     QString                 ToolName;
     QString                 ToolPath;
+
+    VCConfiguration*        config;
 };
 
 class VCResourceCompilerTool : public VCToolBase
@@ -709,7 +767,7 @@ public:
     // Functions
     VCResourceCompilerTool();
     virtual ~VCResourceCompilerTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalIncludeDirectories;
@@ -721,6 +779,7 @@ public:
     QString                 ResourceOutputFileName;
     linkProgressOption      ShowProgress;
     QString                 ToolPath;
+    triState                SuppressStartupBanner;
 };
 
 class VCDeploymentTool
@@ -741,15 +800,16 @@ class VCEventTool : public VCToolBase
 {
 protected:
     // Functions
-    VCEventTool() : ExcludedFromBuild(unset){};
+    VCEventTool(const QString &eventName);
     virtual ~VCEventTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
 public:
     // Variables
     QStringList             CommandLine;
     QString                 Description;
     triState                ExcludedFromBuild;
+    QString                 EventName;
     QString                 ToolName;
     QString                 ToolPath;
 };
@@ -792,7 +852,8 @@ public:
     QString                 DeleteExtensionsOnClean;
     QString                 ImportLibrary;
     QString                 IntermediateDirectory;
-    QString                 Name;
+    QString                 Name;   // "ConfigurationName|PlatformName"
+    QString                 ConfigurationName;
     QString                 OutputDirectory;
     QString                 PrimaryOutput;
     QString                 ProgramDatabase;
@@ -849,14 +910,13 @@ class VCFilter
 public:
     // Functions
     VCFilter();
-    ~VCFilter(){};
+    ~VCFilter(){}
 
     void addFile(const QString& filename);
     void addFile(const VCFilterFile& fileInfo);
     void addFiles(const QStringList& fileList);
     bool addExtraCompiler(const VCFilterFile &info);
     void modifyPCHstage(QString str);
-    void outputFileConfig(XmlOutput &xml, const QString &filename);
 
     // Variables
     QString                 Name;
@@ -874,9 +934,6 @@ public:
 
     bool                    useCompilerTool;
     VCCLCompilerTool        CompilerTool;
-
-private:
-    friend XmlOutput &operator<<(XmlOutput &xml, VCFilter &tool);
 };
 
 typedef QList<VCFilter> VCFilterList;
@@ -894,7 +951,7 @@ public:
         Extras
     };
     // Functions
-    VCProjectSingleConfig(){};
+    VCProjectSingleConfig(){}
     ~VCProjectSingleConfig(){}
 
     // Variables
@@ -923,8 +980,6 @@ public:
     // Accessor for extracompilers
     VCFilter               &filterForExtraCompiler(const QString &compilerName);
 };
-
-
 
 // Tree & Flat view of files --------------------------------------------------
 class VCFilter;
@@ -1051,30 +1106,35 @@ public:
 
     // List of all extracompilers
     QStringList             ExtraCompilers;
-
-    // Functions
-    void                    outputFilter(XmlOutput &xml,
-//                                         VCProjectSingleConfig::FilterTypes type,
-                                         const QString &filtername);
-
-    void                    outputFileConfigs(XmlOutput &xml,
-//                                              VCProjectSingleConfig::FilterTypes type,
-                                              const VCFilterFile &info,
-                                              const QString &filtername);
 };
 
-XmlOutput &operator<<(XmlOutput &, const VCCLCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCLinkerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCMIDLTool &);
-XmlOutput &operator<<(XmlOutput &, const VCCustomBuildTool &);
-XmlOutput &operator<<(XmlOutput &, const VCLibrarianTool &);
-XmlOutput &operator<<(XmlOutput &, const VCResourceCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCEventTool &);
-XmlOutput &operator<<(XmlOutput &, const VCDeploymentTool &);
-XmlOutput &operator<<(XmlOutput &, const VCConfiguration &);
-XmlOutput &operator<<(XmlOutput &, VCFilter &);
-XmlOutput &operator<<(XmlOutput &, const VCProjectSingleConfig &);
-XmlOutput &operator<<(XmlOutput &, VCProject &);
+class VCProjectWriter
+{
+public:
+    virtual ~VCProjectWriter() {}
+
+    virtual void write(XmlOutput &, VCProjectSingleConfig &);
+    virtual void write(XmlOutput &, VCProject &);
+
+    virtual void write(XmlOutput &, const VCCLCompilerTool &);
+    virtual void write(XmlOutput &, const VCLinkerTool &);
+    virtual void write(XmlOutput &, const VCMIDLTool &);
+    virtual void write(XmlOutput &, const VCCustomBuildTool &);
+    virtual void write(XmlOutput &, const VCLibrarianTool &);
+    virtual void write(XmlOutput &, const VCResourceCompilerTool &);
+    virtual void write(XmlOutput &, const VCEventTool &);
+    virtual void write(XmlOutput &, const VCDeploymentTool &);
+    virtual void write(XmlOutput &, const VCConfiguration &);
+    virtual void write(XmlOutput &, VCFilter &);
+
+private:
+    static void outputFilter(VCProject &project, XmlOutput &xml, const QString &filtername);
+    static void outputFileConfigs(VCProject &project, XmlOutput &xml, const VCFilterFile &info, const QString &filtername);
+    static void outputFileConfig(VCFilter &filter, XmlOutput &xml, const QString &filename);
+
+    friend class TreeNode;
+    friend class FlatNode;
+};
 
 QT_END_NAMESPACE
 

@@ -1560,7 +1560,7 @@
     \section1 Dock Widgets
 
     Since dock widgets are \l{Using Containers in Qt Designer}
-    {container widgets}, they can be added to a form in the usuasl way. Once
+    {container widgets}, they can be added to a form in the usual way. Once
     added to a form, dock widgets are not placed in any particular dock area by
     default; you need to set the \gui{docked} property to true for each widget
     and choose an appropriate value for its \gui{dockWidgetArea} property.

@@ -319,6 +319,11 @@ QPoint QRuntimeWindowSurface::offset(const QWidget *widget) const
     return m_windowSurface->offset(widget);
 }
 
+QWindowSurface::WindowSurfaceFeatures QRuntimeWindowSurface::features() const
+{
+    return m_windowSurface->features();
+}
+
 QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     : m_windowSurfaceDestroyPolicy(DestroyImmediately),
       m_graphicsSystem(0)

@@ -32,8 +32,6 @@ HEADERS += \
 	kernel/qshortcutmap_p.h \
 	kernel/qsizepolicy.h \
 	kernel/qpalette.h \
-	kernel/qsound.h \
-	kernel/qsound_p.h \
 	kernel/qstackedlayout.h \
 	kernel/qtooltip.h \
 	kernel/qwhatsthis.h \
@@ -50,7 +48,7 @@ HEADERS += \
 	kernel/qgesturemanager_p.h \
 	kernel/qsoftkeymanager_p.h \
     kernel/qsoftkeymanager_common_p.h \
-	kernel/qguiplatformplugin_p.h
+	kernel/qguiplatformplugin_p.h \
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -72,7 +70,6 @@ SOURCES += \
 	kernel/qpalette.cpp \
 	kernel/qshortcut.cpp \
 	kernel/qshortcutmap.cpp \
-	kernel/qsound.cpp \
 	kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
 	kernel/qguivariant.cpp \
@@ -202,7 +199,71 @@ embedded {
 	}
 }
 
-!embedded:!x11:mac {
+!qpa {
+        HEADERS += \
+                kernel/qsound.h \
+                kernel/qsound_p.h
+
+        SOURCES += \
+                kernel/qsound.cpp
+}
+
+qpa {
+	HEADERS += \
+		kernel/qgenericpluginfactory_qpa.h \
+                kernel/qgenericplugin_qpa.h \
+                kernel/qeventdispatcher_qpa_p.h \
+                kernel/qwindowsysteminterface_qpa.h \
+                kernel/qwindowsysteminterface_qpa_p.h \
+                kernel/qplatformintegration_qpa.h \
+                kernel/qplatformscreen_qpa.h \
+                kernel/qplatformintegrationfactory_qpa_p.h \
+                kernel/qplatformintegrationplugin_qpa.h \
+                kernel/qplatformwindow_qpa.h \
+                kernel/qplatformwindowformat_qpa.h \
+                kernel/qplatformglcontext_qpa.h \
+                kernel/qdesktopwidget_qpa_p.h \
+                kernel/qplatformeventloopintegration_qpa.h \
+                kernel/qplatformcursor_qpa.h \
+                kernel/qplatformclipboard_qpa.h \
+                kernel/qplatformnativeinterface_qpa.h
+
+	SOURCES += \
+		kernel/qapplication_qpa.cpp \
+		kernel/qclipboard_qpa.cpp \
+		kernel/qcursor_qpa.cpp \
+		kernel/qdnd_qws.cpp \
+		kernel/qdesktopwidget_qpa.cpp \
+		kernel/qgenericpluginfactory_qpa.cpp \
+		kernel/qgenericplugin_qpa.cpp \
+		kernel/qkeymapper_qws.cpp \
+                kernel/qwidget_qpa.cpp \
+                kernel/qeventdispatcher_qpa.cpp \
+                kernel/qwindowsysteminterface_qpa.cpp \
+                kernel/qplatformintegration_qpa.cpp \
+                kernel/qplatformscreen_qpa.cpp \
+                kernel/qplatformintegrationfactory_qpa.cpp \
+                kernel/qplatformintegrationplugin_qpa.cpp \
+                kernel/qplatformwindow_qpa.cpp \
+                kernel/qplatformwindowformat_qpa.cpp \
+                kernel/qplatformeventloopintegration_qpa.cpp \
+                kernel/qplatformglcontext_qpa.cpp \
+                kernel/qplatformcursor_qpa.cpp \
+                kernel/qplatformclipboard_qpa.cpp \
+                kernel/qplatformnativeinterface_qpa.cpp \
+                kernel/qsessionmanager_qpa.cpp
+
+        contains(QT_CONFIG, glib) {
+            SOURCES += \
+		kernel/qeventdispatcher_glib_qpa.cpp
+            HEADERS += \
+                kernel/qeventdispatcher_glib_qpa_p.h
+            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
+            LIBS_PRIVATE +=$$QT_LIBS_GLIB
+	}
+}
+
+!embedded:!qpa:!x11:mac {
 	SOURCES += \
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \
@@ -218,7 +279,8 @@ embedded {
                 qcocoaapplicationdelegate_mac_p.h \
                 qmacgesturerecognizer_mac_p.h \
                 qmultitouch_mac_p.h \
-                qcocoasharedwindowmethods_mac_p.h
+                qcocoasharedwindowmethods_mac_p.h \
+                qcocoaintrospection_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \
@@ -238,7 +300,8 @@ embedded {
                 kernel/qeventdispatcher_mac.mm \
                 kernel/qcocoawindowcustomthemeframe_mac.mm \
                 kernel/qmacgesturerecognizer_mac.mm \
-                kernel/qmultitouch_mac.mm
+                kernel/qmultitouch_mac.mm \
+                kernel/qcocoaintrospection_mac.mm
 
         HEADERS += \
                 kernel/qt_cocoa_helpers_mac_p.h \

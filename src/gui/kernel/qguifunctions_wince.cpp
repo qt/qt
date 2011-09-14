@@ -112,6 +112,9 @@ struct AygSIPINFO
 #ifndef SPI_GETSIPINFO
 #define SPI_GETSIPINFO 225
 #endif
+#ifndef SPI_GETPLATFORMTYPE
+#define SPI_GETPLATFORMTYPE 257
+#endif
 
 typedef BOOL (*AygInitDialog)(AygSHINITDLGINFO*);
 typedef BOOL (*AygFullScreen)(HWND, DWORD);
@@ -129,8 +132,6 @@ static void resolveAygLibs()
     if (!aygResolved) {
         aygResolved = true;
         QLibrary ayglib(QLatin1String("aygshell"));
-        if (!ayglib.load())
-            return;
         ptrAygInitDialog = (AygInitDialog) ayglib.resolve("SHInitDialog");
         ptrAygFullScreen = (AygFullScreen) ayglib.resolve("SHFullScreen");
         ptrAygSHSipInfo  = (AygSHSipInfo)  ayglib.resolve("SHSipInfo");

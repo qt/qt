@@ -419,7 +419,7 @@ void QMessageBoxPrivate::updateSize()
 void QMessageBoxPrivate::hideSpecial()
 {
     Q_Q(QMessageBox);
-    QList<QPushButton*> list = qFindChildren<QPushButton*>(q);
+    QList<QPushButton*> list = q->findChildren<QPushButton*>();
         for (int i=0; i<list.size(); ++i) {
             QPushButton *pb = list.at(i);
             QString text = pb->text();
@@ -1271,7 +1271,7 @@ bool QMessageBox::event(QEvent *e)
               (e->type() == QEvent::OkRequest)
               ? QApplication::translate("QMessageBox", "OK")
               : QApplication::translate("QMessageBox", "Help");
-          QList<QPushButton*> list = qFindChildren<QPushButton*>(this);
+          QList<QPushButton*> list = findChildren<QPushButton*>();
           for (int i=0; i<list.size(); ++i) {
               QPushButton *pb = list.at(i);
               if (pb->text() == bName) {
@@ -1518,7 +1518,7 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
                                                             int(defaultButton), 0);
 
     QMessageBox msgBox(icon, title, text, QMessageBox::NoButton, parent);
-    QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox*>(&msgBox);
+    QDialogButtonBox *buttonBox = msgBox.findChild<QDialogButtonBox*>();
     Q_ASSERT(buttonBox != 0);
 
     uint mask = QMessageBox::FirstButton;
@@ -1952,7 +1952,7 @@ void QMessageBoxPrivate::retranslateStrings()
 {
 #ifndef QT_NO_TEXTEDIT
     if (detailsButton)
-        detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
+        detailsButton->setLabel(detailsText->isHidden() ? ShowLabel : HideLabel);
 #endif
 }
 
@@ -2486,7 +2486,7 @@ void QMessageBox::setInformativeText(const QString &text)
     }
 
     if (!d->informativeLabel) {
-        QLabel *label = new QLabel;
+        QLabel *label = new QLabel(this);
         label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
         label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
         label->setAlignment(Qt::AlignTop | Qt::AlignLeft);

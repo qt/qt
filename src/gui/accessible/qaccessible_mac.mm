@@ -774,7 +774,7 @@ QAInterface QAccessibleHierarchyManager::lookup(const AXUIElementRef &element)
     return factory->interface(id);
 #else
     return QAInterface();
-#endif;
+#endif
 }
 
 QAInterface QAccessibleHierarchyManager::lookup(const QAElement &element)
@@ -2427,7 +2427,7 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
         }
 
         // There is no equivalent Mac notification for ObjectShow/Hide, so we call HIObjectSetAccessibilityIgnored
-        // and isItIntersting which will mark the HIObject accociated with the element as ignored if the
+        // and isItInteresting which will mark the HIObject accociated with the element as ignored if the
         // QAccessible::Invisible state bit is set.
         QAInterface interface = accessibleHierarchyManager()->lookup(element);
         if (interface.isValid()) {

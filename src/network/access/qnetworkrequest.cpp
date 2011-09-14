@@ -226,6 +226,8 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue DownloadBufferAttribute
 
+    \omitvalue SynchronousRequestAttribute
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -522,7 +524,7 @@ void QNetworkRequest::setAttribute(Attribute code, const QVariant &value)
 QSslConfiguration QNetworkRequest::sslConfiguration() const
 {
     if (!d->sslConfiguration)
-        d->sslConfiguration = new QSslConfiguration;
+        d->sslConfiguration = new QSslConfiguration(QSslConfiguration::defaultConfiguration());
     return *d->sslConfiguration;
 }
 
@@ -637,6 +639,9 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
     case QNetworkRequest::SetCookieHeader:
         return "Set-Cookie";
 
+    case QNetworkRequest::ContentDispositionHeader:
+        return "Content-Disposition";
+
     // no default:
     // if new values are added, this will generate a compiler warning
     }
@@ -649,6 +654,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     switch (header) {
     case QNetworkRequest::ContentTypeHeader:
     case QNetworkRequest::ContentLengthHeader:
+    case QNetworkRequest::ContentDispositionHeader:
         return value.toByteArray();
 
     case QNetworkRequest::LocationHeader:
@@ -757,7 +763,7 @@ static QVariant parseCookieHeader(const QByteArray &raw)
         result += parsed;
     }
 
-    return qVariantFromValue(result);
+    return QVariant::fromValue(result);
 }
 
 static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QByteArray &value)
@@ -790,7 +796,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
         return parseCookieHeader(value);
 
     case QNetworkRequest::SetCookieHeader:
-        return qVariantFromValue(QNetworkCookie::parseCookies(value));
+        return QVariant::fromValue(QNetworkCookie::parseCookies(value));
 
     default:
         Q_ASSERT(0);
@@ -808,6 +814,11 @@ QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
             return it;
 
     return end;                 // not found
+}
+
+QNetworkHeadersPrivate::RawHeadersList QNetworkHeadersPrivate::allRawHeaders() const
+{
+    return rawHeaders;
 }
 
 QList<QByteArray> QNetworkHeadersPrivate::rawHeadersKeys() const

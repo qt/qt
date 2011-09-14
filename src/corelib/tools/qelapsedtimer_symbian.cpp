@@ -64,11 +64,6 @@ static quint64 getMicrosecondFromTick()
     return nanokernel_tick_period * (val | (quint64(highdword) << 32));
 }
 
-static quint64 getMillisecondFromTick()
-{
-    return getMicrosecondFromTick() / 1000;
-}
-
 timeval qt_gettime()
 {
     timeval tv;
@@ -91,36 +86,41 @@ bool QElapsedTimer::isMonotonic()
 
 void QElapsedTimer::start()
 {
-    t1 = getMillisecondFromTick();
+    t1 = getMicrosecondFromTick();
     t2 = 0;
 }
 
 qint64 QElapsedTimer::restart()
 {
     qint64 oldt1 = t1;
-    t1 = getMillisecondFromTick();
+    t1 = getMicrosecondFromTick();
     t2 = 0;
-    return t1 - oldt1;
+    return (t1 - oldt1) / 1000;
+}
+
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    return (getMicrosecondFromTick() - t1) * 1000;
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    return getMillisecondFromTick() - t1;
+    return (getMicrosecondFromTick() - t1) / 1000;
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const
 {
-    return t1;
+    return t1 / 1000;
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
-    return other.t1 - t1;
+    return (other.t1 - t1) / 1000;
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 {
-    return msecsTo(other) / 1000;
+    return msecsTo(other) / 1000000;
 }
 
 bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)

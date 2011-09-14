@@ -61,10 +61,12 @@ public:
     bool open(int ostProtocolId);
     void close();
 
+    bool waitForReadyRead(int msecs);
+    qint64 bytesAvailable() const;
+
 protected:
     qint64 readData(char *data, qint64 maxSize);
     qint64 writeData(const char *data, qint64 maxSize);
-    qint64 bytesAvailable() const;
 
 private:
     QOstDevicePrivate* d_ptr;

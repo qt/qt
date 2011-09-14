@@ -1313,7 +1313,7 @@ bool QAxServerBase::internalCreate()
     // install an event filter for stock events
     if (isWidget) {
         qt.object->installEventFilter(this);
-        const QList<QWidget*> children = qFindChildren<QWidget*>(qt.object);
+        const QList<QWidget*> children = qt.object->findChildren<QWidget*>();
         QList<QWidget*>::ConstIterator it = children.constBegin();
         while (it != children.constEnd()) {
             (*it)->installEventFilter(this);
@@ -2047,10 +2047,10 @@ int QAxServerBase::qt_metacall(QMetaObject::Call call, int index, void **argv)
                         if (vt == QVariant::UserType) {
                             if (ptype.endsWith('*')) {
                                 variant = QVariant(QMetaType::type(ptype), (void**)argv[p+1]);
-                                // qVariantSetValue(variant, *(void**)(argv[p + 1]), ptype);
+                                // variant.setValue(*(void**)(argv[p + 1]), ptype);
                             } else {
                                 variant = QVariant(QMetaType::type(ptype), argv[p+1]);
-                                // qVariantSetValue(variant, argv[p + 1], ptype);
+                                // variant.setValue(argv[p + 1], ptype);
                             }
                         } else {
                             variant = QVariant(vt, argv[p + 1]);
@@ -2537,7 +2537,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
                 if (!type.isEmpty() && pvarResult) {
                     if (!varp[0].isValid() && type != "QVariant")
                         varp[0] = QVariant(QMetaType::type(type), argv_pointer);
-//                        qVariantSetValue(varp[0], argv_pointer[0], type);
+//                        varp[0].setValue(argv_pointer[0], type);
 		    ok = QVariantToVARIANT(varp[0], *pvarResult, type);
                 }
 	    }
@@ -3325,7 +3325,7 @@ HRESULT WINAPI QAxServerBase::OnAmbientPropertyChange(DISPID dispID)
 	    break;
 	{
             QVariant qvar = VARIANTToQVariant(var, "QFont", QVariant::Font);
-            QFont qfont = qVariantValue<QFont>(qvar);
+            QFont qfont = qvariant_cast<QFont>(qvar);
             qt.widget->setFont(qfont);
 	}
 	break;
@@ -3818,7 +3818,7 @@ HRESULT QAxServerBase::internalActivate()
 	// Gone active by now, take care of UIACTIVATE
 	canTakeFocus = qt.widget->focusPolicy() != Qt::NoFocus && !inDesignMode;
 	if (!canTakeFocus && !inDesignMode) {
-	    QList<QWidget*> widgets = qFindChildren<QWidget*>(qt.widget);
+	    QList<QWidget*> widgets = qt.widget->findChildren<QWidget*>();
 	    for (int w = 0; w < widgets.count(); ++w) {
 		QWidget *widget = widgets[w];
 		canTakeFocus = widget->focusPolicy() != Qt::NoFocus;
@@ -3844,13 +3844,13 @@ HRESULT QAxServerBase::internalActivate()
 	    if (m_spInPlaceFrame) {
 		hr = m_spInPlaceFrame->SetActiveObject(this, QStringToBSTR(class_name));
 		if (!FAILED(hr)) {
-		    menuBar = (qt.widget && !qax_disable_inplaceframe) ? qFindChild<QMenuBar*>(qt.widget) : 0;
+		    menuBar = (qt.widget && !qax_disable_inplaceframe) ? qt.widget->findChild<QMenuBar*>() : 0;
 		    if (menuBar && !menuBar->isVisible()) {
 			createMenu(menuBar);
 			menuBar->hide();
 			menuBar->installEventFilter(this);
 		    }
-		    statusBar = qt.widget ? qFindChild<QStatusBar*>(qt.widget) : 0;
+		    statusBar = qt.widget ? qt.widget->findChild<QStatusBar*>() : 0;
 		    if (statusBar && !statusBar->isVisible()) {
 			const int index = statusBar->metaObject()->indexOfSignal("messageChanged(QString)");
 			QMetaObject::connect(statusBar, index, this, -1);

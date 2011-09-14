@@ -248,8 +248,6 @@ static const NavEventUPP make_navProcUPP()
 }
 
 
-extern OSErr qt_mac_create_fsref(const QString &, FSRef *); //qglobal.cpp
-
 QStringList Q3FileDialog::macGetOpenFileNames(const QString &filter, QString *pwd,
                                              QWidget *parent, const char* /*name*/,
                                              const QString& caption, QString *selectedFilter,

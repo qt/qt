@@ -109,6 +109,12 @@ void QmlOstPlugin::disconnect()
     d->protocol = 0;
 }
 
+bool QmlOstPlugin::waitForMessage()
+{
+    Q_D(QmlOstPlugin);
+    return d->protocol->waitForReadyRead(-1);
+}
+
 void QmlOstPlugin::setPort(int port, bool block)
 {
     Q_UNUSED(port);

@@ -53,6 +53,7 @@ class BookmarkModel;
 class BookmarkFilterModel;
 class QKeyEvent;
 class QSortFilterProxyModel;
+class QToolBar;
 
 class BookmarkManager : public QObject
 {
@@ -67,7 +68,8 @@ public:
     static void destroy();
 
     QWidget* bookmarkDockWidget() const;
-    void takeBookmarksMenu(QMenu* menu);
+    void setBookmarksMenu(QMenu* menu);
+    void setBookmarksToolbar(QToolBar *toolBar);
 
 public slots:
     void addBookmark(const QString &title, const QString &url);
@@ -92,9 +94,11 @@ private slots:
     void addBookmark();
     void removeBookmark();
     void manageBookmarks();
-    void refeshBookmarkMenu();
+    void refreshBookmarkMenu();
+    void refreshBookmarkToolBar();
     void renameBookmark(const QModelIndex &index);
 
+    void setSourceFromAction();
     void setSourceFromAction(QAction *action);
     void setSourceFromIndex(const QModelIndex &index, bool newTab = false);
 
@@ -110,6 +114,7 @@ private:
     static BookmarkManager *bookmarkManager;
 
     QMenu *bookmarkMenu;
+    QToolBar *m_toolBar;
 
     BookmarkModel *bookmarkModel;
     BookmarkFilterModel *bookmarkFilterModel;

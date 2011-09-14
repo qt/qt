@@ -67,7 +67,11 @@
 #include <QtGui/QImageReader>
 #include <QtGui/QDialogButtonBox>
 #include <QtGui/QVBoxLayout>
+#include <QtGui/QLineEdit>
+#include <QtGui/QLabel>
+#include <QtGui/QValidator>
 #include <QtCore/QDebug>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -181,6 +185,14 @@ LanguageResourceDialog* LanguageResourceDialog::create(QDesignerFormEditorInterf
 }
 
 // ------------ IconSelectorPrivate
+
+static inline QPixmap emptyPixmap()
+{
+    QImage img(16, 16, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0);
+    return QPixmap::fromImage(img);
+}
+
 class IconSelectorPrivate
 {
     IconSelector *q_ptr;
@@ -201,7 +213,7 @@ public:
     QMap<QPair<QIcon::Mode, QIcon::State>, int>  m_stateToIndex;
     QMap<int, QPair<QIcon::Mode, QIcon::State> > m_indexToState;
 
-    QIcon m_emptyIcon;
+    const QIcon m_emptyIcon;
     QComboBox *m_stateComboBox;
     QToolButton *m_iconButton;
     QAction *m_resetAction;
@@ -215,6 +227,7 @@ public:
 
 IconSelectorPrivate::IconSelectorPrivate() :
     q_ptr(0),
+    m_emptyIcon(emptyPixmap()),
     m_stateComboBox(0),
     m_iconButton(0),
     m_resetAction(0),
@@ -449,10 +462,6 @@ IconSelector::IconSelector(QWidget *parent) :
     d_ptr->m_stateToName << qMakePair(qMakePair(QIcon::Selected, QIcon::Off), tr("Selected Off") );
     d_ptr->m_stateToName << qMakePair(qMakePair(QIcon::Selected, QIcon::On),  tr("Selected On")  );
 
-    QImage img(16, 16, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
-    d_ptr->m_emptyIcon = QIcon(QPixmap::fromImage(img));
-
     QMenu *setMenu = new QMenu(this);
 
     QAction *setResourceAction = new QAction(tr("Choose Resource..."), this);
@@ -535,9 +544,112 @@ void IconSelector::setPixmapCache(DesignerPixmapCache *pixmapCache)
     d_ptr->slotUpdate();
 }
 
+// --- IconThemeEditor
+
+// Validator for theme line edit, accepts empty or non-blank strings.
+class BlankSuppressingValidator : public QValidator {
+public:
+    explicit BlankSuppressingValidator(QObject * parent = 0) : QValidator(parent) {}
+
+    virtual State validate(QString &input, int &pos) const {
+        const int blankPos = input.indexOf(QLatin1Char(' '));
+        if (blankPos != -1) {
+            pos = blankPos;
+            return Invalid;
+        }
+        return Acceptable;
+    }
+};
+
+struct IconThemeEditorPrivate {
+    IconThemeEditorPrivate();
+
+    const QPixmap m_emptyPixmap;
+    QLineEdit *m_themeLineEdit;
+    QLabel *m_themeLabel;
+};
+
+IconThemeEditorPrivate::IconThemeEditorPrivate() :
+    m_emptyPixmap(emptyPixmap()),
+    m_themeLineEdit(new QLineEdit),
+    m_themeLabel(new QLabel)
+{
+}
+
+IconThemeEditor::IconThemeEditor(QWidget *parent, bool wantResetButton) :
+    QWidget (parent), d(new IconThemeEditorPrivate)
+{
+    QHBoxLayout *mainHLayout = new QHBoxLayout;
+    mainHLayout->setMargin(0);
+
+    // Vertically center theme preview label
+    d->m_themeLabel->setPixmap(d->m_emptyPixmap);
+
+    QVBoxLayout *themeLabelVLayout = new QVBoxLayout;
+    d->m_themeLabel->setMargin(1);
+    themeLabelVLayout->setMargin(0);
+    themeLabelVLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+    themeLabelVLayout->addWidget(d->m_themeLabel);
+    themeLabelVLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+    mainHLayout->addLayout(themeLabelVLayout);
+
+    d->m_themeLineEdit = new QLineEdit;
+    d->m_themeLineEdit->setValidator(new BlankSuppressingValidator(d->m_themeLineEdit));
+    connect(d->m_themeLineEdit, SIGNAL(textChanged(QString)), this, SLOT(slotChanged(QString)));
+    connect(d->m_themeLineEdit, SIGNAL(textEdited(QString)), this, SIGNAL(edited(QString)));
+    mainHLayout->addWidget(d->m_themeLineEdit);
+
+    if (wantResetButton) {
+        QToolButton *themeResetButton = new QToolButton;
+        themeResetButton->setIcon(createIconSet(QLatin1String("resetproperty.png")));
+        connect(themeResetButton, SIGNAL(clicked()), this, SLOT(reset()));
+        mainHLayout->addWidget(themeResetButton);
+    }
+
+    setLayout(mainHLayout);
+    setFocusProxy(d->m_themeLineEdit);
+}
+
+IconThemeEditor::~IconThemeEditor()
+{
+}
+
+void IconThemeEditor::reset()
+{
+    d->m_themeLineEdit->clear();
+    emit edited(QString());
+}
+
+void IconThemeEditor::slotChanged(const QString &theme)
+{
+    updatePreview(theme);
+}
+
+void IconThemeEditor::updatePreview(const QString &t)
+{
+    // Update preview label with icon.
+    if (t.isEmpty() || !QIcon::hasThemeIcon(t)) { // Empty
+        const QPixmap *currentPixmap = d->m_themeLabel->pixmap();
+        if (currentPixmap == 0 || currentPixmap->serialNumber() != d->m_emptyPixmap.serialNumber())
+            d->m_themeLabel->setPixmap(d->m_emptyPixmap);
+    } else {
+        const QIcon icon = QIcon::fromTheme(t);
+        d->m_themeLabel->setPixmap(icon.pixmap(d->m_emptyPixmap.size()));
+    }
+}
+
+QString IconThemeEditor::theme() const
+{
+    return d->m_themeLineEdit->text();
+}
+
+void IconThemeEditor::setTheme(const QString &t)
+{
+    d->m_themeLineEdit->setText(t);
+}
+
 } // qdesigner_internal
 
 QT_END_NAMESPACE
 
 #include "moc_iconselector_p.cpp"
-

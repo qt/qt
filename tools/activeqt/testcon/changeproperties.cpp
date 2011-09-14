@@ -108,7 +108,7 @@ void ChangeProperties::on_buttonSet_clicked()
 	    QColor col;
 	    col.setNamedColor(editValue->text());
 	    if (col.isValid()) {
-		value = qVariantFromValue(col);
+		value = QVariant::fromValue(col);
 	    } else {
 		QMessageBox::warning(this, tr("Can't parse input"), 
 		                           tr("Failed to create a color from %1\n"
@@ -122,7 +122,7 @@ void ChangeProperties::on_buttonSet_clicked()
 	{
 	    QFont fnt;
 	    if (fnt.fromString(editValue->text())) {
-		value = qVariantFromValue(fnt);
+		value = QVariant::fromValue(fnt);
 	    } else {
 		QMessageBox::warning(this, tr("Can't parse input"), 
 		                           tr("Failed to create a font from %1\n"
@@ -141,7 +141,7 @@ void ChangeProperties::on_buttonSet_clicked()
 	    if (pm.isNull())
 		return;
 
-	    value = qVariantFromValue(pm);
+	    value = QVariant::fromValue(pm);
 	}
 	break;
     case QVariant::Bool:

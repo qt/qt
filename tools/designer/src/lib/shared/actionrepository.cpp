@@ -136,7 +136,7 @@ QModelIndex ActionModel::addAction(QAction *action)
     const  Qt::ItemFlags flags = Qt::ItemIsSelectable|Qt::ItemIsDropEnabled|Qt::ItemIsDragEnabled|Qt::ItemIsEnabled;
 
     QVariant itemData;
-    qVariantSetValue(itemData, action);
+    itemData.setValue(action);
 
     for (int i = 0; i < NumColumns; i++) {
         QStandardItem *item = new QStandardItem;

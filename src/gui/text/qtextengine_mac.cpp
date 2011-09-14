@@ -41,6 +41,9 @@
 
 #include "qtextengine_p.h"
 
+#include <private/qfontengine_coretext_p.h>
+#include <private/qfontengine_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 // set the glyph attributes heuristically. Assumes a 1 to 1 relationship between chars and glyphs
@@ -602,11 +605,17 @@ void QTextEngine::shapeTextMac(int item) const
     unsigned short *log_clusters = logClusters(&si);
 
     bool stringToCMapFailed = false;
-    if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes())) {
+    // Skip shaping of line or paragraph separators since we are not
+    // going to draw them anyway
+    if (si.analysis.flags == QScriptAnalysis::LineOrParagraphSeparator
+        && !(option.flags() & QTextOption::ShowLineAndParagraphSeparators))
+        goto cleanUp;
+
+    if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes(), &si)) {
         ensureSpace(num_glyphs);
         g = availableGlyphs(&si);
         stringToCMapFailed = !fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters,
-                                               attributes());
+                                               attributes(), &si);
     }
 
     if (!stringToCMapFailed) {
@@ -642,6 +651,7 @@ void QTextEngine::shapeTextMac(int item) const
         }
     }
 
+cleanUp:
     const ushort *uc = reinterpret_cast<const ushort *>(str);
 
     if ((si.analysis.flags == QScriptAnalysis::SmallCaps || si.analysis.flags == QScriptAnalysis::Uppercase

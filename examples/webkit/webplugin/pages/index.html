@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>Web Plugin</title>
+<!-- [script] -->
+<script type="text/javascript">
+function fillInTable(name, address, quantity)
+{
+    var nameElement = document.getElementById("customers_name");
+    var addressElement = document.getElementById("customers_address");
+    var quantityElement = document.getElementById("customers_quantity");
+
+    nameElement.innerHTML = name;
+    addressElement.innerHTML = address;
+    quantityElement.innerHTML = quantity;
+}
+</script>
+<!-- [script] -->
+</head>
+
+<body>
+<h1>Web Plugin</h1>
+
+<p>
+  This plugin displays comma-separated value (CSV) files in Web pages using
+  a table widget.
+</p>
+
+<!-- [embedded object] -->
+<object type="text/csv;header=present;charset=utf8"
+        data="qrc:/data/accounts.csv"
+        width="100%" height="300">
+</object>
+<!-- [embedded object] -->
+
+<p>
+  The table above shows some sample data rendered by the plugin. It is exposed
+  to this page as the <tt>view</tt> JavaScript object.
+</p>
+
+<p>
+  The fields shown below in an HTML table can be updated by selecting a row in
+  the table above. A signal in the view is connected to a JavaScript function
+  in this page which fills in the values.
+</p>
+
+<div style="margin-left: 5%; width: 90%; background-color: lightgray">
+<!-- [table] -->
+<table>
+<tr>
+  <th>Name:</th>
+  <td id="customers_name"></td>
+</tr><tr>
+  <th>Address:</th>
+  <td id="customers_address"></td>
+</tr><tr>
+  <th>Quantity:</th>
+  <td id="customers_quantity"></td>
+</tr>
+</table>
+<!-- [table] -->
+</div>
+
+</body>
+</html>

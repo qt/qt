@@ -396,8 +396,8 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
 
     if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
-        addLocalizedResourcesToDeployment("default_resource_deployment.sources", symbianLocalizationList);
-        addLocalizedResourcesToDeployment("default_reg_deployment.sources", symbianLocalizationList);
+        addLocalizedResourcesToDeployment("default_resource_deployment.files", symbianLocalizationList);
+        addLocalizedResourcesToDeployment("default_reg_deployment.files", symbianLocalizationList);
     }
 
     // deploy files specified by DEPLOYMENT variable
@@ -503,9 +503,11 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
         twf << wrapperStreamBuffer << endl;
 
         // Wrapped files deployment
-        QString currentPath = qmake_getpwd();
+        QString currentPath = Option::output_dir;
+        if (!currentPath.endsWith(QLatin1Char('/')))
+            currentPath += QLatin1Char('/');
         QString sisName = QString("%1.sis").arg(fixedTarget);
-        twf << "\"" << currentPath << "/" << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
+        twf << "\"" << currentPath << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
         bootStrapPath.append("/smartinstaller.sis");

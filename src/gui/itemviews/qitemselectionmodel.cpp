@@ -212,6 +212,7 @@ bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
 {
     return (isValid() && other.isValid()
             && parent() == other.parent()
+            && model() == other.model()
             && ((top() <= other.top() && bottom() >= other.top())
                 || (top() >= other.top() && top() <= other.bottom()))
             && ((left() <= other.left() && right() >= other.left())
@@ -508,7 +509,7 @@ void QItemSelection::merge(const QItemSelection &other, QItemSelectionModel::Sel
 void QItemSelection::split(const QItemSelectionRange &range,
                            const QItemSelectionRange &other, QItemSelection *result)
 {
-    if (range.parent() != other.parent())
+    if (range.parent() != other.parent() || range.model() != other.model())
         return;
 
     QModelIndex parent = other.parent();
@@ -634,6 +635,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
     }
 
     QItemSelection deselected;
+    QItemSelection newParts;
     QItemSelection::iterator it = ranges.begin();
     while (it != ranges.end()) {
         if (it->topLeft().parent() != parent) {  // Check parents until reaching root or contained in range
@@ -659,13 +661,20 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()), it->bottomRight()));
             *it = QItemSelectionRange(it->topLeft(), model->index(start - 1, it->right(), it->parent()));
             ++it;
-        } else {
-            if (it->top() < start && end < it->bottom())  // Middle intersection (do nothing)
-                deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()),
-                                                      model->index(end, it->left(), it->parent())));
+        } else if (it->top() < start && end < it->bottom()) { // Middle intersection
+            // If the parent contains (1, 2, 3, 4, 5, 6, 7, 8) and [3, 4, 5, 6] is selected,
+            // and [4, 5] is removed, we need to split [3, 4, 5, 6] into [3], [4, 5] and [6].
+            // [4, 5] is appended to deselected, and [3] and [6] remain part of the selection
+            // in ranges.
+            const QItemSelectionRange removedRange(model->index(start, it->right(), it->parent()),
+                                                    model->index(end, it->left(), it->parent()));
+            deselected.append(removedRange);
+            QItemSelection::split(*it, removedRange, &newParts);
+            it = ranges.erase(it);
+        } else
             ++it;
-       }
     }
+    ranges.append(newParts);
 
     if (!deselected.isEmpty())
         emit q->selectionChanged(QItemSelection(), deselected);
@@ -1136,11 +1145,8 @@ void QItemSelectionModel::clearSelection()
     Q_D(QItemSelectionModel);
     if (d->ranges.count() == 0 && d->currentSelection.count() == 0)
         return;
-    QItemSelection selection = d->ranges;
-    selection.merge(d->currentSelection, d->currentCommand);
-    d->ranges.clear();
-    d->currentSelection.clear();
-    emit selectionChanged(QItemSelection(), selection);
+
+    select(QItemSelection(), Clear);
 }
 
 

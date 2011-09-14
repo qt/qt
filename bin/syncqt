@@ -48,13 +48,13 @@ my %modules = ( # path to module name map
         "QtDesigner" => "$basedir/tools/designer/src/lib",
         "QtUiTools" => "$basedir/tools/designer/src/uitools",
         "QtDBus" => "$basedir/src/dbus",
-        "QtWebKit" => "$basedir/src/3rdparty/webkit/WebCore",
+        "QtWebKit" => "$basedir/src/3rdparty/webkit/Source/WebKit/qt",
         "phonon" => "$basedir/src/phonon",
         "QtMultimedia" => "$basedir/src/multimedia",
         "QtMeeGoGraphicsSystemHelper" => "$basedir/tools/qmeegographicssystemhelper",
 );
 my %moduleheaders = ( # restrict the module headers to those found in relative path
-        "QtWebKit" => "../WebKit/qt/Api",
+        "QtWebKit" => "Api",
         "phonon" => "../3rdparty/phonon/phonon",
 );
 
@@ -75,6 +75,7 @@ my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 my $out_basedir = $basedir;
 $out_basedir =~ s=\\=/=g;
+my $quoted_basedir = "\Q$basedir";
 
 # functions ----------------------------------------------------------
 
@@ -352,11 +353,9 @@ sub syncHeader {
 ######################################################################
 sub fixPaths {
     my ($file, $dir) = @_;
-    $dir =~ s=^$basedir/=$out_basedir/= if(!($basedir eq $out_basedir));
+    $dir =~ s=^$quoted_basedir/=$out_basedir/= if(!($basedir eq $out_basedir));
     $file =~ s=\\=/=g;
-    $file =~ s/\+/\\+/g;
     $dir =~ s=\\=/=g;
-    $dir =~ s/\+/\\+/g;
 
     #setup
     my $ret = $file;
@@ -380,7 +379,7 @@ sub fixPaths {
         my $slash = index($file_dir, "/", $i);
         last if($slash == -1);
         my $tmp = substr($file_dir, 0, $slash);
-        last unless($dir =~ m,^$tmp/,);
+        last unless($dir =~ m,^\Q$tmp\E/,);
         $match_dir = $tmp;
         $i = $slash;
     }
@@ -391,7 +390,7 @@ sub fixPaths {
         for(my $i = 0; $i < $count; $i++) {
             $dots .= "../";
         }
-        $ret =~ s,^$match_dir,$dots,;
+        $ret =~ s,^\Q$match_dir\E,$dots,;
     }
     $ret =~ s,/+,/,g;
     return $ret;
@@ -509,13 +508,13 @@ sub symlinkFile
 
     if ($isunix) {
         print "symlink created for $file " unless $quiet;
-        if ( $force_relative && ($ifile =~ /^$basedir/)) {
+        if ( $force_relative && ($ifile =~ /^$quoted_basedir/)) {
             my $t = getcwd();
             my $c = -1;
             my $p = "../";
-            $t =~ s-^$basedir/--;
+            $t =~ s-^$quoted_basedir/--;
             $p .= "../" while( ($c = index( $t, "/", $c + 1)) != -1 );
-            $file =~ s-^$basedir/-$p-;
+            $file =~ s-^$quoted_basedir/-$p-;
             print " ($file)\n" unless $quiet;
         }
         print "\n" unless $quiet;
@@ -694,7 +693,7 @@ my $class_lib_map_contents = "";
 my @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
 my @ignore_for_include_check = ( "qatomic.h" );
 my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
-my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
+my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h", "qatomic_arm.h", "qatomic_armv7.h" );
 my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
 my %colliding_headers = ();
 my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
@@ -715,8 +714,25 @@ foreach my $lib (@modules_to_sync) {
     my $master_contents = "#ifndef QT_".$libcapitals."_MODULE_H\n#define QT_".$libcapitals."_MODULE_H\n";
 
     #get dependencies
-    if(-e "$dir/" . basename($dir) . ".pro") {
-        if(open(F, "<$dir/" . basename($dir) . ".pro")) {
+    my $pro_file = "$dir/" . basename($dir) . ".pro";
+    if(!open(F, "<$pro_file")) {
+        #the pro file doesn't exist let's try to find one
+        opendir(DIR, $dir);
+        $pro_file = "";
+        foreach my $file (readdir(DIR))
+        {
+            if ( $file =~ /\.pro$/i) {
+                die "There are multiple pro files for $lib module, which one should I use? \n" if ($pro_file ne "");
+                $pro_file = "$dir/" . $file;
+            }
+        }
+        closedir(DIR);
+        if ($pro_file eq "") {
+            die "I couldn't find a pro file for $lib module \n";
+        }
+    }
+    if(-e "$pro_file") {
+        if(open(F, "<$pro_file")) {
             while(my $line = <F>) {
                 chomp $line;
                 if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
@@ -839,7 +855,7 @@ foreach my $lib (@modules_to_sync) {
                             @headers = ( "$out_basedir/include/$lib/$header" );
 
                             # write forwarding headers to include/Qt
-                            if ($lib ne "phonon" && $subdir =~ /^$basedir\/src/) {
+                            if ($lib ne "phonon" && $subdir =~ /^$quoted_basedir\/src/) {
                                 my $file_name = "$out_basedir/include/Qt/$header";
                                 my $file_op = '>';
                                 my $header_content = '';

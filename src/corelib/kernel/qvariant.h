@@ -83,19 +83,11 @@ class QUrl;
 class QVariant;
 class QVariantComparisonHelper;
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template <typename T>
 inline QVariant qVariantFromValue(const T &);
 
-template <typename T>
-inline void qVariantSetValue(QVariant &, const T &);
-
 template<typename T>
-inline T qVariantValue(const QVariant &);
-
-template<typename T>
-inline bool qVariantCanConvert(const QVariant &);
-#endif
+inline T qvariant_cast(const QVariant &);
 
 class Q_CORE_EXPORT QVariant
 {
@@ -227,6 +219,12 @@ class Q_CORE_EXPORT QVariant
     QVariant(Qt::GlobalColor color);
 
     QVariant& operator=(const QVariant &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVariant &operator=(QVariant &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+
+    inline void swap(QVariant &other) { qSwap(d, other.d); }
 
     Type type() const;
     int userType() const;
@@ -327,13 +325,12 @@ class Q_CORE_EXPORT QVariant
     const void *constData() const;
     inline const void *data() const { return constData(); }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template<typename T>
     inline void setValue(const T &value);
 
     template<typename T>
     inline T value() const
-    { return qVariantValue<T>(*this); }
+    { return qvariant_cast<T>(*this); }
 
     template<typename T>
     static inline QVariant fromValue(const T &value)
@@ -341,8 +338,7 @@ class Q_CORE_EXPORT QVariant
 
     template<typename T>
     bool canConvert() const
-    { return qVariantCanConvert<T>(*this); }
-#endif
+    { return canConvert(Type(qMetaTypeId<T>())); }
 
  public:
 #ifndef qdoc
@@ -527,11 +523,9 @@ inline QSize &QVariant::asSize()
 { return *reinterpret_cast<QSize *>(castOrDetach(Size)); }
 #endif //QT3_SUPPORT
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template<typename T>
 inline void QVariant::setValue(const T &avalue)
 { qVariantSetValue(*this, avalue); }
-#endif
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant& p);
@@ -594,16 +588,16 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
     return v;
 }
 
+#ifdef QT_DEPRECATED
 template<typename T>
-inline T qVariantValue(const QVariant &variant)
+inline QT_DEPRECATED T qVariantValue(const QVariant &variant)
 { return qvariant_cast<T>(variant); }
 
 template<typename T>
-inline bool qVariantCanConvert(const QVariant &variant)
-{
-    return variant.canConvert(static_cast<QVariant::Type>(
-                qMetaTypeId<T>(static_cast<T *>(0))));
-}
+inline QT_DEPRECATED bool qVariantCanConvert(const QVariant &variant)
+{ return variant.template canConvert<T>(); }
+#endif
+
 #endif
 Q_DECLARE_SHARED(QVariant)
 Q_DECLARE_TYPEINFO(QVariant, Q_MOVABLE_TYPE);

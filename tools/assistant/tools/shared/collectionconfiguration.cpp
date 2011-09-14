@@ -71,6 +71,7 @@ namespace {
 #endif
             ));
     const QString WindowTitleKey(QLatin1String("WindowTitle"));
+    const QString FullTextSearchFallbackKey(QLatin1String("FullTextSearchFallback"));
 } // anonymous namespace
 
 const QString CollectionConfiguration::DefaultZoomFactor(QLatin1String("0.0"));
@@ -308,6 +309,19 @@ void CollectionConfiguration::copyConfiguration(const QHelpEngineCore &source,
     setAboutTexts(target, aboutTexts(source));
     setAboutImages(target, aboutImages(source));
     setDefaultHomePage(target, defaultHomePage(source));
+    setFullTextSearchFallbackEnabled(target, fullTextSearchFallbackEnabled(source));
+}
+
+bool CollectionConfiguration:: fullTextSearchFallbackEnabled(
+    const QHelpEngineCore &helpEngine)
+{
+    return helpEngine.customValue(FullTextSearchFallbackKey, false).toBool();
+}
+
+void CollectionConfiguration::setFullTextSearchFallbackEnabled(
+    QHelpEngineCore &helpEngine, bool on)
+{
+    helpEngine.setCustomValue(FullTextSearchFallbackKey, on);
 }
 
 QT_END_NAMESPACE

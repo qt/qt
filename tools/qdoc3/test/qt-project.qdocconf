@@ -5,8 +5,8 @@ include(qt-defines.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://qt.nokia.com/doc/4.7
-version                 = 4.7.3
+url                     = http://qt.nokia.com/doc/4.8
+version                 = 4.8.0
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
@@ -15,14 +15,14 @@ naturallanguage         = en_US
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.474
+qhp.Qt.namespace           = com.trolltech.qt.480
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
 qhp.Qt.indexRoot           =
 
-qhp.Qt.filterAttributes    = qt 4.7.4 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.7.4
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.4
+qhp.Qt.filterAttributes    = qt 4.8.0 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.8.0
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.0
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
@@ -105,7 +105,7 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/examples/tutorials \
                           $QT_SOURCE_TREE \
                           $QT_SOURCE_TREE/qmake/examples \
-                          $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
+                          $QT_SOURCE_TREE/src/3rdparty/webkit/Source/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/doc/src/declarative/pics \

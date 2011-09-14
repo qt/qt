@@ -53,10 +53,10 @@
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
-#include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
 #include "qnetworkaccesscachebackend_p.h"
-#include "qfilenetworkreply_p.h"
+#include "qnetworkreplydataimpl_p.h"
+#include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
@@ -64,6 +64,10 @@
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
+#include "QtNetwork/qhttpmultipart.h"
+#include "qhttpmultipart_p.h"
+
+#include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -71,7 +75,6 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QNetworkAccessHttpBackendFactory, httpBackend)
 #endif // QT_NO_HTTP
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
-Q_GLOBAL_STATIC(QNetworkAccessDataBackendFactory, dataBackend)
 #ifndef QT_NO_FTP
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 #endif // QT_NO_FTP
@@ -85,7 +88,7 @@ static void ensureInitialized()
 #ifndef QT_NO_HTTP
     (void) httpBackend();
 #endif // QT_NO_HTTP
-    (void) dataBackend();
+
 #ifndef QT_NO_FTP
     (void) ftpBackend();
 #endif
@@ -298,6 +301,10 @@ static void ensureInitialized()
     again, without emitting the authenticationRequired() signal. If it
     rejects the credentials, this signal will be emitted again.
 
+    \note It is not possible to use a QueuedConnection to connect to
+    this signal, as the connection will fail if the authenticator has
+    not been filled in with new information when the signal returns.
+
     \sa proxyAuthenticationRequired()
 */
 
@@ -342,107 +349,6 @@ static void ensureInitialized()
     QNetworkReply::sslConfiguration(), QNetworkReply::ignoreSslErrors()
 */
 
-class QNetworkAuthenticationCredential
-{
-public:
-    QString domain;
-    QString user;
-    QString password;
-};
-Q_DECLARE_TYPEINFO(QNetworkAuthenticationCredential, Q_MOVABLE_TYPE);
-inline bool operator<(const QNetworkAuthenticationCredential &t1, const QString &t2)
-{ return t1.domain < t2; }
-
-class QNetworkAuthenticationCache: private QVector<QNetworkAuthenticationCredential>,
-                                   public QNetworkAccessCache::CacheableObject
-{
-public:
-    QNetworkAuthenticationCache()
-    {
-        setExpires(false);
-        setShareable(true);
-        reserve(1);
-    }
-
-    QNetworkAuthenticationCredential *findClosestMatch(const QString &domain)
-    {
-        iterator it = qLowerBound(begin(), end(), domain);
-        if (it == end() && !isEmpty())
-            --it;
-        if (it == end() || !domain.startsWith(it->domain))
-            return 0;
-        return &*it;
-    }
-
-    void insert(const QString &domain, const QString &user, const QString &password)
-    {
-        QNetworkAuthenticationCredential *closestMatch = findClosestMatch(domain);
-        if (closestMatch && closestMatch->domain == domain) {
-            // we're overriding the current credentials
-            closestMatch->user = user;
-            closestMatch->password = password;
-        } else {
-            QNetworkAuthenticationCredential newCredential;
-            newCredential.domain = domain;
-            newCredential.user = user;
-            newCredential.password = password;
-
-            if (closestMatch)
-                QVector<QNetworkAuthenticationCredential>::insert(++closestMatch, newCredential);
-            else
-                QVector<QNetworkAuthenticationCredential>::insert(end(), newCredential);
-        }
-    }
-
-    virtual void dispose() { delete this; }
-};
-
-#ifndef QT_NO_NETWORKPROXY
-static QByteArray proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm)
-{
-    QUrl key;
-
-    switch (proxy.type()) {
-    case QNetworkProxy::Socks5Proxy:
-        key.setScheme(QLatin1String("proxy-socks5"));
-        break;
-
-    case QNetworkProxy::HttpProxy:
-    case QNetworkProxy::HttpCachingProxy:
-        key.setScheme(QLatin1String("proxy-http"));
-        break;
-
-    case QNetworkProxy::FtpCachingProxy:
-        key.setScheme(QLatin1String("proxy-ftp"));
-        break;
-
-    case QNetworkProxy::DefaultProxy:
-    case QNetworkProxy::NoProxy:
-        // shouldn't happen
-        return QByteArray();
-
-        // no default:
-        // let there be errors if a new proxy type is added in the future
-    }
-
-    if (key.scheme().isEmpty())
-        // proxy type not handled
-        return QByteArray();
-
-    key.setUserName(proxy.user());
-    key.setHost(proxy.hostName());
-    key.setPort(proxy.port());
-    key.setFragment(realm);
-    return "auth:" + key.toEncoded();
-}
-#endif
-
-static inline QByteArray authenticationKey(const QUrl &url, const QString &realm)
-{
-    QUrl copy = url;
-    copy.setFragment(realm);
-    return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
-}
 
 /*!
     Constructs a QNetworkAccessManager object that is the center of
@@ -452,6 +358,8 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
     ensureInitialized();
+
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
 }
 
 /*!
@@ -727,6 +635,46 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
 }
 
 /*!
+    \since 4.8
+
+    \overload
+
+    Sends the contents of the \a multiPart message to the destination
+    specified by \a request.
+
+    This can be used for sending MIME multipart messages over HTTP.
+
+    \sa QHttpMultiPart, QHttpPart, put()
+*/
+QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
+    QIODevice *device = multiPart->d_func()->device;
+    QNetworkReply *reply = post(newRequest, device);
+    return reply;
+}
+
+/*!
+    \since 4.8
+
+    \overload
+
+    Sends the contents of the \a multiPart message to the destination
+    specified by \a request.
+
+    This can be used for sending MIME multipart messages over HTTP.
+
+    \sa QHttpMultiPart, QHttpPart, post()
+*/
+QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    QNetworkRequest newRequest = d_func()->prepareMultipart(request, multiPart);
+    QIODevice *device = multiPart->d_func()->device;
+    QNetworkReply *reply = put(newRequest, device);
+    return reply;
+}
+
+/*!
     Uploads the contents of \a data to the destination \a request and
     returnes a new QNetworkReply object that will be open for reply.
 
@@ -752,7 +700,8 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QIODev
 
 /*!
     \overload
-    Sends the contents of the \a data byte array to the destination 
+
+    Sends the contents of the \a data byte array to the destination
     specified by \a request.
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
@@ -946,30 +895,19 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 {
     Q_D(QNetworkAccessManager);
 
-    // 4.7 only hotfix fast path for data:// URLs
-    // In 4.8 this is solved with QNetworkReplyDataImpl and will work there
-    // This hotfix is done for not needing a QNetworkSession for data://
-    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-             && (req.url().scheme() == QLatin1String("data"))) {
-        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-        QNetworkReplyImplPrivate *priv = reply->d_func();
-        priv->manager = this;
-        priv->backend = new QNetworkAccessDataBackend();
-        priv->backend->manager = this->d_func();
-        priv->backend->setParent(reply);
-        priv->backend->reply = priv;
-        priv->setup(op, req, outgoingData);
-        return reply;
-    }
+    bool isLocalFile = req.url().isLocalFile();
+    QString scheme = req.url().scheme().toLower();
 
     // fast path for GET on file:// URLs
-    // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used for PUT
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-         && (req.url().scheme() == QLatin1String("file")
-             || req.url().scheme() == QLatin1String("qrc")
-             || req.url().scheme().isEmpty())) {
-        return new QFileNetworkReply(this, req, op);
+        && (isLocalFile || scheme == QLatin1String("qrc"))) {
+        return new QNetworkReplyFileImpl(this, req, op);
+    }
+
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
+            && scheme == QLatin1String("data")) {
+        return new QNetworkReplyDataImpl(this, req, op);
     }
 
     // A request with QNetworkRequest::AlwaysCache does not need any bearer management
@@ -995,8 +933,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (!d->networkAccessible && !(req.url().scheme() == QLatin1String("file") ||
-                                      req.url().scheme().isEmpty())) {
+    if (!d->networkAccessible && !isLocalFile) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
@@ -1030,7 +967,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         if (d->cookieJar) {
             QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
             if (!cookies.isEmpty())
-                request.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
+                request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
         }
     }
 
@@ -1038,7 +975,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
+    if (!isLocalFile) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
@@ -1053,10 +990,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-#ifndef QT_NO_NETWORKPROXY
-    QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
-    priv->proxyList = proxyList;
-#endif
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
@@ -1135,10 +1068,10 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
     // also called when last URL is empty, e.g. on first call
     if (backend->reply->urlForLastAuthentication.isEmpty()
             || url != backend->reply->urlForLastAuthentication) {
-        QNetworkAuthenticationCredential *cred = fetchCachedCredentials(url, authenticator);
-        if (cred) {
-            authenticator->setUser(cred->user);
-            authenticator->setPassword(cred->password);
+        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
+        if (!cred.isNull()) {
+            authenticator->setUser(cred.user);
+            authenticator->setPassword(cred.password);
             backend->reply->urlForLastAuthentication = url;
             return;
         }
@@ -1151,7 +1084,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
 
     backend->reply->urlForLastAuthentication = url;
     emit q->authenticationRequired(backend->reply->q_func(), authenticator);
-    cacheCredentials(url, authenticator);
+    authenticationManager->cacheCredentials(url, authenticator);
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -1168,10 +1101,10 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
     // possible solution: some tracking inside the authenticator
     //      or a new function proxyAuthenticationSucceeded(true|false)
     if (proxy != backend->reply->lastProxyAuthentication) {
-        QNetworkAuthenticationCredential *cred = fetchCachedProxyCredentials(proxy);
-        if (cred) {
-            authenticator->setUser(cred->user);
-            authenticator->setPassword(cred->password);
+        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
+        if (!cred.isNull()) {
+            authenticator->setUser(cred.user);
+            authenticator->setPassword(cred.password);
             return;
         }
     }
@@ -1183,75 +1116,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
 
     backend->reply->lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);
-    cacheProxyCredentials(proxy, authenticator);
-}
-
-void QNetworkAccessManagerPrivate::cacheProxyCredentials(const QNetworkProxy &p,
-                                                  const QAuthenticator *authenticator)
-{
-    Q_ASSERT(authenticator);
-    Q_ASSERT(p.type() != QNetworkProxy::DefaultProxy);
-    Q_ASSERT(p.type() != QNetworkProxy::NoProxy);
-
-    QString realm = authenticator->realm();
-    QNetworkProxy proxy = p;
-    proxy.setUser(authenticator->user());
-    // Set two credentials: one with the username and one without
-    do {
-        // Set two credentials actually: one with and one without the realm
-        do {
-            QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
-            if (cacheKey.isEmpty())
-                return;             // should not happen
-
-            QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
-            auth->insert(QString(), authenticator->user(), authenticator->password());
-            objectCache.addEntry(cacheKey, auth); // replace the existing one, if there's any
-
-            if (realm.isEmpty()) {
-                break;
-            } else {
-                realm.clear();
-            }
-        } while (true);
-
-        if (proxy.user().isEmpty())
-            break;
-        else
-            proxy.setUser(QString());
-    } while (true);
-}
-
-QNetworkAuthenticationCredential *
-QNetworkAccessManagerPrivate::fetchCachedProxyCredentials(const QNetworkProxy &p,
-                                                     const QAuthenticator *authenticator)
-{
-    QNetworkProxy proxy = p;
-    if (proxy.type() == QNetworkProxy::DefaultProxy) {
-        proxy = QNetworkProxy::applicationProxy();
-    }
-    if (!proxy.password().isEmpty())
-        return 0;               // no need to set credentials if it already has them
-
-    QString realm;
-    if (authenticator)
-        realm = authenticator->realm();
-
-    QByteArray cacheKey = proxyAuthenticationKey(proxy, realm);
-    if (cacheKey.isEmpty())
-        return 0;
-    if (!objectCache.hasEntry(cacheKey))
-        return 0;
-
-    QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential *cred = auth->findClosestMatch(QString());
-    objectCache.releaseEntry(cacheKey);
-
-    // proxy cache credentials always have exactly one item
-    Q_ASSERT_X(cred, "QNetworkAccessManager",
-               "Internal inconsistency: found a cache key for a proxy, but it's empty");
-    return cred;
+    authenticationManager->cacheProxyCredentials(proxy, authenticator);
 }
 
 QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProxyQuery &query)
@@ -1275,77 +1140,25 @@ QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProx
 }
 #endif
 
-void QNetworkAccessManagerPrivate::cacheCredentials(const QUrl &url,
-                                                  const QAuthenticator *authenticator)
-{
-    Q_ASSERT(authenticator);
-    QString domain = QString::fromLatin1("/"); // FIXME: make QAuthenticator return the domain
-    QString realm = authenticator->realm();
-
-    // Set two credentials actually: one with and one without the username in the URL
-    QUrl copy = url;
-    copy.setUserName(authenticator->user());
-    do {
-        QByteArray cacheKey = authenticationKey(copy, realm);
-        if (objectCache.hasEntry(cacheKey)) {
-            QNetworkAuthenticationCache *auth =
-                static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
-            auth->insert(domain, authenticator->user(), authenticator->password());
-            objectCache.releaseEntry(cacheKey);
-        } else {
-            QNetworkAuthenticationCache *auth = new QNetworkAuthenticationCache;
-            auth->insert(domain, authenticator->user(), authenticator->password());
-            objectCache.addEntry(cacheKey, auth);
-        }
-
-        if (copy.userName().isEmpty()) {
-            break;
-        } else {
-            copy.setUserName(QString());
-        }
-    } while (true);
-}
-
-/*!
-    Fetch the credential data from the credential cache.
-
-    If auth is 0 (as it is when called from createRequest()), this will try to
-    look up with an empty realm. That fails in most cases for HTTP (because the
-    realm is seldom empty for HTTP challenges). In any case, QHttpNetworkConnection
-    never sends the credentials on the first attempt: it needs to find out what
-    authentication methods the server supports.
-
-    For FTP, realm is always empty.
-*/
-QNetworkAuthenticationCredential *
-QNetworkAccessManagerPrivate::fetchCachedCredentials(const QUrl &url,
-                                                     const QAuthenticator *authentication)
-{
-    if (!url.password().isEmpty())
-        return 0;               // no need to set credentials if it already has them
-
-    QString realm;
-    if (authentication)
-        realm = authentication->realm();
-
-    QByteArray cacheKey = authenticationKey(url, realm);
-    if (!objectCache.hasEntry(cacheKey))
-        return 0;
-
-    QNetworkAuthenticationCache *auth =
-        static_cast<QNetworkAuthenticationCache *>(objectCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
-    objectCache.releaseEntry(cacheKey);
-    return cred;
-}
-
 void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 {
     manager->d_func()->objectCache.clear();
+    manager->d_func()->authenticationManager->clearCache();
+
+    if (manager->d_func()->httpThread) {
+        // The thread will deleteLater() itself from its finished() signal
+        manager->d_func()->httpThread->quit();
+        manager->d_func()->httpThread = 0;
+    }
 }
 
 QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 {
+    if (httpThread) {
+        // The thread will deleteLater() itself from its finished() signal
+        httpThread->quit();
+        httpThread = 0;
+    }
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -1355,8 +1168,25 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     initializeSession = false;
 
-    if (!config.isValid()) {
-        networkSession.clear();
+    QSharedPointer<QNetworkSession> newSession;
+    if (config.isValid())
+        newSession = QSharedNetworkSessionManager::getSession(config);
+
+    if (networkSession) {
+        //do nothing if new and old session are the same
+        if (networkSession == newSession)
+            return;
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
+    }
+
+    //switch to new session (null if config was invalid)
+    networkSession = newSession;
+
+    if (!networkSession) {
         online = false;
 
         if (networkAccessible == QNetworkAccessManager::NotAccessible)
@@ -1367,8 +1197,7 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
         return;
     }
 
-    networkSession = QSharedNetworkSessionManager::getSession(config);
-
+    //connect to new session
     QObject::connect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()), Qt::QueuedConnection);
     //QueuedConnection is used to avoid deleting the networkSession inside its closed signal
     QObject::connect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()), Qt::QueuedConnection);
@@ -1380,9 +1209,15 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
 void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
 {
+    Q_Q(QNetworkAccessManager);
     if (networkSession) {
         networkConfiguration = networkSession->configuration().identifier();
 
+        //disconnect from old session
+        QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
+        QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
+        QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
+            q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
         networkSession.clear();
     }
 }
@@ -1391,8 +1226,12 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
 {
     Q_Q(QNetworkAccessManager);
 
-    if (state == QNetworkSession::Connected)
+    //Do not emit the networkSessionConnected signal here, except for roaming -> connected
+    //transition, otherwise it is emitted twice in a row when opening a connection.
+    if (state == QNetworkSession::Connected && lastSessionState == QNetworkSession::Roaming)
         emit q->networkSessionConnected();
+    lastSessionState = state;
+
     if (online) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
             online = false;
@@ -1406,6 +1245,54 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     }
 }
 #endif // QT_NO_BEARERMANAGEMENT
+
+QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
+{
+    // copy the request, we probably need to add some headers
+    QNetworkRequest newRequest(request);
+
+    // add Content-Type header if not there already
+    if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
+        QByteArray contentType;
+        contentType.reserve(34 + multiPart->d_func()->boundary.count());
+        contentType += "multipart/";
+        switch (multiPart->d_func()->contentType) {
+        case QHttpMultiPart::RelatedType:
+            contentType += "related";
+            break;
+        case QHttpMultiPart::FormDataType:
+            contentType += "form-data";
+            break;
+        case QHttpMultiPart::AlternativeType:
+            contentType += "alternative";
+            break;
+        default:
+            contentType += "mixed";
+            break;
+        }
+        // putting the boundary into quotes, recommended in RFC 2046 section 5.1.1
+        contentType += "; boundary=\"" + multiPart->d_func()->boundary + "\"";
+        newRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant(contentType));
+    }
+
+    // add MIME-Version header if not there already (we must include the header
+    // if the message conforms to RFC 2045, see section 4 of that RFC)
+    QByteArray mimeHeader("MIME-Version");
+    if (!request.hasRawHeader(mimeHeader))
+        newRequest.setRawHeader(mimeHeader, QByteArray("1.0"));
+
+    QIODevice *device = multiPart->d_func()->device;
+    if (!device->isReadable()) {
+        if (!device->isOpen()) {
+            if (!device->open(QIODevice::ReadOnly))
+                qWarning("could not open device for reading");
+        } else {
+            qWarning("device is not readable");
+        }
+    }
+
+    return newRequest;
+}
 
 QT_END_NAMESPACE
 

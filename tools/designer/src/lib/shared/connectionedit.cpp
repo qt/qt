@@ -1395,7 +1395,7 @@ void ConnectionEdit::widgetRemoved(QWidget *widget)
     if (m_con_list.empty())
         return;
 
-    QWidgetList child_list = qFindChildren<QWidget*>(widget);
+    QWidgetList child_list = widget->findChildren<QWidget*>();
     child_list.prepend(widget);
 
     const ConnectionSet remove_set = findConnectionsOf(m_con_list, child_list.constBegin(),  child_list.constEnd());
@@ -1545,7 +1545,7 @@ void ConnectionEdit::setSource(Connection *con, const QString &obj_name)
 {
     QObject *object = 0;
     if (!obj_name.isEmpty()) {
-        object = qFindChild<QObject*>(m_bg_widget, obj_name);
+        object = m_bg_widget->findChild<QObject*>(obj_name);
         if (object == 0 && m_bg_widget->objectName() == obj_name)
             object = m_bg_widget;
 
@@ -1559,7 +1559,7 @@ void ConnectionEdit::setTarget(Connection *con, const QString &obj_name)
 {
     QObject *object = 0;
     if (!obj_name.isEmpty()) {
-        object = qFindChild<QObject*>(m_bg_widget, obj_name);
+        object = m_bg_widget->findChild<QObject*>(obj_name);
         if (object == 0 && m_bg_widget->objectName() == obj_name)
             object = m_bg_widget;
 

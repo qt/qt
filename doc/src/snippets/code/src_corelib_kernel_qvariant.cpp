@@ -132,5 +132,5 @@ return QVariant::fromValue(s);
 
 //! [8]
 QObject *object = getObjectFromSomewhere();
-QVariant data = qVariantFromValue(object);
+QVariant data = QVariant::fromValue(object);
 //! [8]

@@ -1,15 +1,18 @@
 TEMPLATE      = subdirs
 SUBDIRS       = analogclock \
+                applicationicon \
                 calculator \
                 calendarwidget \
                 charactermap \
                 codeeditor \
                 digitalclock \
+                elidedlabel \
                 groupbox \
                 icons \
                 imageviewer \
                 lineedits \
                 movie \
+                orientation \
                 scribble \
                 shapedclock \
                 sliders \
@@ -20,7 +23,7 @@ SUBDIRS       = analogclock \
                 tooltips \
                 validators \
                 wiggly \
-                windowflags
+                windowflags \
 
 symbian: SUBDIRS = \
                 analogclock \
@@ -28,9 +31,12 @@ symbian: SUBDIRS = \
                 calendarwidget \
                 lineedits \
                 shapedclock \
+		symbianvibration \
                 tetrix \
                 wiggly \
                 softkeys
+
+maemo5: SUBDIRS += maemovibration
 
 contains(styles, motif): SUBDIRS += styles
 
@@ -40,4 +46,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

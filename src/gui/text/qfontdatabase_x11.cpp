@@ -680,7 +680,7 @@ static void loadXlfds(const char *reqFamily, int encoding_id)
         family->fontFileIndex = -1;
         family->symbol_checked = true;
         QtFontFoundry *foundry = family->foundry(QLatin1String(foundryName), true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, QString(), true);
 
         delete [] style->weightName;
         style->weightName = qstrdup(tokens[Weight]);
@@ -746,6 +746,7 @@ QFontDef qt_FcPatternToQFontDef(FcPattern *pattern, const QFontDef &request)
     QFontDef fontDef;
     fontDef.styleStrategy = request.styleStrategy;
 
+    fontDef.hintingPreference = request.hintingPreference;
     FcChar8 *value = 0;
     if (FcPatternGetString(pattern, FC_FAMILY, 0, &value) == FcResultMatch) {
         fontDef.family = QString::fromUtf8(reinterpret_cast<const char *>(value));
@@ -1018,6 +1019,13 @@ static void loadFontConfig()
     QFontDatabasePrivate *db = privateDb();
     FcFontSet  *fonts;
 
+    FcPattern *pattern = FcPatternCreate();
+    FcDefaultSubstitute(pattern);
+    FcChar8 *lang = 0;
+    if (FcPatternGetString(pattern, FC_LANG, 0, &lang) == FcResultMatch)
+        db->systemLang = QString::fromUtf8((const char *) lang);
+    FcPatternDestroy(pattern);
+
     QString familyName;
     FcChar8 *value = 0;
     int weight_value;
@@ -1026,13 +1034,14 @@ static void loadFontConfig()
     FcChar8 *file_value;
     int index_value;
     FcChar8 *foundry_value;
+    FcChar8 *style_value;
     FcBool scalable;
 
     {
         FcObjectSet *os = FcObjectSetCreate();
         FcPattern *pattern = FcPatternCreate();
         const char *properties [] = {
-            FC_FAMILY, FC_WEIGHT, FC_SLANT,
+            FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
             FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE, FC_WEIGHT,
             FC_WIDTH,
@@ -1077,6 +1086,8 @@ static void loadFontConfig()
 	    scalable = FcTrue;
         if (FcPatternGetString(fonts->fonts[i], FC_FOUNDRY, 0, &foundry_value) != FcResultMatch)
 	    foundry_value = 0;
+        if (FcPatternGetString(fonts->fonts[i], FC_STYLE, 0, &style_value) != FcResultMatch)
+            style_value = 0;
         QtFontFamily *family = db->family(familyName, true);
 
         FcLangSet *langset = 0;
@@ -1134,6 +1145,7 @@ static void loadFontConfig()
         family->fontFileIndex = index_value;
 
         QtFontStyle::Key styleKey;
+        QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
         styleKey.style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
                          : ((slant_value == FC_SLANT_OBLIQUE)
@@ -1148,7 +1160,7 @@ static void loadFontConfig()
 
         QtFontFoundry *foundry
             = family->foundry(foundry_value ? QString::fromUtf8((const char *)foundry_value) : QString(), true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, styleName, true);
 
         if (spacing_value < FC_MONO)
             family->fixedPitch = false;
@@ -1200,7 +1212,7 @@ static void loadFontConfig()
         for (int i = 0; i < 4; ++i) {
             styleKey.style = (i%2) ? QFont::StyleNormal : QFont::StyleItalic;
             styleKey.weight = (i > 1) ? QFont::Bold : QFont::Normal;
-            QtFontStyle *style = foundry->style(styleKey, true);
+            QtFontStyle *style = foundry->style(styleKey, QString(), true);
             style->smoothScalable = true;
             QtFontSize *size = style->pixelSize(SMOOTH_SCALABLE, true);
             QtFontEncoding *enc = size->encodingID(-1, 0, 0, 0, 0, true);
@@ -1348,7 +1360,7 @@ static void initializeDb()
                 if (equiv) continue;
 
                 // let's fake one...
-                equiv = foundry->style(key, true);
+                equiv = foundry->style(key, QString(), true);
                 equiv->smoothScalable = true;
 
                 QtFontSize *equiv_size = equiv->pixelSize(SMOOTH_SCALABLE, true);
@@ -1444,6 +1456,35 @@ static const char *styleHint(const QFontDef &request)
 
 void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontDef &request)
 {
+    double size_value = qMax(qreal(1.), request.pixelSize);
+    FcPatternDel(pattern, FC_PIXEL_SIZE);
+    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
+
+    if (X11->display && QX11Info::appDepth(screen) <= 8) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
+        // can't do antialiasing on 8bpp
+        FcPatternAddBool(pattern, FC_ANTIALIAS, false);
+    } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
+        FcPatternAddBool(pattern, FC_ANTIALIAS,
+                         !(request.styleStrategy & QFont::NoAntialias));
+    }
+
+    if (script != QUnicodeTables::Common && *specialLanguages[script] != '\0') {
+        Q_ASSERT(script < QUnicodeTables::ScriptCount);
+        FcLangSet *ls = FcLangSetCreate();
+        FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
+        FcPatternDel(pattern, FC_LANG);
+        FcPatternAddLangSet(pattern, FC_LANG, ls);
+        FcLangSetDestroy(ls);
+    }
+
+    if (!request.styleName.isEmpty()) {
+        QByteArray cs = request.styleName.toUtf8();
+        FcPatternAddString(pattern, FC_STYLE, (const FcChar8 *) cs.constData());
+        return;
+    }
+
     int weight_value = FC_WEIGHT_BLACK;
     if (request.weight == 0)
         weight_value = FC_WEIGHT_MEDIUM;
@@ -1455,6 +1496,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         weight_value = FC_WEIGHT_DEMIBOLD;
     else if (request.weight < (QFont::Bold + QFont::Black) / 2)
         weight_value = FC_WEIGHT_BOLD;
+    FcPatternDel(pattern, FC_WEIGHT);
     FcPatternAddInteger(pattern, FC_WEIGHT, weight_value);
 
     int slant_value = FC_SLANT_ROMAN;
@@ -1462,31 +1504,14 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_ITALIC;
     else if (request.style == QFont::StyleOblique)
         slant_value = FC_SLANT_OBLIQUE;
+    FcPatternDel(pattern, FC_SLANT);
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
-
-    double size_value = qMax(qreal(1.), request.pixelSize);
-    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;
     if (!stretch)
         stretch = 100;
+    FcPatternDel(pattern, FC_WIDTH);
     FcPatternAddInteger(pattern, FC_WIDTH, stretch);
-
-    if (X11->display && QX11Info::appDepth(screen) <= 8) {
-        // can't do antialiasing on 8bpp
-        FcPatternAddBool(pattern, FC_ANTIALIAS, false);
-    } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
-        FcPatternAddBool(pattern, FC_ANTIALIAS,
-                         !(request.styleStrategy & QFont::NoAntialias));
-    }
-
-    if (script != QUnicodeTables::Common && *specialLanguages[script] != '\0') {
-        Q_ASSERT(script < QUnicodeTables::ScriptCount);
-        FcLangSet *ls = FcLangSetCreate();
-        FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
-        FcPatternAddLangSet(pattern, FC_LANG, ls);
-        FcLangSetDestroy(ls);
-    }
 }
 
 static bool preferScalable(const QFontDef &request)
@@ -1545,9 +1570,8 @@ static FcPattern *getFcPattern(const QFontPrivate *fp, int script, const QFontDe
 
     qt_addPatternProps(pattern, fp->screen, script, request);
 
-    FcDefaultSubstitute(pattern);
     FcConfigSubstitute(0, pattern, FcMatchPattern);
-    FcConfigSubstitute(0, pattern, FcMatchFont);
+    FcDefaultSubstitute(pattern);
 
     // these should only get added to the pattern _after_ substitution
     // append the default fallback font for the specified script
@@ -1585,34 +1609,19 @@ static void FcFontSetRemove(FcFontSet *fs, int at)
         memmove(fs->fonts + at, fs->fonts + at + 1, len);
 }
 
-static QFontEngine *tryPatternLoad(FcPattern *p, int screen,
-                                   const QFontDef &request, int script, FcPattern **matchedPattern = 0)
+static QFontEngine *tryPatternLoad(FcPattern *match, int screen,
+                                   const QFontDef &request, int script)
 {
 #ifdef FONT_MATCH_DEBUG
     FcChar8 *fam;
-    FcPatternGetString(p, FC_FAMILY, 0, &fam);
+    FcPatternGetString(match, FC_FAMILY, 0, &fam);
     FM_DEBUG("==== trying %s\n", fam);
 #endif
     FM_DEBUG("passes charset test\n");
-    FcPattern *pattern = FcPatternDuplicate(p);
-    // add properties back in as the font selected from the
-    // list doesn't contain them.
-    qt_addPatternProps(pattern, screen, script, request);
-
-    FcConfigSubstitute(0, pattern, FcMatchPattern);
-    FcDefaultSubstitute(pattern);
-    FcResult res;
-    FcPattern *match = FcFontMatch(0, pattern, &res);
-
-    if (matchedPattern)
-	*matchedPattern = 0;
 
     QFontEngineX11FT *engine = 0;
     if (!match) // probably no fonts available.
         goto done;
-
-    if (matchedPattern)
-	*matchedPattern = FcPatternDuplicate(match);
 
     if (script != QUnicodeTables::Common) {
         // skip font if it doesn't support the language we want
@@ -1652,11 +1661,6 @@ static QFontEngine *tryPatternLoad(FcPattern *p, int screen,
         }
     }
 done:
-    FcPatternDestroy(pattern);
-    if (!engine && matchedPattern && *matchedPattern) {
-        FcPatternDestroy(*matchedPattern);
-        *matchedPattern = 0;
-    }
     return engine;
 }
 
@@ -1705,14 +1709,26 @@ static QFontEngine *loadFc(const QFontPrivate *fp, int script, const QFontDef &r
 #endif
 
     QFontEngine *fe = 0;
-    FcPattern *matchedPattern = 0;
-    fe = tryPatternLoad(pattern, fp->screen, request, script, &matchedPattern);
+    FcResult res;
+    FcPattern *match = FcFontMatch(0, pattern, &res);
+    fe = tryPatternLoad(match, fp->screen, request, script);
     if (!fe) {
         FcFontSet *fs = qt_fontSetForPattern(pattern, request);
 
+        if (match) {
+            FcPatternDestroy(match);
+            match = 0;
+        }
+
         if (fs) {
-            for (int i = 0; !fe && i < fs->nfont; ++i)
-                fe = tryPatternLoad(fs->fonts[i], fp->screen, request, script, &matchedPattern);
+            for (int i = 0; !fe && i < fs->nfont; ++i) {
+                match = FcFontRenderPrepare(NULL, pattern, fs->fonts[i]);
+                fe = tryPatternLoad(match, fp->screen, request, script);
+                if (fe)
+                    break;
+                FcPatternDestroy(match);
+                match = 0;
+            }
             FcFontSetDestroy(fs);
         }
         FM_DEBUG("engine for script %d is %s\n", script, fe ? fe->fontDef.family.toLatin1().data(): "(null)");
@@ -1720,11 +1736,11 @@ static QFontEngine *loadFc(const QFontPrivate *fp, int script, const QFontDef &r
     if (fe
         && script == QUnicodeTables::Common
         && !(request.styleStrategy & QFont::NoFontMerging) && !fe->symbol) {
-        fe = new QFontEngineMultiFT(fe, matchedPattern, pattern, fp->screen, request);
+        fe = new QFontEngineMultiFT(fe, match, pattern, fp->screen, request);
     } else {
         FcPatternDestroy(pattern);
-        if (matchedPattern)
-            FcPatternDestroy(matchedPattern);
+        if (match)
+            FcPatternDestroy(match);
     }
     return fe;
 }
@@ -1958,17 +1974,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
-            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
-                QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
-                if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
-                    delete fe;
-                    fe = xlfdFontEngine;
-                } else {
-                    delete xlfdFontEngine;
-                }
-            }
-
-
 #endif
         } else if (mainThread && qt_is_gui_used) {
             fe = loadXlfd(d->screen, script, req);
@@ -1991,6 +1996,11 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
     QFontCache::instance()->insertEngine(key, fe);
 }
+
+// Needed for fontconfig version < 2.2.97
+#ifndef FC_FAMILYLANG
+#define FC_FAMILYLANG "familylang"
+#endif
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
@@ -2030,6 +2040,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     int count = 0;
 
     QStringList families;
+    QFontDatabasePrivate *db = privateDb();
 
     FcPattern *pattern = 0;
     do {
@@ -2039,10 +2050,22 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
             return;
 
         FcPatternDel(pattern, FC_FILE);
-        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *)fnt->fileName.toUtf8().constData());
+        QByteArray cs = fnt->fileName.toUtf8();
+        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *) cs.constData());
 
-        FcChar8 *fam = 0;
-        if (FcPatternGetString(pattern, FC_FAMILY, 0, &fam) == FcResultMatch) {
+        FcChar8 *fam = 0, *familylang = 0;
+        int i, n = 0;
+        for (i = 0; ; i++) {
+            if (FcPatternGetString(pattern, FC_FAMILYLANG, i, &familylang) != FcResultMatch)
+                break;
+            QString familyLang = QString::fromUtf8((const char *) familylang);
+            if (familyLang.compare(db->systemLang, Qt::CaseInsensitive) == 0) {
+                n = i;
+                break;
+            }
+        }
+
+        if (FcPatternGetString(pattern, FC_FAMILY, n, &fam) == FcResultMatch) {
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }
@@ -2102,6 +2125,29 @@ bool QFontDatabase::supportsThreadedFontRendering()
     return false;
 #else
     return X11->has_fontconfig;
+#endif
+}
+
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+#if defined(QT_NO_FONTCONFIG)
+    return family;
+#else
+    FcPattern *pattern = FcPatternCreate();
+    if (!pattern)
+        return family;
+
+    QByteArray cs = family.toUtf8();
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) cs.constData());
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcChar8 *familyAfterSubstitution;
+    FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
+    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    FcPatternDestroy(pattern);
+
+    return resolved;
 #endif
 }
 

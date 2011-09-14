@@ -166,14 +166,14 @@ XsdStateMachine<XsdTerm::Ptr>::StateId XsdStateMachineBuilder::buildTerm(const X
 
         const XsdElement::Ptr element(term);
         if (m_mode == CheckingMode) {
-            const XsdElement::List substGroups = element->substitutionGroups();
+            const XsdElement::WeakList substGroups = element->substitutionGroups();
             for (int i = 0; i < substGroups.count(); ++i)
-                m_stateMachine->addTransition(b, substGroups.at(i), endState);
+                m_stateMachine->addTransition(b, XsdElement::Ptr(substGroups.at(i)), endState);
         } else if (m_mode == ValidatingMode) {
-            const XsdElement::List substGroups = element->substitutionGroups();
+            const XsdElement::WeakList substGroups = element->substitutionGroups();
             for (int i = 0; i < substGroups.count(); ++i) {
-                if (XsdSchemaHelper::substitutionGroupOkTransitive(element, substGroups.at(i), m_namePool))
-                    m_stateMachine->addTransition(b, substGroups.at(i), endState);
+                if (XsdSchemaHelper::substitutionGroupOkTransitive(element, XsdElement::Ptr(substGroups.at(i)), m_namePool))
+                    m_stateMachine->addTransition(b, XsdElement::Ptr(substGroups.at(i)), endState);
             }
         }
 

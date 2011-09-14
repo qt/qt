@@ -475,6 +475,7 @@ private slots:
     void QTBUG_12112_focusItem();
     void QTBUG_13473_sceneposchange();
     void QTBUG_16374_crashInDestructor();
+    void QTBUG_20699_focusScopeCrash();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -6413,6 +6414,7 @@ void tst_QGraphicsItem::boundingRegion_data()
 
     QTest::newRow("(0, 0, 10, 10) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(0.0) << QTransform()
                                                                         << QRegion(QRect(0, 0, 10, 10));
+#if 0
     {
         QRegion r;
         r += QRect(0, 0, 6, 2);
@@ -6430,6 +6432,7 @@ void tst_QGraphicsItem::boundingRegion_data()
         r += QRect(6, 9, 4, 1);
         QTest::newRow("(0, 0, 10, 10) | 1.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(1.0) << QTransform() << r;
     }
+#endif
     QTest::newRow("(0, 0, 10, 0) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 0) << qreal(0.0) << QTransform()
                                                                        << QRegion(QRect(0, 0, 10, 1));
     QTest::newRow("(0, 0, 10, 0) | 0.5 | identity | {(0, 0, 10, 1)}") << QLineF(0, 0, 10, 0) << qreal(0.5) << QTransform()
@@ -10741,7 +10744,7 @@ void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
     QTRY_VERIFY(view.repaints > 0);
 
     QGraphicsItemCache *itemCache = QGraphicsItemPrivate::get(item)->extraItemCache();
-    Q_ASSERT(itemCache);
+    QVERIFY(itemCache);
     QPixmapCache::Key currentKey = itemCache->deviceData.value(view.viewport()).key;
 
     // Trigger an update and verify that the cache is unchanged.
@@ -11261,6 +11264,37 @@ void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
 
     view.show();
     QTest::qWaitForWindowShown(&view);
+}
+
+void tst_QGraphicsItem::QTBUG_20699_focusScopeCrash()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsPixmapItem fs;
+    fs.setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+    scene.addItem(&fs);
+    QGraphicsPixmapItem* fs2 = new QGraphicsPixmapItem(&fs);
+    fs2->setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+    QGraphicsPixmapItem* fi2 = new QGraphicsPixmapItem(&fs);
+    fi2->setFlags(QGraphicsItem::ItemIsFocusable);
+    QGraphicsPixmapItem* fi = new QGraphicsPixmapItem(fs2);
+    fi->setFlags(QGraphicsItem::ItemIsFocusable);
+    fs.setFocus();
+    fi->setFocus();
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    fi->setParentItem(fi2);
+    fi->setFocus();
+    fs.setFocus();
+    fi->setParentItem(fs2);
+    fi->setFocus();
+    fs2->setFocus();
+    fs.setFocus();
+    fi->setParentItem(fi2);
+    fi->setFocus();
+    fs.setFocus();
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

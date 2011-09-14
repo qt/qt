@@ -44,9 +44,11 @@
 #ifdef QT_MAC_USE_COCOA
 #import <private/qcocoamenu_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
+#import <private/qcocoaapplication_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>
+#include <private/qcocoaapplication_mac_p.h>
 
 #include <QtGui/QMenu>
 
@@ -60,6 +62,7 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 
 QT_BEGIN_NAMESPACE
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
+extern NSString *qt_mac_removePrivateUnicode(NSString* string);
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -78,7 +81,7 @@ QT_USE_NAMESPACE
     return self;
 }
 
-- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item
 {
     Q_UNUSED(menu);
 
@@ -99,7 +102,7 @@ QT_USE_NAMESPACE
     }
 }
 
-- (void)menuWillOpen:(NSMenu*)menu;
+- (void)menuWillOpen:(NSMenu*)menu
 {
     while (QWidget *popup
                 = QApplication::activePopupWidget())
@@ -109,7 +112,7 @@ QT_USE_NAMESPACE
     qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
-- (void)menuDidClose:(NSMenu*)menu;
+- (void)menuDidClose:(NSMenu*)menu
 {
     qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, false);
     if (previousAction) {
@@ -156,10 +159,13 @@ QT_USE_NAMESPACE
     // In every other case we return NO, which means that Cocoa can do as it pleases
     // (i.e., fire the menu action).
     NSMenuItem *whichItem;
+    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
+    NSString *characters = qt_mac_removePrivateUnicode([event characters]);
     if ([self hasShortcut:menu
-                   forKey:[event characters]
-             forModifiers:([event modifierFlags] & NSDeviceIndependentModifierFlagsMask)
-                 whichItem:&whichItem]) {
+            forKey:characters
+            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
+            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
+            whichItem:&whichItem]) {
         QWidget *widget = 0;
         QAction *qaction = 0;
         if (whichItem && [whichItem tag]) {
@@ -170,6 +176,9 @@ QT_USE_NAMESPACE
                       qApp->activePopupWidget()->focusWidget() : qApp->activePopupWidget());
         else if (QApplicationPrivate::focus_widget)
             widget = QApplicationPrivate::focus_widget;
+        // If we could not find any receivers, pass it to the active window
+        if (!widget)
+            widget = qApp->activeWindow();
         if (qaction && widget) {
             int key = qaction->shortcut();
             QKeyEvent accel_ev(QEvent::ShortcutOverride, (key & (~Qt::KeyboardModifierMask)),
@@ -177,11 +186,10 @@ QT_USE_NAMESPACE
             accel_ev.ignore();
             qt_sendSpontaneousEvent(widget, &accel_ev);
             if (accel_ev.isAccepted()) {
-                if (qt_dispatchKeyEvent(event, widget)) {
-                    *target = nil;
-                    *action = nil;
-                    return YES;
-                }
+                qt_dispatchKeyEvent(event, widget);
+                *target = nil;
+                *action = nil;
+                return YES;
             }
         }
     }

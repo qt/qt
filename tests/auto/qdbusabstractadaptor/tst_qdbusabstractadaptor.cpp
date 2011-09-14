@@ -46,6 +46,11 @@
 #include <QtDBus>
 
 #include "../qdbusmarshall/common.h"
+#include "myobject.h"
+
+static const char serviceName[] = "com.trolltech.autotests.qmyserver";
+static const char objectPath[] = "/com/trolltech/qmyserver";
+static const char *interfaceName = serviceName;
 
 const char *slotSpy;
 QString valueSpy;
@@ -72,273 +77,6 @@ namespace QTest {
     }
 }
 QT_END_NAMESPACE
-
-class tst_QDBusAbstractAdaptor: public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void initTestCase() { commonInit(); }
-    void methodCalls_data();
-    void methodCalls();
-    void methodCallScriptable();
-    void signalEmissions_data();
-    void signalEmissions();
-    void sameSignalDifferentPaths();
-    void sameObjectDifferentPaths();
-    void scriptableSignalOrNot();
-    void overloadedSignalEmission_data();
-    void overloadedSignalEmission();
-    void readProperties();
-    void readPropertiesInvalidInterface();
-    void readPropertiesEmptyInterface_data();
-    void readPropertiesEmptyInterface();
-    void readAllProperties();
-    void readAllPropertiesInvalidInterface();
-    void readAllPropertiesEmptyInterface_data();
-    void readAllPropertiesEmptyInterface();
-    void writeProperties();
-
-    void typeMatching_data();
-    void typeMatching();
-
-    void methodWithMoreThanOneReturnValue();
-};
-
-class QDBusSignalSpy: public QObject
-{
-    Q_OBJECT
-
-public slots:
-    void slot(const QDBusMessage &msg)
-    {
-        ++count;
-        interface = msg.interface();
-        name = msg.member();
-        signature = msg.signature();
-        path = msg.path();
-        value.clear();
-        if (msg.arguments().count())
-            value = msg.arguments().at(0);
-    }
-
-public:
-    QDBusSignalSpy() : count(0) { }
-
-    int count;
-    QString interface;
-    QString name;
-    QString signature;
-    QString path;
-    QVariant value;
-};
-
-class Interface1: public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.Interface1")
-public:
-    Interface1(QObject *parent) : QDBusAbstractAdaptor(parent)
-    { }
-};
-
-class Interface2: public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.Interface2")
-    Q_PROPERTY(QString prop1 READ prop1)
-    Q_PROPERTY(QString prop2 READ prop2 WRITE setProp2 SCRIPTABLE true)
-    Q_PROPERTY(QUrl nonDBusProperty READ nonDBusProperty)
-public:
-    Interface2(QObject *parent) : QDBusAbstractAdaptor(parent)
-    { setAutoRelaySignals(true); }
-
-    QString prop1() const
-    { return QLatin1String("QString Interface2::prop1() const"); }
-
-    QString prop2() const
-    { return QLatin1String("QString Interface2::prop2() const"); }
-
-    void setProp2(const QString &value)
-    {
-        slotSpy = "void Interface2::setProp2(const QString &)";
-        valueSpy = value;
-    }
-
-    QUrl nonDBusProperty() const
-    { return QUrl(); }
-
-    void emitSignal(const QString &, const QVariant &)
-    { emit signal(); }
-
-public slots:
-    void method()
-    {
-        slotSpy = "void Interface2::method()";
-    }
-
-    Q_SCRIPTABLE void scriptableMethod()
-    {
-        slotSpy = "void Interface2::scriptableMethod()";
-    }
-
-signals:
-    void signal();
-};
-
-class Interface3: public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.Interface3")
-    Q_PROPERTY(QString prop1 READ prop1)
-    Q_PROPERTY(QString prop2 READ prop2 WRITE setProp2)
-    Q_PROPERTY(QString interface3prop READ interface3prop)
-public:
-    Interface3(QObject *parent) : QDBusAbstractAdaptor(parent)
-    { setAutoRelaySignals(true); }
-
-    QString prop1() const
-    { return QLatin1String("QString Interface3::prop1() const"); }
-
-    QString prop2() const
-    { return QLatin1String("QString Interface3::prop2() const"); }
-
-    void setProp2(const QString &value)
-    {
-        slotSpy = "void Interface3::setProp2(const QString &)";
-        valueSpy = value;
-    }
-
-    QString interface3prop() const
-    { return QLatin1String("QString Interface3::interface3prop() const"); }
-
-    void emitSignal(const QString &name, const QVariant &value)
-    {
-        if (name == "signalVoid")
-            emit signalVoid();
-        else if (name == "signalInt")
-            emit signalInt(value.toInt());
-        else if (name == "signalString")
-            emit signalString(value.toString());
-    }
-
-public slots:
-    void methodVoid() { slotSpy = "void Interface3::methodVoid()"; }
-    void methodInt(int) { slotSpy = "void Interface3::methodInt(int)"; }
-    void methodString(QString) { slotSpy = "void Interface3::methodString(QString)"; }
-
-    int methodStringString(const QString &s, QString &out)
-    {
-        slotSpy = "int Interface3::methodStringString(const QString &, QString &)";
-        out = s;
-        return 42;
-    }
-
-signals:
-    void signalVoid();
-    void signalInt(int);
-    void signalString(const QString &);
-};
-
-class Interface4: public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.Interface4")
-    Q_PROPERTY(QString prop1 READ prop1)
-    Q_PROPERTY(QString prop2 READ prop2 WRITE setProp2)
-    Q_PROPERTY(QString interface4prop READ interface4prop)
-public:
-    Interface4(QObject *parent) : QDBusAbstractAdaptor(parent)
-    { setAutoRelaySignals(true); }
-
-    QString prop1() const
-    { return QLatin1String("QString Interface4::prop1() const"); }
-
-    QString prop2() const
-    { return QLatin1String("QString Interface4::prop2() const"); }
-
-    QString interface4prop() const
-    { return QLatin1String("QString Interface4::interface4prop() const"); }
-
-    void setProp2(const QString &value)
-    {
-        slotSpy = "void Interface4::setProp2(const QString &)";
-        valueSpy = value;
-    }
-
-    void emitSignal(const QString &, const QVariant &value)
-    {
-        switch (value.type())
-        {
-        case QVariant::Invalid:
-            emit signal();
-            break;
-        case QVariant::Int:
-            emit signal(value.toInt());
-            break;
-        case QVariant::String:
-            emit signal(value.toString());
-            break;
-        default:
-            break;
-        }
-    }
-
-public slots:
-    void method() { slotSpy = "void Interface4::method()"; }
-    void method(int) { slotSpy = "void Interface4::method(int)"; }
-    void method(QString) { slotSpy = "void Interface4::method(QString)"; }
-
-signals:
-    void signal();
-    void signal(int);
-    void signal(const QString &);
-};
-
-class MyObject: public QObject
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "local.MyObject")
-public:
-    Interface1 *if1;
-    Interface2 *if2;
-    Interface3 *if3;
-    Interface4 *if4;
-
-    MyObject(int n = 4)
-        : if1(0), if2(0), if3(0), if4(0)
-    {
-        switch (n)
-        {
-        case 4:
-            if4 = new Interface4(this);
-        case 3:
-            if3 = new Interface3(this);
-        case 2:
-            if2 = new Interface2(this);
-        case 1:
-            if1 = new Interface1(this);
-        }
-    }
-
-    void emitSignal(const QString &name, const QVariant &value)
-    {
-        if (name == "scriptableSignalVoid")
-            emit scriptableSignalVoid();
-        else if (name == "scriptableSignalInt")
-            emit scriptableSignalInt(value.toInt());
-        else if (name == "scriptableSignalString")
-            emit scriptableSignalString(value.toString());
-        else if (name == "nonScriptableSignalVoid")
-            emit nonScriptableSignalVoid();
-    }
-
-signals:
-    Q_SCRIPTABLE void scriptableSignalVoid();
-    Q_SCRIPTABLE void scriptableSignalInt(int);
-    Q_SCRIPTABLE void scriptableSignalString(QString);
-    void nonScriptableSignalVoid();
-};
 
 class TypesInterface: public QDBusAbstractAdaptor
 {
@@ -592,6 +330,191 @@ public slots:
         return structSpy;
     }
 };
+
+void newMyObjectPeer(int nInterfaces = 4)
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "newMyObject");
+    req << nInterfaces;
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+}
+
+void registerMyObjectPeer(const QString & path, QDBusConnection::RegisterOptions options = QDBusConnection::ExportAdaptors)
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "registerMyObject");
+    req << path;
+    req << (int)options;
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+}
+
+void emitSignalPeer(const QString &interface, const QString &name, const QVariant &parameter)
+{
+    if (parameter.isValid())
+    {
+        QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "emitSignal");
+        req << interface;
+        req << name;
+        req << QVariant::fromValue(QDBusVariant(parameter));
+        QDBusConnection::sessionBus().send(req);
+    }
+    else
+    {
+        QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "emitSignal2");
+        req << interface;
+        req << name;
+        QDBusConnection::sessionBus().send(req);
+    }
+
+    QTest::qWait(1000);
+}
+
+const char* slotSpyPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "slotSpyServer");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return reply.arguments().at(0).toString().toLatin1().data();
+}
+
+QString valueSpyPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "valueSpyServer");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return reply.arguments().at(0).toString();
+}
+
+void clearValueSpyPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "clearValueSpy");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+}
+
+class tst_QDBusAbstractAdaptor: public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void cleanupTestCase();
+
+    void methodCalls_data();
+    void methodCalls();
+    void methodCallScriptable();
+    void signalEmissions_data();
+    void signalEmissions();
+    void sameSignalDifferentPaths();
+    void sameObjectDifferentPaths();
+    void scriptableSignalOrNot();
+    void overloadedSignalEmission_data();
+    void overloadedSignalEmission();
+    void readProperties();
+    void readPropertiesInvalidInterface();
+    void readPropertiesEmptyInterface_data();
+    void readPropertiesEmptyInterface();
+    void readAllProperties();
+    void readAllPropertiesInvalidInterface();
+    void readAllPropertiesEmptyInterface_data();
+    void readAllPropertiesEmptyInterface();
+    void writeProperties();
+
+    void methodCallsPeer_data();
+    void methodCallsPeer();
+    void methodCallScriptablePeer();
+    void signalEmissionsPeer_data();
+    void signalEmissionsPeer();
+    void sameSignalDifferentPathsPeer();
+    void sameObjectDifferentPathsPeer();
+    void scriptableSignalOrNotPeer();
+    void overloadedSignalEmissionPeer_data();
+    void overloadedSignalEmissionPeer();
+    void readPropertiesPeer();
+    void readPropertiesInvalidInterfacePeer();
+    void readPropertiesEmptyInterfacePeer_data();
+    void readPropertiesEmptyInterfacePeer();
+    void readAllPropertiesPeer();
+    void readAllPropertiesInvalidInterfacePeer();
+    void readAllPropertiesEmptyInterfacePeer_data();
+    void readAllPropertiesEmptyInterfacePeer();
+    void writePropertiesPeer();
+
+    void typeMatching_data();
+    void typeMatching();
+
+    void methodWithMoreThanOneReturnValue();
+    void methodWithMoreThanOneReturnValuePeer();
+private:
+    QProcess proc;
+};
+
+class WaitForQMyServer: public QObject
+{
+    Q_OBJECT
+public:
+    WaitForQMyServer();
+    bool ok();
+public Q_SLOTS:
+    void ownerChange(const QString &name)
+    {
+        if (name == serviceName)
+            loop.quit();
+    }
+
+private:
+    QEventLoop loop;
+};
+
+WaitForQMyServer::WaitForQMyServer()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    if (!ok()) {
+        connect(con.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                SLOT(ownerChange(QString)));
+        QTimer::singleShot(2000, &loop, SLOT(quit()));
+        loop.exec();
+    }
+}
+
+bool WaitForQMyServer::ok()
+{
+    return QDBusConnection::sessionBus().isConnected() &&
+        QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName);
+}
+
+void tst_QDBusAbstractAdaptor::initTestCase()
+{
+    commonInit();
+
+    // start peer server
+    #ifdef Q_OS_WIN
+    proc.start("qmyserver");
+    #else
+    proc.start("./qmyserver/qmyserver");
+    #endif
+    QVERIFY(proc.waitForStarted());
+
+    WaitForQMyServer w;
+    QVERIFY(w.ok());
+    //QTest::qWait(2000);
+
+    // get peer server address
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
+    QDBusMessage rpl = QDBusConnection::sessionBus().call(req);
+    QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
+    QString address = rpl.arguments().at(0).toString();
+
+    // connect to peer server
+    QDBusConnection peercon = QDBusConnection::connectToPeer(address, "peer");
+    QVERIFY(peercon.isConnected());
+
+    QDBusMessage req2 = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "isConnected");
+    QDBusMessage rpl2 = QDBusConnection::sessionBus().call(req2);
+    QVERIFY(rpl2.type() == QDBusMessage::ReplyMessage);
+    QVERIFY(rpl2.arguments().at(0).toBool());
+}
+
+void tst_QDBusAbstractAdaptor::cleanupTestCase()
+{
+    proc.close();
+    proc.kill();
+}
 
 void tst_QDBusAbstractAdaptor::methodCalls_data()
 {
@@ -1151,6 +1074,512 @@ void tst_QDBusAbstractAdaptor::writeProperties()
     }
 }
 
+void tst_QDBusAbstractAdaptor::methodCallsPeer_data()
+{
+    methodCalls_data();
+}
+
+void tst_QDBusAbstractAdaptor::methodCallsPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    {
+        // must fail: no object
+        QDBusInterface if1(QString(), "/", "local.Interface1", con);
+        QCOMPARE(if1.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ErrorMessage);
+    }
+
+    QFETCH(int, nInterfaces);
+    newMyObjectPeer(nInterfaces);
+    registerMyObjectPeer("/");
+
+    QDBusInterface if1(QString(), "/", "local.Interface1", con);
+    QDBusInterface if2(QString(), "/", "local.Interface2", con);
+    QDBusInterface if3(QString(), "/", "local.Interface3", con);
+    QDBusInterface if4(QString(), "/", "local.Interface4", con);
+
+    // must fail: no such method
+    QCOMPARE(if1.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ErrorMessage);
+    if (!nInterfaces--)
+        return;
+    if (!nInterfaces--)
+        return;
+
+    // simple call: one such method exists
+    QCOMPARE(if2.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface2::method()");
+    if (!nInterfaces--)
+        return;
+
+    // multiple methods in multiple interfaces, no name overlap
+    QCOMPARE(if1.call(QDBus::BlockWithGui, "methodVoid").type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(if1.call(QDBus::BlockWithGui, "methodInt").type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(if1.call(QDBus::BlockWithGui, "methodString").type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(if2.call(QDBus::BlockWithGui, "methodVoid").type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(if2.call(QDBus::BlockWithGui, "methodInt").type(), QDBusMessage::ErrorMessage);
+    QCOMPARE(if2.call(QDBus::BlockWithGui, "methodString").type(), QDBusMessage::ErrorMessage);
+
+    QCOMPARE(if3.call(QDBus::BlockWithGui, "methodVoid").type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface3::methodVoid()");
+    QCOMPARE(if3.call(QDBus::BlockWithGui, "methodInt", 42).type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface3::methodInt(int)");
+    QCOMPARE(if3.call(QDBus::BlockWithGui, "methodString", QString("")).type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface3::methodString(QString)");
+
+    if (!nInterfaces--)
+        return;
+
+    // method overloading: different interfaces
+    QCOMPARE(if4.call(QDBus::BlockWithGui, "method").type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface4::method()");
+
+    // method overloading: different parameters
+    QCOMPARE(if4.call(QDBus::BlockWithGui, "method.i", 42).type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface4::method(int)");
+    QCOMPARE(if4.call(QDBus::BlockWithGui, "method.s", QString()).type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface4::method(QString)");
+}
+
+void tst_QDBusAbstractAdaptor::methodCallScriptablePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer(2);
+    registerMyObjectPeer("/");
+
+    QDBusInterface if2(QString(), "/", "local.Interface2", con);
+
+    QCOMPARE(if2.call(QDBus::BlockWithGui,"scriptableMethod").type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(slotSpyPeer(), "void Interface2::scriptableMethod()");
+}
+
+void tst_QDBusAbstractAdaptor::signalEmissionsPeer_data()
+{
+    signalEmissions_data();
+}
+
+void tst_QDBusAbstractAdaptor::signalEmissionsPeer()
+{
+    QFETCH(QString, interface);
+    QFETCH(QString, name);
+    QFETCH(QVariant, parameter);
+
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer(3);
+    registerMyObjectPeer("/", QDBusConnection::ExportAdaptors
+                            | QDBusConnection::ExportScriptableSignals);
+
+    // connect all signals and emit only one
+    {
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/", "local.Interface2", "signal",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.Interface3", "signalVoid",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.Interface3", "signalInt",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.Interface3", "signalString",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.MyObject", "scriptableSignalVoid",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.MyObject", "scriptableSignalInt",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.MyObject", "scriptableSignalString",
+                    &spy, SLOT(slot(QDBusMessage)));
+
+        emitSignalPeer(interface, name, parameter);
+
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.interface, interface);
+        QCOMPARE(spy.name, name);
+        QTEST(spy.signature, "signature");
+        QCOMPARE(spy.value, parameter);
+    }
+
+    // connect one signal and emit them all
+    {
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/", interface, name, &spy, SLOT(slot(QDBusMessage)));
+        emitSignalPeer("local.Interface2", "signal", QVariant());
+        emitSignalPeer("local.Interface3", "signalVoid", QVariant());
+        emitSignalPeer("local.Interface3", "signalInt", QVariant(1));
+        emitSignalPeer("local.Interface3", "signalString", QVariant("foo"));
+        emitSignalPeer("local.MyObject", "scriptableSignalVoid", QVariant());
+        emitSignalPeer("local.MyObject", "scriptableSignalInt", QVariant(1));
+        emitSignalPeer("local.MyObject", "scriptableSignalString", QVariant("foo"));
+
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.interface, interface);
+        QCOMPARE(spy.name, name);
+        QTEST(spy.signature, "signature");
+        QCOMPARE(spy.value, parameter);
+    }
+}
+
+void tst_QDBusAbstractAdaptor::sameSignalDifferentPathsPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer(2);
+
+    registerMyObjectPeer("/p1");
+    registerMyObjectPeer("/p2");
+
+    QDBusSignalSpy spy;
+    con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
+    emitSignalPeer("local.Interface2", QString(), QVariant());
+    QTest::qWait(200);
+
+    QCOMPARE(spy.count, 1);
+    QCOMPARE(spy.interface, QString("local.Interface2"));
+    QCOMPARE(spy.name, QString("signal"));
+    QVERIFY(spy.signature.isEmpty());
+
+    // now connect the other one
+    spy.count = 0;
+    con.connect(QString(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
+    emitSignalPeer("local.Interface2", QString(), QVariant());
+    QTest::qWait(200);
+
+    QCOMPARE(spy.count, 2);
+}
+
+void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer(2);
+
+    registerMyObjectPeer("/p1");
+    registerMyObjectPeer("/p2", 0); // don't export anything
+
+    QDBusSignalSpy spy;
+    con.connect(QString(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
+    con.connect(QString(), "/p2", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
+    emitSignalPeer("local.Interface2", QString(), QVariant());
+    QTest::qWait(200);
+
+    QCOMPARE(spy.count, 1);
+    QCOMPARE(spy.interface, QString("local.Interface2"));
+    QCOMPARE(spy.name, QString("signal"));
+    QVERIFY(spy.signature.isEmpty());
+}
+
+void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
+{
+    QDBusConnection con("peer");;
+    QVERIFY(con.isConnected());
+
+    {
+        newMyObjectPeer(0);
+
+        registerMyObjectPeer("/p1", QDBusConnection::ExportScriptableSignals);
+        registerMyObjectPeer("/p2", 0); // don't export anything
+
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/p1", "local.MyObject", "scriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/p2", "local.MyObject", "scriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/p1", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        emitSignalPeer("local.MyObject", "scriptableSignalVoid", QVariant());
+        emitSignalPeer("local.MyObject", "nonScriptableSignalVoid", QVariant());
+        QTest::qWait(200);
+
+        QCOMPARE(spy.count, 1);     // only /p1 must have emitted
+        QCOMPARE(spy.interface, QString("local.MyObject"));
+        QCOMPARE(spy.name, QString("scriptableSignalVoid"));
+        QCOMPARE(spy.path, QString("/p1"));
+        QVERIFY(spy.signature.isEmpty());
+    }
+
+    {
+        newMyObjectPeer(0);
+
+        registerMyObjectPeer("/p1", QDBusConnection::ExportScriptableSignals);
+        registerMyObjectPeer("/p2", QDBusConnection::ExportScriptableSignals
+                                | QDBusConnection::ExportNonScriptableSignals);
+
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/p1", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/p2", "local.MyObject", "nonScriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
+        emitSignalPeer("local.MyObject", "nonScriptableSignalVoid", QVariant());
+        QTest::qWait(200);
+
+        QCOMPARE(spy.count, 1);     // only /p2 must have emitted now
+        QCOMPARE(spy.interface, QString("local.MyObject"));
+        QCOMPARE(spy.name, QString("nonScriptableSignalVoid"));
+        QCOMPARE(spy.path, QString("/p2"));
+        QVERIFY(spy.signature.isEmpty());
+    }
+
+    {
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/p1", "local.MyObject", "destroyed", &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/p2", "local.MyObject", "destroyed", &spy, SLOT(slot(QDBusMessage)));
+
+        {
+            newMyObjectPeer(0);
+
+            registerMyObjectPeer("/p1", QDBusConnection::ExportScriptableSignals);
+            registerMyObjectPeer("/p2", QDBusConnection::ExportScriptableSignals
+                                    | QDBusConnection::ExportNonScriptableSignals);
+        } // <--- QObject emits the destroyed(QObject*) signal at this point
+
+        QTest::qWait(200);
+
+        QCOMPARE(spy.count, 0);
+    }
+}
+
+void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer_data()
+{
+    overloadedSignalEmission_data();
+}
+
+void tst_QDBusAbstractAdaptor::overloadedSignalEmissionPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QString interface = "local.Interface4";
+    QString name = "signal";
+    QFETCH(QVariant, parameter);
+    //QDBusInterface *if4 = new QDBusInterface(QString(), "/", interface, con);
+
+    // connect all signals and emit only one
+    {
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/", "local.Interface4", "signal", "",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.Interface4", "signal", "i",
+                    &spy, SLOT(slot(QDBusMessage)));
+        con.connect(QString(), "/", "local.Interface4", "signal", "s",
+                    &spy, SLOT(slot(QDBusMessage)));
+
+        emitSignalPeer(interface, name, parameter);
+
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.interface, interface);
+        QCOMPARE(spy.name, name);
+        QTEST(spy.signature, "signature");
+        QCOMPARE(spy.value, parameter);
+    }
+
+    QFETCH(QString, signature);
+    // connect one signal and emit them all
+    {
+        QDBusSignalSpy spy;
+        con.connect(QString(), "/", interface, name, signature, &spy, SLOT(slot(QDBusMessage)));
+        emitSignalPeer("local.Interface4", "signal", QVariant());
+        emitSignalPeer("local.Interface4", "signal", QVariant(1));
+        emitSignalPeer("local.Interface4", "signal", QVariant("foo"));
+
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.interface, interface);
+        QCOMPARE(spy.name, name);
+        QTEST(spy.signature, "signature");
+        QCOMPARE(spy.value, parameter);
+    }
+}
+
+void tst_QDBusAbstractAdaptor::readPropertiesPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+    for (int i = 2; i <= 4; ++i) {
+        QString name = QString("Interface%1").arg(i);
+
+        for (int j = 1; j <= 2; ++j) {
+            QString propname = QString("prop%1").arg(j);
+            QDBusReply<QVariant> reply =
+                properties.call(QDBus::BlockWithGui, "Get", "local." + name, propname);
+            QVariant value = reply;
+
+            QCOMPARE(value.userType(), int(QVariant::String));
+            QCOMPARE(value.toString(), QString("QString %1::%2() const").arg(name, propname));
+        }
+    }
+}
+
+void tst_QDBusAbstractAdaptor::readPropertiesInvalidInterfacePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+
+    // test an invalid interface:
+    QDBusReply<QVariant> reply = properties.call(QDBus::BlockWithGui, "Get", "local.DoesntExist", "prop1");
+    QVERIFY(!reply.isValid());
+}
+
+void tst_QDBusAbstractAdaptor::readPropertiesEmptyInterfacePeer_data()
+{
+    readPropertiesEmptyInterface_data();
+}
+
+void tst_QDBusAbstractAdaptor::readPropertiesEmptyInterfacePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+
+    QFETCH(QVariantMap, expectedProperties);
+    QFETCH(bool, existing);
+
+    QVariantMap::ConstIterator it = expectedProperties.constBegin();
+    for ( ; it != expectedProperties.constEnd(); ++it) {
+        QDBusReply<QVariant> reply = properties.call(QDBus::BlockWithGui, "Get", "", it.key());
+
+        if (existing) {
+            QVERIFY2(reply.isValid(), qPrintable(it.key()));
+        } else {
+            QVERIFY2(!reply.isValid(), qPrintable(it.key()));
+            continue;
+        }
+
+        QCOMPARE(int(reply.value().type()), int(QVariant::String));
+        if (it.value().isValid())
+            QCOMPARE(reply.value().toString(), it.value().toString());
+    }
+}
+
+void tst_QDBusAbstractAdaptor::readAllPropertiesPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+    for (int i = 2; i <= 4; ++i) {
+        QString name = QString("Interface%1").arg(i);
+        QDBusReply<QVariantMap> reply =
+            properties.call(QDBus::BlockWithGui, "GetAll", "local." + name);
+
+        for (int j = 1; j <= 2; ++j) {
+            QString propname = QString("prop%1").arg(j);
+            QVERIFY2(reply.value().contains(propname),
+                     qPrintable(propname + " on " + name));
+            QVariant value = reply.value().value(propname);
+
+            QCOMPARE(value.userType(), int(QVariant::String));
+            QCOMPARE(value.toString(), QString("QString %1::%2() const").arg(name, propname));
+        }
+    }
+}
+
+void tst_QDBusAbstractAdaptor::readAllPropertiesInvalidInterfacePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+
+    // test an invalid interface:
+    QDBusReply<QVariantMap> reply = properties.call(QDBus::BlockWithGui, "GetAll", "local.DoesntExist");
+    QVERIFY(!reply.isValid());
+}
+
+void tst_QDBusAbstractAdaptor::readAllPropertiesEmptyInterfacePeer_data()
+{
+    readAllPropertiesEmptyInterface_data();
+}
+
+void tst_QDBusAbstractAdaptor::readAllPropertiesEmptyInterfacePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+
+    QDBusReply<QVariantMap> reply = properties.call(QDBus::BlockWithGui, "GetAll", "");
+    QVERIFY(reply.isValid());
+
+    QVariantMap allprops = reply;
+
+    QFETCH(QVariantMap, expectedProperties);
+    QFETCH(bool, existing);
+
+    QVariantMap::ConstIterator it = expectedProperties.constBegin();
+    if (existing) {
+        for ( ; it != expectedProperties.constEnd(); ++it) {
+            QVERIFY2(allprops.contains(it.key()), qPrintable(it.key()));
+
+            QVariant propvalue = allprops.value(it.key());
+            QVERIFY2(!propvalue.isNull(), qPrintable(it.key()));
+            QVERIFY2(propvalue.isValid(), qPrintable(it.key()));
+
+            QString stringvalue = propvalue.toString();
+            QVERIFY2(!stringvalue.isEmpty(), qPrintable(it.key()));
+
+            if (it.value().isValid())
+                QCOMPARE(stringvalue, it.value().toString());
+
+            // remove this property from the map
+            allprops.remove(it.key());
+        }
+
+        QVERIFY2(allprops.isEmpty(),
+                 qPrintable(QStringList(allprops.keys()).join(" ")));
+    } else {
+        for ( ; it != expectedProperties.constEnd(); ++it)
+            QVERIFY2(!allprops.contains(it.key()), qPrintable(it.key()));
+    }
+}
+
+void tst_QDBusAbstractAdaptor::writePropertiesPeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QDBusInterface properties(QString(), "/", "org.freedesktop.DBus.Properties", con);
+    for (int i = 2; i <= 4; ++i) {
+        QString name = QString("Interface%1").arg(i);
+
+        clearValueSpyPeer();
+        properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop1"),
+                        qVariantFromValue(QDBusVariant(name)));
+        QVERIFY(valueSpyPeer().isEmpty()); // call mustn't have succeeded
+
+        properties.call(QDBus::BlockWithGui, "Set", "local." + name, QString("prop2"),
+                        qVariantFromValue(QDBusVariant(name)));
+        QCOMPARE(valueSpyPeer(), name);
+        QCOMPARE(QString(slotSpyPeer()), QString("void %1::setProp2(const QString &)").arg(name));
+    }
+}
+
 #if 0
 void tst_QDBusAbstractAdaptor::adaptorIntrospection_data()
 {
@@ -1427,6 +1856,28 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValue()
     QString testString = "This is a test string.";
 
     QDBusInterface remote(con.baseService(), "/", "local.Interface3", con);
+    QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
+    QVERIFY(reply.arguments().count() == 2);
+
+    QDBusReply<int> intreply = reply;
+    QVERIFY(intreply.isValid());
+    QCOMPARE(intreply.value(), 42);
+
+    QCOMPARE(reply.arguments().at(1).userType(), int(QVariant::String));
+    QCOMPARE(qdbus_cast<QString>(reply.arguments().at(1)), testString);
+}
+
+void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValuePeer()
+{
+    QDBusConnection con("peer");
+    QVERIFY(con.isConnected());
+
+    newMyObjectPeer();
+    registerMyObjectPeer("/");
+
+    QString testString = "This is a test string.";
+
+    QDBusInterface remote(QString(), "/", "local.Interface3", con);
     QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
     QVERIFY(reply.arguments().count() == 2);
 

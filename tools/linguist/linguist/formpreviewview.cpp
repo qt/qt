@@ -83,7 +83,7 @@ static bool operator==(const QUiTranslatableStringValue &tsv1, const QUiTranslat
         target.type = _type; \
         target.target._target; \
         target.prop._prop; \
-        (*targets)[qVariantValue<QUiTranslatableStringValue>(_tsv)].append(target); \
+        (*targets)[qvariant_cast<QUiTranslatableStringValue>(_tsv)].append(target); \
     } while (0)
 
 static void registerTreeItem(QTreeWidgetItem *item, TargetsHash *targets)
@@ -350,14 +350,14 @@ static void highlightAction(QAction *a, bool on)
     if (on) {
         if (!bak.isValid()) {
             QFont fnt = qApp->font();
-            a->setProperty(FONT_BACKUP_PROP, qVariantFromValue(a->font().resolve(fnt)));
+            a->setProperty(FONT_BACKUP_PROP, QVariant::fromValue(a->font().resolve(fnt)));
             fnt.setBold(true);
             fnt.setItalic(true);
             a->setFont(fnt);
         }
     } else {
         if (bak.isValid()) {
-            a->setFont(qVariantValue<QFont>(bak));
+            a->setFont(qvariant_cast<QFont>(bak));
             a->setProperty(FONT_BACKUP_PROP, QVariant());
         }
     }
@@ -374,8 +374,8 @@ static void highlightWidget(QWidget *w, bool on)
             foreach (QObject *co, w->children())
                 if (QWidget *cw = qobject_cast<QWidget *>(co))
                     cw->setPalette(cw->palette().resolve(pal));
-            w->setProperty(PALETTE_BACKUP_PROP, qVariantFromValue(w->palette().resolve(pal)));
-            w->setProperty(AUTOFILL_BACKUP_PROP, qVariantFromValue(w->autoFillBackground()));
+            w->setProperty(PALETTE_BACKUP_PROP, QVariant::fromValue(w->palette().resolve(pal)));
+            w->setProperty(AUTOFILL_BACKUP_PROP, QVariant::fromValue(w->autoFillBackground()));
             QColor col1 = pal.color(QPalette::Dark);
             QColor col2 = pal.color(QPalette::Light);
             pal.setColor(QPalette::Base, col1);
@@ -390,8 +390,8 @@ static void highlightWidget(QWidget *w, bool on)
         }
     } else {
         if (bak.isValid()) {
-            w->setPalette(qVariantValue<QPalette>(bak));
-            w->setAutoFillBackground(qVariantValue<bool>(w->property(AUTOFILL_BACKUP_PROP)));
+            w->setPalette(qvariant_cast<QPalette>(bak));
+            w->setAutoFillBackground(qvariant_cast<bool>(w->property(AUTOFILL_BACKUP_PROP)));
             w->setProperty(PALETTE_BACKUP_PROP, QVariant());
             w->setProperty(AUTOFILL_BACKUP_PROP, QVariant());
         }
@@ -463,6 +463,8 @@ FormPreviewView::FormPreviewView(QWidget *parent, MultiDataModel *dataModel)
     m_mdiArea = new QMdiArea(this);
     m_mdiArea->addSubWindow(m_mdiSubWindow);
     setCentralWidget(m_mdiArea);
+    m_mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
 
 void FormPreviewView::setSourceContext(int model, MessageItem *messageItem)

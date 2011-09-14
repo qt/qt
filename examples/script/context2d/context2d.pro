@@ -27,6 +27,8 @@ symbian:{
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCHEAPSIZE = 0x200000 0xA00000
     contextScripts.path = .
-    contextScripts.sources = scripts
+    contextScripts.files = scripts
     DEPLOYMENT += contextScripts
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

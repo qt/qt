@@ -561,6 +561,7 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
     wakeUp();
     emit awake();
 
+    bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
     bool retVal = false;
     forever {
         if (d->interrupt)
@@ -571,7 +572,7 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         NSEvent* event = 0;
 
         // First, send all previously excluded input events, if any:
-        if (!(flags & QEventLoop::ExcludeUserInputEvents)) {
+        if (!excludeUserEvents) {
             while (!d->queuedUserInputEvents.isEmpty()) {
                 event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
                 if (!filterEvent(event)) {
@@ -586,9 +587,12 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         // application, we should not run or stop NSApplication; This will be
         // done from the application itself. And if processEvents is called
         // manually (rather than from a QEventLoop), we cannot enter a tight
-        // loop and block this call, but instead we need to return after one flush:
+        // loop and block this call, but instead we need to return after one flush.
+        // Finally, if we are to exclude user input events, we cannot call [NSApp run]
+        // as we then loose control over which events gets dispatched:
         const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
-        const bool canExec_Qt = flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec;
+        const bool canExec_Qt = !excludeUserEvents &&
+                (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec) ;
 
         if (canExec_Qt && canExec_3rdParty) {
             // We can use exec-mode, meaning that we can stay in a tight loop until
@@ -616,21 +620,45 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
             // Instead we will process all current pending events and return.
             d->ensureNSAppInitialized();
             if (NSModalSession session = d->currentModalSession()) {
-                if (flags & QEventLoop::WaitForMoreEvents)
-                    qt_mac_waitForMoreModalSessionEvents();
-                NSInteger status = [NSApp runModalSession:session];
-                if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
-                    // INVARIANT: Someone called [NSApp stopModal:] from outside the event
-                    // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
-                    // 'session' as well. As a result, we need to restart all internal sessions:
-                    d->temporarilyStopAllModalSessions();
-                }
-                retVal = true;
-            } else do {
-                event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                // INVARIANT: a modal window is executing.
+                if (!excludeUserEvents) {
+                    // Since we can dispatch all kinds of events, we choose
+                    // to use cocoa's native way of running modal sessions:
+                    if (flags & QEventLoop::WaitForMoreEvents)
+                        qt_mac_waitForMoreModalSessionEvents();
+                    NSInteger status = [NSApp runModalSession:session];
+                    if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
+                        // INVARIANT: Someone called [NSApp stopModal:] from outside the event
+                        // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
+                        // 'session' as well. As a result, we need to restart all internal sessions:
+                        d->temporarilyStopAllModalSessions();
+                    }
+                    retVal = true;
+                } else do {
+                    // Dispatch all non-user events (but que non-user events up for later). In
+                    // this case, we need more control over which events gets dispatched, and
+                    // cannot use [NSApp runModalSession:session]:
+                    event = [NSApp nextEventMatchingMask:NSAnyEventMask
                     untilDate:nil
-                    inMode:NSDefaultRunLoopMode
+                    inMode:NSModalPanelRunLoopMode
                     dequeue: YES];
+
+                    if (event) {
+                        if (IsMouseOrKeyEvent(event)) {
+                            [event retain];
+                            d->queuedUserInputEvents.append(event);
+                            continue;
+                        }
+                        if (!filterEvent(event) && qt_mac_send_event(flags, event, 0))
+                            retVal = true;
+                    }
+                } while (!d->interrupt && event != nil);
+            } else do {
+                // INVARIANT: No modal window is executing.
+                event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                untilDate:nil
+                inMode:NSDefaultRunLoopMode
+                dequeue: YES];
 
                 if (event) {
                     if (flags & QEventLoop::ExcludeUserInputEvents) {
@@ -644,6 +672,11 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                         retVal = true;
                 }
             } while (!d->interrupt && event != nil);
+
+            // Be sure to flush the Qt posted events when not using exec mode
+            // (exec mode will always do this call from the event loop source):
+            if (!d->interrupt)
+                QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 
             // Since the window that holds modality might have changed while processing
             // events, we we need to interrupt when we return back the previous process

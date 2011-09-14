@@ -51,9 +51,8 @@ MessageValidator::MessageValidator() : m_success(false)
 
 MessageValidator::~MessageValidator()
 {
-    Q_ASSERT_X(m_hasChecked,
-               Q_FUNC_INFO,
-               "You must call success().");
+    if (!m_hasChecked)
+        qFatal("%s: You must call success().", Q_FUNC_INFO);
 }
 
 void MessageValidator::handleMessage(QtMsgType type,

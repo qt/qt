@@ -51,6 +51,7 @@
 #include <QImageReader>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qnativeimagehandleprovider_p.h>
+#include <QtGui/private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -470,9 +471,6 @@ void QVGPixmapData::reclaimImages()
     forceToImage();
     destroyImages();
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 int QVGPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

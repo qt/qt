@@ -107,6 +107,10 @@ private slots:
     void useTooMuchMemory();
     void attachTooMuch();
 
+    // unique keys
+    void uniqueKey_data();
+    void uniqueKey();
+
 protected:
     int remove(const QString &key);
 
@@ -225,11 +229,17 @@ void tst_QSharedMemory::key_data()
 {
     QTest::addColumn<QString>("constructorKey");
     QTest::addColumn<QString>("setKey");
+    QTest::addColumn<QString>("setNativeKey");
 
-    QTest::newRow("null, null") << QString() << QString();
-    QTest::newRow("null, one") << QString() << QString("one");
-    QTest::newRow("one, two") << QString("one") << QString("two");
-    QTest::newRow("invalid") << QString("o/e") << QString("t/o");
+    QTest::newRow("null, null, null") << QString() << QString() << QString();
+    QTest::newRow("one, null, null") << QString("one") << QString() << QString();
+    QTest::newRow("null, one, null") << QString() << QString("one") << QString();
+    QTest::newRow("null, null, one") << QString() << QString() << QString("one");
+    QTest::newRow("one, two, null") << QString("one") << QString("two") << QString();
+    QTest::newRow("one, null, two") << QString("one") << QString() << QString("two");
+    QTest::newRow("null, one, two") << QString() << QString("one") << QString("two");
+    QTest::newRow("one, two, three") << QString("one") << QString("two") << QString("three");
+    QTest::newRow("invalid") << QString("o/e") << QString("t/o") << QString("|x");
 }
 
 /*!
@@ -239,11 +249,17 @@ void tst_QSharedMemory::key()
 {
     QFETCH(QString, constructorKey);
     QFETCH(QString, setKey);
+    QFETCH(QString, setNativeKey);
 
     QSharedMemory sm(constructorKey);
     QCOMPARE(sm.key(), constructorKey);
+    QCOMPARE(sm.nativeKey().isEmpty(), constructorKey.isEmpty());
     sm.setKey(setKey);
     QCOMPARE(sm.key(), setKey);
+    QCOMPARE(sm.nativeKey().isEmpty(), setKey.isEmpty());
+    sm.setNativeKey(setNativeKey);
+    QVERIFY(sm.key().isNull());
+    QCOMPARE(sm.nativeKey(), setNativeKey);
     QCOMPARE(sm.isAttached(), false);
 
     QCOMPARE(sm.error(), QSharedMemory::NoError);
@@ -262,7 +278,7 @@ void tst_QSharedMemory::create_data()
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
     QTest::newRow("null key") << QString() << 1024
-        << false << QSharedMemory::LockError;
+        << false << QSharedMemory::KeyError;
     QTest::newRow("-1 size") << QString("negsize") << -1
         << false << QSharedMemory::InvalidSize;
     QTest::newRow("nor size") << QString("norsize") << 1024
@@ -302,7 +318,7 @@ void tst_QSharedMemory::attach_data()
     QTest::addColumn<bool>("exists");
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
-    QTest::newRow("null key") << QString() << false << QSharedMemory::LockError;
+    QTest::newRow("null key") << QString() << false << QSharedMemory::KeyError;
     QTest::newRow("doesn't exists") << QString("doesntexists") << false << QSharedMemory::NotFound;
     QTest::newRow("already exists") << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
 }
@@ -784,6 +800,35 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     }
     QCOMPARE(consumerFailed, false);
     QCOMPARE(failedProcesses, (unsigned int)(0));
+}
+
+void tst_QSharedMemory::uniqueKey_data()
+{
+    QTest::addColumn<QString>("key1");
+    QTest::addColumn<QString>("key2");
+
+    QTest::newRow("null == null") << QString() << QString();
+    QTest::newRow("key == key") << QString("key") << QString("key");
+    QTest::newRow("key1 == key1") << QString("key1") << QString("key1");
+    QTest::newRow("key != key1") << QString("key") << QString("key1");
+    QTest::newRow("ke1y != key1") << QString("ke1y") << QString("key1");
+    QTest::newRow("key1 != key2") << QString("key1") << QString("key2");
+}
+
+void tst_QSharedMemory::uniqueKey()
+{
+    QFETCH(QString, key1);
+    QFETCH(QString, key2);
+
+    QSharedMemory sm1(key1);
+    QSharedMemory sm2(key2);
+
+    bool setEqual = (key1 == key2);
+    bool keyEqual = (sm1.key() == sm2.key());
+    bool nativeEqual = (sm1.nativeKey() == sm2.nativeKey());
+
+    QCOMPARE(keyEqual, setEqual);
+    QCOMPARE(nativeEqual, setEqual);
 }
 
 QTEST_MAIN(tst_QSharedMemory)

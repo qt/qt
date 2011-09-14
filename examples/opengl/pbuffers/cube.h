@@ -43,6 +43,7 @@
 
 #include <QtOpenGL/qgl.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qsequentialanimationgroup.h>
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
@@ -130,8 +131,8 @@ signals:
 private:
     qreal rot;
     QPropertyAnimation *r;
-    QPropertyAnimation *a;
     QPropertyAnimation *rtn;
+    QSequentialAnimationGroup *animGroup;
     qreal startx;
     friend class CubeBuilder;
 };

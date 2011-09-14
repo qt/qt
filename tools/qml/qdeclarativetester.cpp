@@ -205,7 +205,7 @@ void QDeclarativeTester::save()
     QString filename = m_script + QLatin1String(".qml");
     QFileInfo filenameInfo(filename);
     QDir saveDir = filenameInfo.absoluteDir();
-    saveDir.mkpath(".");
+    saveDir.mkpath(QLatin1String("."));
 
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
@@ -224,8 +224,8 @@ void QDeclarativeTester::save()
         if (!fe.hash.isEmpty()) {
             ts << "        hash: \"" << fe.hash.toHex() << "\"\n";
         } else if (!fe.image.isNull()) {
-            QString filename = filenameInfo.baseName() + "." + QString::number(imgCount) + ".png";
-            fe.image.save(m_script + "." + QString::number(imgCount) + ".png");
+            QString filename = filenameInfo.baseName() + QLatin1String(".") + QString::number(imgCount) + QLatin1String(".png");
+            fe.image.save(m_script + QLatin1String(".") + QString::number(imgCount) + QLatin1String(".png"));
             imgCount++;
             ts << "        image: \"" << filename << "\"\n";
         }
@@ -375,7 +375,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                     imagefailure();
                 }
                 if (goodImage != img) {
-                    QString reject(frame->image().toLocalFile() + ".reject.png");
+                    QString reject(frame->image().toLocalFile() + QLatin1String(".reject.png"));
                     qWarning() << "QDeclarativeTester(" << m_script << "): Image mismatch.  Reject saved to:"
                                << reject;
                     img.save(reject);
@@ -393,7 +393,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                                 }
                             }
                         }
-                        QString diff(frame->image().toLocalFile() + ".diff.png");
+                        QString diff(frame->image().toLocalFile() + QLatin1String(".diff.png"));
                         diffimg.save(diff);
                         qWarning().nospace() << "                    Diff (" << diffCount << " pixels differed) saved to: " << diff;
                     }

@@ -80,6 +80,10 @@
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
+#ifdef Q_WS_QPA
+#include <QtGui/QPlatformGLContext>
+#endif
+
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
 
@@ -93,14 +97,19 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
+#if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
+#include <EGL/egl.h>
+#endif
+
 #ifdef Q_OS_SYMBIAN
 #include <private/qgltexturepool_p.h>
 #endif
 
+// #define QT_GL_CONTEXT_RESOURCE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
@@ -109,10 +118,16 @@ extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #endif
 
 struct QGLThreadContext {
+    ~QGLThreadContext() {
+        if (context)
+            context->doneCurrent();
+    }
     QGLContext *context;
 };
 
+#ifndef Q_WS_QPA
 static QThreadStorage<QGLThreadContext *> qgl_context_storage;
+#endif
 
 Q_GLOBAL_STATIC(QGLFormat, qgl_default_format)
 
@@ -352,6 +367,10 @@ void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
 
 static inline void transform_point(GLdouble out[4], const GLdouble m[16], const GLdouble in[4])
 {
+#if defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 #define M(row,col)  m[col*4+row]
     out[0] =
         M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * in[3];
@@ -362,6 +381,9 @@ static inline void transform_point(GLdouble out[4], const GLdouble m[16], const 
     out[3] =
         M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * in[3];
 #undef M
+#if defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic pop
+#endif
 }
 
 static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
@@ -1680,6 +1702,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #if defined(Q_WS_WIN)
     dc = 0;
     win = 0;
+    threadId = 0;
     pixelFormatId = 0;
     cmap = 0;
     hbitmap = 0;
@@ -1691,7 +1714,10 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #  endif
     vi = 0;
 #endif
-#ifndef QT_NO_EGL
+#if defined(Q_WS_QPA)
+    platformContext = 0;
+#endif
+#if !defined(QT_NO_EGL)
     ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
@@ -1715,6 +1741,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
+
+    workaround_brokenAlphaTexSubImage = false;
+    workaround_brokenAlphaTexSubImage_init = false;
 
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
@@ -1772,7 +1801,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
 
 QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
@@ -1835,19 +1864,6 @@ QGLTextureCache::~QGLTextureCache()
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
     QWriteLocker locker(&m_lock);
-
-    if (m_cache.totalCost() + cost > m_cache.maxCost()) {
-        // the cache is full - make an attempt to remove something
-        const QList<QGLTextureCacheKey> keys = m_cache.keys();
-        int i = 0;
-        while (i < m_cache.count()
-               && (m_cache.totalCost() + cost > m_cache.maxCost())) {
-            QGLTexture *tex = m_cache.object(keys.at(i));
-            if (tex->context == ctx)
-                m_cache.remove(keys.at(i));
-            ++i;
-        }
-    }
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
     m_cache.insert(cacheKey, texture, cost);
 }
@@ -1985,7 +2001,7 @@ struct DDSFormat {
     If you're using double buffering you can swap the screen contents
     with the off-screen buffer using swapBuffers().
 
-    Please note that QGLContext is not thread safe.
+    Please note that QGLContext is not \l{thread-safe}.
 */
 
 /*!
@@ -2087,6 +2103,9 @@ QGLContext::~QGLContext()
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
 
+    // clean up resources specific to this context
+    d_ptr->cleanup();
+    // clean up resources belonging to this context's group
     d_ptr->group->cleanupResources(this);
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
@@ -2095,6 +2114,10 @@ QGLContext::~QGLContext()
 
 void QGLContextPrivate::cleanup()
 {
+    QHash<QGLContextResourceBase *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->freeResource(it.value());
+    m_resources.clear();
 }
 
 #define ctx q_ptr
@@ -2158,20 +2181,10 @@ void QGLContextPrivate::swapRegion(const QRegion &)
 
 GLuint QGLContext::bindTexture(const QString &fileName)
 {
-    Q_D(QGLContext);
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QGLDDSCache::const_iterator it = dds_cache->constFind(fileName);
-    if (it != dds_cache->constEnd()) {
-        glBindTexture(GL_TEXTURE_2D, it.value());
-        return it.value();
-    }
-
     QGLTexture texture(this);
     QSize size = texture.bindCompressedTexture(fileName);
     if (!size.isValid())
         return 0;
-
-    dds_cache->insert(fileName, texture.id);
     return texture.id;
 }
 
@@ -2290,7 +2303,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
 {
     return qt_extensionFuncs;
@@ -2629,7 +2642,8 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     const QX11Info *xinfo = qt_x11Info(paintDevice);
     if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
         && xinfo && xinfo->screen() == pixmap.x11Info().screen()
-        && target == GL_TEXTURE_2D)
+        && target == GL_TEXTURE_2D
+        && QApplication::instance()->thread() == QThread::currentThread())
     {
         if (!workaround_brokenTextureFromPixmap_init) {
             workaround_brokenTextureFromPixmap_init = true;
@@ -2865,24 +2879,8 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 */
 void QGLContext::deleteTexture(GLuint id)
 {
-    Q_D(QGLContext);
-
     if (QGLTextureCache::instance()->remove(this, id))
         return;
-
-    // check the DDS cache if the texture wasn't found in the pixmap/image
-    // cache
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QList<QString> ddsKeys = dds_cache->keys();
-    for (int i = 0; i < ddsKeys.size(); ++i) {
-        GLuint texture = dds_cache->value(ddsKeys.at(i));
-        if (id == texture) {
-            dds_cache->remove(ddsKeys.at(i));
-            break;
-        }
-    }
-
-    // Finally, actually delete the texture ID
     glDeleteTextures(1, &id);
 }
 
@@ -3296,18 +3294,13 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
     \fn QColor QGLContext::overlayTransparentColor() const
 
     If this context is a valid context in an overlay plane, returns
-    the plane's transparent color. Otherwise returns an \link
-    QColor::isValid() invalid \endlink color.
-
-    The returned color's \link QColor::pixel() pixel \endlink value is
-    the index of the transparent color in the colormap of the overlay
-    plane. (Naturally, the color's RGB values are meaningless.)
+    the plane's transparent color. Otherwise returns an
+    \{QColor::isValid()}{invalid} color.
 
     The returned QColor object will generally work as expected only
     when passed as the argument to QGLWidget::qglColor() or
     QGLWidget::qglClearColor(). Under certain circumstances it can
-    also be used to draw transparent graphics with a QPainter. See the
-    examples/opengl/overlay_x11 example for details.
+    also be used to draw transparent graphics with a QPainter.
 */
 
 
@@ -3342,16 +3335,23 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 bool QGLContext::create(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
+#ifdef Q_WS_QPA
+    if (!d->paintDevice && !d->platformContext)
+#else
     if (!d->paintDevice)
+#endif
         return false;
+
     reset();
     d->valid = chooseContext(shareContext);
-    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+    if (d->valid && d->paintDevice && d->paintDevice->devType() == QInternal::Widget) {
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
+#ifndef Q_WS_QPA //We do this in choose context->setupSharing()
     if (d->sharing)  // ok, we managed to share
         QGLContextGroup::addShare(this, shareContext);
+#endif
     return d->valid;
 }
 
@@ -3425,14 +3425,24 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
+#ifdef Q_WS_QPA
+    if (const QPlatformGLContext *threadContext = QPlatformGLContext::currentContext()) {
+        return QGLContext::fromPlatformGLContext(const_cast<QPlatformGLContext *>(threadContext));
+    }
+    return 0;
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (threadContext)
         return threadContext->context;
     return 0;
+#endif //Q_WS_QPA
 }
 
 void QGLContextPrivate::setCurrentContext(QGLContext *context)
 {
+#ifdef Q_WS_QPA
+    Q_UNUSED(context);
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
@@ -3445,6 +3455,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     }
     threadContext->context = context;
     QGLContext::currentCtx = context; // XXX: backwards-compat, not thread-safe
+#endif
 }
 
 /*!
@@ -3679,12 +3690,90 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
     \section1 Threading
 
-    It is possible to render into a QGLWidget from another thread, but it
-    requires that all access to the GL context is safe guarded. The Qt GUI
-    thread will try to use the context in resizeEvent and paintEvent, so in
-    order for threaded rendering using a GL widget to work, these functions
-    need to be intercepted in the GUI thread and handled accordingly in the
-    application.
+    As of Qt version 4.8, support for doing threaded GL rendering has
+    been improved. There are three scenarios that we currently support:
+    \list
+    \o 1. Buffer swapping in a thread.
+
+    Swapping buffers in a double buffered context may be a
+    synchronous, locking call that may be a costly operation in some
+    GL implementations. Especially so on embedded devices. It's not
+    optimal to have the CPU idling while the GPU is doing a buffer
+    swap. In those cases it is possible to do the rendering in the
+    main thread and do the actual buffer swap in a separate
+    thread. This can be done with the following steps:
+
+    1. Call doneCurrent() in the main thread when the rendering is
+    finished.
+
+    2. Notify the swapping thread that it can grab the context.
+
+    3. Make the rendering context current in the swapping thread with
+    makeCurrent() and then call swapBuffers().
+
+    4. Call doneCurrent() in the swapping thread and notify the main
+    thread that swapping is done.
+
+    Doing this will free up the main thread so that it can continue
+    with, for example, handling UI events or network requests. Even if
+    there is a context swap involved, it may be preferable compared to
+    having the main thread wait while the GPU finishes the swap
+    operation. Note that this is highly implementation dependent.
+
+    \o 2. Texture uploading in a thread.
+
+    Doing texture uploads in a thread may be very useful for
+    applications handling large amounts of images that needs to be
+    displayed, like for instance a photo gallery application. This is
+    supported in Qt through the existing bindTexture() API. A simple
+    way of doing this is to create two sharing QGLWidgets. One is made
+    current in the main GUI thread, while the other is made current in
+    the texture upload thread. The widget in the uploading thread is
+    never shown, it is only used for sharing textures with the main
+    thread. For each texture that is bound via bindTexture(), notify
+    the main thread so that it can start using the texture.
+
+    \o 3. Using QPainter to draw into a QGLWidget in a thread.
+
+    In Qt 4.8, it is possible to draw into a QGLWidget using a
+    QPainter in a separate thread. Note that this is also possible for
+    QGLPixelBuffers and QGLFramebufferObjects. Since this is only
+    supported in the GL 2 paint engine, OpenGL 2.0 or OpenGL ES 2.0 is
+    required.
+
+    QGLWidgets can only be created in the main GUI thread. This means
+    a call to doneCurrent() is necessary to release the GL context
+    from the main thread, before the widget can be drawn into by
+    another thread. Also, the main GUI thread will dispatch resize and
+    paint events to a QGLWidget when the widget is resized, or parts
+    of it becomes exposed or needs redrawing. It is therefore
+    necessary to handle those events because the default
+    implementations inside QGLWidget will try to make the QGLWidget's
+    context current, which again will interfere with any threads
+    rendering into the widget. Reimplement QGLWidget::paintEvent() and
+    QGLWidget::resizeEvent() to notify the rendering thread that a
+    resize or update is necessary, and be careful not to call the base
+    class implementation. If you are rendering an animation, it might
+    not be necessary to handle the paint event at all since the
+    rendering thread is doing regular updates. Then it would be enough
+    to reimplement QGLWidget::paintEvent() to do nothing.
+
+    \endlist
+
+    As a general rule when doing threaded rendering: be aware that
+    binding and releasing contexts in different threads have to be
+    synchronized by the user. A GL rendering context can only be
+    current in one thread at any time. If you try to open a QPainter
+    on a QGLWidget and the widget's rendering context is current in
+    another thread, it will fail.
+
+    Note that under X11 it is necessary to set the
+    Qt::AA_X11InitThreads application attribute to make the X11
+    library and GLX calls thread safe, otherwise the above scenarios
+    will fail.
+
+    In addition to this, rendering using raw GL calls in a separate
+    thread is supported.
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
@@ -4181,7 +4270,7 @@ void QGLWidget::resizeOverlayGL(int, int)
 /*! \fn bool QGLWidget::event(QEvent *e)
   \reimp
 */
-#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
@@ -4200,13 +4289,7 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(Q_WS_X11)
-    // prevents X errors on some systems, where we get a flush to a
-    // hidden widget
-    if (e->type() == QEvent::Hide) {
-        makeCurrent();
-        glFinish();
-        doneCurrent();
-    } else if (e->type() == QEvent::ParentChange) {
+    if (e->type() == QEvent::ParentChange) {
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
@@ -5208,24 +5291,24 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 #endif
 
 #ifndef QT_OPENGL_ES_1
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_gl_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_gl_engine)
 #endif
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
 #if defined(QT_OPENGL_ES_1)
-    return qt_gl_engine();
+    return qt_gl_engine()->engine();
 #elif defined(QT_OPENGL_ES_2)
-    return qt_gl_2_engine();
+    return qt_gl_2_engine()->engine();
 #else
     if (qt_gl_preferGL2Engine())
-        return qt_gl_2_engine();
+        return qt_gl_2_engine()->engine();
     else
-        return qt_gl_engine();
+        return qt_gl_engine()->engine();
 #endif
 }
 
@@ -5295,12 +5378,69 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
 
 #endif // QT3_SUPPORT
 
+typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
+
+#ifndef GL_NUM_EXTENSIONS
+#define GL_NUM_EXTENSIONS 0x821D
+#endif
+
+QGLExtensionMatcher::QGLExtensionMatcher(const char *str)
+{
+    init(str);
+}
+
+QGLExtensionMatcher::QGLExtensionMatcher()
+{
+    const char *extensionStr = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+
+    if (extensionStr) {
+        init(extensionStr);
+    } else {
+        // clear error state
+        while (glGetError()) {}
+
+        const QGLContext *ctx = QGLContext::currentContext();
+        if (ctx) {
+            qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress(QLatin1String("glGetStringi"));
+
+            GLint numExtensions;
+            glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+
+            for (int i = 0; i < numExtensions; ++i) {
+                const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+
+                m_offsets << m_extensions.size();
+
+                while (*str != 0)
+                    m_extensions.append(*str++);
+                m_extensions.append(' ');
+            }
+        }
+    }
+}
+
+void QGLExtensionMatcher::init(const char *str)
+{
+    m_extensions = str;
+
+    // make sure extension string ends with a space
+    if (!m_extensions.endsWith(' '))
+        m_extensions.append(' ');
+
+    int index = 0;
+    int next = 0;
+    while ((next = m_extensions.indexOf(' ', index)) >= 0) {
+        m_offsets << index;
+        index = next + 1;
+    }
+}
+
 /*
     Returns the GL extensions for the current context.
 */
 QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 {
-    QGLExtensionMatcher extensions(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+    QGLExtensionMatcher extensions;
     Extensions glExtensions;
 
     if (extensions.match("GL_ARB_texture_rectangle"))
@@ -5373,6 +5513,13 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     if (extensions.match("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
 
+    {
+        GLboolean srgbCapableFramebuffers;
+        glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        if (srgbCapableFramebuffers)
+            glExtensions |= SRGBFrameBuffer;
+    }
+
     return glExtensions;
 }
 
@@ -5433,7 +5580,7 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
         glcx = new QGLContext(QGLFormat::defaultFormat(), q);
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
 
 Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
@@ -5498,13 +5645,23 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
         group->m_shares.clear();
 }
 
-QGLContextResource::QGLContextResource(FreeFunc f)
-    : free(f), active(0)
+QGLContextGroupResourceBase::QGLContextGroupResourceBase()
+    : active(0)
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Creating context group resource object %p.", this);
+#endif
 }
 
-QGLContextResource::~QGLContextResource()
+QGLContextGroupResourceBase::~QGLContextGroupResourceBase()
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
+#endif
+    for (int i = 0; i < m_groups.size(); ++i) {
+        m_groups.at(i)->m_resources.remove(this);
+        active.deref();
+    }
 #ifndef QT_NO_DEBUG
     if (active != 0) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
@@ -5514,37 +5671,62 @@ QGLContextResource::~QGLContextResource()
 #endif
 }
 
-void QGLContextResource::insert(const QGLContext *key, void *value)
+void QGLContextGroupResourceBase::insert(const QGLContext *context, void *value)
 {
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
+#endif
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     Q_ASSERT(!group->m_resources.contains(this));
     group->m_resources.insert(this, value);
+    m_groups.append(group);
     active.ref();
 }
 
-void *QGLContextResource::value(const QGLContext *key)
+void *QGLContextGroupResourceBase::value(const QGLContext *context)
 {
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     return group->m_resources.value(this, 0);
 }
 
-void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
 {
-    QGLShareContextScope scope(ctx);
-    free(value);
-    active.deref();
+    void *resource = value(ctx);
+
+    if (resource != 0) {
+        QGLShareContextScope scope(ctx);
+        freeResource(resource);
+
+        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+        group->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
 }
 
-void QGLContextGroup::cleanupResources(const QGLContext *ctx)
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
+{
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
+#endif
+    QGLShareContextScope scope(ctx);
+    freeResource(value);
+    active.deref();
+
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+    m_groups.removeOne(group);
+}
+
+void QGLContextGroup::cleanupResources(const QGLContext *context)
 {
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;
 
     // Iterate over all resources and free each in turn.
-    QHash<QGLContextResource *, void *>::ConstIterator it;
+    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
     for (it = m_resources.begin(); it != m_resources.end(); ++it)
-        it.key()->cleanup(ctx, it.value());
+        it.key()->cleanup(context, it.value());
 }
 
 QGLSharedResourceGuard::~QGLSharedResourceGuard()

@@ -78,6 +78,7 @@
 
 #import <private/qcocoaapplicationdelegate_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
+#import <private/qcocoaapplication_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -89,6 +90,10 @@
 QT_BEGIN_NAMESPACE
 extern void onApplicationChangedActivation(bool); // qapplication_mac.mm
 extern void qt_release_apple_event_handler(); //qapplication_mac.mm
+extern QPointer<QWidget> qt_last_mouse_receiver; // qapplication_mac.cpp
+extern QPointer<QWidget> qt_last_native_mouse_receiver; // qt_cocoa_helpers_mac.mm
+extern QPointer<QWidget> qt_button_down; // qapplication_mac.cpp
+
 QT_END_NAMESPACE
 
 QT_FORWARD_DECLARE_CLASS(QDesktopWidgetImplementation)
@@ -173,7 +178,7 @@ static void cleanupCocoaApplicationDelegate()
     qtMenuLoader = menuLoader;
 }
 
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
+- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
 {
     return [[qtMenuLoader retain] autorelease];
 }
@@ -253,15 +258,35 @@ static void cleanupCocoaApplicationDelegate()
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
         [reflectionDelegate applicationDidBecomeActive:notification];
+
     onApplicationChangedActivation(true);
+
+    if (!QWidget::mouseGrabber()){
+        // Update enter/leave immidiatly, don't wait for a move event. But only
+        // if no grab exists (even if the grab points to this widget, it seems, ref X11)
+        QPoint qlocal, qglobal;
+        QWidget *widgetUnderMouse = 0;
+        qt_mac_getTargetForMouseEvent(0, QEvent::Enter, qlocal, qglobal, 0, &widgetUnderMouse);
+        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, 0);
+        qt_last_mouse_receiver = widgetUnderMouse;
+        qt_last_native_mouse_receiver = widgetUnderMouse ?
+            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
+    }
 }
 
-- (void)applicationDidResignActive:(NSNotification *)notification;
+- (void)applicationDidResignActive:(NSNotification *)notification
 {
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
         [reflectionDelegate applicationDidResignActive:notification];
+
     onApplicationChangedActivation(false);
+
+    if (!QWidget::mouseGrabber())
+        QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver);
+    qt_last_mouse_receiver = 0;
+    qt_last_native_mouse_receiver = 0;
+    qt_button_down = 0;
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification

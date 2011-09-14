@@ -1,7 +1,6 @@
 # Qt network socket
 
 HEADERS += socket/qabstractsocketengine_p.h \
-           socket/qnativesocketengine_p.h \
            socket/qhttpsocketengine_p.h \
            socket/qsocks5socketengine_p.h \
            socket/qabstractsocket.h \
@@ -15,7 +14,6 @@ HEADERS += socket/qabstractsocketengine_p.h \
            socket/qlocalsocket_p.h
 
 SOURCES += socket/qabstractsocketengine.cpp \
-           socket/qnativesocketengine.cpp \
            socket/qhttpsocketengine.cpp \
            socket/qsocks5socketengine.cpp \
            socket/qabstractsocket.cpp \
@@ -25,9 +23,26 @@ SOURCES += socket/qabstractsocketengine.cpp \
            socket/qlocalsocket.cpp \
            socket/qlocalserver.cpp
 
-unix:SOURCES += socket/qnativesocketengine_unix.cpp \
+# On Symbian we use QSymbianSocketEngine
+symbian:SOURCES += socket/qsymbiansocketengine.cpp
+symbian:HEADERS += socket/qsymbiansocketengine_p.h
+# On others we use QNativeSocketEngine
+!symbian:SOURCES += socket/qnativesocketengine.cpp
+!symbian:HEADERS += socket/qnativesocketengine_p.h
+
+unix:!symbian: {
+    SOURCES += socket/qnativesocketengine_unix.cpp \
                 socket/qlocalsocket_unix.cpp \
                 socket/qlocalserver_unix.cpp
+}
+
+symbian: {
+    SOURCES += socket/qlocalsocket_tcp.cpp \
+               socket/qlocalserver_tcp.cpp
+
+    DEFINES += QT_LOCALSOCKET_TCP
+}
+
 unix:HEADERS += \
                 socket/qnet_unix_p.h
 
@@ -40,6 +55,16 @@ wince*: {
                socket/qlocalserver_win.cpp
     SOURCES += socket/qlocalsocket_tcp.cpp \
                socket/qlocalserver_tcp.cpp
+
+    DEFINES += QT_LOCALSOCKET_TCP
+}
+
+integrity: {
+    SOURCES -= socket/qlocalsocket_unix.cpp \
+               socket/qlocalserver_unix.cpp
+    SOURCES += socket/qlocalsocket_tcp.cpp \
+               socket/qlocalserver_tcp.cpp \
+	       socket/qnativesocketengine_unix.cpp
 
     DEFINES += QT_LOCALSOCKET_TCP
 }

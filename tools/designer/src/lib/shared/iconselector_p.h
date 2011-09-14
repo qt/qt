@@ -55,8 +55,11 @@
 #define ICONSELECTOR_H
 
 #include "shared_global_p.h"
+
 #include <QtGui/QWidget>
 #include <QtGui/QDialog>
+
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +73,7 @@ namespace qdesigner_internal {
 class DesignerIconCache;
 class DesignerPixmapCache;
 class PropertySheetIconValue;
+struct IconThemeEditorPrivate;
 
 // Resource Dialog that embeds the language-dependent resource widget as returned by the language extension
 class QDESIGNER_SHARED_EXPORT LanguageResourceDialog : public QDialog
@@ -133,6 +137,32 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotUpdate())
 };
 
+// IconThemeEditor: Let's the user input theme icon names and shows a preview label.
+class QDESIGNER_SHARED_EXPORT IconThemeEditor : public QWidget
+{
+    Q_OBJECT
+    Q_PROPERTY(QString theme READ theme WRITE setTheme DESIGNABLE true)
+public:
+    explicit IconThemeEditor(QWidget *parent = 0, bool wantResetButton = true);
+    virtual ~IconThemeEditor();
+
+    QString theme() const;
+    void setTheme(const QString &theme);
+
+signals:
+    void edited(const QString &);
+
+public slots:
+    void reset();
+
+private slots:
+    void slotChanged(const QString &);
+
+private:
+    void updatePreview(const QString &);
+
+    QScopedPointer<IconThemeEditorPrivate> d;
+};
 
 } // namespace qdesigner_internal
 

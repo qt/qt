@@ -1427,6 +1427,11 @@ public:
     inline void setAttributeColSpan(int a) { m_attr_colSpan = a; m_has_attr_colSpan = true; }
     inline void clearAttributeColSpan() { m_has_attr_colSpan = false; }
 
+    inline bool hasAttributeAlignment() const { return m_has_attr_alignment; }
+    inline QString attributeAlignment() const { return m_attr_alignment; }
+    inline void setAttributeAlignment(const QString& a) { m_attr_alignment = a; m_has_attr_alignment = true; }
+    inline void clearAttributeAlignment() { m_has_attr_alignment = false; }
+
     // child element accessors
     enum Kind { Unknown = 0, Widget, Layout, Spacer };
     inline Kind kind() const { return m_kind; }
@@ -1459,6 +1464,9 @@ private:
 
     int m_attr_colSpan;
     bool m_has_attr_colSpan;
+
+    QString m_attr_alignment;
+    bool m_has_attr_alignment;
 
     // child element data
     Kind m_kind;
@@ -2809,6 +2817,11 @@ public:
     inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
+    inline bool hasAttributeTheme() const { return m_has_attr_theme; }
+    inline QString attributeTheme() const { return m_attr_theme; }
+    inline void setAttributeTheme(const QString& a) { m_attr_theme = a; m_has_attr_theme = true; }
+    inline void clearAttributeTheme() { m_has_attr_theme = false; }
+
     inline bool hasAttributeResource() const { return m_has_attr_resource; }
     inline QString attributeResource() const { return m_attr_resource; }
     inline void setAttributeResource(const QString& a) { m_attr_resource = a; m_has_attr_resource = true; }
@@ -2868,6 +2881,9 @@ private:
     void clear(bool clear_all = true);
 
     // attribute data
+    QString m_attr_theme;
+    bool m_has_attr_theme;
+
     QString m_attr_resource;
     bool m_has_attr_resource;
 

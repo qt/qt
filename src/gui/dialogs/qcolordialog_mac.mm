@@ -185,7 +185,7 @@ QT_USE_NAMESPACE
         [self relayout];
 }
 
-- (void)colorChanged:(NSNotification *)notification;
+- (void)colorChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
     [self updateQtColor];
@@ -343,6 +343,7 @@ QT_USE_NAMESPACE
     mDialogIsExecuting = true;
     bool modalEnded = false;
     while (!modalEnded) {
+#ifndef QT_NO_EXCEPTIONS
         @try {
             [NSApp runModalForWindow:mColorPanel];
             modalEnded = true;
@@ -351,6 +352,10 @@ QT_USE_NAMESPACE
             // clicking on 'SelectedMenuItemColor' from the 'Developer'
             // palette (tab three).
         }
+#else
+        [NSApp runModalForWindow:mColorPanel];
+        modalEnded = true;
+#endif
     }
 
     QAbstractEventDispatcher::instance()->interrupt();
@@ -439,7 +444,7 @@ void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
             priv:this];
         [colorPanel setDelegate:static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate)];
     }
-    [delegate setResultSet:false];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) setResultSet:NO];
     setCocoaPanelColor(initial);
     [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) showColorPanel];
 }

@@ -79,6 +79,7 @@ class QTextItem;
 class QMatrix;
 class QTransform;
 class QStaticText;
+class QGlyphRun;
 
 class QPainterPrivateDeleter;
 
@@ -220,6 +221,8 @@ public:
 
     void setClipping(bool enable);
     bool hasClipping() const;
+
+    QRectF clipBoundingRect() const;
 
     void save();
     void restore();
@@ -377,6 +380,8 @@ public:
 
     void drawPixmapFragments(const PixmapFragment *fragments, int fragmentCount,
                              const QPixmap &pixmap, PixmapFragmentHints hints = 0);
+    void drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount,
+                             const QPixmap &pixmap, PixmapFragmentHints hints = 0);
 
     void drawImage(const QRectF &targetRect, const QImage &image, const QRectF &sourceRect,
                    Qt::ImageConversionFlags flags = Qt::AutoColor);
@@ -395,6 +400,10 @@ public:
 
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
+
+#if !defined(QT_NO_RAWFONT)
+    void drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun);
+#endif
 
     void drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText);
     inline void drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText);
@@ -546,6 +555,7 @@ private:
     friend class QPaintEngine;
     friend class QPaintEngineExPrivate;
     friend class QOpenGLPaintEngine;
+    friend class QVGPaintEngine;
     friend class QX11PaintEngine;
     friend class QX11PaintEnginePrivate;
     friend class QWin32PaintEngine;

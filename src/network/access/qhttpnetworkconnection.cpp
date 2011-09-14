@@ -119,6 +119,11 @@ void QHttpNetworkConnectionPrivate::init()
 {
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
+        channels[i].ssl = encrypt;
+#ifndef QT_NO_BEARERMANAGEMENT
+        //push session down to channels
+        channels[i].networkSession = networkSession;
+#endif
         channels[i].init();
     }
 }
@@ -295,7 +300,13 @@ void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
         int i = indexOf(socket);
         // remove the corrupt data if any
         reply->d_func()->eraseData();
+
+        // Clean the channel
         channels[i].close();
+        channels[i].reply = 0;
+        channels[i].request = QHttpNetworkRequest();
+        channels[i].requeueCurrentlyPipelinedRequests();
+
         // send the next request
         QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
     }
@@ -490,7 +501,7 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
 {
     Q_ASSERT(socket);
 
@@ -503,8 +514,7 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
             prepareRequest(messagePair);
         channels[i].request = messagePair.first;
         channels[i].reply = messagePair.second;
-        channels[i].sendRequest();
-        return;
+        return true;
     }
 
     if (!lowPriorityQueue.isEmpty()) {
@@ -514,9 +524,18 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
             prepareRequest(messagePair);
         channels[i].request = messagePair.first;
         channels[i].reply = messagePair.second;
-        channels[i].sendRequest();
-        return;
+        return true;
     }
+    return false;
+}
+
+QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
+{
+    if (!highPriorityQueue.isEmpty())
+        return highPriorityQueue.last().first;
+    if (!lowPriorityQueue.isEmpty())
+        return lowPriorityQueue.last().first;
+    return QHttpNetworkRequest();
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
@@ -567,33 +586,35 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
            || channels[i].state == QHttpNetworkConnectionChannel::ReadingState))
         return;
 
-
-    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing highPriorityQueue, size=" << highPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
     int lengthBefore;
     while (!highPriorityQueue.isEmpty()) {
         lengthBefore = channels[i].alreadyPipelinedRequests.length();
         fillPipeline(highPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+            channels[i].pipelineFlush();
             return;
+        }
 
         if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
             break; // did not process anything, now do the low prio queue
     }
 
-    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing lowPriorityQueue, size=" << lowPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
     while (!lowPriorityQueue.isEmpty()) {
         lengthBefore = channels[i].alreadyPipelinedRequests.length();
         fillPipeline(lowPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+            channels[i].pipelineFlush();
             return;
+        }
 
         if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
             break; // did not process anything
     }
 
 
+    channels[i].pipelineFlush();
 }
 
 // returns true when the processing of a queue has been done
@@ -766,7 +787,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
     //resend the necessary ones.
     for (int i = 0; i < channelCount; ++i) {
-        if (channels[i].resendCurrent) {
+        if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
 
@@ -785,17 +806,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // try to get a free AND connected socket
     for (int i = 0; i < channelCount; ++i) {
         if (!channels[i].reply && !channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
-            dequeueAndSendRequest(channels[i].socket);
-        }
-    }
-
-    // return fast if there is nothing to do
-    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
-        return;
-    // try to get a free unconnected socket
-    for (int i = 0; i < channelCount; ++i) {
-        if (!channels[i].reply && !channels[i].isSocketBusy()) {
-            dequeueAndSendRequest(channels[i].socket);
+            if (dequeueRequest(channels[i].socket))
+                channels[i].sendRequest();
         }
     }
 
@@ -812,6 +824,21 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; i++)
         if (channels[i].socket->state() == QAbstractSocket::ConnectedState)
             fillPipeline(channels[i].socket);
+
+    // If there is not already any connected channels we need to connect a new one.
+    // We do not pair the channel with the request until we know if it is 
+    // connected or not. This is to reuse connected channels before we connect new once.
+    int queuedRequest = highPriorityQueue.count() + lowPriorityQueue.count();
+    for (int i = 0; i < channelCount; ++i) {
+        if (channels[i].socket->state() == QAbstractSocket::ConnectingState)
+            queuedRequest--;
+        if ( queuedRequest <=0 )
+            break;
+        if (!channels[i].reply && !channels[i].isSocketBusy() && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
+            channels[i].ensureConnection();
+            queuedRequest--;
+        }
+    }
 }
 
 
@@ -826,6 +853,23 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
     }
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+
+QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
+{
+    Q_D(QHttpNetworkConnection);
+    d->networkSession = networkSession;
+    d->init();
+}
+#else
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
 {
@@ -839,6 +883,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
     Q_D(QHttpNetworkConnection);
     d->init();
 }
+#endif
 
 QHttpNetworkConnection::~QHttpNetworkConnection()
 {

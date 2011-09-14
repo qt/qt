@@ -68,7 +68,7 @@ Item {
         hoverEnabled: true
 
         onClicked: {
-            ListView.view.currentIndex = index
+            container.ListView.view.currentIndex = index
             container.forceActiveFocus()
         }
     }

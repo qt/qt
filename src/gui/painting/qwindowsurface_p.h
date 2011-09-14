@@ -63,11 +63,20 @@ class QRect;
 class QPoint;
 class QImage;
 class QWindowSurfacePrivate;
+class QPlatformWindow;
 
 class Q_GUI_EXPORT QWindowSurface
 {
 public:
-    QWindowSurface(QWidget *window);
+    enum WindowSurfaceFeature {
+        PartialUpdates               = 0x00000001, // Supports doing partial updates.
+        PreservedContents            = 0x00000002, // Supports doing flush without first doing a repaint.
+        StaticContents               = 0x00000004, // Supports having static content regions when being resized.
+        AllFeatures                  = 0xffffffff  // For convenience
+    };
+    Q_DECLARE_FLAGS(WindowSurfaceFeatures, WindowSurfaceFeature)
+
+    QWindowSurface(QWidget *window, bool setDefaultSurface = true);
     virtual ~QWindowSurface();
 
     QWidget *window() const;
@@ -79,8 +88,14 @@ public:
     // can be larger than just the offset from the top-level widget as there may also be window
     // decorations which are painted into the window surface.
     virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset) = 0;
+#if !defined(Q_WS_QPA)
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
+#else
+    virtual void resize(const QSize &size);
+    QSize size() const;
+    inline QRect geometry() const { return QRect(QPoint(), size()); }     //### cleanup before Qt 5
+#endif
 
     virtual bool scroll(const QRegion &area, int dx, int dy);
 
@@ -93,24 +108,29 @@ public:
     virtual QPoint offset(const QWidget *widget) const;
     inline QRect rect(const QWidget *widget) const;
 
-    bool hasStaticContentsSupport() const;
-    bool hasPartialUpdateSupport() const;
+    bool hasFeature(WindowSurfaceFeature feature) const;
+    virtual WindowSurfaceFeatures features() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
 
 protected:
     bool hasStaticContents() const;
-    void setStaticContentsSupport(bool enable);
-    void setPartialUpdateSupport(bool enable);
 
 private:
     QWindowSurfacePrivate *d_ptr;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowSurface::WindowSurfaceFeatures)
+
 inline QRect QWindowSurface::rect(const QWidget *widget) const
 {
     return widget->rect().translated(offset(widget));
+}
+
+inline bool QWindowSurface::hasFeature(WindowSurfaceFeature feature) const
+{
+    return (features() & feature) != 0;
 }
 
 QT_END_NAMESPACE

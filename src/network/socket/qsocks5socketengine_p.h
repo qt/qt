@@ -92,6 +92,15 @@ public:
     qint64 write(const char *data, qint64 len);
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
+    bool joinMulticastGroup(const QHostAddress &groupAddress,
+                            const QNetworkInterface &interface);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress,
+                             const QNetworkInterface &interface);
+    QNetworkInterface multicastInterface() const;
+    bool setMulticastInterface(const QNetworkInterface &iface);
+#endif // QT_NO_NETWORKINTERFACE
+
     qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
         quint16 *port = 0);
     qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &addr,

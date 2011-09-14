@@ -384,7 +384,7 @@ QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScri
             QDeclarativeListModelWorkerAgent *agent = lm->agent();
             if (agent) {
                 QDeclarativeListModelWorkerAgent::VariantRef v(agent);
-                return qVariantFromValue(v);
+                return QVariant::fromValue(v);
             } else {
                 return QVariant();
             }

@@ -55,6 +55,7 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qabstractsocket.h>
+#include <QtNetwork/qnetworksession.h>
 
 #include <private/qobject_p.h>
 #include <qauthenticator.h>
@@ -88,8 +89,13 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
     Q_OBJECT
 public:
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
+#else
     QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
+#endif
     ~QHttpNetworkConnection();
 
     //The hostname to which this is connected to.
@@ -161,8 +167,9 @@ public:
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
-    void dequeueAndSendRequest(QAbstractSocket *socket);
+    bool dequeueRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
+    QHttpNetworkRequest predictNextRequest();
 
     void fillPipeline(QAbstractSocket *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
@@ -207,6 +214,10 @@ public:
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSession;
+#endif
 
     friend class QHttpNetworkConnectionChannel;
 };

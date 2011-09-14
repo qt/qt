@@ -68,9 +68,6 @@
 #include <qlibrary.h>
 #include <private/qstylehelper_p.h>
 
-#define CL_MAX(a,b) (a)>(b) ? (a):(b) // ### qMin/qMax does not work for vc6
-#define CL_MIN(a,b) (a)<(b) ? (a):(b) // remove this when it is working
-
 QT_BEGIN_NAMESPACE
 
 using namespace QStyleHelper;
@@ -533,8 +530,8 @@ static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTi
 {
     QColor dark;
     dark.setHsv(option->palette.button().color().hue(),
-                CL_MIN(255, (int)(option->palette.button().color().saturation()*1.9)),
-                CL_MIN(255, (int)(option->palette.button().color().value()*0.7)));
+                qMin(255, (int)(option->palette.button().color().saturation()*1.9)),
+                qMin(255, (int)(option->palette.button().color().value()*0.7)));
 
     QColor highlight = option->palette.highlight().color();
 
@@ -691,11 +688,11 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
     QColor darkOutline;
     QColor dark;
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*3.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*3.0)),
+                qMin(255, (int)(button.value()*0.6)));
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     QColor tabFrameColor = mergedColors(option->palette.background().color(),
                                                 dark.lighter(135), 60);
 
@@ -844,7 +841,6 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
     case PE_PanelButtonTool:
         painter->save();
         if ((option->state & State_Enabled || option->state & State_On) || !(option->state & State_AutoRaise)) {
-            QRect rect = option->rect;
             QPen oldPen = painter->pen();
 
             if (widget && widget->inherits("QDockWidgetTitleButton")) {
@@ -1117,8 +1113,8 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             QColor gradientMidColor = option->palette.button().color();
             QColor gradientStopColor;
             gradientStopColor.setHsv(buttonColor.hue(),
-                                     CL_MIN(255, (int)(buttonColor.saturation()*1.9)),
-                                     CL_MIN(255, (int)(buttonColor.value()*0.96)));
+                                     qMin(255, (int)(buttonColor.saturation()*1.9)),
+                                     qMin(255, (int)(buttonColor.value()*0.96)));
 
             QRect gradRect = rect.adjusted(1, 2, -1, -2);
             // gradient fill
@@ -1244,7 +1240,6 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
         if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
             QColor borderColor = darkOutline.lighter(110);
             QColor alphaCornerColor = mergedColors(borderColor, option->palette.background().color());
-            QColor innerShadow = mergedColors(borderColor, option->palette.base().color());
 
             int borderThickness = proxy()->pixelMetric(PM_TabBarBaseOverlap, twf, widget);
             bool reverse = (twf->direction == Qt::RightToLeft);
@@ -1384,12 +1379,12 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
     QColor button = option->palette.button().color();
     QColor dark;
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     QColor darkOutline;
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*2.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*2.0)),
+                qMin(255, (int)(button.value()*0.6)));
     QRect rect = option->rect;
     QColor shadow = mergedColors(option->palette.background().color().darker(120),
                                  dark.lighter(130), 60);
@@ -1662,8 +1657,8 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             QColor gradientStopColor;
             QColor gradientStartColor = option->palette.button().color();
             gradientStopColor.setHsv(gradientStartColor.hue(),
-                                     CL_MIN(255, (int)(gradientStartColor.saturation()*2)),
-                                     CL_MIN(255, (int)(gradientStartColor.value()*0.96)));
+                                     qMin(255, (int)(gradientStartColor.saturation()*2)),
+                                     qMin(255, (int)(gradientStartColor.value()*0.96)));
             QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
             if (option->palette.background().gradient()) {
                 gradient.setStops(option->palette.background().gradient()->stops());
@@ -1882,7 +1877,6 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             } else {
                 alphaCornerColor = mergedColors(option->palette.background().color(), borderColor);
             }
-            QColor alphaTextColor = mergedColors(option->palette.background().color(), option->palette.text().color());
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 painter->fillRect(menuItem->rect, menuBackground);
                 int w = 0;
@@ -2223,7 +2217,6 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                                     && tabBarAlignment == Qt::AlignLeft);
 
             QColor light = tab->palette.light().color();
-            QColor midlight = tab->palette.midlight().color();
 
             QColor background = tab->palette.background().color();
             int borderThinkness = proxy()->pixelMetric(PM_TabBarBaseOverlap, tab, widget);
@@ -2425,14 +2418,14 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
     QColor grooveColor;
     QColor darkOutline;
     dark.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*1.9)),
-                CL_MIN(255, (int)(button.value()*0.7)));
+                qMin(255, (int)(button.saturation()*1.9)),
+                qMin(255, (int)(button.value()*0.7)));
     grooveColor.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*2.6)),
-                CL_MIN(255, (int)(button.value()*0.9)));
+                qMin(255, (int)(button.saturation()*2.6)),
+                qMin(255, (int)(button.value()*0.9)));
     darkOutline.setHsv(button.hue(),
-                CL_MIN(255, (int)(button.saturation()*3.0)),
-                CL_MIN(255, (int)(button.value()*0.6)));
+                qMin(255, (int)(button.saturation()*3.0)),
+                qMin(255, (int)(button.value()*0.6)));
 
     QColor alphaCornerColor;
     if (widget) {
@@ -2446,14 +2439,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
     QColor gradientStartColor = option->palette.button().color().lighter(108);
     QColor gradientStopColor = mergedColors(option->palette.button().color().darker(108), dark.lighter(150), 70);
-
-    QColor highlightedGradientStartColor = option->palette.button().color();
-    QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
-
-    QColor highlightedDarkInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 35);
-    QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
-
-    QColor buttonShadowAlpha = option->palette.background().color().darker(105);
 
     QPalette palette = option->palette;
 
@@ -3440,7 +3425,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
@@ -3542,8 +3526,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
                     QPainter handlePainter(&cache);
 
-                    QColor highlightedGradientStartColor = option->palette.button().color();
-                    QColor highlightedGradientStopColor = option->palette.light().color();
                     QColor gradientStartColor = mergedColors(option->palette.button().color().lighter(155),
                                                              dark.lighter(155), 50);
                     QColor gradientStopColor = gradientStartColor.darker(108);
@@ -3560,7 +3542,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
 
                     // gradient fill
-                    QRect innerBorder = gradRect;
                     QRect r = pixmapRect.adjusted(1, 1, -1, -1);
 
                     qt_cleanlooks_draw_gradient(&handlePainter, gradRect,
@@ -3763,6 +3744,7 @@ int QCleanlooksStyle::pixelMetric(PixelMetric metric, const QStyleOption *option
         break;
     case PM_MenuBarItemSpacing:
         ret = 6;
+        break;
     case PM_MenuBarHMargin:
         ret = 0;
         break;

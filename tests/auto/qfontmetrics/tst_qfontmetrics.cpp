@@ -74,6 +74,7 @@ private slots:
     void bypassShaping();
     void elidedMultiLength();
     void elidedMultiLengthF();
+    void inFontUcs4();
     void lineWidth();
 };
 
@@ -265,6 +266,27 @@ void tst_QFontMetrics::elidedMultiLength()
 void tst_QFontMetrics::elidedMultiLengthF()
 {
     elidedMultiLength_helper<QFontMetricsF>();
+}
+
+void tst_QFontMetrics::inFontUcs4()
+{
+    int id = QFontDatabase::addApplicationFont(":/fonts/ucs4font.ttf");
+    QVERIFY(id >= 0);
+
+    QFont font("QtTestUcs4");
+    {
+        QFontMetrics fm(font);
+
+        QVERIFY(fm.inFontUcs4(0x1D7FF));
+    }
+
+    {
+        QFontMetricsF fm(font);
+
+        QVERIFY(fm.inFontUcs4(0x1D7FF));
+    }
+
+    QFontDatabase::removeApplicationFont(id);
 }
 
 void tst_QFontMetrics::lineWidth()

@@ -43,6 +43,9 @@
 #define QFSFILEENGINE_H
 
 #include <QtCore/qabstractfileengine.h>
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -101,6 +104,11 @@ public:
 
     //FS only!!
     bool open(QIODevice::OpenMode flags, int fd);
+    bool open(QIODevice::OpenMode flags, int fd, QFile::FileHandleFlags handleFlags);
+    bool open(QIODevice::OpenMode flags, FILE *fh, QFile::FileHandleFlags handleFlags);
+#ifdef Q_OS_SYMBIAN
+    bool open(QIODevice::OpenMode flags, const RFile &f, QFile::FileHandleFlags handleFlags);
+#endif
     static bool setCurrentPath(const QString &path);
     static QString currentPath(const QString &path = QString());
     static QString homePath();

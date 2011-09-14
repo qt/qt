@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
     QStyle *arthurStyle = new ArthurStyle();
     deformWidget.setStyle(arthurStyle);
-    QList<QWidget *> widgets = qFindChildren<QWidget *>(&deformWidget);
+    QList<QWidget *> widgets = deformWidget.findChildren<QWidget *>();
     foreach (QWidget *w, widgets)
         w->setStyle(arthurStyle);
 

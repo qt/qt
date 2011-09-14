@@ -216,7 +216,7 @@ QScriptDebuggerValue QScriptDebuggerEvent::scriptValue() const
 void QScriptDebuggerEvent::setScriptValue(const QScriptDebuggerValue &value)
 {
     Q_D(QScriptDebuggerEvent);
-    d->attributes[Value] = qVariantFromValue(value);
+    d->attributes[Value] = QVariant::fromValue(value);
 }
 
 void QScriptDebuggerEvent::setNestedEvaluate(bool nested)

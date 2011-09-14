@@ -6,9 +6,9 @@ SOURCES += tst_qdeclarativetextedit.cpp ../shared/testhttpserver.cpp
 HEADERS += ../shared/testhttpserver.h
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

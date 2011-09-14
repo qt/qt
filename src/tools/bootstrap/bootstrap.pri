@@ -22,7 +22,9 @@ DEFINES	       += \
         QT_NO_TEXTSTREAM \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
-        QT_NO_USING_NAMESPACE
+        QT_NO_USING_NAMESPACE \
+        QT_NO_DEPRECATED
+
 win32:DEFINES += QT_NODLL
 
 INCLUDEPATH	+= $$QT_BUILD_TREE/include \

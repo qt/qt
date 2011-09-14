@@ -41,6 +41,8 @@
 
 #include "qpixmap.h"
 
+#include <private/qfont_p.h>
+
 #include "qpixmap_raster_p.h"
 #include "qnativeimage_p.h"
 #include "qimage_p.h"
@@ -208,7 +210,13 @@ void QRasterPixmapData::fill(const QColor &color)
                 else
 #endif
                     toFormat = QImage::Format_ARGB32_Premultiplied;
-                image = QImage(image.width(), image.height(), toFormat);
+
+                if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
+                    image.detach();
+                    image.d->format = toFormat;
+                } else {
+                    image = QImage(image.width(), image.height(), toFormat);
+                }
             }
 
             switch (image.format()) {
@@ -339,9 +347,6 @@ QPaintEngine* QRasterPixmapData::paintEngine() const
 {
     return image.paintEngine();
 }
-
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

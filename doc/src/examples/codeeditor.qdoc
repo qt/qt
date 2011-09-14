@@ -190,6 +190,34 @@
     used to implement parenthesis matching. In the \c
     highlightCurrentLine(), the data of the currentBlock() can be
     fetched with QTextBlock::userData(). Matching parentheses can be
-    highlighted with an extra selection.
+    highlighted with an extra selection. The "Matching Parentheses
+    with QSyntaxHighlighter" article in Qt Quarterly 31 implements
+    this. You find it here: \l{http://doc.qt.nokia.com/qq/}.
 
+    The line number area is now painted every time the cursor blinks
+    (because we connect \l{QPlainTextEdit::}{updateRequest()} to
+    \c updateLineNumberArea()). We can avoid this by introducing a new
+    member variable to CodeEditor that keeps track of when the update
+    request comes from a cursor blink (in which case we do not
+    repaint). The code below requires the \c m_countCache variable,
+    which is a QPair<int, int> initialized with \c -1 for both
+    \l{QPair::}{first} and \l{QPair::}{second}.
+
+    \code
+        void CodeEditor::updateLineNumberArea(const QRect &rect, int dy) 
+        {
+            if (dy) {
+                lineNumberArea->scroll(0, dy);
+            } else if (m_countCache.first != blockCount()
+                       || m_countCache.second != textCursor().block().lineCount()) {
+                lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
+                m_countCache.first = blockCount();
+                m_countCache.second = textCursor().block().lineCount();
+            }   
+
+            if (rect.contains(viewport()->rect()))
+                updateLineNumberAreaWidth(0);
+        }
+    \endcode
 */
+

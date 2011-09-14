@@ -7,7 +7,7 @@ DEFINES   += QT_NO_USING_NAMESPACE
 DEFINES   += QLALR_NO_QSCRIPTGRAMMAR_DEBUG_INFO
 #win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000       ### FIXME
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
@@ -39,9 +39,17 @@ wince* {
     LIBS += -lmmtimer
 }
 
-mac {
+!qpa:mac {
     DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
     LIBS_PRIVATE += -framework AppKit
+}
+qpa:mac {
+    DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
+    contains(QT_CONFIG, coreservices) {
+      LIBS_PRIVATE += -framework CoreServices
+    } else {
+      LIBS_PRIVATE += -framework CoreFoundation
+    }
 }
 
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
@@ -65,7 +73,7 @@ INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/generated
 # This line copied from WebCore.pro
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
-DEFINES += NDEBUG
+CONFIG(release, debug|release):DEFINES += NDEBUG
 
 solaris-g++:isEqual(QT_ARCH,sparc) {
     CONFIG -= separate_debug_info
@@ -91,6 +99,10 @@ symbian {
         QMAKE_CXXFLAGS -= --thumb
     }
     QMAKE_CXXFLAGS.ARMCC += -OTime -O3
+}
+
+integrity {
+    CFLAGS += --diag_remark=236,82
 }
 
 # WebKit doesn't compile in C++0x mode

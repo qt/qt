@@ -108,7 +108,7 @@ These methods are shown below. Naturally these approaches are not exclusive; you
 these methods throughout your application as appropriate.
 
 
-\section2 Loading QML components from C++
+\section2 Loading QML Components from C++
 
 A QML document can be loaded with QDeclarativeComponent or QDeclarativeView. QDeclarativeComponent
 loads a QML component as a C++ object; QDeclarativeView also does this,
@@ -180,7 +180,7 @@ required \c objectName. It is better for the C++ implementation to know as littl
 the QML user interface implementation and the composition of the QML object tree.
 
 
-\section2 Embedding C++ objects into QML components
+\section2 Embedding C++ Objects into QML Components
 
 When loading a QML scene into a C++ application, it can be useful to directly embed C++ data into
 the QML object. QDeclarativeContext enables this by exposing data to the context of a QML
@@ -231,7 +231,7 @@ in QML views.
 Also see the QDeclarativeContext documentation for more information.
 
 
-\section2 Defining new QML elements
+\section2 Defining New QML Elements
 
 While new QML elements can be \l {Defining New Components}{defined in QML}, they can also be
 defined by C++ classes; in fact, many of the core \l {QML Elements} are implemented through
@@ -270,7 +270,7 @@ For more information on defining new QML elements, see the \l {Tutorial: Writing
 
 
 
-\section1 Exchanging data between QML and C++
+\section1 Exchanging Data between QML and C++
 
 QML and C++ objects can communicate with one another through signals, slots and property
 modifications. For a C++ object, any data that is exposed to Qt's \l{The Meta-Object System}{Meta-Object System}
@@ -279,7 +279,7 @@ the QML side, all QML object data is automatically made available to the meta-ob
 be accessed from C++.
 
 
-\section2 Calling functions
+\section2 Calling Functions
 
 QML functions can be called from C++ and vice-versa.
 
@@ -314,7 +314,7 @@ same name but different arguments, the correct function will be called according
 the types of arguments that are provided.
 
 
-\section2 Receiving signals
+\section2 Receiving Signals
 
 All QML signals are automatically available to C++, and can be connected to using QObject::connect()
 like any ordinary Qt C++ signal. In return, any C++ signal can be received by a QML object using
@@ -373,7 +373,7 @@ class that is emitting the signal, and that the enum is registered using Q_ENUMS
 See \l {Using enumerations of a custom type} below for details.
 
 
-\section2 Modifying properties
+\section2 Modifying Properties
 
 Any properties declared in a QML object are automatically accessible from C++. Given a QML item
 like this:
@@ -454,7 +454,7 @@ To allow a custom C++ type to be created or used in QML, the C++ class must be r
 type using qmlRegisterType(), as shown in the \l {Defining new QML elements} section above.
 
 
-\section2 JavaScript arrays and objects
+\section2 JavaScript Arrays and Objects
 
 There is built-in support for automatic type conversion between QVariantList and JavaScript
 arrays, and QVariantMap and JavaScript objects.
@@ -465,6 +465,10 @@ below right calls this function, passing a QVariantList and a QVariantMap, which
 converted to JavaScript array and object values, repectively:
 
 \table
+\header
+\o Type
+\o String format
+\o Example
 \row
 \o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/MyItem.qml 0
 \o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/main.cpp 0
@@ -485,7 +489,7 @@ parameter, the value can be created as a JavaScript array or object in the QML
 side, and is automatically converted to a QVariantList or QVariantMap when it is passed to C++.
 
 
-\section2 Using enumerations of a custom type
+\section2 Using Enumerations of a Custom Type
 
 To use an enumeration from a custom C++ component, the enumeration must be declared with Q_ENUMS() to
 register it with Qt's meta object system. For example, the following C++ type has a \c Status enum:
@@ -507,22 +511,26 @@ the \l {Extending QML Functionalities using C++} reference documentation for
 more information.
 
 
-\section2 Using enumeration values as signal parameters
+\section2 Using Enumeration Values as Signal and Method Parameters
 
 C++ signals may pass enumeration values as signal parameters to QML, providing that the enumeration
 and the signal are declared within the same class, or that the enumeration value is one of those declared
 in the \l {Qt}{Qt Namespace}.
 
+Likewise, invokable C++ methods parameters may be enumeration values providing that the enumeration and
+the method are declared within the same class, or that the enumeration value is one of those declared in the
+\l {Qt}{Qt Namespace}.
+
 Additionally, if a C++ signal with an enum parameter should be connectable to a QML function using the
-\l {Connecting signals to methods and other signals}{connect()} function, the enum type must be
-registered using qRegisterMetaType().
+\l{QML Signal and Handler Event System#Connecting Signals to Methods and Signals}{connect()}
+function, the enum type must be registered using qRegisterMetaType().
 
 For QML signals, enum values may be used as signal parameters using the \c int type:
 
 \snippet doc/src/snippets/declarative/qtbinding/enums/standalone.qml 1
 
 
-\section2 Automatic type conversion from strings
+\section2 Automatic Type Conversion from Strings
 
 As a convenience, some basic types can be specified in QML using format strings to make it easier to
 pass simple values from QML to C++.

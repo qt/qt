@@ -63,7 +63,7 @@ class QTextListFormat;
 
 class QTextDocumentLayoutPrivate;
 
-class Q_GUI_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
+class Q_AUTOTEST_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_DECLARE_PRIVATE(QTextDocumentLayout)
     Q_OBJECT
@@ -109,11 +109,6 @@ protected:
     void drawInlineObject(QPainter *p, const QRectF &rect, QTextInlineObject item,
                           int posInDocument, const QTextFormat &format);
     virtual void timerEvent(QTimerEvent *e);
-
-    // TODO: remove when we support line height properly in 4.8
-    enum LineHeightMode { ProportionalHeight, FixedHeight };
-    void setLineHeight(qreal lineHeight, QTextDocumentLayout::LineHeightMode mode);
-
 private:
     QRectF doLayout(int from, int oldLength, int length);
     void layoutFinished();

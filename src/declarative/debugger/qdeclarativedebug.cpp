@@ -84,6 +84,7 @@ public:
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugRootContextQuery *);
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugObjectQuery *);
     static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugExpressionQuery *);
+    static void remove(QDeclarativeEngineDebug *, QDeclarativeDebugWatch *);
 
     QHash<int, QDeclarativeDebugEnginesQuery *> enginesQuery;
     QHash<int, QDeclarativeDebugRootContextQuery *> rootContextQuery;
@@ -120,6 +121,41 @@ QDeclarativeEngineDebugPrivate::~QDeclarativeEngineDebugPrivate()
 {
     if (client)
         client->priv = 0;
+    delete client;
+
+    QHash<int, QDeclarativeDebugEnginesQuery*>::iterator enginesIter = enginesQuery.begin();
+    for (; enginesIter != enginesQuery.end(); ++enginesIter) {
+        enginesIter.value()->m_client = 0;
+        if (enginesIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            enginesIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugRootContextQuery*>::iterator rootContextIter = rootContextQuery.begin();
+    for (; rootContextIter != rootContextQuery.end(); ++rootContextIter) {
+        rootContextIter.value()->m_client = 0;
+        if (rootContextIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            rootContextIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugObjectQuery*>::iterator objectIter = objectQuery.begin();
+    for (; objectIter != objectQuery.end(); ++objectIter) {
+        objectIter.value()->m_client = 0;
+        if (objectIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            objectIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugExpressionQuery*>::iterator exprIter = expressionQuery.begin();
+    for (; exprIter != expressionQuery.end(); ++exprIter) {
+        exprIter.value()->m_client = 0;
+        if (exprIter.value()->state() == QDeclarativeDebugQuery::Waiting)
+            exprIter.value()->setState(QDeclarativeDebugQuery::Error);
+    }
+
+    QHash<int, QDeclarativeDebugWatch*>::iterator watchIter = watched.begin();
+    for (; watchIter != watched.end(); ++watchIter) {
+        watchIter.value()->m_client = 0;
+        watchIter.value()->setState(QDeclarativeDebugWatch::Dead);
+    }
 }
 
 int QDeclarativeEngineDebugPrivate::getId()
@@ -157,6 +193,14 @@ void QDeclarativeEngineDebugPrivate::remove(QDeclarativeEngineDebug *c, QDeclara
     if (c && q) {
         QDeclarativeEngineDebugPrivate *p = (QDeclarativeEngineDebugPrivate *)QObjectPrivate::get(c);
         p->expressionQuery.remove(q->m_queryId);
+    }
+}
+
+void QDeclarativeEngineDebugPrivate::remove(QDeclarativeEngineDebug *c, QDeclarativeDebugWatch *w)
+{
+    if (c && w) {
+        QDeclarativeEngineDebugPrivate *p = (QDeclarativeEngineDebugPrivate *)QObjectPrivate::get(c);
+        p->watched.remove(w->m_queryId);
     }
 }
 
@@ -210,7 +254,7 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
             {
                 QDeclarativeDebugObjectReference obj;
                 obj.m_debugId = prop.m_value.toInt();
-                prop.m_value = qVariantFromValue(obj);
+                prop.m_value = QVariant::fromValue(obj);
                 break;
             }
             case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Unknown:
@@ -594,14 +638,15 @@ QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::queryExpressionResult
 
 bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QString &propertyName,
                                                   const QVariant &bindingExpression,
-                                                  bool isLiteralValue)
+                                                  bool isLiteralValue,
+                                                  QString source, int line)
 {
     Q_D(QDeclarativeEngineDebug);
 
     if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue;
+        ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue << source << line;
         d->client->sendMessage(message);
         return true;
     } else {
@@ -647,6 +692,8 @@ QDeclarativeDebugWatch::QDeclarativeDebugWatch(QObject *parent)
 
 QDeclarativeDebugWatch::~QDeclarativeDebugWatch()
 {
+    if (m_client && m_queryId != -1)
+        QDeclarativeEngineDebugPrivate::remove(m_client, this);
 }
 
 int QDeclarativeDebugWatch::queryId() const

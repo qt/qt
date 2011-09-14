@@ -1522,6 +1522,7 @@ void QDeclarativeAnimationGroupPrivate::append_animation(QDeclarativeListPropert
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
     if (q) {
         a->setGroup(q);
+        // This is an optimization for the parenting that already occurs via addAnimation
         QDeclarative_setParent_noEvent(a->qtAnimation(), q->d_func()->ag);
         q->d_func()->ag->addAnimation(a->qtAnimation());
     }
@@ -1531,9 +1532,12 @@ void QDeclarativeAnimationGroupPrivate::clear_animation(QDeclarativeListProperty
 {
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
     if (q) {
-        for (int i = 0; i < q->d_func()->animations.count(); ++i)
-            q->d_func()->animations.at(i)->setGroup(0);
-        q->d_func()->animations.clear();
+        while (q->d_func()->animations.count()) {
+            QDeclarativeAbstractAnimation *firstAnim = q->d_func()->animations.at(0);
+            QDeclarative_setParent_noEvent(firstAnim->qtAnimation(), 0);
+            q->d_func()->ag->removeAnimation(firstAnim->qtAnimation());
+            firstAnim->setGroup(0);
+        }
     }
 }
 
@@ -2940,5 +2944,9 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
         delete data;
     }
 }
+
+QDeclarativeScriptActionPrivate::QDeclarativeScriptActionPrivate()
+    : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), reversing(false), proxy(this), rsa(0) {}
+
 
 QT_END_NAMESPACE

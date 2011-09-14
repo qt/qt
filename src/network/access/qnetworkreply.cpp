@@ -49,6 +49,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     : readBufferMaxSize(0),
       operation(QNetworkAccessManager::UnknownOperation),
       errorCode(QNetworkReply::NoError)
+    , isFinished(false)
 {
     // set the default attribute values
     attributes.insert(QNetworkRequest::ConnectionEncryptedAttribute, false);
@@ -462,7 +463,7 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 */
 bool QNetworkReply::isFinished() const
 {
-    return d_func()->isFinished();
+    return d_func()->isFinished;
 }
 
 /*!
@@ -716,6 +717,21 @@ void QNetworkReply::setError(NetworkError errorCode, const QString &errorString)
     d->errorCode = errorCode;
     setErrorString(errorString); // in QIODevice
 }
+
+/*!
+    \since 4.8
+    Sets the reply as \a finished.
+
+    After having this set the replies data must not change.
+
+    \sa isFinished()
+*/
+void QNetworkReply::setFinished(bool finished)
+{
+    Q_D(QNetworkReply);
+    d->isFinished = finished;
+}
+
 
 /*!
     Sets the URL being processed to be \a url. Normally, the URL

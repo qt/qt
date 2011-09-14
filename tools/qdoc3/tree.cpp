@@ -1544,8 +1544,72 @@ bool Tree::generateIndexSection(QXmlStreamWriter &writer,
     return true;
 }
 
+
 /*!
- */
+    Returns true if the node \a n1 is less than node \a n2.
+    The comparison is performed by comparing properties of the nodes in order
+    of increasing complexity.
+*/
+bool compareNodes(const Node *n1, const Node *n2)
+{
+    // Private nodes can occur in any order since they won't normally be
+    // written to the index.
+    if (n1->access() == Node::Private && n2->access() == Node::Private)
+        return true;
+
+    if (n1->location().filePath() < n2->location().filePath())
+        return true;
+    else if (n1->location().filePath() > n2->location().filePath())
+        return false;
+
+    if (n1->type() < n2->type())
+        return true;
+    else if (n1->type() > n2->type())
+        return false;
+
+    if (n1->name() < n2->name())
+        return true;
+    else if (n1->name() > n2->name())
+        return false;
+
+    if (n1->access() < n2->access())
+        return true;
+    else if (n1->access() > n2->access())
+        return false;
+
+    if (n1->type() == Node::Function && n2->type() == Node::Function) {
+        const FunctionNode *f1 = static_cast<const FunctionNode *>(n1);
+        const FunctionNode *f2 = static_cast<const FunctionNode *>(n2);
+
+        if (f1->isConst() < f2->isConst())
+            return true;
+        else if (f1->isConst() > f2->isConst())
+            return false;
+
+        if (f1->signature() < f2->signature())
+            return true;
+        else if (f1->signature() > f2->signature())
+            return false;
+    }
+
+    if (n1->type() == Node::Fake && n2->type() == Node::Fake) {
+        const FakeNode *f1 = static_cast<const FakeNode *>(n1);
+        const FakeNode *f2 = static_cast<const FakeNode *>(n2);
+        if (f1->fullTitle() < f2->fullTitle())
+            return true;
+        else if (f1->fullTitle() > f2->fullTitle())
+            return false;
+    }
+
+    return false;
+}
+
+/*!
+    Generate index sections for the child nodes of the given \a node
+    using the \a writer specified. If \a generateInternalNodes is true,
+    nodes marked as internal will be included in the index; otherwise,
+    they will be omitted.
+*/
 void Tree::generateIndexSections(QXmlStreamWriter &writer,
                                  const Node *node,
                                  bool generateInternalNodes) const
@@ -1555,7 +1619,10 @@ void Tree::generateIndexSections(QXmlStreamWriter &writer,
         if (node->isInnerNode()) {
             const InnerNode *inner = static_cast<const InnerNode *>(node);
 
-            foreach (const Node *child, inner->childNodes()) {
+            NodeList cnodes = inner->childNodes();
+            qSort(cnodes.begin(), cnodes.end(), compareNodes);
+
+            foreach (const Node *child, cnodes) {
                 /*
                   Don't generate anything for a QML property group node.
                   It is just a place holder for a collection of QML property

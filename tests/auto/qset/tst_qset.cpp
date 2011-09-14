@@ -66,6 +66,7 @@ public:
 
 private slots:
     void operator_eq();
+    void swap();
     void size();
     void capacity();
     void reserve();
@@ -144,6 +145,16 @@ void tst_QSet::operator_eq()
         QVERIFY(a != b);
         QVERIFY(!(a == b));
     }
+}
+
+void tst_QSet::swap()
+{
+    QSet<int> s1, s2;
+    s1.insert(1);
+    s2.insert(2);
+    s1.swap(s2);
+    QCOMPARE(*s1.begin(),2);
+    QCOMPARE(*s2.begin(),1);
 }
 
 void tst_QSet::size()

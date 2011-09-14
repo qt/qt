@@ -244,7 +244,7 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
             if (!qmlengine->sqlQueryClass)
                 qmlengine->sqlQueryClass = new QDeclarativeSqlQueryScriptClass(engine);
             QScriptValue rows = engine->newObject(qmlengine->sqlQueryClass);
-            rows.setData(engine->newVariant(qVariantFromValue(query)));
+            rows.setData(engine->newVariant(QVariant::fromValue(query)));
             rows.setProperty(QLatin1String("item"), engine->newFunction(qmlsqldatabase_item,1), QScriptValue::SkipInEnumeration);
             result.setProperty(QLatin1String("rows"),rows);
             result.setProperty(QLatin1String("rowsAffected"),query.numRowsAffected());
@@ -282,7 +282,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     QScriptValue instance = engine->newObject();
     instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
-    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
+    QScriptValue tx = engine->newVariant(instance,QVariant::fromValue(db));
 
     QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
     if (from_version!=foundvers) {
@@ -309,8 +309,10 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     if (ok) {
         context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
+#ifndef QT_NO_SETTINGS
         QSettings ini(qmlsqldatabase_databaseFile(db.connectionName(),engine) + QLatin1String(".ini"), QSettings::IniFormat);
         ini.setValue(QLatin1String("Version"), to_version);
+#endif
     }
 
     return engine->undefinedValue();
@@ -326,7 +328,7 @@ static QScriptValue qmlsqldatabase_transaction_shared(QScriptContext *context, Q
     QScriptValue instance = engine->newObject();
     instance.setProperty(QLatin1String("executeSql"),
         engine->newFunction(readOnly ? qmlsqldatabase_executeSql_readonly : qmlsqldatabase_executeSql,1));
-    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
+    QScriptValue tx = engine->newVariant(instance,QVariant::fromValue(db));
 
     db.transaction();
     callback.call(QScriptValue(), QScriptValueList() << tx);
@@ -355,6 +357,7 @@ static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QSc
 */
 static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {
+#ifndef QT_NO_SETTINGS
     qmlsqldatabase_initDatabasesPath(engine);
 
     QSqlDatabase database;
@@ -411,13 +414,16 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
     instance.setProperty(QLatin1String("version"), version, QScriptValue::ReadOnly);
     instance.setProperty(QLatin1String("changeVersion"), engine->newFunction(qmlsqldatabase_change_version,3));
 
-    QScriptValue result = engine->newVariant(instance,qVariantFromValue(database));
+    QScriptValue result = engine->newVariant(instance,QVariant::fromValue(database));
 
     if (created && dbcreationCallback.isFunction()) {
         dbcreationCallback.call(QScriptValue(), QScriptValueList() << result);
     }
 
     return result;
+#else
+    return engine->undefinedValue();
+#endif // QT_NO_SETTINGS
 }
 
 void qt_add_qmlsqldatabase(QScriptEngine *engine)

@@ -60,7 +60,7 @@ LetClause::LetClause(const Expression::Ptr &operand1,
 
 DynamicContext::Ptr LetClause::bindVariable(const DynamicContext::Ptr &context) const
 {
-    context->setExpressionVariable(m_varDecl->slot, Expression::Ptr(new DynamicContextStore(m_operand1, context)));
+    context->setExpressionVariable(m_varDecl->slot, m_operand1);
     return context;
 }
 

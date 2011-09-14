@@ -47,10 +47,9 @@
 #ifndef __KAST_TOPLEVEL_H__
 #define __KAST_TOPLEVEL_H__
 
-#include <q3mainwindow.h>
-#include <q3dict.h>
-#include <qmap.h>
-//Added by qt3to4:
+#include <QMainWindow>
+#include <QMultiHash>
+#include <QMap>
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QKeyEvent>
@@ -63,11 +62,11 @@ QT_BEGIN_NAMESPACE
 class QLCDNumber;
 QT_END_NAMESPACE
 
-class KAstTopLevel : public Q3MainWindow
+class KAstTopLevel : public QMainWindow
 {
     Q_OBJECT
 public:
-    KAstTopLevel( QWidget *parent=0, const char *name=0 );
+    KAstTopLevel( QWidget *parent = 0);
     virtual ~KAstTopLevel();
 
 private:
@@ -104,7 +103,7 @@ private:
     KALedMeter *powerMeter;
 
     bool   sound;
-    Q3Dict<QString> soundDict;
+    //Q3Dict<QString> soundDict;
 
     // waiting for user to press Enter to launch a ship
     bool waitShip;
@@ -118,7 +117,7 @@ private:
     enum Action { Launch, Thrust, RotateLeft, RotateRight, Shoot, Teleport,
                     Brake, Shield, Pause, NewGame  };
 
-    QMap<int,Action> actions;
+    QMap<int, Action> actions;
 };
 
 #endif

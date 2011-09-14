@@ -55,6 +55,7 @@
 
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qtranslator.h"
+#include "QtCore/qsettings.h"
 #include "private/qobject_p.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -78,7 +79,7 @@ class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QCoreApplication)
 
 public:
-    QCoreApplicationPrivate(int &aargc,  char **aargv);
+    QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);
@@ -135,6 +136,11 @@ public:
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
+    static int app_compile_version;
+#if defined(QT3_SUPPORT)
+    static bool useQt3Support;
+#endif
+    static QSettings *trolltechConf();
 };
 
 QT_END_NAMESPACE

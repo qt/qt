@@ -1312,6 +1312,9 @@ class RegexGenerator : private MacroAssembler {
         push(ARMRegisters::r4);
         push(ARMRegisters::r5);
         push(ARMRegisters::r6);
+#if CPU(ARM_TRADITIONAL)
+        push(ARMRegisters::r8); // scratch register
+#endif
         move(ARMRegisters::r3, output);
 #endif
     }
@@ -1327,6 +1330,9 @@ class RegexGenerator : private MacroAssembler {
         pop(X86Registers::ebx);
         pop(X86Registers::ebp);
 #elif CPU(ARM)
+#if CPU(ARM_TRADITIONAL)
+        pop(ARMRegisters::r8); // scratch register
+#endif
         pop(ARMRegisters::r6);
         pop(ARMRegisters::r5);
         pop(ARMRegisters::r4);

@@ -98,7 +98,7 @@ EXPORTS
 	?metaObject@QGLWindowSurface@@UBEPBUQMetaObject@@XZ @ 97 NONAME ; struct QMetaObject const * QGLWindowSurface::metaObject(void) const
 	?setAttributeBuffer@QGLShaderProgram@@QAEXHIHHH@Z @ 98 NONAME ; void QGLShaderProgram::setAttributeBuffer(int, unsigned int, int, int, int)
 	?getProcAddress@QGLContext@@QBEPAXABVQString@@@Z @ 99 NONAME ; void * QGLContext::getProcAddress(class QString const &) const
-	?qt_metacall@QGLTextureGlyphCache@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 100 NONAME ; int QGLTextureGlyphCache::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QGLTextureGlyphCache@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 100 NONAME ABSENT ; int QGLTextureGlyphCache::qt_metacall(enum QMetaObject::Call, int, void * *)
 	??1QGLPixelBuffer@@UAE@XZ @ 101 NONAME ; QGLPixelBuffer::~QGLPixelBuffer(void)
 	?setUniformValueArray@QGLShaderProgram@@QAEXHPBVQVector4D@@H@Z @ 102 NONAME ; void QGLShaderProgram::setUniformValueArray(int, class QVector4D const *, int)
 	?releaseFromDynamicTexture@QGLPixelBuffer@@QAEXXZ @ 103 NONAME ; void QGLPixelBuffer::releaseFromDynamicTexture(void)
@@ -115,7 +115,7 @@ EXPORTS
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABV?$QGenericMatrix@$01$02M@@@Z @ 114 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QGenericMatrix<2, 3, float> const &)
 	?useCorrectShaderProg@QGLEngineShaderManager@@QAE_NXZ @ 115 NONAME ; bool QGLEngineShaderManager::useCorrectShaderProg(void)
 	?setAlphaBufferSize@QGLFormat@@QAEXH@Z @ 116 NONAME ; void QGLFormat::setAlphaBufferSize(int)
-	??0QGLContextResource@@QAE@P6AXPAX@Z@Z @ 117 NONAME ; QGLContextResource::QGLContextResource(void (*)(void *))
+	??0QGLContextResource@@QAE@P6AXPAX@Z@Z @ 117 NONAME ABSENT ; QGLContextResource::QGLContextResource(void (*)(void *))
 	?tr@QGLEngineShaderManager@@SA?AVQString@@PBD0H@Z @ 118 NONAME ; class QString QGLEngineShaderManager::tr(char const *, char const *, int)
 	?setUniformValue@QGLShaderProgram@@QAEXHABVQVector4D@@@Z @ 119 NONAME ; void QGLShaderProgram::setUniformValue(int, class QVector4D const &)
 	?d_func@QGLContext@@ABEPBVQGLContextPrivate@@XZ @ 120 NONAME ; class QGLContextPrivate const * QGLContext::d_func(void) const
@@ -125,7 +125,7 @@ EXPORTS
 	?bindTexture@QGLWidget@@QAEIABVQImage@@IHV?$QFlags@W4BindOption@QGLContext@@@@@Z @ 124 NONAME ; unsigned int QGLWidget::bindTexture(class QImage const &, unsigned int, int, class QFlags<enum QGLContext::BindOption>)
 	?ensureCreated@QGLPixmapData@@ABEXXZ @ 125 NONAME ; void QGLPixmapData::ensureCreated(void) const
 	?setSource@QGLCustomShaderStage@@IAEXABVQByteArray@@@Z @ 126 NONAME ; void QGLCustomShaderStage::setSource(class QByteArray const &)
-	?trUtf8@QGLTextureGlyphCache@@SA?AVQString@@PBD0@Z @ 127 NONAME ; class QString QGLTextureGlyphCache::trUtf8(char const *, char const *)
+	?trUtf8@QGLTextureGlyphCache@@SA?AVQString@@PBD0@Z @ 127 NONAME ABSENT ; class QString QGLTextureGlyphCache::trUtf8(char const *, char const *)
 	?removeFromPainter@QGLCustomShaderStage@@QAEXPAVQPainter@@@Z @ 128 NONAME ; void QGLCustomShaderStage::removeFromPainter(class QPainter *)
 	?qt_metacall@QGLWindowSurface@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 129 NONAME ; int QGLWindowSurface::qt_metacall(enum QMetaObject::Call, int, void * *)
 	??0QGLBuffer@@QAE@W4Type@0@@Z @ 130 NONAME ; QGLBuffer::QGLBuffer(enum QGLBuffer::Type)
@@ -207,7 +207,7 @@ EXPORTS
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABV?$QGenericMatrix@$02$02M@@@Z @ 206 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QGenericMatrix<3, 3, float> const &)
 	?setUniformValue@QGLShaderProgram@@QAEXPBDMMMM@Z @ 207 NONAME ; void QGLShaderProgram::setUniformValue(char const *, float, float, float, float)
 	?requestedFormat@QGLContext@@QBE?AVQGLFormat@@XZ @ 208 NONAME ; class QGLFormat QGLContext::requestedFormat(void) const
-	?fillTexture@QGLTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@I@Z @ 209 NONAME ; void QGLTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int)
+	?fillTexture@QGLTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@I@Z @ 209 NONAME ABSENT ; void QGLTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int)
 	?isNativePaintingActive@QGL2PaintEngineEx@@QBE_NXZ @ 210 NONAME ; bool QGL2PaintEngineEx::isNativePaintingActive(void) const
 	?accumBufferSize@QGLFormat@@QBEHXZ @ 211 NONAME ; int QGLFormat::accumBufferSize(void) const
 	?setAttributeValue@QGLShaderProgram@@QAEXHPBMHH@Z @ 212 NONAME ; void QGLShaderProgram::setAttributeValue(int, float const *, int, int)
@@ -231,7 +231,7 @@ EXPORTS
 	??1QGLPaintDevice@@UAE@XZ @ 230 NONAME ; QGLPaintDevice::~QGLPaintDevice(void)
 	?setGeometryInputType@QGLShaderProgram@@QAEXI@Z @ 231 NONAME ; void QGLShaderProgram::setGeometryInputType(unsigned int)
 	?isValid@QGLPixmapData@@ABE_NXZ @ 232 NONAME ; bool QGLPixmapData::isValid(void) const
-	?cleanup@QGLContextResource@@QAEXPBVQGLContext@@PAX@Z @ 233 NONAME ; void QGLContextResource::cleanup(class QGLContext const *, void *)
+	?cleanup@QGLContextResource@@QAEXPBVQGLContext@@PAX@Z @ 233 NONAME ABSENT ; void QGLContextResource::cleanup(class QGLContext const *, void *)
 	?context@QGLWidget@@QBEPBVQGLContext@@XZ @ 234 NONAME ; class QGLContext const * QGLWidget::context(void) const
 	?tr@QGLShaderProgram@@SA?AVQString@@PBD0H@Z @ 235 NONAME ; class QString QGLShaderProgram::tr(char const *, char const *, int)
 	??0QGLPixelBuffer@@QAE@HHABVQGLFormat@@PAVQGLWidget@@@Z @ 236 NONAME ; QGLPixelBuffer::QGLPixelBuffer(int, int, class QGLFormat const &, class QGLWidget *)
@@ -282,13 +282,13 @@ EXPORTS
 	??0QGLShaderProgram@@QAE@PBVQGLContext@@PAVQObject@@@Z @ 281 NONAME ; QGLShaderProgram::QGLShaderProgram(class QGLContext const *, class QObject *)
 	?setUniformValueArray@QGLShaderProgram@@QAEXPBDPBV?$QGenericMatrix@$03$02M@@H@Z @ 282 NONAME ; void QGLShaderProgram::setUniformValueArray(char const *, class QGenericMatrix<4, 3, float> const *, int)
 	??0QGLShaderProgram@@QAE@PAVQObject@@@Z @ 283 NONAME ; QGLShaderProgram::QGLShaderProgram(class QObject *)
-	?qt_metacast@QGLTextureGlyphCache@@UAEPAXPBD@Z @ 284 NONAME ; void * QGLTextureGlyphCache::qt_metacast(char const *)
+	?qt_metacast@QGLTextureGlyphCache@@UAEPAXPBD@Z @ 284 NONAME ABSENT ; void * QGLTextureGlyphCache::qt_metacast(char const *)
 	?staticMetaObject@QGLEngineShaderManager@@2UQMetaObject@@B @ 285 NONAME ; struct QMetaObject const QGLEngineShaderManager::staticMetaObject
 	?setDevice@QGLContext@@IAEXPAVQPaintDevice@@@Z @ 286 NONAME ; void QGLContext::setDevice(class QPaintDevice *)
 	?setUniformValueArray@QGLShaderProgram@@QAEXHPBV?$QGenericMatrix@$02$01M@@H@Z @ 287 NONAME ; void QGLShaderProgram::setUniformValueArray(int, class QGenericMatrix<3, 2, float> const *, int)
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABV?$QGenericMatrix@$03$02M@@@Z @ 288 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QGenericMatrix<4, 3, float> const &)
 	?setAttributeArray@QGLShaderProgram@@QAEXHIPBXHH@Z @ 289 NONAME ; void QGLShaderProgram::setAttributeArray(int, unsigned int, void const *, int, int)
-	?tr@QGLTextureGlyphCache@@SA?AVQString@@PBD0H@Z @ 290 NONAME ; class QString QGLTextureGlyphCache::tr(char const *, char const *, int)
+	?tr@QGLTextureGlyphCache@@SA?AVQString@@PBD0H@Z @ 290 NONAME ABSENT ; class QString QGLTextureGlyphCache::tr(char const *, char const *, int)
 	?setDefaultOverlayFormat@QGLFormat@@SAXABV1@@Z @ 291 NONAME ; void QGLFormat::setDefaultOverlayFormat(class QGLFormat const &)
 	?qt_gl_share_widget@@YAPAVQGLWidget@@XZ @ 292 NONAME ; class QGLWidget * qt_gl_share_widget(void)
 	?initializeOverlayGL@QGLWidget@@MAEXXZ @ 293 NONAME ; void QGLWidget::initializeOverlayGL(void)
@@ -365,7 +365,7 @@ EXPORTS
 	?samples@QGLFramebufferObjectFormat@@QBEHXZ @ 364 NONAME ; int QGLFramebufferObjectFormat::samples(void) const
 	?setInactive@QGLCustomShaderStage@@QAEXXZ @ 365 NONAME ; void QGLCustomShaderStage::setInactive(void)
 	?extensionFuncs@QGLContextPrivate@@SAAAUQGLExtensionFuncs@@PBVQGLContext@@@Z @ 366 NONAME ; struct QGLExtensionFuncs & QGLContextPrivate::extensionFuncs(class QGLContext const *)
-	?value@QGLContextResource@@QAEPAXPBVQGLContext@@@Z @ 367 NONAME ; void * QGLContextResource::value(class QGLContext const *)
+	?value@QGLContextResource@@QAEPAXPBVQGLContext@@@Z @ 367 NONAME ABSENT ; void * QGLContextResource::value(class QGLContext const *)
 	?majorVersion@QGLFormat@@QBEHXZ @ 368 NONAME ; int QGLFormat::majorVersion(void) const
 	?rgba@QGLFormat@@QBE_NXZ @ 369 NONAME ; bool QGLFormat::rgba(void) const
 	?paintDevice@QGLWindowSurface@@UAEPAVQPaintDevice@@XZ @ 370 NONAME ; class QPaintDevice * QGLWindowSurface::paintDevice(void)
@@ -401,7 +401,7 @@ EXPORTS
 	?isValid@QGLWidget@@QBE_NXZ @ 400 NONAME ; bool QGLWidget::isValid(void) const
 	?shared_null@QGLColormap@@0UQGLColormapData@1@A @ 401 NONAME ; struct QGLColormap::QGLColormapData QGLColormap::shared_null
 	?setUniformValue@QGLShaderProgram@@QAEXPBDQAY01M@Z @ 402 NONAME ; void QGLShaderProgram::setUniformValue(char const *, float [2] * const)
-	?insert@QGLContextResource@@QAEXPBVQGLContext@@PAX@Z @ 403 NONAME ; void QGLContextResource::insert(class QGLContext const *, void *)
+	?insert@QGLContextResource@@QAEXPBVQGLContext@@PAX@Z @ 403 NONAME ABSENT ; void QGLContextResource::insert(class QGLContext const *, void *)
 	??0QGLCustomShaderStage@@QAE@XZ @ 404 NONAME ; QGLCustomShaderStage::QGLCustomShaderStage(void)
 	?setDefaultFormat@QGLFormat@@SAXABV1@@Z @ 405 NONAME ; void QGLFormat::setDefaultFormat(class QGLFormat const &)
 	?sourceCode@QGLShader@@QBE?AVQByteArray@@XZ @ 406 NONAME ; class QByteArray QGLShader::sourceCode(void) const
@@ -421,7 +421,7 @@ EXPORTS
 	??_EQGLShaderProgram@@UAE@I@Z @ 420 NONAME ; QGLShaderProgram::~QGLShaderProgram(unsigned int)
 	?pixmapFilter@QGL2PaintEngineEx@@UAEPAVQPixmapFilter@@HPBV2@@Z @ 421 NONAME ; class QPixmapFilter * QGL2PaintEngineEx::pixmapFilter(int, class QPixmapFilter const *)
 	?scroll@QGLPixmapData@@UAE_NHHABVQRect@@@Z @ 422 NONAME ; bool QGLPixmapData::scroll(int, int, class QRect const &)
-	?contextDestroyed@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 423 NONAME ; void QGLTextureGlyphCache::contextDestroyed(class QGLContext const *)
+	?contextDestroyed@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 423 NONAME ABSENT ; void QGLTextureGlyphCache::contextDestroyed(class QGLContext const *)
 	??0QGLColormap@@QAE@XZ @ 424 NONAME ; QGLColormap::QGLColormap(void)
 	?metric@QGLFramebufferObject@@MBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 425 NONAME ; int QGLFramebufferObject::metric(enum QPaintDevice::PaintDeviceMetric) const
 	?devType@QGLFramebufferObject@@MBEHXZ @ 426 NONAME ; int QGLFramebufferObject::devType(void) const
@@ -468,7 +468,7 @@ EXPORTS
 	?d_func@QGL2PaintEngineEx@@AAEPAVQGL2PaintEngineExPrivate@@XZ @ 467 NONAME ; class QGL2PaintEngineExPrivate * QGL2PaintEngineEx::d_func(void)
 	?resize@QGLPixmapData@@UAEXHH@Z @ 468 NONAME ; void QGLPixmapData::resize(int, int)
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABV?$QGenericMatrix@$01$01M@@@Z @ 469 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QGenericMatrix<2, 2, float> const &)
-	?trUtf8@QGLTextureGlyphCache@@SA?AVQString@@PBD0H@Z @ 470 NONAME ; class QString QGLTextureGlyphCache::trUtf8(char const *, char const *, int)
+	?trUtf8@QGLTextureGlyphCache@@SA?AVQString@@PBD0H@Z @ 470 NONAME ABSENT ; class QString QGLTextureGlyphCache::trUtf8(char const *, char const *, int)
 	?begin@QGL2PaintEngineEx@@UAE_NPAVQPaintDevice@@@Z @ 471 NONAME ; bool QGL2PaintEngineEx::begin(class QPaintDevice *)
 	?samples@QGLFormat@@QBEHXZ @ 472 NONAME ; int QGLFormat::samples(void) const
 	?setFormat@QGLContext@@QAEXABVQGLFormat@@@Z @ 473 NONAME ; void QGLContext::setFormat(class QGLFormat const &)
@@ -495,7 +495,7 @@ EXPORTS
 	?setGeometryOutputVertexCount@QGLShaderProgram@@QAEXH@Z @ 494 NONAME ; void QGLShaderProgram::setGeometryOutputVertexCount(int)
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABVQSize@@@Z @ 495 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QSize const &)
 	?convertToGLFormat@QGLWidget@@SA?AVQImage@@ABV2@@Z @ 496 NONAME ; class QImage QGLWidget::convertToGLFormat(class QImage const &)
-	?staticMetaObject@QGLTextureGlyphCache@@2UQMetaObject@@B @ 497 NONAME ; struct QMetaObject const QGLTextureGlyphCache::staticMetaObject
+	?staticMetaObject@QGLTextureGlyphCache@@2UQMetaObject@@B @ 497 NONAME ABSENT ; struct QMetaObject const QGLTextureGlyphCache::staticMetaObject
 	??_EQGLContextResource@@QAE@I@Z @ 498 NONAME ABSENT ; QGLContextResource::~QGLContextResource(unsigned int)
 	?handle@QGLColormap@@IAEKXZ @ 499 NONAME ; unsigned long QGLColormap::handle(void)
 	?isCreated@QGLBuffer@@QBE_NXZ @ 500 NONAME ; bool QGLBuffer::isCreated(void) const
@@ -549,7 +549,7 @@ EXPORTS
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABVQPointF@@@Z @ 548 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QPointF const &)
 	?getDevice@QGLPaintDevice@@SAPAV1@PAVQPaintDevice@@@Z @ 549 NONAME ; class QGLPaintDevice * QGLPaintDevice::getDevice(class QPaintDevice *)
 	?setUniformValue@QGLShaderProgram@@QAEXHQAY02M@Z @ 550 NONAME ; void QGLShaderProgram::setUniformValue(int, float [3] * const)
-	?getStaticMetaObject@QGLTextureGlyphCache@@SAABUQMetaObject@@XZ @ 551 NONAME ; struct QMetaObject const & QGLTextureGlyphCache::getStaticMetaObject(void)
+	?getStaticMetaObject@QGLTextureGlyphCache@@SAABUQMetaObject@@XZ @ 551 NONAME ABSENT ; struct QMetaObject const & QGLTextureGlyphCache::getStaticMetaObject(void)
 	?swapBuffers@QGLContext@@UBEXXZ @ 552 NONAME ; void QGLContext::swapBuffers(void) const
 	?renderText@QGLWidget@@QAEXHHABVQString@@ABVQFont@@H@Z @ 553 NONAME ; void QGLWidget::renderText(int, int, class QString const &, class QFont const &, int)
 	?defaultFormat@QGLFormat@@SA?AV1@XZ @ 554 NONAME ; class QGLFormat QGLFormat::defaultFormat(void)
@@ -558,7 +558,7 @@ EXPORTS
 	?bindTexture@QGLContext@@QAEIABVQImage@@IHV?$QFlags@W4BindOption@QGLContext@@@@@Z @ 557 NONAME ; unsigned int QGLContext::bindTexture(class QImage const &, unsigned int, int, class QFlags<enum QGLContext::BindOption>)
 	?initialized@QGLContext@@IBE_NXZ @ 558 NONAME ; bool QGLContext::initialized(void) const
 	?cleanup@QGLColormap@@CAXPAUQGLColormapData@1@@Z @ 559 NONAME ; void QGLColormap::cleanup(struct QGLColormap::QGLColormapData *)
-	??1QGLContextResource@@QAE@XZ @ 560 NONAME ; QGLContextResource::~QGLContextResource(void)
+	??1QGLContextResource@@QAE@XZ @ 560 NONAME ABSENT ; QGLContextResource::~QGLContextResource(void)
 	?bindTexture@QGLWidget@@QAEIABVQPixmap@@IHV?$QFlags@W4BindOption@QGLContext@@@@@Z @ 561 NONAME ; unsigned int QGLWidget::bindTexture(class QPixmap const &, unsigned int, int, class QFlags<enum QGLContext::BindOption>)
 	?setUniformValue@QGLShaderProgram@@QAEXPBDABV?$QGenericMatrix@$02$01M@@@Z @ 562 NONAME ; void QGLShaderProgram::setUniformValue(char const *, class QGenericMatrix<3, 2, float> const &)
 	?setUniformValueArray@QGLShaderProgram@@QAEXHPBMHH@Z @ 563 NONAME ; void QGLShaderProgram::setUniformValueArray(int, float const *, int, int)
@@ -589,7 +589,7 @@ EXPORTS
 	?setUniforms@QGraphicsShaderEffect@@MAEXPAVQGLShaderProgram@@@Z @ 588 NONAME ; void QGraphicsShaderEffect::setUniforms(class QGLShaderProgram *)
 	?drawImage@QGL2PaintEngineEx@@UAEXABVQRectF@@ABVQImage@@0V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 589 NONAME ; void QGL2PaintEngineEx::drawImage(class QRectF const &, class QImage const &, class QRectF const &, class QFlags<enum Qt::ImageConversionFlag>)
 	?flush@QGLWindowSurface@@UAEXPAVQWidget@@ABVQRegion@@ABVQPoint@@@Z @ 590 NONAME ; void QGLWindowSurface::flush(class QWidget *, class QRegion const &, class QPoint const &)
-	??0QGLTextureGlyphCache@@QAE@PAVQGLContext@@W4Type@QFontEngineGlyphCache@@ABVQTransform@@@Z @ 591 NONAME ; QGLTextureGlyphCache::QGLTextureGlyphCache(class QGLContext *, enum QFontEngineGlyphCache::Type, class QTransform const &)
+	??0QGLTextureGlyphCache@@QAE@PAVQGLContext@@W4Type@QFontEngineGlyphCache@@ABVQTransform@@@Z @ 591 NONAME ABSENT ; QGLTextureGlyphCache::QGLTextureGlyphCache(class QGLContext *, enum QFontEngineGlyphCache::Type, class QTransform const &)
 	??_EQGLTextureGlyphCache@@UAE@I@Z @ 592 NONAME ; QGLTextureGlyphCache::~QGLTextureGlyphCache(unsigned int)
 	??1QGLShareContextScope@@QAE@XZ @ 593 NONAME ; QGLShareContextScope::~QGLShareContextScope(void)
 	?alpha@QGLFormat@@QBE_NXZ @ 594 NONAME ; bool QGLFormat::alpha(void) const
@@ -633,8 +633,8 @@ EXPORTS
 	?qt_metacast@QGLEngineShaderManager@@UAEPAXPBD@Z @ 632 NONAME ; void * QGLEngineShaderManager::qt_metacast(char const *)
 	?sampleBuffers@QGLFormat@@QBE_NXZ @ 633 NONAME ; bool QGLFormat::sampleBuffers(void) const
 	?trUtf8@QGLWindowSurface@@SA?AVQString@@PBD0H@Z @ 634 NONAME ; class QString QGLWindowSurface::trUtf8(char const *, char const *, int)
-	?shaderProgNeedsChangingSlot@QGLEngineShaderManager@@AAEXXZ @ 635 NONAME ; void QGLEngineShaderManager::shaderProgNeedsChangingSlot(void)
-	?metaObject@QGLTextureGlyphCache@@UBEPBUQMetaObject@@XZ @ 636 NONAME ; struct QMetaObject const * QGLTextureGlyphCache::metaObject(void) const
+	?shaderProgNeedsChangingSlot@QGLEngineShaderManager@@AAEXXZ @ 635 NONAME ABSENT ; void QGLEngineShaderManager::shaderProgNeedsChangingSlot(void)
+	?metaObject@QGLTextureGlyphCache@@UBEPBUQMetaObject@@XZ @ 636 NONAME ABSENT ; struct QMetaObject const * QGLTextureGlyphCache::metaObject(void) const
 	?paintEvent@QGLWidget@@MAEXPAVQPaintEvent@@@Z @ 637 NONAME ; void QGLWidget::paintEvent(class QPaintEvent *)
 	?uniformLocation@QGLShaderProgram@@QBEHABVQByteArray@@@Z @ 638 NONAME ; int QGLShaderProgram::uniformLocation(class QByteArray const &) const
 	?currentContext@QGLContext@@SAPBV1@XZ @ 639 NONAME ; class QGLContext const * QGLContext::currentContext(void)
@@ -643,7 +643,7 @@ EXPORTS
 	?setUniformValueArray@QGLShaderProgram@@QAEXPBDPBV?$QGenericMatrix@$01$01M@@H@Z @ 642 NONAME ; void QGLShaderProgram::setUniformValueArray(char const *, class QGenericMatrix<2, 2, float> const *, int)
 	?drawStaticTextItem@QGL2PaintEngineEx@@UAEXPAVQStaticTextItem@@@Z @ 643 NONAME ; void QGL2PaintEngineEx::drawStaticTextItem(class QStaticTextItem *)
 	?metaObject@QGLShader@@UBEPBUQMetaObject@@XZ @ 644 NONAME ; struct QMetaObject const * QGLShader::metaObject(void) const
-	?tr@QGLTextureGlyphCache@@SA?AVQString@@PBD0@Z @ 645 NONAME ; class QString QGLTextureGlyphCache::tr(char const *, char const *)
+	?tr@QGLTextureGlyphCache@@SA?AVQString@@PBD0@Z @ 645 NONAME ABSENT ; class QString QGLTextureGlyphCache::tr(char const *, char const *)
 	?drawTexture@QGLFramebufferObject@@QAEXABVQRectF@@II@Z @ 646 NONAME ; void QGLFramebufferObject::drawTexture(class QRectF const &, unsigned int, unsigned int)
 	?openGLVersionFlags@QGLFormat@@SA?AV?$QFlags@W4OpenGLVersionFlag@QGLFormat@@@@XZ @ 647 NONAME ; class QFlags<enum QGLFormat::OpenGLVersionFlag> QGLFormat::openGLVersionFlags(void)
 	?setRedBufferSize@QGLFormat@@QAEXH@Z @ 648 NONAME ; void QGLFormat::setRedBufferSize(int)
@@ -706,11 +706,11 @@ EXPORTS
 	?toNativeType@QGLPixmapData@@UAEPAXW4NativeType@QPixmapData@@@Z @ 705 NONAME ; void * QGLPixmapData::toNativeType(enum QPixmapData::NativeType)
 	?fromNativeType@QGLPixmapData@@UAEXPAXW4NativeType@QPixmapData@@@Z @ 706 NONAME ; void QGLPixmapData::fromNativeType(void *, enum QPixmapData::NativeType)
 	?clear@QGLTextureGlyphCache@@QAEXXZ @ 707 NONAME ; void QGLTextureGlyphCache::clear(void)
-	?context@QGLTextureGlyphCache@@QBEPAVQGLContext@@XZ @ 708 NONAME ; class QGLContext * QGLTextureGlyphCache::context(void) const
+	?context@QGLTextureGlyphCache@@QBEPAVQGLContext@@XZ @ 708 NONAME ABSENT ; class QGLContext * QGLTextureGlyphCache::context(void) const
 	?swapBehavior@QGLWindowSurface@@2W4SwapMode@1@A @ 709 NONAME ; enum QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior
 	?createPixmapForImage@QGLPixmapData@@AAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 710 NONAME ; void QGLPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	?fromImageReader@QGLPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 711 NONAME ; void QGLPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
-	?setContext@QGLTextureGlyphCache@@QAEXPAVQGLContext@@@Z @ 712 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext *)
+	?setContext@QGLTextureGlyphCache@@QAEXPAVQGLContext@@@Z @ 712 NONAME ABSENT ; void QGLTextureGlyphCache::setContext(class QGLContext *)
 	?hibernate@QGLPixmapData@@QAEXXZ @ 713 NONAME ; void QGLPixmapData::hibernate(void)
 	?detachTextureFromPool@QGLPixmapData@@QAEXXZ @ 714 NONAME ; void QGLPixmapData::detachTextureFromPool(void)
 	?reclaimTexture@QGLPixmapData@@QAEXXZ @ 715 NONAME ; void QGLPixmapData::reclaimTexture(void)
@@ -725,4 +725,155 @@ EXPORTS
 	?platformExtension@QGLGraphicsSystem@@UAEPAVQGraphicsSystemEx@@XZ @ 724 NONAME ; class QGraphicsSystemEx * QGLGraphicsSystem::platformExtension(void)
 	?releaseCachedGpuResources@QGLGraphicsSystem@@UAEXXZ @ 725 NONAME ; void QGLGraphicsSystem::releaseCachedGpuResources(void)
 	?toVolatileImage@QGLPixmapData@@UBE?AVQVolatileImage@@XZ @ 726 NONAME ; class QVolatileImage QGLPixmapData::toVolatileImage(void) const
-
+	?glGetActiveAttrib@QGLFunctions@@QAEXIIHPAH0PAIPAD@Z @ 727 NONAME ; void QGLFunctions::glGetActiveAttrib(unsigned int, unsigned int, int, int *, int *, unsigned int *, char *)
+	?glBindFramebuffer@QGLFunctions@@QAEXII@Z @ 728 NONAME ; void QGLFunctions::glBindFramebuffer(unsigned int, unsigned int)
+	?glBufferData@QGLFunctions@@QAEXIHPBXI@Z @ 729 NONAME ; void QGLFunctions::glBufferData(unsigned int, int, void const *, unsigned int)
+	?glValidateProgram@QGLFunctions@@QAEXI@Z @ 730 NONAME ; void QGLFunctions::glValidateProgram(unsigned int)
+	?glUniform1f@QGLFunctions@@QAEXHM@Z @ 731 NONAME ; void QGLFunctions::glUniform1f(int, float)
+	?glDetachShader@QGLFunctions@@QAEXII@Z @ 732 NONAME ; void QGLFunctions::glDetachShader(unsigned int, unsigned int)
+	?glDeleteProgram@QGLFunctions@@QAEXI@Z @ 733 NONAME ; void QGLFunctions::glDeleteProgram(unsigned int)
+	??_EQGLContextResourceBase@@UAE@I@Z @ 734 NONAME ; QGLContextResourceBase::~QGLContextResourceBase(unsigned int)
+	?glUniform2f@QGLFunctions@@QAEXHMM@Z @ 735 NONAME ; void QGLFunctions::glUniform2f(int, float, float)
+	?glIsProgram@QGLFunctions@@QAEEI@Z @ 736 NONAME ; unsigned char QGLFunctions::glIsProgram(unsigned int)
+	?openGLFeatures@QGLFunctions@@QBE?AV?$QFlags@W4OpenGLFeature@QGLFunctions@@@@XZ @ 737 NONAME ; class QFlags<enum QGLFunctions::OpenGLFeature> QGLFunctions::openGLFeatures(void) const
+	?glReleaseShaderCompiler@QGLFunctions@@QAEXXZ @ 738 NONAME ; void QGLFunctions::glReleaseShaderCompiler(void)
+	??0QGLTextureGlyphCache@@QAE@PBVQGLContext@@W4Type@QFontEngineGlyphCache@@ABVQTransform@@@Z @ 739 NONAME ; QGLTextureGlyphCache::QGLTextureGlyphCache(class QGLContext const *, enum QFontEngineGlyphCache::Type, class QTransform const &)
+	?context@QGLTextureGlyphCache@@QBEPBVQGLContext@@XZ @ 740 NONAME ; class QGLContext const * QGLTextureGlyphCache::context(void) const
+	?glGenRenderbuffers@QGLFunctions@@QAEXHPAI@Z @ 741 NONAME ; void QGLFunctions::glGenRenderbuffers(int, unsigned int *)
+	?glBindBuffer@QGLFunctions@@QAEXII@Z @ 742 NONAME ; void QGLFunctions::glBindBuffer(unsigned int, unsigned int)
+	?glUniformMatrix3fv@QGLFunctions@@QAEXHHEPBM@Z @ 743 NONAME ; void QGLFunctions::glUniformMatrix3fv(int, int, unsigned char, float const *)
+	?glGenerateMipmap@QGLFunctions@@QAEXI@Z @ 744 NONAME ; void QGLFunctions::glGenerateMipmap(unsigned int)
+	?hasOpenGLFeature@QGLFunctions@@QBE_NW4OpenGLFeature@1@@Z @ 745 NONAME ; bool QGLFunctions::hasOpenGLFeature(enum QGLFunctions::OpenGLFeature) const
+	?glGetAttachedShaders@QGLFunctions@@QAEXIHPAHPAI@Z @ 746 NONAME ; void QGLFunctions::glGetAttachedShaders(unsigned int, int, int *, unsigned int *)
+	?glDeleteShader@QGLFunctions@@QAEXI@Z @ 747 NONAME ; void QGLFunctions::glDeleteShader(unsigned int)
+	?simpleProgram@QGLEngineSharedShaders@@QAEPAVQGLShaderProgram@@XZ @ 748 NONAME ; class QGLShaderProgram * QGLEngineSharedShaders::simpleProgram(void)
+	?blitProgram@QGLEngineSharedShaders@@QAEPAVQGLShaderProgram@@XZ @ 749 NONAME ; class QGLShaderProgram * QGLEngineSharedShaders::blitProgram(void)
+	?glLinkProgram@QGLFunctions@@QAEXI@Z @ 750 NONAME ; void QGLFunctions::glLinkProgram(unsigned int)
+	?glUseProgram@QGLFunctions@@QAEXI@Z @ 751 NONAME ; void QGLFunctions::glUseProgram(unsigned int)
+	??0QGLFunctions@@QAE@PBVQGLContext@@@Z @ 752 NONAME ; QGLFunctions::QGLFunctions(class QGLContext const *)
+	?glGetBufferParameteriv@QGLFunctions@@QAEXIIPAH@Z @ 753 NONAME ; void QGLFunctions::glGetBufferParameteriv(unsigned int, unsigned int, int *)
+	?glGenBuffers@QGLFunctions@@QAEXHPAI@Z @ 754 NONAME ; void QGLFunctions::glGenBuffers(int, unsigned int *)
+	?glGetShaderiv@QGLFunctions@@QAEXIIPAH@Z @ 755 NONAME ; void QGLFunctions::glGetShaderiv(unsigned int, unsigned int, int *)
+	?fillTexture@QGLTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@IUQFixed@@@Z @ 756 NONAME ; void QGLTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int, struct QFixed)
+	?glUniform2fv@QGLFunctions@@QAEXHHPBM@Z @ 757 NONAME ; void QGLFunctions::glUniform2fv(int, int, float const *)
+	??0QGLContextGroupResourceBase@@QAE@XZ @ 758 NONAME ; QGLContextGroupResourceBase::QGLContextGroupResourceBase(void)
+	?glGetFramebufferAttachmentParameteriv@QGLFunctions@@QAEXIIIPAH@Z @ 759 NONAME ; void QGLFunctions::glGetFramebufferAttachmentParameteriv(unsigned int, unsigned int, unsigned int, int *)
+	??0QGLEngineSharedShaders@@QAE@PBVQGLContext@@@Z @ 760 NONAME ; QGLEngineSharedShaders::QGLEngineSharedShaders(class QGLContext const *)
+	?cleanup@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 761 NONAME ; void QGLContextGroupResourceBase::cleanup(class QGLContext const *, void *)
+	?glUniform2iv@QGLFunctions@@QAEXHHPBH@Z @ 762 NONAME ; void QGLFunctions::glUniform2iv(int, int, int const *)
+	?glCompileShader@QGLFunctions@@QAEXI@Z @ 763 NONAME ; void QGLFunctions::glCompileShader(unsigned int)
+	?qShaderSnippets@QGLEngineSharedShaders@@0PAPBDA @ 764 NONAME ; char const * * QGLEngineSharedShaders::qShaderSnippets
+	?isFlipped@QGLPaintDevice@@UBE_NXZ @ 765 NONAME ; bool QGLPaintDevice::isFlipped(void) const
+	?shadersForContext@QGLEngineSharedShaders@@SAPAV1@PBVQGLContext@@@Z @ 766 NONAME ; class QGLEngineSharedShaders * QGLEngineSharedShaders::shadersForContext(class QGLContext const *)
+	?cleanupCustomStage@QGLEngineSharedShaders@@QAEXPAVQGLCustomShaderStage@@@Z @ 767 NONAME ; void QGLEngineSharedShaders::cleanupCustomStage(class QGLCustomShaderStage *)
+	?glGetProgramiv@QGLFunctions@@QAEXIIPAH@Z @ 768 NONAME ; void QGLFunctions::glGetProgramiv(unsigned int, unsigned int, int *)
+	?glClearDepthf@QGLFunctions@@QAEXM@Z @ 769 NONAME ; void QGLFunctions::glClearDepthf(float)
+	?glIsFramebuffer@QGLFunctions@@QAEEI@Z @ 770 NONAME ; unsigned char QGLFunctions::glIsFramebuffer(unsigned int)
+	?getStaticMetaObject@QGLEngineSharedShaders@@SAABUQMetaObject@@XZ @ 771 NONAME ; struct QMetaObject const & QGLEngineSharedShaders::getStaticMetaObject(void)
+	?glUniform4f@QGLFunctions@@QAEXHMMMM@Z @ 772 NONAME ; void QGLFunctions::glUniform4f(int, float, float, float, float)
+	?glUniform3f@QGLFunctions@@QAEXHMMM@Z @ 773 NONAME ; void QGLFunctions::glUniform3f(int, float, float, float)
+	??1QGLEngineSharedShaders@@QAE@XZ @ 774 NONAME ; QGLEngineSharedShaders::~QGLEngineSharedShaders(void)
+	?glDeleteRenderbuffers@QGLFunctions@@QAEXHPBI@Z @ 775 NONAME ; void QGLFunctions::glDeleteRenderbuffers(int, unsigned int const *)
+	?glVertexAttrib1f@QGLFunctions@@QAEXIM@Z @ 776 NONAME ; void QGLFunctions::glVertexAttrib1f(unsigned int, float)
+	?glVertexAttrib4f@QGLFunctions@@QAEXIMMMM@Z @ 777 NONAME ; void QGLFunctions::glVertexAttrib4f(unsigned int, float, float, float, float)
+	?glSampleCoverage@QGLFunctions@@QAEXME@Z @ 778 NONAME ; void QGLFunctions::glSampleCoverage(float, unsigned char)
+	?glGetActiveUniform@QGLFunctions@@QAEXIIHPAH0PAIPAD@Z @ 779 NONAME ; void QGLFunctions::glGetActiveUniform(unsigned int, unsigned int, int, int *, int *, unsigned int *, char *)
+	??_EQGLContextGroupResourceBase@@UAE@I@Z @ 780 NONAME ; QGLContextGroupResourceBase::~QGLContextGroupResourceBase(unsigned int)
+	?findProgramInCache@QGLEngineSharedShaders@@QAEPAVQGLEngineShaderProg@@ABV2@@Z @ 781 NONAME ; class QGLEngineShaderProg * QGLEngineSharedShaders::findProgramInCache(class QGLEngineShaderProg const &)
+	?glStencilOpSeparate@QGLFunctions@@QAEXIIII@Z @ 782 NONAME ; void QGLFunctions::glStencilOpSeparate(unsigned int, unsigned int, unsigned int, unsigned int)
+	?glCheckFramebufferStatus@QGLFunctions@@QAEII@Z @ 783 NONAME ; unsigned int QGLFunctions::glCheckFramebufferStatus(unsigned int)
+	?glDepthRangef@QGLFunctions@@QAEXMM@Z @ 784 NONAME ; void QGLFunctions::glDepthRangef(float, float)
+	??1QGLFunctions@@QAE@XZ @ 785 NONAME ; QGLFunctions::~QGLFunctions(void)
+	?glStencilMaskSeparate@QGLFunctions@@QAEXII@Z @ 786 NONAME ; void QGLFunctions::glStencilMaskSeparate(unsigned int, unsigned int)
+	?glBlendColor@QGLFunctions@@QAEXMMMM@Z @ 787 NONAME ; void QGLFunctions::glBlendColor(float, float, float, float)
+	?glUniform1fv@QGLFunctions@@QAEXHHPBM@Z @ 788 NONAME ; void QGLFunctions::glUniform1fv(int, int, float const *)
+	??1QGLContextResourceBase@@UAE@XZ @ 789 NONAME ; QGLContextResourceBase::~QGLContextResourceBase(void)
+	?glCreateProgram@QGLFunctions@@QAEIXZ @ 790 NONAME ; unsigned int QGLFunctions::glCreateProgram(void)
+	?glVertexAttrib2f@QGLFunctions@@QAEXIMM@Z @ 791 NONAME ; void QGLFunctions::glVertexAttrib2f(unsigned int, float, float)
+	?glUniformMatrix2fv@QGLFunctions@@QAEXHHEPBM@Z @ 792 NONAME ; void QGLFunctions::glUniformMatrix2fv(int, int, unsigned char, float const *)
+	?glBufferSubData@QGLFunctions@@QAEXIHHPBX@Z @ 793 NONAME ; void QGLFunctions::glBufferSubData(unsigned int, int, int, void const *)
+	?glUniform1iv@QGLFunctions@@QAEXHHPBH@Z @ 794 NONAME ; void QGLFunctions::glUniform1iv(int, int, int const *)
+	?qt_resolve_buffer_extensions@@YA_NPAVQGLContext@@@Z @ 795 NONAME ; bool qt_resolve_buffer_extensions(class QGLContext *)
+	?glUniform1i@QGLFunctions@@QAEXHH@Z @ 796 NONAME ; void QGLFunctions::glUniform1i(int, int)
+	?glVertexAttrib4fv@QGLFunctions@@QAEXIPBM@Z @ 797 NONAME ; void QGLFunctions::glVertexAttrib4fv(unsigned int, float const *)
+	?glDeleteFramebuffers@QGLFunctions@@QAEXHPBI@Z @ 798 NONAME ; void QGLFunctions::glDeleteFramebuffers(int, unsigned int const *)
+	?glGetVertexAttribfv@QGLFunctions@@QAEXIIPAM@Z @ 799 NONAME ; void QGLFunctions::glGetVertexAttribfv(unsigned int, unsigned int, float *)
+	?glGetProgramInfoLog@QGLFunctions@@QAEXIHPAHPAD@Z @ 800 NONAME ; void QGLFunctions::glGetProgramInfoLog(unsigned int, int, int *, char *)
+	?glGetShaderInfoLog@QGLFunctions@@QAEXIHPAHPAD@Z @ 801 NONAME ; void QGLFunctions::glGetShaderInfoLog(unsigned int, int, int *, char *)
+	?glEnableVertexAttribArray@QGLFunctions@@QAEXI@Z @ 802 NONAME ; void QGLFunctions::glEnableVertexAttribArray(unsigned int)
+	?glGetVertexAttribiv@QGLFunctions@@QAEXIIPAH@Z @ 803 NONAME ; void QGLFunctions::glGetVertexAttribiv(unsigned int, unsigned int, int *)
+	?glCompressedTexImage2D@QGLFunctions@@QAEXIHIHHHHPBX@Z @ 804 NONAME ; void QGLFunctions::glCompressedTexImage2D(unsigned int, int, unsigned int, int, int, int, int, void const *)
+	?glGetAttribLocation@QGLFunctions@@QAEHIPBD@Z @ 805 NONAME ; int QGLFunctions::glGetAttribLocation(unsigned int, char const *)
+	?glActiveTexture@QGLFunctions@@QAEXI@Z @ 806 NONAME ; void QGLFunctions::glActiveTexture(unsigned int)
+	?glUniform4fv@QGLFunctions@@QAEXHHPBM@Z @ 807 NONAME ; void QGLFunctions::glUniform4fv(int, int, float const *)
+	?glCreateShader@QGLFunctions@@QAEII@Z @ 808 NONAME ; unsigned int QGLFunctions::glCreateShader(unsigned int)
+	?glAttachShader@QGLFunctions@@QAEXII@Z @ 809 NONAME ; void QGLFunctions::glAttachShader(unsigned int, unsigned int)
+	?glRenderbufferStorage@QGLFunctions@@QAEXIIHH@Z @ 810 NONAME ; void QGLFunctions::glRenderbufferStorage(unsigned int, unsigned int, int, int)
+	?glVertexAttribPointer@QGLFunctions@@QAEXIHIEHPBX@Z @ 811 NONAME ; void QGLFunctions::glVertexAttribPointer(unsigned int, int, unsigned int, unsigned char, int, void const *)
+	?glUniform4iv@QGLFunctions@@QAEXHHPBH@Z @ 812 NONAME ; void QGLFunctions::glUniform4iv(int, int, int const *)
+	?glDisableVertexAttribArray@QGLFunctions@@QAEXI@Z @ 813 NONAME ; void QGLFunctions::glDisableVertexAttribArray(unsigned int)
+	?features@QGLWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 814 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QGLWindowSurface::features(void) const
+	?glIsShader@QGLFunctions@@QAEEI@Z @ 815 NONAME ; unsigned char QGLFunctions::glIsShader(unsigned int)
+	?glShaderBinary@QGLFunctions@@QAEXHPBIIPBXH@Z @ 816 NONAME ; void QGLFunctions::glShaderBinary(int, unsigned int const *, unsigned int, void const *, int)
+	?glGenFramebuffers@QGLFunctions@@QAEXHPAI@Z @ 817 NONAME ; void QGLFunctions::glGenFramebuffers(int, unsigned int *)
+	?glVertexAttrib3fv@QGLFunctions@@QAEXIPBM@Z @ 818 NONAME ; void QGLFunctions::glVertexAttrib3fv(unsigned int, float const *)
+	?glGetVertexAttribPointerv@QGLFunctions@@QAEXIIPAPAX@Z @ 819 NONAME ; void QGLFunctions::glGetVertexAttribPointerv(unsigned int, unsigned int, void * *)
+	?snippetNameStr@QGLEngineSharedShaders@@SA?AVQByteArray@@W4SnippetName@1@@Z @ 820 NONAME ; class QByteArray QGLEngineSharedShaders::snippetNameStr(enum QGLEngineSharedShaders::SnippetName)
+	?glUniformMatrix4fv@QGLFunctions@@QAEXHHEPBM@Z @ 821 NONAME ; void QGLFunctions::glUniformMatrix4fv(int, int, unsigned char, float const *)
+	?setContext@QGLTextureGlyphCache@@QAEXPBVQGLContext@@@Z @ 822 NONAME ; void QGLTextureGlyphCache::setContext(class QGLContext const *)
+	?glDeleteBuffers@QGLFunctions@@QAEXHPBI@Z @ 823 NONAME ; void QGLFunctions::glDeleteBuffers(int, unsigned int const *)
+	?glBindRenderbuffer@QGLFunctions@@QAEXII@Z @ 824 NONAME ; void QGLFunctions::glBindRenderbuffer(unsigned int, unsigned int)
+	?glStencilFuncSeparate@QGLFunctions@@QAEXIIHI@Z @ 825 NONAME ; void QGLFunctions::glStencilFuncSeparate(unsigned int, unsigned int, int, unsigned int)
+	?glGetUniformLocation@QGLFunctions@@QAEHIPBD@Z @ 826 NONAME ; int QGLFunctions::glGetUniformLocation(unsigned int, char const *)
+	?glGetRenderbufferParameteriv@QGLFunctions@@QAEXIIPAH@Z @ 827 NONAME ; void QGLFunctions::glGetRenderbufferParameteriv(unsigned int, unsigned int, int *)
+	?glBindAttribLocation@QGLFunctions@@QAEXIIPBD@Z @ 828 NONAME ; void QGLFunctions::glBindAttribLocation(unsigned int, unsigned int, char const *)
+	?glGetShaderSource@QGLFunctions@@QAEXIHPAHPAD@Z @ 829 NONAME ; void QGLFunctions::glGetShaderSource(unsigned int, int, int *, char *)
+	?setMipmap@QGLFramebufferObjectFormat@@QAEX_N@Z @ 830 NONAME ; void QGLFramebufferObjectFormat::setMipmap(bool)
+	??1QGLContextGroupResourceBase@@UAE@XZ @ 831 NONAME ; QGLContextGroupResourceBase::~QGLContextGroupResourceBase(void)
+	?glFramebufferTexture2D@QGLFunctions@@QAEXIIIIH@Z @ 832 NONAME ; void QGLFunctions::glFramebufferTexture2D(unsigned int, unsigned int, unsigned int, unsigned int, int)
+	?glBlendEquationSeparate@QGLFunctions@@QAEXII@Z @ 833 NONAME ; void QGLFunctions::glBlendEquationSeparate(unsigned int, unsigned int)
+	?insert@QGLContextResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 834 NONAME ; void QGLContextResourceBase::insert(class QGLContext const *, void *)
+	??_EQGLEngineSharedShaders@@QAE@I@Z @ 835 NONAME ; QGLEngineSharedShaders::~QGLEngineSharedShaders(unsigned int)
+	?glUniform2i@QGLFunctions@@QAEXHHH@Z @ 836 NONAME ; void QGLFunctions::glUniform2i(int, int, int)
+	?glGetUniformfv@QGLFunctions@@QAEXIHPAM@Z @ 837 NONAME ; void QGLFunctions::glGetUniformfv(unsigned int, int, float *)
+	?glUniform3i@QGLFunctions@@QAEXHHHH@Z @ 838 NONAME ; void QGLFunctions::glUniform3i(int, int, int, int)
+	?staticMetaObject@QGLEngineSharedShaders@@2UQMetaObject@@B @ 839 NONAME ; struct QMetaObject const QGLEngineSharedShaders::staticMetaObject
+	?cleanup@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@@Z @ 840 NONAME ; void QGLContextGroupResourceBase::cleanup(class QGLContext const *)
+	?glIsRenderbuffer@QGLFunctions@@QAEEI@Z @ 841 NONAME ; unsigned char QGLFunctions::glIsRenderbuffer(unsigned int)
+	?initializeGLFunctions@QGLFunctions@@QAEXPBVQGLContext@@@Z @ 842 NONAME ; void QGLFunctions::initializeGLFunctions(class QGLContext const *)
+	??0QGLFunctions@@QAE@XZ @ 843 NONAME ; QGLFunctions::QGLFunctions(void)
+	?glVertexAttrib2fv@QGLFunctions@@QAEXIPBM@Z @ 844 NONAME ; void QGLFunctions::glVertexAttrib2fv(unsigned int, float const *)
+	?isInitialized@QGLFunctions@@CA_NPBUQGLFunctionsPrivate@@@Z @ 845 NONAME ; bool QGLFunctions::isInitialized(struct QGLFunctionsPrivate const *)
+	?glGetUniformiv@QGLFunctions@@QAEXIHPAH@Z @ 846 NONAME ; void QGLFunctions::glGetUniformiv(unsigned int, int, int *)
+	?glBlendEquation@QGLFunctions@@QAEXI@Z @ 847 NONAME ; void QGLFunctions::glBlendEquation(unsigned int)
+	?glFramebufferRenderbuffer@QGLFunctions@@QAEXIIII@Z @ 848 NONAME ; void QGLFunctions::glFramebufferRenderbuffer(unsigned int, unsigned int, unsigned int, unsigned int)
+	?glUniform4i@QGLFunctions@@QAEXHHHHH@Z @ 849 NONAME ; void QGLFunctions::glUniform4i(int, int, int, int, int)
+	?glUniform3fv@QGLFunctions@@QAEXHHPBM@Z @ 850 NONAME ; void QGLFunctions::glUniform3fv(int, int, float const *)
+	?value@QGLContextResourceBase@@QAEPAXPBVQGLContext@@@Z @ 851 NONAME ; void * QGLContextResourceBase::value(class QGLContext const *)
+	?glBlendFuncSeparate@QGLFunctions@@QAEXIIII@Z @ 852 NONAME ; void QGLFunctions::glBlendFuncSeparate(unsigned int, unsigned int, unsigned int, unsigned int)
+	?glCompressedTexSubImage2D@QGLFunctions@@QAEXIHHHHHIHPBX@Z @ 853 NONAME ; void QGLFunctions::glCompressedTexSubImage2D(unsigned int, int, int, int, int, int, unsigned int, int, void const *)
+	?freeResource@QGLTextureGlyphCache@@UAEXPAX@Z @ 854 NONAME ; void QGLTextureGlyphCache::freeResource(void *)
+	?value@QGLContextGroupResourceBase@@QAEPAXPBVQGLContext@@@Z @ 855 NONAME ; void * QGLContextGroupResourceBase::value(class QGLContext const *)
+	?glUniform3iv@QGLFunctions@@QAEXHHPBH@Z @ 856 NONAME ; void QGLFunctions::glUniform3iv(int, int, int const *)
+	?mipmap@QGLFramebufferObjectFormat@@QBE_NXZ @ 857 NONAME ; bool QGLFramebufferObjectFormat::mipmap(void) const
+	?qt_extensionFuncs@QGLContextPrivate@@2UQGLExtensionFuncs@@A @ 858 NONAME ; struct QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs
+	?glShaderSource@QGLFunctions@@QAEXIHPAPBDPBH@Z @ 859 NONAME ; void QGLFunctions::glShaderSource(unsigned int, int, char const * *, int const *)
+	?glGetShaderPrecisionFormat@QGLFunctions@@QAEXIIPAH0@Z @ 860 NONAME ; void QGLFunctions::glGetShaderPrecisionFormat(unsigned int, unsigned int, int *, int *)
+	?insert@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 861 NONAME ; void QGLContextGroupResourceBase::insert(class QGLContext const *, void *)
+	?staticMetaObjectExtraData@QGLWindowSurface@@0UQMetaObjectExtraData@@B @ 862 NONAME ; struct QMetaObjectExtraData const QGLWindowSurface::staticMetaObjectExtraData
+	?qt_static_metacall@QGLSignalProxy@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 863 NONAME ; void QGLSignalProxy::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QGLSignalProxy@@0UQMetaObjectExtraData@@B @ 864 NONAME ; struct QMetaObjectExtraData const QGLSignalProxy::staticMetaObjectExtraData
+	?qt_static_metacall@QGLWindowSurface@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 865 NONAME ; void QGLWindowSurface::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QGLWidget@@0UQMetaObjectExtraData@@B @ 866 NONAME ; struct QMetaObjectExtraData const QGLWidget::staticMetaObjectExtraData
+	?qt_static_metacall@QGraphicsShaderEffect@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 867 NONAME ; void QGraphicsShaderEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QGLEngineShaderManager@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 868 NONAME ; void QGLEngineShaderManager::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QGLShader@@0UQMetaObjectExtraData@@B @ 869 NONAME ; struct QMetaObjectExtraData const QGLShader::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QGLShaderProgram@@0UQMetaObjectExtraData@@B @ 870 NONAME ; struct QMetaObjectExtraData const QGLShaderProgram::staticMetaObjectExtraData
+	?qt_static_metacall@QGLWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 871 NONAME ; void QGLWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QGLShader@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 872 NONAME ; void QGLShader::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QGraphicsShaderEffect@@0UQMetaObjectExtraData@@B @ 873 NONAME ; struct QMetaObjectExtraData const QGraphicsShaderEffect::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QGLEngineShaderManager@@0UQMetaObjectExtraData@@B @ 874 NONAME ; struct QMetaObjectExtraData const QGLEngineShaderManager::staticMetaObjectExtraData
+	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 875 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?glVertexAttrib3f@QGLFunctions@@QAEXIMMM@Z @ 876 NONAME ; void QGLFunctions::glVertexAttrib3f(unsigned int, float, float, float)
+	?glVertexAttrib1fv@QGLFunctions@@QAEXIPBM@Z @ 877 NONAME ; void QGLFunctions::glVertexAttrib1fv(unsigned int, float const *)
+	?glIsBuffer@QGLFunctions@@QAEEI@Z @ 878 NONAME ; unsigned char QGLFunctions::glIsBuffer(unsigned int)

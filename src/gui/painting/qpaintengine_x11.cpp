@@ -1611,8 +1611,8 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
         && (fill.style() != Qt::NoBrush)
         && ((has_fill_texture && fill.texture().hasAlpha()) || antialias || !solid_fill || has_alpha_pen != has_alpha_brush))
     {
-        QRect br = tessellator->tessellate((QPointF *)clippedPoints, clippedCount,
-                                              mode == QPaintEngine::WindingMode);
+        tessellator->tessellate((QPointF *)clippedPoints, clippedCount,
+                                mode == QPaintEngine::WindingMode);
         if (tessellator->size > 0) {
             XRenderPictureAttributes attrs;
             attrs.poly_edge = antialias ? PolyEdgeSmooth : PolyEdgeSharp;
@@ -1771,7 +1771,6 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
     Q_D(QX11PaintEngine);
     if (path.isEmpty())
         return;
-    QTransform old_matrix = d->matrix;
 
     if (d->has_brush)
         d->fillPath(path, QX11PaintEnginePrivate::BrushGC, true);
@@ -2334,7 +2333,7 @@ static QPainterPath path_for_glyphs(const QVarLengthArray<glyph_t> &glyphs,
                 bool set = src[x >> 3] & (0x80 >> (x & 7));
                 if (set) {
                     QRect r(xp + x, yp - h, 1, 1);
-                    while (x < glyph->width-1 && src[(x+1) >> 3] & (0x80 >> ((x+1) & 7))) {
+                    while (x+1 < glyph->width && src[(x+1) >> 3] & (0x80 >> ((x+1) & 7))) {
                         ++x;
                         r.setRight(r.right()+1);
                     }
@@ -2385,7 +2384,7 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
         set = ft->loadTransformedGlyphSet(d->matrix);
 
     if (!set || set->outline_drawing
-        || !ft->loadGlyphs(set, glyphs.data(), glyphs.size(), QFontEngineFT::Format_Render))
+        || !ft->loadGlyphs(set, glyphs.constData(), glyphs.size(), positions.constData(), QFontEngineFT::Format_Render))
     {
         QPaintEngine::drawTextItem(p, ti);
         return;

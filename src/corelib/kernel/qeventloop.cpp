@@ -175,6 +175,8 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
+    //we need to protect from race condition with QThread::exit
+    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
     if (d->threadData->quitNow)
         return -1;
 
@@ -186,6 +188,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     d->exit = false;
     ++d->threadData->loopLevel;
     d->threadData->eventLoops.push(this);
+    locker.unlock();
 
     // remove posted quit events when entering a new event loop
     QCoreApplication *app = QCoreApplication::instance();
@@ -205,6 +208,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
                  "reimplement QApplication::notify() and catch all exceptions there.\n");
 
         // copied from below
+        locker.relock();
         QEventLoop *eventLoop = d->threadData->eventLoops.pop();
         Q_ASSERT_X(eventLoop == this, "QEventLoop::exec()", "internal error");
         Q_UNUSED(eventLoop); // --release warning
@@ -216,6 +220,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 #endif
 
     // copied above
+    locker.relock();
     QEventLoop *eventLoop = d->threadData->eventLoops.pop();
     Q_ASSERT_X(eventLoop == this, "QEventLoop::exec()", "internal error");
     Q_UNUSED(eventLoop); // --release warning

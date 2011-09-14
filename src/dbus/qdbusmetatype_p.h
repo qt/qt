@@ -65,6 +65,7 @@ struct QDBusMetaTypeId
     static int objectpath;      // QDBusObjectPath
     static int signature;       // QDBusSignature
     static int error;           // QDBusError
+    static int unixfd;          // QDBusUnixFileDescriptor
 
     static void init();
 };

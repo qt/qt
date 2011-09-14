@@ -50,13 +50,15 @@
 #include <qdir.h>
 #include <qdatetime.h>
 #include <qdiriterator.h>
-#include <qcryptographichash.h>
 #include <qurl.h>
-
+#include <qcryptographichash.h>
 #include <qdebug.h>
 
-#define CACHE_PREFIX  QLatin1String("cache_")
-#define CACHE_POSTFIX QLatin1String(".cache")
+#define CACHE_POSTFIX QLatin1String(".d")
+#define PREPARED_SLASH QLatin1String("prepared/")
+#define CACHE_VERSION 7
+#define DATA_DIR QLatin1String("data")
+
 #define MAX_COMPRESSION_SIZE (1024 * 1024 * 3)
 
 #ifndef QT_NO_NETWORKDISKCACHE
@@ -153,6 +155,9 @@ void QNetworkDiskCache::setCacheDirectory(const QString &cacheDir)
     d->cacheDirectory = dir.absolutePath();
     if (!d->cacheDirectory.endsWith(QLatin1Char('/')))
         d->cacheDirectory += QLatin1Char('/');
+
+    d->dataDirectory = d->cacheDirectory + DATA_DIR + QString::number(CACHE_VERSION) + QLatin1Char('/');
+    d->prepareLayout();
 }
 
 /*!
@@ -244,6 +249,26 @@ void QNetworkDiskCache::insert(QIODevice *device)
     d->inserting.erase(it);
 }
 
+
+/*!
+    Create subdirectories and other housekeeping on the filesystem.
+    Prevents too many files from being present in any single directory.
+*/
+void QNetworkDiskCachePrivate::prepareLayout()
+{
+    QDir helper;
+    helper.mkpath(cacheDirectory + PREPARED_SLASH);
+
+    //Create directory and subdirectories 0-F
+    helper.mkpath(dataDirectory);
+    for (uint i = 0; i < 16 ; i++) {
+        QString str = QString::number(i, 16);
+        QString subdir = dataDirectory + str;
+        helper.mkdir(subdir);
+    }
+}
+
+
 void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
 {
     Q_Q(QNetworkDiskCache);
@@ -324,7 +349,7 @@ bool QNetworkDiskCachePrivate::removeFile(const QString &file)
         return false;
     QFileInfo info(file);
     QString fileName = info.fileName();
-    if (!fileName.endsWith(CACHE_POSTFIX) || !fileName.startsWith(CACHE_PREFIX))
+    if (!fileName.endsWith(CACHE_POSTFIX))
         return false;
     qint64 size = info.size();
     if (QFile::remove(file)) {
@@ -404,7 +429,7 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
             // ### verify that QFile uses the fd size and not the file name
             qint64 size = file->size() - file->pos();
             const uchar *p = 0;
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_INTEGRITY)
             p = file->map(file->pos(), size);
 #endif
             if (p) {
@@ -508,6 +533,9 @@ qint64 QNetworkDiskCache::expire()
         return 0;
     }
 
+    // close file handle to prevent "in use" error when QFile::remove() is called
+    d->lastItem.reset();
+
     QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
     QDirIterator it(cacheDirectory(), filters, QDirIterator::Subdirectories);
 
@@ -517,7 +545,7 @@ qint64 QNetworkDiskCache::expire()
         QString path = it.next();
         QFileInfo info = it.fileInfo();
         QString fileName = info.fileName();
-        if (fileName.endsWith(CACHE_POSTFIX) && fileName.startsWith(CACHE_PREFIX)) {
+        if (fileName.endsWith(CACHE_POSTFIX)) {
             cacheItems.insert(info.created(), path);
             totalSize += info.size();
         }
@@ -544,8 +572,6 @@ qint64 QNetworkDiskCache::expire()
                 << "Kept:" << cacheItems.count() - removedFiles;
     }
 #endif
-    if (removedFiles > 0)
-        d->lastItem.reset();
     return totalSize;
 }
 
@@ -564,7 +590,10 @@ void QNetworkDiskCache::clear()
     d->maximumCacheSize = size;
 }
 
-QByteArray QNetworkDiskCachePrivate::generateId(const QUrl &url) const
+/*!
+    Given a URL, generates a unique enough filename (and subdirectory)
+ */
+QString QNetworkDiskCachePrivate::uniqueFileName(const QUrl &url)
 {
     QUrl cleanUrl = url;
     cleanUrl.setPassword(QString());
@@ -572,29 +601,32 @@ QByteArray QNetworkDiskCachePrivate::generateId(const QUrl &url) const
 
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData(cleanUrl.toEncoded());
-    return hash.result().toHex();
+    // convert sha1 to base36 form and return first 8 bytes for use as string
+    QByteArray id =  QByteArray::number(*(qlonglong*)hash.result().data(), 36).left(8);
+    // generates <one-char subdir>/<8-char filname.d>
+    uint code = (uint)id.at(id.length()-1) % 16;
+    QString pathFragment = QString::number(code, 16) + QLatin1Char('/')
+                             + QLatin1String(id) + CACHE_POSTFIX;
+
+    return pathFragment;
 }
 
 QString QNetworkDiskCachePrivate::tmpCacheFileName() const
 {
-    QDir dir;
-    dir.mkpath(cacheDirectory + QLatin1String("prepared/"));
-    return cacheDirectory + QLatin1String("prepared/") + CACHE_PREFIX + QLatin1String("XXXXXX") + CACHE_POSTFIX;
+    //The subdirectory is presumed to be already read for use.
+    return cacheDirectory + PREPARED_SLASH + QLatin1String("XXXXXX") + CACHE_POSTFIX;
 }
 
+/*!
+    Generates fully qualified path of cached resource from a URL.
+ */
 QString QNetworkDiskCachePrivate::cacheFileName(const QUrl &url) const
 {
     if (!url.isValid())
         return QString();
-    QString directory = cacheDirectory + url.scheme() + QLatin1Char('/');
-    if (!QFile::exists(directory)) {
-        // ### make a static QDir function for this...
-        QDir dir;
-        dir.mkpath(directory);
-    }
 
-    QString fileName = CACHE_PREFIX + QLatin1String(generateId(url)) + CACHE_POSTFIX;
-    return  directory + fileName;
+    QString fullpath = dataDirectory + uniqueFileName(url);
+    return  fullpath;
 }
 
 /*!
@@ -631,7 +663,7 @@ bool QCacheItem::canCompress() const
 enum
 {
     CacheMagic = 0xe8,
-    CurrentCacheVersion = 7
+    CurrentCacheVersion = CACHE_VERSION
 };
 
 void QCacheItem::writeHeader(QFile *device) const
@@ -682,6 +714,12 @@ bool QCacheItem::read(QFile *device, bool readData)
         data.setData(qUncompress(dataBA));
         data.open(QBuffer::ReadOnly);
     }
+
+    // quick and dirty check if metadata's URL field and the file's name are in synch
+    QString expectedFilename = QNetworkDiskCachePrivate::uniqueFileName(metaData.url());
+    if (!device->fileName().endsWith(expectedFilename))
+        return false;
+
     return metaData.isValid();
 }
 

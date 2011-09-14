@@ -86,6 +86,7 @@ public slots:
 private slots:
     void noConnection();
     void connectToBus();
+    void connectToPeer();
     void connect();
     void send();
     void sendWithGui();
@@ -94,9 +95,13 @@ private slots:
 
     void registerObject_data();
     void registerObject();
+    void registerObjectPeer_data();
+    void registerObjectPeer();
     void registerObject2();
+    void registerObjectPeer2();
 
     void registerQObjectChildren();
+    void registerQObjectChildrenPeer();
 
     void callSelf();
     void callSelfByAnotherName_data();
@@ -108,9 +113,14 @@ private slots:
 
     void serviceRegistrationRaceCondition();
 
+    void registerVirtualObject();
+    void callVirtualObject();
+    void callVirtualObjectLocal();
+
 public:
     QString serviceName() const { return "com.trolltech.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);
+    bool callMethodPeer(const QDBusConnection &conn, const QString &path);
 };
 
 class QDBusSpy: public QObject
@@ -259,6 +269,14 @@ void tst_QDBusConnection::connectToBus()
         QVERIFY(!con.lastError().isValid());
     }
 
+    QDBusConnection::disconnectFromPeer("bubu");
+
+    {
+        QDBusConnection con("bubu");
+        QVERIFY(con.isConnected());
+        QVERIFY(!con.lastError().isValid());
+    }
+
     QDBusConnection::disconnectFromBus("bubu");
 
     {
@@ -274,6 +292,65 @@ void tst_QDBusConnection::connectToBus()
         QVERIFY(!con.lastError().isValid());
 
         QDBusConnection::disconnectFromBus("newconn");
+    }
+}
+
+void tst_QDBusConnection::connectToPeer()
+{
+    {
+        QDBusConnection con = QDBusConnection::connectToPeer(
+                "", "newconn");
+        QVERIFY(!con.isConnected());
+        QVERIFY(con.lastError().isValid());
+    }
+
+    QDBusServer server("unix:tmpdir=/tmp", 0);
+
+    {
+        QDBusConnection con = QDBusConnection::connectToPeer(
+                "unix:abstract=/tmp/dbus-XXXXXXXXXX,guid=00000000000000000000000000000000", "newconn2");
+        QVERIFY(!con.isConnected());
+        QVERIFY(con.lastError().isValid());
+    }
+
+    {
+        QDBusConnection con = QDBusConnection::connectToPeer(
+                server.address(), "bubu");
+
+        QVERIFY(con.isConnected());
+        QVERIFY(!con.lastError().isValid());
+
+        QDBusConnection con2("foo");
+        QVERIFY(!con2.isConnected());
+        QVERIFY(!con2.lastError().isValid());
+
+        con2 = con;
+        QVERIFY(con.isConnected());
+        QVERIFY(con2.isConnected());
+        QVERIFY(!con.lastError().isValid());
+        QVERIFY(!con2.lastError().isValid());
+    }
+
+    {
+        QDBusConnection con("bubu");
+        QVERIFY(con.isConnected());
+        QVERIFY(!con.lastError().isValid());
+    }
+
+    QDBusConnection::disconnectFromBus("bubu");
+
+    {
+        QDBusConnection con("bubu");
+        QVERIFY(con.isConnected());
+        QVERIFY(!con.lastError().isValid());
+    }
+
+    QDBusConnection::disconnectFromPeer("bubu");
+
+    {
+        QDBusConnection con("bubu");
+        QVERIFY(!con.isConnected());
+        QVERIFY(!con.lastError().isValid());
     }
 }
 
@@ -306,6 +383,106 @@ void tst_QDBusConnection::registerObject()
     }
     // make sure it's gone
     QVERIFY(!callMethod(con, path));
+}
+
+class MyServer : public QDBusServer
+{
+    Q_OBJECT
+public:
+    MyServer(QString path, QString addr, QObject* parent) : QDBusServer(addr, parent),
+                                                            m_path(path),
+                                                            m_conn("none")
+    {
+        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+    }
+
+    bool registerObject()
+    {
+        if( !m_conn.registerObject(m_path, &m_obj, QDBusConnection::ExportAllSlots) )
+            return false;
+        if(! (m_conn.objectRegisteredAt(m_path) == &m_obj))
+            return false;
+        return true;
+    }
+
+    void unregisterObject()
+    {
+        m_conn.unregisterObject(m_path);
+    }
+
+public slots:
+    void handleConnection(const QDBusConnection& c)
+    {
+        m_conn = c;
+        QVERIFY(isConnected());
+        QVERIFY(m_conn.isConnected());
+        QVERIFY(registerObject());
+    }
+
+private:
+    MyObject m_obj;
+    QString m_path;
+    QDBusConnection m_conn;
+};
+
+
+void tst_QDBusConnection::registerObjectPeer_data()
+{
+    QTest::addColumn<QString>("path");
+
+    QTest::newRow("/") << "/";
+    QTest::newRow("/p1") << "/p1";
+    QTest::newRow("/p2") << "/p2";
+    QTest::newRow("/p1/q") << "/p1/q";
+    QTest::newRow("/p1/q/r") << "/p1/q/r";
+}
+
+void tst_QDBusConnection::registerObjectPeer()
+{
+    QFETCH(QString, path);
+
+    MyServer server(path, "unix:tmpdir=/tmp", 0);
+
+    {
+        QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
+
+        QCoreApplication::processEvents();
+        QVERIFY(con.isConnected());
+
+        MyObject obj;
+        QVERIFY(callMethodPeer(con, path));
+        QCOMPARE(obj.path, path);
+    }
+
+    {
+        QDBusConnection con("foo");
+        QVERIFY(con.isConnected());
+        QVERIFY(callMethodPeer(con, path));
+    }
+
+    server.unregisterObject();
+
+    {
+        QDBusConnection con("foo");
+        QVERIFY(con.isConnected());
+        QVERIFY(!callMethodPeer(con, path));
+    }
+
+    server.registerObject();
+
+    {
+        QDBusConnection con("foo");
+        QVERIFY(con.isConnected());
+        QVERIFY(callMethodPeer(con, path));
+    }
+
+    QDBusConnection::disconnectFromPeer("foo");
+
+    {
+        QDBusConnection con("foo");
+        QVERIFY(!con.isConnected());
+        QVERIFY(!callMethodPeer(con, path));
+    }
 }
 
 void tst_QDBusConnection::registerObject2()
@@ -401,6 +578,134 @@ void tst_QDBusConnection::registerObject2()
     }
 }
 
+class MyServer2 : public QDBusServer
+{
+    Q_OBJECT
+public:
+    MyServer2(QString addr, QObject* parent) : QDBusServer(addr, parent),
+                                               m_conn("none")
+    {
+        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+    }
+
+    QDBusConnection connection()
+    {
+        return m_conn;
+    }
+
+public slots:
+    void handleConnection(const QDBusConnection& c)
+    {
+        m_conn = c;
+        QVERIFY(isConnected());
+        QVERIFY(m_conn.isConnected());
+    }
+
+private:
+    MyObject m_obj;
+    QDBusConnection m_conn;
+};
+
+void tst_QDBusConnection::registerObjectPeer2()
+{
+    MyServer2 server("unix:tmpdir=/tmp", 0);
+    QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
+    QCoreApplication::processEvents();
+    QVERIFY(con.isConnected());
+
+    QDBusConnection srv_con = server.connection();
+
+    // make sure nothing is using our paths:
+    QVERIFY(!callMethodPeer(srv_con, "/"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1"));
+    QVERIFY(!callMethodPeer(srv_con, "/p2"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/q"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/q/r"));
+
+    {
+        // register one object at root:
+        MyObject obj;
+        QVERIFY(con.registerObject("/", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(callMethodPeer(srv_con, "/"));
+        qDebug() << obj.path;
+        QCOMPARE(obj.path, QString("/"));
+    }
+    // make sure it's gone
+    QVERIFY(!callMethodPeer(srv_con, "/"));
+
+    {
+        // register one at an element:
+        MyObject obj;
+        QVERIFY(con.registerObject("/p1", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(!callMethodPeer(srv_con, "/"));
+        QVERIFY(callMethodPeer(srv_con, "/p1"));
+        qDebug() << obj.path;
+        QCOMPARE(obj.path, QString("/p1"));
+
+        // re-register it somewhere else
+        QVERIFY(con.registerObject("/p2", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(callMethodPeer(srv_con, "/p1"));
+        QCOMPARE(obj.path, QString("/p1"));
+        QVERIFY(callMethodPeer(srv_con, "/p2"));
+        QCOMPARE(obj.path, QString("/p2"));
+    }
+    // make sure it's gone
+    QVERIFY(!callMethodPeer(srv_con, "/p1"));
+    QVERIFY(!callMethodPeer(srv_con, "/p2"));
+
+    {
+        // register at a deep path
+        MyObject obj;
+        QVERIFY(con.registerObject("/p1/q/r", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(!callMethodPeer(srv_con, "/"));
+        QVERIFY(!callMethodPeer(srv_con, "/p1"));
+        QVERIFY(!callMethodPeer(srv_con, "/p1/q"));
+        QVERIFY(callMethodPeer(srv_con, "/p1/q/r"));
+        QCOMPARE(obj.path, QString("/p1/q/r"));
+    }
+    // make sure it's gone
+    QVERIFY(!callMethodPeer(srv_con, "/p1/q/r"));
+
+    {
+        MyObject obj;
+        QVERIFY(con.registerObject("/p1/q2", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2"));
+        QCOMPARE(obj.path, QString("/p1/q2"));
+
+        // try unregistering
+        con.unregisterObject("/p1/q2");
+        QVERIFY(!callMethodPeer(srv_con, "/p1/q2"));
+
+        // register it again
+        QVERIFY(con.registerObject("/p1/q2", &obj, QDBusConnection::ExportAllSlots));
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2"));
+        QCOMPARE(obj.path, QString("/p1/q2"));
+
+        // now try removing things around it:
+        con.unregisterObject("/p2");
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2")); // unrelated object shouldn't affect
+
+        con.unregisterObject("/p1");
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2")); // unregistering just the parent shouldn't affect it
+
+        con.unregisterObject("/p1/q2/r");
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2")); // unregistering non-existing child shouldn't affect it either
+
+        con.unregisterObject("/p1/q");
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2")); // unregistering sibling (before) shouldn't affect
+
+        con.unregisterObject("/p1/r");
+        QVERIFY(callMethodPeer(srv_con, "/p1/q2")); // unregistering sibling (after) shouldn't affect
+
+        // now remove it:
+        con.unregisterObject("/p1", QDBusConnection::UnregisterTree);
+        QVERIFY(!callMethodPeer(srv_con, "/p1/q2")); // we removed the full tree
+    }
+
+    QDBusConnection::disconnectFromPeer("foo");
+}
+
+
 void tst_QDBusConnection::registerQObjectChildren()
 {
     // make sure no one is there
@@ -456,10 +761,90 @@ void tst_QDBusConnection::registerQObjectChildren()
     QVERIFY(!callMethod(con, "/p1/c/cc"));
 }
 
+void tst_QDBusConnection::registerQObjectChildrenPeer()
+{
+    MyServer2 server("unix:tmpdir=/tmp", 0);
+    QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
+    QCoreApplication::processEvents();
+    QVERIFY(con.isConnected());
+
+    QDBusConnection srv_con = server.connection();
+
+    QVERIFY(!callMethodPeer(srv_con, "/p1"));
+
+    {
+        MyObject obj, *a, *b, *c, *cc;
+
+        a = new MyObject(&obj);
+        a->setObjectName("a");
+
+        b = new MyObject(&obj);
+        b->setObjectName("b");
+
+        c = new MyObject(&obj);
+        c->setObjectName("c");
+
+        cc = new MyObject(c);
+        cc->setObjectName("cc");
+
+        con.registerObject("/p1", &obj, QDBusConnection::ExportAllSlots |
+                           QDBusConnection::ExportChildObjects);
+
+        // make calls
+        QVERIFY(callMethodPeer(srv_con, "/p1"));
+        QCOMPARE(obj.callCount, 1);
+        QVERIFY(callMethodPeer(srv_con, "/p1/a"));
+        QCOMPARE(a->callCount, 1);
+        QVERIFY(callMethodPeer(srv_con, "/p1/b"));
+        QCOMPARE(b->callCount, 1);
+        QVERIFY(callMethodPeer(srv_con, "/p1/c"));
+        QCOMPARE(c->callCount, 1);
+        QVERIFY(callMethodPeer(srv_con, "/p1/c/cc"));
+        QCOMPARE(cc->callCount, 1);
+
+        QVERIFY(!callMethodPeer(srv_con, "/p1/d"));
+        QVERIFY(!callMethodPeer(srv_con, "/p1/c/abc"));
+
+        // pull an object, see if it goes away:
+        delete b;
+        QVERIFY(!callMethodPeer(srv_con, "/p1/b"));
+
+        delete c;
+        QVERIFY(!callMethodPeer(srv_con, "/p1/c"));
+        QVERIFY(!callMethodPeer(srv_con, "/p1/c/cc"));
+    }
+
+    QVERIFY(!callMethodPeer(srv_con, "/p1"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/a"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/b"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/c"));
+    QVERIFY(!callMethodPeer(srv_con, "/p1/c/cc"));
+
+    QDBusConnection::disconnectFromPeer("foo");
+}
+
 bool tst_QDBusConnection::callMethod(const QDBusConnection &conn, const QString &path)
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(conn.baseService(), path, "", "method");
     QDBusMessage reply = conn.call(msg, QDBus::Block/*WithGui*/);
+    if (reply.type() != QDBusMessage::ReplyMessage)
+        return false;
+    if (MyObject::path == path) {
+        QTest::compare_helper(true, "COMPARE()", __FILE__, __LINE__);
+    } else {
+        QTest::compare_helper(false, "Compared values are not the same",
+                              QTest::toString(MyObject::path), QTest::toString(path),
+                              "MyObject::path", "path", __FILE__, __LINE__);
+        return false;
+    }
+
+    return true;
+}
+
+bool tst_QDBusConnection::callMethodPeer(const QDBusConnection &conn, const QString &path)
+{
+    QDBusMessage msg = QDBusMessage::createMethodCall("", path, "", "method");
+    QDBusMessage reply = conn.call(msg, QDBus::BlockWithGui);
 
     if (reply.type() != QDBusMessage::ReplyMessage)
         return false;
@@ -714,6 +1099,203 @@ void tst_QDBusConnection::serviceRegistrationRaceCondition()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recv.count, 1);
+}
+
+class VirtualObject: public QDBusVirtualObject
+{
+    Q_OBJECT
+public:
+    VirtualObject() :success(true) {}
+
+    QString introspect(const QString &path) const
+    {
+        return QString();
+    }
+
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+        ++callCount;
+        lastMessage = message;
+
+        if (success) {
+            QDBusMessage reply = message.createReply(replyArguments);
+            connection.send(reply);
+        }
+        emit messageReceived(message);
+        return success;
+    }
+signals:
+    void messageReceived(const QDBusMessage &message) const;
+
+public:
+    mutable QDBusMessage lastMessage;
+    QVariantList replyArguments;
+    mutable int callCount;
+    bool success;
+};
+
+
+void tst_QDBusConnection::registerVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+    QString childChildPath = "/tree/node/child/another";
+
+    {
+        // Register VirtualObject that handles child paths. Unregister by going out of scope.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&obj));
+    }
+    QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+
+    {
+        // Register VirtualObject that handles child paths. Unregister by calling unregister.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&obj));
+        con.unregisterObject(path);
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    }
+
+    {
+        // Single node has no sub path handling.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SingleNode));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    }
+
+    {
+        // Register VirtualObject that handles child paths. Try to register an object on a child path of that.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+
+        QObject objectAtSubPath;
+        QVERIFY(!con.registerObject(path, &objectAtSubPath));
+        QVERIFY(!con.registerObject(childPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+    }
+
+    {
+        // Register object, make sure no SubPath handling object can be registered on a parent path.
+        QObject objectAtSubPath;
+        QVERIFY(con.registerObject(childPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&objectAtSubPath));
+
+        VirtualObject obj;
+        QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    }
+    QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(0));
+}
+
+void tst_QDBusConnection::callVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QDBusConnection con2 = QDBusConnection::connectToBus(QDBusConnection::SessionBus, "con2");
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+
+    // register one object at root:
+    VirtualObject obj;
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+    obj.callCount = 0;
+    obj.replyArguments << 42 << 47u;
+
+    QObject::connect(&obj, SIGNAL(messageReceived(QDBusMessage)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, QString(), "hello");
+    QDBusPendingCall reply = con2.asyncCall(message);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(obj.callCount, 1);
+    QCOMPARE(obj.lastMessage.service(), con2.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), path);
+    reply.waitForFinished();
+    QVERIFY(reply.isValid());
+    QCOMPARE(reply.reply().arguments(), obj.replyArguments);
+
+    // call sub path
+    QDBusMessage childMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "helloChild");
+    obj.replyArguments.clear();
+    obj.replyArguments << 99;
+    QDBusPendingCall childReply = con2.asyncCall(childMessage);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(obj.callCount, 2);
+    QCOMPARE(obj.lastMessage.service(), con2.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), childPath);
+
+    childReply.waitForFinished();
+    QVERIFY(childReply.isValid());
+    QCOMPARE(childReply.reply().arguments(), obj.replyArguments);
+
+    // let the call fail by having the virtual object return false
+    obj.success = false;
+    QDBusMessage errorMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "someFunc");
+    QDBusPendingCall errorReply = con2.asyncCall(errorMessage);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QTest::qWait(100);
+    QVERIFY(errorReply.isError());
+    qDebug() << errorReply.reply().arguments();
+    QCOMPARE(errorReply.reply().errorName(), QString("org.freedesktop.DBus.Error.UnknownObject"));
+
+    QDBusConnection::disconnectFromBus("con2");
+}
+
+void tst_QDBusConnection::callVirtualObjectLocal()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+
+    // register one object at root:
+    VirtualObject obj;
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+    obj.callCount = 0;
+    obj.replyArguments << 42 << 47u;
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, QString(), "hello");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    QCOMPARE(obj.callCount, 1);
+    QCOMPARE(obj.lastMessage.service(), con.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), path);
+    QCOMPARE(obj.replyArguments, reply.arguments());
+
+    obj.replyArguments << QString("alien abduction");
+    QDBusMessage subPathMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "hello");
+    QDBusMessage subPathReply = con.call(subPathMessage , QDBus::Block, 5000);
+    QCOMPARE(obj.callCount, 2);
+    QCOMPARE(obj.lastMessage.service(), con.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), childPath);
+    QCOMPARE(obj.replyArguments, subPathReply.arguments());
 }
 
 QString MyObject::path;

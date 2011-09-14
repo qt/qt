@@ -782,7 +782,6 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             GtkStateType state = gtkPainter.gtkState(option);
             style = gtkTreeHeader->style;
             GtkArrowType type = GTK_ARROW_UP;
-            QRect r = header->rect;
             QImage arrow;
             // This sorting indicator inversion is intentional, and follows the GNOME HIG.
             // See http://library.gnome.org/devel/hig-book/stable/controls-lists.html.en#controls-lists-sortable
@@ -1706,12 +1705,17 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 fakePos = maximum;
             else if (scrollBar->sliderPosition > scrollBar->minimum)
                 fakePos = maximum - 1;
-            GtkObject *adjustment =  d->gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
 
-            if (horizontal)
-                d->gtk_range_set_adjustment((GtkRange*)(gtkHScrollBar), (GtkAdjustment*)(adjustment));
-            else
-                d->gtk_range_set_adjustment((GtkRange*)(gtkVScrollBar), (GtkAdjustment*)(adjustment));
+
+            GtkRange *range = (GtkRange*)(horizontal ? gtkHScrollBar : gtkVScrollBar);
+            GtkAdjustment *adjustment = d->gtk_range_get_adjustment(range);
+
+            if (adjustment) {
+                d->gtk_adjustment_configure(adjustment, fakePos, 0, maximum, 0, 0, 0);
+            } else {
+                adjustment = (GtkAdjustment*)d->gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
+                d->gtk_range_set_adjustment(range, adjustment);
+            }
 
             if (scrollBar->subControls & SC_ScrollBarGroove) {
                 GtkStateType state = GTK_STATE_ACTIVE;
@@ -1852,7 +1856,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     editArea.setRight(upRect.left());
             }
             if (spinBox->frame) {
-                GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = gtkPainter.gtkState(option);
 
                 if (!(option->state & State_Enabled))
@@ -1862,7 +1865,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 else if (state == GTK_STATE_PRELIGHT)
                     state = GTK_STATE_NORMAL;
 
-                shadow = GTK_SHADOW_IN;
                 style = gtkPainter.getStyle(gtkSpinButton);
 
 
@@ -1990,15 +1992,29 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             style = scaleWidget->style;
 
             if ((option->subControls & SC_SliderGroove) && groove.isValid()) {
-                GtkObject *adjustment =  d->gtk_adjustment_new(slider->sliderPosition,
-                                         slider->minimum,
-                                         slider->maximum,
-                                         slider->singleStep,
-                                         slider->singleStep,
-                                         slider->pageStep);
+
+                GtkRange *range = (GtkRange*)scaleWidget;
+                GtkAdjustment *adjustment = d->gtk_range_get_adjustment(range);
+                if (adjustment) {
+                    d->gtk_adjustment_configure(adjustment,
+                                                slider->sliderPosition,
+                                                slider->minimum,
+                                                slider->maximum,
+                                                slider->singleStep,
+                                                slider->singleStep,
+                                                slider->pageStep);
+                } else {
+                    adjustment = (GtkAdjustment*)d->gtk_adjustment_new(slider->sliderPosition,
+                                                                       slider->minimum,
+                                                                       slider->maximum,
+                                                                       slider->singleStep,
+                                                                       slider->singleStep,
+                                                                       slider->pageStep);
+                    d->gtk_range_set_adjustment(range, adjustment);
+                }
+
                 int outerSize;
-                d->gtk_range_set_adjustment ((GtkRange*)(scaleWidget), (GtkAdjustment*)(adjustment));
-                d->gtk_range_set_inverted((GtkRange*)(scaleWidget), !horizontal);
+                d->gtk_range_set_inverted(range, !horizontal);
                 d->gtk_widget_style_get(scaleWidget, "trough-border", &outerSize, NULL);
                 outerSize++;
 
@@ -2998,8 +3014,7 @@ void QGtkStyle::drawControl(ControlElement element,
             else if (bar->progress > bar->minimum)
                 fakePos = maximum - 1;
 
-            GtkObject *adjustment =  d->gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
-            d->gtk_progress_set_adjustment((GtkProgress*)(gtkProgressBar), (GtkAdjustment*)(adjustment));
+            d->gtk_progress_configure((GtkProgress*)gtkProgressBar, fakePos, 0, maximum);
 
             QRect progressBar;
 

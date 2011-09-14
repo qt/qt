@@ -70,7 +70,6 @@ class QNetworkAccessManagerPrivate;
 class QNetworkReplyImplPrivate;
 class QAbstractNetworkCache;
 class QNetworkCacheMetaData;
-class QNetworkAccessBackendUploadIODevice;
 class QNonContiguousByteDevice;
 
 // Should support direct file upload from disk or download to disk.
@@ -175,11 +174,16 @@ protected:
     // Create the device used for reading the upload data
     QNonContiguousByteDevice* createUploadByteDevice();
 
-
     // these functions control the downstream mechanism
     // that is, data that has come via the connection and is going out the backend
     qint64 nextDownstreamBlockSize() const;
     void writeDownstreamData(QByteDataBuffer &list);
+
+    // not actually appending data, it was already written to the user buffer
+    void writeDownstreamDataDownloadBuffer(qint64, qint64);
+    char* getDownloadBuffer(qint64);
+
+    QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
 
 public slots:
     // for task 251801, needs to be a slot to be called asynchronously
@@ -192,19 +196,22 @@ protected slots:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
 #endif
     void authenticationRequired(QAuthenticator *auth);
-    void cacheCredentials(QAuthenticator *auth);
     void metaDataChanged();
     void redirectionRequested(const QUrl &destination);
     void sslErrors(const QList<QSslError> &errors);
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
+protected:
+    // FIXME In the long run we should get rid of our QNAM architecture
+    // and scrap this ReplyImpl/Backend distinction.
+    QNetworkAccessManagerPrivate *manager;
+    QNetworkReplyImplPrivate *reply;
+
 private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
-    friend class QNetworkAccessBackendUploadIODevice;
     friend class QNetworkReplyImplPrivate;
-    QNetworkAccessManagerPrivate *manager;
-    QNetworkReplyImplPrivate *reply;
+
     bool synchronous;
 };
 

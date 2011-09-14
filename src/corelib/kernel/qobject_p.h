@@ -55,6 +55,7 @@
 
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qsharedpointer.h"
 #include "QtCore/qcoreevent.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qvector.h"
@@ -107,19 +108,23 @@ public:
         QList<QVariant> propertyValues;
     };
 
+    typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
     {
         QObject *sender;
         QObject *receiver;
-        int method;
-        uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
-        QBasicAtomicPointer<int> argumentTypes;
+        StaticMetaCallFunction callFunction;
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
         //senders linked list
         Connection *next;
         Connection **prev;
+        QBasicAtomicPointer<int> argumentTypes;
+        ushort method_offset;
+        ushort method_relative;
+        ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ~Connection();
+        int method() const { return method_offset + method_relative; }
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
@@ -154,7 +159,6 @@ public:
 
 #ifdef QT3_SUPPORT
     void sendPendingChildInsertedEvents();
-    void removePendingChildInsertedEvents(QObject *child);
 #endif
 
     static inline Sender *setCurrentSender(QObject *receiver,
@@ -162,8 +166,10 @@ public:
     static inline void resetCurrentSender(QObject *receiver,
                                    Sender *currentSender,
                                    Sender *previousSender);
+#ifdef QT_JAMBI_BUILD
     static int *setDeleteWatch(QObjectPrivate *d, int *newWatch);
     static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
+#endif
     static void clearGuards(QObject *);
 
     static QObjectPrivate *get(QObject *o) {
@@ -185,7 +191,7 @@ public:
     mutable quint32 connectedSignals[2];
 
 #ifdef QT3_SUPPORT
-    QList<QObject *> pendingChildInsertedEvents;
+    QVector< QWeakPointer<QObject> > pendingChildInsertedEvents;
 #else
     // preserve binary compatibility with code compiled without Qt 3 support
     // keeping the binary layout stable helps the Qt Creator debugger
@@ -201,7 +207,9 @@ public:
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
+#ifdef QT_JAMBI_BUILD
     int *deleteWatch;
+#endif
 };
 
 
@@ -249,25 +257,27 @@ class QSemaphore;
 class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 {
 public:
-    QMetaCallEvent(int id, const QObject *sender, int signalId,
+    QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
     ~QMetaCallEvent();
 
-    inline int id() const { return id_; }
+    inline int id() const { return method_offset_ + method_relative_; }
     inline const QObject *sender() const { return sender_; }
     inline int signalId() const { return signalId_; }
     inline void **args() const { return args_; }
 
-    virtual int placeMetaCall(QObject *object);
+    virtual void placeMetaCall(QObject *object);
 
 private:
-    int id_;
     const QObject *sender_;
     int signalId_;
     int nargs_;
     int *types_;
     void **args_;
     QSemaphore *semaphore_;
+    QObjectPrivate::StaticMetaCallFunction callFunction_;
+    ushort method_offset_;
+    ushort method_relative_;
 };
 
 class QBoolBlocker

@@ -152,6 +152,7 @@
     <file>images/win/textjustify.png</file>
     <file>images/win/textsuperscript.png</file>
     <file>images/win/textsubscript.png</file>
+    <file>images/win/simplifyrichtext.png</file>
     <file>images/win/back.png</file>
     <file>images/win/forward.png</file>
     <file>images/win/down.png</file>
@@ -166,6 +167,7 @@
     <file>images/mac/textjustify.png</file>
     <file>images/mac/textsuperscript.png</file>
     <file>images/mac/textsubscript.png</file>
+    <file>images/mac/simplifyrichtext.png</file>
   </qresource>
   <qresource prefix="/trolltech/brushes">
     <file>defaultbrushes.xml</file>

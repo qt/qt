@@ -101,6 +101,9 @@ class QTestLogger : public QAbstractTestLogger
         int qwarnCount() const;
         int qfatalCount() const;
         int infoCount() const;
+        void registerRandomSeed(unsigned int seed);
+        unsigned int randomSeed() const;
+        bool hasRandomSeed() const;
 
     private:
         QTestElement *listOfTestcases;
@@ -121,6 +124,8 @@ class QTestLogger : public QAbstractTestLogger
         int qwarnCounter;
         int qfatalCounter;
         int infoCounter;
+        unsigned int randomSeed_;
+        bool hasRandomSeed_;
 };
 
 QT_END_NAMESPACE

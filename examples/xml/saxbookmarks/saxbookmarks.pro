@@ -14,7 +14,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/xml/saxbookmarks
 INSTALLS += target sources
 
 wince*: {
-     addFiles.sources = frank.xbel jennifer.xbel
+     addFiles.files = frank.xbel jennifer.xbel
      addFiles.path = "\\My Documents"
      DEPLOYMENT += addFiles
 }
@@ -22,7 +22,9 @@ wince*: {
 symbian: {
      TARGET.UID3 = 0xA000C60A
      include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
-     addFiles.sources = frank.xbel jennifer.xbel
+     addFiles.files = frank.xbel jennifer.xbel
      addFiles.path = /data/qt/saxbookmarks
      DEPLOYMENT += addFiles
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

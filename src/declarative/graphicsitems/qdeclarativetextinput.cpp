@@ -564,13 +564,11 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     \qmlproperty int TextInput::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionEnd, cursorPosition, selectedText, select()
+    \sa selectionEnd, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionStart() const
 {
@@ -582,13 +580,11 @@ int QDeclarativeTextInput::selectionStart() const
     \qmlproperty int TextInput::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
-    \sa selectionStart, cursorPosition, selectedText, select()
+    \sa selectionStart, cursorPosition, selectedText
 */
 int QDeclarativeTextInput::selectionEnd() const
 {
@@ -882,7 +878,8 @@ void QDeclarativeTextInputPrivate::updateInputMethodHints()
     \o TextInput.Normal - Displays the text as it is. (Default)
     \o TextInput.Password - Displays asterixes instead of characters.
     \o TextInput.NoEcho - Displays nothing.
-    \o TextInput.PasswordEchoOnEdit - Displays all but the current character as asterixes.
+    \o TextInput.PasswordEchoOnEdit - Displays characters as they are entered
+    while editing, otherwise displays asterisks.
     \endlist
 */
 QDeclarativeTextInput::EchoMode QDeclarativeTextInput::echoMode() const
@@ -1854,6 +1851,7 @@ bool QDeclarativeTextInput::isInputMethodComposing() const
 void QDeclarativeTextInputPrivate::init()
 {
     Q_Q(QDeclarativeTextInput);
+    control->setParent(q);
     control->setCursorWidth(1);
     control->setPasswordCharacter(QLatin1Char('*'));
     q->setSmooth(smooth);

@@ -17,10 +17,10 @@ QT += xml svg network
 contains(QT_CONFIG, qt3support): QT += qt3support
 
 wince*|symbian: {
-   configuration.sources = ../*.ini
+   configuration.files = ../*.ini
    configuration.path = .
 
-   screenapp.sources = ../tst_screenshot/tst_screenshot.exe
+   screenapp.files = ../tst_screenshot/tst_screenshot.exe
    screenapp.path = tst_screenshot
    
    DEPLOYMENT += configuration screenapp

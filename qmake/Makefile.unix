@@ -11,16 +11,18 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
      symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
-     symbiancommon.o registry.o epocroot.o
+     symbiancommon.o registry.o epocroot.o gbuild.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
       qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfile.o \
-      qfsfileengine_unix.o qfsfileengine_iterator_unix.o qfsfileengine.o \
+      qfilesystementry.o qfilesystemengine_unix.o qfilesystemengine.o qfilesystemiterator_unix.o \
+      qfsfileengine_unix.o qfsfileengine.o \
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
-      qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
-      qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o qxmlstream.o qxmlutils.o \
+      qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o qvariant.o qvsnprintf.o \
+      qlocale.o qlocale_tools.o qlocale_unix.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o \
+      qxmlstream.o qxmlutils.o \
       $(QTOBJS)
 
 
@@ -37,6 +39,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp \
 	   generators/symbian/symmake_abld.cpp generators/symbian/symmake_sbsv2.cpp \
            generaters/symbian/symbiancommon.cpp \
+	   generators/integrity/gbuild.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
@@ -44,8 +47,11 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvector.cpp $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
@@ -53,7 +59,10 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qconfig.cpp $(SOURCE_PATH)/src/corelib/io/qurl.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
@@ -61,9 +70,11 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(QTSRCS)
 
-CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/mac -Igenerators/symbian \
+CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
+           -Igenerators/mac -Igenerators/symbian -Igenerators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
 	   -I$(SOURCE_PATH)/tools/shared \
@@ -71,7 +82,7 @@ CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/ma
 	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_STL \
 	   -DQT_NO_COMPRESS -I$(QMAKESPEC) -DHAVE_QCONFIG_CPP -DQT_NO_THREAD -DQT_NO_QOBJECT \
-           -DQT_NO_GEOM_VARIANT $(OPENSOURCE_CXXFLAGS)
+           -DQT_NO_GEOM_VARIANT -DQT_NO_DEPRECATED $(OPENSOURCE_CXXFLAGS)
 
 CXXFLAGS = @QMAKE_CXXFLAGS@ $(CPPFLAGS)
 
@@ -99,6 +110,9 @@ qvariant.o: $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp
 
 qsettings.o: $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
+
+qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
 qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
@@ -148,6 +162,12 @@ qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 qlocale.o: $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 
+qlocale_tools.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+
+qlocale_unix.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
+
 qdatastream.o: $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
 
@@ -160,6 +180,21 @@ qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
 qfile.o: $(SOURCE_PATH)/src/corelib/io/qfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfile.cpp
 
+qfilesystementry.o: $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
+
+qfilesystemengine.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
+
+qfilesystemengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
+
+qfilesystemengine_mac.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
+
+qfilesystemiterator_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
+
 qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 
@@ -168,9 +203,6 @@ qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.c
 
 qfsfileengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
-
-qfsfileengine_iterator_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp
 
 qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
@@ -297,6 +329,9 @@ registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+
+gbuild.o: generators/integrity/gbuild.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/integrity/gbuild.cpp
 
 projectgenerator.o: generators/projectgenerator.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/projectgenerator.cpp

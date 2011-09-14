@@ -49,7 +49,11 @@ int main(int argv, char **args)
     app.setApplicationName("Phonon Capabilities Example");
 
     Window window;
+#if defined(Q_OS_SYMBIAN)
+    window.showMaximized();
+#else
     window.show();
+#endif
 
     return app.exec();
 }

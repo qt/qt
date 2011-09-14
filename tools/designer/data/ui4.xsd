@@ -207,6 +207,7 @@
                 <xs:attribute name="column" type="xs:integer" />
                 <xs:attribute name="rowspan" type="xs:integer" />
                 <xs:attribute name="colspan" type="xs:integer" />
+		<xs:attribute name="alignment" type="xs:string" />
         </xs:complexType>
 
 <!-- item view begin -->
@@ -414,7 +415,7 @@
 
         <xs:complexType name="StringList">
             <xs:sequence>
-                        <xs:element name="string" type="xs:string" maxOccurs="unbounded" />
+                        <xs:element name="string" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
         </xs:complexType>
 
@@ -434,6 +435,7 @@
                         <xs:element name="selectedoff" type="ResourcePixmap" minOccurs="0" />
                         <xs:element name="selectedon" type="ResourcePixmap" minOccurs="0" />
                 </xs:all>
+		<xs:attribute name="theme" type="xs:string" />
                 <xs:attribute name="resource" type="xs:string" /> <!-- pre 4.4 legacy support -->
         </xs:complexType>
 

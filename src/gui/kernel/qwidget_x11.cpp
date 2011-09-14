@@ -346,7 +346,7 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
-Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
+void qt_x11_wait_for_window_manager(QWidget *w, bool sendPostedEvents)
 {
     if (!w || (!w->isWindow() && !w->internalWinId()))
         return;
@@ -361,7 +361,8 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     WId winid = w->internalWinId();
 
     // first deliver events that are already in the local queue
-    QApplication::sendPostedEvents();
+    if (sendPostedEvents)
+        QApplication::sendPostedEvents();
 
     // the normal sequence is:
     //  ... ConfigureNotify ... ReparentNotify ... MapNotify ... Expose
@@ -394,6 +395,11 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         if (t.elapsed() > maximumWaitTime)
             return;
     } while(1);
+}
+
+Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
+{
+    qt_x11_wait_for_window_manager(w, true);
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)
@@ -480,8 +486,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     bool topLevel = (flags & Qt::Window);
     bool popup = (type == Qt::Popup);
-    bool dialog = (type == Qt::Dialog
-                   || type == Qt::Sheet);
     bool desktop = (type == Qt::Desktop);
     bool tool = (type == Qt::Tool || type == Qt::SplashScreen
                  || type == Qt::ToolTip || type == Qt::Drawer);
@@ -547,7 +551,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     int sh = DisplayHeight(dpy,scr);
 
     if (desktop) {                                // desktop widget
-        dialog = popup = false;                        // force these flags off
+        popup = false;                        // force these flags off
         data.crect.setRect(0, 0, sw, sh);
     } else if (topLevel && !q->testAttribute(Qt::WA_Resized)) {
         QDesktopWidget *desktopWidget = qApp->desktop();
@@ -907,8 +911,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             inputContext->setFocusWidget(q);
     }
 
-    if (destroyw)
+    if (destroyw) {
         qt_XDestroyWindow(q, dpy, destroyw);
+        if (QTLWExtra *topData = maybeTopData()) {
+#ifndef QT_NO_XSYNC
+            if (topData->syncUpdateCounter)
+                XSyncDestroyCounter(dpy, topData->syncUpdateCounter);
+#endif
+            // we destroyed our old window - reset the top-level state
+            createTLSysExtra();
+        }
+    }
 
     // newly created windows are positioned at the window system's
     // (0,0) position. If the parent uses wrect mapping to expand the
@@ -939,8 +952,13 @@ static void qt_x11_recreateWidget(QWidget *widget)
         // recreate their GL context, which in turn causes them to choose
         // their visual again. Now that WA_TranslucentBackground is set,
         // QGLContext::chooseVisual will select an ARGB visual.
-        QEvent e(QEvent::ParentChange);
-        QApplication::sendEvent(widget, &e);
+
+        // QGLWidget expects a ParentAboutToChange to be sent first
+        QEvent aboutToChangeEvent(QEvent::ParentAboutToChange);
+        QApplication::sendEvent(widget, &aboutToChangeEvent);
+
+        QEvent parentChangeEvent(QEvent::ParentChange);
+        QApplication::sendEvent(widget, &parentChangeEvent);
     } else {
         // For regular widgets, reparent them with their parent which
         // also triggers a recreation of the native window
@@ -1318,12 +1336,40 @@ QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
+    QPoint offset = data->crect.topLeft();
+    const QWidget *w = this;
+    const QWidget *p = w->parentWidget();
+    while (!w->isWindow() && p) {
+        w = p;
+        p = p->parentWidget();
+        offset += w->data->crect.topLeft();
+    }
+
+    const QWidgetPrivate *wd = w->d_func();
+    QTLWExtra *tlw = wd->topData();
+    if (!tlw->embedded)
+        return pos + offset;
+
     return d->mapToGlobal(pos);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
+    QPoint offset = data->crect.topLeft();
+    const QWidget *w = this;
+    const QWidget *p = w->parentWidget();
+    while (!w->isWindow() && p) {
+        w = p;
+        p = p->parentWidget();
+        offset += w->data->crect.topLeft();
+    }
+
+    const QWidgetPrivate *wd = w->d_func();
+    QTLWExtra *tlw = wd->topData();
+    if (!tlw->embedded)
+        return pos - offset;
+
     return d->mapFromGlobal(pos);
 }
 
@@ -1337,9 +1383,15 @@ void QWidgetPrivate::updateSystemBackground()
     if (brush.style() == Qt::NoBrush
         || q->testAttribute(Qt::WA_NoSystemBackground)
         || q->testAttribute(Qt::WA_UpdatesDisabled)
-        || type == Qt::Popup || type == Qt::ToolTip
-        )
-        XSetWindowBackgroundPixmap(X11->display, q->internalWinId(), XNone);
+        || type == Qt::Popup || type == Qt::ToolTip) {
+            if (QX11Info::isCompositingManagerRunning()
+                && q->testAttribute(Qt::WA_TranslucentBackground)
+                && !(q->parent()))
+                XSetWindowBackground(X11->display, q->internalWinId(),
+                                     QColormap::instance(xinfo.screen()).pixel(Qt::transparent));
+            else
+                XSetWindowBackgroundPixmap(X11->display, q->internalWinId(), XNone);
+        }
     else if (brush.style() == Qt::SolidPattern && brush.isOpaque())
         XSetWindowBackground(X11->display, q->internalWinId(),
                              QColormap::instance(xinfo.screen()).pixel(brush.color()));
@@ -1487,7 +1539,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 || !QX11Info::appDefaultColormap(xinfo.screen())) {
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
-                    topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
+                    topData->iconPixmap = new QPixmap(qt_toX11Pixmap(QBitmap(icon.pixmap(QSize(64,64)))));
                 pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this

@@ -56,6 +56,10 @@
 #include <QtGui/qcursor.h>
 #include <QtGui/qkeysequence.h>
 
+#ifdef Q_WS_QPA //should this go somewhere else?
+#include <QtGui/qplatformwindowformat_qpa.h>
+#endif
+
 #ifdef QT_INCLUDE_COMPAT
 #include <QtGui/qevent.h>
 #endif
@@ -94,9 +98,12 @@ class QHideEvent;
 class QInputContext;
 class QIcon;
 class QWindowSurface;
+class QPlatformWindow;
 class QLocale;
 class QGraphicsProxyWidget;
 class QGraphicsEffect;
+class QRasterWindowSurface;
+class QUnifiedToolbarSurface;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif
@@ -627,6 +634,16 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
+#if defined(Q_WS_QPA)
+    void setPlatformWindow(QPlatformWindow *window);
+    QPlatformWindow *platformWindow() const;
+
+    void setPlatformWindowFormat(const QPlatformWindowFormat &format);
+    QPlatformWindowFormat platformWindowFormat() const;
+
+    friend class QDesktopScreenWidget;
+#endif
+
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);
 
@@ -758,6 +775,8 @@ private:
     friend OSViewRef qt_mac_nativeview_for(const QWidget *w);
     friend void qt_event_request_window_change(QWidget *widget);
     friend bool qt_mac_sendMacEventToWidget(QWidget *widget, EventRef ref);
+    friend class QRasterWindowSurface;
+    friend class QUnifiedToolbarSurface;
 #endif
 #ifdef Q_WS_QWS
     friend class QWSBackingStore;
@@ -898,13 +917,6 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWidget::RenderFlags)
 
-#if defined Q_CC_MSVC && _MSC_VER < 1300
-template <> inline QWidget *qobject_cast_helper<QWidget*>(QObject *o, QWidget *)
-{
-    if (!o || !o->isWidgetType()) return 0;
-    return (QWidget*)(o);
-}
-#else
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
     if (!o || !o->isWidgetType()) return 0;
@@ -915,7 +927,6 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
     if (!o || !o->isWidgetType()) return 0;
     return static_cast<const QWidget*>(o);
 }
-#endif
 
 inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }

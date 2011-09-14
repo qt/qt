@@ -58,7 +58,7 @@ use File::Spec;
 use File::Path;
 # use CWD abs_bath, which is exported only on request
 use Cwd 'abs_path';
-
+use File::Copy;
 
 sub Usage() {
     print <<ENDUSAGESTRING;
@@ -84,6 +84,8 @@ Where supported options are as follows:
      [-g|gcce-is-armv5]      = Convert gcce platform to armv5.
      [-d|dont-patch]         = Skip automatic patching of capabilities and pkg file if default certificate
                                is used. Instead non-self-signable capabilities just cause warnings.
+     [-t|tmp-dir <path>]     = Specifies temporary directory to be used for package creation.
+                               Defaults to 'createpackage_tmp' under same directory as templatepkg.
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
@@ -130,6 +132,7 @@ my $signed_sis_name = "";
 my $onlyUnsigned = "";
 my $convertGcce = "";
 my $dontPatchCaps = "";
+my $tempPackageDir = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
@@ -139,7 +142,8 @@ unless (GetOptions('i|install' => \$install,
                    's|stub' => \$stub,
                    'n|sisname=s' => \$signed_sis_name,
                    'g|gcce-is-armv5' => \$convertGcce,
-                   'd|dont-patch' => \$dontPatchCaps,)) {
+                   'd|dont-patch' => \$dontPatchCaps,
+                   't|tmp-dir=s' => \$tempPackageDir,)) {
     Usage();
 }
 
@@ -190,18 +194,22 @@ $key = $ARGV[3] or $key = "";
 my $passphrase;
 $passphrase = $ARGV[4] or $passphrase = "";
 
+if ($tempPackageDir eq "") {
+    my ($templateVolume, $templatePath, $templateFileName) = File::Spec->splitpath($templatepkg);
+    $tempPackageDir = File::Spec->catpath($templateVolume, $templatePath."createpackage_tmp", "");
+}
+
+mkpath($tempPackageDir);
+
 # Generate output pkg basename (i.e. file name without extension)
 my $pkgoutputbasename = $templatepkg;
-my $preservePkgOutput = "";
 $pkgoutputbasename =~ s/_template/_$targetplatform/g;
 $pkgoutputbasename =~ s/_installer\.pkg/_installer___temp\.pkg/g;
-if ($pkgoutputbasename eq $templatepkg) {
-    $preservePkgOutput = "1";
-}
 $pkgoutputbasename =~ s/\.pkg//g;
 
 # Store output file names to variables
-my $pkgoutput = $pkgoutputbasename.".pkg";
+my ($dummy1, $dummy2, $pkgoutput) = File::Spec->splitpath($pkgoutputbasename.".pkg");
+$pkgoutput = $tempPackageDir."/".$pkgoutput;
 my $sisoutputbasename;
 if ($signed_sis_name eq "") {
     $sisoutputbasename = $pkgoutputbasename;
@@ -230,11 +238,7 @@ if ($templatepkg =~ m/_installer\.pkg$/i && $onlyUnsigned) {
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
 my $stub_sis_name = $sisoutputbasename.".sis";
 
-# Store some utility variables
-my $scriptpath = dirname(__FILE__);
 my $certtext = $certificate;
-# certificates are one step up in hierarchy
-my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs/");
 
 # Check some pre-conditions and print error messages if needed.
 unless (length($templatepkg)) {
@@ -257,6 +261,16 @@ if (length($certificate)) {
     }
 } else {
     #If no certificate is given, check default options
+    my $scriptpath = dirname(__FILE__);
+    my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs");
+
+    unless (-e $certpath) {
+        my $qmakeCmd = File::Spec->catfile($scriptpath, "qmake");
+        $certpath = `$qmakeCmd -query QT_INSTALL_PREFIX`;
+        $certpath =~ s/\s+$//;
+        $certpath = File::Spec->catdir($certpath, "src/s60installs");
+    }
+
     $certtext = "RnD";
     $certificate = File::Spec->catfile($certpath, "rd.cer");
     $key = File::Spec->catfile($certpath, "rd-key.pem");
@@ -300,9 +314,7 @@ unlink $unsigned_sis_name;
 if (!$onlyUnsigned) {
     unlink $signed_sis_name;
 }
-if (!$preservePkgOutput) {
-    unlink $pkgoutput;
-}
+unlink $pkgoutput;
 
 # Preprocess PKG
 
@@ -334,6 +346,11 @@ print OUTPUT $_;
 close OUTPUT;
 
 if ($preprocessonly) {
+    # Copy preprocessed file from tmp dir to pkg file dir
+    my ($templateVolume, $templatePath, $templateFileName) = File::Spec->splitpath($templatepkg);
+    my ($dummy1, $dummy2, $copyFileName) = File::Spec->splitpath($pkgoutput);
+    my $copyTarget = File::Spec->catpath($templateVolume, $templatePath, $copyFileName);
+    copy($pkgoutput, $copyTarget) or die "Preprocessed pkg file '$pkgoutput' cannot be copied.";
     exit;
 }
 
@@ -354,7 +371,7 @@ if($stub) {
             system ("$patch_capabilities -c $pkgoutput") and print ("Warning: Package check for self-signing viability failed. Installing the package on a device will most likely fail!\n\n");
         } else {
             print("Auto-patching self-signed package.\n");
-            system ("$patch_capabilities $pkgoutput") and die ("ERROR: Automatic patching failed");
+            system ("$patch_capabilities -t $tempPackageDir $pkgoutput") and die ("ERROR: Automatic patching failed");
         }
     }
 
@@ -377,9 +394,6 @@ if($stub) {
             print ("\nUnsigned package creation failed!\n");
         }
 
-        if (!$preservePkgOutput) {
-            unlink $pkgoutput;
-        }
         print ("\n");
         exit;
     }
@@ -405,10 +419,7 @@ if($stub) {
             print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
         }
 
-        # remove temporary pkg and unsigned sis
-        if (!$preservePkgOutput) {
-            unlink $pkgoutput;
-        }
+        # remove temporary unsigned sis
         if (!$preserveUnsigned) {
             unlink $unsigned_sis_name;
         }

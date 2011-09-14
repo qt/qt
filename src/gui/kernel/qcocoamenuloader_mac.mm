@@ -70,13 +70,13 @@ QT_USE_NAMESPACE
     showAllItem = [[appMenu itemWithTitle:@"Show All"] retain];
 
     // Get the names in the nib to match the app name set by Qt.
-    NSString *appName = reinterpret_cast<const NSString*>(QCFString::toCFStringRef(qAppName()));
+    const NSString *appName = reinterpret_cast<const NSString*>(QCFString::toCFStringRef(qAppName()));
     [quitItem setTitle:[[quitItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:appName]];
+                                                                   withString:const_cast<NSString *>(appName)]];
     [hideItem setTitle:[[hideItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:appName]];
+                                                                   withString:const_cast<NSString *>(appName)]];
     [aboutItem setTitle:[[aboutItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
-                                                                   withString:appName]];
+                                                                   withString:const_cast<NSString *>(appName)]];
     [appName release];
     // Disable the items that don't do anything. If someone associates a QAction with them
     // They should get synced back in.
@@ -170,12 +170,12 @@ QT_USE_NAMESPACE
     return [[aboutQtItem retain] autorelease];
 }
 
-- (NSMenuItem *)hideMenuItem;
+- (NSMenuItem *)hideMenuItem
 {
     return [[hideItem retain] autorelease];
 }
 
-- (NSMenuItem *)appSpecificMenuItem;
+- (NSMenuItem *)appSpecificMenuItem
 {
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.

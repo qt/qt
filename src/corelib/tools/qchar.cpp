@@ -48,11 +48,11 @@
 #  undef QT_NO_CAST_TO_ASCII
 #endif
 #include "qchar.h"
+
 #include "qdatastream.h"
 #include "qtextcodec.h"
 
 #include "qunicodetables_p.h"
-
 #include "qunicodetables.cpp"
 
 QT_BEGIN_NAMESPACE
@@ -677,7 +677,7 @@ bool QChar::isSymbol() const
     \since 4.7
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    is the high part of a utf16 surrogate
+    is the low part of a utf16 surrogate
     (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
 */
 
@@ -686,7 +686,7 @@ bool QChar::isSymbol() const
     \since 4.7
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    can be splited to the high and low parts of a utf16 surrogate
+    can be split into the high and low parts of a utf16 surrogate
     (ie. if its code point is greater than or equals to 0x10000).
 */
 
@@ -1069,6 +1069,15 @@ QChar::UnicodeVersion QChar::unicodeVersion(ushort ucs2)
     return (QChar::UnicodeVersion) qGetProp(ucs2)->unicodeVersion;
 }
 
+/*!
+    \since 4.8
+
+    Returns the most recent supported Unicode version.
+*/
+QChar::UnicodeVersion QChar::currentUnicodeVersion()
+{
+    return UNICODE_DATA_VERSION;
+}
 
 /*!
     Returns the lowercase equivalent if the character is uppercase or titlecase;
@@ -1489,6 +1498,16 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
 }
 
 
+struct UCS2Pair {
+    ushort u1;
+    ushort u2;
+};
+
+inline bool operator<(ushort u1, const UCS2Pair &ligature)
+{ return u1 < ligature.u1; }
+inline bool operator<(const UCS2Pair &ligature, ushort u1)
+{ return ligature.u1 < u1; }
+
 static ushort ligatureHelper(ushort u1, ushort u2)
 {
     // hangul L-V pair
@@ -1511,12 +1530,14 @@ static ushort ligatureHelper(ushort u1, ushort u2)
     if (index == 0xffff)
         return 0;
     const unsigned short *ligatures = uc_ligature_map+index;
-    ushort length = *ligatures;
-    ++ligatures;
-    // ### use bsearch
-    for (uint i = 0; i < length; ++i)
-        if (ligatures[2*i] == u1)
-            return ligatures[2*i+1];
+    ushort length = *ligatures++;
+    {
+        const UCS2Pair *data = reinterpret_cast<const UCS2Pair *>(ligatures);
+        const UCS2Pair *r = qBinaryFind(data, data + length, u1);
+        if (r != data + length)
+            return r->u2;
+    }
+
     return 0;
 }
 

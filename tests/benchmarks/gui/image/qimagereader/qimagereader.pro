@@ -11,15 +11,15 @@ SOURCES += tst_qimagereader.cpp
 QT += network
 
 wince*: {
-   addFiles.sources = images
+   addFiles.files = images
    addFiles.path = .
 
    CONFIG(debug, debug|release):{
-   imageFormatsPlugins.sources = $$(QTDIR)/plugins/imageformats/*d4.dll
+   imageFormatsPlugins.files = $$(QTDIR)/plugins/imageformats/*d4.dll
    }
 
    CONFIG(release, debug|release):{
-   imageFormatsPlugins.sources = $$(QTDIR)/plugins/imageformats/*[^d]4.dll
+   imageFormatsPlugins.files = $$(QTDIR)/plugins/imageformats/*[^d]4.dll
    }
    imageFormatsPlugins.path = imageformats
    DEPLOYMENT += addFiles imageFormatsPlugins

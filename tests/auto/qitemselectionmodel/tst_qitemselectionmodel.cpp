@@ -94,8 +94,14 @@ private slots:
     void task260134_layoutChangedWithAllSelected();
     void QTBUG5671_layoutChangedWithAllSelected();
     void QTBUG2804_layoutChangedTreeSelection();
+    void deselectRemovedMiddleRange();
+    void rangeOperatorLessThan_data();
+    void rangeOperatorLessThan();
+
+    void testDifferentModels();
 
     void testValidRangesInSelectionsAfterReset();
+    void testChainedSelectionClear();
 
 private:
     QAbstractItemModel *model;
@@ -2355,6 +2361,237 @@ void tst_QItemSelectionModel::QTBUG2804_layoutChangedTreeSelection()
     QCOMPARE(selModel.selectedIndexes().count(), 4);
 }
 
+class RemovalObserver : public QObject
+{
+    Q_OBJECT
+    QItemSelectionModel *m_itemSelectionModel;
+public:
+    RemovalObserver(QItemSelectionModel *selectionModel)
+      : m_itemSelectionModel(selectionModel)
+    {
+        connect(m_itemSelectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(selectionChanged(QItemSelection, QItemSelection)));
+    }
+
+public slots:
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+    {
+        foreach(const QModelIndex &index, deselected.indexes()) {
+            QVERIFY(!m_itemSelectionModel->selection().contains(index));
+        }
+        QVERIFY(m_itemSelectionModel->selection().size() == 2);
+    }
+
+};
+
+void tst_QItemSelectionModel::deselectRemovedMiddleRange()
+{
+    QStandardItemModel model(8, 0);
+
+    for (int row = 0; row < 8; ++row) {
+        static const int column = 0;
+        QStandardItem *item = new QStandardItem(QString::number(row));
+        model.setItem(row, column, item);
+    }
+
+    QItemSelectionModel selModel(&model);
+
+    selModel.select(QItemSelection(model.index(3, 0), model.index(6, 0)), QItemSelectionModel::Select);
+
+    QVERIFY(selModel.selection().size() == 1);
+
+    RemovalObserver ro(&selModel);
+
+    QSignalSpy spy(&selModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)));
+    bool ok = model.removeRows(4, 2);
+
+    QVERIFY(ok);
+    QVERIFY(spy.size() == 1);
+}
+
+static QStandardItemModel* getModel(QObject *parent)
+{
+    QStandardItemModel *model = new QStandardItemModel(parent);
+
+    for (int i = 0; i < 4; ++i) {
+        QStandardItem *parentItem = model->invisibleRootItem();
+        QList<QStandardItem*> list;
+        for (int j = 0; j < 4; ++j) {
+            list.append(new QStandardItem(QString("item %1, %2").arg(i).arg(j)));
+        }
+        parentItem->appendRow(list);
+        parentItem = list.first();
+        for (int j = 0; j < 4; ++j) {
+            QList<QStandardItem*> list;
+            for (int k = 0; k < 4; ++k) {
+                list.append(new QStandardItem(QString("item %1, %2").arg(i).arg(j)));
+            }
+            parentItem->appendRow(list);
+        }
+    }
+    return model;
+}
+
+enum Result {
+  LessThan,
+  NotLessThan,
+  NotEqual
+};
+
+Q_DECLARE_METATYPE(Result);
+
+void tst_QItemSelectionModel::rangeOperatorLessThan_data()
+{
+    QTest::addColumn<int>("parent1");
+    QTest::addColumn<int>("top1");
+    QTest::addColumn<int>("left1");
+    QTest::addColumn<int>("bottom1");
+    QTest::addColumn<int>("right1");
+    QTest::addColumn<int>("parent2");
+    QTest::addColumn<int>("top2");
+    QTest::addColumn<int>("left2");
+    QTest::addColumn<int>("bottom2");
+    QTest::addColumn<int>("right2");
+    QTest::addColumn<Result>("result");
+
+    QTest::newRow("lt01") << -1 << 0 << 0 << 3 << 3
+                          << -1 << 0 << 0 << 3 << 3 << NotLessThan;
+
+    QTest::newRow("lt02") << -1 << 0 << 0 << 2 << 3
+                          << -1 << 0 << 0 << 3 << 3 << LessThan;
+    QTest::newRow("lt03") << -1 << 0 << 0 << 3 << 2
+                          << -1 << 0 << 0 << 3 << 3 << LessThan;
+    QTest::newRow("lt04") << -1 << 0 << 0 << 2 << 2
+                          << -1 << 0 << 0 << 3 << 3 << LessThan;
+
+    QTest::newRow("lt05") << -1 << 0 << 0 << 3 << 3
+                          << -1 << 0 << 0 << 2 << 3 << NotLessThan;
+    QTest::newRow("lt06") << -1 << 0 << 0 << 3 << 3
+                          << -1 << 0 << 0 << 3 << 2 << NotLessThan;
+    QTest::newRow("lt07") << -1 << 0 << 0 << 3 << 3
+                          << -1 << 0 << 0 << 2 << 2 << NotLessThan;
+
+    QTest::newRow("lt08") << -1 << 0 << 0 << 3 << 3
+                          << 0 << 0 << 0 << 3 << 3 << NotEqual;
+    QTest::newRow("lt09") << 1 << 0 << 0 << 3 << 3
+                          << 0 << 0 << 0 << 3 << 3 << NotEqual;
+    QTest::newRow("lt10") << 1 << 0 << 0 << 1 << 1
+                          << 0 << 2 << 2 << 3 << 3 << NotEqual;
+    QTest::newRow("lt11") << 1 << 2 << 2 << 3 << 3
+                          << 0 << 0 << 0 << 1 << 1 << NotEqual;
+
+    QTest::newRow("lt12") << -1 << 0 << 0 << 1 << 1
+                          << -1 << 2 << 2 << 3 << 3 << LessThan;
+    QTest::newRow("lt13") << -1 << 2 << 2 << 3 << 3
+                          << -1 << 0 << 0 << 1 << 1 << NotLessThan;
+    QTest::newRow("lt14") << 1 << 0 << 0 << 1 << 1
+                          << 1 << 2 << 2 << 3 << 3 << LessThan;
+    QTest::newRow("lt15") << 1 << 2 << 2 << 3 << 3
+                          << 1 << 0 << 0 << 1 << 1 << NotLessThan;
+
+    QTest::newRow("lt16") << -1 << 0 << 0 << 2 << 2
+                          << -1 << 1 << 1 << 3 << 3 << LessThan;
+    QTest::newRow("lt17") << -1 << 1 << 1 << 3 << 3
+                          << -1 << 0 << 0 << 2 << 2 << NotLessThan;
+    QTest::newRow("lt18") << 1 << 0 << 0 << 2 << 2
+                          << 1 << 1 << 1 << 3 << 3 << LessThan;
+    QTest::newRow("lt19") << 1 << 1 << 1 << 3 << 3
+                          << 1 << 0 << 0 << 2 << 2 << NotLessThan;
+}
+
+void tst_QItemSelectionModel::rangeOperatorLessThan()
+{
+  QStandardItemModel *model1 = getModel(this);
+  QStandardItemModel *model2 = getModel(this);
+
+  QFETCH(int, parent1);
+  QFETCH(int, top1);
+  QFETCH(int, left1);
+  QFETCH(int, bottom1);
+  QFETCH(int, right1);
+  QFETCH(int, parent2);
+  QFETCH(int, top2);
+  QFETCH(int, left2);
+  QFETCH(int, bottom2);
+  QFETCH(int, right2);
+  QFETCH(Result, result);
+
+  QModelIndex p1 = model1->index(parent1, 0);
+
+  QModelIndex tl1 = model1->index(top1, left1, p1);
+  QModelIndex br1 = model1->index(bottom1, right1, p1);
+
+  QItemSelectionRange r1(tl1, br1);
+
+  QModelIndex p2 = model1->index(parent2, 0);
+
+  QModelIndex tl2 = model1->index(top2, left2, p2);
+  QModelIndex br2 = model1->index(bottom2, right2, p2);
+
+  QItemSelectionRange r2(tl2, br2);
+
+  if (result == LessThan)
+      QVERIFY(r1 < r2);
+  else if (result == NotLessThan)
+      QVERIFY(!(r1 < r2));
+  else if (result == NotEqual)
+      if (!(r1 < r2))
+          QVERIFY(r2 < r1);
+
+  // Ranges in different models are always non-equal
+
+  QModelIndex p3 = model2->index(parent1, 0);
+
+  QModelIndex tl3 = model2->index(top1, left1, p3);
+  QModelIndex br3 = model2->index(bottom1, right1, p3);
+
+  QItemSelectionRange r3(tl3, br3);
+
+  if (!(r1 < r3))
+    QVERIFY(r3 < r1);
+
+  if (!(r2 < r3))
+    QVERIFY(r3 < r2);
+
+  QModelIndex p4 = model2->index(parent2, 0);
+
+  QModelIndex tl4 = model2->index(top2, left2, p4);
+  QModelIndex br4 = model2->index(bottom2, right2, p4);
+
+  QItemSelectionRange r4(tl4, br4);
+
+  if (!(r1 < r4))
+    QVERIFY(r4 < r1);
+
+  if (!(r2 < r4))
+    QVERIFY(r4 < r2);
+}
+
+void tst_QItemSelectionModel::testDifferentModels()
+{
+    QStandardItemModel model1;
+    QStandardItemModel model2;
+    QStandardItem top11("Child1"), top12("Child2"), top13("Child3");
+    QStandardItem top21("Child1"), top22("Child2"), top23("Child3");
+
+    model1.appendColumn(QList<QStandardItem*>() << &top11 << &top12 << &top13);
+    model2.appendColumn(QList<QStandardItem*>() << &top21 << &top22 << &top23);
+
+
+    QModelIndex topIndex1 = model1.index(0, 0);
+    QModelIndex bottomIndex1 = model1.index(2, 0);
+    QModelIndex topIndex2 = model2.index(0, 0);
+
+    QItemSelectionRange range(topIndex1, bottomIndex1);
+
+    QVERIFY(range.intersects(QItemSelectionRange(topIndex1, topIndex1)));
+    QVERIFY(!range.intersects(QItemSelectionRange(topIndex2, topIndex2)));
+
+    QItemSelection newSelection;
+    QItemSelection::split(range, QItemSelectionRange(topIndex2, topIndex2), &newSelection);
+
+    QVERIFY(newSelection.isEmpty());
+}
+
 class SelectionObserver : public QObject
 {
   Q_OBJECT
@@ -2417,6 +2654,58 @@ void tst_QItemSelectionModel::testValidRangesInSelectionsAfterReset()
     observer.setSelectionModel(&selectionModel);
 
     model.setStringList(strings);
+}
+
+class DuplicateItemSelectionModel : public QItemSelectionModel
+{
+  Q_OBJECT
+public:
+  DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
+    : QItemSelectionModel(model, parent), m_target(target)
+  {
+
+  }
+
+  void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+  {
+      QItemSelectionModel::select(selection, command);
+      m_target->select(selection, command);
+  }
+
+  using QItemSelectionModel::select;
+
+private:
+  QItemSelectionModel *m_target;
+
+};
+
+void tst_QItemSelectionModel::testChainedSelectionClear()
+{
+    QStringListModel model(QStringList() << "Apples" << "Pears");
+
+    QItemSelectionModel selectionModel(&model, 0);
+    DuplicateItemSelectionModel duplicate(&selectionModel, &model, 0);
+
+    duplicate.select(model.index(0, 0), QItemSelectionModel::Select);
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 1);
+        QVERIFY(selectedIndexes.first() == model.index(0, 0));
+    }
+
+    duplicate.clearSelection();
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 0);
+    }
 
 }
 

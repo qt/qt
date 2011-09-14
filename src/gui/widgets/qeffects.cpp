@@ -55,19 +55,6 @@
 QT_BEGIN_NAMESPACE
 
 /*
-  Internal class to get access to protected QWidget-members
-*/
-
-class QAccessWidget : public QWidget
-{
-    friend class QAlphaWidget;
-    friend class QRollEffect;
-public:
-    QAccessWidget(QWidget* parent=0, Qt::WindowFlags f = 0)
-        : QWidget(parent, f) {}
-};
-
-/*
   Internal class QAlphaWidget.
 
   The QAlphaWidget is shown while the animation lasts
@@ -98,13 +85,12 @@ private:
     QImage backImage;
     QImage frontImage;
     QImage mixedImage;
-    QPointer<QAccessWidget> widget;
+    QPointer<QWidget> widget;
     int duration;
     int elapsed;
     bool showWidget;
     QTimer anim;
     QElapsedTimer checkTime;
-    double windowOpacity;
 };
 
 static QAlphaWidget* q_blend = 0;
@@ -119,8 +105,7 @@ QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
     setEnabled(false);
 #endif
     setAttribute(Qt::WA_NoSystemBackground, true);
-    widget = (QAccessWidget*)w;
-    windowOpacity = w->windowOpacity();
+    widget = w;
     alpha = 0;
 }
 
@@ -129,7 +114,7 @@ QAlphaWidget::~QAlphaWidget()
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     // Restore user-defined opacity value
     if (widget)
-        widget->setWindowOpacity(windowOpacity);
+        widget->setWindowOpacity(1);
 #endif
 }
 
@@ -268,10 +253,10 @@ void QAlphaWidget::render()
         alpha = 1;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    if (alpha >= windowOpacity || !showWidget) {
+    if (alpha >= 1 || !showWidget) {
         anim.stop();
         qApp->removeEventFilter(this);
-        widget->setWindowOpacity(windowOpacity);
+        widget->setWindowOpacity(1);
         q_blend = 0;
         deleteLater();
     } else {
@@ -370,7 +355,7 @@ private slots:
     void scroll();
 
 private:
-    QPointer<QAccessWidget> widget;
+    QPointer<QWidget> widget;
 
     int currentHeight;
     int currentWidth;
@@ -401,7 +386,7 @@ QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
     setEnabled(false);
 #endif
 
-    widget = (QAccessWidget*) w;
+    widget = w;
     Q_ASSERT(widget);
 
     setAttribute(Qt::WA_NoSystemBackground, true);

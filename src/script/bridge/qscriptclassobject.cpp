@@ -183,6 +183,10 @@ void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecSt
                                               JSC::PropertyNameArray &propertyNames,
                                               JSC::EnumerationMode mode)
 {
+    // For compatibility with the old back-end, normal JS properties
+    // are added first.
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
+
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
@@ -195,7 +199,6 @@ void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecSt
         }
         delete it;
     }
-    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
 }
 
 JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &callData)
@@ -223,7 +226,7 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     eng_p->pushContext(exec, thisValue, args, callee);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
     QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
-    QVariant result = scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx));
+    QVariant result = scriptClass->extension(QScriptClass::Callable, QVariant::fromValue(ctx));
     eng_p->popContext();
     eng_p->currentFrame = oldFrame;
     return QScriptEnginePrivate::jscValueFromVariant(exec, result);
@@ -251,7 +254,7 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
     QScriptValue defaultObject = ctx->thisObject();
-    QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx)));
+    QScriptValue result = qvariant_cast<QScriptValue>(scriptClass->extension(QScriptClass::Callable, QVariant::fromValue(ctx)));
     if (!result.isObject())
         result = defaultObject;
     eng_p->popContext();
@@ -268,7 +271,7 @@ bool ClassObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState *exe
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     QScript::SaveFrameHelper saveFrame(eng_p, exec);
     args << eng_p->scriptValueFromJSCValue(object) << eng_p->scriptValueFromJSCValue(value);
-    QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
+    QVariant result = scriptClass()->extension(QScriptClass::HasInstance, QVariant::fromValue(args));
     return result.toBool();
 }
 

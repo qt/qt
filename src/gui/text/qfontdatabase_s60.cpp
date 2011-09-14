@@ -486,6 +486,7 @@ void QFontEngineMultiS60::loadEngine(int at)
     Q_ASSERT(engines[at]);
 }
 
+#ifdef QT_NO_FREETYPE
 static bool registerScreenDeviceFont(int screenDeviceFontIndex,
                                      const QSymbianFontDatabaseExtrasImplementation *dbExtras)
 {
@@ -524,7 +525,7 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
     QtFontFamily *family = privateDb()->family(familyName, true);
     family->fixedPitch = faceAttrib.IsMonoWidth();
     QtFontFoundry *foundry = family->foundry(QString(), true);
-    QtFontStyle *style = foundry->style(styleKey, true);
+    QtFontStyle *style = foundry->style(styleKey, QString(), true);
     style->smoothScalable = typefaceSupport.iIsScalable;
     style->pixelSize(0, true);
 
@@ -545,11 +546,12 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
         qFromBigEndian<quint32>(ulCodePageRange + 4)
     };
     const QList<QFontDatabase::WritingSystem> writingSystems =
-        determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+        qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
     foreach (const QFontDatabase::WritingSystem system, writingSystems)
         family->writingSystems[system] = QtFontFamily::Supported;
     return true;
 }
+#endif
 
 static void initializeDb()
 {

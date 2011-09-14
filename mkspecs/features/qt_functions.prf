@@ -46,7 +46,10 @@ defineTest(qtAddLibrary) {
        }
     }
     symbian {
-        isEqual(LIB_NAME, QtGui) {
+        isEqual(LIB_NAME, QtCore) {
+            #workaround for dependency from f32file.h on e32svr.h which has moved location in symbian3
+            INCLUDEPATH *= $$OS_LAYER_SYSTEMINCLUDE
+        } else:isEqual(LIB_NAME, QtGui) {
             # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
             INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
         } else:isEqual(LIB_NAME, QtWebKit) {
@@ -103,3 +106,17 @@ defineTest(qtPrepareTool) {
     }
     export($$1)
 }
+
+defineTest(packagesExist) {
+    # this can't be done in global scope here because qt_functions is loaded
+    # before the .pro is parsed, so if the .pro set PKG_CONFIG, we wouldn't know it
+    # yet. oops.
+    isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config # keep consistent with link_pkgconfig.prf! too
+
+    for(package, ARGS) {
+        !system($$PKG_CONFIG --exists $$package):return(false)
+    }
+
+    return(true)
+}
+

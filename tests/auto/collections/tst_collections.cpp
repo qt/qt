@@ -104,13 +104,6 @@ void foo()
 #include "q3cleanuphandler.h"
 #endif
 
-// Do not test initialization of pods on msvc6 and msvc 2002
-// This is a known issue
-#if defined Q_CC_MSVC && _MSC_VER < 1310
-#   define NOPODINITIALIZATION
-#endif
-
-
 template class QList<int>;
 
 //TESTED_FILES=
@@ -166,6 +159,9 @@ private slots:
     void forwardDeclared();
     void alignment();
     void QTBUG13079_collectionInsideCollection();
+
+    void foreach_2();
+    void insert_remove_loop();
 };
 
 struct LargeStatic {
@@ -195,10 +191,6 @@ QT_END_NAMESPACE
 
 struct Pod {
     int i1, i2;
-
-#if defined NOPODINITIALIZATION
-    Pod() : i1(0), i2(0) { }
-#endif
 };
 
 tst_Collections::tst_Collections()
@@ -2450,6 +2442,7 @@ void tst_Collections::cache()
 	QVERIFY(!cache.contains(2));
 	delete cache.take(10);
     }
+#if 0
     {
 	QCache<int, QString> cache(120);
 	int i;
@@ -2463,6 +2456,7 @@ void tst_Collections::cache()
 	QVERIFY(!cache.contains(3));
 	QVERIFY(cache.contains(2));
     }
+#endif
     {
 	QCache<int, int> cache(100);
 	cache.insert(2, new int(2));
@@ -3448,27 +3442,16 @@ void tst_Collections::containerTypedefs()
     testSetContainerTypedefs(QSet<int>());
 }
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-class Key1
-{};
-class T1
-{};
-class T2
-{};
-#else
 class Key1;
 class T1;
 class T2;
-#endif
 
 void tst_Collections::forwardDeclared()
 {
     { typedef QHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QMultiHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-#if !defined(Q_CC_MSVC_NET) || _MSC_VER >= 1310
     { typedef QMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-#endif
 #if !defined(Q_CC_RVCT)
     // RVCT can't handle forward declared template parameters if those are used to declare
     // class members inside templated class.
@@ -3524,7 +3507,7 @@ void testVectorAlignment()
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
-    
+
     for (int i = 0; i < container.size(); ++i)
         QVERIFY(container.at(i).checkAligned());
 }
@@ -3643,7 +3626,7 @@ template<template<class, class> class C> void QTBUG13079_collectionInsideCollect
 }
 
 
-static quint32 qHash(const QTBUG13079_Node<QSet> &)
+quint32 qHash(const QTBUG13079_Node<QSet> &)
 {
     return 0;
 }
@@ -3717,6 +3700,215 @@ void tst_Collections::QTBUG13079_collectionInsideCollection()
     QTBUG13079_collectionInsidePtrImpl<QSharedDataPointer>();
 #endif
 }
+
+template<class Container> void foreach_test_arrays(const Container &container)
+{
+    typedef typename Container::value_type T;
+    int i = 0;
+    QSet <T> set;
+    foreach(const T & val, container) {
+        QVERIFY( val == container[i] );
+        set << val;
+        i++;
+    }
+    QCOMPARE(set.count(), container.count());
+
+    //modify the container while iterating.
+    Container c2 = container;
+    Container c3;
+    i = 0;
+    foreach (T val, c2) {
+        c3 << val;
+        c2.insert((i * 89) % c2.size(), T() );
+        QVERIFY( val == container.at(i) );
+        val = T();
+        i++;
+    }
+    QVERIFY(c3 == container);
+}
+
+
+void tst_Collections::foreach_2()
+{
+    QStringList strlist = QString::fromLatin1("a,b,c,d,e,f,g,h,ih,kl,mn,op,qr,st,uvw,xyz").split(",");
+    foreach_test_arrays(strlist);
+    foreach_test_arrays(QList<QString>(strlist));
+    foreach_test_arrays(strlist.toVector());
+
+    QList<int> intlist;
+    intlist << 1 << 2 << 3 << 4 <<5 << 6 << 7 << 8 << 9;
+    foreach_test_arrays(intlist);
+    foreach_test_arrays(intlist.toVector());
+
+    QVarLengthArray<int> varl1;
+    QVarLengthArray<int, 3> varl2;
+    QVarLengthArray<int, 10> varl3;
+    foreach(int i, intlist) {
+        varl1 << i;
+        varl2 << i;
+        varl3 << i;
+    }
+    QCOMPARE(varl1.count(), intlist.count());
+    QCOMPARE(varl2.count(), intlist.count());
+    QCOMPARE(varl3.count(), intlist.count());
+    foreach_test_arrays(varl1);
+    foreach_test_arrays(varl2);
+    foreach_test_arrays(varl3);
+
+    QVarLengthArray<QString> varl4;
+    QVarLengthArray<QString, 3> varl5;
+    QVarLengthArray<QString, 18> varl6;
+    foreach(const QString &str, strlist) {
+        varl4 << str;
+        varl5 << str;
+        varl6 << str;
+    }
+    QCOMPARE(varl4.count(), strlist.count());
+    QCOMPARE(varl5.count(), strlist.count());
+    QCOMPARE(varl6.count(), strlist.count());
+    foreach_test_arrays(varl4);
+    foreach_test_arrays(varl5);
+    foreach_test_arrays(varl6);
+}
+
+struct IntOrString
+{
+    int val;
+    IntOrString(int v) : val(v) { }
+    IntOrString(const QString &v) : val(v.toInt()) { }
+    operator int() { return val; }
+    operator QString() { return QString::number(val); }
+#ifndef QT_NO_STL
+    operator std::string() { return QString::number(val).toStdString(); }
+    IntOrString(const std::string &v) : val(QString::fromStdString(v).toInt()) { }
+#endif
+};
+
+template<class Container> void insert_remove_loop_impl()
+{
+    typedef typename Container::value_type T;
+    Container t;
+    t.append(T(IntOrString(1)));
+    t << (T(IntOrString(2)));
+    t += (T(IntOrString(3)));
+    t.prepend(T(IntOrString(4)));
+    t.insert(2, 3 , T(IntOrString(5)));
+    t.insert(4, T(IntOrString(6)));
+    t.insert(t.begin() + 2, T(IntOrString(7)));
+    t.insert(t.begin() + 5, 3,  T(IntOrString(8)));
+    int expect1[] = { 4 , 1 , 7, 5 , 5 , 8, 8, 8, 6, 5, 2 , 3 };
+    QCOMPARE(size_t(t.count()), sizeof(expect1)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect1[i])));
+    }
+
+    Container compare_test1 = t;
+    t.replace(5, T(IntOrString(9)));
+    Container compare_test2 = t;
+    QVERIFY(!(compare_test1 == t));
+    QVERIFY( (compare_test1 != t));
+    QVERIFY( (compare_test2 == t));
+    QVERIFY(!(compare_test2 != t));
+    t.remove(7);
+    t.remove(2, 3);
+    int expect2[] = { 4 , 1 , 9, 8, 6, 5, 2 , 3 };
+    QCOMPARE(size_t(t.count()), sizeof(expect2)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect2[i])));
+    }
+
+    for (typename Container::iterator it = t.begin(); it != t.end(); ) {
+        if ( int(IntOrString(*it)) % 2 )
+            ++it;
+        else
+            it = t.erase(it);
+    }
+
+    int expect3[] = { 1 , 9, 5, 3 };
+    QCOMPARE(size_t(t.count()), sizeof(expect3)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect3[i])));
+    }
+
+    t.erase(t.begin() + 1, t.end() - 1);
+
+    int expect4[] = { 1 , 3 };
+    QCOMPARE(size_t(t.count()), sizeof(expect4)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect4[i])));
+    }
+
+    t << T(IntOrString(10)) << T(IntOrString(11)) << T(IntOrString(12)) << T(IntOrString(13));
+    t << T(IntOrString(14)) << T(IntOrString(15)) << T(IntOrString(16)) << T(IntOrString(17));
+    t << T(IntOrString(18)) << T(IntOrString(19)) << T(IntOrString(20)) << T(IntOrString(21));
+    for (typename Container::iterator it = t.begin(); it != t.end(); ++it) {
+        int iv = int(IntOrString(*it));
+        if ( iv % 2 ) {
+            it = t.insert(it, T(IntOrString(iv * iv)));
+            it = t.insert(it + 2, T(IntOrString(iv * iv + 1)));
+        }
+    }
+
+    int expect5[] = { 1, 1, 2, 3*3, 3, 3*3+1, 10, 11*11, 11, 11*11+1, 12 , 13*13, 13, 13*13+1, 14,
+                      15*15, 15, 15*15+1, 16 , 17*17, 17, 17*17+1 ,18 , 19*19, 19, 19*19+1, 20, 21*21, 21, 21*21+1 };
+    QCOMPARE(size_t(t.count()), sizeof(expect5)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect5[i])));
+    }
+}
+
+
+//Add insert(int, int, T) so it has the same interface as QVector and QVarLengthArray for the test.
+template<typename T>
+struct ExtList : QList<T> {
+    using QList<T>::insert;
+    void insert(int before, int n, const T&x) {
+        while (n--) {
+            this->insert(before, x );
+        }
+    }
+    void insert(typename QList<T>::iterator before, int n, const T&x) {
+        while (n--) {
+            before = this->insert(before, x);
+        }
+    }
+
+    void remove(int i) {
+        this->removeAt(i);
+    }
+    void remove(int i, int n) {
+        while (n--) {
+            this->removeAt(i);
+        }
+    }
+};
+
+void tst_Collections::insert_remove_loop()
+{
+    insert_remove_loop_impl<ExtList<int> >();
+    insert_remove_loop_impl<ExtList<QString> >();
+    insert_remove_loop_impl<QVector<int> >();
+    insert_remove_loop_impl<QVector<QString> >();
+    insert_remove_loop_impl<QVarLengthArray<int> >();
+    insert_remove_loop_impl<QVarLengthArray<QString> >();
+    insert_remove_loop_impl<QVarLengthArray<int, 10> >();
+    insert_remove_loop_impl<QVarLengthArray<QString, 10> >();
+    insert_remove_loop_impl<QVarLengthArray<int, 3> >();
+    insert_remove_loop_impl<QVarLengthArray<QString, 3> >();
+    insert_remove_loop_impl<QVarLengthArray<int, 15> >();
+    insert_remove_loop_impl<QVarLengthArray<QString, 15> >();
+
+#ifndef QT_NO_STL
+    insert_remove_loop_impl<ExtList<std::string> >();
+    insert_remove_loop_impl<QVector<std::string> >();
+    insert_remove_loop_impl<QVarLengthArray<std::string> >();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 10> >();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 3> >();
+    insert_remove_loop_impl<QVarLengthArray<std::string, 15> >();
+#endif
+}
+
+
 
 QTEST_APPLESS_MAIN(tst_Collections)
 #include "tst_collections.moc"

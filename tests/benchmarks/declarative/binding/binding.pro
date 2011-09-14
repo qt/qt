@@ -8,9 +8,9 @@ SOURCES += tst_binding.cpp testtypes.cpp
 HEADERS += testtypes.h
 
 symbian {
-    data.sources = data
+    data.files = data
     data.path = .
-    DEPLOYMENT = data
+    DEPLOYMENT += data
 } else {
     # Define SRCDIR equal to test's source directory
     DEFINES += SRCDIR=\\\"$$PWD\\\"

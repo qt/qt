@@ -13,7 +13,7 @@ QT -= gui
 
 
 wince*|symbian: {
-   addFiles.sources = encodings parser xmldocs
+   addFiles.files = encodings parser xmldocs
    addFiles.path = .
    DEPLOYMENT += addFiles
 }

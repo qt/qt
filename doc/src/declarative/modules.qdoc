@@ -310,6 +310,7 @@ It is defined by a plain text file named "qmldir" that contains one or more line
 <TypeName> [<InitialVersion>] <File>
 internal <TypeName> <File>
 plugin <Name> [<Path>]
+typeinfo <File>
 \endcode
 
 \bold {# <Comment>} lines are used for comments. They are ignored by the QML engine.
@@ -350,6 +351,14 @@ plugin file, or a relative path from the directory containing the \c qmldir file
 containing the plugin file. By default the engine searches for the plugin library in the directory that contains the \c qmldir
 file. The plugin search path can be queried with QDeclarativeEngine::pluginPathList() and modified using QDeclarativeEngine::addPluginPath(). When running the \l {QML Viewer}, use the \c -P option to add paths to the plugin search path.
 
+\bold {typeinfo <File>} lines add \l{Writing a qmltypes file}{type description files} to
+the module that can be read by QML tools such as Qt Creator to get information about the
+types defined by the module's plugins. <File> is the (relative) file name of a .qmltypes
+file.
+
+Without such a file QML tools may be unable to offer features such as code completion
+for the types defined in your plugins.
+
 
 \section1 Debugging
 
@@ -357,6 +366,122 @@ The \c QML_IMPORT_TRACE environment variable can be useful for debugging
 when there are problems with finding and loading modules. See
 \l{Debugging module imports} for more information.
 
+
+\section1 Writing a qmltypes file
+
+QML modules may refer to one or more type information files in their
+\l{Writing a qmldir file}{qmldir} file. These usually have the .qmltypes
+extension and are read by external tools to gain information about
+types defined in plugins.
+
+As such qmltypes files have no effect on the functionality of a QML module.
+Their only use is to allow tools such as Qt Creator to provide code completion,
+error checking and other functionality to users of your module.
+
+Any module that uses plugins should also ship a type description file.
+
+The best way to create a qmltypes file for your module is to generate it
+using the \c qmlplugindump tool that is provided with Qt.
+
+Example:
+If your module is in \c /tmp/imports/My/Module, you could run
+\code
+qmlplugindump My.Module 1.0 /tmp/imports > /tmp/imports/My/Module/mymodule.qmltypes
+\endcode
+to generate type information for your module. Afterwards, add the line
+\code
+typeinfo mymodule.qmltypes
+\endcode
+to \c /tmp/imports/My/Module/qmldir to register it.
+
+While the qmldump tool covers most cases, it does not work if:
+\list
+\o The plugin uses a \l{QDeclarativeCustomParser}. The component that uses
+   the custom parser will not get its members documented.
+\o The plugin can not be loaded. In particular if you cross-compiled
+   the plugin for a different architecture, qmldump will not be able to
+   load it.
+\endlist
+
+In case you have to create a qmltypes file manually or need to adjust
+an existing one, this is the file format:
+
+\qml
+import QtQuick.tooling 1.1
+
+// There always is a single Module object that contains all
+// Component objects.
+Module {
+    // A Component object directly corresponds to a type exported
+    // in a plugin with a call to qmlRegisterType.
+    Component {
+
+        // The name is a unique identifier used to refer to this type.
+        // It is recommended you simply use the C++ type name.
+        name: "QDeclarativeAbstractAnimation"
+
+        // The name of the prototype Component.
+        prototype: "QObject"
+
+        // The name of the default property.
+        defaultProperty: "animations"
+
+        // The name of the type containing attached properties
+        // and methods.
+        attachedType: "QDeclarativeAnimationAttached"
+
+        // The list of exports determines how a type can be imported.
+        // Each string has the format "URI/Name version" and matches the
+        // arguments to qmlRegisterType. Usually types are only exported
+        // once, if at all.
+        // If the "URI/" part of the string is missing that means the
+        // type should be put into the package defined by the URI the
+        // module was imported with.
+        // For example if this module was imported with 'import Foo 4.8'
+        // the Animation object would be found in the package Foo and
+        // QtQuick.
+        exports: [
+            "Animation 4.7",
+            "QtQuick/Animation 1.0"
+        ]
+
+        Property {
+            name: "animations";
+            type: "QDeclarativeAbstractAnimation"
+            // defaults to false, whether this property is read only
+            isReadonly: true
+            // defaults to false, whether the type of this property was a pointer in C++
+            isPointer: true
+            // defaults to false: whether the type actually is a QDeclarativeListProperty<type>
+            isList: true
+            // defaults to 0: the minor version that introduced this property
+            revision: 1
+        }
+        Property { name: "loops"; type: "int" }
+        Property { name: "name"; type: "string" }
+        Property { name: "loopsEnum"; type: "Loops" }
+
+        Enum {
+            name: "Loops"
+            values: {
+                "Infinite": -2,
+                "OnceOnly": 1
+            }
+        }
+
+        // Signal and Method work the same way. The inner Parameter
+        // declarations also support the isReadonly, isPointer and isList
+        // attributes which mean the same as for Property
+        Method { name: "restart" }
+        Signal { name: "started"; revision: 2 }
+        Signal {
+            name: "runningChanged"
+            Parameter { type: "bool" }
+            Parameter { name: "foo"; type: "bool" }
+        }
+    }
+}
+\endqml
 
 */
 /

@@ -313,7 +313,7 @@ void ArthurFrame::loadSourceFile(const QString &sourceFile)
 void ArthurFrame::showSource()
 {
     // Check for existing source
-    if (qFindChild<QTextBrowser *>(this))
+    if (findChild<QTextBrowser *>())
         return;
 
     QString contents;

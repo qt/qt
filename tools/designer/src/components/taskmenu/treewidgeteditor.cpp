@@ -60,18 +60,18 @@ QT_BEGIN_NAMESPACE
 
 namespace qdesigner_internal {
 
-TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QWidget *parent)
-    : AbstractItemEditor(form, parent), m_updatingBrowser(false)
+TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QDialog *dialog)
+    : AbstractItemEditor(form, 0), m_updatingBrowser(false)
 {
     m_columnEditor = new ItemListEditor(form, this);
     m_columnEditor->setObjectName(QLatin1String("columnEditor"));
     m_columnEditor->setNewItemText(tr("New Column"));
-    ui.setupUi(this);
+    ui.setupUi(dialog);
 
     injectPropertyBrowser(ui.itemsTab, ui.widget);
     connect(ui.showPropertiesButton, SIGNAL(clicked()),
             this, SLOT(togglePropertyBrowser()));
-    togglePropertyBrowser();
+    setPropertyBrowserVisible(false);
 
     ui.tabWidget->insertTab(0, m_columnEditor, tr("&Columns"));
     ui.tabWidget->setCurrentIndex(0);
@@ -86,6 +86,30 @@ TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QWidget *
     ui.moveItemLeftButton->setIcon(createIconSet(QString::fromUtf8("levelup.png")));
 
     ui.treeWidget->header()->setMovable(false);
+
+    connect(ui.newItemButton, SIGNAL(clicked()), this, SLOT(on_newItemButton_clicked()));
+    connect(ui.newSubItemButton, SIGNAL(clicked()), this, SLOT(on_newSubItemButton_clicked()));
+    connect(ui.moveItemUpButton, SIGNAL(clicked()), this, SLOT(on_moveItemUpButton_clicked()));
+    connect(ui.moveItemDownButton, SIGNAL(clicked()), this, SLOT(on_moveItemDownButton_clicked()));
+    connect(ui.moveItemRightButton, SIGNAL(clicked()), this, SLOT(on_moveItemRightButton_clicked()));
+    connect(ui.moveItemLeftButton, SIGNAL(clicked()), this, SLOT(on_moveItemLeftButton_clicked()));
+    connect(ui.treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(on_treeWidget_currentItemChanged()));
+    connect(ui.treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+            this, SLOT(on_treeWidget_itemChanged(QTreeWidgetItem*,int)));
+
+    connect(m_columnEditor, SIGNAL(indexChanged(int)),
+            this, SLOT(on_columnEditor_indexChanged(int)));
+    connect(m_columnEditor, SIGNAL(itemChanged(int,int,QVariant)),
+            this, SLOT(on_columnEditor_itemChanged(int,int,QVariant)));
+    connect(m_columnEditor, SIGNAL(itemInserted(int)),
+            this, SLOT(on_columnEditor_itemInserted(int)));
+    connect(m_columnEditor, SIGNAL(itemDeleted(int)),
+            this, SLOT(on_columnEditor_itemDeleted(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedUp(int)),
+            this, SLOT(on_columnEditor_itemMovedUp(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedDown(int)),
+            this, SLOT(on_columnEditor_itemMovedDown(int)));
 
     connect(iconCache(), SIGNAL(reloaded()), this, SLOT(cacheReloaded()));
 }
@@ -171,8 +195,8 @@ void TreeWidgetEditor::setItemData(int role, const QVariant &v)
     BoolBlocker block(m_updatingBrowser);
     if (role == Qt::FontRole && newValue.type() == QVariant::Font) {
         QFont oldFont = ui.treeWidget->font();
-        QFont newFont = qVariantValue<QFont>(newValue).resolve(oldFont);
-        newValue = qVariantFromValue(newFont);
+        QFont newFont = qvariant_cast<QFont>(newValue).resolve(oldFont);
+        newValue = QVariant::fromValue(newFont);
         ui.treeWidget->currentItem()->setData(col, role, QVariant()); // force the right font with the current resolve mask is set (item view bug)
     }
     ui.treeWidget->currentItem()->setData(col, role, newValue);
@@ -198,7 +222,7 @@ void TreeWidgetEditor::on_newItemButton_clicked()
         newItem = new QTreeWidgetItem(ui.treeWidget);
     const QString newItemText = tr("New Item");
     newItem->setText(0, newItemText);
-    newItem->setData(0, Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(newItemText)));
+    newItem->setData(0, Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(newItemText)));
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
     ui.treeWidget->blockSignals(false);
 
@@ -217,7 +241,7 @@ void TreeWidgetEditor::on_newSubItemButton_clicked()
     QTreeWidgetItem *newItem = new QTreeWidgetItem(curItem);
     const QString newItemText = tr("New Subitem");
     newItem->setText(0, newItemText);
-    newItem->setData(0, Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(newItemText)));
+    newItem->setData(0, Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(newItemText)));
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
     ui.treeWidget->blockSignals(false);
 
@@ -386,15 +410,13 @@ void TreeWidgetEditor::on_moveItemRightButton_clicked()
 
 void TreeWidgetEditor::togglePropertyBrowser()
 {
-    // Always hide in case parent widget is not visible -> on startup
-    const bool isVisible =
-            !this->isVisible() ? true : m_propertyBrowser->isVisible();
-    if (isVisible)
-        ui.showPropertiesButton->setText(tr("Properties &<<"));
-    else
-        ui.showPropertiesButton->setText(tr("Properties &>>"));
+    setPropertyBrowserVisible(!m_propertyBrowser->isVisible());
+}
 
-    m_propertyBrowser->setVisible(!isVisible);
+void TreeWidgetEditor::setPropertyBrowserVisible(bool v)
+{
+    ui.showPropertiesButton->setText(v ? tr("Properties &>>") : tr("Properties &<<"));
+    m_propertyBrowser->setVisible(v);
 }
 
 void TreeWidgetEditor::on_treeWidget_currentItemChanged()
@@ -408,10 +430,10 @@ void TreeWidgetEditor::on_treeWidget_itemChanged(QTreeWidgetItem *item, int colu
     if (m_updatingBrowser)
         return;
 
-    PropertySheetStringValue val = qVariantValue<PropertySheetStringValue>(item->data(column, Qt::DisplayPropertyRole));
+    PropertySheetStringValue val = qvariant_cast<PropertySheetStringValue>(item->data(column, Qt::DisplayPropertyRole));
     val.setValue(item->text(column));
     BoolBlocker block(m_updatingBrowser);
-    item->setData(column, Qt::DisplayPropertyRole, qVariantFromValue(val));
+    item->setData(column, Qt::DisplayPropertyRole, QVariant::fromValue(val));
 
     updateBrowser();
 }
@@ -425,7 +447,7 @@ void TreeWidgetEditor::on_columnEditor_indexChanged(int idx)
 void TreeWidgetEditor::on_columnEditor_itemChanged(int idx, int role, const QVariant &v)
 {
     if (role == Qt::DisplayPropertyRole)
-        ui.treeWidget->headerItem()->setData(idx, Qt::EditRole, qVariantValue<PropertySheetStringValue>(v).value());
+        ui.treeWidget->headerItem()->setData(idx, Qt::EditRole, qvariant_cast<PropertySheetStringValue>(v).value());
     ui.treeWidget->headerItem()->setData(idx, role, v);
 }
 
@@ -599,5 +621,22 @@ void TreeWidgetEditor::cacheReloaded()
     reloadIconResources(iconCache(), ui.treeWidget);
 }
 
+TreeWidgetEditorDialog::TreeWidgetEditorDialog(QDesignerFormWindowInterface *form, QWidget *parent) :
+    QDialog(parent), m_editor(form, this)
+{
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
+
+TreeWidgetContents TreeWidgetEditorDialog::fillContentsFromTreeWidget(QTreeWidget *treeWidget)
+{
+    return m_editor.fillContentsFromTreeWidget(treeWidget);
+}
+
+TreeWidgetContents TreeWidgetEditorDialog::contents() const
+{
+    return m_editor.contents();
+}
+
+} // namespace qdesigner_internal
+
 QT_END_NAMESPACE

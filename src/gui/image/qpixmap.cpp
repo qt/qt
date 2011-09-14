@@ -71,6 +71,10 @@
 # include "private/qpixmap_mac_p.h"
 #endif
 
+#ifdef Q_WS_QPA
+# include "qplatformintegration_qpa.h"
+#endif
+
 #if defined(Q_WS_X11)
 # include "qx11info_x11.h"
 # include <private/qt_x11_p.h>
@@ -98,12 +102,26 @@ static bool qt_pixmap_thread_test()
         qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
         return false;
     }
-#ifndef Q_WS_WIN
+
     if (qApp->thread() != QThread::currentThread()) {
-        qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
-        return false;
-    }
+        bool fail = false;
+#if defined (Q_WS_X11)
+        if (!QApplication::testAttribute(Qt::AA_X11InitThreads))
+            fail = true;
+#elif defined (Q_WS_QPA)
+        if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
+            printf("Lighthouse plugin does not support threaded pixmaps!\n");
+            fail = true;
+        }
+#else
+        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+            fail = true;
 #endif
+        if (fail) {
+            qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
+            return false;
+        }
+    }
     return true;
 }
 
@@ -112,8 +130,16 @@ void QPixmap::init(int w, int h, Type type)
     init(w, h, int(type));
 }
 
+extern QApplication::Type qt_appType;
+
 void QPixmap::init(int w, int h, int type)
 {
+    if (qt_appType == QApplication::Tty) {
+        qWarning("QPixmap: Cannot create a QPixmap when no GUI is being used");
+        data = 0;
+        return;
+    }
+
     if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
         data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
     else
@@ -438,6 +464,14 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
     }
     return *this;
 }
+
+/*!
+    \fn void QPixmap::swap(QPixmap &other)
+    \since 4.8
+
+    Swaps pixmap \a other with this pixmap. This operation is very
+    fast and never fails.
+*/
 
 /*!
    Returns the pixmap as a QVariant.
@@ -1178,19 +1212,20 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 
     \warning This function is X11 specific; using it is non-portable.
 
+    \warning Since 4.8, pixmaps do not have an X11 handle unless
+    created with \l {QPixmap::}{fromX11Pixmap()}, or if the native
+    graphics system is explicitly enabled.
+
     \sa detach()
+    \sa QApplication::setGraphicsSystem()
 */
 
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd) {
-        if (pd->classId() == QPixmapData::X11Class)
-            return static_cast<const QX11PixmapData*>(pd)->handle();
-        else
-            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
-    }
+    if (pd && pd->classId() == QPixmapData::X11Class)
+        return static_cast<const QX11PixmapData*>(pd)->handle();
 #endif
     return 0;
 }
@@ -1625,16 +1660,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     {Implicit Data Sharing} documentation. QPixmap objects can also be
     streamed.
 
-    Depending on the system, QPixmap is stored using a RGB32 or a
-    premultiplied alpha format. If the image has an alpha channel, and
-    if the system allows, the preferred format is premultiplied alpha.
-    Note also that QPixmap, unlike QImage, may be hardware dependent.
-    On X11, Mac and Symbian, a QPixmap is stored on the server side while
-    a QImage is stored on the client side (on Windows, these two classes
-    have an equivalent internal representation, i.e. both QImage and
-    QPixmap are stored on the client side and don't use any GDI
-    resources).
-
     Note that the pixel data in a pixmap is internal and is managed by
     the underlying window system. Because QPixmap is a QPaintDevice
     subclass, QPainter can be used to draw directly onto pixmaps.
@@ -1964,6 +1989,8 @@ int QPixmap::defaultDepth()
     return 32;
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
+#elif defined(Q_WS_QPA)
+    return 32; //LITE: use graphicssystem (we should do that in general)
 #endif
 }
 

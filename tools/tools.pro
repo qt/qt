@@ -20,10 +20,13 @@ TEMPLATE        = subdirs
                 SUBDIRS += designer
             }
         }
-        unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
-        win32:!wince*:SUBDIRS += activeqt
+        unix:!symbian:!mac:!embedded:!qpa:SUBDIRS += qtconfig
+        win32:!wince*:!win32-g++*:SUBDIRS += activeqt
     }
-    contains(QT_CONFIG, declarative):SUBDIRS += qml
+    contains(QT_CONFIG, declarative) {
+        SUBDIRS += qml
+        !symbian: SUBDIRS += qmlplugindump
+    }
 }
 
 !wince*:!symbian:SUBDIRS += linguist

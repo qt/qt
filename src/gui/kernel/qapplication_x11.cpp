@@ -483,11 +483,9 @@ static void* qt_load_library_runtime(const char *library, int vernum,
     Q_FOREACH(int version, versions) {
         QLatin1String libName(library);
         QLibrary xfixesLib(libName, version);
-        if (xfixesLib.load()) {
-            void *ptr = xfixesLib.resolve(symbol);
-            if (ptr)
-                return ptr;
-        }
+        void *ptr = xfixesLib.resolve(symbol);
+        if (ptr)
+            return ptr;
     }
     return 0;
 }
@@ -1589,6 +1587,9 @@ static void getXDefault(const char *group, const char *key, int *val)
         int v = strtol(str, &end, 0);
         if (str != end)
             *val = v;
+        // otherwise use fontconfig to convert the string to integer
+        else
+            FcNameConstant((FcChar8 *) str, val);
     }
 }
 
@@ -1738,6 +1739,9 @@ void qt_init(QApplicationPrivate *priv, int,
         appClass = app_class;
     } else {
         // Qt controls everything (default)
+
+        if (QApplication::testAttribute(Qt::AA_X11InitThreads))
+            XInitThreads();
 
         // Set application name and class
         char *app_class = 0;
@@ -2233,6 +2237,7 @@ void qt_init(QApplicationPrivate *priv, int,
         }
         getXDefault("Xft", FC_ANTIALIAS, &X11->fc_antialias);
 #ifdef FC_HINT_STYLE
+        X11->fc_hint_style = -1;
         getXDefault("Xft", FC_HINT_STYLE, &X11->fc_hint_style);
 #endif
 #if 0
@@ -2273,6 +2278,13 @@ void qt_init(QApplicationPrivate *priv, int,
         // Attempt to determine the current running X11 Desktop Enviornment
         // Use dbus if/when we can, but fall back to using windowManagerName() for now
 
+#ifndef QT_NO_XFIXES
+        if (X11->ptrXFixesSelectSelectionInput)
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(), ATOM(_NET_WM_CM_S0),
+                                       XFixesSetSelectionOwnerNotifyMask
+                                       | XFixesSelectionWindowDestroyNotifyMask
+                                       | XFixesSelectionClientCloseNotifyMask);
+#endif // QT_NO_XFIXES
         X11->compositingManagerRunning = XGetSelectionOwner(X11->display,
                                                             ATOM(_NET_WM_CM_S0));
         X11->desktopEnvironment = DE_UNKNOWN;
@@ -2608,22 +2620,20 @@ void qt_init(QApplicationPrivate *priv, int,
 
 #if !defined (Q_OS_IRIX) && !defined (QT_NO_TABLET)
     QLibrary wacom(QString::fromLatin1("wacomcfg"), 0); // version 0 is the latest release at time of writing this.
-    if (wacom.load()) {
-        // NOTE: C casts instead of reinterpret_cast for GCC 3.3.x
-        ptrWacomConfigInit = (PtrWacomConfigInit)wacom.resolve("WacomConfigInit");
-        ptrWacomConfigOpenDevice = (PtrWacomConfigOpenDevice)wacom.resolve("WacomConfigOpenDevice");
-        ptrWacomConfigGetRawParam  = (PtrWacomConfigGetRawParam)wacom.resolve("WacomConfigGetRawParam");
-        ptrWacomConfigCloseDevice = (PtrWacomConfigCloseDevice)wacom.resolve("WacomConfigCloseDevice");
-        ptrWacomConfigTerm = (PtrWacomConfigTerm)wacom.resolve("WacomConfigTerm");
+    // NOTE: C casts instead of reinterpret_cast for GCC 3.3.x
+    ptrWacomConfigInit = (PtrWacomConfigInit)wacom.resolve("WacomConfigInit");
+    ptrWacomConfigOpenDevice = (PtrWacomConfigOpenDevice)wacom.resolve("WacomConfigOpenDevice");
+    ptrWacomConfigGetRawParam  = (PtrWacomConfigGetRawParam)wacom.resolve("WacomConfigGetRawParam");
+    ptrWacomConfigCloseDevice = (PtrWacomConfigCloseDevice)wacom.resolve("WacomConfigCloseDevice");
+    ptrWacomConfigTerm = (PtrWacomConfigTerm)wacom.resolve("WacomConfigTerm");
 
-        if (ptrWacomConfigInit == 0 || ptrWacomConfigOpenDevice == 0 || ptrWacomConfigGetRawParam == 0
-                || ptrWacomConfigCloseDevice == 0 || ptrWacomConfigTerm == 0) { // either we have all, or we have none.
+    if (ptrWacomConfigInit == 0 || ptrWacomConfigOpenDevice == 0 || ptrWacomConfigGetRawParam == 0
+        || ptrWacomConfigCloseDevice == 0 || ptrWacomConfigTerm == 0) { // either we have all, or we have none.
             ptrWacomConfigInit = 0;
             ptrWacomConfigOpenDevice = 0;
             ptrWacomConfigGetRawParam  = 0;
             ptrWacomConfigCloseDevice = 0;
             ptrWacomConfigTerm = 0;
-        }
     }
 #endif
 }
@@ -3048,6 +3058,21 @@ void QApplicationPrivate::_q_alertTimeOut()
     }
 }
 
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    Window root;
+    Window child;
+    int root_x, root_y, win_x, win_y;
+    uint keybstate;
+    for (int i = 0; i < ScreenCount(X11->display); ++i) {
+        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
+                          &root_x, &root_y, &win_x, &win_y, &keybstate))
+            return X11->translateModifiers(keybstate & 0x00ff);
+    }
+    return 0;
+
+}
+
 /*****************************************************************************
   Special lookup functions for windows that have been reparented recently
  *****************************************************************************/
@@ -3210,6 +3235,8 @@ int QApplication::x11ProcessEvent(XEvent* event)
         XFixesSelectionNotifyEvent *req =
             reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
         X11->time = req->selection_timestamp;
+        if (req->selection == ATOM(_NET_WM_CM_S0))
+            X11->compositingManagerRunning = req->owner;
     }
 #endif
 
@@ -5225,14 +5252,15 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         bool trust = isVisible()
                      && (d->topData()->parentWinId == XNone ||
                          d->topData()->parentWinId == QX11Info::appRootWindow());
+        bool isCPos = false;
 
         if (event->xconfigure.send_event || trust) {
             // if a ConfigureNotify comes from a real sendevent request, we can
             // trust its values.
             newCPos.rx() = event->xconfigure.x + event->xconfigure.border_width;
             newCPos.ry() = event->xconfigure.y + event->xconfigure.border_width;
+            isCPos = true;
         }
-
         if (isVisible())
             QApplication::syncX();
 
@@ -5258,6 +5286,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                     newCPos.ry() = otherEvent.xconfigure.y +
                                    otherEvent.xconfigure.border_width;
+                    isCPos = true;
                 }
             }
 #ifndef QT_NO_XSYNC
@@ -5268,6 +5297,19 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                     break;
             }
 #endif // QT_NO_XSYNC
+        }
+
+        if (!isCPos) {
+            // we didn't get an updated position of the toplevel.
+            // either we haven't moved or there is a bug in the window manager.
+            // anyway, let's query the position to be certain.
+            int x, y;
+            Window child;
+            XTranslateCoordinates(X11->display, internalWinId(),
+                                  QApplication::desktop()->screen(d->xinfo.screen())->internalWinId(),
+                                  0, 0, &x, &y, &child);
+            newCPos.rx() = x;
+            newCPos.ry() = y;
         }
 
         QRect cr (geometry());
@@ -5312,18 +5354,6 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
     }
 
     if (wasResize) {
-        static bool slowResize = qgetenv("QT_SLOW_TOPLEVEL_RESIZE").toInt();
-        if (d->extra->compress_events && !slowResize && !data->in_show && isVisible()) {
-            QApplication::syncX();
-            XEvent otherEvent;
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), ConfigureNotify, &otherEvent)
-                   && !qt_x11EventFilter(&otherEvent) && !x11Event(&otherEvent)
-                   && otherEvent.xconfigure.event == otherEvent.xconfigure.window) {
-                data->crect.setWidth(otherEvent.xconfigure.width);
-                data->crect.setHeight(otherEvent.xconfigure.height);
-            }
-        }
-
         if (isVisible() && data->crect.size() != oldSize) {
             Q_ASSERT(d->extra->topextra);
             QWidgetBackingStore *bs = d->extra->topextra->backingStore.data();
@@ -5332,7 +5362,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
             // resize optimization in order to get invalidated regions for resized widgets.
             // The optimization discards all invalidateBuffer() calls since we're going to
             // repaint everything anyways, but that's not the case with static contents.
-            if (!slowResize && !hasStaticContents)
+            if (!hasStaticContents)
                 d->extra->topextra->inTopLevelResize = true;
             QResizeEvent e(data->crect.size(), oldSize);
             QApplication::sendSpontaneousEvent(this, &e);

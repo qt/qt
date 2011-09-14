@@ -260,10 +260,27 @@ bool QGLShaderPrivate::compile(QGLShader *q)
         glGetShaderInfoLog(shader, value, &len, logbuf);
         log = QString::fromLatin1(logbuf);
         QString name = q->objectName();
+
+        const char *types[] = {
+            "Fragment",
+            "Vertex",
+            "Geometry",
+            ""
+        };
+
+        const char *type = types[3];
+        if (shaderType == QGLShader::Fragment)
+            type = types[0];
+        else if (shaderType == QGLShader::Vertex)
+            type = types[1];
+        else if (shaderType == QGLShader::Geometry)
+            type = types[2];
+
         if (name.isEmpty())
-            qWarning() << "QGLShader::compile:" << log;
+            qWarning("QGLShader::compile(%s): %s", type, qPrintable(log));
         else
-            qWarning() << "QGLShader::compile[" << name << "]:" << log;
+            qWarning("QGLShader::compile(%s)[%s]: %s", type, qPrintable(name), qPrintable(log));
+
         delete [] logbuf;
     }
     return compiled;

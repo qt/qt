@@ -67,22 +67,27 @@ static QNetworkInterface::InterfaceFlags convertFlags(const TSoInetInterfaceInfo
     return flags;
 }
 
+QHostAddress qt_QHostAddressFromTInetAddr(const TInetAddr& addr)
+{
+    if (addr.IsV4Mapped() || addr.Family() == KAfInet) {
+        //convert v4 host address
+        return QHostAddress(addr.Address());
+    } else {
+        //convert v6 host address
+        return QHostAddress((quint8 *)(addr.Ip6Address().u.iAddr8));
+    }
+}
+
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     TInt err(KErrNone);
     QList<QNetworkInterfacePrivate *> interfaces;
-
-    // Connect to Native socket server
-    RSocketServ socketServ;
-    err = socketServ.Connect();
-    if (err)
-        return interfaces;
+    QList<QHostAddress> addressesWithEstimatedNetmasks;
 
     // Open dummy socket for interface queries
     RSocket socket;
-    err = socket.Open(socketServ, _L("udp"));
+    err = socket.Open(qt_symbianGetSocketServer(), _L("udp"));
     if (err) {
-        socketServ.Close();
         return interfaces;
     }
 
@@ -90,7 +95,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     err =  socket.SetOpt(KSoInetEnumInterfaces, KSolInetIfCtrl);
     if (err) {
         socket.Close();
-        socketServ.Close();
         return interfaces;
     }
 
@@ -98,8 +102,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     TPckgBuf<TSoInetInterfaceInfo> infoPckg;
     TSoInetInterfaceInfo &info = infoPckg();
     while (socket.GetOpt(KSoInetNextInterface, KSolInetIfCtrl, infoPckg) == KErrNone) {
-        // Do not include IPv6 addresses because netmask and broadcast address cannot be determined correctly
-        if (info.iName != KNullDesC && info.iAddress.IsV4Mapped()) {
+        if (info.iName != KNullDesC) {
             TName address;
             QNetworkAddressEntry entry;
             QNetworkInterfacePrivate *iface = 0;
@@ -121,40 +124,58 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             }
 
             // Get the address of the interface
-            info.iAddress.Output(address);
-            entry.setIp(QHostAddress(qt_TDesC2QString(address)));
+            entry.setIp(qt_QHostAddressFromTInetAddr(info.iAddress));
+
+#if defined(QNETWORKINTERFACE_DEBUG)
+            qDebug() << "address is" << info.iAddress.Family() << entry.ip();
+            qDebug() << "netmask is" << info.iNetMask.Family() << qt_QHostAddressFromTInetAddr( info.iNetMask );
+#endif
 
             // Get the interface netmask
-            // For some reason netmask is always 0.0.0.0
-            // info.iNetMask.Output(address);
-            // entry.setNetmask( QHostAddress( qt_TDesC2QString( address ) ) );
-
-            // Workaround: Let Symbian determine netmask based on IP address class
-            // TODO: Works only for IPv4 - Task: 259128 Implement IPv6 support
-            TInetAddr netmask;
-            netmask.NetMask(info.iAddress);
-            netmask.Output(address);
-            entry.setNetmask(QHostAddress(qt_TDesC2QString(address)));
-
-            // Get the interface broadcast address
-            if (iface->flags & QNetworkInterface::CanBroadcast) {
-                // For some reason broadcast address is always 0.0.0.0
-                // info.iBrdAddr.Output(address);
-                // entry.setBroadcast( QHostAddress( qt_TDesC2QString( address ) ) );
-
-                // Workaround: Let Symbian determine broadcast address based on IP address
-                // TODO: Works only for IPv4 - Task: 259128 Implement IPv6 support
-                TInetAddr broadcast;
-                broadcast.NetBroadcast(info.iAddress);
-                broadcast.Output(address);
-                entry.setBroadcast(QHostAddress(qt_TDesC2QString(address)));
+            if (info.iNetMask.IsUnspecified()) {
+                // For some reason netmask is always 0.0.0.0 for IPv4 interfaces
+                // and loopback interfaces (which we statically know)
+                if (info.iAddress.IsV4Mapped()) {
+                    if (info.iFeatures & KIfIsLoopback) {
+                        entry.setPrefixLength(32);
+                    } else {
+                        // Workaround: Let Symbian determine netmask based on IP address class (IPv4 only API)
+                        TInetAddr netmask;
+                        netmask.NetMask(info.iAddress);
+                        entry.setNetmask(QHostAddress(netmask.Address())); //binary convert v4 address
+                        addressesWithEstimatedNetmasks << entry.ip();
+#if defined(QNETWORKINTERFACE_DEBUG)
+                        qDebug() << "address class determined netmask" << entry.netmask();
+#endif
+                    }
+                } else {
+                    // For IPv6 interfaces
+                    if (info.iFeatures & KIfIsLoopback) {
+                        entry.setPrefixLength(128);
+                    } else if (info.iNetMask.IsUnspecified()) {
+                        //Don't see this error for IPv6, but try to handle it if it happens
+                        entry.setPrefixLength(64); //most common
+#if defined(QNETWORKINTERFACE_DEBUG)
+                        qDebug() << "total guess netmask" << entry.netmask();
+#endif
+                        addressesWithEstimatedNetmasks << entry.ip();
+                    }
+                }
+            } else {
+                //Expected code path for IPv6 non loopback interfaces (IPv4 could come here if symbian is fixed)
+                entry.setNetmask(qt_QHostAddressFromTInetAddr(info.iNetMask));
+#if defined(QNETWORKINTERFACE_DEBUG)
+                qDebug() << "reported netmask" << entry.netmask();
+#endif
             }
+
+            // broadcast address is determined from the netmask in postProcess()
 
             // Add new entry to interface address entries
             iface->addressEntries << entry;
 
 #if defined(QNETWORKINTERFACE_DEBUG)
-            printf("\n       Found network interface %s, interface flags:\n\
+            qDebug("\n       Found network interface %s, interface flags:\n\
                 IsUp = %d, IsRunning = %d, CanBroadcast = %d,\n\
                 IsLoopBack = %d, IsPointToPoint = %d, CanMulticast = %d, \n\
                 ip = %s, netmask = %s, broadcast = %s,\n\
@@ -168,15 +189,20 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         }
     }
 
+    // if we didn't have to guess any netmasks, then we're done.
+    if (addressesWithEstimatedNetmasks.isEmpty()) {
+        socket.Close();
+        return interfaces;
+    }
+
     // we will try to use routing info to detect more precisely
-    // netmask and then ::postProcess() should calculate
+    // estimated netmasks and then ::postProcess() should calculate
     // broadcast addresses
 
     // use dummy socket to start enumerating routes
     err =  socket.SetOpt(KSoInetEnumRoutes, KSolInetRtCtrl);
     if (err) {
         socket.Close();
-        socketServ.Close();
         // return what we have
         // up to this moment
         return interfaces;
@@ -185,16 +211,21 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     TSoInetRouteInfo routeInfo;
     TPckg<TSoInetRouteInfo> routeInfoPkg(routeInfo);
     while (socket.GetOpt(KSoInetNextRoute, KSolInetRtCtrl, routeInfoPkg) == KErrNone) {
-        TName address;
-
         // get interface address
-        routeInfo.iIfAddr.Output(address);
-        QHostAddress ifAddr(qt_TDesC2QString(address));
+        QHostAddress ifAddr(qt_QHostAddressFromTInetAddr(routeInfo.iIfAddr));
         if (ifAddr.isNull())
             continue;
+        if (!addressesWithEstimatedNetmasks.contains(ifAddr)) {
+#if defined(QNETWORKINTERFACE_DEBUG)
+            qDebug() << "skipping route from" << ifAddr << "because it wasn't an estimated netmask";
+#endif
+            continue;
+        }
 
-        routeInfo.iDstAddr.Output(address);
-        QHostAddress destination(qt_TDesC2QString(address));
+        QHostAddress destination(qt_QHostAddressFromTInetAddr(routeInfo.iDstAddr));
+#if defined(QNETWORKINTERFACE_DEBUG)
+        qDebug() << "route from" << ifAddr << "to" << destination;
+#endif
         if (destination.isNull() || destination != ifAddr)
             continue;
 
@@ -205,17 +236,13 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                 QNetworkAddressEntry entry = iface->addressEntries.at(eindex);
                 if (entry.ip() != ifAddr) {
                     continue;
-                } else if (entry.ip().protocol() != QAbstractSocket::IPv4Protocol) {
-                    // skip if not IPv4 address (e.g. IPv6)
-                    // as results not reliable on Symbian
-                    continue;
-                } else {
-                    routeInfo.iNetMask.Output(address);
-                    QHostAddress netmask(qt_TDesC2QString(address));
+                } else if (!routeInfo.iNetMask.IsUnspecified()) {
+                    //the route may also return 0.0.0.0 netmask, in which case don't use it.
+                    QHostAddress netmask(qt_QHostAddressFromTInetAddr(routeInfo.iNetMask));
                     entry.setNetmask(netmask);
-                    // NULL boradcast address for
-                    // ::postProcess to have effect
-                    entry.setBroadcast(QHostAddress());
+#if defined(QNETWORKINTERFACE_DEBUG)
+                    qDebug() << " - route netmask" << routeInfo.iNetMask.Family() << netmask << " (using route determined netmask)";
+#endif
                     iface->addressEntries.replace(eindex, entry);
                 }
             }
@@ -223,7 +250,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     }
 
     socket.Close();
-    socketServ.Close();
 
     return interfaces;
 }

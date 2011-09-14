@@ -363,6 +363,7 @@ private:
     const bool m_activateScripts;
 
     bool m_layoutWidget;
+    bool m_firstThemeIcon;
 };
 
 } // namespace CPP

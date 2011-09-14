@@ -58,7 +58,7 @@ QVariant CustomSqlModel::data(const QModelIndex &index, int role) const
             return value.toString().toUpper();
     }
     if (role == Qt::TextColorRole && index.column() == 1)
-        return qVariantFromValue(QColor(Qt::blue));
+        return QVariant::fromValue(QColor(Qt::blue));
     return value;
 }
 //! [0]

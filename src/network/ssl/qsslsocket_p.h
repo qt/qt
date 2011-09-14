@@ -69,10 +69,13 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_OS_MAC)
 #include <Security/SecCertificate.h>
 #include <CoreFoundation/CFArray.h>
+#ifndef QT_NO_CORESERVICES
     typedef OSStatus (*PtrSecCertificateGetData)(SecCertificateRef, CSSM_DATA_PTR);
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
+#endif
 #elif defined(Q_OS_WIN)
+#include <windows.h>
 #include <wincrypt.h>
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
@@ -112,6 +115,8 @@ public:
     // that was used for connecting to.
     QString verificationPeerName;
 
+    bool allowRootCertOnDemandLoading;
+
     static bool supportsSsl();
     static void ensureInitialized();
     static void deinitialize();
@@ -129,7 +134,7 @@ public:
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     static PtrSecCertificateGetData ptrSecCertificateGetData;
     static PtrSecTrustSettingsCopyCertificates ptrSecTrustSettingsCopyCertificates;
     static PtrSecTrustCopyAnchorCertificates ptrSecTrustCopyAnchorCertificates;
@@ -168,6 +173,9 @@ private:
 
     static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;
+protected:
+    static bool s_loadRootCertsOnDemand;
+    static QList<QByteArray> unixRootCertDirectories();
 };
 
 QT_END_NAMESPACE

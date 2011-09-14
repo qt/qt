@@ -237,6 +237,7 @@ public:
     // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
     QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
     void dragMoveEvent(QDragMoveEvent *e);
+    bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
 #endif
 
 private:
@@ -364,6 +365,7 @@ public:
 
 #ifndef QT_NO_DRAGANDDROP
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
 #endif
 
     inline void setGridSize(const QSize &size) { grid = size; }
@@ -376,7 +378,10 @@ public:
     inline bool isSelectionRectVisible() const { return showElasticBand; }
 
     inline QModelIndex modelIndex(int row) const { return model->index(row, column, root); }
-    inline bool isHidden(int row) const { return hiddenRows.contains(model->index(row, 0, root)); }
+    inline bool isHidden(int row) const {
+        QModelIndex idx = model->index(row, 0, root);
+        return isPersistent(idx) && hiddenRows.contains(idx);
+    }
     inline bool isHiddenOrDisabled(int row) const { return isHidden(row) || !isIndexEnabled(modelIndex(row)); }
 
     inline void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const {
@@ -430,7 +435,7 @@ public:
     QBasicTimer batchLayoutTimer;
 
     // used for hidden items
-    QVector<QPersistentModelIndex> hiddenRows;
+    QSet<QPersistentModelIndex> hiddenRows;
 
     int column;
     bool uniformItemSizes;

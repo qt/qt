@@ -97,6 +97,12 @@ qint64 QElapsedTimer::restart()
     return absoluteToMSecs(t1 - old);
 }
 
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    uint64_t cpu_time = mach_absolute_time();
+    return absoluteToNSecs(cpu_time - t1);
+}
+
 qint64 QElapsedTimer::elapsed() const
 {
     uint64_t cpu_time = mach_absolute_time();

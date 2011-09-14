@@ -55,6 +55,7 @@
 
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
+#include "QtCore/qmetatype.h"
 
 #include "qlocale.h"
 
@@ -76,8 +77,24 @@ public:
     QChar minus() const { return QChar(m_minus); }
     QChar exponential() const { return QChar(m_exponential); }
 
-    quint32 languageId() const { return m_language_id; }
-    quint32 countryId() const { return m_country_id; }
+    quint16 languageId() const { return m_language_id; }
+    quint16 countryId() const { return m_country_id; }
+
+    QString bcp47Name() const;
+
+    QString languageCode() const; // ### QByteArray::fromRawData would be more optimal
+    QString scriptCode() const;
+    QString countryCode() const;
+
+    static QLocale::Language codeToLanguage(const QString &code);
+    static QLocale::Script codeToScript(const QString &code);
+    static QLocale::Country codeToCountry(const QString &code);
+    static void getLangAndCountry(const QString &name, QLocale::Language &lang,
+                                  QLocale::Script &script, QLocale::Country &cntry);
+    static const QLocalePrivate *findLocale(QLocale::Language language,
+                                            QLocale::Script script,
+                                            QLocale::Country country);
+
 
     QLocale::MeasurementSystem measurementSystem() const;
 
@@ -107,6 +124,22 @@ public:
         FailOnGroupSeparators,
         ParseGroupSeparators
     };
+
+    static QString doubleToString(const QChar zero, const QChar plus,
+                                  const QChar minus, const QChar exponent,
+                                  const QChar group, const QChar decimal,
+                                  double d, int precision,
+                                  DoubleForm form,
+                                  int width, unsigned flags);
+    static QString longLongToString(const QChar zero, const QChar group,
+                                    const QChar plus, const QChar minus,
+                                    qint64 l, int precision, int base,
+                                    int width, unsigned flags);
+    static QString unsLongLongToString(const QChar zero, const QChar group,
+                                       const QChar plus,
+                                       quint64 l, int precision,
+                                       int base, int width,
+                                       unsigned flags);
 
     QString doubleToString(double d,
                            int precision = -1,
@@ -144,11 +177,17 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint16 m_language_id, m_country_id;
+    quint16 m_language_id, m_script_id, m_country_id;
 
     quint16 m_decimal, m_group, m_list, m_percent,
         m_zero, m_minus, m_plus, m_exponential;
+    quint16 m_quotation_start, m_quotation_end;
+    quint16 m_alternate_quotation_start, m_alternate_quotation_end;
 
+    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
+    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
+    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
+    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
     quint16 m_short_date_format_idx, m_short_date_format_size;
     quint16 m_long_date_format_idx, m_long_date_format_size;
     quint16 m_short_time_format_idx, m_short_time_format_size;
@@ -167,6 +206,19 @@ public:
     quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
     quint16 m_am_idx, m_am_size;
     quint16 m_pm_idx, m_pm_size;
+    char m_currency_iso_code[3];
+    quint16 m_currency_symbol_idx, m_currency_symbol_size;
+    quint16 m_currency_display_name_idx, m_currency_display_name_size;
+    quint8 m_currency_format_idx, m_currency_format_size;
+    quint8 m_currency_negative_format_idx, m_currency_negative_format_size;
+    quint16 m_language_endonym_idx, m_language_endonym_size;
+    quint16 m_country_endonym_idx, m_country_endonym_size;
+    quint16 m_currency_digits : 2;
+    quint16 m_currency_rounding : 3;
+    quint16 m_first_day_of_week : 3;
+    quint16 m_weekend_start : 3;
+    quint16 m_weekend_end : 3;
+
 };
 
 inline char QLocalePrivate::digitToCLocale(const QChar &in) const
@@ -219,6 +271,13 @@ private:
 };
 #endif
 
+QString qt_readEscapedFormatString(const QString &format, int *idx);
+bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
+int qt_repeatCount(const QString &s, int i);
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QStringRef)
+Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
 
 #endif // QLOCALE_P_H

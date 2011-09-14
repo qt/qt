@@ -91,6 +91,9 @@ private slots:
     void animateClick();
     void toggle();
     void clicked();
+#ifdef Q_OS_MAC
+    void macClicked();
+#endif
     void toggled();
     void isEnabled();
     void defaultAndAutoDefault();
@@ -382,7 +385,7 @@ void tst_QPushButton::toggled()
     testWidget->toggle();
     QVERIFY( toggle_count == 0 );
 
-    // do it again, just to be shure
+    // do it again, just to be sure
     resetCounters();
     testWidget->toggle();
     QVERIFY( toggle_count == 0 );
@@ -468,6 +471,34 @@ void tst_QPushButton::clicked()
     QCOMPARE( press_count, (uint)10 );
     QCOMPARE( release_count, (uint)10 );
 }
+
+#ifdef Q_OS_MAC
+// test that the corners of a mac style button are not treated as clicks.
+// but that if a style is applied, they are.
+void tst_QPushButton::macClicked()
+{
+    QPushButton *macTestWidget = new QPushButton( "Push button" );
+    macTestWidget->show();
+    connect( macTestWidget, SIGNAL(clicked()), this, SLOT(onClicked()) );
+
+    QTest::mouseClick( macTestWidget, Qt::LeftButton, 0, QPoint(1,1) );
+    QVERIFY( click_count == 0 );
+
+    QTest::mouseClick( macTestWidget, Qt::LeftButton, 0, macTestWidget->rect().center() );
+    QVERIFY( click_count == 1 );
+
+    resetCounters();
+    macTestWidget->setStyleSheet("background: white;");
+
+    QTest::mouseClick( macTestWidget, Qt::LeftButton, 0, QPoint(1,1) );
+    QVERIFY( click_count == 1 );
+
+    QTest::mouseClick( macTestWidget, Qt::LeftButton, 0, macTestWidget->rect().center() );
+    QVERIFY( click_count == 2 );
+
+    delete macTestWidget;
+}
+#endif
 
 /*
 void tst_QPushButton::group()

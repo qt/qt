@@ -84,9 +84,9 @@ public:
     void resize(int n, const T& val = T())
     {
         if (n < this->size())
-            erase(this->begin() + n, this->end());
+            this->erase(this->begin() + n, this->end());
         else
-            insert(this->end(), n - this->size(), val);
+            this->insert(this->end(), n - this->size(), val);
     }
 
 

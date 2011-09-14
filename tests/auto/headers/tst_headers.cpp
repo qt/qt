@@ -177,7 +177,7 @@ void tst_Headers::allSourceFilesData()
             || sourceFile.endsWith("/src/corelib/global/qconfig.h")
             || sourceFile.endsWith("/src/corelib/global/qconfig.cpp")
             || sourceFile.endsWith("/src/tools/uic/qclass_lib_map.h")
-            || sourceFile.endsWith("src/network/access/qnetworkcookiejartlds_p.h")
+            || sourceFile.endsWith("src/corelib/io/qurltlds_p.h")
             )
             continue;
 
@@ -243,6 +243,10 @@ void tst_Headers::licenseCheck()
         QCOMPARE(content.at(i++), QString("**"));
         if (sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.cpp")
             || sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.h")
+            || sourceFile.endsWith("/src/gui/itemviews/qidentityproxymodel.h")
+            || sourceFile.endsWith("/src/gui/itemviews/qidentityproxymodel.cpp")
+            || sourceFile.endsWith("/doc/src/snippets/code/src_gui_itemviews_qidentityproxymodel.cpp")
+            || sourceFile.endsWith("/tests/auto/qidentityproxymodel/tst_qidentityproxymodel.cpp")
             || sourceFile.endsWith("/src/network/kernel/qnetworkproxy_p.h"))
         {
             // These files are not copyrighted by Nokia.

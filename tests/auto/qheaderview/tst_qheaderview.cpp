@@ -195,6 +195,8 @@ private slots:
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
 
+    void initialSortOrderRole();
+
 protected:
     QWidget *topLevel;
     QHeaderView *view;
@@ -1114,7 +1116,7 @@ void tst_QHeaderView::moveAndInsertSection()
 
 void tst_QHeaderView::resizeMode()
 {
-    // Q_ASSERT's when resizeMode is called with an invalid index
+    // resizeMode must not be called with an invalid index
     int last = view->count() - 1;
     view->setResizeMode(QHeaderView::Interactive);
     QCOMPARE(view->resizeMode(last), QHeaderView::Interactive);
@@ -2105,6 +2107,41 @@ void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
     QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton);
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
+}
+
+void tst_QHeaderView::initialSortOrderRole()
+{
+    QTableView view;
+    QStandardItemModel *model = new QStandardItemModel(4, 3, &view);
+    for (int i = 0; i< model->rowCount(); ++i)
+        for (int j = 0; j< model->columnCount(); ++j)
+            model->setData(model->index(i,j), QString("item [%1,%2]").arg(i).arg(j));
+    QStandardItem *ascendingItem = new QStandardItem();
+    QStandardItem *descendingItem = new QStandardItem();
+    ascendingItem->setData(Qt::AscendingOrder, Qt::InitialSortOrderRole);
+    descendingItem->setData(Qt::DescendingOrder, Qt::InitialSortOrderRole);
+    model->setHorizontalHeaderItem(1, ascendingItem);
+    model->setHorizontalHeaderItem(2, descendingItem);
+    view.setModel(model);
+    view.setSortingEnabled(true);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    const int column1Pos = view.horizontalHeader()->sectionViewportPosition(1) + 5; // +5 not to be on the handle
+    QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(column1Pos, 0));
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 1);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorOrder(), Qt::AscendingOrder);
+
+    const int column2Pos = view.horizontalHeader()->sectionViewportPosition(2) + 5; // +5 not to be on the handle
+    QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(column2Pos, 0));
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 2);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorOrder(), Qt::DescendingOrder);
+
+    const int column0Pos = view.horizontalHeader()->sectionViewportPosition(0) + 5; // +5 not to be on the handle
+    QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(column0Pos, 0));
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 0);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorOrder(), Qt::AscendingOrder);
 }
 
 QTEST_MAIN(tst_QHeaderView)

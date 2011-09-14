@@ -306,7 +306,7 @@ void tst_QMenu::mouseActivation()
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
-    //context menus can allways be accessed with right click except on windows
+    //context menus can always be accessed with right click except on windows
     menu.show();
     QTest::mouseClick(&menu, Qt::RightButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
@@ -789,7 +789,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
         ++i;
-        Q_ASSERT(i<1000);
+        QVERIFY(i<1000);
     }
     main.setActiveAction(menuAction);
     sub.setActiveAction(subAction);

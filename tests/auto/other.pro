@@ -3,8 +3,8 @@
 
 TEMPLATE=subdirs
 SUBDIRS=\
-#           exceptionsafety_objects \ shouldn't enable it
-           qaccessibility \
+#           baselineexample \ Just an example demonstrating qbaselinetest usage
+           lancelot \
            qalgorithms \
            qcombobox \
            qcssparser \
@@ -35,6 +35,8 @@ SUBDIRS=\
            windowsmobile \
            nativeimagehandleprovider
 
+contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
+
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
     SUBDIRS += macgui \
@@ -53,6 +55,8 @@ symbian {
     SUBDIRS += qsoftkeymanager \
                qs60mainapplication
 }
+
+!win32-msvc*:!wince*:SUBDIRS += exceptionsafety_objects
 
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

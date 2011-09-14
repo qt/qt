@@ -67,7 +67,7 @@
 #   include "private/qringbuffer_p.h"
 #   include <private/qwineventnotifier_p.h>
 #else
-#   include "private/qnativesocketengine_p.h"
+#   include "private/qabstractsocketengine_p.h"
 #   include <qtcpsocket.h>
 #   include <qsocketnotifier.h>
 #   include <errno.h>

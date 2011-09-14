@@ -74,6 +74,10 @@ class QGLPixmapData;
 #include <QtGui/private/qegl_p.h>
 #endif
 
+#if defined(Q_WS_QPA)
+#include <QtGui/QPlatformGLContext>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
@@ -167,7 +171,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS)
                        , wsurf(0)
 #endif
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
@@ -223,10 +227,8 @@ public:
 #endif
 };
 
-class QGLContextResource;
+class QGLContextGroupResourceBase;
 class QGLSharedResourceGuard;
-
-typedef QHash<QString, GLuint> QGLDDSCache;
 
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate maintains the reference counter and destroys
@@ -246,22 +248,22 @@ public:
 
     static void addShare(const QGLContext *context, const QGLContext *share);
     static void removeShare(const QGLContext *context);
+
 private:
     QGLContextGroup(const QGLContext *context);
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
-    QHash<QGLContextResource *, void *> m_resources;
+    QHash<QGLContextGroupResourceBase *, void *> m_resources;
     QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
-    QGLDDSCache m_dds_cache;
 
     void cleanupResources(const QGLContext *ctx);
 
     friend class QGLContext;
     friend class QGLContextPrivate;
-    friend class QGLContextResource;
+    friend class QGLContextGroupResourceBase;
 };
 
 // Get the context that resources for "ctx" will transfer to once
@@ -292,7 +294,8 @@ public:
         PVRTCTextureCompression = 0x00020000,
         FragmentShader          = 0x00040000,
         ElementIndexUint        = 0x00080000,
-        Depth24                 = 0x00100000
+        Depth24                 = 0x00100000,
+        SRGBFrameBuffer         = 0x00200000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -329,6 +332,8 @@ class QGLTextureDestroyer;
 // all the GL2 engine uses:
 #define QT_GL_VERTEX_ARRAY_TRACKED_COUNT 3
 
+class QGLContextResourceBase;
+
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
@@ -364,13 +369,21 @@ public:
     QGLCmap* cmap;
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
+    Qt::HANDLE threadId;
 #endif
 #ifndef QT_NO_EGL
-    uint ownsEglContext : 1;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
     EGLSurface eglSurfaceForDevice() const;
+    static QEglProperties *extraWindowSurfaceCreationProps;
+    static void setExtraWindowSurfaceCreationProps(QEglProperties *props);
+#endif
+
+#if defined(Q_WS_QPA)
+    QPlatformGLContext *platformContext;
+    void setupSharing();
+
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
@@ -413,6 +426,13 @@ public:
     uint workaround_brokenTextureFromPixmap : 1;
     uint workaround_brokenTextureFromPixmap_init : 1;
 
+    uint workaround_brokenAlphaTexSubImage : 1;
+    uint workaround_brokenAlphaTexSubImage_init : 1;
+
+#ifndef QT_NO_EGL
+    uint ownsEglContext : 1;
+#endif
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
@@ -425,6 +445,7 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
+    QHash<QGLContextResourceBase *, void *> m_resources;
     QGLTextureDestroyer *texture_destroyer;
 
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
@@ -435,8 +456,8 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-    static QGLExtensionFuncs qt_extensionFuncs;
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN) 
+    static Q_OPENGL_EXPORT QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif
 
@@ -503,6 +524,7 @@ Q_SIGNALS:
 
 private slots:
     void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+        Q_UNUSED(boundPixmap);
 #if defined(Q_WS_X11)
         if (boundPixmap) {
             QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
@@ -690,22 +712,129 @@ inline GLenum qt_gl_preferredTextureTarget()
 #endif
 }
 
-// One resource per group of shared contexts.
-class Q_OPENGL_EXPORT QGLContextResource
+/*
+   Base for resources that are shared in a context group.
+*/
+class Q_OPENGL_EXPORT QGLContextGroupResourceBase
 {
 public:
-    typedef void (*FreeFunc)(void *);
-    QGLContextResource(FreeFunc f);
-    ~QGLContextResource();
-    // Set resource 'value' for 'key' and all its shared contexts.
-    void insert(const QGLContext *key, void *value);
-    // Return resource for 'key' or a shared context.
-    void *value(const QGLContext *key);
-    // Cleanup 'value' in response to a context group being destroyed.
-    void cleanup(const QGLContext *ctx, void *value);
+    QGLContextGroupResourceBase();
+    virtual ~QGLContextGroupResourceBase();
+    void insert(const QGLContext *context, void *value);
+    void *value(const QGLContext *context);
+    void cleanup(const QGLContext *context);
+    void cleanup(const QGLContext *context, void *value);
+    virtual void freeResource(void *value) = 0;
+
+protected:
+    QList<QGLContextGroup *> m_groups;
+
 private:
-    FreeFunc free;
     QAtomicInt active;
+};
+
+/*
+   The QGLContextGroupResource template is used to manage a resource
+   for a group of sharing GL contexts. When the last context in the
+   group is destroyed, or when the QGLContextGroupResource object
+   itself is destroyed (implies potential context switches), the
+   resource will be freed.
+
+   The class used as the template class type needs to have a
+   constructor with the following signature:
+     T(const QGLContext *);
+*/
+template <class T>
+class QGLContextGroupResource : public QGLContextGroupResourceBase
+{
+public:
+    ~QGLContextGroupResource() {
+        for (int i = 0; i < m_groups.size(); ++i) {
+            const QGLContext *context = m_groups.at(i)->context();
+            T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
+            if (resource) {
+                QGLShareContextScope scope(context);
+                delete resource;
+            }
+        }
+    }
+
+    T *value(const QGLContext *context) {
+        T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
+        if (!resource) {
+            resource = new T(context);
+            insert(context, resource);
+        }
+        return resource;
+    }
+
+protected:
+    void freeResource(void *resource) {
+        delete reinterpret_cast<T *>(resource);
+    }
+};
+
+/*
+   Base for resources that are context specific.
+*/
+class Q_OPENGL_EXPORT QGLContextResourceBase
+{
+public:
+    virtual ~QGLContextResourceBase() {
+        for (int i = 0; i < m_contexts.size(); ++i)
+            m_contexts.at(i)->d_ptr->m_resources.remove(this);
+    }
+
+    void insert(const QGLContext *context, void *value) {
+        context->d_ptr->m_resources.insert(this, value);
+    }
+
+    void *value(const QGLContext *context) {
+        return context->d_ptr->m_resources.value(this, 0);
+    }
+    virtual void freeResource(void *value) = 0;
+
+protected:
+    QList<const QGLContext *> m_contexts;
+};
+
+/*
+   The QGLContextResource template is used to manage a resource for a
+   single GL context. Just before the context is destroyed (while it's
+   still the current context), or when the QGLContextResource object
+   itself is destroyed (implies potential context switches), the
+   resource will be freed.  The class used as the template class type
+   needs to have a constructor with the following signature: T(const
+   QGLContext *);
+*/
+template <class T>
+class QGLContextResource : public QGLContextResourceBase
+{
+public:
+    ~QGLContextResource() {
+        for (int i = 0; i < m_contexts.size(); ++i) {
+            const QGLContext *context = m_contexts.at(i);
+            T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
+            if (resource) {
+                QGLShareContextScope scope(context);
+                delete resource;
+            }
+        }
+    }
+
+    T *value(const QGLContext *context) {
+        T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
+        if (!resource) {
+            resource = new T(context);
+            insert(context, resource);
+        }
+        return resource;
+    }
+
+protected:
+    void freeResource(void *resource) {
+        delete reinterpret_cast<T *>(resource);
+    }
 };
 
 // Put a guard around a GL object identifier and its context.
@@ -755,48 +884,52 @@ private:
 };
 
 
-// This class can be used to match GL extensions without doing any mallocs. The
-// class assumes that the GL extension string ends with a space character,
-// which it should do on all conformant platforms. Create the object and pass
-// in a pointer to the extension string, then call match() on each extension
-// that should be matched. The match() function takes the extension name
-// *without* the terminating space character as input.
-
 class QGLExtensionMatcher
 {
 public:
-    QGLExtensionMatcher(const char *str)
-        : gl_extensions(str), gl_extensions_length(qstrlen(str))
-    {}
+    QGLExtensionMatcher(const char *str);
+    QGLExtensionMatcher();
 
-    bool match(const char *str) {
+    bool match(const char *str) const {
         int str_length = qstrlen(str);
-        const char *extensions = gl_extensions;
-        int extensions_length = gl_extensions_length;
 
-        while (1) {
-            // the total length that needs to be matched is the str_length +
-            // the space character that terminates the extension name
-            if (extensions_length < str_length + 1)
-                return false;
-            if (qstrncmp(extensions, str, str_length) == 0 && extensions[str_length] == ' ')
+        Q_ASSERT(str);
+        Q_ASSERT(str_length > 0);
+        Q_ASSERT(str[str_length-1] != ' ');
+
+        for (int i = 0; i < m_offsets.size(); ++i) {
+            const char *extension = m_extensions.constData() + m_offsets.at(i);
+            if (qstrncmp(extension, str, str_length) == 0 && extension[str_length] == ' ')
                 return true;
-
-            int split_pos = 0;
-            while (split_pos < extensions_length && extensions[split_pos] != ' ')
-                ++split_pos;
-            ++split_pos; // added for the terminating space character
-            extensions += split_pos;
-            extensions_length -= split_pos;
         }
         return false;
     }
 
 private:
-    const char *gl_extensions;
-    int gl_extensions_length;
+    void init(const char *str);
+
+    QByteArray m_extensions;
+    QVector<int> m_offsets;
 };
 
+
+// this is a class that wraps a QThreadStorage object for storing
+// thread local instances of the GL 1 and GL 2 paint engines
+
+template <class T>
+class QGLEngineThreadStorage
+{
+public:
+    QPaintEngine *engine() {
+        QPaintEngine *&localEngine = storage.localData();
+        if (!localEngine)
+            localEngine = new T;
+        return localEngine;
+    }
+
+private:
+    QThreadStorage<QPaintEngine *> storage;
+};
 QT_END_NAMESPACE
 
 #endif // QGL_P_H

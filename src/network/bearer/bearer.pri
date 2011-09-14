@@ -17,4 +17,3 @@ SOURCES += bearer/qnetworksession.cpp \
            bearer/qbearerengine.cpp \
            bearer/qbearerplugin.cpp \
            bearer/qsharednetworksession.cpp
-

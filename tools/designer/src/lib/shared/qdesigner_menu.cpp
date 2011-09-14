@@ -477,7 +477,7 @@ bool QDesignerMenu::handleContextMenuEvent(QWidget *, QContextMenuEvent *event)
 
     QMenu menu;
     QVariant itemData;
-    qVariantSetValue(itemData, action);
+    itemData.setValue(action);
 
     QAction *addSeparatorAction = menu.addAction(tr("Insert separator"));
     addSeparatorAction->setData(itemData);
@@ -630,7 +630,7 @@ QDesignerMenu *QDesignerMenu::findActivatedMenu() const
 {
     QList<QDesignerMenu*> candidates;
     candidates.append(const_cast<QDesignerMenu*>(this));
-    candidates += qFindChildren<QDesignerMenu*>(this);
+    candidates += findChildren<QDesignerMenu*>();
 
     foreach (QDesignerMenu *m, candidates) {
         if (m == qApp->activeWindow())
@@ -867,7 +867,7 @@ void QDesignerMenu::closeMenuChain()
         w = w->parentWidget();
 
     if (w) {
-        foreach (QMenu *subMenu, qFindChildren<QMenu*>(w)) {
+        foreach (QMenu *subMenu, w->findChildren<QMenu*>()) {
             subMenu->hide();
         }
     }
@@ -1323,7 +1323,7 @@ QAction *QDesignerMenu::safeActionAt(int index) const
 void QDesignerMenu::hideSubMenu()
 {
     m_lastSubMenuIndex = -1;
-    foreach (QMenu *subMenu, qFindChildren<QMenu*>(this)) {
+    foreach (QMenu *subMenu, findChildren<QMenu*>()) {
         subMenu->hide();
     }
 }

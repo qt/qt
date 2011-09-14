@@ -77,26 +77,20 @@ QT_BEGIN_NAMESPACE
 class QEventDispatcherSymbian;
 class QTimerActiveObject;
 
-class QActiveObject : public CActive
+class Q_CORE_EXPORT QActiveObject : public CActive
 {
 public:
     QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher);
     ~QActiveObject();
 
-    bool maybeQueueForLater();
+    bool maybeDeferSocketEvent();
 
     void reactivateAndComplete();
-
 protected:
     QEventDispatcherSymbian *m_dispatcher;
-
-private:
-    bool m_hasAlreadyRun : 1;
-    bool m_hasRunAgain : 1;
-    int m_iterationCount;
 };
 
-class QWakeUpActiveObject : public QActiveObject
+class QWakeUpActiveObject : public CActive
 {
 public:
     QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher);
@@ -107,6 +101,10 @@ public:
 protected:
     void DoCancel();
     void RunL();
+
+private:
+    QEventDispatcherSymbian *m_dispatcher;
+    TThreadId m_hostThreadId;
 };
 
 struct SymbianTimerInfo : public QSharedData
@@ -126,7 +124,7 @@ struct SymbianTimerInfo : public QSharedData
 typedef QExplicitlySharedDataPointer<SymbianTimerInfo> SymbianTimerInfoPtr;
 
 // This is a bit of a proxy class. See comments in SetActive and Start for details.
-class QTimerActiveObject : public QActiveObject
+class QTimerActiveObject : public CActive
 {
 public:
     QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo);
@@ -143,26 +141,11 @@ private:
     void StartTimer();
 
 private:
+    QEventDispatcherSymbian *m_dispatcher;
     SymbianTimerInfo *m_timerInfo;
     QElapsedTimer m_timeoutTimer;
     int m_expectedTimeSinceLastEvent;
     RTimer m_rTimer;
-};
-
-class QCompleteDeferredAOs : public CActive
-{
-public:
-    QCompleteDeferredAOs(QEventDispatcherSymbian *dispatcher);
-    ~QCompleteDeferredAOs();
-
-    void complete();
-
-protected:
-    void DoCancel();
-    void RunL();
-
-private:
-    QEventDispatcherSymbian *m_dispatcher;
 };
 
 class QSocketActiveObject : public QActiveObject
@@ -176,6 +159,7 @@ public:
 protected:
     void DoCancel();
     void RunL();
+    void run();
 
 private:
     QSocketNotifier *m_notifier;
@@ -244,17 +228,13 @@ public:
     void closingDown();
 
     void timerFired(int timerId);
-    void socketFired(QSocketActiveObject *socketAO);
     void wakeUpWasCalled();
     void reactivateSocketNotifier(QSocketNotifier *notifier);
 
-    void addDeferredActiveObject(QActiveObject *object);
-    void removeDeferredActiveObject(QActiveObject *object);
-    void queueDeferredActiveObjectsCompletion();
-    // Can be overridden to activate local active objects too, but do call baseclass!
-    virtual void reactivateDeferredActiveObjects();
-
     inline int iterationCount() const { return m_iterationCount; }
+
+    void addDeferredSocketActiveObject(QActiveObject *object);
+    inline bool areSocketEventsBlocked() const { return m_noSocketEvents; }
 
     static void RequestComplete(TRequestStatus *&status, TInt reason);
     static void RequestComplete(RThread &threadHandle, TRequestStatus *&status, TInt reason);
@@ -273,7 +253,6 @@ private:
     QHash<QSocketNotifier *, QSocketActiveObject *> m_notifiers;
 
     QWakeUpActiveObject *m_wakeUpAO;
-    QCompleteDeferredAOs *m_completeDeferredAOs;
 
     volatile bool m_interrupt;
     QAtomicInt m_wakeUpDone;
@@ -281,13 +260,12 @@ private:
     unsigned char m_iterationCount;
     bool m_insideTimerEvent;
     bool m_noSocketEvents;
-    QList<QSocketActiveObject *> m_deferredSocketEvents;
-
-    QList<QActiveObject *> m_deferredActiveObjects;
+    //deferred until socket events are enabled
+    QList<QActiveObject *> m_deferredSocketEvents;
 
     int m_delay;
     int m_avgEventTime;
-    QTime m_lastIdleRequestTimer;
+    QElapsedTimer m_lastIdleRequestTimer;
 };
 
 #ifdef QT_DEBUG

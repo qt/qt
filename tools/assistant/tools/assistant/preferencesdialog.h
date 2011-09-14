@@ -81,6 +81,7 @@ private slots:
 signals:
     void updateBrowserFont();
     void updateApplicationFont();
+    void updateUserInterface();
 
 private:
     void updateFilterPage();
@@ -96,12 +97,12 @@ private:
     QStringList m_docsBackup;
     QStringList m_regDocs;
     QStringList m_unregDocs;
-    QList<int> m_TabsToClose;
     FontPanel *m_appFontPanel;
     FontPanel *m_browserFontPanel;
     bool m_appFontChanged;
     bool m_browserFontChanged;
     HelpEngineWrapper &helpEngine;
+    bool m_showTabs;
 };
 
 QT_END_NAMESPACE

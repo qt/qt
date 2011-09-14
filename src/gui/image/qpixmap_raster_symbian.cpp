@@ -45,6 +45,7 @@
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_p.h>
 #include <private/qt_s60_p.h>
+#include <private/qfont_p.h>
 #include <private/qpaintengine_raster_symbian_p.h>
 
 #include "qpixmap.h"

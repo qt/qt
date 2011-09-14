@@ -1,0 +1,181 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example webkit/simplewebplugin
+    \title Simple Web Plugin Example
+
+    The Simple Web Plugin example shows how to embed a regular Qt widget into a
+    Web page displayed using QWebView.
+
+    \image webkit-simplewebplugin.png A table widget embedded in a Web page.
+
+    In this example, we will show how to include Qt widgets in Web-centric user
+    interfaces.
+
+    \section1 QtWebKit Basics
+
+    QtWebKit provides integration between Qt and WebKit on two different levels.
+    On a low level, Qt provides widgets for Web pages to be rendered onto; on a
+    high level, a set of classes are provided that represent all the key
+    components of a Web browser.
+
+    QWebView is a widget that is used to display Web pages, QWebPage represents
+    the content in a page, and QWebFrame represents an individual frame in a
+    Web page. The code to display a Web page is very simple:
+
+    \snippet webkitsnippets/simple/main.cpp Using QWebView
+
+    The widget provides fundamental Web browsing features, such as Cascading
+    Style Sheet and JavaScript support. Other technologies can be added to
+    provide a more comprehensive experience.
+
+    \section1 Adding a Widget to a Page
+
+    Since Qt is used to render pages, it is easy to add both standard and
+    custom widgets to pages. All we need is some markup to indicate where a
+    widget is expected in a page and a mechanism that lets us know when it
+    needs to be created.
+
+    The markup used involves the \c <object> element, described in the HTML 4
+    specification, which is used to include generic objects in Web pages. When
+    describing an object to represent a widget, there are typically three
+    attributes this element can have: a \c data attribute that indicates where
+    any relevant data can be obtained; \c width and \c height attributes can
+    be used to set the size of the widget on the page.
+
+    Here's how we might describe such an object:
+
+    \snippet examples/webkit/simplewebplugin/pages/index.html embedded object
+
+    The mechanism used by QtWebKit to insert widgets into pages is a plugin
+    factory that is registered with a given WebPage instance. Factories are
+    subclasses of QWebPluginFactory and can be equipped to supply more than one
+    type of widget.
+
+    \section1 Creating a Widget to Embed
+
+    To demonstrate how the factory is used, we create a simple widget that can
+    be used to display Comma-Separated Values (CSV) files. The widget class,
+    \c CSVView, is just a subclass of QTableView with extra functions to set
+    up an internal data model. Instances of the factory class, \c CSVFactory,
+    are responsible for creating \c CSVView widgets and requesting data on
+    their behalf.
+
+    The \c CSVFactory class is defined in the following way:
+
+    \snippet examples/webkit/simplewebplugin/csvfactory.h plugin factory
+
+    The public functions give a good overview of how QtWebKit will use the
+    factory to create widgets. We begin by looking at the factory's constructor:
+
+    \snippet examples/webkit/simplewebplugin/csvfactory.cpp constructor
+
+    The factory contains a network access manager which we will use to obtain
+    data for each of the plugin widgets created.
+
+    The \c plugins() function is used to report information
+    about the kinds of widget plugins it can create; our implementation reports
+    the MIME type it expects and provides a description of the plugin:
+
+    \snippet examples/webkit/simplewebplugin/csvfactory.cpp plugins
+
+    The \c create() function is where most of the action happens. It is
+    called with a MIME type that describes the kind of data to be displayed,
+    a URL that refers to the data, and information about any additional
+    arguments that were specified in the Web page. We begin by checking the
+    basic MIME type information passed in the \c mimeType parameter, and only
+    continue if we recognize it.
+
+    \snippet examples/webkit/simplewebplugin/csvfactory.cpp begin create
+
+    We construct a view widget
+    using the fully-specified MIME type, which is guaranteed to be in the list of
+    arguments if a MIME type has been supplied.
+
+    \snippet examples/webkit/simplewebplugin/csvfactory.cpp submit request
+
+    Lastly, we use the network access manager to request the data specified by
+    the \c url parameter, connecting its \c finished() signal to the view's
+    \c updateModel() slot so that it can collect the data. The reply object is
+    intentionally created on the heap; the \c finished() signal is connected to
+    its \c deleteLater() slot, ensuring that Qt will dispose of it when it is no
+    longer needed.
+
+    The \c CSVView class provides only minor extensions to the functionality of
+    QTableView, with a public slot to handle incoming data and a private
+    variable to record exact MIME type information:
+
+    \snippet examples/webkit/simplewebplugin/csvview.h definition
+
+    The constructor is simply used to record the MIME type of the data:
+
+    \snippet examples/webkit/simplewebplugin/csvview.cpp constructor
+
+    To save space, we will only look at parts of the \c updateModel() function,
+    which begins by obtaining the QNetworkReply object that caused the slot
+    to be invoked before checking for errors:
+
+    \snippet examples/webkit/simplewebplugin/csvview.cpp update model begin
+
+    Assuming that the data is correct, we need to determine whether the
+    CSV file includes a table header, and to find out which character encoding was
+    used to store the data. Both these pieces of information may be included in
+    the complete MIME type information, so we parse this before continuing---this
+    is shown in the online example code.
+
+    \snippet examples/webkit/simplewebplugin/csvview.cpp read data begin
+
+    Since QNetworkReply is a QIODevice subclass, the reply can be read
+    using a suitably configured text stream, and the data fed into a standard
+    model. The mechanics of this can be found in the
+    \l{webkit/simplewebplugin/csvview.cpp}{code listing}. Here, we skip to the
+    end of the function where we close the reply object and set the model on
+    the view:
+
+    \snippet examples/webkit/simplewebplugin/csvview.cpp update model
+
+    Once the reply has been read, and the model populated with data, very little
+    needs to be done by the plugin. Ownership of the view widget is handled
+    elsewhere, and we have ensured that the model will be destroyed when it is
+    no longer needed by making it a child object of the view.
+
+    Let's look quickly at the \c MainWindow implementation:
+
+    \snippet examples/webkit/simplewebplugin/mainwindow.cpp constructor
+
+    Apart from creating and setting a factory on the QWebPage object, the
+    most important task is to enable Web plugins. If this global setting is not
+    enabled, plugins will not be used and our \c <object> elements will simply
+    be ignored.
+
+    \section1 Further Reading
+
+    The \l{Web Plugin Example} extends this example by adding a signal-slot
+    connection between the embedded widget and a JavaScript function in the
+    page.
+*/

@@ -91,7 +91,7 @@ public:
     short     hx, hy;
 #if defined (Q_WS_MAC)
     int mId;
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     int id;
 #endif
 #if defined (Q_WS_WIN)

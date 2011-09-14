@@ -541,12 +541,19 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
-        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + alloc))));
-        if (!d) {
+        if (len  >= ulong(1 << 31) - sizeof(QByteArray::Data)) {
+            //QByteArray does not support that huge size anyway.
+            qWarning("qUncompress: Input data is corrupted");
+            return QByteArray();
+        }
+        QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc));
+        if (!p) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
             qWarning("qUncompress: could not allocate enough memory to uncompress data");
             return QByteArray();
         }
+        d.take(); // realloc was successful
+        d.reset(p);
 
         int res = ::uncompress((uchar*)d->array, &len,
                                (uchar*)data+4, nbytes-4);
@@ -554,12 +561,19 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
-                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + len))));
-                if (!d) {
+                if (len  >= ulong(1 << 31) - sizeof(QByteArray::Data)) {
+                    //QByteArray does not support that huge size anyway.
+                    qWarning("qUncompress: Input data is corrupted");
+                    return QByteArray();
+                }
+                QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len));
+                if (!p) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
                     qWarning("qUncompress: could not allocate enough memory to uncompress data");
                     return QByteArray();
                 }
+                d.take(); // realloc was successful
+                d.reset(p);
             }
             d->ref = 1;
             d->alloc = d->size = len;
@@ -673,12 +687,12 @@ QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
     values. To set all the bytes to a particular value, call fill().
 
     To obtain a pointer to the actual character data, call data() or
-    constData(). These functions return a pointer to the beginning of
-    the data. The pointer is guaranteed to remain valid until a
-    non-const function is called on the QByteArray. It is also
-    guaranteed that the data ends with a '\\0' byte. This '\\0' byte
-    is automatically provided by QByteArray and is not counted in
-    size().
+    constData(). These functions return a pointer to the beginning of the data.
+    The pointer is guaranteed to remain valid until a non-const function is
+    called on the QByteArray. It is also guaranteed that the data ends with a
+    '\\0' byte unless the QByteArray was created from a \l{fromRawData()}{raw
+    data}. This '\\0' byte is automatically provided by QByteArray and is not
+    counted in size().
 
     QByteArray provides the following basic functions for modifying
     the byte data: append(), prepend(), insert(), replace(), and
@@ -900,15 +914,24 @@ QByteArray &QByteArray::operator=(const char *str)
     return *this;
 }
 
+/*! \fn void QByteArray::swap(QByteArray &other)
+    \since 4.8
+
+    Swaps byte array \a other with this byte array. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn int QByteArray::size() const
 
     Returns the number of bytes in this byte array.
 
-    The last byte in the byte array is at position size() - 1. In
-    addition, QByteArray ensures that the byte at position size() is
-    always '\\0', so that you can use the return value of data() and
-    constData() as arguments to functions that expect '\\0'-terminated
-    strings.
+    The last byte in the byte array is at position size() - 1. In addition,
+    QByteArray ensures that the byte at position size() is always '\\0', so
+    that you can use the return value of data() and constData() as arguments to
+    functions that expect '\\0'-terminated strings. If the QByteArray object
+    was created from a \l{fromRawData()}{raw data} that didn't include the
+    trailing null-termination character then QByteArray doesn't add it
+    automaticall unless the \l{deep copy} is created.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 6
@@ -1039,10 +1062,11 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn const char *QByteArray::constData() const
 
-    Returns a pointer to the data stored in the byte array. The
-    pointer can be used to access the bytes that compose the array.
-    The data is '\\0'-terminated. The pointer remains valid as long
-    as the byte array isn't reallocated or destroyed.
+    Returns a pointer to the data stored in the byte array. The pointer can be
+    used to access the bytes that compose the array. The data is
+    '\\0'-terminated unless the QByteArray object was created from raw data.
+    The pointer remains valid as long as the byte array isn't reallocated or
+    destroyed.
 
     This function is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
@@ -1051,7 +1075,7 @@ QByteArray &QByteArray::operator=(const char *str)
     but most functions that take \c{char *} arguments assume that the
     data ends at the first '\\0' they encounter.
 
-    \sa data(), operator[]()
+    \sa data(), operator[](), fromRawData()
 */
 
 /*! \fn void QByteArray::detach()

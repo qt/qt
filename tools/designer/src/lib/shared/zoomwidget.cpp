@@ -328,7 +328,7 @@ void ZoomWidget::setWidget(QWidget *w, Qt::WindowFlags wFlags)
         scene().removeItem(m_proxy);
         if (QWidget *w = m_proxy->widget()) {
             // remove the event filter
-            if (QObject *evf =  qFindChild<QObject*>(w, QLatin1String(zoomedEventFilterRedirectorNameC)))
+            if (QObject *evf =  w->findChild<QObject*>(QLatin1String(zoomedEventFilterRedirectorNameC)))
                 w->removeEventFilter(evf);
         }
         m_proxy->deleteLater();

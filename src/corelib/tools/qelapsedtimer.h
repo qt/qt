@@ -57,7 +57,8 @@ public:
         SystemTime,
         MonotonicClock,
         TickCounter,
-        MachAbsoluteTime
+        MachAbsoluteTime,
+        PerformanceCounter
     };
     static ClockType clockType();
     static bool isMonotonic();
@@ -67,6 +68,7 @@ public:
     void invalidate();
     bool isValid() const;
 
+    qint64 nsecsElapsed() const;
     qint64 elapsed() const;
     bool hasExpired(qint64 timeout) const;
 

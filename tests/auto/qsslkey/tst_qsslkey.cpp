@@ -108,10 +108,8 @@ tst_QSslKey::tst_QSslKey()
 #ifdef Q_WS_MAC
     // applicationDirPath() points to a path inside the app bundle on Mac.
     QDir dir(qApp->applicationDirPath() + QLatin1String("/../../../keys"));
-#elif defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
-    QDir dir(SRCDIR + QLatin1String("/keys"));  // prefer this way to avoid ifdeffery and support shadow builds?
 #else
-    QDir dir(qApp->applicationDirPath() + QLatin1String("/keys"));
+    QDir dir(SRCDIR + QLatin1String("/keys"));  // prefer this way to avoid ifdeffery and support shadow builds?
 #endif
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rx(QLatin1String("^(rsa|dsa)-(pub|pri)-(\\d+)\\.(pem|der)$"));

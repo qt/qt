@@ -76,6 +76,7 @@ private slots:
 
     void textures();
 
+    void swap();
     void nullBrush();
     void isOpaque();
     void debug();
@@ -383,6 +384,14 @@ void tst_QBrush::textures()
     image = image_brush.texture().toImage().convertToFormat(QImage::Format_RGB32);
     QCOMPARE(image, image_source);
     QCOMPARE(image_brush.textureImage(), image_source);
+}
+
+void tst_QBrush::swap()
+{
+    QBrush b1(Qt::black), b2(Qt::white);
+    b1.swap(b2);
+    QCOMPARE(b1.color(), QColor(Qt::white));
+    QCOMPARE(b2.color(), QColor(Qt::black));
 }
 
 void tst_QBrush::nullBrush()

@@ -41,14 +41,12 @@
 
 #include "qbearerplugin_p.h"
 
-#include <QtCore/qdebug.h>
-
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
 QBearerEnginePlugin::QBearerEnginePlugin(QObject *parent)
-:   QObject(parent)
+    : QObject(parent)
 {
 }
 

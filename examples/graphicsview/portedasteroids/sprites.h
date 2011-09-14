@@ -144,7 +144,7 @@ public:
 	{
 	    if (cskip-- <= 0) {
 		setFrame( (frame()+step+frameCount())%frameCount() );
-		cskip = QABS(skip);
+                cskip = qAbs(skip);
 	    }
 	}
 

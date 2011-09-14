@@ -87,6 +87,48 @@ def findChild(parent, tag_name, arg_name=None, arg_value=None, draft=None):
         return node
     return False
 
+def findTagsInFile(file, path):
+    doc = False
+    if doc_cache.has_key(file):
+        doc = doc_cache[file]
+    else:
+        doc = xml.dom.minidom.parse(file)
+        doc_cache[file] = doc
+
+    elt = doc.documentElement
+    tag_spec_list = path.split("/")
+    last_entry = None
+    for i in range(len(tag_spec_list)):
+        tag_spec = tag_spec_list[i]
+        tag_name = tag_spec
+        arg_name = 'type'
+        arg_value = ''
+        left_bracket = tag_spec.find('[')
+        if left_bracket != -1:
+            tag_name = tag_spec[:left_bracket]
+            arg_value = tag_spec[left_bracket+1:-1].split("=")
+            if len(arg_value) == 2:
+                arg_name = arg_value[0]
+                arg_value = arg_value[1]
+            else:
+                arg_value = arg_value[0]
+        elt = findChild(elt, tag_name, arg_name, arg_value)
+        if not elt:
+            return None
+    ret = []
+    if elt.childNodes:
+        for node in elt.childNodes:
+            if node.attributes:
+                element = [node.nodeName, None]
+                element[1] = node.attributes.items()
+                ret.append(element)
+    else:
+        if elt.attributes:
+            element = [elt.nodeName, None]
+            element[1] = elt.attributes.items()
+            ret.append(element)
+    return ret
+
 def _findEntryInFile(file, path, draft=None, attribute=None):
     doc = False
     if doc_cache.has_key(file):

@@ -115,12 +115,25 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  if defined(Q_WS_WINCE)
 #    include <bldver.h>
 #  endif
-#  include <winable.h>
+#  if !defined(Q_WS_WINCE)
+#    include <winable.h>
+#  endif
+#endif
+
+#ifndef QT_NO_GESTURES
+#  ifndef GID_ZOOM
+#    define GID_ZOOM              3
+#    define GID_TWOFINGERTAP      6
+#    define GID_PRESSANDTAP       7
+#    define GID_ROLLOVER          GID_PRESSANDTAP
+#  endif
 #endif
 
 #ifndef WM_TOUCH
 #  define WM_TOUCH 0x0240
+#endif
 
+#ifndef TOUCHEVENTF_MOVE
 #  define TOUCHEVENTF_MOVE       0x0001
 #  define TOUCHEVENTF_DOWN       0x0002
 #  define TOUCHEVENTF_UP         0x0004
@@ -207,8 +220,6 @@ static void resolveAygLibs()
     if (!aygResolved) {
         aygResolved = true;
         QSystemLibrary ayglib(QLatin1String("aygshell"));
-        if (!ayglib.load())
-            return;
         ptrRecognizeGesture = (AygRecognizeGesture) ayglib.resolve("SHRecognizeGesture");
     }
 }
@@ -226,6 +237,7 @@ static void resolveAygLibs()
 #  define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #endif
 
+Q_GUI_EXPORT qreal qt_fontsmoothing_gamma;
 Q_GUI_EXPORT bool qt_cleartype_enabled;
 Q_GUI_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
 
@@ -642,8 +654,18 @@ static void qt_win_read_cleartype_settings()
     if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0))
         qt_cleartype_enabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
 #endif
-}
 
+    int winSmooth;
+    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0)) {
+        qt_fontsmoothing_gamma = winSmooth / qreal(1000.0);
+    } else {
+        qt_fontsmoothing_gamma = 1.0;
+    }
+
+    // Safeguard ourselves against corrupt registry values...
+    if (qt_fontsmoothing_gamma > 5 || qt_fontsmoothing_gamma < 1)
+        qt_fontsmoothing_gamma = qreal(1.4);
+}
 
 static void qt_set_windows_resources()
 {
@@ -944,29 +966,36 @@ bool qt_nograb()                                // application no-grab option
 typedef QHash<QString, int> WinClassNameHash;
 Q_GLOBAL_STATIC(WinClassNameHash, winclassNames)
 
+//
+// If 0 is passed as the widget pointer, register a window class
+// for QWidget as default. This is used in QGLTemporaryContext
+// during GL initialization, where we don't want to use temporary
+// QWidgets or QGLWidgets, neither do we want to have separate code
+// to register window classes.
+//
 const QString qt_reg_winclass(QWidget *w)        // register window class
 {
-    int flags = w->windowFlags();
-    int type = flags & Qt::WindowType_Mask;
+    Qt::WindowFlags flags = w ? w->windowFlags() : (Qt::WindowFlags)0;
+    Qt::WindowFlags type = flags & Qt::WindowType_Mask;
 
     uint style;
     bool icon;
     QString cname;
-    if (qt_widget_private(w)->isGLWidget) {
+    if (w && qt_widget_private(w)->isGLWidget) {
         cname = QLatin1String("QGLWidget");
         style = CS_DBLCLKS;
 #ifndef Q_WS_WINCE
         style |= CS_OWNDC;
 #endif
         icon  = true;
-    } else if (flags & Qt::MSWindowsOwnDC) {
+    } else if (w && (flags & Qt::MSWindowsOwnDC)) {
         cname = QLatin1String("QWidgetOwnDC");
         style = CS_DBLCLKS;
 #ifndef Q_WS_WINCE
         style |= CS_OWNDC;
 #endif
         icon  = true;
-    } else if (type == Qt::Tool || type == Qt::ToolTip){
+    } else if (w && (type == Qt::Tool || type == Qt::ToolTip)) {
         style = CS_DBLCLKS;
         if (w->inherits("QTipLabel") || w->inherits("QAlphaWidget")) {
             if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
@@ -981,7 +1010,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
         style |= CS_SAVEBITS;
 #endif
         icon = false;
-    } else if (type == Qt::Popup) {
+    } else if (w && (type == Qt::Popup)) {
         cname = QLatin1String("QPopup");
         style = CS_DBLCLKS;
 #ifndef Q_WS_WINCE
@@ -1035,7 +1064,12 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     if (winclassNames()->contains(cname))        // already registered in our list
         return cname;
 
+#ifndef Q_WS_WINCE
+    WNDCLASSEX wc;
+    wc.cbSize       = sizeof(WNDCLASSEX);
+#else
     WNDCLASS wc;
+#endif
     wc.style        = style;
     wc.lpfnWndProc  = (WNDPROC)QtWndProc;
     wc.cbClsExtra   = 0;
@@ -1044,22 +1078,38 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     if (icon) {
         wc.hIcon = (HICON)LoadImage(qWinAppInst(), L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
 #ifndef Q_WS_WINCE
-        if (!wc.hIcon)
+        if (wc.hIcon) {
+            int sw = GetSystemMetrics(SM_CXSMICON);
+            int sh = GetSystemMetrics(SM_CYSMICON);
+            wc.hIconSm = (HICON)LoadImage(qWinAppInst(), L"IDI_ICON1", IMAGE_ICON, sw, sh, 0);
+        } else {
             wc.hIcon = (HICON)LoadImage(0, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+            wc.hIconSm = 0;
+        }
 #endif
     } else {
         wc.hIcon    = 0;
+#ifndef Q_WS_WINCE
+        wc.hIconSm  = 0;
+#endif
     }
     wc.hCursor      = 0;
 #ifndef Q_WS_WINCE
-    wc.hbrBackground = qt_widget_private(w)->isGLWidget ? 0 : (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
+    HBRUSH brush = 0;
+    if (w && !qt_widget_private(w)->isGLWidget)
+        brush = (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
+    wc.hbrBackground = brush;
 #else
     wc.hbrBackground = 0;
 #endif
     wc.lpszMenuName  = 0;
     wc.lpszClassName = (wchar_t*)cname.utf16();
 
+#ifndef Q_WS_WINCE
+    ATOM atom = RegisterClassEx(&wc);
+#else
     ATOM atom = RegisterClass(&wc);
+#endif
 
 #ifndef QT_NO_DEBUG
     if (!atom)
@@ -1074,8 +1124,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
 
 Q_GUI_EXPORT const QString qt_getRegisteredWndClass()
 {
-    QWidget w;
-    return qt_reg_winclass(&w);
+    return qt_reg_winclass(0);
 }
 
 static void unregWinClasses()
@@ -1268,6 +1317,11 @@ Qt::KeyboardModifiers qt_win_getKeyboardModifiers()
     if (GetKeyState(VK_MENU) < 0)
         modifiers |= Qt::AltModifier;
     return modifiers;
+}
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return qt_win_getKeyboardModifiers();
 }
 
 /*****************************************************************************
@@ -2323,8 +2377,13 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
 #ifndef QT_NO_ACCESSIBILITY
         case WM_GETOBJECT:
             {
+                /* On Win64, lParam can be 0x00000000fffffffc or 0xfffffffffffffffc (!),
+                   but MSDN says that lParam should be converted to a DWORD
+                   before its compared against OBJID_CLIENT
+                */
+                const DWORD dwObjId = (DWORD)lParam;
                 // Ignoring all requests while starting up
-                if (QApplication::startingUp() || QApplication::closingDown() || (LONG)lParam != OBJID_CLIENT) {
+                if (QApplication::startingUp() || QApplication::closingDown() || dwObjId != OBJID_CLIENT) {
                     result = false;
                     break;
                 }
@@ -3676,13 +3735,11 @@ static void initWinTabFunctions()
         return;
 
     QSystemLibrary library(QLatin1String("wintab32"));
-    if (library.load()) {
-        ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
-        ptrWTGet = (PtrWTGet)library.resolve("WTGetW");
-        ptrWTEnable = (PtrWTEnable)library.resolve("WTEnable");
-        ptrWTOverlap = (PtrWTEnable)library.resolve("WTOverlap");
-        ptrWTPacketsGet = (PtrWTPacketsGet)library.resolve("WTPacketsGet");
-    }
+    ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
+    ptrWTGet = (PtrWTGet)library.resolve("WTGetW");
+    ptrWTEnable = (PtrWTEnable)library.resolve("WTEnable");
+    ptrWTOverlap = (PtrWTEnable)library.resolve("WTOverlap");
+    ptrWTPacketsGet = (PtrWTPacketsGet)library.resolve("WTPacketsGet");
 #endif // Q_OS_WINCE
 }
 #endif // QT_NO_TABLETEVENT

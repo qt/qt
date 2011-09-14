@@ -63,6 +63,12 @@ public:
     explicit QBitArray(int size, bool val = false);
     QBitArray(const QBitArray &other) : d(other.d) {}
     inline QBitArray &operator=(const QBitArray &other) { d = other.d; return *this; }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QBitArray &operator=(QBitArray &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+
+    inline void swap(QBitArray &other) { qSwap(d, other.d); }
 
     inline int size() const { return (d.size() << 3) - *d.constData(); }
     inline int count() const { return (d.size() << 3) - *d.constData(); }

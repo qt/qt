@@ -65,7 +65,7 @@
 #   include <qt_windows.h>
 #   include <private/qwineventnotifier_p.h>
 #else
-#   include <private/qnativesocketengine_p.h>
+#   include <private/qabstractsocketengine_p.h>
 #   include <qsocketnotifier.h>
 #endif
 

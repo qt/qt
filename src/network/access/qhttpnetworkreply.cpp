@@ -119,6 +119,7 @@ void QHttpNetworkReply::setRequest(const QHttpNetworkRequest &request)
 {
     Q_D(QHttpNetworkReply);
     d->request = request;
+    d->ssl = request.isSsl();
 }
 
 int QHttpNetworkReply::statusCode() const
@@ -176,6 +177,12 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
         return -1;
 }
 
+bool QHttpNetworkReply::readAnyAvailable() const
+{
+    Q_D(const QHttpNetworkReply);
+    return (d->responseData.bufferCount() > 0);
+}
+
 QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);
@@ -201,6 +208,25 @@ void QHttpNetworkReply::setDownstreamLimited(bool dsl)
     d->connection->d_func()->readMoreLater(this);
 }
 
+bool QHttpNetworkReply::supportsUserProvidedDownloadBuffer()
+{
+    Q_D(QHttpNetworkReply);
+    return (!d->isChunked() && !d->autoDecompress && d->bodyLength > 0);
+}
+
+void QHttpNetworkReply::setUserProvidedDownloadBuffer(char* b)
+{
+    Q_D(QHttpNetworkReply);
+    if (supportsUserProvidedDownloadBuffer())
+        d->userProvidedDownloadBuffer = b;
+}
+
+char* QHttpNetworkReply::userProvidedDownloadBuffer()
+{
+    Q_D(QHttpNetworkReply);
+    return d->userProvidedDownloadBuffer;
+}
+
 bool QHttpNetworkReply::isFinished() const
 {
     return d_func()->state == QHttpNetworkReplyPrivate::AllDoneState;
@@ -218,7 +244,10 @@ QHttpNetworkConnection* QHttpNetworkReply::connection()
 
 
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
-    : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
+    : QHttpNetworkHeaderPrivate(newUrl)
+    , state(NothingDoneState)
+    , ssl(false)
+    , statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
       chunkedTransferEncoding(false),
       connectionCloseEnabled(true),
@@ -226,6 +255,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), downstreamLimited(false)
+      ,userProvidedDownloadBuffer(0)
 {
 }
 
@@ -465,6 +495,8 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             return -1; // unexpected EOF
         else if (haveRead == 0)
             break; // read more later
+        else if (haveRead == 1 && bytes == 0 && (c == 11 || c == '\n' || c == '\r' || c == ' ' || c == 31))
+            continue; // Ignore all whitespace that was trailing froma previous request on that socket
 
         bytes++;
 
@@ -640,12 +672,32 @@ bool QHttpNetworkReplyPrivate::isConnectionCloseEnabled()
 
 // note this function can only be used for non-chunked, non-compressed with
 // known content length
+qint64 QHttpNetworkReplyPrivate::readBodyVeryFast(QAbstractSocket *socket, char *b)
+{
+    // This first read is to flush the buffer inside the socket
+    qint64 haveRead = 0;
+    haveRead = socket->read(b, bodyLength - contentRead);
+    if (haveRead == -1) {
+        return 0; // ### error checking here;
+    }
+    contentRead += haveRead;
+
+    if (contentRead == bodyLength) {
+        state = AllDoneState;
+    }
+
+    return haveRead;
+}
+
+// note this function can only be used for non-chunked, non-compressed with
+// known content length
 qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb)
 {
+
     qint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
     QByteArray bd;
     bd.resize(toBeRead);
-    qint64 haveRead = socket->read(bd.data(), bd.size());
+    qint64 haveRead = socket->read(bd.data(), toBeRead);
     if (haveRead == -1) {
         bd.clear();
         return 0; // ### error checking here;
@@ -667,29 +719,34 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 {
     qint64 bytes = 0;
     if (isChunked()) {
-        bytes += readReplyBodyChunked(socket, out); // chunked transfer encoding (rfc 2616, sec 3.6)
-    } else if (bodyLength > 0) { // we have a Content-Length
+        // chunked transfer encoding (rfc 2616, sec 3.6)
+        bytes += readReplyBodyChunked(socket, out);
+    } else if (bodyLength > 0) {
+        // we have a Content-Length
         bytes += readReplyBodyRaw(socket, out, bodyLength - contentRead);
         if (contentRead + bytes == bodyLength)
             state = AllDoneState;
     } else {
+        // no content length. just read what's possible
         bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
     contentRead += bytes;
     return bytes;
 }
 
-qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QAbstractSocket *socket, QByteDataBuffer *out, qint64 size)
 {
+    // FIXME get rid of this function and just use readBodyFast and give it socket->bytesAvailable()
     qint64 bytes = 0;
-    Q_ASSERT(in);
+    Q_ASSERT(socket);
     Q_ASSERT(out);
 
-    int toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, in->bytesAvailable()));
+    int toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, socket->bytesAvailable()));
+
     while (toBeRead > 0) {
         QByteArray byteData;
         byteData.resize(toBeRead);
-        qint64 haveRead = in->read(byteData.data(), byteData.size());
+        qint64 haveRead = socket->read(byteData.data(), byteData.size());
         if (haveRead <= 0) {
             // ### error checking here
             byteData.clear();
@@ -701,25 +758,35 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QIODevice *in, QByteDataBuffer
         bytes += haveRead;
         size -= haveRead;
 
-        toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, in->bytesAvailable()));
+        toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, socket->bytesAvailable()));
     }
     return bytes;
 
 }
 
-qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out)
+qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, QByteDataBuffer *out)
 {
     qint64 bytes = 0;
-    while (in->bytesAvailable()) { // while we can read from input
-        // if we are done with the current chunk, get the size of the new chunk
+    while (socket->bytesAvailable()) {
         if (currentChunkRead >= currentChunkSize) {
+            // For the first chunk and when we're done with a chunk
             currentChunkSize = 0;
             currentChunkRead = 0;
             if (bytes) {
+                // After a chunk
                 char crlf[2];
-                bytes += in->read(crlf, 2); // read the "\r\n" after the chunk
+                // read the "\r\n" after the chunk
+                qint64 haveRead = socket->read(crlf, 2);
+                // FIXME: This code is slightly broken and not optimal. What if the 2 bytes are not available yet?!
+                // For nice reasons (the toLong in getChunkSize accepting \n at the beginning
+                // it right now still works, but we should definitely fix this.
+
+                if (haveRead != 2)
+                    return bytes; // FIXME
+                bytes += haveRead;
             }
-            bytes += getChunkSize(in, &currentChunkSize);
+            // Note that chunk size gets stored in currentChunkSize, what is returned is the bytes read
+            bytes += getChunkSize(socket, &currentChunkSize);
             if (currentChunkSize == -1)
                 break;
         }
@@ -729,8 +796,8 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QByteDataBu
             break;
         }
 
-        // otherwise, try to read what is missing for this chunk
-        qint64 haveRead = readReplyBodyRaw (in, out, currentChunkSize - currentChunkRead);
+        // otherwise, try to begin reading this chunk / to read what is missing for this chunk
+        qint64 haveRead = readReplyBodyRaw (socket, out, currentChunkSize - currentChunkRead);
         currentChunkRead += haveRead;
         bytes += haveRead;
 
@@ -740,22 +807,25 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QIODevice *in, QByteDataBu
     return bytes;
 }
 
-qint64 QHttpNetworkReplyPrivate::getChunkSize(QIODevice *in, qint64 *chunkSize)
+qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *chunkSize)
 {
     qint64 bytes = 0;
     char crlf[2];
     *chunkSize = -1;
-    int bytesAvailable = in->bytesAvailable();
+
+    int bytesAvailable = socket->bytesAvailable();
+    // FIXME rewrite to permanent loop without bytesAvailable
     while (bytesAvailable > bytes) {
-        qint64 sniffedBytes =  in->peek(crlf, 2);
+        qint64 sniffedBytes = socket->peek(crlf, 2);
         int fragmentSize = fragment.size();
+
         // check the next two bytes for a "\r\n", skip blank lines
         if ((fragmentSize && sniffedBytes == 2 && crlf[0] == '\r' && crlf[1] == '\n')
            ||(fragmentSize > 1 && fragment.endsWith('\r')  && crlf[0] == '\n'))
         {
-            bytes += in->read(crlf, 1);     // read the \r or \n
+            bytes += socket->read(crlf, 1);     // read the \r or \n
             if (crlf[0] == '\r')
-                bytes += in->read(crlf, 1); // read the \n
+                bytes += socket->read(crlf, 1); // read the \n
             bool ok = false;
             // ignore the chunk-extension
             fragment = fragment.mid(0, fragment.indexOf(';')).trimmed();
@@ -765,10 +835,15 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QIODevice *in, qint64 *chunkSize)
         } else {
             // read the fragment to the buffer
             char c = 0;
-            bytes += in->read(&c, 1);
+            qint64 haveRead = socket->read(&c, 1);
+            if (haveRead < 0) {
+                return -1; // FIXME
+            }
+            bytes += haveRead;
             fragment.append(c);
         }
     }
+
     return bytes;
 }
 

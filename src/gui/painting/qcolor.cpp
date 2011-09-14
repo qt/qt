@@ -532,8 +532,7 @@ QString QColor::name() const
 
 void QColor::setNamedColor(const QString &name)
 {
-    if (!setColorFromString(name))
-        qWarning("QColor::setNamedColor: Unknown color name '%s'", name.toLatin1().constData());
+    setColorFromString(name);
 }
 
 /*!
@@ -629,7 +628,7 @@ void QColor::getHsvF(qreal *h, qreal *s, qreal *v, qreal *a) const
         return;
     }
 
-    *h = ct.ahsv.hue == USHRT_MAX ? -1.0 : ct.ahsv.hue / 36000.0;
+    *h = ct.ahsv.hue == USHRT_MAX ? qreal(-1.0) : ct.ahsv.hue / qreal(36000.0);
     *s = ct.ahsv.saturation / qreal(USHRT_MAX);
     *v = ct.ahsv.value / qreal(USHRT_MAX);
 
@@ -676,17 +675,17 @@ void QColor::getHsv(int *h, int *s, int *v, int *a) const
 */
 void QColor::setHsvF(qreal h, qreal s, qreal v, qreal a)
 {
-    if (((h < 0.0 || h > 1.0) && h != -1.0)
-        || (s < 0.0 || s > 1.0)
-        || (v < 0.0 || v > 1.0)
-        || (a < 0.0 || a > 1.0)) {
+    if (((h < qreal(0.0) || h > qreal(1.0)) && h != qreal(-1.0))
+        || (s < qreal(0.0) || s > qreal(1.0))
+        || (v < qreal(0.0) || v > qreal(1.0))
+        || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::setHsvF: HSV parameters out of range");
         return;
     }
 
     cspec = Hsv;
     ct.ahsv.alpha      = qRound(a * USHRT_MAX);
-    ct.ahsv.hue        = h == -1.0 ? USHRT_MAX : qRound(h * 36000);
+    ct.ahsv.hue        = h == qreal(-1.0) ? USHRT_MAX : qRound(h * 36000);
     ct.ahsv.saturation = qRound(s * USHRT_MAX);
     ct.ahsv.value      = qRound(v * USHRT_MAX);
     ct.ahsv.pad        = 0;
@@ -740,7 +739,7 @@ void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
         return;
     }
 
-    *h = ct.ahsl.hue == USHRT_MAX ? -1.0 : ct.ahsl.hue / 36000.0;
+    *h = ct.ahsl.hue == USHRT_MAX ? qreal(-1.0) : ct.ahsl.hue / qreal(36000.0);
     *s = ct.ahsl.saturation / qreal(USHRT_MAX);
     *l = ct.ahsl.lightness / qreal(USHRT_MAX);
 
@@ -790,17 +789,17 @@ void QColor::getHsl(int *h, int *s, int *l, int *a) const
 */
 void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
 {
-    if (((h < 0.0 || h > 1.0) && h != -1.0)
-        || (s < 0.0 || s > 1.0)
-        || (l < 0.0 || l > 1.0)
-        || (a < 0.0 || a > 1.0)) {
+    if (((h < qreal(0.0) || h > qreal(1.0)) && h != qreal(-1.0))
+        || (s < qreal(0.0) || s > qreal(1.0))
+        || (l < qreal(0.0) || l > qreal(1.0))
+        || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::setHsvF: HSV parameters out of range");
         return;
     }
 
     cspec = Hsl;
     ct.ahsl.alpha      = qRound(a * USHRT_MAX);
-    ct.ahsl.hue        = h == -1.0 ? USHRT_MAX : qRound(h * 36000);
+    ct.ahsl.hue        = h == qreal(-1.0) ? USHRT_MAX : qRound(h * 36000);
     ct.ahsl.saturation = qRound(s * USHRT_MAX);
     ct.ahsl.lightness  = qRound(l * USHRT_MAX);
     ct.ahsl.pad        = 0;
@@ -909,10 +908,10 @@ void QColor::getRgb(int *r, int *g, int *b, int *a) const
 */
 void QColor::setRgbF(qreal r, qreal g, qreal b, qreal a)
 {
-    if (r < 0.0 || r > 1.0
-        || g < 0.0 || g > 1.0
-        || b < 0.0 || b > 1.0
-        || a < 0.0 || a > 1.0) {
+    if (r < qreal(0.0) || r > qreal(1.0)
+        || g < qreal(0.0) || g > qreal(1.0)
+        || b < qreal(0.0) || b > qreal(1.0)
+        || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::setRgbF: RGB parameters out of range");
         invalidate();
         return;
@@ -1322,7 +1321,7 @@ qreal QColor::hsvHueF() const
 {
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().hueF();
-    return ct.ahsv.hue == USHRT_MAX ? -1.0 : ct.ahsv.hue / 36000.0;
+    return ct.ahsv.hue == USHRT_MAX ? qreal(-1.0) : ct.ahsv.hue / qreal(36000.0);
 }
 
 /*!
@@ -1418,7 +1417,7 @@ qreal QColor::hslHueF() const
 {
     if (cspec != Invalid && cspec != Hsl)
         return toHsl().hslHueF();
-    return ct.ahsl.hue == USHRT_MAX ? -1.0 : ct.ahsl.hue / 36000.0;
+    return ct.ahsl.hue == USHRT_MAX ? qreal(-1.0) : ct.ahsl.hue / qreal(36000.0);
 }
 
 /*!
@@ -1584,10 +1583,10 @@ QColor QColor::toRgb() const
             const qreal v = ct.ahsv.value / qreal(USHRT_MAX);
             const int i = int(h);
             const qreal f = h - i;
-            const qreal p = v * (1.0 - s);
+            const qreal p = v * (qreal(1.0) - s);
 
             if (i & 1) {
-                const qreal q = v * (1.0 - (s * f));
+                const qreal q = v * (qreal(1.0) - (s * f));
 
                 switch (i) {
                 case 1:
@@ -1607,7 +1606,7 @@ QColor QColor::toRgb() const
                     break;
                 }
             } else {
-                const qreal t = v * (1.0 - (s * (1.0 - f)));
+                const qreal t = v * (qreal(1.0) - (s * (qreal(1.0) - f)));
 
                 switch (i) {
                 case 0:
@@ -1683,9 +1682,9 @@ QColor QColor::toRgb() const
             const qreal y = ct.acmyk.yellow / qreal(USHRT_MAX);
             const qreal k = ct.acmyk.black / qreal(USHRT_MAX);
 
-            color.ct.argb.red   = qRound((1.0 - (c * (1.0 - k) + k)) * USHRT_MAX);
-            color.ct.argb.green = qRound((1.0 - (m * (1.0 - k) + k)) * USHRT_MAX);
-            color.ct.argb.blue  = qRound((1.0 - (y * (1.0 - k) + k)) * USHRT_MAX);
+            color.ct.argb.red   = qRound((qreal(1.0) - (c * (qreal(1.0) - k) + k)) * USHRT_MAX);
+            color.ct.argb.green = qRound((qreal(1.0) - (m * (qreal(1.0) - k) + k)) * USHRT_MAX);
+            color.ct.argb.blue  = qRound((qreal(1.0) - (y * (qreal(1.0) - k) + k)) * USHRT_MAX);
             break;
         }
     default:
@@ -1737,15 +1736,15 @@ QColor QColor::toHsv() const
         if (qFuzzyCompare(r, max)) {
             hue = ((g - b) /delta);
         } else if (qFuzzyCompare(g, max)) {
-            hue = (2.0 + (b - r) / delta);
+            hue = (qreal(2.0) + (b - r) / delta);
         } else if (qFuzzyCompare(b, max)) {
-            hue = (4.0 + (r - g) / delta);
+            hue = (qreal(4.0) + (r - g) / delta);
         } else {
             Q_ASSERT_X(false, "QColor::toHsv", "internal error");
         }
-        hue *= 60.0;
-        if (hue < 0.0)
-            hue += 360.0;
+        hue *= qreal(60.0);
+        if (hue < qreal(0.0))
+            hue += qreal(360.0);
         color.ct.ahsv.hue = qRound(hue * 100);
     }
 
@@ -1781,7 +1780,7 @@ QColor QColor::toHsl() const
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
-        color.ct.ahsl.hue = 0;
+        color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
     } else {
         // chromatic case
@@ -1793,15 +1792,15 @@ QColor QColor::toHsl() const
         if (qFuzzyCompare(r, max)) {
             hue = ((g - b) /delta);
         } else if (qFuzzyCompare(g, max)) {
-            hue = (2.0 + (b - r) / delta);
+            hue = (qreal(2.0) + (b - r) / delta);
         } else if (qFuzzyCompare(b, max)) {
-            hue = (4.0 + (r - g) / delta);
+            hue = (qreal(4.0) + (r - g) / delta);
         } else {
             Q_ASSERT_X(false, "QColor::toHsv", "internal error");
         }
-        hue *= 60.0;
-        if (hue < 0.0)
-            hue += 360.0;
+        hue *= qreal(60.0);
+        if (hue < qreal(0.0))
+            hue += qreal(360.0);
         color.ct.ahsl.hue = qRound(hue * 100);
     }
 
@@ -1829,17 +1828,17 @@ QColor QColor::toCmyk() const
     const qreal r = ct.argb.red   / qreal(USHRT_MAX);
     const qreal g = ct.argb.green / qreal(USHRT_MAX);
     const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
-    qreal c = 1.0 - r;
-    qreal m = 1.0 - g;
-    qreal y = 1.0 - b;
+    qreal c = qreal(1.0) - r;
+    qreal m = qreal(1.0) - g;
+    qreal y = qreal(1.0) - b;
 
     // cmy -> cmyk
     const qreal k = qMin(c, qMin(m, y));
 
     if (!qFuzzyIsNull(k - 1)) {
-        c = (c - k) / (1.0 - k);
-        m = (m - k) / (1.0 - k);
-        y = (y - k) / (1.0 - k);
+        c = (c - k) / (qreal(1.0) - k);
+        m = (m - k) / (qreal(1.0) - k);
+        y = (y - k) / (qreal(1.0) - k);
     }
 
     color.ct.acmyk.cyan    = qRound(c * USHRT_MAX);
@@ -1942,10 +1941,10 @@ QColor QColor::fromRgb(int r, int g, int b, int a)
 */
 QColor QColor::fromRgbF(qreal r, qreal g, qreal b, qreal a)
 {
-    if (r < 0.0 || r > 1.0
-        || g < 0.0 || g > 1.0
-        || b < 0.0 || b > 1.0
-        || a < 0.0 || a > 1.0) {
+    if (r < qreal(0.0) || r > qreal(1.0)
+        || g < qreal(0.0) || g > qreal(1.0)
+        || b < qreal(0.0) || b > qreal(1.0)
+        || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::fromRgbF: RGB parameters out of range");
         return QColor();
     }
@@ -2005,10 +2004,10 @@ QColor QColor::fromHsv(int h, int s, int v, int a)
 */
 QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
 {
-    if (((h < 0.0 || h > 1.0) && h != -1.0)
-        || (s < 0.0 || s > 1.0)
-        || (v < 0.0 || v > 1.0)
-        || (a < 0.0 || a > 1.0)) {
+    if (((h < qreal(0.0) || h > qreal(1.0)) && h != qreal(-1.0))
+        || (s < qreal(0.0) || s > qreal(1.0))
+        || (v < qreal(0.0) || v > qreal(1.0))
+        || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::fromHsvF: HSV parameters out of range");
         return QColor();
     }
@@ -2016,7 +2015,7 @@ QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
     QColor color;
     color.cspec = Hsv;
     color.ct.ahsv.alpha      = qRound(a * USHRT_MAX);
-    color.ct.ahsv.hue        = h == -1.0 ? USHRT_MAX : qRound(h * 36000);
+    color.ct.ahsv.hue        = h == qreal(-1.0) ? USHRT_MAX : qRound(h * 36000);
     color.ct.ahsv.saturation = qRound(s * USHRT_MAX);
     color.ct.ahsv.value      = qRound(v * USHRT_MAX);
     color.ct.ahsv.pad        = 0;
@@ -2069,10 +2068,10 @@ QColor QColor::fromHsl(int h, int s, int l, int a)
 */
 QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
 {
-    if (((h < 0.0 || h > 1.0) && h != -1.0)
-        || (s < 0.0 || s > 1.0)
-        || (l < 0.0 || l > 1.0)
-        || (a < 0.0 || a > 1.0)) {
+    if (((h < qreal(0.0) || h > qreal(1.0)) && h != qreal(-1.0))
+        || (s < qreal(0.0) || s > qreal(1.0))
+        || (l < qreal(0.0) || l > qreal(1.0))
+        || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::fromHsvF: HSV parameters out of range");
         return QColor();
     }
@@ -2080,7 +2079,7 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
     QColor color;
     color.cspec = Hsl;
     color.ct.ahsl.alpha      = qRound(a * USHRT_MAX);
-    color.ct.ahsl.hue        = (h == -1.0) ? USHRT_MAX : qRound(h * 36000);
+    color.ct.ahsl.hue        = (h == qreal(-1.0)) ? USHRT_MAX : qRound(h * 36000);
     if (color.ct.ahsl.hue == 36000)
         color.ct.ahsl.hue = 0;
     color.ct.ahsl.saturation = qRound(s * USHRT_MAX);
@@ -2189,11 +2188,11 @@ void QColor::setCmyk(int c, int m, int y, int k, int a)
 */
 void QColor::setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
 {
-    if (c < 0.0 || c > 1.0
-        || m < 0.0 || m > 1.0
-        || y < 0.0 || y > 1.0
-        || k < 0.0 || k > 1.0
-        || a < 0.0 || a > 1.0) {
+    if (c < qreal(0.0) || c > qreal(1.0)
+        || m < qreal(0.0) || m > qreal(1.0)
+        || y < qreal(0.0) || y > qreal(1.0)
+        || k < qreal(0.0) || k > qreal(1.0)
+        || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::setCmykF: CMYK parameters out of range");
         return;
     }
@@ -2251,11 +2250,11 @@ QColor QColor::fromCmyk(int c, int m, int y, int k, int a)
 */
 QColor QColor::fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
 {
-    if (c < 0.0 || c > 1.0
-        || m < 0.0 || m > 1.0
-        || y < 0.0 || y > 1.0
-        || k < 0.0 || k > 1.0
-        || a < 0.0 || a > 1.0) {
+    if (c < qreal(0.0) || c > qreal(1.0)
+        || m < qreal(0.0) || m > qreal(1.0)
+        || y < qreal(0.0) || y > qreal(1.0)
+        || k < qreal(0.0) || k > qreal(1.0)
+        || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::fromCmykF: CMYK parameters out of range");
         return QColor();
     }

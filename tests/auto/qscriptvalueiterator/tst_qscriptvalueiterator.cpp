@@ -71,6 +71,8 @@ private slots:
     void iterateString();
     void iterateGetterSetter();
     void assignObjectToIterator();
+    void iterateNonObject();
+    void iterateOverObjectFromDeletedEngine();
 };
 
 tst_QScriptValueIterator::tst_QScriptValueIterator()
@@ -104,7 +106,7 @@ void tst_QScriptValueIterator::iterateForward()
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
-    Q_ASSERT(propertyNames.size() == propertyValues.size());
+    QVERIFY(propertyNames.size() == propertyValues.size());
 
     QScriptEngine engine;
     QScriptValue object = engine.newObject();
@@ -163,7 +165,7 @@ void tst_QScriptValueIterator::iterateBackward()
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
-    Q_ASSERT(propertyNames.size() == propertyValues.size());
+    QVERIFY(propertyNames.size() == propertyValues.size());
 
     QScriptEngine engine;
     QScriptValue object = engine.newObject();
@@ -210,106 +212,138 @@ void tst_QScriptValueIterator::iterateBackward()
 
 void tst_QScriptValueIterator::iterateArray_data()
 {
-    QTest::addColumn<QStringList>("inputPropertyNames");
-    QTest::addColumn<QStringList>("inputPropertyValues");
     QTest::addColumn<QStringList>("propertyNames");
     QTest::addColumn<QStringList>("propertyValues");
-    QTest::newRow("no elements") << QStringList() << QStringList() << QStringList() << QStringList();
 
+    QTest::newRow("no elements") << QStringList() << QStringList();
 
     QTest::newRow("0=foo, 1=barr")
-        << (QStringList() << "0" << "1")
-        << (QStringList() << "foo" << "bar")
         << (QStringList() << "0" << "1")
         << (QStringList() << "foo" << "bar");
 
 
     QTest::newRow("0=foo, 3=barr")
         << (QStringList() << "0" << "1" << "2" << "3")
-        << (QStringList() << "foo" << "" << "" << "bar")
-        << (QStringList() << "0" << "1" << "2" << "3")
         << (QStringList() << "foo" << "" << "" << "bar");
 }
 
 void tst_QScriptValueIterator::iterateArray()
 {
-    QFETCH(QStringList, inputPropertyNames);
-    QFETCH(QStringList, inputPropertyValues);
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
 
     QScriptEngine engine;
     QScriptValue array = engine.newArray();
-    for (int i = 0; i < inputPropertyNames.size(); ++i) {
-        array.setProperty(inputPropertyNames.at(i), inputPropertyValues.at(i));
+
+    // Fill the array
+    for (int i = 0; i < propertyNames.size(); ++i) {
+        array.setProperty(propertyNames.at(i), propertyValues.at(i));
     }
 
+    // Iterate thru array properties. Note that the QScriptValueIterator doesn't guarantee
+    // any order on the iteration!
     int length = array.property("length").toInt32();
     QCOMPARE(length, propertyNames.size());
+
+    bool iteratedThruLength = false;
+    QHash<QString, QScriptValue> arrayProperties;
     QScriptValueIterator it(array);
-    for (int i = 0; i < length; ++i) {
-        QCOMPARE(it.hasNext(), true);
-        it.next();
-        QCOMPARE(it.name(), propertyNames.at(i));
-        QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
-        QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
-        QCOMPARE(it.value().toString(), propertyValues.at(i));
-    }
-    QVERIFY(it.hasNext());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("length"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), length);
-    QCOMPARE(it.flags(), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
 
-    it.previous();
-    QCOMPARE(it.hasPrevious(), length > 0);
-    for (int i = length - 1; i >= 0; --i) {
-        it.previous();
-        QCOMPARE(it.name(), propertyNames.at(i));
-        QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
-        QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
-        QCOMPARE(it.value().toString(), propertyValues.at(i));
-        QCOMPARE(it.hasPrevious(), i > 0);
-    }
-    QCOMPARE(it.hasPrevious(), false);
+    // Iterate forward
+    while (it.hasNext()) {
+        it.next();
 
-    // hasNext() and hasPrevious() cache their result; verify that the result is in sync
-    if (length > 1) {
-        QVERIFY(it.hasNext());
-        it.next();
-        QCOMPARE(it.name(), QString::fromLatin1("0"));
-        QVERIFY(it.hasNext());
-        it.previous();
-        QCOMPARE(it.name(), QString::fromLatin1("0"));
-        QVERIFY(!it.hasPrevious());
-        it.next();
-        QCOMPARE(it.name(), QString::fromLatin1("0"));
-        QVERIFY(it.hasPrevious());
-        it.next();
-        QCOMPARE(it.name(), QString::fromLatin1("1"));
+        const QString name = it.name();
+        if (name == QString::fromLatin1("length")) {
+            QVERIFY(it.value().isNumber());
+            QCOMPARE(it.value().toInt32(), length);
+            QCOMPARE(it.flags(), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+            QVERIFY2(!iteratedThruLength, "'length' appeared more than once during iteration.");
+            iteratedThruLength = true;
+            continue;
+        }
+
+        // Storing the properties we iterate in a hash to compare with test data.
+        QVERIFY2(!arrayProperties.contains(name), "property appeared more than once during iteration.");
+        arrayProperties.insert(name, it.value());
+        QCOMPARE(it.flags(), array.propertyFlags(name));
+        QVERIFY(it.value().strictlyEquals(array.property(name)));
     }
-    {
-        // same test as object:
-        QScriptValue originalArray = engine.newArray();
-        for (int i = 0; i < inputPropertyNames.size(); ++i) {
-            originalArray.setProperty(inputPropertyNames.at(i), inputPropertyValues.at(i));
+
+    // Verify properties
+    QVERIFY(iteratedThruLength);
+    QCOMPARE(arrayProperties.size(), propertyNames.size());
+    for (int i = 0; i < propertyNames.size(); ++i) {
+        QVERIFY(arrayProperties.contains(propertyNames.at(i)));
+        QCOMPARE(arrayProperties.value(propertyNames.at(i)).toString(), propertyValues.at(i));
+    }
+
+    // Iterate backwards
+    arrayProperties.clear();
+    iteratedThruLength = false;
+    it.toBack();
+
+    while (it.hasPrevious()) {
+        it.previous();
+
+        const QString name = it.name();
+        if (name == QString::fromLatin1("length")) {
+            QVERIFY(it.value().isNumber());
+            QCOMPARE(it.value().toInt32(), length);
+            QCOMPARE(it.flags(), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+            QVERIFY2(!iteratedThruLength, "'length' appeared more than once during iteration.");
+            iteratedThruLength = true;
+            continue;
         }
-        QScriptValue array = originalArray.toObject();
-        int length = array.property("length").toInt32();
-        QCOMPARE(length, propertyNames.size());
-        QScriptValueIterator it(array);
-        for (int i = 0; i < length; ++i) {
-            QCOMPARE(it.hasNext(), true);
-            it.next();
-            QCOMPARE(it.name(), propertyNames.at(i));
-            QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
-            QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
-            QCOMPARE(it.value().toString(), propertyValues.at(i));
+
+        // Storing the properties we iterate in a hash to compare with test data.
+        QVERIFY2(!arrayProperties.contains(name), "property appeared more than once during iteration.");
+        arrayProperties.insert(name, it.value());
+        QCOMPARE(it.flags(), array.propertyFlags(name));
+        QVERIFY(it.value().strictlyEquals(array.property(name)));
+    }
+
+    // Verify properties
+    QVERIFY(iteratedThruLength);
+    QCOMPARE(arrayProperties.size(), propertyNames.size());
+    for (int i = 0; i < propertyNames.size(); ++i) {
+        QVERIFY(arrayProperties.contains(propertyNames.at(i)));
+        QCOMPARE(arrayProperties.value(propertyNames.at(i)).toString(), propertyValues.at(i));
+    }
+
+    // ### Do we still need this test?
+    // Forward test again but as object
+    arrayProperties.clear();
+    iteratedThruLength = false;
+    QScriptValue arrayObject = engine.toObject(array);
+    QScriptValueIterator it2(arrayObject);
+
+    while (it2.hasNext()) {
+        it2.next();
+
+        const QString name = it2.name();
+        if (name == QString::fromLatin1("length")) {
+            QVERIFY(it2.value().isNumber());
+            QCOMPARE(it2.value().toInt32(), length);
+            QCOMPARE(it2.flags(), QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+            QVERIFY2(!iteratedThruLength, "'length' appeared more than once during iteration.");
+            iteratedThruLength = true;
+            continue;
         }
-        QCOMPARE(it.hasNext(), true);
-        it.next();
-        QCOMPARE(it.name(), QString::fromLatin1("length"));
+
+        // Storing the properties we iterate in a hash to compare with test data.
+        QVERIFY2(!arrayProperties.contains(name), "property appeared more than once during iteration.");
+        arrayProperties.insert(name, it2.value());
+        QCOMPARE(it2.flags(), arrayObject.propertyFlags(name));
+        QVERIFY(it2.value().strictlyEquals(arrayObject.property(name)));
+    }
+
+    // Verify properties
+    QVERIFY(iteratedThruLength);
+    QCOMPARE(arrayProperties.size(), propertyNames.size());
+    for (int i = 0; i < propertyNames.size(); ++i) {
+        QVERIFY(arrayProperties.contains(propertyNames.at(i)));
+        QCOMPARE(arrayProperties.value(propertyNames.at(i)).toString(), propertyValues.at(i));
     }
 }
 
@@ -417,35 +451,59 @@ void tst_QScriptValueIterator::iterateString()
     QScriptValue str = QScriptValue(&engine, QString::fromLatin1("ciao"));
     QVERIFY(str.isString());
     QScriptValue obj = str.toObject();
+    QVERIFY(obj.property("length").isNumber());
     int length = obj.property("length").toInt32();
     QCOMPARE(length, 4);
-    QScriptValueIterator it(obj);
-    for (int i = 0; i < length; ++i) {
-        QCOMPARE(it.hasNext(), true);
-        QString indexStr = QScriptValue(&engine, i).toString();
-        it.next();
-        QCOMPARE(it.name(), indexStr);
-        QCOMPARE(it.flags(), obj.propertyFlags(indexStr));
-        QCOMPARE(it.value().strictlyEquals(obj.property(indexStr)), true);
-    }
-    QVERIFY(it.hasNext());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("length"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), length);
-    QCOMPARE(it.flags(), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
 
-    it.previous();
-    QCOMPARE(it.hasPrevious(), length > 0);
-    for (int i = length - 1; i >= 0; --i) {
-        it.previous();
-        QString indexStr = QScriptValue(&engine, i).toString();
-        QCOMPARE(it.name(), indexStr);
-        QCOMPARE(it.flags(), obj.propertyFlags(indexStr));
-        QCOMPARE(it.value().strictlyEquals(obj.property(indexStr)), true);
-        QCOMPARE(it.hasPrevious(), i > 0);
+    QScriptValueIterator it(obj);
+    QHash<QString, QScriptValue> stringProperties;
+    bool iteratedThruLength = false;
+
+    while (it.hasNext()) {
+        it.next();
+        const QString name = it.name();
+
+        if (name == QString::fromLatin1("length")) {
+            QVERIFY(it.value().isNumber());
+            QCOMPARE(it.value().toInt32(), length);
+            QCOMPARE(it.flags(), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+            QVERIFY2(!iteratedThruLength, "'length' appeared more than once during iteration.");
+            iteratedThruLength = true;
+            continue;
+        }
+
+        QVERIFY2(!stringProperties.contains(name), "property appeared more than once during iteration.");
+        stringProperties.insert(name, it.value());
+        QCOMPARE(it.flags(), obj.propertyFlags(name));
+        QVERIFY(it.value().strictlyEquals(obj.property(name)));
     }
-    QCOMPARE(it.hasPrevious(), false);
+
+    QVERIFY(iteratedThruLength);
+    QCOMPARE(stringProperties.size(), length);
+
+    // And going backwards
+    iteratedThruLength = false;
+    stringProperties.clear();
+    it.toBack();
+
+    while (it.hasPrevious()) {
+        it.previous();
+        const QString name = it.name();
+
+        if (name == QString::fromLatin1("length")) {
+            QVERIFY(it.value().isNumber());
+            QCOMPARE(it.value().toInt32(), length);
+            QCOMPARE(it.flags(), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration | QScriptValue::Undeletable);
+            QVERIFY2(!iteratedThruLength, "'length' appeared more than once during iteration.");
+            iteratedThruLength = true;
+            continue;
+        }
+
+        QVERIFY2(!stringProperties.contains(name), "property appeared more than once during iteration.");
+        stringProperties.insert(name, it.value());
+        QCOMPARE(it.flags(), obj.propertyFlags(name));
+        QVERIFY(it.value().strictlyEquals(obj.property(name)));
+    }
 }
 
 static QScriptValue myGetterSetter(QScriptContext *ctx, QScriptEngine *)
@@ -581,6 +639,71 @@ void tst_QScriptValueIterator::assignObjectToIterator()
     QVERIFY(it.hasNext());
     it.next();
     QCOMPARE(it.name(), QString::fromLatin1("bar"));
+}
+
+void tst_QScriptValueIterator::iterateNonObject()
+{
+    QScriptValueIterator it(123);
+    QVERIFY(!it.hasNext());
+    it.next();
+    QVERIFY(!it.hasPrevious());
+    it.previous();
+    it.toFront();
+    it.toBack();
+    it.name();
+    it.scriptName();
+    it.flags();
+    it.value();
+    it.setValue(1);
+    it.remove();
+    QScriptValue num(5);
+    it = num;
+    QVERIFY(!it.hasNext());
+}
+
+void tst_QScriptValueIterator::iterateOverObjectFromDeletedEngine()
+{
+    QScriptEngine *engine = new QScriptEngine;
+    QScriptValue objet = engine->newObject();
+
+    // populate object with properties
+    QHash<QString, int> properties;
+    properties.insert("foo",1235);
+    properties.insert("oof",5321);
+    properties.insert("ofo",3521);
+    QHash<QString, int>::const_iterator i = properties.constBegin();
+    for(; i != properties.constEnd(); ++i) {
+        objet.setProperty(i.key(), i.value());
+    }
+
+    // start iterating
+    QScriptValueIterator it(objet);
+    it.next();
+    QVERIFY(properties.contains(it.name()));
+
+    delete engine;
+
+    QVERIFY(!objet.isValid());
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.value().isValid());
+
+    QVERIFY(!it.hasNext());
+    it.next();
+
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.scriptName().isValid());
+    QVERIFY(!it.value().isValid());
+    it.setValue("1234567");
+    it.remove();
+
+    QVERIFY(!it.hasPrevious());
+    it.previous();
+
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.scriptName().isValid());
+    QVERIFY(!it.value().isValid());
+    it.setValue("1234567");
+    it.remove();
 }
 
 QTEST_MAIN(tst_QScriptValueIterator)

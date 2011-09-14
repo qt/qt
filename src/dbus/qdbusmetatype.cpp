@@ -50,11 +50,17 @@
 #include <qvector.h>
 
 #include "qdbusmessage.h"
+#include "qdbusunixfiledescriptor.h"
 #include "qdbusutil_p.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusargument_p.h"
 
 #ifndef QT_NO_DBUS
+
+#ifndef DBUS_TYPE_UNIX_FD
+# define DBUS_TYPE_UNIX_FD int('h')
+# define DBUS_TYPE_UNIX_FD_AS_STRING "h"
+#endif
 
 Q_DECLARE_METATYPE(QList<bool>)
 Q_DECLARE_METATYPE(QList<short>)
@@ -96,6 +102,7 @@ int QDBusMetaTypeId::variant;
 int QDBusMetaTypeId::objectpath;
 int QDBusMetaTypeId::signature;
 int QDBusMetaTypeId::error;
+int QDBusMetaTypeId::unixfd;
 
 void QDBusMetaTypeId::init()
 {
@@ -110,7 +117,8 @@ void QDBusMetaTypeId::init()
         variant = qRegisterMetaType<QDBusVariant>("QDBusVariant");
         objectpath = qRegisterMetaType<QDBusObjectPath>("QDBusObjectPath");
         signature = qRegisterMetaType<QDBusSignature>("QDBusSignature");
-	error = qRegisterMetaType<QDBusError>("QDBusError");
+        error = qRegisterMetaType<QDBusError>("QDBusError");
+        unixfd = qRegisterMetaType<QDBusUnixFileDescriptor>("QDBusUnixFileDescriptor");
 
 #ifndef QDBUS_NO_SPECIALTYPES
         // and register QtCore's with us
@@ -127,6 +135,7 @@ void QDBusMetaTypeId::init()
         registerHelper<QLineF>();
         registerHelper<QVariantList>();
         registerHelper<QVariantMap>();
+        registerHelper<QVariantHash>();
 
         qDBusRegisterMetaType<QList<bool> >();
         qDBusRegisterMetaType<QList<short> >();
@@ -138,6 +147,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<double> >();
         qDBusRegisterMetaType<QList<QDBusObjectPath> >();
         qDBusRegisterMetaType<QList<QDBusSignature> >();
+        qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
         initialized = true;
@@ -342,6 +352,9 @@ int QDBusMetaType::signatureToType(const char *signature)
     case DBUS_TYPE_SIGNATURE:
         return QDBusMetaTypeId::signature;
 
+    case DBUS_TYPE_UNIX_FD:
+        return QDBusMetaTypeId::unixfd;
+
     case DBUS_TYPE_VARIANT:
         return QDBusMetaTypeId::variant;
 
@@ -431,6 +444,8 @@ const char *QDBusMetaType::typeToSignature(int type)
         return DBUS_TYPE_OBJECT_PATH_AS_STRING;
     else if (type == QDBusMetaTypeId::signature)
         return DBUS_TYPE_SIGNATURE_AS_STRING;
+    else if (type == QDBusMetaTypeId::unixfd)
+        return DBUS_TYPE_UNIX_FD_AS_STRING;
 
     // try the database
     QVector<QDBusCustomTypeInfo> *ct = customTypes();

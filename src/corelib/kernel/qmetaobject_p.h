@@ -118,6 +118,7 @@ struct QMetaObjectPrivate
     int flags; //since revision 3
     int signalCount; //since revision 4
     // revision 5 introduces changes in normalized signatures, no new members
+    // revision 6 added qt_static_metacall as a member of each Q_OBJECT and inside QMetaObject itself
 
     static inline const QMetaObjectPrivate *get(const QMetaObject *metaobject)
     { return reinterpret_cast<const QMetaObjectPrivate*>(metaobject->d.data); }
@@ -125,7 +126,7 @@ struct QMetaObjectPrivate
     static int indexOfSignalRelative(const QMetaObject **baseObject,
                                      const char* name,
                                      bool normalizeStringData);
-    static int indexOfSlot(const QMetaObject *m,
+    static int indexOfSlotRelative(const QMetaObject **m,
                            const char *slot,
                            bool normalizeStringData);
     static int originalClone(const QMetaObject *obj, int local_method_index);
@@ -133,8 +134,11 @@ struct QMetaObjectPrivate
 #ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
     enum DisconnectType { DisconnectAll, DisconnectOne };
+    static void memberIndexes(const QObject *obj, const QMetaMethod &member,
+                              int *signalIndex, int *methodIndex);
     static bool connect(const QObject *sender, int signal_index,
-                        const QObject *receiver, int method_index,
+                        const QObject *receiver, int method_index_relative,
+                        const QMetaObject *rmeta = 0,
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
                            const QObject *receiver, int method_index,

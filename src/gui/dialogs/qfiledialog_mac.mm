@@ -63,6 +63,7 @@
 #include <qdesktopwidget.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
+#import <AppKit/NSSavePanel.h>
 #include "ui_qfiledialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -84,7 +85,13 @@ QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject {
+@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate)
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    : NSObject<NSOpenSavePanelDelegate>
+#else
+    : NSObject
+#endif
+{
     @public
     NSOpenPanel *mOpenPanel;
     NSSavePanel *mSavePanel;
@@ -298,12 +305,13 @@ QT_USE_NAMESPACE
     QString qtFileName = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename);
     QFileInfo info(qtFileName.normalized(QT_PREPEND_NAMESPACE(QString::NormalizationForm_C)));
     QString path = info.absolutePath();
+    QString name = info.fileName();
     if (path != *mLastFilterCheckPath){
         *mLastFilterCheckPath = path;
         *mQDirFilterEntryList = info.dir().entryList(*mQDirFilter);
     }
     // Check if the QDir filter accepts the file:
-    if (!mQDirFilterEntryList->contains(info.fileName()))
+    if (!mQDirFilterEntryList->contains(name))
         return NO;
 
     // No filter means accept everything
@@ -311,7 +319,7 @@ QT_USE_NAMESPACE
         return YES;
     // Check if the current file name filter accepts the file:
     for (int i=0; i<mSelectedNameFilter->size(); ++i) {
-        if (QDir::match(mSelectedNameFilter->at(i), qtFileName))
+        if (QDir::match(mSelectedNameFilter->at(i), name))
             return YES;
     }
     return NO;
@@ -545,9 +553,6 @@ void QFileDialogPrivate::QNSOpenSavePanelDelegate_filterSelected(int menuIndex)
 {
     emit q_func()->filterSelected(nameFilters.at(menuIndex));
 }
-
-extern OSErr qt_mac_create_fsref(const QString &, FSRef *); // qglobal.cpp
-extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1); // qglobal.cpp
 
 void QFileDialogPrivate::setDirectory_sys(const QString &directory)
 {

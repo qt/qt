@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>449</width>
-    <height>164</height>
+    <width>447</width>
+    <height>162</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,7 +88,7 @@
       <item row="1" column="1">
        <widget class="QLineEdit" name="proxyPortEdit">
         <property name="text">
-         <string>8080</string>
+         <string notr="true">8080</string>
         </property>
        </widget>
       </item>

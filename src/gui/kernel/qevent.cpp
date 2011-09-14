@@ -43,6 +43,7 @@
 #include "qcursor.h"
 #include "qapplication.h"
 #include "private/qapplication_p.h"
+#include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
 #include "qwidget.h"
 #include "qgraphicsview.h"
@@ -52,6 +53,10 @@
 #include "qevent_p.h"
 #include "qgesture.h"
 #include "qgesture_p.h"
+
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -137,8 +142,7 @@ QInputEvent::~QInputEvent()
     and QWidget::mouseMoveEvent() to receive mouse events in your own
     widgets.
 
-    \sa QWidget::setMouseTracking() QWidget::grabMouse()
-    QCursor::pos()
+    \sa QWidget::setMouseTracking() QWidget::grabMouse() QCursor::pos()
 */
 
 /*!
@@ -724,12 +728,12 @@ QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, 
     The \a type parameter must be QEvent::KeyPress, QEvent::KeyRelease,
     or QEvent::ShortcutOverride.
 
-    Int \a key is the code for the Qt::Key that the event loop should listen 
-    for. If \a key is 0, the event is not a result of a known key; for 
+    Int \a key is the code for the Qt::Key that the event loop should listen
+    for. If \a key is 0, the event is not a result of a known key; for
     example, it may be the result of a compose sequence or keyboard macro.
-    The \a modifiers holds the keyboard modifiers, and the given \a text 
-    is the Unicode text that the key generated. If \a autorep is true, 
-    isAutoRepeat() will be true. \a count is the number of keys involved 
+    The \a modifiers holds the keyboard modifiers, and the given \a text
+    is the Unicode text that the key generated. If \a autorep is true,
+    isAutoRepeat() will be true. \a count is the number of keys involved
     in the event.
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
@@ -1658,7 +1662,7 @@ Qt::ButtonState QContextMenuEvent::state() const
     string is controlled by the widget only). The AttributeType enum
     describes the different attributes that can be set.
 
-    A class implementing QWidget::inputMethodEvent() or 
+    A class implementing QWidget::inputMethodEvent() or
     QGraphicsItem::inputMethodEvent() should at least understand and
     honor the \l TextFormat and \l Cursor attributes.
 
@@ -3023,8 +3027,15 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac OS X only.
+    \note This class is currently supported for Mac OS X and Symbian only.
 */
+
+QFileOpenEventPrivate::~QFileOpenEventPrivate()
+{
+#ifdef Q_OS_SYMBIAN
+    file.Close();
+#endif
+}
 
 /*!
     \internal
@@ -3049,6 +3060,22 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
     f = url.toLocalFile();
 }
 
+#ifdef Q_OS_SYMBIAN
+/*! \internal
+*/
+QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
+    : QEvent(FileOpen)
+{
+    TFileName fullName;
+    fileHandle.FullName(fullName);
+    f = qt_TDesC2QString(fullName);
+    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(f)));
+    // Duplicate here allows the file handle to be valid after S60 app construction is complete.
+    qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
+    d = reinterpret_cast<QEventPrivate *>(priv.take());
+}
+#endif
+
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
@@ -3072,6 +3099,39 @@ QFileOpenEvent::~QFileOpenEvent()
 QUrl QFileOpenEvent::url() const
 {
     return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
+}
+
+/*!
+    \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+
+    Opens a QFile on the \a file referenced by this event in the mode specified
+    by \a flags. Returns true if successful; otherwise returns false.
+
+    This is necessary as some files cannot be opened by name, but require specific
+    information stored in this event.
+    For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
+    the QFile could only be opened from the Symbian RFile used in the construction of this event.
+
+    \since 4.8
+*/
+bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+{
+    file.setFileName(f);
+#ifdef Q_OS_SYMBIAN
+    const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
+    if (priv->file.SubSessionHandle()) {
+        RFile dup;
+        // Duplicate here means that the opened QFile will continue to be valid beyond the lifetime of this QFileOpenEvent.
+        // It also allows openFile to be used in threads other than the thread in which the QFileOpenEvent was created.
+        if (dup.Duplicate(priv->file) == KErrNone) {
+            QScopedPointer<RFile, QScopedPointerRCloser<RFile> > dupCloser(&dup);
+            bool open = file.open(dup, flags, QFile::AutoCloseHandle);
+            dupCloser.take();
+            return open;
+        }
+    }
+#endif
+    return file.open(flags);
 }
 
 #ifndef QT_NO_TOOLBAR
@@ -3622,7 +3682,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
-/*! 
+/*!
     \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
@@ -4392,7 +4452,7 @@ void QGestureEvent::accept(QGesture *gesture)
     of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
 
     Clearing the accept flag indicates that the event receiver does not
-    want the gesture. Unwanted gestures may be propgated to the parent widget.
+    want the gesture. Unwanted gestures may be propagated to the parent widget.
 
     \sa QGestureEvent::accept()
 */

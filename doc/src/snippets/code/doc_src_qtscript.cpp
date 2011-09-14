@@ -544,7 +544,7 @@ QScriptValue constructXmlStreamReader(QScriptContext *context, QScriptEngine *en
     XmlStreamReaderPointer pointer(reader);
 
     // store the shared pointer in the script object that we are constructing
-    return engine->newVariant(context->thisObject(), qVariantFromValue(pointer));
+    return engine->newVariant(context->thisObject(), QVariant::fromValue(pointer));
 }
 //! [93]
 

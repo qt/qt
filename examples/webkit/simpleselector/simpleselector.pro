@@ -13,4 +13,7 @@ INSTALLS += target sources
 symbian {
     TARGET.UID3 = 0xA000D7CC
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.CAPABILITY = NetworkServices
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

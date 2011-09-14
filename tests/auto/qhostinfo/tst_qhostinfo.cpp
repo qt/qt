@@ -62,6 +62,12 @@
 #include <private/qthread_p.h>
 #include <QTcpServer>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #include <time.h>
 #include <qlibrary.h>
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -126,6 +132,7 @@ private slots:
 
     void raceCondition();
     void threadSafety();
+    void threadSafetyAsynchronousAPI();
 
     void multipleSameLookups();
     void multipleDifferentLookups_data();
@@ -133,6 +140,8 @@ private slots:
 
     void cache();
 
+    void abortHostLookup();
+    void abortHostLookupInDifferentThread();
 protected slots:
     void resultsReady(const QHostInfo &);
 
@@ -142,6 +151,11 @@ private:
     bool lookupDone;
     int lookupsDoneCounter;
     QHostInfo lookupResults;
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 // Testing get/set functions
@@ -182,8 +196,36 @@ tst_QHostInfo::~tst_QHostInfo()
 
 void tst_QHostInfo::initTestCase()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    ipv6Available = true;
+    ipv6LookupsAvailable = true;
+#else
     ipv6Available = false;
     ipv6LookupsAvailable = false;
+
+    QTcpServer server;
+    if (server.listen(QHostAddress("::1"))) {
+        // We have IPv6 support
+        ipv6Available = true;
+    }
+
 #if !defined(QT_NO_GETADDRINFO)
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
@@ -204,13 +246,7 @@ void tst_QHostInfo::initTestCase()
         }
     }
 #endif
-
-    QTcpServer server;
-    if (server.listen(QHostAddress("::1"))) {
-        // We have IPv6 support
-        ipv6Available = true;
-    }
-
+#endif
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
@@ -220,7 +256,7 @@ void tst_QHostInfo::initTestCase()
 
 void tst_QHostInfo::init()
 {
-    // delete the cache so inidividual testcase results are independant from each other
+    // delete the cache so inidividual testcase results are independent from each other
     qt_qhostinfo_clear_cache();
 
     QFETCH_GLOBAL(bool, cache);
@@ -237,18 +273,14 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-#ifdef Q_OS_SYMBIAN
     // Test server lookup
     QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
-    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP().toString() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
-    QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
-#else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
-#endif
+
     QTest::newRow("notfound") << "this-name-does-not-exist-hopefully." << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("idn-ace") << "xn--alqualond-34a.troll.no" << "10.3.3.55" << int(QHostInfo::NoError);
@@ -290,12 +322,16 @@ void tst_QHostInfo::lookupIPv6_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    QTest::newRow("ip6") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401::4" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2::2" << int(QHostInfo::NoError);
+    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115::10" << int(QHostInfo::NoError);
+    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << int(QHostInfo::NoError);
+    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115::13" << int(QHostInfo::NoError);
 
     // avoid using real IPv6 addresses here because this will do a DNS query
     // real addresses are between 2000:: and 3fff:ffff:ffff:ffff:ffff:ffff:ffff
     QTest::newRow("literal_ip6") << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << int(QHostInfo::NoError);
-    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
+    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401::4" << int(QHostInfo::NoError);
 }
 
 void tst_QHostInfo::lookupIPv6()
@@ -310,7 +346,7 @@ void tst_QHostInfo::lookupIPv6()
     lookupDone = false;
     QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(const QHostInfo&)));
 
-    QTestEventLoop::instance().enterLoop(3);
+    QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(lookupDone);
 
@@ -337,7 +373,7 @@ void tst_QHostInfo::reverseLookup_data()
 
     // ### Use internal DNS instead. Discussed with Andreas.
     //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
-    QTest::newRow("origin.cisco.com") << QString("12.159.148.94") << QStringList(QString("origin.cisco.com")) << 0;
+    QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0;
     QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1;
 }
 
@@ -411,6 +447,8 @@ protected:
     inline void run()
     {
          QHostInfo info = QHostInfo::fromName("qt.nokia.com");
+         QCOMPARE(info.error(), QHostInfo::NoError);
+         QVERIFY(info.addresses().count() > 0);
          QCOMPARE(info.addresses().at(0).toString(), QString("87.238.50.178"));
     }
 };
@@ -418,7 +456,7 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     const int runs = 10;
 #else
     const int runs = 100;
@@ -429,6 +467,56 @@ void tst_QHostInfo::threadSafety()
             thr[i].start();
         for (int k = nattempts - 1; k >= 0; --k)
             thr[k].wait();
+    }
+}
+
+class LookupReceiver : public QObject
+{
+    Q_OBJECT
+public slots:
+    void start();
+    void resultsReady(const QHostInfo&);
+public:
+    QHostInfo result;
+    int numrequests;
+};
+
+void LookupReceiver::start()
+{
+    for (int i=0;i<numrequests;i++)
+        QHostInfo::lookupHost(QString("qt.nokia.com"), this, SLOT(resultsReady(const QHostInfo&)));
+}
+
+void LookupReceiver::resultsReady(const QHostInfo &info)
+{
+    result = info;
+    numrequests--;
+    if (numrequests == 0 || info.error() != QHostInfo::NoError)
+        QThread::currentThread()->quit();
+}
+
+void tst_QHostInfo::threadSafetyAsynchronousAPI()
+{
+    const int nattempts = 10;
+    const int lookupsperthread = 10;
+    QList<QThread*> threads;
+    QList<LookupReceiver*> receivers;
+    for (int i = 0; i < nattempts; ++i) {
+        QThread* thread = new QThread;
+        LookupReceiver* receiver = new LookupReceiver;
+        receiver->numrequests = lookupsperthread;
+        receivers.append(receiver);
+        receiver->moveToThread(thread);
+        connect(thread, SIGNAL(started()), receiver, SLOT(start()));
+        thread->start();
+        threads.append(thread);
+    }
+    for (int k = threads.count() - 1; k >= 0; --k)
+        QVERIFY(threads.at(k)->wait(60000));
+    foreach (LookupReceiver* receiver, receivers) {
+        QCOMPARE(receiver->result.error(), QHostInfo::NoError);
+        QCOMPARE(receiver->result.addresses().at(0).toString(), QString("87.238.50.178"));
+        QCOMPARE(receiver->numrequests, 0);
     }
 }
 
@@ -478,8 +566,9 @@ void tst_QHostInfo::multipleDifferentLookups()
 
     QElapsedTimer timer;
     timer.start();
-    while (timer.elapsed() < 10000 && lookupsDoneCounter < repeats*COUNT) {
+    while (timer.elapsed() < 60000 && lookupsDoneCounter < repeats*COUNT) {
         QTestEventLoop::instance().enterLoop(2);
+        //qDebug() << "t:" << timer.elapsed();
     }
     QCOMPARE(lookupsDoneCounter, repeats*COUNT);
 }
@@ -520,7 +609,7 @@ void tst_QHostInfo::cache()
     QVERIFY(result.addresses().isEmpty());
 
     // the slot should have been called 2 times.
-    QVERIFY(lookupsDoneCounter == 2);
+    QCOMPARE(lookupsDoneCounter, 2);
 }
 
 void tst_QHostInfo::resultsReady(const QHostInfo &hi)
@@ -529,6 +618,53 @@ void tst_QHostInfo::resultsReady(const QHostInfo &hi)
     lookupResults = hi;
     lookupsDoneCounter++;
     QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
+}
+
+void tst_QHostInfo::abortHostLookup()
+{
+    //reset counter
+    lookupsDoneCounter = 0;
+    bool valid = false;
+    int id = -1;
+    QHostInfo result = qt_qhostinfo_lookup("qt.nokia.com", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QVERIFY(!valid);
+    //it is assumed that the DNS request/response in the backend is slower than it takes to call abort
+    QHostInfo::abortHostLookup(id);
+    QTestEventLoop::instance().enterLoop(5);
+    QCOMPARE(lookupsDoneCounter, 0);
+}
+
+class LookupAborter : public QObject
+{
+    Q_OBJECT
+public slots:
+    void abort()
+    {
+        QHostInfo::abortHostLookup(id);
+        QThread::currentThread()->quit();
+    }
+public:
+    int id;
+};
+
+void tst_QHostInfo::abortHostLookupInDifferentThread()
+{
+    //reset counter
+    lookupsDoneCounter = 0;
+    bool valid = false;
+    int id = -1;
+    QHostInfo result = qt_qhostinfo_lookup("qt.nokia.com", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QVERIFY(!valid);
+    QThread thread;
+    LookupAborter aborter;
+    aborter.id = id;
+    aborter.moveToThread(&thread);
+    connect(&thread, SIGNAL(started()), &aborter, SLOT(abort()));
+    //it is assumed that the DNS request/response in the backend is slower than it takes to schedule the thread and call abort
+    thread.start();
+    QVERIFY(thread.wait(5000));
+    QTestEventLoop::instance().enterLoop(5);
+    QCOMPARE(lookupsDoneCounter, 0);
 }
 
 QTEST_MAIN(tst_QHostInfo)

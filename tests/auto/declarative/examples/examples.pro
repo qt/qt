@@ -6,10 +6,12 @@ SOURCES += tst_examples.cpp
 
 include(../../../../tools/qml/qml.pri)
 
+include(../symbianlibs.pri)
+
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

@@ -70,12 +70,12 @@ namespace QSharedMemoryPrivate
 #include "private/qobject_p.h"
 
 #ifdef Q_OS_WIN
-#include <qt_windows.h>
+#  include <qt_windows.h>
 #elif defined(Q_OS_SYMBIAN)
-#include <e32std.h>
-#include <sys/types.h>
+#  include <e32std.h>
+#  include <sys/types.h>
 #else
-#include <sys/sem.h>
+#  include <sys/types.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -122,6 +122,7 @@ public:
     void *memory;
     int size;
     QString key;
+    QString nativeKey;
     QSharedMemory::SharedMemoryError error;
     QString errorString;
 #ifndef QT_NO_SYSTEMSEMAPHORE
@@ -134,11 +135,13 @@ public:
             const QString &prefix = QLatin1String("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
     HANDLE handle();
+#elif defined(QT_POSIX_IPC)
+    int handle();
 #else
     key_t handle();
 #endif
     bool initKey();
-    bool cleanHandle();
+    void cleanHandle();
     bool create(int size);
     bool attach(QSharedMemory::AccessMode mode);
     bool detach();
@@ -150,7 +153,7 @@ public:
 #endif
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
-    bool tryLocker(QSharedMemoryLocker *locker, const QString function) {
+    inline bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {
         if (!locker->lock()) {
             errorString = QSharedMemory::tr("%1: unable to lock").arg(function);
             error = QSharedMemory::LockError;
@@ -165,6 +168,8 @@ private:
     HANDLE hand;
 #elif defined(Q_OS_SYMBIAN)
     RChunk chunk;
+#elif defined(QT_POSIX_IPC)
+    int hand;
 #else
     key_t unix_key;
 #endif

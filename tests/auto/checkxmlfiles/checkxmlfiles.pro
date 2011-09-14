@@ -8,7 +8,7 @@ include (../xmlpatterns.pri)
 
 wince*|symbian: {
 QT += network
-addFiles.sources = \
+addFiles.files = \
 	$$QT_SOURCE_TREE/examples/sql/masterdetail/albumdetails.xml \
 	$$QT_SOURCE_TREE/examples/xmlpatterns/xquery/globalVariables/globals.gccxml \
 	$$QT_SOURCE_TREE/doc/src/diagrams/stylesheet/treeview.svg \

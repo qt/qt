@@ -48,8 +48,16 @@
 #include <QDataStream>
 #include <QStringList>
 
+#ifdef Q_WS_QWS
 #include "qwindowsystem_qws.h"
 #include "qscreen_qws.h"
+#endif
+
+#ifdef Q_WS_QPA
+#include <QWindowSystemInterface>
+#include <QKeyEvent>
+#endif
+
 #include "qtimer.h"
 #include <stdlib.h>
 
@@ -217,7 +225,7 @@ bool QWSKbPrivate::loadKeymap(const QString &file)
     ds >> qmap_magic >> qmap_version >> qmap_keymap_size >> qmap_keycompose_size;
 
     if (ds.status() != QDataStream::Ok || qmap_magic != QWSKeyboard::FileMagic || qmap_version != 1 || qmap_keymap_size == 0) {
-        qWarning("'%s' is ot a valid.qmap keymap file.", qPrintable(file));
+        qWarning("'%s' is not a valid .qmap keymap file.", qPrintable(file));
         return false;
     }
 
@@ -352,7 +360,15 @@ QWSKeyboardHandler::~QWSKeyboardHandler()
 void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
                         bool isPress, bool autoRepeat)
 {
+#if defined(Q_WS_QWS)
     qwsServer->processKeyEvent(unicode, keycode, modifiers, isPress, autoRepeat);
+#elif defined(Q_WS_QPA)
+    QEvent::Type type = isPress ? QEvent::KeyPress : QEvent::KeyRelease;
+    QString str;
+    if (unicode != 0xffff)
+        str = QString(unicode);
+    QWindowSystemInterface::handleKeyEvent(0, type, keycode, modifiers, str);
+#endif
 }
 
 /*!
@@ -375,6 +391,7 @@ void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardM
  */
 int QWSKeyboardHandler::transformDirKey(int key)
 {
+#ifdef Q_WS_QWS
     static int dir_keyrot = -1;
     if (dir_keyrot < 0) {
         // get the rotation
@@ -387,6 +404,9 @@ int QWSKeyboardHandler::transformDirKey(int key)
     }
     int xf = qt_screen->transformOrientation() + dir_keyrot;
     return (key-Qt::Key_Left+xf)%4+Qt::Key_Left;
+#else
+    return 0;
+#endif
 }
 
 /*!
@@ -454,7 +474,7 @@ void QWSKeyboardHandler::endAutoRepeat()
 	
     Maps \a keycode according to a keymap and sends that key event to the
     \l{Qt for Embedded Linux} server application.
- 
+
     Please see the \l{Qt for Embedded Linux Character Input} and the \l
     {kmap2qmap} documentations for a description on how to create and use
     keymap files.

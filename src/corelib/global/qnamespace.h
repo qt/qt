@@ -94,6 +94,7 @@ Qt {
     Q_ENUMS(GestureState)
     Q_ENUMS(GestureType)
 #endif
+    Q_ENUMS(CursorMoveStyle)
 #endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
 
 #if defined(Q_MOC_RUN)
@@ -525,8 +526,8 @@ public:
 #endif
 
         WA_X11DoNotAcceptFocus = 132,
-
         WA_SymbianNoSystemRotation = 133,
+        WA_MacNoShadow = 134,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -544,6 +545,8 @@ public:
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_S60DontConstructApplicationPanes = 8,
         AA_S60DisablePartialScreenInputMode = 9,
+        AA_X11InitThreads = 10,
+        AA_CaptureMultimediaKeys = 11,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -1627,6 +1630,7 @@ public:
         AccessibleDescriptionRole = 12,
         // More general purpose
         SizeHintRole = 13,
+        InitialSortOrderRole = 14,
         // Internal UiLib roles. Start worrying when public roles go that high.
         DisplayPropertyRole = 27,
         DecorationPropertyRole = 28,
@@ -1669,7 +1673,7 @@ public:
     typedef void *HANDLE;
 #elif defined(Q_WS_X11)
     typedef unsigned long HANDLE;
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     typedef void * HANDLE;
 #elif defined(Q_OS_SYMBIAN)
     typedef unsigned long int HANDLE; // equivalent to TUint32
@@ -1781,6 +1785,11 @@ public:
         NavigationModeKeypadDirectional,
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
+    };
+
+    enum CursorMoveStyle {
+        LogicalMoveStyle,
+        VisualMoveStyle
     };
 }
 #ifdef Q_MOC_RUN

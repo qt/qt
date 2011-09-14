@@ -49,6 +49,11 @@
 #include "qabstractfileengine.h"
 #include "qendian.h"
 
+#if !defined(QT_NO_DIRECTWRITE)
+#  include "qsettings.h"
+#  include "qfontenginedirectwrite_p.h"
+#endif
+
 #ifdef Q_OS_WINCE
 #   include <QTemporaryFile>
 #endif
@@ -237,6 +242,8 @@ error:
     return i18n_name;
 }
 
+extern QFont::Weight weightFromInteger(int weight); // qfontdatabase.cpp
+
 static
 void addFontToDatabase(QString familyName, const QString &scriptName,
                        TEXTMETRIC *textmetric,
@@ -269,16 +276,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
     if (familyName[0] != QLatin1Char('@') && !familyName.startsWith(QLatin1String("WST_"))) {
         QtFontStyle::Key styleKey;
         styleKey.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
-        if (weight < 400)
-            styleKey.weight = QFont::Light;
-        else if (weight < 600)
-            styleKey.weight = QFont::Normal;
-        else if (weight < 700)
-            styleKey.weight = QFont::DemiBold;
-        else if (weight < 800)
-            styleKey.weight = QFont::Bold;
-        else
-            styleKey.weight = QFont::Black;
+        styleKey.weight = weightFromInteger(weight);
 
         QtFontFamily *family = privateDb()->family(familyName, true);
 
@@ -286,7 +284,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             family->english_name = getEnglishName(familyName);
 
         QtFontFoundry *foundry = family->foundry(foundryName, true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, QString(), true);
         style->smoothScalable = scalable;
         style->pixelSize( size, TRUE);
 
@@ -294,14 +292,14 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
         if (styleKey.weight <= QFont::DemiBold) {
             QtFontStyle::Key key(styleKey);
             key.weight = QFont::Bold;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }
         if (styleKey.style != QFont::StyleItalic) {
             QtFontStyle::Key key(styleKey);
             key.style = QFont::StyleItalic;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }
@@ -309,7 +307,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             QtFontStyle::Key key(styleKey);
             key.weight = QFont::Bold;
             key.style = QFont::StyleItalic;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }
@@ -335,7 +333,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             quint32 codePageRange[2] = {
                 signature->fsCsb[0], signature->fsCsb[1]
             };
-            QList<QFontDatabase::WritingSystem> systems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+            QList<QFontDatabase::WritingSystem> systems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);
 
             for (int i = 0; i < systems.count(); ++i) {
                 QFontDatabase::WritingSystem writingSystem = systems.at(i);
@@ -525,23 +523,82 @@ static inline void load(const QString &family = QString(), int = -1)
 
 
 
-static void initFontInfo(QFontEngineWin *fe, const QFontDef &request, const QFontPrivate *fp)
+static void initFontInfo(QFontEngineWin *fe, const QFontDef &request, HDC fontHdc, int dpi)
 {
     fe->fontDef = request;                                // most settings are equal
 
-    HDC dc = ((request.styleStrategy & QFont::PreferDevice) && fp->hdc) ? fp->hdc : shared_dc();
+    HDC dc = ((request.styleStrategy & QFont::PreferDevice) && fontHdc) ? fontHdc : shared_dc();
     SelectObject(dc, fe->hfont);
     wchar_t n[64];
     GetTextFace(dc, 64, n);
     fe->fontDef.family = QString::fromWCharArray(n);
     fe->fontDef.fixedPitch = !(fe->tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
     if (fe->fontDef.pointSize < 0) {
-        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / fp->dpi;
+        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / dpi;
     } else if (fe->fontDef.pixelSize == -1) {
-        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * fp->dpi / 72.);
+        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * dpi / 72.);
     }
 }
 
+#if !defined(QT_NO_DIRECTWRITE)
+static void initFontInfo(QFontEngineDirectWrite *fe, const QFontDef &request,
+                         int dpi, IDWriteFont *font)
+{
+    fe->fontDef = request;
+
+    IDWriteFontFamily *fontFamily = NULL;
+    HRESULT hr = font->GetFontFamily(&fontFamily);
+
+    IDWriteLocalizedStrings *familyNames = NULL;
+    if (SUCCEEDED(hr))
+        hr = fontFamily->GetFamilyNames(&familyNames);
+
+    UINT32 index = 0;
+    BOOL exists = false;
+
+    wchar_t localeName[LOCALE_NAME_MAX_LENGTH];
+
+    if (SUCCEEDED(hr)) {
+        int defaultLocaleSuccess = GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH);
+
+        if (defaultLocaleSuccess)
+            hr = familyNames->FindLocaleName(localeName, &index, &exists);
+
+        if (SUCCEEDED(hr) && !exists)
+            hr = familyNames->FindLocaleName(L"en-us", &index, &exists);
+    }
+
+    if (!exists)
+        index = 0;
+
+    UINT32 length = 0;
+    if (SUCCEEDED(hr))
+        hr = familyNames->GetStringLength(index, &length);
+
+    wchar_t *name = new (std::nothrow) wchar_t[length+1];
+    if (name == NULL)
+        hr = E_OUTOFMEMORY;
+
+    // Get the family name.
+    if (SUCCEEDED(hr))
+        hr = familyNames->GetString(index, name, length + 1);
+
+    if (SUCCEEDED(hr))
+        fe->fontDef.family = QString::fromWCharArray(name);
+
+    delete[] name;
+    if (familyNames != NULL)
+        familyNames->Release();
+
+    if (FAILED(hr))
+        qErrnoWarning(hr, "initFontInfo: Failed to get family name");
+
+    if (fe->fontDef.pointSize < 0)
+        fe->fontDef.pointSize = fe->fontDef.pixelSize * 72. / dpi;
+    else if (fe->fontDef.pixelSize == -1)
+        fe->fontDef.pixelSize = qRound(fe->fontDef.pointSize * dpi / 72.);
+}
+#endif
 
 static const char *other_tryFonts[] = {
     "Arial",
@@ -595,6 +652,14 @@ static const char *kr_tryFonts[] = {
 
 static const char **tryFonts = 0;
 
+#if !defined(QT_NO_DIRECTWRITE)
+static QString fontNameSubstitute(const QString &familyName)
+{
+    QLatin1String key("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\"
+                      "FontSubstitutes");
+    return QSettings(key, QSettings::NativeFormat).value(familyName, familyName).toString();
+}
+#endif
 
 static inline HFONT systemFont()
 {
@@ -607,20 +672,21 @@ static inline HFONT systemFont()
 #define DEFAULT_GUI_FONT 17
 #endif
 
-static
-QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &request, const QtFontDesc *desc,
-                        const QStringList &family_list)
+static QFontEngine *loadEngine(int script, const QFontDef &request,
+                               HDC fontHdc, int dpi, bool rawMode,
+                               const QtFontDesc *desc,
+                               const QStringList &family_list)
 {
     LOGFONT lf;
     memset(&lf, 0, sizeof(LOGFONT));
 
-    bool useDevice = (request.styleStrategy & QFont::PreferDevice) && fp->hdc;
+    bool useDevice = (request.styleStrategy & QFont::PreferDevice) && fontHdc;
 
     HDC hdc = shared_dc();
-    QString font_name = desc->family->name;
+    QString font_name = desc != 0 ? desc->family->name : request.family;
 
     if (useDevice) {
-        hdc = fp->hdc;
+        hdc = fontHdc;
         font_name = request.family;
     }
 
@@ -629,9 +695,18 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
 
     HFONT hfont = 0;
 
-    if (fp->rawMode) {                        // will choose a stock font
+
+#if !defined(QT_NO_DIRECTWRITE)
+    bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
+                       || (request.hintingPreference == QFont::PreferVerticalHinting);
+    IDWriteFont *directWriteFont = 0;
+#else
+    bool useDirectWrite = false;
+#endif
+
+    if (rawMode) {                        // will choose a stock font
         int f, deffnt = SYSTEM_FONT;
-        QString fam = desc->family->name.toLower();
+        QString fam = desc != 0 ? desc->family->name.toLower() : request.family.toLower();
         if (fam == QLatin1String("default"))
             f = deffnt;
         else if (fam == QLatin1String("system"))
@@ -685,11 +760,11 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         lf.lfWidth                = 0;
         lf.lfEscapement        = 0;
         lf.lfOrientation        = 0;
-        if (desc->style->key.weight == 50)
+        if (desc == 0 || desc->style->key.weight == 50)
             lf.lfWeight = FW_DONTCARE;
         else
             lf.lfWeight = (desc->style->key.weight*900)/99;
-        lf.lfItalic                = (desc->style->key.style != QFont::StyleNormal);
+        lf.lfItalic         = (desc != 0 && desc->style->key.style != QFont::StyleNormal);
         lf.lfCharSet        = DEFAULT_CHARSET;
 
         int strat = OUT_DEFAULT_PRECIS;
@@ -745,6 +820,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
             fam = QLatin1String("Courier New");
 
         memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+
         hfont = CreateFontIndirect(&lf);
         if (!hfont)
             qErrnoWarning("QFontEngine::loadEngine: CreateFontIndirect failed");
@@ -759,54 +835,130 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
         res = GetTextMetrics(hdc, &tm);
         avWidth = tm.tmAveCharWidth;
         ttf = tm.tmPitchAndFamily & TMPF_TRUETYPE;
-
         SelectObject(hdc, oldObj);
 
-        if (hfont && (!ttf || request.stretch != 100)) {
-            DeleteObject(hfont);
-            if (!res)
-                qErrnoWarning("QFontEngine::loadEngine: GetTextMetrics failed");
-            lf.lfWidth = avWidth * request.stretch/100;
-            hfont = CreateFontIndirect(&lf);
-            if (!hfont)
-                qErrnoWarning("QFontEngine::loadEngine: CreateFontIndirect with stretch failed");
-        }
+        if (!ttf || !useDirectWrite) {
+            useDirectWrite = false;
+
+            if (hfont && (!ttf || request.stretch != 100)) {
+                DeleteObject(hfont);
+                if (!res)
+                    qErrnoWarning("QFontEngine::loadEngine: GetTextMetrics failed");
+                lf.lfWidth = avWidth * request.stretch/100;
+                hfont = CreateFontIndirect(&lf);
+                if (!hfont)
+                    qErrnoWarning("QFontEngine::loadEngine: CreateFontIndirect with stretch failed");
+            }
 
 #ifndef Q_WS_WINCE
-        if (hfont == 0) {
-            hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-            stockFont = true;
-        }
+            if (hfont == 0) {
+                hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
+                stockFont = true;
+            }
 #else
-        if (hfont == 0) {
-            hfont = (HFONT)GetStockObject(SYSTEM_FONT);
-            stockFont = true;
+            if (hfont == 0) {
+                hfont = (HFONT)GetStockObject(SYSTEM_FONT);
+                stockFont = true;
+            }
+#endif
+
+        }
+
+#if !defined(QT_NO_DIRECTWRITE)
+        else {
+            // Default to false for DirectWrite (and re-enable once/if everything
+            // turns out okay)
+            useDirectWrite = false;
+
+            QFontDatabasePrivate *db = privateDb();
+            if (db->directWriteFactory == 0) {
+                HRESULT hr = DWriteCreateFactory(
+                            DWRITE_FACTORY_TYPE_SHARED,
+                            __uuidof(IDWriteFactory),
+                            reinterpret_cast<IUnknown **>(&db->directWriteFactory)
+                            );
+                if (FAILED(hr)) {
+                    qErrnoWarning("QFontEngine::loadEngine: DWriteCreateFactory failed");
+                } else {
+                    hr = db->directWriteFactory->GetGdiInterop(&db->directWriteGdiInterop);
+                    if (FAILED(hr))
+                        qErrnoWarning("QFontEngine::loadEngine: GetGdiInterop failed");
+                }
+            }
+
+            if (db->directWriteGdiInterop != 0) {
+                QString nameSubstitute = fontNameSubstitute(QString::fromWCharArray(lf.lfFaceName));
+                memcpy(lf.lfFaceName, nameSubstitute.utf16(),
+                       sizeof(wchar_t) * qMin(nameSubstitute.length() + 1, LF_FACESIZE));
+
+                HRESULT hr = db->directWriteGdiInterop->CreateFontFromLOGFONT(
+                            &lf,
+                            &directWriteFont);
+                if (FAILED(hr)) {
+#ifndef QT_NO_DEBUG
+                    qErrnoWarning("QFontEngine::loadEngine: CreateFontFromLOGFONT failed "
+                                  "for %ls (0x%lx)",
+                                  lf.lfFaceName, hr);
+#endif
+                } else {
+                    DeleteObject(hfont);
+                    useDirectWrite = true;
+                }
+            }
         }
 #endif
 
     }
-    QFontEngineWin *few = new QFontEngineWin(font_name, hfont, stockFont, lf);
 
-    if (preferClearTypeAA)
-        few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+    QFontEngine *fe = 0;
+    if (!useDirectWrite)  {
+        QFontEngineWin *few = new QFontEngineWin(font_name, hfont, stockFont, lf);
+        if (preferClearTypeAA)
+            few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
-    // Also check for OpenType tables when using complex scripts
-    // ### TODO: This only works for scripts that require OpenType. More generally
-    // for scripts that do not require OpenType we should just look at the list of
-    // supported writing systems in the font's OS/2 table.
-    if (scriptRequiresOpenType(script)) {
-        HB_Face hbFace = few->harfbuzzFace();
-        if (!hbFace || !hbFace->supported_scripts[script]) {
-            FM_DEBUG("  OpenType support missing for script\n");
-            delete few;
-            return 0;
+        // Also check for OpenType tables when using complex scripts
+        // ### TODO: This only works for scripts that require OpenType. More generally
+        // for scripts that do not require OpenType we should just look at the list of
+        // supported writing systems in the font's OS/2 table.
+        if (scriptRequiresOpenType(script)) {
+            HB_Face hbFace = few->harfbuzzFace();
+            if (!hbFace || !hbFace->supported_scripts[script]) {
+                FM_DEBUG("  OpenType support missing for script\n");
+                delete few;
+                return 0;
+            }
+        }
+
+        initFontInfo(few, request, fontHdc, dpi);
+        fe = few;
+    }
+
+#if !defined(QT_NO_DIRECTWRITE)
+    else {
+        QFontDatabasePrivate *db = privateDb();
+
+        IDWriteFontFace *directWriteFontFace = NULL;
+        HRESULT hr = directWriteFont->CreateFontFace(&directWriteFontFace);
+        if (SUCCEEDED(hr)) {
+            QFontEngineDirectWrite *fedw = new QFontEngineDirectWrite(db->directWriteFactory,
+                                                                      directWriteFontFace,
+                                                                      request.pixelSize);
+
+            initFontInfo(fedw, request, dpi, directWriteFont);
+
+            fe = fedw;
+        } else {
+            qErrnoWarning(hr, "QFontEngine::loadEngine: CreateFontFace failed");
         }
     }
 
-    QFontEngine *fe = few;
-    initFontInfo(few, request, fp);
+    if (directWriteFont != 0)
+        directWriteFont->Release();
+#endif
+
     if(script == QUnicodeTables::Common
        && !(request.styleStrategy & QFont::NoFontMerging)
+       && desc != 0
        && !(desc->family->writingSystems[QFontDatabase::Symbol] & QtFontFamily::Supported)) {
         if(!tryFonts) {
             LANGID lid = GetUserDefaultLangID();
@@ -836,11 +988,25 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
                 list << QLatin1String(*tf);
             ++tf;
         }
-        QFontEngine *mfe = new QFontEngineMultiWin(few, list);
+        QFontEngine *mfe = new QFontEngineMultiWin(fe, list);
         mfe->fontDef = fe->fontDef;
         fe = mfe;
     }
     return fe;
+}
+
+QFontEngine *qt_load_font_engine_win(const QFontDef &request)
+{
+    // From qfont.cpp
+    extern int qt_defaultDpi();
+
+    QFontCache::Key key(request, QUnicodeTables::Common);
+    QFontEngine *fe = QFontCache::instance()->findEngine(key);
+    if (fe != 0)
+        return fe;
+    else
+        return loadEngine(QUnicodeTables::Common, request, 0, qt_defaultDpi(), false, 0,
+                          QStringList());
 }
 
 const char *styleHint(const QFontDef &request)
@@ -903,7 +1069,7 @@ static QFontEngine *loadWin(const QFontPrivate *d, int script, const QFontDef &r
         }
         if (!desc.family)
             break;
-        fe = loadEngine(script, d, req, &desc, family_list);
+        fe = loadEngine(script, req, d->hdc, d->dpi, d->rawMode, &desc, family_list);
         if (!fe)
             blacklistedFamilies.append(desc.familyIndex);
     }

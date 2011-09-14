@@ -113,6 +113,11 @@ public:
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSharedDataPointer(QSharedDataPointer &&o) : d(o.d) { o.d = 0; }
+    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 
@@ -163,14 +168,12 @@ public:
     explicit QExplicitlySharedDataPointer(T *data);
     inline QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<T> &o) : d(o.d) { if (d) d->ref.ref(); }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template<class X>
     inline QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) : d(static_cast<T *>(o.data()))
     {
         if(d)
             d->ref.ref();
     }
-#endif
 
     inline QExplicitlySharedDataPointer<T> & operator=(const QExplicitlySharedDataPointer<T> &o) {
         if (o.d != d) {
@@ -194,6 +197,11 @@ public:
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) : d(o.d) { o.d = 0; }
+    inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 
@@ -256,6 +264,20 @@ Q_INLINE_TEMPLATE void qSwap(QSharedDataPointer<T> &p1, QSharedDataPointer<T> &p
 template <class T>
 Q_INLINE_TEMPLATE void qSwap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
 { p1.swap(p2); }
+
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T>
+    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QSharedDataPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedDataPointer)<T> &p2)
+    { p1.swap(p2); }
+
+    template <class T>
+    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QExplicitlySharedDataPointer)<T> &p1, QT_PREPEND_NAMESPACE(QExplicitlySharedDataPointer)<T> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
 
 QT_END_NAMESPACE
 

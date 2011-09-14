@@ -52,6 +52,18 @@
 #error qbytearray.h must be included before any header file that defines truncate
 #endif
 
+#if defined(Q_CC_GNU) && (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
+//There is a bug in GCC 4.0 that tries to instantiate template of annonymous enum
+#  ifdef QT_USE_FAST_OPERATOR_PLUS
+#    undef QT_USE_FAST_OPERATOR_PLUS
+#  endif
+#  ifdef QT_USE_QSTRINGBUILDER
+#    undef QT_USE_QSTRINGBUILDER
+#  endif
+
+#endif
+
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -144,6 +156,12 @@ public:
 
     QByteArray &operator=(const QByteArray &);
     QByteArray &operator=(const char *str);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QByteArray &operator=(QByteArray &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+
+    inline void swap(QByteArray &other) { qSwap(d, other.d); }
 
     inline int size() const;
     bool isEmpty() const;
@@ -542,6 +560,7 @@ inline bool operator>=(const QByteArray &a1, const char *a2)
 { return qstrcmp(a1, a2) >= 0; }
 inline bool operator>=(const char *a1, const QByteArray &a2)
 { return qstrcmp(a1, a2) >= 0; }
+#if !defined(QT_USE_QSTRINGBUILDER)
 inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline const QByteArray operator+(const QByteArray &a1, const char *a2)
@@ -552,6 +571,7 @@ inline const QByteArray operator+(const char *a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline const QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
+#endif // QT_USE_QSTRINGBUILDER
 inline QBool QByteArray::contains(const char *c) const
 { return QBool(indexOf(c) != -1); }
 inline QByteArray &QByteArray::replace(char before, const char *c)
@@ -593,5 +613,9 @@ Q_DECLARE_SHARED(QByteArray)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#ifdef QT_USE_QSTRINGBUILDER
+#include <QtCore/qstring.h>
+#endif
 
 #endif // QBYTEARRAY_H

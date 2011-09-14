@@ -225,7 +225,7 @@ struct QHashNode
     inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
 };
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
 #define Q_HASH_DECLARE_INT_NODES(key_type) \
     template <class T> \
     struct QHashDummyNode<key_type, T> { \
@@ -253,7 +253,6 @@ Q_HASH_DECLARE_INT_NODES(ushort);
 Q_HASH_DECLARE_INT_NODES(int);
 Q_HASH_DECLARE_INT_NODES(uint);
 #undef Q_HASH_DECLARE_INT_NODES
-#endif // QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 template <class Key, class T>
 class QHash
@@ -284,6 +283,11 @@ public:
     inline ~QHash() { if (!d->ref.deref()) freeData(d); }
 
     QHash<Key, T> &operator=(const QHash<Key, T> &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QHash<Key, T> &operator=(QHash<Key, T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+    inline void swap(QHash<Key, T> &other) { qSwap(d, other.d); }
 
     bool operator==(const QHash<Key, T> &other) const;
     inline bool operator!=(const QHash<Key, T> &other) const { return !(*this == other); }
@@ -513,8 +517,6 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode2(QHashData::Node *node)
 {
 #ifdef Q_CC_BOR
     concrete(node)->~QHashNode<Key, T>();
-#elif defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
-    concrete(node)->~QHashNode();
 #else
     concrete(node)->~Node();
 #endif
@@ -924,6 +926,7 @@ class QMultiHash : public QHash<Key, T>
 public:
     QMultiHash() {}
     QMultiHash(const QHash<Key, T> &other) : QHash<Key, T>(other) {}
+    inline void swap(QMultiHash<Key, T> &other) { QHash<Key, T>::swap(other); } // prevent QMultiHash<->QHash swaps
 
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)
     { return QHash<Key, T>::insert(key, value); }

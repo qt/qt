@@ -87,6 +87,10 @@ public:
 
     QStringList toStringList() const;
 
+    QStringList keys() const;
+
+    void insert(const QProcessEnvironment &e);
+
     static QProcessEnvironment systemEnvironment();
 
 private:

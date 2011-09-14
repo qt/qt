@@ -57,7 +57,6 @@ QVGWindowSurface::QVGWindowSurface(QWidget *window)
 {
     // Create the default type of EGL window surface for windows.
     d_ptr = new QVGEGLWindowSurfaceDirect(this);
-    setStaticContentsSupport(d_ptr->supportsStaticContents());
 }
 
 QVGWindowSurface::QVGWindowSurface
@@ -94,10 +93,17 @@ void QVGWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoin
     d_ptr->endPaint(parent, region);
 }
 
+#if !defined(Q_WS_QPA)
 void QVGWindowSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
 }
+#else
+void QVGWindowSurface::resize(const QSize &size)
+{
+            QWindowSurface::resize(size);
+}
+#endif //!Q_WS_QPA
 
 bool QVGWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
@@ -129,6 +135,14 @@ void QVGWindowSurface::endPaint(const QRegion &region)
 QPaintEngine *QVGWindowSurface::paintEngine() const
 {
     return d_ptr->paintEngine();
+}
+
+QWindowSurface::WindowSurfaceFeatures QVGWindowSurface::features() const
+{
+    WindowSurfaceFeatures features = PartialUpdates | PreservedContents;
+    if (d_ptr->supportsStaticContents())
+        features |= StaticContents;
+    return features;
 }
 
 int QVGWindowSurface::metric(PaintDeviceMetric met) const

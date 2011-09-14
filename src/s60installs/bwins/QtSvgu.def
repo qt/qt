@@ -146,4 +146,10 @@ EXPORTS
 	?staticMetaObject@QSvgWidget@@2UQMetaObject@@B @ 145 NONAME ; struct QMetaObject const QSvgWidget::staticMetaObject
 	?staticMetaObject@QGraphicsSvgItem@@2UQMetaObject@@B @ 146 NONAME ; struct QMetaObject const QGraphicsSvgItem::staticMetaObject
 	?staticMetaObject@QSvgRenderer@@2UQMetaObject@@B @ 147 NONAME ; struct QMetaObject const QSvgRenderer::staticMetaObject
+	?qt_static_metacall@QSvgWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 148 NONAME ; void QSvgWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QSvgRenderer@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 149 NONAME ; void QSvgRenderer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSvgWidget@@0UQMetaObjectExtraData@@B @ 150 NONAME ; struct QMetaObjectExtraData const QSvgWidget::staticMetaObjectExtraData
+	?qt_static_metacall@QGraphicsSvgItem@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 151 NONAME ; void QGraphicsSvgItem::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSvgRenderer@@0UQMetaObjectExtraData@@B @ 152 NONAME ; struct QMetaObjectExtraData const QSvgRenderer::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QGraphicsSvgItem@@0UQMetaObjectExtraData@@B @ 153 NONAME ; struct QMetaObjectExtraData const QGraphicsSvgItem::staticMetaObjectExtraData
 

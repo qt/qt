@@ -49,7 +49,11 @@ int main(int argv, char **args)
     app.setQuitOnLastWindowClosed(true);
 
     MainWindow window;
+#if defined(Q_OS_SYMBIAN)
+    window.showMaximized();
+#else
     window.show();
+#endif
 
     return app.exec(); 
 }

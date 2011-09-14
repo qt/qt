@@ -57,31 +57,81 @@
 #include <private/qgl_p.h>
 #include <qglshaderprogram.h>
 
+// #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
 class QGL2PaintEngineExPrivate;
 
-class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QObject, public QImageTextureGlyphCache
+struct QGLGlyphTexture
 {
-    Q_OBJECT
+    QGLGlyphTexture(const QGLContext *ctx)
+        : m_width(0)
+        , m_height(0)
+    {
+        if (ctx && !ctx->d_ptr->workaround_brokenFBOReadBack)
+            glGenFramebuffers(1, &m_fbo);
+
+#ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
+        qDebug(" -> QGLGlyphTexture() %p for context %p.", this, ctx);
+#endif
+    }
+
+    ~QGLGlyphTexture() {
+        const QGLContext *ctx = QGLContext::currentContext();
+#ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
+        qDebug("~QGLGlyphTexture() %p for context %p.", this, ctx);
+#endif
+        // At this point, the context group is made current, so it's safe to
+        // release resources without a makeCurrent() call
+        if (ctx) {
+            if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+                glDeleteFramebuffers(1, &m_fbo);
+            if (m_width || m_height)
+                glDeleteTextures(1, &m_texture);
+        }
+    }
+
+    GLuint m_texture;
+    GLuint m_fbo;
+    int m_width;
+    int m_height;
+};
+
+class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache, public QGLContextGroupResourceBase
+{
 public:
-    QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
     ~QGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
-    virtual void fillTexture(const Coord &c, glyph_t glyph);
+    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition);
     virtual int glyphPadding() const;
     virtual int maxTextureWidth() const;
     virtual int maxTextureHeight() const;
 
-    inline GLuint texture() const { return m_texture; }
+    inline GLuint texture() const {
+        QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        return glyphTexture ? glyphTexture->m_texture : 0;
+    }
 
-    inline int width() const { return m_width; }
-    inline int height() const { return m_height; }
+    inline int width() const {
+        QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        return glyphTexture ? glyphTexture->m_width : 0;
+    }
+    inline int height() const {
+        QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        return glyphTexture ? glyphTexture->m_height : 0;
+    }
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
+
+    void setContext(const QGLContext *context);
+    inline const QGLContext *context() const { return ctx; }
 
     inline int serialNumber() const { return m_serialNumber; }
 
@@ -92,56 +142,21 @@ public:
     FilterMode filterMode() const { return m_filterMode; }
     void setFilterMode(FilterMode m) { m_filterMode = m; }
 
-    void setContext(QGLContext *context);
-    QGLContext *context() const { return ctx; }
-
-public Q_SLOTS:
-    void contextDestroyed(const QGLContext *context) {
-        if (context == ctx) {
-            const QGLContext *nextCtx = qt_gl_transfer_context(ctx);
-            if (!nextCtx) {
-                // the context may not be current, so we cannot directly
-                // destroy the fbo and texture here, but since the context
-                // is about to be destroyed, the GL server will do the
-                // clean up for us anyway. We reset everything, so that the
-                // glyph cache object can be reused later by setting a new
-                // context on it.
-                m_fbo = 0;
-                m_texture = 0;
-                ctx = 0;
-                m_width = 0;
-                m_height = 0;
-                m_w = 0;
-                m_h = 0;
-                m_cx = 0;
-                m_cy = 0;
-                m_currentRowHeight = 0;
-                coords.clear();
-            } else {
-                // since the context holding the texture is shared, and
-                // about to be destroyed, we have to transfer ownership
-                // of the texture to one of the share contexts
-                ctx = const_cast<QGLContext *>(nextCtx);
-            }
-        }
-    }
-
     void clear();
 
+    void freeResource(void *) { ctx = 0; }
+
 private:
-    QGLContext *ctx;
+    QGLContextGroupResource<QGLGlyphTexture> m_textureResource;
 
+    const QGLContext *ctx;
     QGL2PaintEngineExPrivate *pex;
-
-    GLuint m_texture;
-    GLuint m_fbo;
-
-    int m_width;
-    int m_height;
-
-    QGLShaderProgram *m_program;
-
+    QGLShaderProgram *m_blitProgram;
     FilterMode m_filterMode;
+
+    GLfloat m_vertexCoordinateArray[8];
+    GLfloat m_textureCoordinateArray[8];
+
     int m_serialNumber;
 };
 

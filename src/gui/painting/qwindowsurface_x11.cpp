@@ -70,9 +70,6 @@ QX11WindowSurface::QX11WindowSurface(QWidget *widget)
 #ifndef QT_NO_XRENDER
     d_ptr->translucentBackground = X11->use_xrender
         && widget->x11Info().depth() == 32;
-    setStaticContentsSupport(!d_ptr->translucentBackground);
-#else
-    setStaticContentsSupport(true);
 #endif
 }
 
@@ -149,6 +146,8 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
         return;
 #ifndef QT_NO_XRENDER
     if (d_ptr->translucentBackground) {
+        QPixmap::x11SetDefaultScreen(d_ptr->widget->x11Info().screen());
+
         QX11PixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
         data->xinfo = d_ptr->widget->x11Info();
         data->resize(size.width(), size.height());
@@ -249,6 +248,18 @@ QPixmap QX11WindowSurface::grabWidget(const QWidget *widget,
     XFreeGC(X11->display, tmpGc);
 
     return px;
+}
+
+QWindowSurface::WindowSurfaceFeatures QX11WindowSurface::features() const
+{
+    WindowSurfaceFeatures features = QWindowSurface::PartialUpdates | QWindowSurface::PreservedContents;
+#ifndef QT_NO_XRENDER
+    if (!d_ptr->translucentBackground)
+        features |= QWindowSurface::StaticContents;
+#else
+    features |= QWindowSurface::StaticContents;
+#endif
+    return features;
 }
 
 QT_END_NAMESPACE

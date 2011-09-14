@@ -874,13 +874,6 @@ void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attri
         }
     }
 
-    if (attributes->size() == oldSize) {
-        // S60 didn't provide any format, so let's give our own instead.
-        attributes->append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
-                                                        0,
-                                                        m_preeditString.size(),
-                                                        standardFormat(PreeditFormat)));
-    }
 }
 
 void QCoeFepInputContext::queueInputCapabilitiesChanged()

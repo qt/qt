@@ -48,6 +48,10 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
 
+#ifdef Q_WS_QPA
+#include <QtGui/QPlatformWindowFormat>
+#endif
+
 QT_BEGIN_HEADER
 
 #if defined(Q_WS_WIN)
@@ -56,28 +60,32 @@ QT_BEGIN_HEADER
 
 #if defined(Q_WS_MAC)
 # include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
 #elif defined(QT_OPENGL_ES_1)
-# include <GLES/gl.h>
-#ifndef GL_DOUBLE
-# define GL_DOUBLE GL_FLOAT
-#endif
-#ifndef GLdouble
+# if defined(Q_OS_MAC)
+#  include <OpenGLES/ES1/gl.h>
+# else
+#  include <GLES/gl.h>
+# endif
+# ifndef GL_DOUBLE
+#  define GL_DOUBLE GL_FLOAT
+# endif
+# ifndef GLdouble
 typedef GLfloat GLdouble;
-#endif
+# endif
 #elif defined(QT_OPENGL_ES_2)
-# include <GLES2/gl2.h>
-#ifndef GL_DOUBLE
-# define GL_DOUBLE GL_FLOAT
-#endif
-#ifndef GLdouble
+# if defined(Q_OS_MAC)
+#  include <OpenGLES/ES2/gl.h>
+# else
+#  include <GLES2/gl2.h>
+# endif
+# ifndef GL_DOUBLE
+#  define GL_DOUBLE GL_FLOAT
+# endif
+# ifndef GLdouble
 typedef GLfloat GLdouble;
-#endif
+# endif
 #else
 # include <GL/gl.h>
-# ifndef QT_LINUXBASE
-#   include <GL/glu.h>
-# endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -274,6 +282,10 @@ public:
 
     static OpenGLVersionFlags openGLVersionFlags();
 
+#if defined(Q_WS_QPA)
+    static QGLFormat fromPlatformWindowFormat(const QPlatformWindowFormat &format);
+    static QPlatformWindowFormat toPlatformWindowFormat(const QGLFormat &format);
+#endif
 private:
     QGLFormatPrivate *d;
 
@@ -379,13 +391,16 @@ public:
 
     static const QGLContext* currentContext();
 
+#ifdef Q_WS_QPA
+    static QGLContext *fromPlatformGLContext(QPlatformGLContext *platformContext);
+#endif
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
 
 #if defined(Q_WS_WIN)
     virtual int choosePixelFormat(void* pfd, HDC pdc);
 #endif
-#if defined(Q_WS_X11) && defined(QT_NO_EGL)
+#if defined(Q_WS_X11)
     virtual void* tryVisual(const QGLFormat& f, int bufDepth = 1);
     virtual void* chooseVisual();
 #endif
@@ -408,6 +423,10 @@ protected:
     static QGLContext* currentCtx;
 
 private:
+#ifdef Q_WS_QPA
+    QGLContext(QPlatformGLContext *platformContext);
+#endif
+
     QScopedPointer<QGLContextPrivate> d_ptr;
 
     friend class QGLPixelBuffer;
@@ -424,6 +443,7 @@ private:
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
+    friend struct QGLGlyphTexture;
     friend class QGLContextGroup;
     friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
@@ -444,6 +464,7 @@ private:
     friend class QGLWidgetGLPaintDevice;
     friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
+    friend class QGLContextResourceBase;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

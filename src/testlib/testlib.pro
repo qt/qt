@@ -70,8 +70,16 @@ wince*::LIBS += libcmt.lib \
     coredll.lib \
     winsock.lib
 mac:LIBS += -framework IOKit \
-    -framework ApplicationServices \
     -framework Security
+!qpa:mac: LIBS += -framework ApplicationServices
+qpa:mac: {
+    contains(QT_CONFIG, coreservices) {
+      LIBS_PRIVATE += -framework CoreServices
+    } else {
+      LIBS_PRIVATE += -framework CoreFoundation
+    }
+}
+
 include(../qbase.pri)
 QMAKE_TARGET_PRODUCT = QTestLib
 QMAKE_TARGET_DESCRIPTION = Qt \

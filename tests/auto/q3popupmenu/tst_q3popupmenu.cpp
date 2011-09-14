@@ -88,7 +88,7 @@ protected slots:
     void onShiftItem();
     void onSpicy();
     void onSubItem();
-    // Needed to slience QObject about non existant slot
+    // Needed to slience QObject about non existent slot
     void dummySlot() {}
     void itemParameterChanged(int p = 0){itemParameter = p; }
 

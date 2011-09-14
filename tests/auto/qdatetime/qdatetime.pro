@@ -1,5 +1,4 @@
 load(qttest_p4)
-
 SOURCES += tst_qdatetime.cpp
 QT = core
 
@@ -10,5 +9,4 @@ win32-msvc|win32-msvc9x {
     QMAKE_CFLAGS_RELEASE -= -O1
     QMAKE_CXXFLAGS_RELEASE -= -O1
 }
-
-
+CONFIG += parallel_test

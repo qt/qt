@@ -192,19 +192,16 @@ bool QTiffHandler::read(QImage *image)
         return false;
     }
 
-    uint16 bitsPerSample, samplesPerPixel, bitsPerPixel;
-    if (!TIFFGetFieldDefaulted(tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample)) {
-        TIFFClose(tiff);
-        return false;
-    }
-    if (!TIFFGetFieldDefaulted(tiff, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel)) {
-        TIFFClose(tiff);
-        return false;
-    }
-    bitsPerPixel = bitsPerSample * samplesPerPixel;
+    // BitsPerSample defaults to 1 according to the TIFF spec.
+    uint16 bitPerSample;
+    if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample))
+        bitPerSample = 1;
+    uint16 samplesPerPixel; // they may be e.g. grayscale with 2 samples per pixel
+    if (!TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel))
+        samplesPerPixel = 1;
 
     bool grayscale = photometric == PHOTOMETRIC_MINISBLACK || photometric == PHOTOMETRIC_MINISWHITE;
-    if (grayscale && bitsPerPixel == 1) {
+    if (grayscale && bitPerSample == 1 && samplesPerPixel == 1) {
         if (image->size() != QSize(width, height) || image->format() != QImage::Format_Mono)
             *image = QImage(width, height, QImage::Format_Mono);
         QVector<QRgb> colortable(2);
@@ -226,7 +223,7 @@ bool QTiffHandler::read(QImage *image)
             }
         }
     } else {
-        if ((grayscale || photometric == PHOTOMETRIC_PALETTE) && bitsPerPixel == 8) {
+        if ((grayscale || photometric == PHOTOMETRIC_PALETTE) && bitPerSample == 8 && samplesPerPixel == 1) {
             if (image->size() != QSize(width, height) || image->format() != QImage::Format_Indexed8)
                 *image = QImage(width, height, QImage::Format_Indexed8);
             if (!image->isNull()) {

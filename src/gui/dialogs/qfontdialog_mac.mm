@@ -51,6 +51,7 @@
 #include <private/qt_mac_p.h>
 #include <qabstracteventdispatcher.h>
 #include <qdebug.h>
+#include <private/qfontengine_coretext_p.h>
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
@@ -346,7 +347,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     [self relayoutToContentSize:[[mStolenContentView superview] frame].size];
 }
 
-- (void)relayoutToContentSize:(NSSize)frameSize;
+- (void)relayoutToContentSize:(NSSize)frameSize
 {
     Q_ASSERT(mPanelHackedWithButtons);
 
@@ -505,7 +506,7 @@ void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
     QMacCocoaAutoReleasePool pool;
     QFontEngine *fe = font.d->engineForScript(QUnicodeTables::Common);
     NSFontManager *mgr = [NSFontManager sharedFontManager];
-    NSFont *nsFont = 0;
+    const NSFont *nsFont = 0;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     if (qstrcmp(fe->name(), "CoreText") == 0) {
@@ -531,7 +532,7 @@ void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
             size:fontInfo.pointSize()];
     }
 
-    [mgr setSelectedFont:nsFont isMultiple:NO];
+    [mgr setSelectedFont:const_cast<NSFont *>(nsFont) isMultiple:NO];
     [static_cast<QT_MANGLE_NAMESPACE(QCocoaFontPanelDelegate) *>(delegate) setQtFont:font];
 }
 

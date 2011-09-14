@@ -340,7 +340,7 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QInotifyFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
 }
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
@@ -353,24 +353,24 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
     ioctl(inotifyFd, FIONREAD, (char *) &buffSize);
     QVarLengthArray<char, 4096> buffer(buffSize);
     buffSize = read(inotifyFd, buffer.data(), buffSize);
-    const char *at = buffer.data();
-    const char * const end = at + buffSize;
+    char *at = buffer.data();
+    char * const end = at + buffSize;
 
-    QMap<int, inotify_event> eventForId;
+    QHash<int, inotify_event *> eventForId;
     while (at < end) {
-        const inotify_event *event = reinterpret_cast<const inotify_event *>(at);
+        inotify_event *event = reinterpret_cast<inotify_event *>(at);
 
         if (eventForId.contains(event->wd))
-            eventForId[event->wd].mask |= event->mask;
+            eventForId[event->wd]->mask |= event->mask;
         else
-            eventForId.insert(event->wd, *event);
+            eventForId.insert(event->wd, event);
 
         at += sizeof(inotify_event) + event->len;
     }
 
-    QMap<int, inotify_event>::const_iterator it = eventForId.constBegin();
+    QHash<int, inotify_event *>::const_iterator it = eventForId.constBegin();
     while (it != eventForId.constEnd()) {
-        inotify_event event = *it;
+        const inotify_event &event = **it;
         ++it;
 
         // qDebug() << "inotify event, wd" << event.wd << "mask" << hex << event.mask;

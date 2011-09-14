@@ -493,7 +493,12 @@ private slots:
     void QTBUG5590_dummyProperty();
     void QTBUG12260_defaultTemplate();
     void notifyError();
+    void QTBUG17635_invokableAndProperty();
     void revisions();
+    void warnings_data();
+    void warnings();
+    void privateClass();
+
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -512,6 +517,7 @@ private:
 
 private:
     QString qtIncludePath;
+    class PrivateClass;
 };
 
 void tst_Moc::initTestCase()
@@ -1386,6 +1392,31 @@ void tst_Moc::notifyError()
 #endif
 }
 
+class QTBUG_17635_InvokableAndProperty : public QObject
+{
+    Q_OBJECT
+public:
+    Q_PROPERTY(int numberOfEggs READ numberOfEggs)
+    Q_PROPERTY(int numberOfChickens READ numberOfChickens)
+    Q_INVOKABLE QString getEgg(int index) { return QString::fromLatin1("Egg"); }
+    Q_INVOKABLE QString getChicken(int index) { return QString::fromLatin1("Chicken"); }
+    int numberOfEggs() { return 2; }
+    int numberOfChickens() { return 4; }
+};
+
+void tst_Moc::QTBUG17635_invokableAndProperty()
+{
+    //Moc used to fail parsing Q_INVOKABLE if they were dirrectly following a Q_PROPERTY;
+    QTBUG_17635_InvokableAndProperty mc;
+    QString val;
+    QMetaObject::invokeMethod(&mc, "getEgg", Q_RETURN_ARG(QString, val), Q_ARG(int, 10));
+    QCOMPARE(val, QString::fromLatin1("Egg"));
+    QMetaObject::invokeMethod(&mc, "getChicken", Q_RETURN_ARG(QString, val), Q_ARG(int, 10));
+    QCOMPARE(val, QString::fromLatin1("Chicken"));
+    QVERIFY(mc.metaObject()->indexOfProperty("numberOfEggs") != -1);
+    QVERIFY(mc.metaObject()->indexOfProperty("numberOfChickens") != -1);
+}
+
 // If changed, update VersionTestNotify below
 class VersionTest : public QObject
 {
@@ -1498,8 +1529,145 @@ void tst_Moc::revisions()
     revisions_T<VersionTestNotify>();
 }
 
+void tst_Moc::warnings_data()
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<QStringList>("args");
+    QTest::addColumn<int>("exitCode");
+    QTest::addColumn<QString>("expectedStdOut");
+    QTest::addColumn<QString>("expectedStdErr");
+
+    // empty input should result in "no relevant classes" note
+    QTest::newRow("No relevant classes")
+        << QByteArray(" ")
+        << QStringList()
+        << 0
+        << QString()
+        << QString("standard input:0: Note: No relevant classes found. No output generated.");
+
+    // passing "-nn" should suppress "no relevant classes" note
+    QTest::newRow("-nn")
+        << QByteArray(" ")
+        << (QStringList() << "-nn")
+        << 0
+        << QString()
+        << QString();
+
+    // passing "-nw" should also suppress "no relevant classes" note
+    QTest::newRow("-nw")
+        << QByteArray(" ")
+        << (QStringList() << "-nw")
+        << 0
+        << QString()
+        << QString();
+
+    // This should output a warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << QStringList()
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+
+    // Passing "-nn" should NOT suppress the warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << (QStringList() << "-nn")
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+
+    // Passing "-nw" should suppress the warning
+    QTest::newRow("Invalid property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
+        << (QStringList() << "-nw")
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString();
+
+    // This should output an error
+    QTest::newRow("Does not inherit QObject")
+        << QByteArray("class X { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    // "-nn" should not suppress the error
+    QTest::newRow("Does not inherit QObject with -nn")
+        << QByteArray("class X { Q_OBJECT };")
+        << (QStringList() << "-nn")
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    // "-nw" should not suppress the error
+    QTest::newRow("Does not inherit QObject with -nn")
+        << QByteArray("class X { Q_OBJECT };")
+        << (QStringList() << "-nw")
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+}
+
+void tst_Moc::warnings()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+
+    QFETCH(QByteArray, input);
+    QFETCH(QStringList, args);
+    QFETCH(int, exitCode);
+    QFETCH(QString, expectedStdOut);
+    QFETCH(QString, expectedStdErr);
+
+#ifdef Q_CC_MSVC
+    // for some reasons, moc compiled with MSVC uses a different output format
+    QRegExp lineNumberRe(":(\\d+):");
+    lineNumberRe.setMinimal(true);
+    expectedStdErr.replace(lineNumberRe, "(\\1):");
+#endif
+
+    QProcess proc;
+    proc.start("moc", args);
+    QVERIFY(proc.waitForStarted());
+
+    QCOMPARE(proc.write(input), qint64(input.size()));
+
+    proc.closeWriteChannel();
+
+    QVERIFY(proc.waitForFinished());
+
+    QCOMPARE(proc.exitCode(), exitCode);
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+
+    // magic value "IGNORE_ALL_STDOUT" ignores stdout
+    if (expectedStdOut != "IGNORE_ALL_STDOUT")
+        QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardOutput()).trimmed(), expectedStdOut);
+    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed(), expectedStdErr);
+
+    }
+
+class tst_Moc::PrivateClass : public QObject {
+    Q_PROPERTY(int someProperty READ someSlot WRITE someSlot2)
+Q_OBJECT
+Q_SIGNALS:
+    void someSignal();
+public Q_SLOTS:
+    int someSlot() { return 1; }
+    void someSlot2(int) {}
+public:
+    Q_INVOKABLE PrivateClass()  {}
+};
+
+void tst_Moc::privateClass()
+{
+    QVERIFY(PrivateClass::staticMetaObject.indexOfConstructor("PrivateClass()") == 0);
+    QVERIFY(PrivateClass::staticMetaObject.indexOfSignal("someSignal()") > 0);
+}
+
+
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
-
-
 

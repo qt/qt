@@ -139,6 +139,8 @@ private:
     const QMetaObject *mobj;
     uint handle;
     friend struct QMetaObject;
+    friend struct QMetaObjectPrivate;
+    friend class QObject;
 };
 Q_DECLARE_TYPEINFO(QMetaMethod, Q_MOVABLE_TYPE);
 

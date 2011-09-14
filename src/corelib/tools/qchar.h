@@ -105,7 +105,7 @@ public:
 
     enum Category
     {
-        NoCategory,
+        NoCategory,    // ### Qt 5: replace with Other_NotAssigned
 
         Mark_NonSpacing,          //   Mn
         Mark_SpacingCombining,    //   Mc
@@ -144,7 +144,7 @@ public:
         Symbol_Modifier,          //   Sk
         Symbol_Other,             //   So
 
-        Punctuation_Dask = Punctuation_Dash // oops
+        Punctuation_Dask = Punctuation_Dash // ### Qt 5: remove
     };
 
     enum Direction
@@ -210,7 +210,7 @@ public:
     };
 
     enum UnicodeVersion {
-        Unicode_Unassigned,
+        Unicode_Unassigned,    // ### Qt 5: assign with some constantly big value
         Unicode_1_1,
         Unicode_2_0,
         Unicode_2_1_2,
@@ -333,6 +333,8 @@ public:
 
     static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4);
     static UnicodeVersion QT_FASTCALL unicodeVersion(ushort ucs2);
+
+    static UnicodeVersion QT_FASTCALL currentUnicodeVersion();
 
     static QString QT_FASTCALL decomposition(uint ucs4);
 

@@ -61,8 +61,6 @@ static void report_error(int code, const char *where, const char *what)
         qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
 }
 
-
-
 class QWaitConditionPrivate {
 public:
     pthread_mutex_t mutex;

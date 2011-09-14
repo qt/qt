@@ -14,4 +14,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS xmlpatterns.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

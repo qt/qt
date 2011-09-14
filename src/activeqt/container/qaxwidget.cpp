@@ -1163,7 +1163,7 @@ HRESULT WINAPI QAxClientSite::InsertMenus(HMENU /*hmenuShared*/, LPOLEMENUGROUPW
     AX_DEBUG(QAxClientSite::InsertMenus);
     QMenuBar *mb = menuBar;
     if (!mb)
-        mb = qFindChild<QMenuBar*>(widget->window());
+        mb = widget->window()->findChild<QMenuBar*>();
     if (!mb)
         return E_NOTIMPL;
     menuBar = mb;
@@ -1309,7 +1309,7 @@ HRESULT WINAPI QAxClientSite::SetMenu(HMENU hmenuShared, HOLEMENU holemenu, HWND
         m_menuOwner = hwndActiveObject;
         QMenuBar *mb = menuBar;
         if (!mb)
-            mb = qFindChild<QMenuBar*>(widget->window());
+            mb = widget->window()->findChild<QMenuBar*>();
         if (!mb)
             return E_NOTIMPL;
         menuBar = mb;

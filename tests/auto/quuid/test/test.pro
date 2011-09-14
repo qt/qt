@@ -15,14 +15,14 @@ CONFIG(debug_and_release_target) {
 }
 
 wince* {
-   addFile_processUniqueness.sources = $$OUT_PWD/../testProcessUniqueness/testProcessUniqueness.exe 
+   addFile_processUniqueness.files = $$OUT_PWD/../testProcessUniqueness/testProcessUniqueness.exe 
    addFile_processUniqueness.path = testProcessUniqueness
 
    DEPLOYMENT += addFile_processUniqueness
 }
 
 symbian {
-   binDep.sources = testProcessUniqueness.exe
+   binDep.files = testProcessUniqueness.exe
    binDep.path = \\sys\\bin
 
    DEPLOYMENT += binDep

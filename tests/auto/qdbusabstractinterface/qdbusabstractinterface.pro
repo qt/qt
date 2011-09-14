@@ -1,15 +1,10 @@
 load(qttest_p4)
-QT = core
-contains(QT_CONFIG,dbus): { 
-    SOURCES += tst_qdbusabstractinterface.cpp interface.cpp
-    HEADERS += interface.h
-    QT += dbus
-
-    # These are generated sources
-    # To regenerate, see the command-line at the top of the files
-    SOURCES += pinger.cpp
-    HEADERS += pinger.h
+contains(QT_CONFIG,dbus): {
+    TEMPLATE = subdirs
+    CONFIG += ordered
+    SUBDIRS = qpinger test
+} else {
+    SOURCES += ../qdbusmarshall/dummy.cpp
 }
-else:SOURCES += ../qdbusmarshall/dummy.cpp
 
 OTHER_FILES += com.trolltech.QtDBus.Pinger.xml

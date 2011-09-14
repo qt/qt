@@ -62,7 +62,6 @@ extern void qt_event_request_window_change(QWidget *); // qapplication_mac.mm
 extern void qt_mac_send_posted_gl_updates(QWidget *widget); // qapplication_mac.mm
 
 Q_GLOBAL_STATIC(QPointer<QWidget>, currentDragTarget);
-
 QT_END_NAMESPACE
 
 - (id)initWithContentRect:(NSRect)contentRect
@@ -140,16 +139,6 @@ QT_END_NAMESPACE
     qt_dispatchTabletProximityEvent(tabletEvent);
 }
 
-- (void)qtDispatcherToQAction:(id)sender
-{
-    // If this window is modal, the menu bar will be modally shaddowed.
-    // In that case, since the window will be in the first responder chain,
-    // we can still catch the trigger here and forward it to the menu bar.
-    // This is needed as a single modal dialog on Qt should be able to access
-    // the application menu (e.g. quit).
-    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
-}
-
 - (void)terminate:(id)sender
 {
     // This function is called from the quit item in the menubar when this window
@@ -173,77 +162,27 @@ QT_END_NAMESPACE
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if ([event type] == NSApplicationDefined) {
-        switch ([event subtype]) {
-            case QtCocoaEventSubTypePostMessage:
-                [NSApp qt_sendPostedMessage:event];
-                return;
-            default:
-                break;
-        }
-        return;
-    }
-
-    QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    // Cocoa can hold onto the window after we've disavowed its knowledge. So,
-    // if we get sent an event afterwards just have it go through the super's
-    // version and don't do any stuff with Qt.
-    if (!widget) {
-        [super sendEvent:event];
-        return;
-    }
-
     [self retain];
-    QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
-    Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
 
     bool handled = false;
-    // sometimes need to redirect mouse events to the popup.
-    QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup && popup != widget) {
-        switch([event type])
-        {
-        case NSLeftMouseDown:
-            if (!qt_button_down)
-                qt_button_down = widget;
-            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
-            // Don't call super here. This prevents us from getting the mouseUp event,
-            // which we need to send even if the mouseDown event was not accepted.
-            // (this is standard Qt behavior.)
-            break;
-        case NSRightMouseDown:
-        case NSOtherMouseDown:
-            if (!qt_button_down)
-                qt_button_down = widget;
-            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
-            break;
-        case NSLeftMouseUp:
-        case NSRightMouseUp:
-        case NSOtherMouseUp:
-            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonRelease, mouseButton);
-            qt_button_down = 0;
-            break;
-        case NSMouseMoved:
-            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, Qt::NoButton);
-            break;
-        case NSLeftMouseDragged:
-        case NSRightMouseDragged:
-        case NSOtherMouseDragged:
-            [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->view = view;
-            [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->theEvent = event;
-            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, mouseButton);
-            break;
-        default:
-            [super sendEvent:event];
-            break;
-        }
-    } else {
-        [super sendEvent:event];
+    switch([event type]) {
+    case NSMouseMoved:
+        // Cocoa sends move events to a parent and all its children under the mouse, much
+        // like Qt handles hover events. But we only want to handle the move event once, so
+        // to optimize a bit (since we subscribe for move event for all views), we handle it
+        // here before this logic happends. Note: it might be tempting to do this shortcut for
+        // all mouse events. The problem is that Cocoa does more than just find the correct view
+        // when sending the event, like raising windows etc. So avoid it as much as possible:
+        handled = qt_mac_handleMouseEvent(event, QEvent::MouseMove, Qt::NoButton, 0);
+        break;
+    default:
+        break;
     }
 
-    if (!handled)
-        qt_mac_dispatchNCMouseMessage(self, event, [self QT_MANGLE_NAMESPACE(qt_qwidget)], leftButtonIsRightButton);
-
+    if (!handled) {
+        [super sendEvent:event];
+        qt_mac_handleNonClientAreaMouseEvent(self, event);
+    }
     [self release];
 }
 
@@ -276,6 +215,56 @@ QT_END_NAMESPACE
     return [super frameViewClassForStyleMask:styleMask];
 }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+- (void)touchesBeganWithEvent:(NSEvent *)event;
+{
+    QPoint qlocal, qglobal;
+    QWidget *widgetToGetTouch = 0;
+    qt_mac_getTargetForMouseEvent(event, QEvent::Gesture, qlocal, qglobal, 0, &widgetToGetTouch);
+    if (!widgetToGetTouch)
+        return;
+
+    bool all = widgetToGetTouch->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(widgetToGetTouch, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event;
+{
+    QPoint qlocal, qglobal;
+    QWidget *widgetToGetTouch = 0;
+    qt_mac_getTargetForMouseEvent(event, QEvent::Gesture, qlocal, qglobal, 0, &widgetToGetTouch);
+    if (!widgetToGetTouch)
+        return;
+
+    bool all = widgetToGetTouch->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(widgetToGetTouch, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event;
+{
+    QPoint qlocal, qglobal;
+    QWidget *widgetToGetTouch = 0;
+    qt_mac_getTargetForMouseEvent(event, QEvent::Gesture, qlocal, qglobal, 0, &widgetToGetTouch);
+    if (!widgetToGetTouch)
+        return;
+
+    bool all = widgetToGetTouch->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(widgetToGetTouch, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event;
+{
+    QPoint qlocal, qglobal;
+    QWidget *widgetToGetTouch = 0;
+    qt_mac_getTargetForMouseEvent(event, QEvent::Gesture, qlocal, qglobal, 0, &widgetToGetTouch);
+    if (!widgetToGetTouch)
+        return;
+
+    bool all = widgetToGetTouch->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(widgetToGetTouch, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
+}
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+
 -(void)registerDragTypes
 {
     // Calling registerForDraggedTypes below is slow, so only do
@@ -298,21 +287,47 @@ QT_END_NAMESPACE
                        NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
         for (int i = 0; i < customTypes.size(); i++) {
-           [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
+           [supportedTypes addObject:qt_mac_QStringToNSString(customTypes[i])];
         }
         [self registerForDraggedTypes:supportedTypes];
     }
 }
 
-- (QWidget *)dragTargetHitTest:(id <NSDraggingInfo>)sender
+- (void)removeDropData
 {
-    // Do a hittest to find the NSView under the
-    // mouse, and return the corresponding QWidget:
-    NSPoint windowPoint = [sender draggingLocation];
-    NSView *candidateView = [[self contentView] hitTest:windowPoint];
-    if (![candidateView isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]])
-        return 0;
-    return [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(candidateView) qt_qwidget];
+    if (dropData) {
+        delete dropData;
+        dropData = 0;
+    }
+}
+
+- (void)addDropData:(id <NSDraggingInfo>)sender
+{
+    [self removeDropData];
+    CFStringRef dropPasteboard = (CFStringRef) [[sender draggingPasteboard] name];
+    dropData = new QCocoaDropData(dropPasteboard);
+}
+
+- (void)changeDraggingCursor:(NSDragOperation)newOperation
+{
+    static SEL action = nil;
+    static bool operationSupported = false;
+    if (action == nil) {
+        action = NSSelectorFromString(@"operationNotAllowedCursor");
+        if ([NSCursor respondsToSelector:action]) {
+            operationSupported = true;
+        }
+    }
+    if (operationSupported) {
+        NSCursor *notAllowedCursor = [NSCursor performSelector:action];
+        bool isNotAllowedCursor = ([NSCursor currentCursor] == notAllowedCursor);
+        if (newOperation == NSDragOperationNone && !isNotAllowedCursor) {
+            [notAllowedCursor push];
+        } else if (newOperation != NSDragOperationNone && isNotAllowedCursor) {
+            [notAllowedCursor pop];
+        }
+
+    }
 }
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
@@ -325,80 +340,211 @@ QT_END_NAMESPACE
     // registerForDraggedTypes on the views will severly degrade initialization time
     // for an application that uses a lot of drag subscribing widgets.
 
-    QWidget *target = [self dragTargetHitTest:sender];
-    if (!target)
+    NSPoint nswindowPoint = [sender draggingLocation];
+    NSPoint nsglobalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:nswindowPoint];
+    QPoint globalPoint = flipPoint(nsglobalPoint).toPoint();
+
+    QWidget *qwidget = QApplication::widgetAt(globalPoint);
+    *currentDragTarget() = qwidget;
+    if (!qwidget)
         return NSDragOperationNone;
-    if (target->testAttribute(Qt::WA_DropSiteRegistered) == false)
+    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
         return NSDragOperationNone;
 
-    *currentDragTarget() = target;
-    return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingEntered:sender];
+    [self addDropData:sender];
+
+    QMimeData *mimeData = dropData;
+    if (QDragManager::self()->source())
+        mimeData = QDragManager::self()->dragPrivate()->data;
+
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+
+    if ([sender draggingSource] != nil) {
+        // modifier flags might have changed, update it here since we don't send any input events.
+        QApplicationPrivate::modifier_buttons = qt_cocoaModifiers2QtModifiers([[NSApp currentEvent] modifierFlags]);
+        modifiers = QApplication::keyboardModifiers();
+    } else {
+        // when the source is from another application the above technique will not work.
+        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+    }
+
+    // send the drag enter event to the widget.
+    QPoint localPoint(qwidget->mapFromGlobal(globalPoint));
+    QDragEnterEvent qDEEvent(localPoint, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
+    QApplication::sendEvent(qwidget, &qDEEvent);
+
+    if (!qDEEvent.isAccepted()) {
+        // The enter event was not accepted. We mark this by removing
+        // the drop data so we don't send subsequent drag move events:
+        [self removeDropData];
+        [self changeDraggingCursor:NSDragOperationNone];
+        return NSDragOperationNone;
+    } else {
+        // Send a drag move event immediately after a drag enter event (as per documentation).
+        QDragMoveEvent qDMEvent(localPoint, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
+        qDMEvent.setDropAction(qDEEvent.dropAction());
+        qDMEvent.accept(); // accept by default, since enter event was accepted.
+        QApplication::sendEvent(qwidget, &qDMEvent);
+
+        if (!qDMEvent.isAccepted() || qDMEvent.dropAction() == Qt::IgnoreAction) {
+            // Since we accepted the drag enter event, the widget expects
+            // future drage move events.
+            nsActions = NSDragOperationNone;
+            // Save as ignored in the answer rect.
+            qDMEvent.setDropAction(Qt::IgnoreAction);
+        } else {
+            nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDMEvent.dropAction());
+        }
+
+        QT_PREPEND_NAMESPACE(qt_mac_copy_answer_rect)(qDMEvent);
+        [self changeDraggingCursor:nsActions];
+        return nsActions;
+    }
  }
 
-- (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
 {
-    QWidget *target = [self dragTargetHitTest:sender];
-    if (!target)
+    NSPoint nswindowPoint = [sender draggingLocation];
+    NSPoint nsglobalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:nswindowPoint];
+    QPoint globalPoint = flipPoint(nsglobalPoint).toPoint();
+
+    QWidget *qwidget = QApplication::widgetAt(globalPoint);
+    if (!qwidget)
         return NSDragOperationNone;
 
-    if (target == *currentDragTarget()) {
-        // The drag continues to move over the widget that we have sendt
-        // a draggingEntered message to. So just update the view:
-        return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingUpdated:sender];
-    } else {
-        // The widget under the mouse has changed.
-        // So we need to fake enter/leave events:
-        if (*currentDragTarget())
-            [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingExited:sender];
-        if (target->testAttribute(Qt::WA_DropSiteRegistered) == false) {
-            *currentDragTarget() = 0;
-            return NSDragOperationNone;
+    // First, check if the widget under the mouse has changed since the
+    // last drag move events. If so, we need to change target, and dispatch
+    // syntetic drag enter/leave events:
+    if (qwidget != *currentDragTarget()) {
+        if (*currentDragTarget() && dropData) {
+            QDragLeaveEvent de;
+            QApplication::sendEvent(*currentDragTarget(), &de);
+            [self removeDropData];
         }
-        *currentDragTarget() = target;
-        return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingEntered:sender];
+        return [self draggingEntered:sender];
     }
+
+    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
+        return NSDragOperationNone;
+
+    // If we have no drop data (which will be assigned inside draggingEntered), it means
+    // that the current drag target did not accept the enter event. If so, we ignore
+    // subsequent move events as well:
+    if (dropData == 0) {
+        [self changeDraggingCursor:NSDragOperationNone];
+        return NSDragOperationNone;
+    }
+
+    // If the mouse is still within the accepted rect (provided by
+    // the application on a previous event), we follow the optimization
+    // and just return the answer given at that point:
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
+    QPoint localPoint(qwidget->mapFromGlobal(globalPoint));
+    if (qt_mac_mouse_inside_answer_rect(localPoint)
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions) {
+        NSDragOperation operation = QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
+        [self changeDraggingCursor:operation];
+        return operation;
+    }
+
+    QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
+    Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
+    Qt::KeyboardModifiers modifiers  = Qt::NoModifier;
+
+    // Update modifiers:
+    if ([sender draggingSource] != nil) {
+        QApplicationPrivate::modifier_buttons = qt_cocoaModifiers2QtModifiers([[NSApp currentEvent] modifierFlags]);
+        modifiers = QApplication::keyboardModifiers();
+    } else {
+        modifiers = qt_cocoaDragOperation2QtModifiers(nsActions);
+    }
+
+    QMimeData *mimeData = dropData;
+    if (QDragManager::self()->source())
+        mimeData = QDragManager::self()->dragPrivate()->data;
+
+    // Insert the same drop action on the event according to
+    // what the application told us it should be on the previous event:
+    QDragMoveEvent qDMEvent(localPoint, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
+    if (QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction != Qt::IgnoreAction
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).buttons == qDMEvent.mouseButtons()
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).modifiers == qDMEvent.keyboardModifiers())
+        qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
+
+    // Now, end the drag move event to the widget:
+    qDMEvent.accept();
+    QApplication::sendEvent(qwidget, &qDMEvent);
+
+    NSDragOperation operation = qt_mac_mapDropAction(qDMEvent.dropAction());
+    if (!qDMEvent.isAccepted() || qDMEvent.dropAction() == Qt::IgnoreAction) {
+        // Ignore this event (we will still receive further
+        // notifications), save as ignored in the answer rect:
+        operation = NSDragOperationNone;
+        qDMEvent.setDropAction(Qt::IgnoreAction);
+    }
+
+    qt_mac_copy_answer_rect(qDMEvent);
+    [self changeDraggingCursor:operation];
+
+    return operation;
 }
 
-- (void)draggingExited:(id < NSDraggingInfo >)sender
+- (void)draggingExited:(id <NSDraggingInfo>)sender
 {
-    QWidget *target = [self dragTargetHitTest:sender];
-    if (!target)
+    NSPoint nswindowPoint = [sender draggingLocation];
+    NSPoint nsglobalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:nswindowPoint];
+    QPoint globalPoint = flipPoint(nsglobalPoint).toPoint();
+
+    QWidget *qwidget = *currentDragTarget();
+    if (!qwidget)
         return;
 
-    if (*currentDragTarget()) {
-        [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingExited:sender];
-        *currentDragTarget() = 0;
+    if (dropData) {
+        QDragLeaveEvent de;
+        QApplication::sendEvent(qwidget, &de);
+        [self removeDropData];
     }
+
+    // Clean-up:
+    [self removeDropData];
+    *currentDragTarget() = 0;
+    [self changeDraggingCursor:NSDragOperationEvery];
 }
 
-- (BOOL)performDragOperation:(id < NSDraggingInfo >)sender
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-    QWidget *target = [self dragTargetHitTest:sender];
-    if (!target)
+    QWidget *qwidget = *currentDragTarget();
+    if (!qwidget)
         return NO;
 
-    BOOL dropResult = NO;
-    if (*currentDragTarget()) {
-        dropResult = [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) performDragOperation:sender];
-        *currentDragTarget() = 0;
-    }
-    return dropResult;
-}
+    *currentDragTarget() = 0;
+    NSPoint nswindowPoint = [sender draggingLocation];
+    NSPoint nsglobalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:nswindowPoint];
+    QPoint globalPoint = flipPoint(nsglobalPoint).toPoint();
 
-- (void)displayIfNeeded
-{
+    [self addDropData:sender];
 
-    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    if (qwidget == 0) {
-        [super displayIfNeeded];
-        return;
-    }
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
+    QMimeData *mimeData = dropData;
 
-    if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qt_widget_private(qwidget)->maybeBackingStore())
-            bs->sync(qwidget, qwidget->rect());
-    }
-    [super displayIfNeeded];
+    if (QDragManager::self()->source())
+        mimeData = QDragManager::self()->dragPrivate()->data;
+    if (QDragManager::self()->object)
+        QDragManager::self()->dragPrivate()->target = qwidget;
+
+    QPoint localPoint(qwidget->mapFromGlobal(globalPoint));
+    QDropEvent de(localPoint, qtAllowed, mimeData,
+                  QApplication::mouseButtons(), QApplication::keyboardModifiers());
+    QApplication::sendEvent(qwidget, &de);
+
+    if (QDragManager::self()->object)
+        QDragManager::self()->dragPrivate()->executed_action = de.dropAction();
+
+    return de.isAccepted();
 }
 
 // This is a hack and it should be removed once we find the real cause for
@@ -433,8 +579,8 @@ static bool firstDrawingInvocation = true;
 - (void)drawRectSpecial:(NSRect)rect
 {
     // Call the original drawing method.
-    [self drawRectOriginal:rect];
-    NSWindow *window = [self window];
+    [id(self) drawRectOriginal:rect];
+    NSWindow *window = [id(self) window];
     NSToolbar *toolbar = [window toolbar];
     if(!toolbar) {
         // There is no toolbar, we have to draw a line on top of the line drawn by Cocoa.
@@ -454,3 +600,11 @@ static bool firstDrawingInvocation = true;
         }
     }
 }
+
+- (void)drawRectOriginal:(NSRect)rect
+{
+    Q_UNUSED(rect)
+    // This method implementation is here to silenct the compiler.
+    // See drawRectSpecial for information.
+}
+

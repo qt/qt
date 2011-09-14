@@ -58,6 +58,8 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
 
+#include <QtCore/QStringBuilder>
+
 #ifndef QT_NO_XMLSTREAMREADER
 
 // From DOM-Level-3-Core spec
@@ -510,7 +512,7 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
     node.d = data;
     if (data) A(data);
 
-    return engine->newVariant(instance, qVariantFromValue(node));
+    return engine->newVariant(instance, QVariant::fromValue(node));
 }
 
 QScriptValue Element::prototype(QScriptEngine *engine)
@@ -710,7 +712,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QByteArray &data)
     instance.setPrototype(Document::prototype(engine));
     Node documentNode;
     documentNode.d = document;
-    return engine->newVariant(instance, qVariantFromValue(documentNode));
+    return engine->newVariant(instance, QVariant::fromValue(documentNode));
 }
 
 Node::Node()
@@ -761,7 +763,7 @@ QScriptValue NamedNodeMap::create(QScriptEngine *engine, NodeImpl *data, QList<N
     map.list = list;
     if (data) A(data);
 
-    instance.setData(engine->newVariant(qVariantFromValue(map)));
+    instance.setData(engine->newVariant(QVariant::fromValue(map)));
 
     if (!QDeclarativeScriptEngine::get(engine)->namedNodeMapClass)
         QDeclarativeScriptEngine::get(engine)->namedNodeMapClass= new NamedNodeMapClass(engine);
@@ -818,7 +820,7 @@ QScriptValue NodeList::create(QScriptEngine *engine, NodeImpl *data)
     list.d = data;
     if (data) A(data);
 
-    instance.setData(engine->newVariant(qVariantFromValue(list)));
+    instance.setData(engine->newVariant(QVariant::fromValue(list)));
 
     if (!QDeclarativeScriptEngine::get(engine)->nodeListClass)
         QDeclarativeScriptEngine::get(engine)->nodeListClass= new NodeListClass(engine);
@@ -1090,10 +1092,9 @@ QString QDeclarativeXMLHttpRequest::headers()
 
     foreach (const HeaderPair &header, m_headersList) {
         if (ret.length())
-            ret.append(QString::fromUtf8("\r\n"));
-        ret.append(QString::fromUtf8(header.first));
-        ret.append(QString::fromUtf8(": "));
-        ret.append(QString::fromUtf8(header.second));
+            ret.append(QLatin1String("\r\n"));
+        ret = ret % QString::fromUtf8(header.first) % QLatin1String(": ")
+                % QString::fromUtf8(header.second);
     }
     return ret;
 }
@@ -1105,9 +1106,9 @@ void QDeclarativeXMLHttpRequest::fillHeadersList()
     m_headersList.clear();
     foreach (const QByteArray &header, headerList) {
         HeaderPair pair (header.toLower(), m_network->rawHeader(header));
-	if (pair.first == "set-cookie" ||
-	    pair.first == "set-cookie2") 
-	    continue;
+        if (pair.first == "set-cookie" ||
+            pair.first == "set-cookie2")
+            continue;
 
         m_headersList << pair;
     }

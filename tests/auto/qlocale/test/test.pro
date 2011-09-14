@@ -22,7 +22,7 @@ QT += network
 embedded: QT += gui
 
 wince*: {
-   addFiles.sources = \
+   addFiles.files = \
         ../syslocaleapp
 
    addFiles.path = "\\Program Files\\tst_qlocale"

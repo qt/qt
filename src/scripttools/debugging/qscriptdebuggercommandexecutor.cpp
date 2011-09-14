@@ -229,11 +229,11 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
 
     case QScriptDebuggerCommand::ScriptsCheckpoint:
         backend->scriptsCheckpoint();
-        response.setResult(qVariantFromValue(backend->scriptsDelta()));
+        response.setResult(QVariant::fromValue(backend->scriptsDelta()));
         break;
 
     case QScriptDebuggerCommand::GetScriptsDelta:
-        response.setResult(qVariantFromValue(backend->scriptsDelta()));
+        response.setResult(QVariant::fromValue(backend->scriptsDelta()));
         break;
 
     case QScriptDebuggerCommand::ResolveScript:
@@ -302,7 +302,7 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
     }   break;
 
     case QScriptDebuggerCommand::ContextsCheckpoint: {
-        response.setResult(qVariantFromValue(backend->contextsCheckpoint()));
+        response.setResult(QVariant::fromValue(backend->contextsCheckpoint()));
     }   break;
 
     case QScriptDebuggerCommand::GetPropertyExpressionValue: {
@@ -441,7 +441,7 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
             result.addedProperties.append(dest);
         }
         backend->setIgnoreExceptions(didIgnoreExceptions);
-        response.setResult(qVariantFromValue(result));
+        response.setResult(QVariant::fromValue(result));
     }   break;
 
     case QScriptDebuggerCommand::DeleteScriptObjectSnapshot: {

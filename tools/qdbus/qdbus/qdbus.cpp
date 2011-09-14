@@ -59,7 +59,7 @@ static bool printArgumentsLiterally = false;
 
 static void showUsage()
 {
-    printf("Usage: qdbus [--system] [--literal] [servicename] [path] [method] [args]\n"
+    printf("Usage: qdbus [--system | --address ADDRESS] [--literal] [servicename] [path] [method] [args]\n"
            "\n"
            "  servicename       the service to connect to (e.g., org.freedesktop.DBus)\n"
            "  path              the path to the object (e.g., /)\n"
@@ -71,6 +71,7 @@ static void showUsage()
            "\n"
            "Options:\n"
            "  --system          connect to the system bus\n"
+           "  --address ADDRESS connect to the given bus\n"
            "  --literal         print replies literally\n");
 }
 
@@ -332,7 +333,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                 if (id == int(QMetaType::UChar)) {
                     // special case: QVariant::convert doesn't convert to/from
                     // UChar because it can't decide if it's a character or a number
-                    p = qVariantFromValue<uchar>(p.toUInt());
+                    p = QVariant::fromValue<uchar>(p.toUInt());
                 } else if (id < int(QMetaType::User) && id != int(QVariant::Map)) {
                     p.convert(QVariant::Type(id));
                     if (p.type() == QVariant::Invalid) {
@@ -342,7 +343,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                     }
                 } else if (id == qMetaTypeId<QDBusVariant>()) {
                     QDBusVariant tmp(p);
-                    p = qVariantFromValue(tmp);
+                    p = QVariant::fromValue(tmp);
                 } else if (id == qMetaTypeId<QDBusObjectPath>()) {
                     QDBusObjectPath path(argument);
                     if (path.path().isNull()) {
@@ -350,7 +351,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                                 qPrintable(argument));
                         return 1;
                     }
-                    p = qVariantFromValue(path);
+                    p = QVariant::fromValue(path);
                 } else if (id == qMetaTypeId<QDBusSignature>()) {
                     QDBusSignature sig(argument);
                     if (sig.signature().isNull()) {
@@ -358,7 +359,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                                 qPrintable(argument));
                         return 1;
                     }
-                    p = qVariantFromValue(sig);
+                    p = QVariant::fromValue(sig);
                 } else {
                     fprintf(stderr, "Sorry, can't pass arg of type '%s'.\n",
                             types.at(i).constData());
@@ -454,6 +455,11 @@ int main(int argc, char **argv)
         if (arg == QLatin1String("--system")) {
             connection = QDBusConnection::systemBus();
             connectionOpened = true;
+        } else if (arg == QLatin1String("--address")) {
+            if (!args.isEmpty()) {
+                connection = QDBusConnection::connectToBus(args.takeFirst(), "bus");
+                connectionOpened = true;
+            }
         } else if (arg == QLatin1String("--literal")) {
             printArgumentsLiterally = true;
         } else if (arg == QLatin1String("--help")) {

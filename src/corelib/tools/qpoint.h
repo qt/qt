@@ -70,22 +70,30 @@ public:
 
     QPoint &operator+=(const QPoint &p);
     QPoint &operator-=(const QPoint &p);
-    QPoint &operator*=(qreal c);
+
+    QPoint &operator*=(float c);
+    QPoint &operator*=(double c);
+    QPoint &operator*=(int c);
+
     QPoint &operator/=(qreal c);
 
     friend inline bool operator==(const QPoint &, const QPoint &);
     friend inline bool operator!=(const QPoint &, const QPoint &);
     friend inline const QPoint operator+(const QPoint &, const QPoint &);
     friend inline const QPoint operator-(const QPoint &, const QPoint &);
-    friend inline const QPoint operator*(const QPoint &, qreal);
-    friend inline const QPoint operator*(qreal, const QPoint &);
+    friend inline const QPoint operator*(const QPoint &, float);
+    friend inline const QPoint operator*(float, const QPoint &);
+    friend inline const QPoint operator*(const QPoint &, double);
+    friend inline const QPoint operator*(double, const QPoint &);
+    friend inline const QPoint operator*(const QPoint &, int);
+    friend inline const QPoint operator*(int, const QPoint &);
     friend inline const QPoint operator-(const QPoint &);
     friend inline const QPoint operator/(const QPoint &, qreal);
 
 private:
     friend class QTransform;
     // ### Qt 5;  remove the ifdef and just have the same order on all platforms.
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     int yp;
     int xp;
 #else
@@ -141,8 +149,14 @@ inline QPoint &QPoint::operator+=(const QPoint &p)
 inline QPoint &QPoint::operator-=(const QPoint &p)
 { xp-=p.xp; yp-=p.yp; return *this; }
 
-inline QPoint &QPoint::operator*=(qreal c)
+inline QPoint &QPoint::operator*=(float c)
 { xp = qRound(xp*c); yp = qRound(yp*c); return *this; }
+
+inline QPoint &QPoint::operator*=(double c)
+{ xp = qRound(xp*c); yp = qRound(yp*c); return *this; }
+
+inline QPoint &QPoint::operator*=(int c)
+{ xp = xp*c; yp = yp*c; return *this; }
 
 inline bool operator==(const QPoint &p1, const QPoint &p2)
 { return p1.xp == p2.xp && p1.yp == p2.yp; }
@@ -156,11 +170,23 @@ inline const QPoint operator+(const QPoint &p1, const QPoint &p2)
 inline const QPoint operator-(const QPoint &p1, const QPoint &p2)
 { return QPoint(p1.xp-p2.xp, p1.yp-p2.yp); }
 
-inline const QPoint operator*(const QPoint &p, qreal c)
+inline const QPoint operator*(const QPoint &p, float c)
 { return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
 
-inline const QPoint operator*(qreal c, const QPoint &p)
+inline const QPoint operator*(const QPoint &p, double c)
 { return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+
+inline const QPoint operator*(const QPoint &p, int c)
+{ return QPoint(p.xp*c, p.yp*c); }
+
+inline const QPoint operator*(float c, const QPoint &p)
+{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+
+inline const QPoint operator*(double c, const QPoint &p)
+{ return QPoint(qRound(p.xp*c), qRound(p.yp*c)); }
+
+inline const QPoint operator*(int c, const QPoint &p)
+{ return QPoint(p.xp*c, p.yp*c); }
 
 inline const QPoint operator-(const QPoint &p)
 { return QPoint(-p.xp, -p.yp); }

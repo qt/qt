@@ -97,6 +97,10 @@ public:
     QString cacheDirectory() const { return m_cacheDirectory; }
     bool cacheDirRelativeToCollection() const { return m_cacheDirRelativeToCollection; }
 
+    bool fullTextSearchFallbackEnabled() const {
+        return m_enableFullTextSearchFallback;
+    }
+
 private:
     void raiseErrorWithLine();
     void readConfig();
@@ -125,6 +129,7 @@ private:
     QStringList m_filesToRegister;
     QString m_cacheDirectory;
     bool m_cacheDirRelativeToCollection;
+    bool m_enableFullTextSearchFallback;
 };
 
 void CollectionConfigReader::raiseErrorWithLine()
@@ -139,6 +144,7 @@ void CollectionConfigReader::readData(const QByteArray &contents)
     m_enableAddressBar = true;
     m_hideAddressBar = true;
     m_enableDocumentationManager = true;
+    m_enableFullTextSearchFallback = false;
 
     addData(contents);
     while (!atEnd()) {
@@ -212,6 +218,9 @@ void CollectionConfigReader::readAssistantSettings()
                     attributes().value(QLatin1String("base"))
                     == QLatin1String("collection");
                 m_cacheDirectory = readElementText();
+            } else if (name() == QLatin1String("enableFullTextSearchFallback")) {
+                if (readElementText() == QLatin1String("true"))
+                    m_enableFullTextSearchFallback = true;
             } else {
                 raiseErrorWithLine();
             }
@@ -513,6 +522,8 @@ int main(int argc, char *argv[])
          !config.hideAddressBar());
     CollectionConfiguration::setCreationTime(helpEngine,
         QDateTime::currentDateTime().toTime_t());
+    CollectionConfiguration::setFullTextSearchFallbackEnabled(helpEngine,
+        config.fullTextSearchFallbackEnabled());
 
     if (!config.applicationIcon().isEmpty()) {
         QFile icon(absoluteFileName(basePath, config.applicationIcon()));

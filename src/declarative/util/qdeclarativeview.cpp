@@ -49,6 +49,7 @@
 #include <qdeclarativeguard_p.h>
 
 #include <private/qdeclarativedebugtrace_p.h>
+#include <private/qdeclarativeinspectorservice_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -72,7 +73,6 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
-extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
 class QDeclarativeScene : public QGraphicsScene
 {
@@ -300,6 +300,8 @@ void QDeclarativeViewPrivate::init()
     q->viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
     q->viewport()->setAttribute(Qt::WA_NoSystemBackground);
 #endif
+
+    QDeclarativeInspectorService::instance()->addView(q);
 }
 
 /*!
@@ -307,6 +309,7 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
+    QDeclarativeInspectorService::instance()->removeView(this);
 }
 
 /*! \property QDeclarativeView::source
@@ -316,6 +319,8 @@ QDeclarativeView::~QDeclarativeView()
 
     Ensure that the URL provided is full and correct, in particular, use
     \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+
+    \sa {Network Transparency}{Loading Resources in QML}
  */
 
 /*!
@@ -559,7 +564,6 @@ void QDeclarativeView::continueExecute()
     emit statusChanged(status());
 }
 
-
 /*!
   \internal
 */
@@ -707,19 +711,29 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
     if (frameRateDebug())
         time = d->frameTimer.restart();
 
-#ifdef Q_WS_MAC
-    bool oldSmooth = qt_applefontsmoothing_enabled;
-    qt_applefontsmoothing_enabled = false;
-#endif
     QGraphicsView::paintEvent(event);
-#ifdef Q_WS_MAC
-    qt_applefontsmoothing_enabled = oldSmooth;
-#endif
 
     QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
+
+#if QT_SHOW_DECLARATIVEVIEW_FPS
+    static QTime timer;
+    static int frames;
+
+    if (frames == 0) {
+        timer.start();
+    } else if (timer.elapsed() > 5000) {
+        qreal avgtime = timer.elapsed() / (qreal) frames;
+        qDebug("Average time per frame: %f ms (%i fps)", avgtime, int(1000 / avgtime));
+        timer.start();
+        frames = 0;
+    }
+    ++frames;
+    scene()->update();
+#endif
+
 }
 
 QT_END_NAMESPACE

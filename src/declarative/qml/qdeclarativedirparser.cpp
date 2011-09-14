@@ -160,6 +160,16 @@ bool QDeclarativeDirParser::parse()
             Component entry(sections[1], sections[2], -1, -1);
             entry.internal = true;
             _components.append(entry);
+        } else if (sections[0] == QLatin1String("typeinfo")) {
+            if (sectionCount != 2) {
+                reportError(lineNumber, -1,
+                            QString::fromUtf8("typeinfo requires 1 argument, but %1 were provided").arg(sectionCount - 1));
+                continue;
+            }
+#ifdef QT_CREATOR
+            TypeInfo typeInfo(sections[1]);
+            _typeInfos.append(typeInfo);
+#endif
 
         } else if (sectionCount == 2) {
             // No version specified (should only be used for relative qmldir files)
@@ -228,5 +238,12 @@ QList<QDeclarativeDirParser::Component> QDeclarativeDirParser::components() cons
 {
     return _components;
 }
+
+#ifdef QT_CREATOR
+QList<QDeclarativeDirParser::TypeInfo> QDeclarativeDirParser::typeInfos() const
+{
+    return _typeInfos;
+}
+#endif
 
 QT_END_NAMESPACE

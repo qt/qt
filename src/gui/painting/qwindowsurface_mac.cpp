@@ -82,6 +82,7 @@ void QMacWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
     extern CGContextRef qt_mac_graphicsContextFor(QWidget *);
     CGContextRef context = qt_mac_graphicsContextFor(widget);
 #endif
+    CGContextRetain(context);
     CGContextSaveGState(context);
 
     // Flip context.
@@ -109,6 +110,7 @@ void QMacWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
 #else
     CGContextFlush(context);
 #endif
+    CGContextRelease(context);
 }
 
 void QMacWindowSurface::setGeometry(const QRect &rect)

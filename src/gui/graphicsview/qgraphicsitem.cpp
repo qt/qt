@@ -1171,24 +1171,26 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     // Update focus scope item ptr in new scope.
     QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
     if (newFocusScopeItem && newParent) {
-        if (subFocusItem) {
-            // Find the subFocusItem's topmost focus scope.
-            QGraphicsItem *ancestorScope = 0;
-            QGraphicsItem *p = subFocusItem->d_ptr->parent;
-            while (p) {
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
-                    ancestorScope = p;
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsPanel)
-                    break;
-                p = p->d_ptr->parent;
-            }
-            if (ancestorScope)
-                newFocusScopeItem = ancestorScope;
-        }
-
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
+                if (subFocusItem && subFocusItem != q_ptr) {
+                    // Find the subFocusItem's topmost focus scope within the new parent's focusscope
+                    QGraphicsItem *ancestorScope = 0;
+                    QGraphicsItem *p2 = subFocusItem->d_ptr->parent;
+                    while (p2 && p2 != p) {
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
+                            ancestorScope = p2;
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsPanel)
+                            break;
+                        if (p2 == q_ptr)
+                            break;
+                        p2 = p2->d_ptr->parent;
+                    }
+                    if (ancestorScope)
+                        newFocusScopeItem = ancestorScope;
+                }
+
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
                 newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
@@ -1710,12 +1712,12 @@ void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
         return;
 
     const QVariant newParentVariant(itemChange(QGraphicsItem::ItemParentChange,
-                                               qVariantFromValue<QGraphicsItem *>(newParent)));
-    newParent = qVariantValue<QGraphicsItem *>(newParentVariant);
+                                               QVariant::fromValue<QGraphicsItem *>(newParent)));
+    newParent = qvariant_cast<QGraphicsItem *>(newParentVariant);
     if (newParent == d_ptr->parent)
         return;
 
-    const QVariant thisPointerVariant(qVariantFromValue<QGraphicsItem *>(this));
+    const QVariant thisPointerVariant(QVariant::fromValue<QGraphicsItem *>(this));
     d_ptr->setParentItemHelper(newParent, &newParentVariant, &thisPointerVariant);
 }
 
@@ -2139,7 +2141,7 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
 */
 QCursor QGraphicsItem::cursor() const
 {
-    return qVariantValue<QCursor>(d_ptr->extra(QGraphicsItemPrivate::ExtraCursor));
+    return qvariant_cast<QCursor>(d_ptr->extra(QGraphicsItemPrivate::ExtraCursor));
 }
 
 /*!
@@ -2159,8 +2161,8 @@ QCursor QGraphicsItem::cursor() const
 */
 void QGraphicsItem::setCursor(const QCursor &cursor)
 {
-    const QVariant cursorVariant(itemChange(ItemCursorChange, qVariantFromValue<QCursor>(cursor)));
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraCursor, qVariantValue<QCursor>(cursorVariant));
+    const QVariant cursorVariant(itemChange(ItemCursorChange, QVariant::fromValue<QCursor>(cursor)));
+    d_ptr->setExtra(QGraphicsItemPrivate::ExtraCursor, qvariant_cast<QCursor>(cursorVariant));
     d_ptr->hasCursor = 1;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->allItemsUseDefaultCursor = false;
@@ -2286,7 +2288,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 
     // Schedule redrawing
     if (update) {
-        QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
+        QGraphicsItemCache *c = (QGraphicsItemCache *)qvariant_cast<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
         if (scene) {
@@ -3728,7 +3730,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
     }
 
     // Notify the item that the position is changing.
-    const QVariant newPosVariant(itemChange(ItemPositionChange, qVariantFromValue<QPointF>(pos)));
+    const QVariant newPosVariant(itemChange(ItemPositionChange, QVariant::fromValue<QPointF>(pos)));
     QPointF newPos = newPosVariant.toPointF();
     if (newPos == d_ptr->pos)
         return;
@@ -4082,7 +4084,7 @@ void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
     if (d_ptr->flags & ItemSendsGeometryChanges) {
         // Notify the item that the origin point is changing.
         const QVariant newOriginVariant(itemChange(ItemTransformOriginPointChange,
-                                                   qVariantFromValue<QPointF>(origin)));
+                                                   QVariant::fromValue<QPointF>(origin)));
         newOrigin = newOriginVariant.toPointF();
     }
 
@@ -4101,7 +4103,7 @@ void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
 
     // Send post-notification.
     if (d_ptr->flags & ItemSendsGeometryChanges)
-        itemChange(ItemTransformOriginPointHasChanged, qVariantFromValue<QPointF>(newOrigin));
+        itemChange(ItemTransformOriginPointHasChanged, QVariant::fromValue<QPointF>(newOrigin));
 }
 
 /*!
@@ -4363,8 +4365,8 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     }
 
     // Notify the item that the transformation matrix is changing.
-    const QVariant newMatrixVariant = qVariantFromValue<QMatrix>(newTransform.toAffine());
-    newTransform = QTransform(qVariantValue<QMatrix>(itemChange(ItemMatrixChange, newMatrixVariant)));
+    const QVariant newMatrixVariant = QVariant::fromValue<QMatrix>(newTransform.toAffine());
+    newTransform = QTransform(qvariant_cast<QMatrix>(itemChange(ItemMatrixChange, newMatrixVariant)));
     if (d_ptr->transformData->transform == newTransform)
         return;
 
@@ -4372,7 +4374,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     d_ptr->setTransformHelper(newTransform);
 
     // Send post-notification.
-    itemChange(ItemTransformHasChanged, qVariantFromValue<QTransform>(newTransform));
+    itemChange(ItemTransformHasChanged, QVariant::fromValue<QTransform>(newTransform));
 }
 
 /*!
@@ -4415,8 +4417,8 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 
     // Notify the item that the transformation matrix is changing.
     const QVariant newTransformVariant(itemChange(ItemTransformChange,
-                                                  qVariantFromValue<QTransform>(newTransform)));
-    newTransform = qVariantValue<QTransform>(newTransformVariant);
+                                                  QVariant::fromValue<QTransform>(newTransform)));
+    newTransform = qvariant_cast<QTransform>(newTransformVariant);
     if (d_ptr->transformData->transform == newTransform)
         return;
 
@@ -5269,7 +5271,7 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
 qreal QGraphicsItem::boundingRegionGranularity() const
 {
     return d_ptr->hasBoundingRegionGranularity
-        ? qVariantValue<qreal>(d_ptr->extra(QGraphicsItemPrivate::ExtraBoundingRegionGranularity))
+        ? qvariant_cast<qreal>(d_ptr->extra(QGraphicsItemPrivate::ExtraBoundingRegionGranularity))
         : 0;
 }
 
@@ -5305,7 +5307,7 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     }
     d_ptr->hasBoundingRegionGranularity = 1;
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraBoundingRegionGranularity,
-                    qVariantFromValue<qreal>(granularity));
+                    QVariant::fromValue<qreal>(granularity));
 }
 
 /*!
@@ -5480,7 +5482,7 @@ void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 */
 QGraphicsItemCache *QGraphicsItemPrivate::maybeExtraItemCache() const
 {
-    return (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
+    return (QGraphicsItemCache *)qvariant_cast<void *>(extra(ExtraCacheData));
 }
 
 /*!
@@ -5488,11 +5490,11 @@ QGraphicsItemCache *QGraphicsItemPrivate::maybeExtraItemCache() const
 */
 QGraphicsItemCache *QGraphicsItemPrivate::extraItemCache() const
 {
-    QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
+    QGraphicsItemCache *c = (QGraphicsItemCache *)qvariant_cast<void *>(extra(ExtraCacheData));
     if (!c) {
         QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
         c = new QGraphicsItemCache;
-        that->setExtra(ExtraCacheData, qVariantFromValue<void *>(c));
+        that->setExtra(ExtraCacheData, QVariant::fromValue<void *>(c));
     }
     return c;
 }
@@ -5502,7 +5504,7 @@ QGraphicsItemCache *QGraphicsItemPrivate::extraItemCache() const
 */
 void QGraphicsItemPrivate::removeExtraItemCache()
 {
-    QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
+    QGraphicsItemCache *c = (QGraphicsItemCache *)qvariant_cast<void *>(extra(ExtraCacheData));
     if (c) {
         c->purge();
         delete c;
@@ -7395,15 +7397,19 @@ void QGraphicsItem::updateMicroFocus()
     if (QWidget *fw = QApplication::focusWidget()) {
         if (scene()) {
             for (int i = 0 ; i < scene()->views().count() ; ++i) {
-                if (scene()->views().at(i) == fw)
-                    if (QInputContext *inputContext = fw->inputContext())
+                if (scene()->views().at(i) == fw) {
+                    if (QInputContext *inputContext = fw->inputContext()) {
                         inputContext->update();
+#ifndef QT_NO_ACCESSIBILITY
+                        // ##### is this correct
+                        if (toGraphicsObject())
+                            QAccessible::updateAccessibility(toGraphicsObject(), 0, QAccessible::StateChanged);
+#endif
+                        break;
+                    }
+                }
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
-        // ##### is this correct
-        QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
-#endif
     }
 #endif
 }
@@ -8126,6 +8132,8 @@ QPen QAbstractGraphicsShapeItem::pen() const
 void QAbstractGraphicsShapeItem::setPen(const QPen &pen)
 {
     Q_D(QAbstractGraphicsShapeItem);
+    if (d->pen == pen)
+        return;
     prepareGeometryChange();
     d->pen = pen;
     d->boundingRect = QRectF();
@@ -8156,6 +8164,8 @@ QBrush QAbstractGraphicsShapeItem::brush() const
 void QAbstractGraphicsShapeItem::setBrush(const QBrush &brush)
 {
     Q_D(QAbstractGraphicsShapeItem);
+    if (d->brush == brush)
+        return;
     d->brush = brush;
     update();
 }
@@ -9286,6 +9296,8 @@ QPen QGraphicsLineItem::pen() const
 void QGraphicsLineItem::setPen(const QPen &pen)
 {
     Q_D(QGraphicsLineItem);
+    if (d->pen == pen)
+        return;
     prepareGeometryChange();
     d->pen = pen;
     update();

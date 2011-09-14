@@ -62,7 +62,7 @@ void QParentWidget::createSubWidget(const QString &name)
 //! [1] //! [2]
 QSubWidget *QParentWidget::subWidget(const QString &name)
 {
-    return qFindChild<QSubWidget*>(this, name);
+    return findChild<QSubWidget*>(name);
 }
 
 //! [2]

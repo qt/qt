@@ -781,6 +781,23 @@ namespace Phonon
                 }
             }
 
+            const QList<OutputPin> demuxOutputs = BackendNode::pins(m_demux, PINDIR_OUTPUT);
+            for (int i = 0; i < demuxOutputs.count(); ++i) {
+                //...and the output must be decoded
+                QAMMediaType type;
+                hr = demuxOutputs.at(i)->ConnectionMediaType(&type);
+                if (FAILED(hr)) {
+                    continue;
+                }
+
+                if (type.majortype == MEDIATYPE_Video) {
+                    m_hasVideo = true;
+                } else if (type.majortype == MEDIATYPE_Audio) {
+                    m_hasAudio = true;
+                }
+            }
+
+
             for (int i = 0; i < m_decoders.count(); ++i) {
                 QList<Filter> chain = getFilterChain(m_demux, m_decoders.at(i));
                 for (int i = 0; i < chain.count(); ++i) {
@@ -806,14 +823,11 @@ namespace Phonon
             }
 
             //we need to do something smart to detect if the streams are unencoded
-            if (m_demux) {
-                const QList<OutputPin> outputs = BackendNode::pins(m_demux, PINDIR_OUTPUT);
-                for (int i = 0; i < outputs.count(); ++i) {
-                    const OutputPin &out = outputs.at(i);
-                    InputPin pin;
-                    if (out->ConnectedTo(pin.pparam()) == HRESULT(VFW_E_NOT_CONNECTED)) {
-                        m_decoderPins += out; //unconnected outputs can be decoded outputs
-                    }
+            for (int i = 0; i < demuxOutputs.count(); ++i) {
+                const OutputPin &out = demuxOutputs.at(i);
+                InputPin pin;
+                if (out->ConnectedTo(pin.pparam()) == HRESULT(VFW_E_NOT_CONNECTED)) {
+                    m_decoderPins += out; //unconnected outputs can be decoded outputs
                 }
             }
 

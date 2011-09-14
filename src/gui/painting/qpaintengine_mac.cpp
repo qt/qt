@@ -57,6 +57,8 @@
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
+#include <private/qfontengine_coretext_p.h>
+#include <private/qfontengine_mac_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qpainter_p.h>
 #include <private/qpainterpath_p.h>
@@ -98,7 +100,7 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
     int devType = p->device()->devType();
     if (pe->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget || devType == QInternal::Pixmap)) {
+            && (devType == QInternal::Widget || devType == QInternal::Pixmap || devType == QInternal::Image)) {
 
         extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
         CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
@@ -131,8 +133,9 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
             CGContextTranslateCTM(context, native.dx(), native.dy());
         }
+    } else {
+        CGContextRetain(context);
     }
-    CGContextRetain(context);
 }
 
 
@@ -1541,8 +1544,9 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
                 QPointF center(radialGrad->center());
                 QPointF focal(radialGrad->focalPoint());
                 qreal radius = radialGrad->radius();
+                qreal focalRadius = radialGrad->focalRadius();
                 shading = CGShadingCreateRadial(colorspace, CGPointMake(focal.x(), focal.y()),
-                                                0.0, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
+                                                focalRadius, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
             }
 
             CGFunctionRelease(fill_func);

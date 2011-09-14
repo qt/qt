@@ -119,10 +119,6 @@ const QStringList& qEnabledDraggedTypes()
  *****************************************************************************/
 //#define DEBUG_MIME_MAPS
 
-//functions
-extern QString qt_mac_from_pascal_string(const Str255);  //qglobal.cpp
-extern void qt_mac_from_pascal_string(QString, Str255, TextEncoding encoding=0, int len=-1);  //qglobal.cpp
-
 ScrapFlavorType qt_mac_mime_type = 'CUTE';
 CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
 

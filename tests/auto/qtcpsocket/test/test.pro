@@ -11,7 +11,10 @@ wince*: {
 QT += network
 vxworks:QT -= gui
 
-symbian: TARGET.EPOCHEAPSIZE="0x100 0x1000000"
+symbian: {
+    TARGET.EPOCHEAPSIZE="0x100 0x1000000"
+    TARGET.CAPABILITY = NetworkServices ReadUserData
+}
 
 TARGET = tst_qtcpsocket
 

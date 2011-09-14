@@ -75,6 +75,10 @@ public:
 
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
+    void registerRandomSeed(unsigned int seed);
+private:
+    unsigned int randomSeed;
+    bool hasRandomSeed;
 };
 
 QT_END_NAMESPACE

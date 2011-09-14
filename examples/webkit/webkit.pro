@@ -6,6 +6,9 @@ SUBDIRS +=  domtraversal \
             simpleselector \
             imageanalyzer \
             framecapture \
+            simplewebplugin \
+            webplugin \
+            webftpclient
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
 
@@ -15,4 +18,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS webkit.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/webkit
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -65,18 +65,17 @@ typedef QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> QNetworkConfi
 class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
-    QNetworkConfigurationPrivate ()
-    :   mutex(QMutex::Recursive), type(QNetworkConfiguration::Invalid),
+    QNetworkConfigurationPrivate() :
+        mutex(QMutex::Recursive),
+        type(QNetworkConfiguration::Invalid),
         purpose(QNetworkConfiguration::UnknownPurpose),
         bearerType(QNetworkConfiguration::BearerUnknown),
         isValid(false), roamingSupported(false)
-    {
-    }
-
+    {}
     virtual ~QNetworkConfigurationPrivate()
     {
         //release pointers to member configurations
-        serviceNetworkMembers.clear(); 
+        serviceNetworkMembers.clear();
     }
 
     virtual QString bearerTypeName() const
@@ -100,11 +99,9 @@ public:
     bool roamingSupported;
 
 private:
-    // disallow detaching
-    QNetworkConfigurationPrivate &operator=(const QNetworkConfigurationPrivate &other);
-    QNetworkConfigurationPrivate(const QNetworkConfigurationPrivate &other);
+    Q_DISABLE_COPY(QNetworkConfigurationPrivate)
 };
 
 QT_END_NAMESPACE
 
-#endif //QNETWORKCONFIGURATIONPRIVATE_H
+#endif // QNETWORKCONFIGURATIONPRIVATE_H

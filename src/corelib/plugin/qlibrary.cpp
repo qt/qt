@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
@@ -38,7 +39,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qplatformdefs.h"
 #include "qlibrary.h"
 
@@ -52,6 +52,7 @@
 #include <qmap.h>
 #include <qsettings.h>
 #include <qdatetime.h>
+#include <private/qcoreapplication_p.h>
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -61,10 +62,9 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qdir.h>
+#include "qelfparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-//#define QT_DEBUG_COMPONENT
 
 #ifdef QT_NO_DEBUG
 #  define QLIBRARY_AS_DEBUG false
@@ -365,11 +365,35 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         fdlen = data.size();
     }
 
-    // verify that the pattern is present in the plugin
+    /*
+       ELF binaries on GNU, have .qplugin sections.
+    */
+    long pos = 0;
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
     const ulong plen = qstrlen(pattern);
-    long pos = qt_find_pattern(filedata, fdlen, pattern, plen);
-
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+    int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
+    if (r == QElfParser::NoQtSection) {
+        if (pos > 0) {
+            // find inside .rodata
+            long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+            if (rel < 0) {
+                pos = -1;
+            } else {
+                pos += rel;
+            }
+        } else {
+            pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+        }
+    } else if (r != QElfParser::Ok) {
+        if (lib && qt_debug_component()) {
+            qWarning("QElfParser: %s",qPrintable(lib->errorString));
+        }
+        return false;
+    }
+#else
+    pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
     bool ret = false;
     if (pos >= 0)
         ret = qt_parse_pattern(filedata + pos, version, debug, key);
@@ -385,13 +409,8 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
 
 struct LibraryData {
-    LibraryData() : settings(0) { }
-    ~LibraryData() {
-        delete settings;
-    }
-
-    QSettings *settings;
     LibraryMap libraryMap;
+    QSet<QLibraryPrivate*> loadedLibs;
 };
 
 Q_GLOBAL_STATIC(LibraryData, libraryData)
@@ -443,7 +462,18 @@ bool QLibraryPrivate::load()
         return true;
     if (fileName.isEmpty())
         return false;
-    return load_sys();
+
+    bool ret = load_sys();
+    if (ret) {
+        //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
+        //this allows to unload the library at a later time
+        if (LibraryData *lib = libraryData()) {
+            lib->loadedLibs += this;
+            libraryRefCount.ref();
+        }
+    }
+
+    return ret;
 }
 
 bool QLibraryPrivate::unload()
@@ -451,10 +481,16 @@ bool QLibraryPrivate::unload()
     if (!pHnd)
         return false;
     if (!libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
-        if (instance)
-            delete instance();
+        delete inst.data();
         if  (unload_sys()) {
-            instance = 0;
+            if (qt_debug_component())
+                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName;
+            //when the library is unloaded, we release the reference on it so that 'this'
+            //can get deleted
+            if (LibraryData *lib = libraryData()) {
+                if (lib->loadedLibs.remove(this))
+                    libraryRefCount.deref();
+            }
             pHnd = 0;
         }
     }
@@ -475,6 +511,8 @@ bool QLibraryPrivate::loadPlugin()
         libraryUnloadCount.ref();
         return true;
     }
+    if (pluginState == IsNotAPlugin)
+        return false;
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
@@ -487,6 +525,9 @@ bool QLibraryPrivate::loadPlugin()
 #endif
         return instance;
     }
+    if (qt_debug_component())
+        qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
+    pluginState = IsNotAPlugin;
     return false;
 }
 
@@ -496,7 +537,7 @@ bool QLibraryPrivate::loadPlugin()
 
     \table
     \header \i Platform \i Valid suffixes
-    \row \i Windows     \i \c .dll
+    \row \i Windows     \i \c .dll, \c .DLL
     \row \i Unix/Linux  \i \c .so
     \row \i AIX  \i \c .a
     \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
@@ -509,7 +550,7 @@ bool QLibraryPrivate::loadPlugin()
 bool QLibrary::isLibrary(const QString &fileName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return fileName.endsWith(QLatin1String(".dll"));
+    return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
 #elif defined(Q_OS_SYMBIAN)
     // Plugin stubs are also considered libraries in Symbian.
     return (fileName.endsWith(QLatin1String(".dll")) ||
@@ -571,6 +612,51 @@ bool QLibrary::isLibrary(const QString &fileName)
 
 }
 
+#if defined (Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400  && !defined(Q_CC_INTEL)
+#define QT_USE_MS_STD_EXCEPTION 1
+const char* qt_try_versioninfo(void *pfn, bool *exceptionThrown)
+{
+    *exceptionThrown = false;
+    const char *szData = 0;
+    typedef const char * (*VerificationFunction)();
+    VerificationFunction func = reinterpret_cast<VerificationFunction>(pfn);
+    __try {
+        if(func)
+            szData =  func();
+    } __except(EXCEPTION_EXECUTE_HANDLER) {
+        *exceptionThrown = true;
+    }
+    return szData;
+}
+#endif
+
+#ifdef Q_CC_BOR
+typedef const char * __stdcall (*QtPluginQueryVerificationDataFunction)();
+#else
+typedef const char * (*QtPluginQueryVerificationDataFunction)();
+#endif
+
+bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, uint *qt_version, bool *debug, QByteArray *key, bool *exceptionThrown)
+{
+    *exceptionThrown = false;
+    const char *szData = 0;
+    if (!pfn)
+        return false;
+#ifdef QT_USE_MS_STD_EXCEPTION
+    szData = qt_try_versioninfo((void *)pfn, exceptionThrown);
+    if (*exceptionThrown)
+        return false;
+#else
+    szData = pfn();
+#endif
+
+#ifdef QT_NO_PLUGIN_CHECK
+	return true;
+#else
+	return qt_parse_pattern(szData, qt_version, debug, key);
+#endif
+}
+
 bool QLibraryPrivate::isPlugin(QSettings *settings)
 {
     errorString.clear();
@@ -606,7 +692,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg((QT_VERSION & 0xff00) >> 8)
                      .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"))
                      .arg(fileName);
-#ifdef Q_WS_MAC    
+#ifdef Q_WS_MAC
     // On Mac, add the application arch to the reg key in order to
     // cache plugin information separately for each arch. This prevents
     // Qt from wrongly caching plugin load failures when the archs
@@ -621,15 +707,11 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     regkey += QLatin1String("-ppc");
 #endif
 #endif // Q_WS_MAC
-    
+
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
-        settings = libraryData()->settings;
-        if (!settings) {
-            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-            libraryData()->settings = settings;
-        }
+        settings = QCoreApplicationPrivate::trolltechConf();
     }
     reg = settings->value(regkey).toStringList();
 #endif
@@ -646,70 +728,82 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
         } else
 #endif
         {
-            bool temporary_load = false;
+            bool retryLoadLibrary = false;    // Only used on Windows with MS compiler.(false in other cases)
+            do {
+                bool temporary_load = false;
 #ifdef Q_OS_WIN
-            HMODULE hTempModule = 0;
+                HMODULE hTempModule = 0;
 #endif
-            if (!pHnd) {
+                if (!pHnd) {
 #ifdef Q_OS_WIN
-                //avoid 'Bad Image' message box
-                UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
-                hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
-                SetErrorMode(oldmode);
+                    DWORD dwFlags = (retryLoadLibrary) ? 0: DONT_RESOLVE_DLL_REFERENCES;
+                    //avoid 'Bad Image' message box
+                    UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
+                    hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, dwFlags);
+                    SetErrorMode(oldmode);
 #else
 #  if defined(Q_OS_SYMBIAN)
-                //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
-                if (fileinfo.exists())
+                    //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
+                    if (fileinfo.exists())
 #  endif
-                temporary_load =  load_sys();
+                        temporary_load =  load_sys();
 #endif
-            }
-#  ifdef Q_CC_BOR
-            typedef const char * __stdcall (*QtPluginQueryVerificationDataFunction)();
-#  else
-            typedef const char * (*QtPluginQueryVerificationDataFunction)();
-#  endif
+                }
 #ifdef Q_OS_WIN
-            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = hTempModule
-                ? (QtPluginQueryVerificationDataFunction)
+                QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = hTempModule ? (QtPluginQueryVerificationDataFunction)
 #ifdef Q_OS_WINCE
-                    ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
+                        ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
 #else
-                    ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
+                        ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
 #endif
                 : (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
 #else
-            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
+                QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
 #  if defined(Q_OS_SYMBIAN)
-            if (temporary_load) {
-                qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
-                // If resolving with function name failed (i.e. not STDDLL), try resolving using known ordinal
-                if (!qtPluginQueryVerificationDataFunction)
-                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("1");
-            }
+                if (temporary_load) {
+                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+                    // If resolving with function name failed (i.e. not STDDLL), try resolving using known ordinal
+                    if (!qtPluginQueryVerificationDataFunction)
+                        qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("1");
+                }
 #  else
-            qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+                qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
 #  endif
 #endif
-
-            if (!qtPluginQueryVerificationDataFunction
-                || !qt_parse_pattern(qtPluginQueryVerificationDataFunction(), &qt_version, &debug, &key)) {
-                qt_version = 0;
-                key = "unknown";
-                if (temporary_load)
-                    unload_sys();
-            } else {
-                success = true;
-            }
-#ifdef Q_OS_WIN
-            if (hTempModule) {
-                BOOL ok = ::FreeLibrary(hTempModule);
-                if (ok) {
-                    hTempModule = 0;
+                bool exceptionThrown = false;
+                bool ret = qt_get_verificationdata(qtPluginQueryVerificationDataFunction,
+                                                   &qt_version, &debug, &key, &exceptionThrown);
+                if (!exceptionThrown) {
+                    if (!ret) {
+                        qt_version = 0;
+                        key = "unknown";
+                        if (temporary_load)
+                            unload_sys();
+                    } else {
+                        success = true;
+                    }
+                    retryLoadLibrary = false;
                 }
-
-            }
+#ifdef QT_USE_MS_STD_EXCEPTION
+                else {
+                    // An exception was thrown when calling qt_plugin_query_verification_data().
+                    // This usually happens when plugin is compiled with the /clr compiler flag,
+                    // & will only work if the dependencies are loaded & DLLMain() is called.
+                    // LoadLibrary() will do this, try once with this & if it fails dont load.
+                    retryLoadLibrary = !retryLoadLibrary;
+                }
 #endif
+#ifdef Q_OS_WIN
+                if (hTempModule) {
+                    BOOL ok = ::FreeLibrary(hTempModule);
+                    if (ok) {
+                        hTempModule = 0;
+                    }
+
+                }
+#endif
+            } while(retryLoadLibrary);  // Will be 'false' in all cases other than when an
+                                        // exception is thrown(will happen only when using a MS compiler)
         }
 
         // Qt 4.5 compatibility: stl doesn't affect binary compatibility
@@ -758,6 +852,9 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
 #ifdef QT_BUILD_KEY_COMPAT2
                && key != QT_BUILD_KEY_COMPAT2
+#endif
+#ifdef QT_BUILD_KEY_COMPAT3
+               && key != QT_BUILD_KEY_COMPAT3
 #endif
                ) {
         if (qt_debug_component()) {
@@ -1039,7 +1136,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
 */
 void *QLibrary::resolve(const char *symbol)
 {
-    if (!load())
+    if (!isLoaded() && !load())
         return 0;
     return d->resolve(symbol);
 }
@@ -1182,15 +1279,11 @@ QLibrary::LoadHints QLibrary::loadHints() const
 /* Internal, for debugging */
 bool qt_debug_component()
 {
-#if defined(QT_DEBUG_COMPONENT)
-    return true;    //compatibility?
-#else
     static int debug_env = -1;
     if (debug_env == -1)
        debug_env = QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_PLUGINS").toInt();
 
     return debug_env != 0;
-#endif
 }
 
 QT_END_NAMESPACE

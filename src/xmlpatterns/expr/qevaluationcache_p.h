@@ -124,6 +124,7 @@ namespace QPatternist
 
     private:
         static DynamicContext::Ptr topFocusContext(const DynamicContext::Ptr &context);
+        const VariableDeclaration* m_declaration;
         bool m_declarationUsedByMany;
         /**
          * This variable must not be called m_slot. If it so, a compiler bug on

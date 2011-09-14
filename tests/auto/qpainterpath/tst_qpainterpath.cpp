@@ -60,6 +60,8 @@ public:
 
 private slots:
     void getSetCheck();
+    void swap();
+
     void contains_QPointF_data();
     void contains_QPointF();
 
@@ -112,6 +114,8 @@ private slots:
     void connectPathMoveTo();
 
     void translate();
+
+    void lineWithinBounds();
 };
 
 // Testing get/set functions
@@ -140,6 +144,17 @@ void tst_QPainterPath::getSetCheck()
     QCOMPARE(qreal(0.0), obj1.curveThreshold());
     obj1.setCurveThreshold(1.1);
     QCOMPARE(qreal(1.1), obj1.curveThreshold());
+}
+
+void tst_QPainterPath::swap()
+{
+    QPainterPath p1;
+    p1.addRect( 0, 0,10,10);
+    QPainterPath p2;
+    p2.addRect(10,10,10,10);
+    p1.swap(p2);
+    QCOMPARE(p1.boundingRect().toRect(), QRect(10,10,10,10));
+    QCOMPARE(p2.boundingRect().toRect(), QRect( 0, 0,10,10));
 }
 
 Q_DECLARE_METATYPE(QPainterPath)
@@ -1040,6 +1055,11 @@ void tst_QPainterPath::pointAtPercent_data()
     QRectF rect(241, 273, 185, 228);
     path.addEllipse(rect);
     QTest::newRow("Case 17") << path << qreal(1.0) << QPointF(rect.right(), qreal(0.5) * (rect.top() + rect.bottom()));
+
+    path = QPainterPath();
+    path.moveTo(100, 100);
+    QTest::newRow("Case 18") << path << qreal(0.0) << QPointF(100, 100);
+    QTest::newRow("Case 19") << path << qreal(1.0) << QPointF(100, 100);
 }
 
 void tst_QPainterPath::pointAtPercent()
@@ -1287,6 +1307,25 @@ void tst_QPainterPath::translate()
 
     QCOMPARE(complexPath.translated(-offset), untranslatedComplexPath);
 }
+
+
+void tst_QPainterPath::lineWithinBounds()
+{
+    const int iteration_count = 3;
+    volatile const qreal yVal = 0.5;
+    QPointF a(0.0, yVal);
+    QPointF b(1000.0, yVal);
+    QPointF c(2000.0, yVal);
+    QPointF d(3000.0, yVal);
+    QPainterPath path;
+    path.moveTo(QPointF(0, yVal));
+    path.cubicTo(QPointF(1000.0, yVal), QPointF(2000.0, yVal), QPointF(3000.0, yVal));
+    for(int i=0; i<=iteration_count; i++) {
+        qreal actual = path.pointAtPercent(qreal(i) / iteration_count).y();
+        QVERIFY(actual == yVal); // don't use QCOMPARE, don't want fuzzy comparison
+    }
+}
+
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)
 

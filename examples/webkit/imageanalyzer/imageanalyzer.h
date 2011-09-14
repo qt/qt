@@ -38,15 +38,17 @@
 **
 ****************************************************************************/
 
-
 #ifndef IMAGEANALYZER_H
 #define IMAGEANALYZER_H
+
 #include <QFutureWatcher>
 #include <QtGui>
 
-QT_FORWARD_DECLARE_CLASS(QNetworkAccessManager)
-QT_FORWARD_DECLARE_CLASS(QNetworkReply)
-QT_FORWARD_DECLARE_CLASS(QNetworkDiskCache)
+QT_BEGIN_NAMESPACE
+class QNetworkAccessManager;
+class QNetworkReply;
+class QNetworkDiskCache;
+QT_END_NAMESPACE
 
 //! [ ImageAnalyzer - public interface ]
 class ImageAnalyzer : public QObject

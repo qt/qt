@@ -63,6 +63,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     pipeliningAllowed = other.pipeliningAllowed;
     customVerb = other.customVerb;
     withCredentials = other.withCredentials;
+    ssl = other.ssl;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -73,6 +74,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 {
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
+        && (ssl == other.ssl)
         && (uploadByteDevice == other.uploadByteDevice);
 }
 
@@ -156,8 +158,10 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     }
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
-        if (request.headerField("content-type").isEmpty())
-            ba += "Content-Type: application/x-www-form-urlencoded\r\n";
+        if (request.headerField("content-type").isEmpty()) {
+            qWarning("content-type missing in HTTP POST, defaulting to application/octet-stream");
+            ba += "Content-Type: application/octet-stream\r\n";
+        }
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();
             ba += "Content-Length: ";
@@ -197,6 +201,15 @@ QUrl QHttpNetworkRequest::url() const
 void QHttpNetworkRequest::setUrl(const QUrl &url)
 {
     d->url = url;
+}
+
+bool QHttpNetworkRequest::isSsl() const
+{
+    return d->ssl;
+}
+void QHttpNetworkRequest::setSsl(bool s)
+{
+    d->ssl = s;
 }
 
 qint64 QHttpNetworkRequest::contentLength() const

@@ -297,7 +297,7 @@ void PathDeformWidget::setStyle( QStyle * style )
     {
         m_controls->setStyle(style);
         
-        QList<QWidget *> widgets = qFindChildren<QWidget *>(m_controls);
+        QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
         foreach (QWidget *w, widgets)
             w->setStyle(style);
     }

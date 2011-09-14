@@ -58,6 +58,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
+#include <qabstractanimation.h>
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -114,30 +115,47 @@ private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
 };
 
+
+class QUnifiedTimer;
+class QDefaultAnimationDriver : public QAnimationDriver
+{
+    Q_OBJECT
+public:
+    QDefaultAnimationDriver(QUnifiedTimer *timer);
+    void timerEvent(QTimerEvent *e);
+
+    void started();
+    void stopped();
+
+private:
+    QBasicTimer m_timer;
+    QUnifiedTimer *m_unified_timer;
+};
+
+class Q_CORE_EXPORT QAnimationDriverPrivate : public QObjectPrivate
+{
+public:
+    QAnimationDriverPrivate() : running(false) {}
+    bool running;
+};
+
 typedef QElapsedTimer ElapsedTimer;
 
-class QUnifiedTimer : public QObject
+class Q_CORE_EXPORT QUnifiedTimer : public QObject
 {
 private:
     QUnifiedTimer();
 
 public:
     //XXX this is needed by dui
-    static Q_CORE_EXPORT QUnifiedTimer *instance();
+    static QUnifiedTimer *instance();
     static QUnifiedTimer *instance(bool create);
 
     static void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
     static void unregisterAnimation(QAbstractAnimation *animation);
 
     //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
-    void setTimingInterval(int interval)
-    {
-        timingInterval = interval;
-        if (animationTimer.isActive() && !isPauseTimerActive) {
-            //we changed the timing interval
-            animationTimer.start(timingInterval, this);
-        }
-    }
+    void setTimingInterval(int interval);
 
     /*
        this allows to have a consistent timer interval at each tick from the timer
@@ -161,11 +179,23 @@ public:
     */
     static void updateAnimationTimer();
 
+    void installAnimationDriver(QAnimationDriver *driver);
+
+    void restartAnimationTimer();
+    void updateAnimationsTime();
+
+    //useful for profiling/debugging
+    int runningAnimationCount() { return animations.count(); }
+
 protected:
     void timerEvent(QTimerEvent *);
 
 private:
-    // timer used for all active (running) animations
+    friend class QDefaultAnimationDriver;
+
+    QAnimationDriver *driver;
+    QDefaultAnimationDriver defaultDriver;
+
     QBasicTimer animationTimer;
     // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
@@ -196,9 +226,6 @@ private:
     void registerRunningAnimation(QAbstractAnimation *animation);
     void unregisterRunningAnimation(QAbstractAnimation *animation);
 
-    void restartAnimationTimer();
-
-    void updateAnimationsTime();
     int closestPauseAnimationTimeToFinish();
 };
 

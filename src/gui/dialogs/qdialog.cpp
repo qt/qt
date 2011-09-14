@@ -337,7 +337,7 @@ void QDialogPrivate::setDefault(QPushButton *pushButton)
 {
     Q_Q(QDialog);
     bool hasMain = false;
-    QList<QPushButton*> list = qFindChildren<QPushButton*>(q);
+    QList<QPushButton*> list = q->findChildren<QPushButton*>();
     for (int i=0; i<list.size(); ++i) {
         QPushButton *pb = list.at(i);
         if (pb->window() == q) {
@@ -372,7 +372,7 @@ void QDialogPrivate::setMainDefault(QPushButton *pushButton)
 void QDialogPrivate::hideDefault()
 {
     Q_Q(QDialog);
-    QList<QPushButton*> list = qFindChildren<QPushButton*>(q);
+    QList<QPushButton*> list = q->findChildren<QPushButton*>();
     for (int i=0; i<list.size(); ++i) {
         list.at(i)->setDefault(false);
     }
@@ -675,7 +675,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
         switch (e->key()) {
         case Qt::Key_Enter:
         case Qt::Key_Return: {
-            QList<QPushButton*> list = qFindChildren<QPushButton*>(this);
+            QList<QPushButton*> list = findChildren<QPushButton*>();
             for (int i=0; i<list.size(); ++i) {
                 QPushButton *pb = list.at(i);
                 if (pb->isDefault() && pb->isVisible()) {

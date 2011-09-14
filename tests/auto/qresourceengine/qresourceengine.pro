@@ -21,25 +21,26 @@ PRE_TARGETDEPS += $${runtime_resource.target}
 
 QT = core
 wince*|symbian:{
-    deploy.sources += runtime_resource.rcc parentdir.txt
-    test.sources = testqrc/*
+    deploy.files += runtime_resource.rcc parentdir.txt
+    test.files = testqrc/*
     test.path = testqrc
-    alias.sources = testqrc/aliasdir/*
+    alias.files = testqrc/aliasdir/*
     alias.path = testqrc/aliasdir
-    other.sources = testqrc/otherdir/*
+    other.files = testqrc/otherdir/*
     other.path = testqrc/otherdir
-    search1.sources = testqrc/searchpath1/*
+    search1.files = testqrc/searchpath1/*
     search1.path = testqrc/searchpath1
-    search2.sources = testqrc/searchpath2/*
+    search2.files = testqrc/searchpath2/*
     search2.path = testqrc/searchpath2
-    sub.sources = testqrc/subdir/*
+    sub.files = testqrc/subdir/*
     sub.path = testqrc/subdir
-    testsub.sources = testqrc/test/*
+    testsub.files = testqrc/test/*
     testsub.path = testqrc/test
-    testsub2.sources = testqrc/test/test/*
+    testsub2.files = testqrc/test/test/*
     testsub2.path = testqrc/test/test
-    DEPLOYMENT = deploy test alias other search1 search2 sub testsub testsub2
+    DEPLOYMENT += deploy test alias other search1 search2 sub testsub testsub2
     !symbian:DEFINES += SRCDIR=\\\"\\\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+CONFIG += parallel_test

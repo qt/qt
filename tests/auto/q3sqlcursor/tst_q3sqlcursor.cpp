@@ -251,7 +251,7 @@ void tst_Q3SqlCursor::copyConstructor()
     }
 
     QSqlRecord* rec = cur2.primeUpdate();
-    Q_ASSERT( rec );
+    QVERIFY( rec );
     QCOMPARE( (int)rec->count(), 4 );
 
     int i = 0;
@@ -398,7 +398,7 @@ void tst_Q3SqlCursor::batchInsert()
     int i = 0;
     for ( ; i < 100; ++i ) {
         QSqlRecord* irec = cur.primeInsert();
-        Q_ASSERT( irec );
+        QVERIFY( irec );
         irec->setValue( "id", i );
         irec->setValue( "t_varchar", "blah" );
         irec->setValue( "t_char", "blah" );
@@ -412,7 +412,7 @@ void tst_Q3SqlCursor::batchInsert()
 
     for ( ; i < 200; ++i ) {
         QSqlRecord* irec = cur.primeInsert();
-        Q_ASSERT( irec );
+        QVERIFY( irec );
         irec->setValue( "id", i );
         irec->setValue( "t_varchar", "blah" );
         irec->setValue( "t_char", "blah" );
@@ -699,7 +699,7 @@ void tst_Q3SqlCursor::updateNoPK()
 
     Q3SqlCursor cur(qTableName("qtestPK", __FILE__), true, db);
     QSqlRecord* rec = cur.primeInsert();
-    Q_ASSERT(rec);
+    QVERIFY(rec);
     rec->setNull(0);
     rec->setNull(1);
     rec->setNull(2);
@@ -724,7 +724,7 @@ void tst_Q3SqlCursor::updateNoPK()
     }
 
     rec = cur.primeUpdate();
-    Q_ASSERT(rec);
+    QVERIFY(rec);
     rec->setValue(0, 1);
     rec->setNull(1);
     rec->setNull(2);

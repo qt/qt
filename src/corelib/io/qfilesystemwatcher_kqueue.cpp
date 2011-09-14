@@ -45,6 +45,8 @@
 #include "qfilesystemwatcher_kqueue_p.h"
 #include "private/qcore_unix_p.h"
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include <qdebug.h>
 #include <qfile.h>
 #include <qsocketnotifier.h>
@@ -326,5 +328,7 @@ void QKqueueFileSystemWatcherEngine::run()
         }
     }
 }
+
+#endif //QT_NO_FILESYSTEMWATCHER
 
 QT_END_NAMESPACE

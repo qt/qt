@@ -266,7 +266,7 @@ QT_BEGIN_NAMESPACE
 inline Variant asVariant(const QVariant &v)
 {
     Variant var;
-    var = qVariantValue<Variant>(v);
+    var = qvariant_cast<Variant>(v);
     return var;
 }
 

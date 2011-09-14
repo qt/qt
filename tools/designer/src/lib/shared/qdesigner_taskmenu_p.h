@@ -118,6 +118,7 @@ private slots:
     void containerFakeMethods();
     void slotNavigateToSlot();
     void applySize(QAction *a);
+    void slotLayoutAlignment();
 
 private:
     QDesignerTaskMenuPrivate *d;

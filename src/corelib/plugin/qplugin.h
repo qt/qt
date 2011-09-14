@@ -101,13 +101,17 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 // NOTE: if you change pattern, you MUST change the pattern in
 // qlibrary.cpp as well.  changing the pattern will break all
 // backwards compatibility as well (no old plugins will be loaded).
+// QT5: should probably remove the entire pattern thing and do the section
+//      trick for all platforms. for now, keep it and fallback to scan for it.
 #  ifdef QPLUGIN_DEBUG_STR
 #    undef QPLUGIN_DEBUG_STR
 #  endif
 #  ifdef QT_NO_DEBUG
 #    define QPLUGIN_DEBUG_STR "false"
+#    define QPLUGIN_SECTION_DEBUG_STR ""
 #  else
 #    define QPLUGIN_DEBUG_STR "true"
+#    define QPLUGIN_SECTION_DEBUG_STR ".debug"
 #  endif
 #  define Q_PLUGIN_VERIFICATION_DATA \
     static const char qt_plugin_verification_data[] = \
@@ -116,6 +120,13 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
       "debug="QPLUGIN_DEBUG_STR"\n" \
       "buildkey="QT_BUILD_KEY;
 
+#  if defined (Q_OF_ELF) && defined (Q_CC_GNU)
+#  define Q_PLUGIN_VERIFICATION_SECTION \
+    __attribute__ ((section (".qtplugin"))) __attribute__((used))
+#  else
+#  define Q_PLUGIN_VERIFICATION_SECTION
+#  endif
+
 #  if defined (Q_OS_WIN32) && defined(Q_CC_BOR)
 #     define Q_STANDARD_CALL __stdcall
 #  else
@@ -123,7 +134,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 #  endif
 
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
-            Q_PLUGIN_VERIFICATION_DATA \
+            Q_PLUGIN_VERIFICATION_SECTION Q_PLUGIN_VERIFICATION_DATA \
             Q_EXTERN_C Q_DECL_EXPORT \
             const char * Q_STANDARD_CALL qt_plugin_query_verification_data() \
             { return qt_plugin_verification_data; } \

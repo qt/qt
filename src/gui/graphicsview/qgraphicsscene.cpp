@@ -245,6 +245,10 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include <QtGui/qaccessible.h>
+#endif
+
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
@@ -837,6 +841,14 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     if (item)
         focusItem = item;
     updateInputMethodSensitivityInViews();
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (focusItem) {
+        if (QGraphicsObject *focusObj = focusItem->toGraphicsObject()) {
+            QAccessible::updateAccessibility(focusObj, 0, QAccessible::Focus);
+        }
+    }
+#endif
     if (item) {
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
@@ -1627,7 +1639,8 @@ QGraphicsScene::~QGraphicsScene()
     Q_D(QGraphicsScene);
 
     // Remove this scene from qApp's global scene list.
-    qApp->d_func()->scene_list.removeAll(this);
+    if (!QApplicationPrivate::is_app_closing)
+        qApp->d_func()->scene_list.removeAll(this);
 
     clear();
 
@@ -2544,8 +2557,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Notify the item that its scene is changing, and allow the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                    qVariantFromValue<QGraphicsScene *>(this)));
-    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
+                                                    QVariant::fromValue<QGraphicsScene *>(this)));
+    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
         if (targetScene && item->d_ptr->scene != targetScene)
             targetScene->addItem(item);
@@ -2956,8 +2969,8 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     // Notify the item that it's scene is changing to 0, allowing the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                    qVariantFromValue<QGraphicsScene *>(0)));
-    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
+                                                    QVariant::fromValue<QGraphicsScene *>(0)));
+    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != 0 && targetScene != this) {
         targetScene->addItem(item);
         return;
@@ -3462,7 +3475,8 @@ bool QGraphicsScene::event(QEvent *event)
         break;
     }
     case QEvent::Leave:
-        d->leaveScene();
+        // hackieshly unpacking the viewport pointer from the leave event.
+        d->leaveScene(reinterpret_cast<QWidget *>(event->d));
         break;
     case QEvent::GraphicsSceneHelp:
         helpEvent(static_cast<QGraphicsSceneHelpEvent *>(event));
@@ -3935,20 +3949,19 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     Handles all actions necessary to clean up the scene when the mouse leaves
     the view.
 */
-void QGraphicsScenePrivate::leaveScene()
+void QGraphicsScenePrivate::leaveScene(QWidget *viewport)
 {
-    Q_Q(QGraphicsScene);
 #ifndef QT_NO_TOOLTIP
     QToolTip::hideText();
 #endif
+    QGraphicsView *view = qobject_cast<QGraphicsView *>(viewport->parent());
     // Send HoverLeave events to all existing hover items, topmost first.
-    QGraphicsView *senderWidget = qobject_cast<QGraphicsView *>(q->sender());
     QGraphicsSceneHoverEvent hoverEvent;
-    hoverEvent.setWidget(senderWidget);
+    hoverEvent.setWidget(viewport);
 
-    if (senderWidget) {
+    if (view) {
         QPoint cursorPos = QCursor::pos();
-        hoverEvent.setScenePos(senderWidget->mapToScene(senderWidget->mapFromGlobal(cursorPos)));
+        hoverEvent.setScenePos(view->mapToScene(viewport->mapFromGlobal(cursorPos)));
         hoverEvent.setLastScenePos(hoverEvent.scenePos());
         hoverEvent.setScreenPos(cursorPos);
         hoverEvent.setLastScreenPos(hoverEvent.screenPos());
@@ -4369,25 +4382,8 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 static inline bool transformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+    if (type <= QTransform::TxScale) {
         return true;
-    } else if (type == QTransform::TxScale) {
-        // Check for 0 and 180 degree rotations.
-        // (0 might happen after 4 rotations of 90 degrees).
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
-        if (m12 == 0.0f && m21 == 0.0f) {
-            if (m11 == 1.0f && m22 == 1.0f)
-                return true; // 0 degrees
-            else if (m11 == -1.0f && m22 == -1.0f)
-                return true; // 180 degrees.
-            if(m11 == 1.0f && m22 == -1.0f)
-                return true; // 0 degrees inverted y.
-            else if(m11 == -1.0f && m22 == 1.0f)
-                return true; // 180 degrees inverted y.
-        }
     } else if (type == QTransform::TxRotate) {
         // Check for 90, and 270 degree rotations.
         qreal m11 = transform.m11();
@@ -4965,6 +4961,19 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 
         if (painterStateProtection || restorePainterClip)
             painter->restore();
+
+        static int drawRect = qgetenv("QT_DRAW_SCENE_ITEM_RECTS").toInt();
+        if (drawRect) {
+            QPen oldPen = painter->pen();
+            QBrush oldBrush = painter->brush();
+            quintptr ptr = reinterpret_cast<quintptr>(item);
+            const QColor color = QColor::fromHsv(ptr % 255, 255, 255);
+            painter->setPen(color);
+            painter->setBrush(Qt::NoBrush);
+            painter->drawRect(adjustedItemBoundingRect(item));
+            painter->setPen(oldPen);
+            painter->setBrush(oldBrush);
+        }
     }
 
     // Draw children in front

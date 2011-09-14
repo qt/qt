@@ -105,7 +105,7 @@
 #include "qhostaddress.h"
 #include "qlist.h"
 #include "qpointer.h"
-#include "qnativesocketengine_p.h"
+#include "qabstractsocketengine_p.h"
 #include "qtcpserver.h"
 #include "qtcpsocket.h"
 #include "qnetworkproxy.h"
@@ -292,6 +292,10 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
         d->serverSocketErrorString = tr("Operation on socket is not supported");
         return false;
     }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     if (!d->socketEngine->initialize(QAbstractSocket::TcpSocket, proto)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
@@ -412,6 +416,15 @@ bool QTcpServer::setSocketDescriptor(int socketDescriptor)
     if (d->socketEngine)
         delete d->socketEngine;
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
+    if (!d->socketEngine) {
+        d->serverSocketError = QAbstractSocket::UnsupportedSocketOperationError;
+        d->serverSocketErrorString = tr("Operation on socket is not supported");
+        return false;
+    }
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the socket engine (if it has been set)
+    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
+#endif
     if (!d->socketEngine->initialize(socketDescriptor, QAbstractSocket::ListeningState)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();

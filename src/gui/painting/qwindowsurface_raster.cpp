@@ -64,6 +64,9 @@
 
 #ifdef Q_WS_MAC
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <QMainWindow>
+#include <private/qmainwindowlayout_p.h>
+#include <QToolBar>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +78,9 @@ public:
 
 #ifdef Q_WS_X11
     GC gc;
+#ifndef QT_NO_MITSHM
+    uint needsSync : 1;
+#endif
 #ifndef QT_NO_XRENDER
     uint translucentBackground : 1;
 #endif
@@ -82,8 +88,8 @@ public:
     uint inSetGeometry : 1;
 };
 
-QRasterWindowSurface::QRasterWindowSurface(QWidget *window)
-    : QWindowSurface(window), d_ptr(new QRasterWindowSurfacePrivate)
+QRasterWindowSurface::QRasterWindowSurface(QWidget *window, bool setDefaultSurface)
+    : QWindowSurface(window, setDefaultSurface), d_ptr(new QRasterWindowSurfacePrivate)
 {
 #ifdef Q_WS_X11
     d_ptr->gc = XCreateGC(X11->display, window->handle(), 0, 0);
@@ -91,10 +97,17 @@ QRasterWindowSurface::QRasterWindowSurface(QWidget *window)
     d_ptr->translucentBackground = X11->use_xrender
         && window->x11Info().depth() == 32;
 #endif
+#ifndef QT_NO_MITHSM
+    d_ptr->needsSync = false;
+#endif
 #endif
     d_ptr->image = 0;
     d_ptr->inSetGeometry = false;
-    setStaticContentsSupport(true);
+
+#ifdef QT_MAC_USE_COCOA
+    needsFlush = false;
+    regionToFlush = QRegion();
+#endif // QT_MAC_USE_COCOA
 }
 
 
@@ -113,8 +126,23 @@ QPaintDevice *QRasterWindowSurface::paintDevice()
     return &d_ptr->image->image;
 }
 
+#if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
+void QRasterWindowSurface::syncX()
+{
+    // delay writing to the backbuffer until we know for sure X is done reading from it
+    if (d_ptr->needsSync) {
+        XSync(X11->display, false);
+        d_ptr->needsSync = false;
+    }
+}
+#endif
+
 void QRasterWindowSurface::beginPaint(const QRegion &rgn)
 {
+#if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
+    syncX();
+#endif
+
 #if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_WS_WINCE))
     if (!qt_widget_private(window())->isOpaque && window()->testAttribute(Qt::WA_TranslucentBackground)) {
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
@@ -201,7 +229,6 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     QRegion wrgn(rgn);
     if (!wOffset.isNull())
         wrgn.translate(-wOffset);
-    QRect wbr = wrgn.boundingRect();
 
     if (wrgn.rectCount() != 1) {
         int num;
@@ -209,23 +236,25 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         XSetClipRectangles(X11->display, d_ptr->gc, 0, 0, rects, num, YXBanded);
     }
 
-    QRect br = rgn.boundingRect().translated(offset);
+    QPoint widgetOffset = offset + wOffset;
+    QRect clipRect = widget->rect().translated(widgetOffset).intersected(d_ptr->image->image.rect());
+
+    QRect br = rgn.boundingRect().translated(offset).intersected(clipRect);
+    QPoint wpos = br.topLeft() - widgetOffset;
+
 #ifndef QT_NO_MITSHM
     if (d_ptr->image->xshmpm) {
         XCopyArea(X11->display, d_ptr->image->xshmpm, widget->handle(), d_ptr->gc,
-                  br.x(), br.y(), br.width(), br.height(), wbr.x(), wbr.y());
-        XSync(X11->display, False);
+                  br.x(), br.y(), br.width(), br.height(), wpos.x(), wpos.y());
+        d_ptr->needsSync = true;
     } else if (d_ptr->image->xshmimg) {
-        const QImage &src = d->image->image;
-        br = br.intersected(src.rect());
         XShmPutImage(X11->display, widget->handle(), d_ptr->gc, d_ptr->image->xshmimg,
-                     br.x(), br.y(), wbr.x(), wbr.y(), br.width(), br.height(), False);
-        XSync(X11->display, False);
+                     br.x(), br.y(), wpos.x(), wpos.y(), br.width(), br.height(), False);
+        d_ptr->needsSync = true;
     } else
 #endif
     {
         const QImage &src = d->image->image;
-        br = br.intersected(src.rect());
         if (src.format() != QImage::Format_RGB32 || widget->x11Info().depth() < 24) {
             Q_ASSERT(src.depth() >= 16);
             const QImage sub_src(src.scanLine(br.y()) + br.x() * (uint(src.depth()) / 8),
@@ -234,11 +263,11 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
             data->xinfo = widget->x11Info();
             data->fromImage(sub_src, Qt::NoOpaqueDetection);
             QPixmap pm = QPixmap(data);
-            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, 0 , 0 , br.width(), br.height(), wbr.x(), wbr.y());
+            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, 0 , 0 , br.width(), br.height(), wpos.x(), wpos.y());
         } else {
             // qpaintengine_x11.cpp
             extern void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image, Drawable hd, GC gc, Display *dpy, Visual *visual, int depth);
-            qt_x11_drawImage(br, wbr.topLeft(), src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
+            qt_x11_drawImage(br, wpos, src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
         }
     }
 
@@ -248,20 +277,27 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 #ifdef Q_WS_MAC
 
-//     qDebug() << "Flushing" << widget << rgn << offset;
-
-//     d->image->image.save("flush.png");
-
     Q_UNUSED(offset);
+
+    // This is mainly done for native components like native "open file" dialog.
+    if (widget->testAttribute(Qt::WA_DontShowOnScreen)) {
+        return;
+    }
+
+#ifdef QT_MAC_USE_COCOA
+
+    this->needsFlush = true;
+    this->regionToFlush += rgn;
+
+    // The actual flushing will be processed in [view drawRect:rect]
+    qt_mac_setNeedsDisplay(widget);
+
+#else
     // Get a context for the widget.
-#ifndef QT_MAC_USE_COCOA
     CGContextRef context;
     CGrafPtr port = GetWindowPort(qt_mac_window_for(widget));
     QDBeginCGContext(port, &context);
-#else
-    extern CGContextRef qt_mac_graphicsContextFor(QWidget *);
-    CGContextRef context = qt_mac_graphicsContextFor(widget);
-#endif
+    CGContextRetain(context);
     CGContextSaveGState(context);
 
     // Flip context.
@@ -276,26 +312,23 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     }
     CGContextClip(context);
 
-    QRect r = rgn.boundingRect();
+    QRect r = rgn.boundingRect().intersected(d->image->image.rect());
     const CGRect area = CGRectMake(r.x(), r.y(), r.width(), r.height());
     CGImageRef image = CGBitmapContextCreateImage(d->image->cg);
     CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
 
     qt_mac_drawCGImage(context, &area, subImage);
+
     CGImageRelease(subImage);
     CGImageRelease(image);
 
-//     CGSize size = { d->image->image.width(), d->image->image.height() };
-//     CGLayerRef layer = CGLayerCreateWithContext(d->image->cg, size, 0);
-//     CGPoint pt = { 0, 0 };
-//     CGContextDrawLayerAtPoint(context, pt, layer);
-//     CGLayerRelease(layer);
+    QDEndCGContext(port, &context);
 
     // Restore context.
     CGContextRestoreGState(context);
-#ifndef QT_MAC_USE_COCOA
-    QDEndCGContext(port, &context);
-#endif
+    CGContextRelease(context);
+#endif // QT_MAC_USE_COCOA
+
 #endif // Q_WS_MAC
 
 #ifdef Q_OS_SYMBIAN
@@ -323,6 +356,25 @@ void QRasterWindowSurface::setGeometry(const QRect &rect)
             prepareBuffer(QNativeImage::systemFormat(), window());
     }
     d->inSetGeometry = false;
+
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    QMainWindow* mWindow = qobject_cast<QMainWindow*>(window());
+    if (mWindow) {
+        QMainWindowLayout *mLayout = qobject_cast<QMainWindowLayout*>(mWindow->layout());
+        QList<QToolBar *> toolbarList = mLayout->qtoolbarsInUnifiedToolbarList;
+
+        for (int i = 0; i < toolbarList.size(); ++i) {
+            QToolBar* toolbar = toolbarList.at(i);
+            if (mLayout->toolBarArea(toolbar) == Qt::TopToolBarArea) {
+                QWidget* tbWidget = (QWidget*) toolbar;
+                if (tbWidget->d_func()->unifiedSurface) {
+                    tbWidget->d_func()->unifiedSurface->setGeometry(rect);
+                }
+            }
+        }
+    }
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+
 }
 
 // from qwindowsurface.cpp
@@ -347,6 +399,10 @@ bool QRasterWindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (!d->image || d->image->image.isNull())
         return false;
 
+#if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
+    syncX();
+#endif
+
     const QVector<QRect> rects = area.rects();
     for (int i = 0; i < rects.size(); ++i)
         qt_scrollRectInImage(d->image->image, rects.at(i), QPoint(dx, dy));
@@ -355,6 +411,10 @@ bool QRasterWindowSurface::scroll(const QRegion &area, int dx, int dy)
 #endif
 }
 
+QWindowSurface::WindowSurfaceFeatures QRasterWindowSurface::features() const
+{
+    return QWindowSurface::AllFeatures;
+}
 
 void QRasterWindowSurface::prepareBuffer(QImage::Format format, QWidget *widget)
 {
@@ -416,5 +476,13 @@ void QRasterWindowSurface::prepareBuffer(QImage::Format format, QWidget *widget)
 
     delete oldImage;
 }
+
+#ifdef QT_MAC_USE_COCOA
+CGContextRef QRasterWindowSurface::imageContext()
+{
+    Q_D(QRasterWindowSurface);
+    return d->image->cg;
+}
+#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE

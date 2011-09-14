@@ -85,6 +85,9 @@ void QFocusFramePrivate::update()
 void QFocusFramePrivate::updateSize()
 {
     Q_Q(QFocusFrame);
+    if (!widget)
+        return;
+
     int vmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameVMargin),
         hmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameHMargin);
     QPoint pos(widget->x(), widget->y());

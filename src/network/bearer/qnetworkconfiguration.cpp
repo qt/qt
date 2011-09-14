@@ -212,18 +212,9 @@ QNetworkConfiguration::QNetworkConfiguration()
 /*!
     Creates a copy of the QNetworkConfiguration object contained in \a other.
 */
-QNetworkConfiguration::QNetworkConfiguration(const QNetworkConfiguration& other)
+QNetworkConfiguration::QNetworkConfiguration(const QNetworkConfiguration &other)
     : d(other.d)
 {
-}
-
-/*!
-    Copies the content of the QNetworkConfiguration object contained in \a other into this one.
-*/
-QNetworkConfiguration& QNetworkConfiguration::operator=(const QNetworkConfiguration& other)
-{
-    d = other.d;
-    return *this;
 }
 
 /*!
@@ -234,22 +225,25 @@ QNetworkConfiguration::~QNetworkConfiguration()
 }
 
 /*!
+    Copies the content of the QNetworkConfiguration object contained in \a other into this one.
+*/
+QNetworkConfiguration &QNetworkConfiguration::operator=(const QNetworkConfiguration &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
     Returns true, if this configuration is the same as the \a other
     configuration given; otherwise returns false.
 */
-bool QNetworkConfiguration::operator==(const QNetworkConfiguration& other) const
+bool QNetworkConfiguration::operator==(const QNetworkConfiguration &other) const
 {
-    if (!d)
-        return !other.d;
-
-    if (!other.d)
-        return false;
-
     return (d == other.d);
 }
 
 /*!
-    \fn bool QNetworkConfiguration::operator!=(const QNetworkConfiguration& other) const
+    \fn bool QNetworkConfiguration::operator!=(const QNetworkConfiguration &other) const
 
     Returns true if this configuration is not the same as the \a other
     configuration given; otherwise returns false.
@@ -370,10 +364,13 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 {
     QList<QNetworkConfiguration> results;
 
-    if (type() != QNetworkConfiguration::ServiceNetwork || !isValid())
+    if (!d)
         return results;
 
     QMutexLocker locker(&d->mutex);
+
+    if (d->type != QNetworkConfiguration::ServiceNetwork || !d->isValid)
+        return results;
 
     QMutableMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(d->serviceNetworkMembers);
     while (i.hasNext()) {
@@ -510,4 +507,3 @@ QString QNetworkConfiguration::bearerTypeName() const
 }
 
 QT_END_NAMESPACE
-

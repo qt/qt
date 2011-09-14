@@ -209,6 +209,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    defaultCursorMoveStyle = Qt::LogicalMoveStyle;
 
     indentWidth = 40;
     documentMargin = 4;
@@ -1383,6 +1384,20 @@ int QTextDocumentPrivate::previousCursorPosition(int position, QTextLayout::Curs
     return it.layout()->previousCursorPosition(position-start, mode) + start;
 }
 
+int QTextDocumentPrivate::leftCursorPosition(int position) const
+{
+    QTextBlock it = blocksFind(position);
+    int start = it.position();
+    return it.layout()->leftCursorPosition(position-start) + start;
+}
+
+int QTextDocumentPrivate::rightCursorPosition(int position) const
+{
+    QTextBlock it = blocksFind(position);
+    int start = it.position();
+    return it.layout()->rightCursorPosition(position-start) + start;
+}
+
 void QTextDocumentPrivate::changeObjectFormat(QTextObject *obj, int format)
 {
     beginEditBlock();
@@ -1407,11 +1422,18 @@ void QTextDocumentPrivate::changeObjectFormat(QTextObject *obj, int format)
 
 static QTextFrame *findChildFrame(QTextFrame *f, int pos)
 {
-    // ##### use binary search
-    QList<QTextFrame *> children = f->childFrames();
-    for (int i = 0; i < children.size(); ++i) {
-        QTextFrame *c = children.at(i);
-        if (pos >= c->firstPosition() && pos <= c->lastPosition())
+    /* Binary search for frame at pos */
+    const QList<QTextFrame *> children = f->childFrames();
+    int first = 0;
+    int last = children.size() - 1;
+    while (first <= last) {
+        int mid = (first + last) / 2;
+        QTextFrame *c = children.at(mid);
+        if (pos > c->lastPosition())
+            first = mid + 1;
+        else if (pos < c->firstPosition())
+            last = mid - 1;
+        else
             return c;
     }
     return 0;

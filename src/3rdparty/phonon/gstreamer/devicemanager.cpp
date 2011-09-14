@@ -22,7 +22,9 @@
 #include "videowidget.h"
 #include "glrenderer.h"
 #include "widgetrenderer.h"
+#ifdef Q_WS_X11
 #include "x11renderer.h"
+#endif
 #include "artssink.h"
 #include "pulsesupport.h"
 
@@ -264,7 +266,7 @@ AbstractRenderer *DeviceManager::createVideoRenderer(VideoWidget *parent)
     if (m_videoSinkWidget == "software") {
         return new WidgetRenderer(parent);
     }
-#ifndef Q_WS_QWS
+#ifdef Q_WS_X11
     else if (m_videoSinkWidget == "xwindow") {
         return new X11Renderer(parent);
     } else {

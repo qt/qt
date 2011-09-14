@@ -28,21 +28,21 @@ CONFIG(debug_and_release) {
 }
 
 wince* {
-    additionalFiles.sources = ../lackey/lackey.exe
+    additionalFiles.files = ../lackey/lackey.exe
     additionalFiles.path = lackey
 }
 
 symbian {
-    additionalFiles.sources = lackey.exe
+    additionalFiles.files = lackey.exe
     additionalFiles.path = \\sys\\bin
     TARGET.UID3 = 0xE0340005
     DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 }
 
 wince*|symbian {
-    scriptFiles.sources = ../lackey/scripts/*.js
+    scriptFiles.files = ../lackey/scripts/*.js
     scriptFiles.path = lackey/scripts
-    DEPLOYMENT = additionalFiles scriptFiles
+    DEPLOYMENT += additionalFiles scriptFiles
     QT += script    # for easy deployment of QtScript
     
     requires(contains(QT_CONFIG,script))

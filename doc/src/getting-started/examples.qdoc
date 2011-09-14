@@ -481,6 +481,8 @@
     \o  \l{network/bearercloud}{Bearer Cloud}\raisedaster
     \o  \l{network/bearermonitor}{Bearer Monitor}
     \o  \l{network/securesocketclient}{Secure Socket Client}
+    \o  \l{network/multicastreceiver}{Multicast Receiver}
+    \o  \l{network/multicastsender}{Multicast Sender}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.
@@ -784,6 +786,13 @@
     \row \o \l{webkit/simpleselector}{Simple Selector}\raisedaster
     \o A basic demonstration, showing how to use QWebElement to select elements in a
     Web page.
+    \row \o \l{webkit/simplewebplugin}{Simple Web Plugin}\raisedaster
+    \o Shows how to embed a widget into a Web page displayed using a QWebView
+    widget.
+    \row \o \l{webkit/webftpclient}{Web FTP Client}\raisedaster
+    \o Shows how to add support for a new protocol to QtWebKit-based applications.
+    \row \o \l{webkit/webplugin}{Web Plugin}\raisedaster
+    \o Shows how to communicate with a widget embedded into a Web page.
     \endtable
 
     Examples marked with an asterisk (*) are fully documented.

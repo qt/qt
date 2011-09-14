@@ -49,20 +49,20 @@
 
     The QGraphicsItemAnimation class animates a QGraphicsItem. You can
     schedule changes to the item's transformation matrix at
-    specified steps. The QGraphicsItemAnimation class has a 
-    current step value. When this value changes the transformations 
-    scheduled at that step are performed. The current step of the 
+    specified steps. The QGraphicsItemAnimation class has a
+    current step value. When this value changes the transformations
+    scheduled at that step are performed. The current step of the
     animation is set with the \c setStep() function.
 
     QGraphicsItemAnimation will do a simple linear interpolation
-    between the nearest adjacent scheduled changes to calculate the 
+    between the nearest adjacent scheduled changes to calculate the
     matrix. For instance, if you set the position of an item at values
     0.0 and 1.0, the animation will show the item moving in a straight
-    line between these positions. The same is true for scaling and 
+    line between these positions. The same is true for scaling and
     rotation.
 
     It is usual to use the class with a QTimeLine. The timeline's
-    \l{QTimeLine::}{valueChanged()} signal is then connected to the 
+    \l{QTimeLine::}{valueChanged()} signal is then connected to the
     \c setStep() slot. For example, you can set up an item for rotation
     by calling \c setRotationAt() for different step values.
     The animations timeline is set with the setTimeLine() function.
@@ -286,7 +286,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
     QList<QPair<qreal, QPointF> > list;
     for (int i = 0; i < d->xPosition.size(); ++i)
         list << QPair<qreal, QPointF>(d->xPosition.at(i).step, QPointF(d->xPosition.at(i).value, d->yPosition.at(i).value));
-    
+
     return list;
 }
 
@@ -343,7 +343,7 @@ QList<QPair<qreal, qreal> > QGraphicsItemAnimation::rotationList() const
     QList<QPair<qreal, qreal> > list;
     for (int i = 0; i < d->rotation.size(); ++i)
         list << QPair<qreal, qreal>(d->rotation.at(i).step, d->rotation.at(i).value);
-    
+
     return list;
 }
 
@@ -395,7 +395,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::translationList() const
     QList<QPair<qreal, QPointF> > list;
     for (int i = 0; i < d->xTranslation.size(); ++i)
         list << QPair<qreal, QPointF>(d->xTranslation.at(i).step, QPointF(d->xTranslation.at(i).value, d->yTranslation.at(i).value));
-    
+
     return list;
 }
 
@@ -447,7 +447,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
     QList<QPair<qreal, QPointF> > list;
     for (int i = 0; i < d->horizontalScale.size(); ++i)
         list << QPair<qreal, QPointF>(d->horizontalScale.at(i).step, QPointF(d->horizontalScale.at(i).value, d->verticalScale.at(i).value));
-    
+
     return list;
 }
 
@@ -499,7 +499,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::shearList() const
     QList<QPair<qreal, QPointF> > list;
     for (int i = 0; i < d->horizontalShear.size(); ++i)
         list << QPair<qreal, QPointF>(d->horizontalShear.at(i).step, QPointF(d->horizontalShear.at(i).value, d->verticalShear.at(i).value));
-    
+
     return list;
 }
 

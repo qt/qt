@@ -362,6 +362,7 @@ QModelIndex QSortFilterProxyModelPrivate::proxy_to_source(const QModelIndex &pro
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (proxy_index.model() != q_func()) {
         qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapToSource";
+        Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapToSource");
         return QModelIndex();
     }
     IndexMap::const_iterator it = index_to_iterator(proxy_index);
@@ -379,6 +380,7 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (source_index.model() != model) {
         qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapFromSource";
+        Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapFromSource");
         return QModelIndex();
     }
     QModelIndex source_parent = source_index.parent();
@@ -1500,7 +1502,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
     \l{Model Subclassing Reference}.
 
     \sa QAbstractProxyModel, QAbstractItemModel, {Model/View Programming},
-    {Basic Sort/Filter Model Example}, {Custom Sort/Filter Model Example}
+    {Basic Sort/Filter Model Example}, {Custom Sort/Filter Model Example}, QIdentityProxyModel
 */
 
 /*!

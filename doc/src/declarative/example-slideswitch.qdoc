@@ -33,7 +33,7 @@ This example shows how to create a reusable switch component in QML.
 
 The code for this example can be found in the \c $QTDIR/examples/declarative/ui-components/slideswitch directory.
 
-The elements that composed the switch are:
+The elements that compose the switch are:
 
 \list
 \o a \c on property (the interface to interact with the switch),

@@ -932,7 +932,9 @@ void QDeclarativeListViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightPosAnimator;
@@ -2852,7 +2854,7 @@ void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
     Q_D(QDeclarativeListView);
     d->maxExtentDirty = true;
     d->minExtentDirty = true;
-    if (d->isRightToLeft() && d->orient == Qt::Horizontal) {
+    if (d->isRightToLeft() && d->orient == QDeclarativeListView::Horizontal) {
         // maintain position relative to the right edge
         int dx = newGeometry.width() - oldGeometry.width();
         setContentX(contentX() - dx);

@@ -70,7 +70,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if(project->first("TEMPLATE") == "app" ||
-       project->first("TEMPLATE") == "lib") {
+       project->first("TEMPLATE") == "lib" ||
+       project->first("TEMPLATE") == "aux") {
 #if 0
         if(Option::mkfile::do_stub_makefile)
             return MakefileGenerator::writeStubMakefile(t);
@@ -83,6 +84,54 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
         return true;
     }
     return false;
+}
+
+void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &callPrefix,
+                                              const QString &makeArguments, const QString &callPostfix)
+{
+    // Pass MAKEFLAGS as environment variable to sub-make calls.
+    // Unlike other make tools nmake doesn't do this automatically.
+    t << "\n\t@set MAKEFLAGS=$(MAKEFLAGS)";
+    Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments, callPostfix);
+}
+
+QString NmakeMakefileGenerator::getPdbTarget()
+{
+    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
+}
+
+QString NmakeMakefileGenerator::defaultInstall(const QString &t)
+{
+    if((t != "target" && t != "dlltarget") ||
+       (t == "dlltarget" && (project->first("TEMPLATE") != "lib" || !project->isActiveConfig("shared"))) ||
+        project->first("TEMPLATE") == "subdirs")
+       return QString();
+
+    QString ret = Win32MakefileGenerator::defaultInstall(t);
+
+    const QString root = "$(INSTALL_ROOT)";
+    QStringList &uninst = project->values(t + ".uninstall");
+    QString targetdir = Option::fixPathToTargetOS(project->first(t + ".path"), false);
+    targetdir = fileFixify(targetdir, FileFixifyAbsolute);
+    if(targetdir.right(1) != Option::dir_sep)
+        targetdir += Option::dir_sep;
+
+    if(t == "target" && project->first("TEMPLATE") == "lib") {
+        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
+            QString pdb_target = getPdbTarget();
+            pdb_target.remove('"');
+            QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
+            QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
+            if(!ret.isEmpty())
+                ret += "\n\t";
+            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
+            if(!uninst.isEmpty())
+                uninst.append("\n\t");
+            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+        }
+    }
+
+    return ret;
 }
 
 QStringList &NmakeMakefileGenerator::findDependencies(const QString &file)
@@ -129,10 +178,12 @@ QString NmakeMakefileGenerator::var(const QString &value)
             p.replace("-c", precompRule);
             // Cannot use -Gm with -FI & -Yu, as this gives an
             // internal compiler error, on the newer compilers
+            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
             p.remove("-Gm");
             return p;
         } else if (value == "QMAKE_CXXFLAGS") {
             // Remove internal compiler error option
+            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
             return MakefileGenerator::var(value).remove("-Gm");
         }
     }
@@ -177,8 +228,10 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_LIBS") += escapeFilePaths(project->values("RES_FILE"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty())
-        project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(project->first("DEF_FILE")));
+    if (!project->values("DEF_FILE").isEmpty()) {
+        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        project->values("QMAKE_LFLAGS").append(QString("/DEF:") + escapeFilePath(defFileName));
+    }
 
     if(!project->values("VERSION").isEmpty()) {
         QString version = project->values("VERSION")[0];
@@ -289,6 +342,11 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
+    if (project->first("TEMPLATE") == "aux") {
+        t << "first:" << endl;
+        return;
+    }
+
     t << "first: all" << endl;
     t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)" << endl << endl;
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");

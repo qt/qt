@@ -10,9 +10,9 @@ DEFINES += QT_USE_USING_NAMESPACE
 wince*: {   
    DEFINES += SRCDIR=\\\"./\\\"
    QT += network
-   addFiles.sources = $$PWD/data/*.*                
+   addFiles.files = $$PWD/data/*.*                
    addFiles.path = data
-   clucene.sources = $$QT_BUILD_TREE/lib/QtCLucene*.dll
+   clucene.files = $$QT_BUILD_TREE/lib/QtCLucene*.dll
 
    DEPLOYMENT += addFiles
    DEPLOYMENT += clucene

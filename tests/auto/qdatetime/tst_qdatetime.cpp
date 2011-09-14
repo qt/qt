@@ -85,6 +85,8 @@ private slots:
     void setTime_t();
     void setMSecsSinceEpoch_data();
     void setMSecsSinceEpoch();
+    void toString_isoDate_data();
+    void toString_isoDate();
     void toString_enumformat();
     void toString_strformat_data();
     void toString_strformat();
@@ -153,9 +155,16 @@ Q_DECLARE_METATYPE(QTime)
 
 tst_QDateTime::tst_QDateTime()
 {
+#ifdef Q_OS_SYMBIAN
+    // Symbian's timezone server cannot handle DST correctly for dates before year 1997
+    uint x1 = QDateTime(QDate(2000, 1, 1), QTime()).toTime_t();
+    uint x2 = QDateTime(QDate(2000, 6, 1), QTime()).toTime_t();
+    europeanTimeZone = (x1 == 946681200 && x2 == 959810400);
+#else
     uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
     uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
     europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
+#endif
 }
 
 tst_QDateTime::~tst_QDateTime()
@@ -198,8 +207,8 @@ void tst_QDateTime::ctor()
     QDateTime dt3(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC);
 
     QVERIFY(dt1 == dt2);
-    QVERIFY(dt1 != dt3);
     if (europeanTimeZone) {
+        QVERIFY(dt1 != dt3);
         QVERIFY(dt1 < dt3);
         QVERIFY(dt1.addSecs(3600).toUTC() == dt3);
     }
@@ -506,6 +515,36 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QCOMPARE(dt, reference.addMSecs(msecs));
 }
 
+void tst_QDateTime::toString_isoDate_data()
+{
+    QTest::addColumn<QDateTime>("dt");
+    QTest::addColumn<QString>("formatted");
+
+    QTest::newRow("localtime")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34))
+            << QString("1978-11-09T13:28:34");
+    QTest::newRow("UTC")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34), Qt::UTC)
+            << QString("1978-11-09T13:28:34Z");
+    QDateTime dt(QDate(1978, 11, 9), QTime(13, 28, 34));
+    dt.setUtcOffset(19800);
+    QTest::newRow("positive OffsetFromUTC")
+            << dt
+            << QString("1978-11-09T13:28:34+05:30");
+    dt.setUtcOffset(-7200);
+    QTest::newRow("negative OffsetFromUTC")
+            << dt
+            << QString("1978-11-09T13:28:34-02:00");
+}
+
+void tst_QDateTime::toString_isoDate()
+{
+    QFETCH(QDateTime, dt);
+    QFETCH(QString, formatted);
+
+    QCOMPARE(dt.toString(Qt::ISODate), formatted);
+}
+
 void tst_QDateTime::toString_enumformat()
 {
     QDateTime dt1(QDate(1995, 5, 20), QTime(12, 34, 56));
@@ -705,12 +744,12 @@ void tst_QDateTime::addSecs_data()
     }
 
     // Year sign change
-    QTest::newRow("toNegative") << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0))
+    QTest::newRow("toNegative") << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), Qt::UTC)
                                 << -1
-                                << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59));
-    QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59))
+                                << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC);
+    QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC)
                                 << 1
-                                << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0));
+                                << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), Qt::UTC);
 
     // Gregorian/Julian switchover
     QTest::newRow("toGregorian") << QDateTime(QDate(1582, 10, 4), QTime(23, 59, 59))

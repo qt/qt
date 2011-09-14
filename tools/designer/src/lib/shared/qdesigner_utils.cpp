@@ -52,15 +52,16 @@
 #include <QtDesigner/QDesignerTaskMenuExtension>
 #include <QtDesigner/QExtensionManager>
 
-#include <QtGui/QIcon>
-#include <QtGui/QPixmap>
 #include <QtCore/QDir>
-
-#include <QtGui/QApplication>
 #include <QtCore/QProcess>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDebug>
 #include <QtCore/QQueue>
+#include <QtCore/QSharedData>
+
+#include <QtGui/QApplication>
+#include <QtGui/QIcon>
+#include <QtGui/QPixmap>
 #include <QtGui/QListWidget>
 #include <QtGui/QTreeWidget>
 #include <QtGui/QTableWidget>
@@ -82,8 +83,8 @@ namespace qdesigner_internal
 
         for (int c = 0; c < item->columnCount(); c++) {
             const QVariant v = item->data(c, Qt::DecorationPropertyRole);
-            if (qVariantCanConvert<PropertySheetIconValue>(v))
-                item->setIcon(c, iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+            if (v.canConvert<PropertySheetIconValue>())
+                item->setIcon(c, iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
         }
     }
 
@@ -93,8 +94,8 @@ namespace qdesigner_internal
             return;
 
         const QVariant v = item->data(Qt::DecorationPropertyRole);
-        if (qVariantCanConvert<PropertySheetIconValue>(v))
-            item->setIcon(iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+        if (v.canConvert<PropertySheetIconValue>())
+            item->setIcon(iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
     }
 
     void reloadTableItem(DesignerIconCache *iconCache, QTableWidgetItem *item)
@@ -103,8 +104,8 @@ namespace qdesigner_internal
             return;
 
         const QVariant v = item->data(Qt::DecorationPropertyRole);
-        if (qVariantCanConvert<PropertySheetIconValue>(v))
-            item->setIcon(iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+        if (v.canConvert<PropertySheetIconValue>())
+            item->setIcon(iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
     }
 
     void reloadIconResources(DesignerIconCache *iconCache, QObject *object)
@@ -115,8 +116,8 @@ namespace qdesigner_internal
         } else if (QComboBox *comboBox = qobject_cast<QComboBox *>(object)) {
             for (int i = 0; i < comboBox->count(); i++) {
                 const QVariant v = comboBox->itemData(i, Qt::DecorationPropertyRole);
-                if (qVariantCanConvert<PropertySheetIconValue>(v)) {
-                    QIcon icon = iconCache->icon(qVariantValue<PropertySheetIconValue>(v));
+                if (v.canConvert<PropertySheetIconValue>()) {
+                    QIcon icon = iconCache->icon(qvariant_cast<PropertySheetIconValue>(v));
                     comboBox->setItemIcon(i, icon);
                     comboBox->setItemData(i, icon);
                 }
@@ -314,24 +315,51 @@ namespace qdesigner_internal
     }
 
     // ---------- PropertySheetIconValue
-    PropertySheetIconValue::PropertySheetIconValue(const PropertySheetPixmapValue &pixmap)
+
+    class PropertySheetIconValueData : public QSharedData {
+    public:
+        PropertySheetIconValue::ModeStateToPixmapMap m_paths;
+        QString m_theme;
+    };
+
+    PropertySheetIconValue::PropertySheetIconValue(const PropertySheetPixmapValue &pixmap) :
+        m_data(new PropertySheetIconValueData)
     {
         setPixmap(QIcon::Normal, QIcon::Off, pixmap);
     }
 
-    PropertySheetIconValue::PropertySheetIconValue()
+    PropertySheetIconValue::PropertySheetIconValue() :
+        m_data(new PropertySheetIconValueData)
     {
+    }
+
+    PropertySheetIconValue::~PropertySheetIconValue()
+    {
+    }
+
+    PropertySheetIconValue::PropertySheetIconValue(const PropertySheetIconValue &rhs) :
+        m_data(rhs.m_data)
+    {
+    }
+
+    PropertySheetIconValue &PropertySheetIconValue::operator=(const PropertySheetIconValue &rhs)
+    {
+        if (this != &rhs)
+            m_data.operator=(rhs.m_data);
+        return *this;
     }
 
     bool PropertySheetIconValue::equals(const PropertySheetIconValue &rhs) const
     {
-        return m_paths == rhs.m_paths;
+        return m_data->m_theme == rhs.m_data->m_theme && m_data->m_paths == rhs.m_data->m_paths;
     }
 
     bool PropertySheetIconValue::operator<(const PropertySheetIconValue &other) const
     {
-        QMapIterator<ModeStateKey, PropertySheetPixmapValue> itThis(m_paths);
-        QMapIterator<ModeStateKey, PropertySheetPixmapValue> itOther(other.m_paths);
+        if (const int themeCmp = m_data->m_theme.compare(other.m_data->m_theme))
+            return themeCmp < 0;
+        QMapIterator<ModeStateKey, PropertySheetPixmapValue> itThis(m_data->m_paths);
+        QMapIterator<ModeStateKey, PropertySheetPixmapValue> itOther(other.m_data->m_paths);
         while (itThis.hasNext() && itOther.hasNext()) {
             const ModeStateKey thisPair = itThis.next().key();
             const ModeStateKey otherPair = itOther.next().key();
@@ -350,19 +378,34 @@ namespace qdesigner_internal
         return false;
     }
 
+    bool PropertySheetIconValue::isEmpty() const
+    {
+        return m_data->m_theme.isEmpty() && m_data->m_paths.isEmpty();
+    }
+
+    QString PropertySheetIconValue::theme() const
+    {
+        return m_data->m_theme;
+    }
+
+    void PropertySheetIconValue::setTheme(const QString &t)
+    {
+        m_data->m_theme = t;
+    }
+
     PropertySheetPixmapValue PropertySheetIconValue::pixmap(QIcon::Mode mode, QIcon::State state) const
     {
         const ModeStateKey pair = qMakePair(mode, state);
-        return m_paths.value(pair);
+        return m_data->m_paths.value(pair);
     }
 
     void PropertySheetIconValue::setPixmap(QIcon::Mode mode, QIcon::State state, const PropertySheetPixmapValue &pixmap)
     {
         const ModeStateKey pair = qMakePair(mode, state);
         if (pixmap.path().isEmpty())
-            m_paths.remove(pair);
+            m_data->m_paths.remove(pair);
         else
-            m_paths.insert(pair, pixmap);
+            m_data->m_paths.insert(pair, pixmap);
     }
 
     QPixmap DesignerPixmapCache::pixmap(const PropertySheetPixmapValue &value) const
@@ -388,16 +431,28 @@ namespace qdesigner_internal
 
     QIcon DesignerIconCache::icon(const PropertySheetIconValue &value) const
     {
+        typedef PropertySheetIconValue::ModeStateToPixmapMap::const_iterator ModeStateToPixmapMapConstIt;
+
         QMap<PropertySheetIconValue, QIcon>::const_iterator it = m_cache.constFind(value);
         if (it != m_cache.constEnd())
             return it.value();
 
+        // Match on the theme first if it is available.
+        if (!value.theme().isEmpty()) {
+            const QString theme = value.theme();
+            if (QIcon::hasThemeIcon(theme)) {
+                const QIcon themeIcon = QIcon::fromTheme(theme);
+                m_cache.insert(value, themeIcon);
+                return themeIcon;
+            }
+        }
+
         QIcon icon;
-        QMap<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> paths = value.paths();
-        QMapIterator<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> itPath(paths);
-        while (itPath.hasNext()) {
-            QPair<QIcon::Mode, QIcon::State> pair = itPath.next().key();
-            icon.addFile(itPath.value().path(), QSize(), pair.first, pair.second);
+        const PropertySheetIconValue::ModeStateToPixmapMap &paths = value.paths();
+        const ModeStateToPixmapMapConstIt cend = paths.constEnd();
+        for (ModeStateToPixmapMapConstIt it = paths.constBegin(); it != cend; ++it) {
+            const QPair<QIcon::Mode, QIcon::State> pair = it.key();
+            icon.addFile(it.value().path(), QSize(), pair.first, pair.second);
         }
         m_cache.insert(value, icon);
         return icon;
@@ -547,50 +602,75 @@ namespace qdesigner_internal
             && (m_translatable == rhs.m_translatable) && (m_disambiguation == rhs.m_disambiguation) && (m_comment == rhs.m_comment);
     }
 
-    class StateMap
-    {
-    public:
-        StateMap()
-        {
-            m_stateToFlag.insert(qMakePair(QIcon::Normal, QIcon::Off), 0x01);
-            m_stateToFlag.insert(qMakePair(QIcon::Normal, QIcon::On), 0x02);
-            m_stateToFlag.insert(qMakePair(QIcon::Disabled, QIcon::Off), 0x04);
-            m_stateToFlag.insert(qMakePair(QIcon::Disabled, QIcon::On), 0x08);
-            m_stateToFlag.insert(qMakePair(QIcon::Active, QIcon::Off), 0x10);
-            m_stateToFlag.insert(qMakePair(QIcon::Active, QIcon::On), 0x20);
-            m_stateToFlag.insert(qMakePair(QIcon::Selected, QIcon::Off), 0x40);
-            m_stateToFlag.insert(qMakePair(QIcon::Selected, QIcon::On), 0x80);
 
-            m_flagToState.insert(0x01, qMakePair(QIcon::Normal, QIcon::Off));
-            m_flagToState.insert(0x02, qMakePair(QIcon::Normal, QIcon::On));
-            m_flagToState.insert(0x04, qMakePair(QIcon::Disabled, QIcon::Off));
-            m_flagToState.insert(0x08, qMakePair(QIcon::Disabled, QIcon::On));
-            m_flagToState.insert(0x10, qMakePair(QIcon::Active, QIcon::Off));
-            m_flagToState.insert(0x20, qMakePair(QIcon::Active, QIcon::On));
-            m_flagToState.insert(0x40, qMakePair(QIcon::Selected, QIcon::Off));
-            m_flagToState.insert(0x80, qMakePair(QIcon::Selected, QIcon::On));
-        }
-        uint flag(const QPair<QIcon::Mode, QIcon::State> &pair) const
-        {
-            return m_stateToFlag.value(pair);
-        }
-        QPair<QIcon::Mode, QIcon::State> state(uint flag) const
-        {
-            return m_flagToState.value(flag);
-        }
-    private:
-        QMap<QPair<QIcon::Mode, QIcon::State>, uint > m_stateToFlag;
-        QMap<uint, QPair<QIcon::Mode, QIcon::State> > m_flagToState;
+    /* IconSubPropertyMask: Assign each icon sub-property (pixmaps for the
+     * various states/modes and the theme) a flag bit (see QFont) so that they
+     * can be handled individually when assigning property values to
+     * multiselections in the set-property-commands (that is, do not clobber
+     * other subproperties when assigning just one).
+     * Provide back-and-forth mapping functions for the icon states. */
+
+    enum IconSubPropertyMask {
+        NormalOffIconMask   = 0x01,
+        NormalOnIconMask    = 0x02,
+        DisabledOffIconMask = 0x04,
+        DisabledOnIconMask  = 0x08,
+        ActiveOffIconMask   = 0x10,
+        ActiveOnIconMask    = 0x20,
+        SelectedOffIconMask = 0x40,
+        SelectedOnIconMask  = 0x80,
+        ThemeIconMask       = 0x10000
     };
 
-    Q_GLOBAL_STATIC(StateMap, stateMap)
+    static inline uint iconStateToSubPropertyFlag(QIcon::Mode mode, QIcon::State state)
+    {
+        switch (mode) {
+        case QIcon::Disabled:
+            return state == QIcon::On ? DisabledOnIconMask : DisabledOffIconMask;
+        case QIcon::Active:
+            return state == QIcon::On ?   ActiveOnIconMask :   ActiveOffIconMask;
+        case QIcon::Selected:
+            return state == QIcon::On ? SelectedOnIconMask : SelectedOffIconMask;
+        case QIcon::Normal:
+            break;
+        }
+        return     state == QIcon::On ?   NormalOnIconMask :   NormalOffIconMask;
+    }
+
+    static inline QPair<QIcon::Mode, QIcon::State> subPropertyFlagToIconModeState(unsigned flag)
+    {
+        switch (flag) {
+        case NormalOnIconMask:
+            return qMakePair(QIcon::Normal,   QIcon::On);
+        case DisabledOffIconMask:
+            return qMakePair(QIcon::Disabled, QIcon::Off);
+        case DisabledOnIconMask:
+            return qMakePair(QIcon::Disabled, QIcon::On);
+        case ActiveOffIconMask:
+            return qMakePair(QIcon::Active,   QIcon::Off);
+        case ActiveOnIconMask:
+            return qMakePair(QIcon::Active,   QIcon::On);
+        case SelectedOffIconMask:
+            return qMakePair(QIcon::Selected, QIcon::Off);
+        case SelectedOnIconMask:
+            return qMakePair(QIcon::Selected, QIcon::On);
+        case NormalOffIconMask:
+        default:
+            break;
+        }
+        return     qMakePair(QIcon::Normal,   QIcon::Off);
+    }
 
     uint PropertySheetIconValue::mask() const
     {
+        typedef ModeStateToPixmapMap::const_iterator ModeStateToPixmapMapConstIt;
+
         uint flags = 0;
-        QMapIterator<ModeStateKey, PropertySheetPixmapValue> itPath(m_paths);
-        while (itPath.hasNext())
-            flags |= stateMap()->flag(itPath.next().key());
+        const ModeStateToPixmapMapConstIt cend = m_data->m_paths.constEnd();
+        for (ModeStateToPixmapMapConstIt it = m_data->m_paths.constBegin(); it != cend; ++it)
+            flags |= iconStateToSubPropertyFlag(it.key().first, it.key().second);
+        if (!m_data->m_theme.isEmpty())
+            flags |= ThemeIconMask;
         return flags;
     }
 
@@ -598,14 +678,30 @@ namespace qdesigner_internal
     {
         uint diffMask = mask() | other.mask();
         for (int i = 0; i < 8; i++) {
-            uint flag = 1 << i;
+            const uint flag = 1 << i;
             if (diffMask & flag) { // if state is set in both icons, compare the values
-                const ModeStateKey state = stateMap()->state(flag);
+                const QPair<QIcon::Mode, QIcon::State> state = subPropertyFlagToIconModeState(flag);
                 if (pixmap(state.first, state.second) == other.pixmap(state.first, state.second))
                     diffMask &= ~flag;
             }
         }
+        if ((diffMask & ThemeIconMask) && theme() == other.theme())
+            diffMask &= ~ThemeIconMask;
         return diffMask;
+    }
+
+    PropertySheetIconValue PropertySheetIconValue::themed() const
+    {
+        PropertySheetIconValue rc(*this);
+        rc.m_data->m_paths.clear();
+        return rc;
+    }
+
+    PropertySheetIconValue PropertySheetIconValue::unthemed() const
+    {
+        PropertySheetIconValue rc(*this);
+        rc.m_data->m_theme.clear();
+        return rc;
     }
 
     void PropertySheetIconValue::assign(const PropertySheetIconValue &other, uint mask)
@@ -613,15 +709,33 @@ namespace qdesigner_internal
         for (int i = 0; i < 8; i++) {
             uint flag = 1 << i;
             if (mask & flag) {
-                const ModeStateKey state = stateMap()->state(flag);
+                const ModeStateKey state = subPropertyFlagToIconModeState(flag);
                 setPixmap(state.first, state.second, other.pixmap(state.first, state.second));
             }
         }
+        if (mask & ThemeIconMask)
+            setTheme(other.theme());
     }
 
-    PropertySheetIconValue::ModeStateToPixmapMap PropertySheetIconValue::paths() const
+    const PropertySheetIconValue::ModeStateToPixmapMap &PropertySheetIconValue::paths() const
     {
-        return m_paths;
+        return m_data->m_paths;
+    }
+
+    QDESIGNER_SHARED_EXPORT QDebug operator<<(QDebug d, const PropertySheetIconValue &p)
+    {
+        typedef PropertySheetIconValue::ModeStateToPixmapMap::const_iterator ModeStateToPixmapMapConstIt;
+
+        QDebug nospace = d.nospace();
+        nospace << "PropertySheetIconValue theme='" << p.theme() << "' ";
+
+        const PropertySheetIconValue::ModeStateToPixmapMap &paths = p.paths();
+        const ModeStateToPixmapMapConstIt cend = paths.constEnd();
+        for (ModeStateToPixmapMapConstIt it = paths.constBegin(); it != cend; ++it)
+            nospace << " mode=" << it.key().first << ",state=" << it.key().second
+                       << ",'" << it.value().path() << '\'';
+        nospace << " mask=0x" << QString::number(p.mask(), 16);
+        return d;
     }
 
     QDESIGNER_SHARED_EXPORT QDesignerFormWindowCommand *createTextPropertyCommand(const QString &propertyName, const QString &text, QObject *object, QDesignerFormWindowInterface *fw)

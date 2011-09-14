@@ -784,7 +784,7 @@ void WidgetFactory::applyStyleToTopLevel(QStyle *style, QWidget *widget)
 
     widget->setStyle(style);
     widget->setPalette(standardPalette);
-    const QWidgetList lst = qFindChildren<QWidget*>(widget);
+    const QWidgetList lst = widget->findChildren<QWidget*>();
     const QWidgetList::const_iterator cend = lst.constEnd();
     for (QWidgetList::const_iterator it = lst.constBegin(); it != cend; ++it)
         (*it)->setStyle(style);

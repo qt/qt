@@ -58,6 +58,7 @@
 #include <commsdattypeinfov1_1.h> // CCDIAPRecord, CCDProxiesRecord
 #include <commsdattypesv1_1.h> // KCDTIdIAPRecord, KCDTIdProxiesRecord
 #include <QtNetwork/QNetworkConfigurationManager>
+#include <QtNetwork/QNetworkConfiguration>
 #include <QFlags>
 
 using namespace CommsDat;
@@ -67,82 +68,96 @@ QT_BEGIN_NAMESPACE
 class SymbianIapId
 {
 public:
-    enum State{
-        NotValid,
-        Valid
-    };
-    Q_DECLARE_FLAGS(States, State)
-    SymbianIapId() {}
+    SymbianIapId() : valid(false), id(0) {}
     ~SymbianIapId() {}
-    void setIapId(TUint32 iapId) { iapState |= Valid; id = iapId; }
-    bool isValid() { return iapState == Valid; }
+    void setIapId(TUint32 iapId) { valid = true; id = iapId; }
+    bool isValid() { return valid; }
     TUint32 iapId() { return id; }
 private:
-    QFlags<States> iapState;
+    bool valid;
     TUint32 id;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(SymbianIapId::States)
 
 class SymbianProxyQuery
 {
 public:
     static QNetworkConfiguration findCurrentConfiguration(QNetworkConfigurationManager& configurationManager);
-    static SymbianIapId getIapId(QNetworkConfigurationManager& configurationManager);
+    static QNetworkConfiguration findCurrentConfigurationFromServiceNetwork(const QNetworkConfiguration& serviceNetwork);
+    static SymbianIapId getIapId(QNetworkConfigurationManager &configurationManager, const QNetworkProxyQuery &query);
     static CCDIAPRecord *getIapRecordLC(TUint32 aIAPId, CMDBSession &aDb);
     static CMDBRecordSet<CCDProxiesRecord> *prepareQueryLC(TUint32 serviceId, TDesC& serviceType);
     static QList<QNetworkProxy> proxyQueryL(TUint32 aIAPId, const QNetworkProxyQuery &query);
 };
 
+QNetworkConfiguration SymbianProxyQuery::findCurrentConfigurationFromServiceNetwork(const QNetworkConfiguration& serviceNetwork)
+{
+    // Note: This code assumes that the only unambigious way to
+    // find current proxy config is if there is only one access point
+    // or if the found access point is immediately usable.
+    QList<QNetworkConfiguration> childConfigurations = serviceNetwork.children();
+    if (childConfigurations.isEmpty()) {
+        qWarning("QNetworkProxyFactory::systemProxyForQuery called with empty service network");
+        return QNetworkConfiguration();
+    } else if (childConfigurations.count() == 1) {
+        //if only one IAP in the service network, it's always going to be used.
+        return childConfigurations.at(0);
+    } else {
+        //use highest priority active config, if available
+        for (int index = 0; index < childConfigurations.count(); index++) {
+            QNetworkConfiguration childConfig = childConfigurations.at(index);
+            if (childConfig.isValid() && childConfig.state() == QNetworkConfiguration::Active)
+                return childConfig;
+        }
+        //otherwise use highest priority discovered config (that's the one which will be activated if start were called now)
+        for (int index = 0; index < childConfigurations.count(); index++) {
+            QNetworkConfiguration childConfig = childConfigurations.at(index);
+            if (childConfig.isValid() && childConfig.state() == QNetworkConfiguration::Discovered)
+                return childConfig;
+        }
+        //otherwise the highest priority defined (most likely to be activated if all were available when start is called)
+        qWarning("QNetworkProxyFactory::systemProxyForQuery called with service network, but none of its IAPs are available");
+        return childConfigurations.at(0);
+    }
+}
+
 QNetworkConfiguration SymbianProxyQuery::findCurrentConfiguration(QNetworkConfigurationManager& configurationManager)
 {
     QList<QNetworkConfiguration> activeConfigurations = configurationManager.allConfigurations(
         QNetworkConfiguration::Active);
-    QNetworkConfiguration currentConfig;
     if (activeConfigurations.count() > 0) {
-        currentConfig = activeConfigurations.at(0);
+        return activeConfigurations.at(0);
     } else {
         // No active configurations, try default one
         QNetworkConfiguration defaultConfiguration = configurationManager.defaultConfiguration();
         if (defaultConfiguration.isValid()) {
             switch (defaultConfiguration.type()) {
             case QNetworkConfiguration::InternetAccessPoint:
-                currentConfig = defaultConfiguration;
-                break;
+                return defaultConfiguration;
             case QNetworkConfiguration::ServiceNetwork:
-            {
-                // Note: This code assumes that the only unambigious way to
-                // find current proxy config is if there is only one access point
-                // or if the found access point is immediately usable.
-                QList<QNetworkConfiguration> childConfigurations = defaultConfiguration.children();
-                if (childConfigurations.count() == 1) {
-                    currentConfig = childConfigurations.at(0);
-                } else {
-                    for (int index = 0; index < childConfigurations.count(); index++) {
-                        QNetworkConfiguration childConfig = childConfigurations.at(index);
-                        if (childConfig.isValid() && childConfig.state() == QNetworkConfiguration::Discovered) {
-                            currentConfig = childConfig;
-                            break;
-                        }
-                    }
-                }
-            }
-                break;
+                return findCurrentConfigurationFromServiceNetwork(defaultConfiguration);
             case QNetworkConfiguration::UserChoice:
-                // User choice is not a valid configuration for proxy discovery
+                qWarning("QNetworkProxyFactory::systemProxyForQuery called with user choice configuration, which is not valid");
                 break;
             }
         }
     }
-    return currentConfig;
+    return QNetworkConfiguration();
 }
 
-SymbianIapId SymbianProxyQuery::getIapId(QNetworkConfigurationManager& configurationManager)
+SymbianIapId SymbianProxyQuery::getIapId(QNetworkConfigurationManager& configurationManager, const QNetworkProxyQuery &query)
 {
     SymbianIapId iapId;
 
-    QNetworkConfiguration currentConfig = findCurrentConfiguration(configurationManager);
-    if (currentConfig.isValid()) {
+    QNetworkConfiguration currentConfig = query.networkConfiguration();
+    if (!currentConfig.isValid()) {
+        //If config is not specified, then try to find out an active or default one
+        currentConfig = findCurrentConfiguration(configurationManager);
+    }
+    if (currentConfig.isValid() && currentConfig.type() == QNetworkConfiguration::ServiceNetwork) {
+        //convert service network to the real IAP.
+        currentConfig = findCurrentConfigurationFromServiceNetwork(currentConfig);
+    }
+    if (currentConfig.isValid() && currentConfig.type() == QNetworkConfiguration::InternetAccessPoint) {
         // Note: the following code assumes that the identifier is in format
         // I_xxxx where xxxx is the identifier of IAP. This is meant as a
         // temporary solution until there is a support for returning
@@ -231,7 +246,12 @@ QList<QNetworkProxy> SymbianProxyQuery::proxyQueryL(TUint32 aIAPId, const QNetwo
             CleanupStack::Pop(); // serverName
             TUint32 port = proxyRecord->iPortNumber;
 
-            QNetworkProxy proxy(QNetworkProxy::HttpProxy, serverNameQt, port);
+            //Symbian config doesn't include proxy type, assume http unless the port matches assigned port of another type
+            //Mobile operators use a wide variety of port numbers for http proxies.
+            QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;
+            if (port == 1080) //IANA assigned port for SOCKS
+                proxyType = QNetworkProxy::Socks5Proxy;
+            QNetworkProxy proxy(proxyType, serverNameQt, port);
             foundProxies.append(proxy);
         }
     }
@@ -249,7 +269,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     SymbianIapId iapId;
     TInt error;
     QNetworkConfigurationManager manager;
-    iapId = SymbianProxyQuery::getIapId(manager);
+    iapId = SymbianProxyQuery::getIapId(manager, query);
     if (iapId.isValid()) {
         TRAP(error, proxies = SymbianProxyQuery::proxyQueryL(iapId.iapId(), query))
         if (error != KErrNone) {

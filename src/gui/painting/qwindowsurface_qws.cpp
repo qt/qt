@@ -806,6 +806,10 @@ QWSMemorySurface::QWSMemorySurface(QWidget *w)
 
 QWSMemorySurface::~QWSMemorySurface()
 {
+#ifndef QT_NO_QWS_MULTIPROCESS
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
+#endif
 }
 
 
@@ -852,9 +856,9 @@ void QWSMemorySurface::setLock(int lockId)
 {
     if (memlock && memlock->id() == lockId)
         return;
-    delete memlock;
+    if (memlock != QWSDisplay::Data::getClientLock())
+        delete memlock;
     memlock = (lockId == -1 ? 0 : new QWSLock(lockId));
-    return;
 }
 #endif // QT_NO_QWS_MULTIPROCESS
 
@@ -946,37 +950,39 @@ void QWSLocalMemSurface::setGeometry(const QRect &rect)
     }
 
     uchar *deleteLater = 0;
-    // In case of a Hide event we need to delete the memory after sending the
-    // event to the server in order to let the server animate the event.
-    if (size.isEmpty()) {
-        deleteLater = mem;
-        mem = 0;
-    }
 
     if (img.size() != size) {
-        delete[] mem;
         if (size.isEmpty()) {
+            if (memsize) {
+                // In case of a Hide event we need to delete the memory after sending the
+                // event to the server in order to let the server animate the event.
+                deleteLater = mem;
+                memsize = 0;
+            }
             mem = 0;
             img = QImage();
         } else {
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
-            const int memsize = bpl * size.height();
-            mem = new uchar[memsize];
+            const int imagesize = bpl * size.height();
+            if (memsize < imagesize) {
+                delete[] mem;
+                memsize = imagesize;
+                mem = new uchar[memsize];
+            }
             img = QImage(mem, size.width(), size.height(), bpl, format);
             setImageMetrics(img, win);
         }
     }
 
     QWSWindowSurface::setGeometry(rect);
+
     delete[] deleteLater;
 }
 
 QByteArray QWSLocalMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(uchar*) + 3 * sizeof(int) +
-                 sizeof(SurfaceFlags));
+    QByteArray array(sizeof(uchar*) + 3 * sizeof(int) + sizeof(SurfaceFlags), Qt::Uninitialized);
 
     char *ptr = array.data();
 
@@ -997,6 +1003,11 @@ QByteArray QWSLocalMemSurface::permanentState() const
 
 void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
+
     int width;
     int height;
     QImage::Format format;
@@ -1023,6 +1034,10 @@ void QWSLocalMemSurface::setPermanentState(const QByteArray &data)
 
 void QWSLocalMemSurface::releaseSurface()
 {
+    if (memsize) {
+        delete[] mem;
+        memsize = 0;
+    }
     mem = 0;
     img = QImage();
 }
@@ -1050,10 +1065,12 @@ bool QWSSharedMemSurface::setMemory(int memId)
         return true;
 
     mem.detach();
-    if (!mem.attach(memId)) {
+
+    if (memId != -1 && !mem.attach(memId)) {
+#ifndef QT_NO_DEBUG
         perror("QWSSharedMemSurface: attaching to shared memory");
-        qCritical("QWSSharedMemSurface: Error attaching to"
-                  " shared memory 0x%x", memId);
+        qCritical("QWSSharedMemSurface: Error attaching to shared memory 0x%x", memId);
+#endif
         return false;
     }
 
@@ -1064,17 +1081,15 @@ bool QWSSharedMemSurface::setMemory(int memId)
 void QWSSharedMemSurface::setDirectRegion(const QRegion &r, int id)
 {
     QWSMemorySurface::setDirectRegion(r, id);
-    if(mem.address())
+    if (mem.address())
         *(uint *)mem.address() = id;
 }
 
 const QRegion QWSSharedMemSurface::directRegion() const
 {
-    QWSSharedMemory *cmem = const_cast<QWSSharedMemory *>(&mem);
-    if (cmem->address() && ((int*)cmem->address())[0] == directRegionId())
+    if (mem.address() && *(uint *)mem.address() == uint(directRegionId()))
         return QWSMemorySurface::directRegion();
-    else
-        return QRegion();
+    return QRegion();
 }
 #endif
 
@@ -1117,8 +1132,6 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
             mem.detach();
             img = QImage();
         } else {
-            mem.detach();
-
             QWidget *win = window();
             const QImage::Format format = preferredImageFormat(win);
             const int bpl = nextMulOf4(bytesPerPixel(format) * size.width());
@@ -1127,9 +1140,12 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 #else
             const int imagesize = bpl * size.height();
 #endif
-            if (!mem.create(imagesize)) {
-                perror("QWSSharedMemSurface::setGeometry allocating shared memory");
-                qFatal("Error creating shared memory of size %d", imagesize);
+            if (mem.size() < imagesize) {
+                mem.detach();
+                if (!mem.create(imagesize)) {
+                    perror("QWSSharedMemSurface::setGeometry allocating shared memory");
+                    qFatal("Error creating shared memory of size %d", imagesize);
+                }
             }
 #ifdef QT_QWS_CLIENTBLIT
             *((uint *)mem.address()) = 0;
@@ -1147,8 +1163,7 @@ void QWSSharedMemSurface::setGeometry(const QRect &rect)
 
 QByteArray QWSSharedMemSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(6 * sizeof(int));
+    QByteArray array(6 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
 
@@ -1222,8 +1237,8 @@ bool QWSOnScreenSurface::isValid() const
 
 QByteArray QWSOnScreenSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(sizeof(int));
+    QByteArray array(sizeof(int), Qt::Uninitialized);
+
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = QApplication::desktop()->screenNumber(window());
     return array;
@@ -1263,8 +1278,7 @@ QWSYellowSurface::~QWSYellowSurface()
 
 QByteArray QWSYellowSurface::permanentState() const
 {
-    QByteArray array;
-    array.resize(2 * sizeof(int));
+    QByteArray array(2 * sizeof(int), Qt::Uninitialized);
 
     int *ptr = reinterpret_cast<int*>(array.data());
     ptr[0] = surfaceSize.width();

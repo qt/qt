@@ -89,6 +89,7 @@ private slots:
     void tryStartPeakThreadCount();
     void tryStartCount();
     void waitForDone();
+    void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
     void stressTest();
 };
@@ -772,6 +773,32 @@ void tst_QThreadPool::waitForDone()
         threadPool.waitForDone();
         QCOMPARE(int(count), runs);
     }
+}
+
+void tst_QThreadPool::waitForDoneTimeout()
+{
+    class BlockedTask : public QRunnable
+    {
+    public:
+      QMutex mutex;
+      BlockedTask() { setAutoDelete(false); }
+      
+      void run()
+        {
+          mutex.lock();
+          mutex.unlock();
+          QTest::qSleep(50);
+        }
+    };
+
+    QThreadPool threadPool;
+
+    BlockedTask *task = new BlockedTask;
+    task->mutex.lock();
+    threadPool.start(task);
+    QVERIFY(!threadPool.waitForDone(100));
+    task->mutex.unlock();
+    QVERIFY(threadPool.waitForDone(400));
 }
 
 void tst_QThreadPool::destroyingWaitsForTasksToFinish()

@@ -101,7 +101,7 @@ bool isVariantType(const char* type)
     return qvariant_nameToType(type) != 0;
 }
 
-// copied from qmetaobject.cpp
+// copied from qmetaobject_p.h
 // do not touch without touching the moc as well
 enum PropertyFlags  {
     Invalid = 0x00000000,
@@ -111,6 +111,8 @@ enum PropertyFlags  {
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
 //    Override = 0x00000200,
+    Constant = 0x00000400,
+    Final = 0x00000800,
     Designable = 0x00001000,
     ResolveDesignable = 0x00002000,
     Scriptable = 0x00004000,
@@ -618,6 +620,8 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     property.setUser(prototype.isUser());
     property.setStdCppSet(prototype.hasStdCppSet());
     property.setEnumOrFlag(prototype.isEnumType());
+    property.setConstant(prototype.isConstant());
+    property.setFinal(prototype.isFinal());
     if (prototype.hasNotifySignal()) {
         // Find an existing method for the notify signal, or add a new one.
         QMetaMethod method = prototype.notifySignal();
@@ -791,7 +795,7 @@ void QMetaObjectBuilder::addMetaObject
     }
 
     if ((members & StaticMetacall) != 0) {
-        if (priv(prototype->d.data)->revision >= 2) {
+        if (priv(prototype->d.data)->revision >= 6) {
             const QMetaObjectExtraData *extra =
                 (const QMetaObjectExtraData *)(prototype->d.extradata);
             if (extra && extra->static_metacall)
@@ -2280,6 +2284,32 @@ bool QMetaPropertyBuilder::isEnumOrFlag() const
 }
 
 /*!
+    Returns true if the property is constant; otherwise returns false.
+    The default value is false.
+*/
+bool QMetaPropertyBuilder::isConstant() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->flag(Constant);
+    else
+        return false;
+}
+
+/*!
+    Returns true if the property is final; otherwise returns false.
+    The default value is false.
+*/
+bool QMetaPropertyBuilder::isFinal() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->flag(Final);
+    else
+        return false;
+}
+
+/*!
     Sets this property to readable if \a value is true.
 
     \sa isReadable(), setWritable()
@@ -2401,6 +2431,31 @@ void QMetaPropertyBuilder::setEnumOrFlag(bool value)
     if (d)
         d->setFlag(EnumOrFlag, value);
 }
+
+/*!
+    Sets the \c CONSTANT flag on this property to \a value.
+
+    \sa isConstant()
+*/
+void QMetaPropertyBuilder::setConstant(bool value)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        d->setFlag(Constant, value);
+}
+
+/*!
+    Sets the \c FINAL flag on this property to \a value.
+
+    \sa isFinal()
+*/
+void QMetaPropertyBuilder::setFinal(bool value)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        d->setFlag(Final, value);
+}
+
 
 /*!
     \class QMetaEnumBuilder

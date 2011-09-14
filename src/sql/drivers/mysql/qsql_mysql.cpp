@@ -420,10 +420,10 @@ QVariant QMYSQLResult::handle() const
 {
 #if MYSQL_VERSION_ID >= 40108
     if(d->preparedQuery)
-        return d->meta ? qVariantFromValue(d->meta) : qVariantFromValue(d->stmt);
+        return d->meta ? QVariant::fromValue(d->meta) : qVariantFromValue(d->stmt);
     else
 #endif
-        return qVariantFromValue(d->result);
+        return QVariant::fromValue(d->result);
 }
 
 void QMYSQLResult::cleanup()
@@ -1436,7 +1436,7 @@ QSqlRecord QMYSQLDriver::record(const QString& tablename) const
 
 QVariant QMYSQLDriver::handle() const
 {
-    return qVariantFromValue(d->mysql);
+    return QVariant::fromValue(d->mysql);
 }
 
 bool QMYSQLDriver::beginTransaction()

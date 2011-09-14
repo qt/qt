@@ -12,6 +12,8 @@ symbian:HEADERS +=  arch/qatomic_symbian.h \
 
 vxworks:HEADERS += arch/qatomic_vxworks.h
 
+integrity:HEADERS += arch/qatomic_integrity.h
+
 !wince*:!win32:!mac:!symbian:HEADERS += arch/qatomic_alpha.h \
                        arch/qatomic_avr32.h \
                        arch/qatomic_ia64.h \
@@ -21,7 +23,9 @@ vxworks:HEADERS += arch/qatomic_vxworks.h
                        arch/qatomic_generic.h \
                        arch/qatomic_powerpc.h \
                        arch/qatomic_arm.h \
+                       arch/qatomic_armv5.h \
                        arch/qatomic_armv6.h \
+                       arch/qatomic_armv7.h \
                        arch/qatomic_i386.h \
                        arch/qatomic_mips.h \
                        arch/qatomic_s390.h \

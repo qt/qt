@@ -47,7 +47,8 @@ NativeEventList::NativeEventList(int defaultWaitMs)
     , wait(false)
     , defaultWaitMs(defaultWaitMs)
 {
-    QString multiplier = qgetenv("NATIVEDEBUG");
+    debug = qgetenv("NATIVEDEBUG").toInt();
+    QString multiplier = qgetenv("NATIVEDEBUGSPEED");
     if (!multiplier.isEmpty())
         setTimeMultiplier(multiplier.toFloat());
 }
@@ -61,8 +62,11 @@ NativeEventList::~NativeEventList()
 void NativeEventList::sendNextEvent()
 {
     QNativeEvent *e = eventList.at(currIndex).second;
-    if (e)
+    if (e) {
+        if (debug > 0)
+            qDebug() << "Sending:" << *e;
         QNativeInput::sendNativeEvent(*e);
+    }
     waitNextEvent();
 }
 

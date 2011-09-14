@@ -115,6 +115,8 @@ QWidget *qt_button_down = 0;                     // widget got last button-down
 
 QSymbianControl *QSymbianControl::lastFocusedControl = 0;
 
+static Qt::KeyboardModifiers app_keyboardModifiers = Qt::NoModifier;
+
 QS60Data* qGlobalS60Data()
 {
     return qt_s60Data();
@@ -580,13 +582,20 @@ QPoint QSymbianControl::translatePointForFixedNativeOrientation(const TPoint &po
 {
     QPoint pos(pointerEventPos.iX, pointerEventPos.iY);
     if (qwidget->d_func()->fixNativeOrientationCalled) {
-        QSize wsize = qwidget->size();
-        TSize size = Size();
+        QSize wsize = qwidget->size(); // always same as the size in the native orientation
+        TSize size = Size(); // depends on the current orientation
         if (size.iWidth == wsize.height() && size.iHeight == wsize.width()) {
             qreal x = pos.x();
             qreal y = pos.y();
-            pos.setX(size.iHeight - y);
-            pos.setY(x);
+            if (S60->screenRotation == QS60Data::ScreenRotation90) {
+                // DisplayRightUp
+                pos.setX(size.iHeight - y);
+                pos.setY(x);
+            } else if (S60->screenRotation == QS60Data::ScreenRotation270) {
+                // DisplayLeftUp
+                pos.setX(y);
+                pos.setY(size.iWidth - x);
+            }
         }
     }
     return pos;
@@ -735,6 +744,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
+    app_keyboardModifiers = modifiers;
 
     QPoint widgetPos = translatePointForFixedNativeOrientation(pEvent.iPosition);
     TPoint controlScreenPos = PositionRelativeToScreen();
@@ -1392,6 +1402,23 @@ void QSymbianControl::PositionChanged()
     }
 }
 
+// Search recursively if there is a child widget that is both visible and focused.
+bool QSymbianControl::hasFocusedAndVisibleChild(QWidget *parentWidget)
+{
+    for (int i = 0; i < parentWidget->children().size(); ++i) {
+        QObject *object = parentWidget->children().at(i);
+        if (object && object->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(object);
+            WId winId = w->internalWinId();
+            if (winId && winId->IsFocused() && winId->IsVisible())
+                return true;
+            if (hasFocusedAndVisibleChild(w))
+                return true;
+        }
+    }
+    return false;
+}
+
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
     if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
@@ -1424,17 +1451,9 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         if (qwidget->isWindow())
             S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
 #endif
-    } else if (QApplication::activeWindow() == qwidget->window()) {
-        bool focusedControlFound = false;
-        WId winId = 0;
-        for (QWidget *w = qwidget->parentWidget(); w && (winId = w->internalWinId()); w = w->parentWidget()) {
-            if (winId->IsFocused() && winId->IsVisible()) {
-                focusedControlFound = true;
-                break;
-            } else if (w->isWindow())
-                break;
-        }
-        if (!focusedControlFound) {
+    } else {
+        QWidget *parentWindow = qwidget->window();
+        if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
             if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
                 QWidget *fw = QApplication::focusWidget();
                 if (fw) {
@@ -1547,6 +1566,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {
+#ifdef QT_SOFTKEYS_ENABLED
+        // Update needed just in case softkeys contain icons
+        QSoftKeyManager::updateSoftKeys();
+#endif
         handleClientAreaChange();
         // Send resize event to trigger desktopwidget workAreaResized signal
         if (qt_desktopWidget) {
@@ -1688,7 +1711,7 @@ void QSymbianControl::ensureFixNativeOrientation()
     This function is only available on S60.
 */
 QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv)
-    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 {
     Q_D(QApplication);
     S60->s60ApplicationFactory = factory;
@@ -1696,7 +1719,7 @@ QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int
 }
 
 QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int _internal)
-    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 {
     Q_D(QApplication);
     S60->s60ApplicationFactory = factory;
@@ -1722,7 +1745,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         if (commandLine) {
             // After this construction, CEikonEnv will be available from CEikonEnv::Static().
             // (much like our qApp).
-            QtEikonEnv* coe = new QtEikonEnv;
+            CEikonEnv* coe = new CEikonEnv;
             //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
             TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
             if(err != KErrNone) {
@@ -1832,6 +1855,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     repository = 0;
 #endif
 
+    qt_keymapper_private()->updateInputLanguage();
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
@@ -1915,13 +1940,18 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     qRegisterMetaType<WId>("WId");
 }
 
+#ifdef QT_NO_FREETYPE
 extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
+#endif
 
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
  *****************************************************************************/
 void qt_cleanup()
 {
+#ifdef Q_WS_S60
+    S60->setButtonGroupContainer(0);
+#endif
     if(qt_S60Beep) {
         delete qt_S60Beep;
         qt_S60Beep = 0;
@@ -1929,7 +1959,9 @@ void qt_cleanup()
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
     QPixmapCache::clear(); // Has to happen now, since QSymbianRasterPixmapData has FBS handles
 
+#ifdef QT_NO_FREETYPE
     qt_cleanup_symbianFontDatabase();
+#endif
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
     // It's important that this happens here, before the event dispatcher gets
@@ -2398,6 +2430,13 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
         break;
 #endif
+
+#ifdef Q_WS_S60
+    case KEikInputLanguageChange:
+        qt_keymapper_private()->updateInputLanguage();
+        break;
+#endif
+
     default:
         break;
     }
@@ -2559,6 +2598,11 @@ bool QApplication::isEffectEnabled(Qt::UIEffect /* effect */)
 void QApplication::setEffectEnabled(Qt::UIEffect /* effect */, bool /* enable */)
 {
     // TODO: Implement QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+}
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return app_keyboardModifiers;
 }
 
 TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)

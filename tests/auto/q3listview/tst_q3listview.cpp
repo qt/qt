@@ -678,7 +678,7 @@ void tst_Q3ListView::selections_mouseClick()
 
     for (i = 0; i < items.count(); ++i) {
 	Q3ListViewItem *item = items.at(i);
-        Q_ASSERT(item);
+        QVERIFY(item);
 	if ( item->isSelected() ) {
 	    QVERIFY( selectedItems.contains( i ) );
 	} else {

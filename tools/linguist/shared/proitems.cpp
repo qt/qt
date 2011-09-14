@@ -40,319 +40,335 @@
 ****************************************************************************/
 
 #include "proitems.h"
-#include "abstractproitemvisitor.h"
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QSet>
 
 QT_BEGIN_NAMESPACE
 
-// --------------- ProItem ------------
-void ProItem::setComment(const QString &comment)
+using namespace ProStringConstants;
+
+// from qhash.cpp
+uint ProString::hash(const QChar *p, int n)
 {
-    m_comment = comment;
+    uint h = 0;
+
+    while (n--) {
+        h = (h << 4) + (*p++).unicode();
+        h ^= (h & 0xf0000000) >> 23;
+        h &= 0x0fffffff;
+    }
+    return h;
 }
 
-QString ProItem::comment() const
+ProString::ProString() :
+    m_offset(0), m_length(0), m_file(0), m_hash(0x80000000)
 {
-    return m_comment;
 }
 
-// --------------- ProBlock ----------------
-
-ProBlock::ProBlock(ProBlock *parent)
+ProString::ProString(const ProString &other) :
+    m_string(other.m_string), m_offset(other.m_offset), m_length(other.m_length), m_file(other.m_file), m_hash(other.m_hash)
 {
-    m_blockKind = 0;
-    m_parent = parent;
-    m_refCount = 1;
 }
 
-ProBlock::~ProBlock()
+ProString::ProString(const ProString &other, OmitPreHashing) :
+    m_string(other.m_string), m_offset(other.m_offset), m_length(other.m_length), m_file(other.m_file), m_hash(0x80000000)
 {
-    foreach (ProItem *itm, m_proitems)
-        if (itm->kind() == BlockKind)
-            static_cast<ProBlock *>(itm)->deref();
-        else
-            delete itm;
 }
 
-void ProBlock::appendItem(ProItem *proitem)
+ProString::ProString(const QString &str) :
+    m_string(str), m_offset(0), m_length(str.length()), m_file(0)
 {
-    m_proitems << proitem;
+    updatedHash();
 }
 
-void ProBlock::setItems(const QList<ProItem *> &proitems)
+ProString::ProString(const QString &str, OmitPreHashing) :
+    m_string(str), m_offset(0), m_length(str.length()), m_file(0), m_hash(0x80000000)
 {
-    m_proitems = proitems;
 }
 
-QList<ProItem *> ProBlock::items() const
+ProString::ProString(const char *str) :
+    m_string(QString::fromLatin1(str)), m_offset(0), m_length(qstrlen(str)), m_file(0)
 {
-    return m_proitems;
+    updatedHash();
 }
 
-void ProBlock::setBlockKind(int blockKind)
+ProString::ProString(const char *str, OmitPreHashing) :
+    m_string(QString::fromLatin1(str)), m_offset(0), m_length(qstrlen(str)), m_file(0), m_hash(0x80000000)
 {
-    m_blockKind = blockKind;
 }
 
-int ProBlock::blockKind() const
+ProString::ProString(const QString &str, int offset, int length) :
+    m_string(str), m_offset(offset), m_length(length), m_file(0)
 {
-    return m_blockKind;
+    updatedHash();
 }
 
-void ProBlock::setParent(ProBlock *parent)
+ProString::ProString(const QString &str, int offset, int length, uint hash) :
+    m_string(str), m_offset(offset), m_length(length), m_file(0), m_hash(hash)
 {
-    m_parent = parent;
 }
 
-ProBlock *ProBlock::parent() const
+ProString::ProString(const QString &str, int offset, int length, ProStringConstants::OmitPreHashing) :
+    m_string(str), m_offset(offset), m_length(length), m_file(0), m_hash(0x80000000)
 {
-    return m_parent;
 }
 
-ProItem::ProItemKind ProBlock::kind() const
+void ProString::setValue(const QString &str)
 {
-    return ProItem::BlockKind;
+    m_string = str, m_offset = 0, m_length = str.length();
+    updatedHash();
 }
 
-ProItem::ProItemReturn ProBlock::Accept(AbstractProItemVisitor *visitor)
+void ProString::setValue(const QString &str, OmitPreHashing)
 {
-    if (visitor->visitBeginProBlock(this) == ReturnSkip)
-        return ReturnTrue;
-    ProItemReturn rt = ReturnTrue;
-    for (int i = 0; i < m_proitems.count(); ++i) {
-        rt = m_proitems.at(i)->Accept(visitor);
-        if (rt != ReturnTrue && rt != ReturnFalse) {
-            if (rt == ReturnLoop) {
-                rt = ReturnTrue;
-                while (visitor->visitProLoopIteration())
-                    for (int j = i; ++j < m_proitems.count(); ) {
-                        rt = m_proitems.at(j)->Accept(visitor);
-                        if (rt != ReturnTrue && rt != ReturnFalse) {
-                            if (rt == ReturnNext) {
-                                rt = ReturnTrue;
-                                break;
-                            }
-                            if (rt == ReturnBreak)
-                                rt = ReturnTrue;
-                            goto do_break;
-                        }
-                    }
-              do_break:
-                visitor->visitProLoopCleanup();
+    m_string = str, m_offset = 0, m_length = str.length(), m_hash = 0x80000000;
+}
+
+uint ProString::updatedHash() const
+{
+     return (m_hash = hash(m_string.constData() + m_offset, m_length));
+}
+
+uint qHash(const ProString &str)
+{
+    if (!(str.m_hash & 0x80000000))
+        return str.m_hash;
+    return str.updatedHash();
+}
+
+QString ProString::toQString() const
+{
+    return m_string.mid(m_offset, m_length);
+}
+
+QString &ProString::toQString(QString &tmp) const
+{
+    return tmp.setRawData(m_string.constData() + m_offset, m_length);
+}
+
+bool ProString::operator==(const ProString &other) const
+{
+    if (m_length != other.m_length)
+        return false;
+    return !memcmp(m_string.constData() + m_offset,
+                   other.m_string.constData() + other.m_offset, m_length * 2);
+}
+
+bool ProString::operator==(const QString &other) const
+{
+    if (m_length != other.length())
+        return false;
+    return !memcmp(m_string.constData() + m_offset, other.constData(), m_length * 2);
+}
+
+bool ProString::operator==(const QLatin1String &other) const
+{
+    const ushort *uc = (ushort *)m_string.constData() + m_offset;
+    const ushort *e = uc + m_length;
+    const uchar *c = (uchar *)other.latin1();
+
+    if (!c)
+        return isEmpty();
+
+    while (*c) {
+        if (uc == e || *uc != *c)
+            return false;
+        ++uc;
+        ++c;
+    }
+    return (uc == e);
+}
+
+QChar *ProString::prepareAppend(int extraLen)
+{
+    if (m_string.isDetached() && m_length + extraLen <= m_string.capacity()) {
+        m_string.reserve(0); // Prevent the resize() below from reallocating
+        QChar *ptr = (QChar *)m_string.constData();
+        if (m_offset)
+            memmove(ptr, ptr + m_offset, m_length * 2);
+        ptr += m_length;
+        m_offset = 0;
+        m_length += extraLen;
+        m_string.resize(m_length);
+        m_hash = 0x80000000;
+        return ptr;
+    } else {
+        QString neu(m_length + extraLen, Qt::Uninitialized);
+        QChar *ptr = (QChar *)neu.constData();
+        memcpy(ptr, m_string.constData() + m_offset, m_length * 2);
+        ptr += m_length;
+        *this = ProString(neu, NoHash);
+        return ptr;
+    }
+}
+
+// If pending != 0, prefix with space if appending to non-empty non-pending
+ProString &ProString::append(const ProString &other, bool *pending)
+{
+    if (other.m_length) {
+        if (!m_length) {
+            *this = other;
+        } else {
+            QChar *ptr;
+            if (pending && !*pending) {
+                ptr = prepareAppend(1 + other.m_length);
+                *ptr++ = 32;
+            } else {
+                ptr = prepareAppend(other.m_length);
             }
-            break;
+            memcpy(ptr, other.m_string.constData() + other.m_offset, other.m_length * 2);
+            if (other.m_file)
+                m_file = other.m_file;
+        }
+        if (pending)
+            *pending = true;
+    }
+    return *this;
+}
+
+ProString &ProString::append(const ProStringList &other, bool *pending, bool skipEmpty1st)
+{
+    if (const int sz = other.size()) {
+        int startIdx = 0;
+        if (pending && !*pending && skipEmpty1st && other.at(0).isEmpty()) {
+            if (sz == 1)
+                return *this;
+            startIdx = 1;
+        }
+        if (!m_length && sz == startIdx + 1) {
+            *this = other.at(startIdx);
+        } else {
+            int totalLength = sz - startIdx;
+            for (int i = startIdx; i < sz; ++i)
+                totalLength += other.at(i).size();
+            bool putSpace = false;
+            if (pending && !*pending && m_length)
+                putSpace = true;
+            else
+                totalLength--;
+
+            QChar *ptr = prepareAppend(totalLength);
+            for (int i = startIdx; i < sz; ++i) {
+                if (putSpace)
+                    *ptr++ = 32;
+                else
+                    putSpace = true;
+                const ProString &str = other.at(i);
+                memcpy(ptr, str.m_string.constData() + str.m_offset, str.m_length * 2);
+                ptr += str.m_length;
+            }
+            if (other.last().m_file)
+                m_file = other.last().m_file;
+        }
+        if (pending)
+            *pending = true;
+    }
+    return *this;
+}
+
+QString operator+(const ProString &one, const ProString &two)
+{
+    if (two.m_length) {
+        if (!one.m_length) {
+            return two.toQString();
+        } else {
+            QString neu(one.m_length + two.m_length, Qt::Uninitialized);
+            ushort *ptr = (ushort *)neu.constData();
+            memcpy(ptr, one.m_string.constData() + one.m_offset, one.m_length * 2);
+            memcpy(ptr + one.m_length, two.m_string.constData() + two.m_offset, two.m_length * 2);
+            return neu;
         }
     }
-    visitor->visitEndProBlock(this);
-    return rt;
+    return one.toQString();
 }
 
-// --------------- ProVariable ----------------
-ProVariable::ProVariable(const QString &name, ProBlock *parent)
-    : ProBlock(parent)
+
+ProString ProString::mid(int off, int len) const
 {
-    setBlockKind(ProBlock::VariableKind);
-    m_variable = name;
-    m_variableKind = SetOperator;
+    ProString ret(*this, NoHash);
+    if (off > m_length)
+        off = m_length;
+    ret.m_offset += off;
+    ret.m_length -= off;
+    if (ret.m_length > len)
+        ret.m_length = len;
+    return ret;
 }
 
-void ProVariable::setVariableOperator(VariableOperator variableKind)
+ProString ProString::trimmed() const
 {
-    m_variableKind = variableKind;
+    ProString ret(*this, NoHash);
+    int cur = m_offset;
+    int end = cur + m_length;
+    const QChar *data = m_string.constData();
+    for (; cur < end; cur++)
+        if (!data[cur].isSpace()) {
+            // No underrun check - we know there is at least one non-whitespace
+            while (data[end - 1].isSpace())
+                end--;
+            break;
+        }
+    ret.m_offset = cur;
+    ret.m_length = end - cur;
+    return ret;
 }
 
-ProVariable::VariableOperator ProVariable::variableOperator() const
+QString ProStringList::join(const QString &sep) const
 {
-    return m_variableKind;
+    int totalLength = 0;
+    const int sz = size();
+
+    for (int i = 0; i < sz; ++i)
+        totalLength += at(i).size();
+
+    if (sz)
+        totalLength += sep.size() * (sz - 1);
+
+    QString res(totalLength, Qt::Uninitialized);
+    QChar *ptr = (QChar *)res.constData();
+    for (int i = 0; i < sz; ++i) {
+        if (i) {
+            memcpy(ptr, sep.constData(), sep.size() * 2);
+            ptr += sep.size();
+        }
+        memcpy(ptr, at(i).constData(), at(i).size() * 2);
+        ptr += at(i).size();
+    }
+    return res;
 }
 
-void ProVariable::setVariable(const QString &name)
+void ProStringList::removeDuplicates()
 {
-    m_variable = name;
+    int n = size();
+    int j = 0;
+    QSet<ProString> seen;
+    seen.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        const ProString &s = at(i);
+        if (seen.contains(s))
+            continue;
+        seen.insert(s);
+        if (j != i)
+            (*this)[j] = s;
+        ++j;
+    }
+    if (n != j)
+        erase(begin() + j, end());
 }
 
-QString ProVariable::variable() const
-{
-    return m_variable;
-}
-
-ProItem::ProItemReturn ProVariable::Accept(AbstractProItemVisitor *visitor)
-{
-    visitor->visitBeginProVariable(this);
-    foreach (ProItem *item, m_proitems)
-        item->Accept(visitor); // cannot fail
-    visitor->visitEndProVariable(this);
-    return ReturnTrue;
-}
-
-// --------------- ProValue ----------------
-ProValue::ProValue(const QString &value, ProVariable *variable)
-{
-    m_variable = variable;
-    m_value = value;
-}
-
-void ProValue::setValue(const QString &value)
-{
-    m_value = value;
-}
-
-QString ProValue::value() const
-{
-    return m_value;
-}
-
-void ProValue::setVariable(ProVariable *variable)
-{
-    m_variable = variable;
-}
-
-ProVariable *ProValue::variable() const
-{
-    return m_variable;
-}
-
-ProItem::ProItemKind ProValue::kind() const
-{
-    return ProItem::ValueKind;
-}
-
-ProItem::ProItemReturn ProValue::Accept(AbstractProItemVisitor *visitor)
-{
-    visitor->visitProValue(this);
-    return ReturnTrue;
-}
-
-// --------------- ProFunction ----------------
-ProFunction::ProFunction(const QString &text)
-{
-    m_text = text;
-}
-
-void ProFunction::setText(const QString &text)
-{
-    m_text = text;
-}
-
-QString ProFunction::text() const
-{
-    return m_text;
-}
-
-ProItem::ProItemKind ProFunction::kind() const
-{
-    return ProItem::FunctionKind;
-}
-
-ProItem::ProItemReturn ProFunction::Accept(AbstractProItemVisitor *visitor)
-{
-    return visitor->visitProFunction(this);
-}
-
-// --------------- ProCondition ----------------
-ProCondition::ProCondition(const QString &text)
-{
-    m_text = text;
-}
-
-void ProCondition::setText(const QString &text)
-{
-    m_text = text;
-}
-
-QString ProCondition::text() const
-{
-    return m_text;
-}
-
-ProItem::ProItemKind ProCondition::kind() const
-{
-    return ProItem::ConditionKind;
-}
-
-ProItem::ProItemReturn ProCondition::Accept(AbstractProItemVisitor *visitor)
-{
-    visitor->visitProCondition(this);
-    return ReturnTrue;
-}
-
-// --------------- ProOperator ----------------
-ProOperator::ProOperator(OperatorKind operatorKind)
-{
-    m_operatorKind = operatorKind;
-}
-
-void ProOperator::setOperatorKind(OperatorKind operatorKind)
-{
-    m_operatorKind = operatorKind;
-}
-
-ProOperator::OperatorKind ProOperator::operatorKind() const
-{
-    return m_operatorKind;
-}
-
-ProItem::ProItemKind ProOperator::kind() const
-{
-    return ProItem::OperatorKind;
-}
-
-ProItem::ProItemReturn ProOperator::Accept(AbstractProItemVisitor *visitor)
-{
-    visitor->visitProOperator(this);
-    return ReturnTrue;
-}
-
-// --------------- ProFile ----------------
 ProFile::ProFile(const QString &fileName)
-    : ProBlock(0)
+    : m_refCount(1),
+      m_fileName(fileName),
+      m_ok(true)
 {
-    m_modified = false;
-    setBlockKind(ProBlock::ProFileKind);
-    m_fileName = fileName;
-
-    QFileInfo fi(fileName);
-    m_displayFileName = fi.fileName();
-    m_directoryName = fi.absolutePath();
+    if (!fileName.startsWith(QLatin1Char('(')))
+        m_directoryName = QFileInfo( // qmake sickness: canonicalize only the directory!
+                fileName.left(fileName.lastIndexOf(QLatin1Char('/')))).canonicalFilePath();
 }
 
 ProFile::~ProFile()
 {
-}
-
-QString ProFile::displayFileName() const
-{
-    return m_displayFileName;
-}
-
-QString ProFile::fileName() const
-{
-    return m_fileName;
-}
-
-QString ProFile::directoryName() const
-{
-    return m_directoryName;
-}
-
-void ProFile::setModified(bool modified)
-{
-    m_modified = modified;
-}
-
-bool ProFile::isModified() const
-{
-    return m_modified;
-}
-
-ProItem::ProItemReturn ProFile::Accept(AbstractProItemVisitor *visitor)
-{
-    ProItemReturn rt;
-    if ((rt = visitor->visitBeginProFile(this)) != ReturnTrue)
-        return rt;
-    ProBlock::Accept(visitor); // cannot fail
-    return visitor->visitEndProFile(this);
 }
 
 QT_END_NAMESPACE

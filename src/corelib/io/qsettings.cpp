@@ -66,13 +66,12 @@
 
 #ifndef QT_NO_QOBJECT
 #include "qcoreapplication.h"
+#endif
 
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #include "qt_windows.h"
 #include <private/qsystemlibrary_p.h>
-
-#endif // Q_OS_WIN
-#endif // QT_NO_QOBJECT
+#endif
 
 #ifdef Q_OS_VXWORKS
 #  include <ioLib.h>
@@ -258,9 +257,7 @@ bool QConfFile::isWritable() const
     } else {
         // Create the directories to the file.
         QDir dir(fileInfo.absolutePath());
-        if (dir.exists() && dir.isReadable()) {
-            return true;
-        } else {
+        if (!dir.exists()) {
             if (!dir.mkpath(dir.absolutePath()))
                 return false;
         }
@@ -983,30 +980,13 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 // ************************************************************************
 // QConfFileSettingsPrivate
 
-/*
-    If we don't have the permission to read the file, returns false.
-    If the file doesn't exist, returns true.
-*/
-static bool checkAccess(const QString &name)
-{
-    QFileInfo fileInfo(name);
-
-    if (fileInfo.exists()) {
-        QFile file(name);
-        // if the file exists but we can't open it, report an error
-        return file.open(QFile::ReadOnly);
-    } else {
-        return true;
-    }
-}
-
 void QConfFileSettingsPrivate::initFormat()
 {
     extension = (format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini");
     readFunc = 0;
     writeFunc = 0;
 #if defined(Q_OS_MAC)
-    caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : IniCaseSensitivity;
 #else
     caseSensitivity = IniCaseSensitivity;
 #endif
@@ -1028,17 +1008,12 @@ void QConfFileSettingsPrivate::initFormat()
 
 void QConfFileSettingsPrivate::initAccess()
 {
-    bool readAccess = false;
     if (confFiles[spec]) {
-        readAccess = checkAccess(confFiles[spec]->name);
         if (format > QSettings::IniFormat) {
             if (!readFunc)
-                readAccess = false;
+                setStatus(QSettings::AccessError);
         }
     }
-
-    if (!readAccess)
-        setStatus(QSettings::AccessError);
 
     sync();       // loads the files the first time
 }
@@ -1048,9 +1023,6 @@ static QString windowsConfigPath(int type)
 {
     QString result;
 
-#ifndef QT_NO_QOBJECT
-    // We can't use QLibrary if there is QT_NO_QOBJECT is defined
-    // This only happens when bootstrapping qmake.
 #ifndef Q_OS_WINCE
     QSystemLibrary library(QLatin1String("shell32"));
 #else
@@ -1063,8 +1035,6 @@ static QString windowsConfigPath(int type)
         SHGetSpecialFolderPath(0, path, type, FALSE);
         result = QString::fromWCharArray(path);
     }
-
-#endif // QT_NO_QOBJECT
 
     if (result.isEmpty()) {
         switch (type) {
@@ -1132,17 +1102,17 @@ static void initDefaultPaths(QMutexLocker *locker)
         if (env == 0) {
             userPath = homePath;
             userPath += QLatin1Char('/');
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
             userPath += QLatin1String("Settings");
 #else
             userPath += QLatin1String(".config");
 #endif
         } else if (*env == '/') {
-            userPath = QLatin1String(env);
+            userPath = QFile::decodeName(env);
         } else {
             userPath = homePath;
             userPath += QLatin1Char('/');
-            userPath += QLatin1String(env);
+            userPath += QFile::decodeName(env);
         }
         userPath += QLatin1Char('/');
 
@@ -1434,7 +1404,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         We can often optimize the read-only case, if the file on disk
         hasn't changed.
     */
-    if (readOnly) {
+    if (readOnly && confFile->size > 0) {
         QFileInfo fileInfo(confFile->name);
         if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified())
             return;
@@ -1456,6 +1426,9 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         file.open(QFile::ReadWrite);
     if (!file.isOpen())
         file.open(QFile::ReadOnly);
+
+    if (!createFile && !file.isOpen())
+        setStatus(QSettings::AccessError);
 
 #ifdef Q_OS_WIN
     HANDLE readSemaphore = 0;

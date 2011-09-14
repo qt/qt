@@ -38,7 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "helpviewer.h"
+#include "helpviewer_p.h"
+
 #include "helpenginewrapper.h"
 #include "tracer.h"
 
@@ -49,18 +52,21 @@
 #include <QtCore/QUrl>
 
 #include <QtGui/QDesktopServices>
+#include <QtGui/QMouseEvent>
+
+#include <QtHelp/QHelpEngineCore>
 
 QT_BEGIN_NAMESPACE
 
-const QLatin1String AbstractHelpViewer::DocPath("qthelp://com.trolltech.");
+const QString HelpViewer::DocPath = QLatin1String("qthelp://com.trolltech.");
 
-const QString AbstractHelpViewer::AboutBlank =
+const QString HelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 
-const QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
+const QString HelpViewer::LocalHelpFile = QLatin1String("qthelp://"
     "com.trolltech.com.assistantinternal-1.0.0/assistant/assistant.html");
 
-const QString AbstractHelpViewer::PageNotFoundMessage =
+const QString HelpViewer::PageNotFoundMessage =
     QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
     "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
     "</h3></div>");
@@ -102,17 +108,13 @@ struct ExtensionMap {
     { 0, 0 }
 };
 
-// -- AbstractHelpViewer
-
-AbstractHelpViewer::AbstractHelpViewer()
+HelpViewer::~HelpViewer()
 {
+    TRACE_OBJ
+    delete d;
 }
 
-AbstractHelpViewer::~AbstractHelpViewer()
-{
-}
-
-bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
+bool HelpViewer::isLocalUrl(const QUrl &url)
 {
     TRACE_OBJ
     const QString &scheme = url.scheme();
@@ -124,13 +126,13 @@ bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
         || scheme == QLatin1String("about");
 }
 
-bool AbstractHelpViewer::canOpenPage(const QString &url)
+bool HelpViewer::canOpenPage(const QString &url)
 {
     TRACE_OBJ
     return !mimeFromUrl(url).isEmpty();
 }
 
-QString AbstractHelpViewer::mimeFromUrl(const QUrl &url)
+QString HelpViewer::mimeFromUrl(const QUrl &url)
 {
     TRACE_OBJ
     const QString &path = url.path();
@@ -146,7 +148,7 @@ QString AbstractHelpViewer::mimeFromUrl(const QUrl &url)
     return QLatin1String("");
 }
 
-bool AbstractHelpViewer::launchWithExternalApp(const QUrl &url)
+bool HelpViewer::launchWithExternalApp(const QUrl &url)
 {
     TRACE_OBJ
     if (isLocalUrl(url)) {
@@ -174,6 +176,45 @@ bool AbstractHelpViewer::launchWithExternalApp(const QUrl &url)
     } else if (url.scheme() == QLatin1String("http")) {
         return QDesktopServices::openUrl(url);
     }
+    return false;
+}
+
+// -- public slots
+
+void HelpViewer::home()
+{
+    TRACE_OBJ
+    setSource(HelpEngineWrapper::instance().homePage());
+}
+
+// -- private slots
+
+void HelpViewer::setLoadStarted()
+{
+    d->m_loadFinished = false;
+}
+
+void HelpViewer::setLoadFinished(bool ok)
+{
+    d->m_loadFinished = ok;
+    emit sourceChanged(source());
+}
+
+// -- private
+
+bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *event)
+{
+    TRACE_OBJ
+    if (event->button() == Qt::XButton1) {
+        backward();
+        return true;
+    }
+
+    if (event->button() == Qt::XButton2) {
+        forward();
+        return true;
+    }
+
     return false;
 }
 

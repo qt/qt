@@ -84,7 +84,7 @@ class QLayoutStyleInfo
 public:
     inline QLayoutStyleInfo() { invalidate(); }
     inline QLayoutStyleInfo(QStyle *style, QWidget *widget)
-        : m_valid(true), m_style(style), m_widget(widget) 
+        : m_valid(true), m_style(style), m_widget(widget)
     {
         Q_ASSERT(style);
         if (widget) //###
@@ -112,7 +112,7 @@ public:
         return m_defaultSpacing[o - 1];
     }
 
-    inline qreal perItemSpacing(QSizePolicy::ControlType control1, 
+    inline qreal perItemSpacing(QSizePolicy::ControlType control1,
                                   QSizePolicy::ControlType control2,
                                   Qt::Orientation orientation) const
     {
@@ -132,7 +132,7 @@ class Q_AUTOTEST_EXPORT QGraphicsLayoutPrivate : public QGraphicsLayoutItemPriva
     Q_DECLARE_PUBLIC(QGraphicsLayout)
 
 public:
-    QGraphicsLayoutPrivate() : QGraphicsLayoutItemPrivate(0, true), left(-1.0), top(-1.0), right(-1.0), bottom(-1.0), 
+    QGraphicsLayoutPrivate() : QGraphicsLayoutItemPrivate(0, true), left(-1.0), top(-1.0), right(-1.0), bottom(-1.0),
         activated(true) { }
 
     void reparentChildItems(QGraphicsItem *newParent);
@@ -148,7 +148,7 @@ public:
 
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW
 
 #endif

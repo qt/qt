@@ -8,7 +8,7 @@ SOURCES += qmltime.cpp
 
 symbian {
     TARGET.CAPABILITY = "All -TCB"
-    example.sources = example.qml tests
+    example.files = example.qml tests
     example.path = .
     DEPLOYMENT += example
 }

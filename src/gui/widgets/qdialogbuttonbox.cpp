@@ -562,6 +562,14 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
     } else {
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     }
+
+#ifdef Q_WS_MAC
+    // Since mnemonics is off by default on Mac, we add a Cmd-D
+    // shortcut here to e.g. make the "Don't Save" button work nativly:
+    if (sbutton == QDialogButtonBox::Discard)
+        button->setShortcut(QKeySequence(QLatin1String("Ctrl+D")));
+#endif
+
     return button;
 }
 
@@ -1229,7 +1237,7 @@ bool QDialogButtonBox::event(QEvent *event)
                 break;
         }
 
-        foreach (QPushButton *pb, qFindChildren<QPushButton *>(dialog ? dialog : this)) {
+        foreach (QPushButton *pb, (dialog ? dialog : this)->findChildren<QPushButton *>()) {
             if (pb->isDefault() && pb != firstAcceptButton) {
                 hasDefault = true;
                 break;

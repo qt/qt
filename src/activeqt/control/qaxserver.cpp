@@ -285,7 +285,7 @@ HRESULT UpdateRegistry(BOOL bRegister)
                     |OLEMISC_RECOMPOSEONRESIZE;
                 if (!control)
                     olemisc |= OLEMISC_INVISIBLEATRUNTIME;
-                else if (qFindChild<QMenuBar*>(object) && !qax_disable_inplaceframe)
+                else if (object->findChild<QMenuBar*>() && !qax_disable_inplaceframe)
                     olemisc |= OLEMISC_WANTSTOMENUMERGE;
                 
                 settings.setValue(QLatin1Char('/') + module + QLatin1Char('.') + className + QLatin1Char('.') + classMajorVersion + QLatin1String("/."), className + QLatin1String(" Class"));

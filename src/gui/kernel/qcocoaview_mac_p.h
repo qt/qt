@@ -58,56 +58,30 @@
 QT_FORWARD_DECLARE_CLASS(QWidgetPrivate);
 QT_FORWARD_DECLARE_CLASS(QWidget);
 QT_FORWARD_DECLARE_CLASS(QEvent);
-QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 QT_FORWARD_DECLARE_CLASS(QString);
 QT_FORWARD_DECLARE_CLASS(QStringList);
-
-QT_BEGIN_NAMESPACE
-struct DnDParams
-{
-    QT_MANGLE_NAMESPACE(QCocoaView) *view;
-    NSEvent *theEvent;
-    NSPoint localPoint;
-    NSDragOperation performedAction;
-    NSPoint activeDragEnterPos;
-};
-
-QT_END_NAMESPACE
-
-QT_FORWARD_DECLARE_STRUCT(DnDParams);
 
 Q_GUI_EXPORT
 @interface QT_MANGLE_NAMESPACE(QCocoaView) : NSControl <NSTextInput> {
     QWidget *qwidget;
     QWidgetPrivate *qwidgetprivate;
-    bool leftButtonIsRightButton;
-    QCocoaDropData *dropData;
     NSDragOperation supportedActions;
     bool composing;
     int composingLength;
     bool sendKeyEvents;
+    bool fromKeyDownEvent;
     QString *composingText;
-    NSInteger dragEnterSequence;
+    @public int alienTouchCount;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void) finishInitWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void)frameDidChange:(NSNotification *)note;
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender;
-- (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender;
-- (void)draggingExited:(id < NSDraggingInfo >)sender;
-- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
-- (void)removeDropData;
-- (void)addDropData:(id <NSDraggingInfo>)sender;
 - (void)setSupportedActions:(NSDragOperation)actions;
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 - (void)draggedImage:(NSImage *)anImage endedAt:(NSPoint)aPoint operation:(NSDragOperation)operation;
 - (BOOL)isComposing;
 - (QWidget *)qt_qwidget;
 - (void) qt_clearQWidget;
-- (BOOL)qt_leftButtonIsRightButton;
-- (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
-- (void)changeDraggingCursor:(NSDragOperation)newOperation;
-+ (DnDParams*)currentMouseEvent;
 
 @end
 #endif

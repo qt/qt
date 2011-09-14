@@ -71,6 +71,10 @@ public:
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QFontMetrics &operator=(QFontMetrics &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     int ascent() const;
     int descent() const;
@@ -85,6 +89,7 @@ public:
     int averageCharWidth() const;
 
     bool inFont(QChar) const;
+    bool inFontUcs4(uint ucs4) const;
 
     int leftBearing(QChar) const;
     int rightBearing(QChar) const;
@@ -148,7 +153,10 @@ public:
 
     QFontMetricsF &operator=(const QFontMetricsF &);
     QFontMetricsF &operator=(const QFontMetrics &);
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QFontMetricsF &operator=(QFontMetricsF &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     qreal ascent() const;
     qreal descent() const;
     qreal height() const;
@@ -162,6 +170,7 @@ public:
     qreal averageCharWidth() const;
 
     bool inFont(QChar) const;
+    bool inFontUcs4(uint ucs4) const;
 
     qreal leftBearing(QChar) const;
     qreal rightBearing(QChar) const;

@@ -203,12 +203,7 @@ ExceptionHolder ExceptionStore::exception()
 
 void ExceptionStore::throwPossibleException()
 {
-    /* On win32-g++, with GCC 3.4.2 std::uncaught_exception() isn't reliable. */
-    if (hasException()
-#ifndef Q_CC_MINGW
-        && std::uncaught_exception() == false
-#endif
-            ) {
+    if (hasException() ) {
         exceptionHolder.base->hasThrown = true;
         exceptionHolder.exception()->raise();
     }

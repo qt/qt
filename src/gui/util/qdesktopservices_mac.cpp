@@ -49,6 +49,8 @@
 #include <private/qcore_mac_p.h>
 #include <qcoreapplication.h>
 
+#include <ApplicationServices/ApplicationServices.h>
+
 QT_BEGIN_NAMESPACE
 
 /*

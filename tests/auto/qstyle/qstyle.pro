@@ -4,7 +4,7 @@ SOURCES  += tst_qstyle.cpp
 
 wince*|symbian: {
    !symbian:DEFINES += SRCDIR=\\\".\\\"
-   addPixmap.sources = task_25863.png
+   addPixmap.files = task_25863.png
    addPixmap.path = .
    DEPLOYMENT += addPixmap
 } else {

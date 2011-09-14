@@ -85,10 +85,11 @@ public:
         Qt_4_4 = 10,
         Qt_4_5 = 11,
         Qt_4_6 = 12,
-        Qt_4_7 = Qt_4_6
-#if QT_VERSION >= 0x040800
-#error Add the datastream version for this Qt version
+        Qt_4_7 = Qt_4_6,
         Qt_4_8 = Qt_4_7
+#if QT_VERSION >= 0x040900
+#error Add the datastream version for this Qt version
+        Qt_4_9 = Qt_4_8
 #endif
     };
 
@@ -100,7 +101,8 @@ public:
     enum Status {
         Ok,
         ReadPastEnd,
-	ReadCorruptData
+        ReadCorruptData,
+        WriteFailed
     };
 
     enum FloatingPointPrecision {

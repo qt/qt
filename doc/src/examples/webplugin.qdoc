@@ -1,0 +1,157 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example webkit/webplugin
+    \title Web Plugin Example
+
+    The Web Plugin example shows how to communicate between a Qt widget
+    embedded in a Web page and the page itself.
+
+    \image webkit-webplugin.png A table widget embedded in a Web page.
+
+    In this example, we will take the widget described in the
+    \l{Simple Web Plugin Example} and show how to set up communications between
+    the widget and the Web environment.
+
+    \section1 Setting up Communications
+
+    There are two ways of interacting with the content in a Web page. The first
+    way involves the use of QWebElement to read and modify the page
+    content and structure; this is useful for certain types of application, as
+    demonstrated by the \l{DOM Traversal Example} and the
+    \l{Simple Selector Example}.
+
+    The second way is to add Qt objects to the page, connecting their signals
+    to JavaScript functions, and executing the object's slots directly from
+    JavaScript in the page. We explore this approach in this example.
+
+    To perform this communication, we require an updated \c CSVView widget from
+    the \l{Simple Web Plugin Example} that can emit a signal whenever a row is
+    selected, a JavaScript function to modify elements on the page, and some
+    glue code to make the connection.
+
+    On the page, the plugin is declared like this:
+
+    \snippet examples/webkit/webplugin/pages/index.html embedded object
+
+    As in the previous example, the \c <object> definition includes information
+    about the data to be displayed, its location, and the dimensions of the
+    plugin in the page.
+
+    Later in the document, we include a table that we will update with data
+    from the \c CSVView widget:
+
+    \snippet examples/webkit/webplugin/pages/index.html table
+
+    The \c CSVView widget is similar to the previous version. However, we
+    wish to obtain and export individual rows of data, so we define the
+    \c rowSelected() signal and \c exportRow() slot to perform this task.
+
+    \snippet examples/webkit/webplugin/csvview.h definition
+
+    Since we wish to obtain one row of data at a time, the constructor includes
+    code to restrict how the user can interact with the view:
+
+    \snippet examples/webkit/simplewebplugin/csvview.cpp constructor
+
+    The \c exportRow() slot provides a convenient mechanism for obtaining and
+    emitting the values found on the current row of the table:
+
+    \snippet examples/webkit/webplugin/csvview.cpp export row
+
+    This slot is connected to a signal belonging to the view's selection model:
+    \l{QItemSelectionModel::}{currentChanged()}. This can be seen by examining
+    the \c updateModel() function in the source code.
+
+    \c exportRow() emits the \c rowSelected() signal, passing strings containing
+    the name, address and quantity in the current table row. To see how this
+    data is passed to the Web page, we need to look at the \c CSVFactory class.
+
+    \section1 Connecting Components Together
+
+    In the \c CSVFactory class, we reimplement the \l{QWebPluginFactory::}{create()}
+    function to create instances of the \c CSVView class, as in the previous
+    example.
+
+    \snippet examples/webkit/webplugin/csvfactory.cpp begin create
+
+    We also expose the view widget to the frame in the page that
+    contains the elements, and set up a connection between the view and a
+    JavaScript function defined in the page header:
+
+    \snippet examples/webkit/webplugin/csvfactory.cpp create connection
+
+    The view is added to the Web page as \c view, and the connection code we
+    evaluate performs a signal-slot connection from the view's \c rowSelected()
+    signal to a pure JavaScript function:
+
+    \js
+    view.rowSelected.connect(fillInTable);
+    \endjs
+
+    \c fillInTable is the name of the JavaScript function to modify the
+    form's input elements. This function expects three arguments: the name,
+    address and quantity values for a row of data.
+
+    Whenever the current row changes in the \c view object, the \c exportRow()
+    slot is called, the data found in the selected row is extracted from the
+    model and emitted in the \c rowSelected() signal as three strings, and
+    the above connection ensures that \c fillInTable() will be called with the
+    current items of data. The appropriate type conversions occur behind the
+    scenes to ensure that each QString is converted to a JavaScript string
+    object.
+
+    The rest of the function is the same as in the previous example:
+
+    \snippet examples/webkit/webplugin/csvfactory.cpp submit request
+
+    We now give the JavaScript \c fillInForm() function to show what it does
+    with the strings it is given. The function itself is defined in the HTML
+    page header:
+
+    \snippet examples/webkit/webplugin/pages/index.html script
+
+    We obtain the elements in the page that we wish to update by using the HTML
+    Document Object Model (DOM) API. The values of these elements are updated
+    with the \c name, \c address and \c quantity strings supplied.
+
+    \section1 Linking Things Together
+
+    Although we have used the widgets to demonstrate the use of signals and
+    slots for communication between Qt components and JavaScript in the browser,
+    we do not need to embed widgets in Web pages to be able to do this. By
+    inserting objects into pages and evaluating JavaScript, Qt applications can
+    be made to examine and process information found online.
+
+    One additional improvement that can be made to this example is to create
+    a relation between the embedded widget and the table to be updated. We
+    could do this by including \c <param> elements within the \c <object>
+    element that refers to the table cells by their \c id attributes. This
+    would help us to avoid hard-coding the \c customers_name,
+    \c customers_address and \c customers_quantity identifiers in the script.
+*/

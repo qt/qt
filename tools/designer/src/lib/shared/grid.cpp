@@ -71,7 +71,7 @@ template <class T>
         const QVariantMap::const_iterator it = v.constFind(key);
         const bool found = it != v.constEnd();
         if (found)
-            value = qVariantValue<T>(it.value());
+            value = qvariant_cast<T>(it.value());
         return found;
     }
 
@@ -89,12 +89,20 @@ Grid::Grid() :
 
 bool Grid::fromVariantMap(const QVariantMap& vm)
 {
-    *this = Grid();
-    valueFromVariantMap(vm, QLatin1String(KEY_VISIBLE), m_visible);
-    valueFromVariantMap(vm, QLatin1String(KEY_SNAPX), m_snapX);
-    valueFromVariantMap(vm, QLatin1String(KEY_SNAPY), m_snapY);
-    valueFromVariantMap(vm, QLatin1String(KEY_DELTAX), m_deltaX);
-    return valueFromVariantMap(vm, QLatin1String(KEY_DELTAY), m_deltaY);
+    Grid grid;
+    bool anyData = valueFromVariantMap(vm, QLatin1String(KEY_VISIBLE), grid.m_visible);
+    anyData |= valueFromVariantMap(vm, QLatin1String(KEY_SNAPX), grid.m_snapX);
+    anyData |= valueFromVariantMap(vm, QLatin1String(KEY_SNAPY), grid.m_snapY);
+    anyData |= valueFromVariantMap(vm, QLatin1String(KEY_DELTAX), grid.m_deltaX);
+    anyData |= valueFromVariantMap(vm, QLatin1String(KEY_DELTAY), grid.m_deltaY);
+    if (!anyData)
+        return false;
+    if (grid.m_deltaX == 0 || grid.m_deltaY == 0) {
+        qWarning("Attempt to set invalid grid with a spacing of 0.");
+        return false;
+    }
+    *this = grid;
+    return true;
 }
 
 QVariantMap Grid::toVariantMap(bool forceKeys) const

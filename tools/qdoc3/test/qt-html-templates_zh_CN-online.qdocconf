@@ -24,7 +24,7 @@ HTML.postheader = \
     "    </div>\n" \
     "    <div id=\"shortCut\">\n" \
     "      <ul>\n" \
-    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.7</a></span></li>\n" \
+    "        <li class=\"shortCut-topleft-inactive\"><span><a href=\"index.html\">Qt 4.8</a></span></li>\n" \
     "        <li class=\"shortCut-topleft-active\"><a href=\"http://qt.nokia.com/doc/\">ALL VERSIONS" \
     "        </a></li>\n" \
     "      </ul>\n" \
@@ -149,7 +149,7 @@ HTML.footer = \
     "  </div> \n" \
     "  <div class=\"footer\">\n" \
     "    <p>\n" \
-    "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
+    "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2011 Nokia Corporation and/or its\n" \
     "      subsidiaries. Nokia, Qt and their respective logos are trademarks of Nokia Corporation \n" \
     "      in Finland and/or other countries worldwide.</p>\n" \
     "    <p>\n" \

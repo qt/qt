@@ -76,6 +76,7 @@ private slots:
 
     void setElideMode_data();
     void setElideMode();
+    void sizeHints();
 
     void setUsesScrollButtons_data();
     void setUsesScrollButtons();
@@ -278,6 +279,46 @@ void tst_QTabBar::setElideMode()
     // Make sure style sheet does not override user set mode
     tabBar.setStyleSheet("QWidget { background-color: #ABA8A6;}");
     QTEST(int(tabBar.elideMode()), "expectedMode");
+}
+
+void tst_QTabBar::sizeHints()
+{
+    QTabBar tabBar;
+	QSKIP("To be fixed on Mac (font size below not large enough) and Linux QWS (probably too large for the screen).", SkipSingle);
+    tabBar.setFont(QFont("Arial", 10));
+    tabBar.addTab("tab 01");
+    tabBar.addTab("tab 02");
+    tabBar.addTab("tab 03");
+    tabBar.addTab("tab 04");
+    tabBar.addTab("tab 05");
+    tabBar.addTab("tab 06");
+    tabBar.addTab("This is tab7");
+    tabBar.addTab("This is tab8");
+    tabBar.addTab("This is tab9 with a very long title");
+
+    // No eliding and no scrolling -> tabbar becomes very wide
+    tabBar.setUsesScrollButtons(false);
+    tabBar.setElideMode(Qt::ElideNone);
+//    qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
+    QVERIFY(tabBar.minimumSizeHint().width() > 700);
+    QVERIFY(tabBar.sizeHint().width() > 700);
+
+    // Scrolling enabled -> no reason to become very wide
+    tabBar.setUsesScrollButtons(true);
+ //   qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
+    QVERIFY(tabBar.minimumSizeHint().width() < 200);
+    QVERIFY(tabBar.sizeHint().width() > 700); // unchanged
+
+    // Eliding enabled -> no reason to become very wide
+    tabBar.setUsesScrollButtons(false);
+    tabBar.setElideMode(Qt::ElideRight);
+//    qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
+    QVERIFY(tabBar.minimumSizeHint().width() < 500);
+    QVERIFY(tabBar.sizeHint().width() > 700); // unchanged
+
+    tabBar.addTab("This is tab10 with a very long title");
+    QVERIFY(tabBar.minimumSizeHint().width() < 600);
+    QVERIFY(tabBar.sizeHint().width() > 700); // unchanged
 }
 
 void tst_QTabBar::setUsesScrollButtons_data()

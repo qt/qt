@@ -170,9 +170,6 @@ public:
     int startOption() const;
     void setStartOption(int option);
 
-    bool searchWasAttached() const;
-    void setSearchWasAttached(bool attached);
-
     bool hasFontSettings() const;
     bool usesAppFont() const;
     void setUseAppFont(bool useAppFont);
@@ -187,7 +184,12 @@ public:
     QFontDatabase::WritingSystem browserWritingSystem() const;
     void setBrowserWritingSystem(QFontDatabase::WritingSystem system);
 
+    bool showTabs() const;
+    void setShowTabs(bool show);
+
     static const QString TrUnfiltered;
+
+    bool fullTextSearchFallbackEnabled() const;
 
 signals:
 

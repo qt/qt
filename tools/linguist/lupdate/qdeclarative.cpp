@@ -62,6 +62,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cctype>
 
 QT_BEGIN_NAMESPACE
 

@@ -854,25 +854,26 @@ struct MyPage2 : public QWizardPage
 public:
     MyPage2() : init(0), cleanup(0), validate(0) {}
 
-    void initializePage() { ++init; QWizardPage::initializePage(); checkInvariant(); }
-    void cleanupPage() { ++cleanup; QWizardPage::cleanupPage(); checkInvariant(); }
+    void initializePage() { ++init; QWizardPage::initializePage(); }
+    void cleanupPage() { ++cleanup; QWizardPage::cleanupPage(); }
     bool validatePage() { ++validate; return QWizardPage::validatePage(); }
 
-    void check(int init, int cleanup)
-    { Q_ASSERT(init == this->init && cleanup == this->cleanup); Q_UNUSED(init); Q_UNUSED(cleanup); }
+    bool check(int init, int cleanup)
+    {
+        return init == this->init
+            && cleanup == this->cleanup
+            && (this->init == this->cleanup || this->init - 1 == this->cleanup);
+    }
 
     int init;
     int cleanup;
     int validate;
-
-private:
-    void checkInvariant() { Q_ASSERT(init == cleanup || init - 1 == cleanup); }
 };
 
 #define CHECK_PAGE_INIT(i0, c0, i1, c1, i2, c2) \
-    page0->check((i0), (c0)); \
-    page1->check((i1), (c1)); \
-    page2->check((i2), (c2));
+    QVERIFY(page0->check((i0), (c0))); \
+    QVERIFY(page1->check((i1), (c1))); \
+    QVERIFY(page2->check((i2), (c2)));
 
 void tst_QWizard::setOption_IndependentPages()
 {
@@ -922,7 +923,7 @@ void tst_QWizard::setOption_IndependentPages()
     CHECK_PAGE_INIT(11, 10, 11, 10, 10, 10);
 
     // Now, turn on the option and check that they're called at the
-    // appropiate times (which aren't the same).
+    // appropriate times (which aren't the same).
     wizard.setOption(QWizard::IndependentPages, true);
     CHECK_PAGE_INIT(11, 10, 11, 10, 10, 10);
 
@@ -1770,8 +1771,11 @@ public:
 
     ~TestWizard()
     {
-        foreach (int id, pageIds)
-            delete page(id);
+        foreach (int id, pageIds) {
+            QWizardPage *page_to_delete = page(id);
+            removePage(id);
+            delete page_to_delete;
+	}
     }
 
     void applyOperations(const QList<Operation *> &operations)
@@ -2548,8 +2552,8 @@ void tst_QWizard::task177022_setFixedSize()
     QWizard wiz;
     QWizardPage page1;
     QWizardPage page2;
-    wiz.addPage(&page1);
-    wiz.addPage(&page2);
+    int page1_id = wiz.addPage(&page1);
+    int page2_id = wiz.addPage(&page2);
     wiz.setFixedSize(width, height);
     if (wiz.wizardStyle() == QWizard::AeroStyle)
         QEXPECT_FAIL("", "this probably relates to non-client area hack for AeroStyle titlebar "
@@ -2576,6 +2580,8 @@ void tst_QWizard::task177022_setFixedSize()
     QCOMPARE(wiz.maximumWidth(), width);
     QCOMPARE(wiz.maximumHeight(), height);
 
+    wiz.removePage(page1_id);
+    wiz.removePage(page2_id);
 }
 
 void tst_QWizard::task248107_backButton()

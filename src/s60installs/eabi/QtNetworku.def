@@ -1085,12 +1085,12 @@ EXPORTS
 	_ZN35QNetworkConfigurationManagerPrivate11pollEnginesEv @ 1084 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate11qt_metacallEN11QMetaObject4CallEiPPv @ 1085 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate11qt_metacastEPKc @ 1086 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1087 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1087 NONAME ABSENT
 	_ZN35QNetworkConfigurationManagerPrivate12startPollingEv @ 1088 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate13enablePollingEv @ 1089 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate14disablePollingEv @ 1090 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate16staticMetaObjectE @ 1091 NONAME DATA 16
-	_ZN35QNetworkConfigurationManagerPrivate17allConfigurationsE6QFlagsIN21QNetworkConfiguration9StateFlagEE @ 1092 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate17allConfigurationsE6QFlagsIN21QNetworkConfiguration9StateFlagEE @ 1092 NONAME ABSENT
 	_ZN35QNetworkConfigurationManagerPrivate18configurationAddedE28QExplicitlySharedDataPointerI28QNetworkConfigurationPrivateE @ 1093 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate18configurationAddedERK21QNetworkConfiguration @ 1094 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate18onlineStateChangedEb @ 1095 NONAME
@@ -1099,14 +1099,14 @@ EXPORTS
 	_ZN35QNetworkConfigurationManagerPrivate20configurationChangedERK21QNetworkConfiguration @ 1098 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate20configurationRemovedE28QExplicitlySharedDataPointerI28QNetworkConfigurationPrivateE @ 1099 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate20configurationRemovedERK21QNetworkConfiguration @ 1100 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate20defaultConfigurationEv @ 1101 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate20defaultConfigurationEv @ 1101 NONAME ABSENT
 	_ZN35QNetworkConfigurationManagerPrivate20updateConfigurationsEv @ 1102 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate27configurationFromIdentifierERK7QString @ 1103 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate27configurationFromIdentifierERK7QString @ 1103 NONAME ABSENT
 	_ZN35QNetworkConfigurationManagerPrivate27configurationUpdateCompleteEv @ 1104 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate31performAsyncConfigurationUpdateEv @ 1105 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate5abortEv @ 1106 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate7enginesEv @ 1107 NONAME
-	_ZN35QNetworkConfigurationManagerPrivate8isOnlineEv @ 1108 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate5abortEv @ 1106 NONAME ABSENT
+	_ZN35QNetworkConfigurationManagerPrivate7enginesEv @ 1107 NONAME ABSENT
+	_ZN35QNetworkConfigurationManagerPrivate8isOnlineEv @ 1108 NONAME ABSENT
 	_ZN35QNetworkConfigurationManagerPrivateC1Ev @ 1109 NONAME
 	_ZN35QNetworkConfigurationManagerPrivateC2Ev @ 1110 NONAME
 	_ZN35QNetworkConfigurationManagerPrivateD0Ev @ 1111 NONAME
@@ -1168,4 +1168,106 @@ EXPORTS
 	_ZTV35QNetworkConfigurationManagerPrivate @ 1167 NONAME
 	_ZThn8_N19QBearerEnginePluginD0Ev @ 1168 NONAME
 	_ZThn8_N19QBearerEnginePluginD1Ev @ 1169 NONAME
+	_ZN10QUdpSocket18joinMulticastGroupERK12QHostAddress @ 1170 NONAME
+	_ZN10QUdpSocket18joinMulticastGroupERK12QHostAddressRK17QNetworkInterface @ 1171 NONAME
+	_ZN10QUdpSocket19leaveMulticastGroupERK12QHostAddress @ 1172 NONAME
+	_ZN10QUdpSocket19leaveMulticastGroupERK12QHostAddressRK17QNetworkInterface @ 1173 NONAME
+	_ZN10QUdpSocket21setMulticastInterfaceERK17QNetworkInterface @ 1174 NONAME
+	_ZN13QNetworkReply11setFinishedEb @ 1175 NONAME
+	_ZNK10QUdpSocket18multicastInterfaceEv @ 1176 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1177 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate17allConfigurationsE6QFlagsIN21QNetworkConfiguration9StateFlagEE @ 1178 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate20defaultConfigurationEv @ 1179 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate27configurationFromIdentifierERK7QString @ 1180 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate7enginesEv @ 1181 NONAME
+	_ZNK35QNetworkConfigurationManagerPrivate8isOnlineEv @ 1182 NONAME
+	_ZN10QSslSocket17setPeerVerifyNameERK7QString @ 1183 NONAME
+	_ZN22QNetworkSessionPrivate13nativeSessionER15QNetworkSession @ 1184 NONAME
+	_ZN22QNetworkSessionPrivate16nativeOpenSocketER15QNetworkSessionR7RSocketjjj @ 1185 NONAME
+	_ZN22QNetworkSessionPrivate22nativeOpenHostResolverER15QNetworkSessionR13RHostResolverjj @ 1186 NONAME
+	_ZNK10QSslSocket14peerVerifyNameEv @ 1187 NONAME
+	_ZN14QHttpMultiPart11qt_metacallEN11QMetaObject4CallEiPPv @ 1188 NONAME
+	_ZN14QHttpMultiPart11qt_metacastEPKc @ 1189 NONAME
+	_ZN14QHttpMultiPart11setBoundaryERK10QByteArray @ 1190 NONAME
+	_ZN14QHttpMultiPart14setContentTypeENS_11ContentTypeE @ 1191 NONAME
+	_ZN14QHttpMultiPart16staticMetaObjectE @ 1192 NONAME DATA 16
+	_ZN14QHttpMultiPart19getStaticMetaObjectEv @ 1193 NONAME
+	_ZN14QHttpMultiPart6appendERK9QHttpPart @ 1194 NONAME
+	_ZN14QHttpMultiPartC1ENS_11ContentTypeEP7QObject @ 1195 NONAME
+	_ZN14QHttpMultiPartC1EP7QObject @ 1196 NONAME
+	_ZN14QHttpMultiPartC2ENS_11ContentTypeEP7QObject @ 1197 NONAME
+	_ZN14QHttpMultiPartC2EP7QObject @ 1198 NONAME
+	_ZN14QHttpMultiPartD0Ev @ 1199 NONAME
+	_ZN14QHttpMultiPartD1Ev @ 1200 NONAME
+	_ZN14QHttpMultiPartD2Ev @ 1201 NONAME
+	_ZN21QNetworkAccessManager3putERK15QNetworkRequestP14QHttpMultiPart @ 1202 NONAME
+	_ZN21QNetworkAccessManager4postERK15QNetworkRequestP14QHttpMultiPart @ 1203 NONAME
+	_ZN9QHttpPart12setRawHeaderERK10QByteArrayS2_ @ 1204 NONAME
+	_ZN9QHttpPart13setBodyDeviceEP9QIODevice @ 1205 NONAME
+	_ZN9QHttpPart7setBodyERK10QByteArray @ 1206 NONAME
+	_ZN9QHttpPart9setHeaderEN15QNetworkRequest12KnownHeadersERK8QVariant @ 1207 NONAME
+	_ZN9QHttpPartC1ERKS_ @ 1208 NONAME
+	_ZN9QHttpPartC1Ev @ 1209 NONAME
+	_ZN9QHttpPartC2ERKS_ @ 1210 NONAME
+	_ZN9QHttpPartC2Ev @ 1211 NONAME
+	_ZN9QHttpPartD1Ev @ 1212 NONAME
+	_ZN9QHttpPartD2Ev @ 1213 NONAME
+	_ZN9QHttpPartaSERKS_ @ 1214 NONAME
+	_ZNK14QHttpMultiPart10metaObjectEv @ 1215 NONAME
+	_ZNK14QHttpMultiPart8boundaryEv @ 1216 NONAME
+	_ZNK9QHttpParteqERKS_ @ 1217 NONAME
+	_ZTI14QHttpMultiPart @ 1218 NONAME
+	_ZTV14QHttpMultiPart @ 1219 NONAME
+	_ZN10QSslSocket18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1220 NONAME
+	_ZN10QSslSocket25staticMetaObjectExtraDataE @ 1221 NONAME DATA 8
+	_ZN10QTcpServer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1222 NONAME
+	_ZN10QTcpServer25staticMetaObjectExtraDataE @ 1223 NONAME DATA 8
+	_ZN10QTcpSocket18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1224 NONAME
+	_ZN10QTcpSocket25staticMetaObjectExtraDataE @ 1225 NONAME DATA 8
+	_ZN10QUdpSocket18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1226 NONAME
+	_ZN10QUdpSocket25staticMetaObjectExtraDataE @ 1227 NONAME DATA 8
+	_ZN12QLocalServer18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1228 NONAME
+	_ZN12QLocalServer25staticMetaObjectExtraDataE @ 1229 NONAME DATA 8
+	_ZN12QLocalSocket18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1230 NONAME
+	_ZN12QLocalSocket25staticMetaObjectExtraDataE @ 1231 NONAME DATA 8
+	_ZN13QBearerEngine18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1232 NONAME
+	_ZN13QBearerEngine25staticMetaObjectExtraDataE @ 1233 NONAME DATA 8
+	_ZN13QNetworkReply18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1234 NONAME
+	_ZN13QNetworkReply25staticMetaObjectExtraDataE @ 1235 NONAME DATA 8
+	_ZN14QHttpMultiPart18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1236 NONAME
+	_ZN14QHttpMultiPart25staticMetaObjectExtraDataE @ 1237 NONAME DATA 8
+	_ZN15QAbstractSocket18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1238 NONAME
+	_ZN15QAbstractSocket25staticMetaObjectExtraDataE @ 1239 NONAME DATA 8
+	_ZN15QNetworkSession18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1240 NONAME
+	_ZN15QNetworkSession25staticMetaObjectExtraDataE @ 1241 NONAME DATA 8
+	_ZN17QNetworkCookieJar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1242 NONAME
+	_ZN17QNetworkCookieJar25staticMetaObjectExtraDataE @ 1243 NONAME DATA 8
+	_ZN17QNetworkDiskCache18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1244 NONAME
+	_ZN17QNetworkDiskCache25staticMetaObjectExtraDataE @ 1245 NONAME DATA 8
+	_ZN19QBearerEnginePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1246 NONAME
+	_ZN19QBearerEnginePlugin25staticMetaObjectExtraDataE @ 1247 NONAME DATA 8
+	_ZN21QAbstractNetworkCache18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1248 NONAME
+	_ZN21QAbstractNetworkCache25staticMetaObjectExtraDataE @ 1249 NONAME DATA 8
+	_ZN21QNetworkAccessManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1250 NONAME
+	_ZN21QNetworkAccessManager25staticMetaObjectExtraDataE @ 1251 NONAME DATA 8
+	_ZN22QNetworkSessionPrivate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1252 NONAME
+	_ZN22QNetworkSessionPrivate25staticMetaObjectExtraDataE @ 1253 NONAME DATA 8
+	_ZN28QNetworkConfigurationManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1254 NONAME
+	_ZN28QNetworkConfigurationManager25staticMetaObjectExtraDataE @ 1255 NONAME DATA 8
+	_ZN35QNetworkConfigurationManagerPrivate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1256 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate25staticMetaObjectExtraDataE @ 1257 NONAME DATA 8
+	_ZN4QFtp18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1258 NONAME
+	_ZN4QFtp25staticMetaObjectExtraDataE @ 1259 NONAME DATA 8
+	_ZN5QHttp18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1260 NONAME
+	_ZN5QHttp25staticMetaObjectExtraDataE @ 1261 NONAME DATA 8
+	_ZN18QNetworkProxyQuery23setNetworkConfigurationERK21QNetworkConfiguration @ 1262 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationRK4QUrlNS_9QueryTypeE @ 1263 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationRK7QStringiS5_NS_9QueryTypeE @ 1264 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationtRK7QStringNS_9QueryTypeE @ 1265 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationRK4QUrlNS_9QueryTypeE @ 1266 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationRK7QStringiS5_NS_9QueryTypeE @ 1267 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationtRK7QStringNS_9QueryTypeE @ 1268 NONAME
+	_ZNK18QNetworkProxyQuery20networkConfigurationEv @ 1269 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate10initializeEv @ 1270 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate7cleanupEv @ 1271 NONAME
 

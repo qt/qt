@@ -63,7 +63,6 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
                            int tf, const QString &text, QRectF *brect,
                            int tabStops, int *tabArray, int tabArrayLen,
                            QPainter *painter);
-Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*****************************************************************************
   QFontMetrics member functions
@@ -440,6 +439,24 @@ bool QFontMetrics::inFont(QChar ch) const
     if (engine->type() == QFontEngine::Box)
         return false;
     return engine->canRender(&ch, 1);
+}
+
+/*!
+   \fn bool QFontMetrics::inFontUcs4(uint character) const
+   \since 4.8
+
+   Returns true if the given \a character encoded in UCS-4/UTF-32 is a valid
+   character in the font; otherwise returns false.
+*/
+bool QFontMetrics::inFontUcs4(uint ucs4) const
+{
+    const int script = QUnicodeTables::script(ucs4);
+    QFontEngine *engine = d->engineForScript(script);
+    Q_ASSERT(engine != 0);
+    if (engine->type() == QFontEngine::Box)
+        return false;
+    QString utf16 = QString::fromUcs4(&ucs4, 1);
+    return engine->canRender(utf16.data(), utf16.length());
 }
 
 /*!
@@ -1315,6 +1332,24 @@ bool QFontMetricsF::inFont(QChar ch) const
 }
 
 /*!
+    \fn bool QFontMetricsF::inFontUcs4(uint ch) const
+    \since 4.8
+
+    Returns true if the character given by \a ch, encoded in UCS-4/UTF-32,
+    is a valid character in the font; otherwise returns false.
+*/
+bool QFontMetricsF::inFontUcs4(uint ucs4) const
+{
+    const int script = QUnicodeTables::script(ucs4);
+    QFontEngine *engine = d->engineForScript(script);
+    Q_ASSERT(engine != 0);
+    if (engine->type() == QFontEngine::Box)
+        return false;
+    QString utf16 = QString::fromUcs4(&ucs4, 1);
+    return engine->canRender(utf16.data(), utf16.length());
+}
+
+/*!
     Returns the left bearing of character \a ch in the font.
 
     The left bearing is the right-ward distance of the left-most pixel
@@ -1779,7 +1814,7 @@ qreal QFontMetricsF::lineWidth() const
 
     Use the boundingRect() function in combination with
     QString::left() instead.
-     
+
     \oldcode
         QRect rect = boundingRect(text, len);
     \newcode

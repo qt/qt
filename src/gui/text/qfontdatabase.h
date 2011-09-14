@@ -138,6 +138,8 @@ public:
     bool bold(const QString &family, const QString &style) const;
     int weight(const QString &family, const QString &style) const;
 
+    bool hasFamily(const QString &family) const;
+
     static QString writingSystemName(WritingSystem writingSystem);
     static QString writingSystemSample(WritingSystem writingSystem);
 
@@ -152,7 +154,8 @@ public:
 private:
     static void createDatabase();
     static void parseFontName(const QString &name, QString &foundry, QString &family);
-#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+    static QString resolveFontFamilyAlias(const QString &family);
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
     static QFontEngine *findFont(int script, const QFontPrivate *fp, const QFontDef &request);
 #endif
     static void load(const QFontPrivate *d, int script);
@@ -167,6 +170,7 @@ private:
     friend class QFontEngineMultiXLFD;
     friend class QFontEngineMultiQWS;
     friend class QFontEngineMultiS60;
+    friend class QFontEngineMultiQPA;
 
     QFontDatabasePrivate *d;
 };

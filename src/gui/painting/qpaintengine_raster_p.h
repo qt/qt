@@ -196,9 +196,6 @@ public:
     void stroke(const QVectorPath &path, const QPen &pen);
     void fill(const QVectorPath &path, const QBrush &brush);
 
-    void strokePolygonCosmetic(const QPoint *pts, int pointCount, PolygonDrawMode mode);
-    void strokePolygonCosmetic(const QPointF *pt, int pointCount, PolygonDrawMode mode);
-
     void clip(const QVectorPath &path, Qt::ClipOperation op);
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
@@ -249,17 +246,21 @@ public:
     virtual void drawBufferSpan(const uint *buffer, int bufsize,
                                 int x, int y, int length, uint const_alpha);
 #endif
+    bool supportsTransformations(const QFontEngine *fontEngine) const;
+    bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
 protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);
 private:
     friend struct QSpanData;
+    friend class QBlitterPaintEngine;
+    friend class QBlitterPaintEnginePrivate;
     void init();
 
     void fillRect(const QRectF &rect, QSpanData *data);
     void drawBitmap(const QPointF &pos, const QImage &image, QSpanData *fill);
 
-    void drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
+    bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
                           QFontEngine *fontEngine);
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
@@ -326,7 +327,6 @@ public:
     bool isUnclipped_normalized(const QRect &rect) const;
     bool isUnclipped(const QRect &rect, int penWidth) const;
     bool isUnclipped(const QRectF &rect, int penWidth) const;
-    ProcessSpans getPenFunc(const QRect &rect, const QSpanData *data) const;
     ProcessSpans getPenFunc(const QRectF &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRect &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRectF &rect, const QSpanData *data) const;
@@ -340,6 +340,7 @@ public:
     void initializeRasterizer(QSpanData *data);
 
     void recalculateFastImages();
+    bool canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const;
 
     QPaintDevice *device;
     QScopedPointer<QOutlineMapper> outlineMapper;

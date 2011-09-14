@@ -44,21 +44,27 @@
  * Part of the KDE project
  */
 
-#include <qpainter.h>
-//Added by qt3to4:
+#include <QPainter>
 #include <QResizeEvent>
-#include <Q3Frame>
+#include <QFrame>
+#include <QColorGroup>
 #include "ledmeter.h"
 
-KALedMeter::KALedMeter( QWidget *parent ) : Q3Frame( parent )
+KALedMeter::KALedMeter( QWidget *parent ) : QFrame( parent )
 {
-    mCRanges.setAutoDelete( TRUE );
     mRange = 100;
     mCount = 20;
     mCurrentCount = 0;
     mValue = 0;
     setMinimumWidth( mCount * 2 + frameWidth() );
 }
+
+KALedMeter::~KALedMeter()
+{
+    qDeleteAll(mCRanges);
+    mCRanges.clear();
+}
+
 
 void KALedMeter::setRange( int r )
 {
@@ -106,27 +112,30 @@ void KALedMeter::addColorRange( int pc, const QColor &c )
 
 void KALedMeter::resizeEvent( QResizeEvent *e )
 {
-    Q3Frame::resizeEvent( e );
+    QFrame::resizeEvent( e );
     int w = ( width() - frameWidth() - 2 ) / mCount * mCount;
     w += frameWidth() + 2;
     setFrameRect( QRect( 0, 0, w, height() ) );
 }
 
-void KALedMeter::drawContents( QPainter *p )
+void KALedMeter::paintEvent(QPaintEvent *event)
 {
+    QFrame::paintEvent(event);
+
     QRect b = contentsRect();
+    QPainter p(this);
 
     unsigned cidx = 0;
     int ncol = mCount;
-    QColor col = colorGroup().foreground();
+    QColor col = palette().foreground().color();
    
     if ( !mCRanges.isEmpty() )
     {
         col = mCRanges.at( cidx )->mColor;
         ncol = mCRanges.at( cidx )->mValue;
     }
-    p->setBrush( col );
-    p->setPen( col );
+    p.setBrush( col );
+    p.setPen( col );
 
     int lw = b.width() / mCount;
     int lx = b.left() + 1;
@@ -138,21 +147,22 @@ void KALedMeter::drawContents( QPainter *p )
             {
                 col = mCRanges.at( cidx )->mColor;
                 ncol = mCRanges.at( cidx )->mValue;
-                p->setBrush( col );
-                p->setPen( col );
+                p.setBrush( col );
+                p.setPen( col );
             }
         }
 
-        p->drawRect( lx, b.top() + 1, lw - 1, b.height() - 2 );
+        p.drawRect( lx, b.top() + 1, lw - 1, b.height() - 2 );
     }
 }
 
 void KALedMeter::calcColorRanges()
 {
     int prev = 0;
-    ColorRange *cr;
-    for ( cr = mCRanges.first(); cr; cr = mCRanges.next() )
+
+    for(QList<ColorRange*>::iterator it = mCRanges.begin(); it != mCRanges.end(); it++)
     {
+        ColorRange *cr = *it;
         cr->mValue = prev + cr->mPc * mCount / 100;
         prev = cr->mValue;
     }

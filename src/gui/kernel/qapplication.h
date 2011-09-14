@@ -79,6 +79,8 @@ template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
 class QDecoration;
+#elif defined(Q_WS_QPA)
+class QPlatformNativeInterface;
 #endif
 #if defined(Q_OS_SYMBIAN)
 class QSymbianEvent;
@@ -123,15 +125,15 @@ public:
 #endif
 
 #ifndef qdoc
-    QApplication(int &argc, char **argv, int = QT_VERSION);
-    QApplication(int &argc, char **argv, bool GUIenabled, int = QT_VERSION);
-    QApplication(int &argc, char **argv, Type, int = QT_VERSION);
+    QApplication(int &argc, char **argv, int = ApplicationFlags);
+    QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
+    QApplication(int &argc, char **argv, Type, int = ApplicationFlags);
 #if defined(Q_WS_X11)
-    QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0, int = QT_VERSION);
-    QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0, int = QT_VERSION);
+    QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0, int = ApplicationFlags);
+    QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0, int = ApplicationFlags);
 #endif
 #if defined(Q_OS_SYMBIAN)
-    QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int = QT_VERSION);
+    QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int = ApplicationFlags);
 #endif
 #endif
     virtual ~QApplication();
@@ -196,6 +198,7 @@ public:
     static void alert(QWidget *widget, int duration = 0);
 
     static Qt::KeyboardModifiers keyboardModifiers();
+    static Qt::KeyboardModifiers queryKeyboardModifiers();
     static Qt::MouseButtons mouseButtons();
 
     static void setDesktopSettingsAware(bool);
@@ -252,6 +255,10 @@ public:
     static void qwsSetDecoration(QDecoration *);
     static QDecoration *qwsSetDecoration(const QString &decoration);
 #endif
+#endif
+
+#if defined(Q_WS_QPA)
+    static QPlatformNativeInterface *platformNativeInterface();
 #endif
 
 

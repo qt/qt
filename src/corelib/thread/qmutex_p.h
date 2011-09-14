@@ -56,32 +56,51 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qmutex.h>
+
+#if defined(Q_OS_MAC)
+# include <mach/semaphore.h>
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+# include <e32std.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QMutexPrivate {
+class QMutexPrivate : public QMutexData {
 public:
     QMutexPrivate(QMutex::RecursionMode mode);
     ~QMutexPrivate();
 
-    ulong self();
     bool wait(int timeout = -1);
     void wakeUp();
 
-    const bool recursive;
-    QAtomicInt contenders;
-    volatile int lastSpinCount;
+    // 1ms = 1000000ns
+    enum { MaximumSpinTimeThreshold = 1000000 };
+    volatile qint64 maximumSpinTime;
+    volatile qint64 averageWaitTime;
     Qt::HANDLE owner;
     uint count;
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_MAC)
+    semaphore_t mach_semaphore;
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 #elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     HANDLE event;
+#elif defined(Q_OS_SYMBIAN)
+    RSemaphore lock;
 #endif
 };
+
+inline QMutexData::QMutexData(QMutex::RecursionMode mode)
+    : recursive(mode == QMutex::Recursive)
+{}
+
+inline QMutexData::~QMutexData() {}
 
 QT_END_NAMESPACE
 

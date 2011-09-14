@@ -50,7 +50,7 @@ ColorListEditor::ColorListEditor(QWidget *widget) : QComboBox(widget)
 //! [0]
 QColor ColorListEditor::color() const
 {
-    return qVariantValue<QColor>(itemData(currentIndex(), Qt::DecorationRole));
+    return qvariant_cast<QColor>(itemData(currentIndex(), Qt::DecorationRole));
 }
 //! [0]
 

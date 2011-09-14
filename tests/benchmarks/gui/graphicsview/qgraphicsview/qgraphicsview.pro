@@ -9,7 +9,7 @@ include(chiptester/chiptester.pri)
 
 symbian {
    qt_not_deployed {
-      plugins.sources = qjpeg.dll
+      plugins.files = qjpeg.dll
       plugins.path = imageformats
       DEPLOYMENT += plugins
    }

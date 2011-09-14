@@ -22,4 +22,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS graphicsview.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

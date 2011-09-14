@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
     : QWidget(parent)
     , zoomCount(0)
-    , attached(false)
     , searchEngine(engine)
 {
     TRACE_OBJ
@@ -86,7 +85,7 @@ SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
     connect(searchEngine, SIGNAL(searchingFinished(int)), this,
         SLOT(searchingFinished(int)));
 
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (browser) // Will be null if lib was configured not to use CLucene.
         browser->viewport()->installEventFilter(this);
 }
@@ -100,7 +99,7 @@ SearchWidget::~SearchWidget()
 void SearchWidget::zoomIn()
 {
     TRACE_OBJ
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (browser && zoomCount != 10) {
         zoomCount++;
         browser->zoomIn();
@@ -110,7 +109,7 @@ void SearchWidget::zoomIn()
 void SearchWidget::zoomOut()
 {
     TRACE_OBJ
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (browser && zoomCount != -5) {
         zoomCount--;
         browser->zoomOut();
@@ -123,23 +122,11 @@ void SearchWidget::resetZoom()
     if (zoomCount == 0)
         return;
 
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (browser) {
         browser->zoomOut(zoomCount);
         zoomCount = 0;
     }
-}
-
-bool SearchWidget::isAttached() const
-{
-    TRACE_OBJ
-    return attached;
-}
-
-void SearchWidget::setAttached(bool state)
-{
-    TRACE_OBJ
-    attached = state;
 }
 
 void SearchWidget::search() const
@@ -165,7 +152,7 @@ void SearchWidget::searchingFinished(int hits)
 bool SearchWidget::eventFilter(QObject* o, QEvent *e)
 {
     TRACE_OBJ
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (browser && o == browser->viewport()
         && e->type() == QEvent::MouseButtonRelease){
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
@@ -196,7 +183,7 @@ void SearchWidget::contextMenuEvent(QContextMenuEvent *contextMenuEvent)
     QMenu menu;
     QPoint point = contextMenuEvent->globalPos();
 
-    QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
+    QTextBrowser* browser = resultWidget->findChild<QTextBrowser*>();
     if (!browser)
         return;
 

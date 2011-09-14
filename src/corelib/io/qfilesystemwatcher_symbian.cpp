@@ -62,9 +62,9 @@ QNotifyChangeEvent::QNotifyChangeEvent(RFs &fs, const TDesC &file,
         failureCount(0)
 {
     if (isDir) {
-        fsSession.NotifyChange(ENotifyEntry, iStatus, file);
+        fsSession.NotifyChange(ENotifyEntry, iStatus, watchedPath);
     } else {
-        fsSession.NotifyChange(ENotifyAll, iStatus, file);
+        fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
     }
     CActiveScheduler::Add(this);
     SetActive();
@@ -95,7 +95,10 @@ void QNotifyChangeEvent::RunL()
         SetActive();
 
         if (!failureCount) {
-            QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
+            int err;
+            QT_TRYCATCH_ERROR(err, engine->emitPathChanged(this));
+            if (err != KErrNone)
+                qWarning("QNotifyChangeEvent::RunL() - emitPathChanged threw exception (Converted error code: %d)", err);
         }
     }
 }
@@ -215,7 +218,7 @@ void QSymbianFileSystemWatcherEngine::emitPathChanged(QNotifyChangeEvent *e)
 
 void QSymbianFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
     wait();
 }
 

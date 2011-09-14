@@ -164,6 +164,8 @@ public:
         TextIndent = 0x1034,
         TabPositions = 0x1035,
         BlockIndent = 0x1040,
+        LineHeight = 0x1048,
+        LineHeightType = 0x1049,
         BlockNonBreakableLines = 0x1050,
         BlockTrailingHorizontalRulerWidth = 0x1060,
 
@@ -175,6 +177,7 @@ public:
         FontStyleHint = 0x1FE3,
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
+        FontHintingPreference = 0x1FE6,
         FontFamily = 0x2000,
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
@@ -202,6 +205,8 @@ public:
         // list properties
         ListStyle = 0x3000,
         ListIndent = 0x3001,
+        ListNumberPrefix = 0x3002,
+        ListNumberSuffix = 0x3003,
 
         // table and frame properties
         FrameBorder = 0x4000,
@@ -373,7 +378,8 @@ public:
         AlignSubScript,
         AlignMiddle,
         AlignTop,
-        AlignBottom
+        AlignBottom,
+        AlignBaseline
     };
     enum UnderlineStyle { // keep in sync with Qt::PenStyle!
         NoUnderline,
@@ -456,6 +462,16 @@ public:
     QFont::StyleStrategy fontStyleStrategy() const
     { return static_cast<QFont::StyleStrategy>(intProperty(FontStyleStrategy)); }
 
+    inline void setFontHintingPreference(QFont::HintingPreference hintingPreference)
+    {
+        setProperty(FontHintingPreference, hintingPreference);
+    }
+
+    inline QFont::HintingPreference fontHintingPreference() const
+    {
+        return static_cast<QFont::HintingPreference>(intProperty(FontHintingPreference));
+    }
+
     inline void setFontKerning(bool enable)
     { setProperty(FontKerning, enable); }
     inline bool fontKerning() const
@@ -529,6 +545,14 @@ inline void QTextCharFormat::setTableCellColumnSpan(int _tableCellColumnSpan)
 class Q_GUI_EXPORT QTextBlockFormat : public QTextFormat
 {
 public:
+    enum LineHeightTypes {
+        SingleHeight = 0,
+        ProportionalHeight = 1,
+        FixedHeight = 2,
+        MinimumHeight = 3,
+        LineDistanceHeight = 4
+    };
+
     QTextBlockFormat();
 
     bool isValid() const { return isBlockFormat(); }
@@ -566,6 +590,14 @@ public:
     inline int indent() const
     { return intProperty(BlockIndent); }
 
+    inline void setLineHeight(qreal height, int heightType)
+    { setProperty(LineHeight, height); setProperty(LineHeightType, heightType); }
+    inline qreal lineHeight(qreal scriptLineHeight, qreal scaling) const;
+    inline qreal lineHeight() const
+    { return doubleProperty(LineHeight); }
+    inline int lineHeightType() const
+    { return intProperty(LineHeightType); }
+
     inline void setNonBreakableLines(bool b)
     { setProperty(BlockNonBreakableLines, b); }
     inline bool nonBreakableLines() const
@@ -589,6 +621,23 @@ inline void QTextBlockFormat::setAlignment(Qt::Alignment aalignment)
 
 inline void QTextBlockFormat::setIndent(int aindent)
 { setProperty(BlockIndent, aindent); }
+
+inline qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling = 1.0) const
+{
+  switch(intProperty(LineHeightType)) {
+    case SingleHeight:
+      return(scriptLineHeight);
+    case ProportionalHeight:
+      return(scriptLineHeight * doubleProperty(LineHeight) / 100.0);
+    case FixedHeight:
+      return(doubleProperty(LineHeight) * scaling);
+    case MinimumHeight:
+      return(qMax(scriptLineHeight, doubleProperty(LineHeight) * scaling));
+    case LineDistanceHeight:
+      return(scriptLineHeight + doubleProperty(LineHeight) * scaling);
+  }
+  return(0);
+}
 
 class Q_GUI_EXPORT QTextListFormat : public QTextFormat
 {
@@ -617,6 +666,14 @@ public:
     inline int indent() const
     { return intProperty(ListIndent); }
 
+    inline void setNumberPrefix(const QString &numberPrefix);
+    inline QString numberPrefix() const
+    { return stringProperty(ListNumberPrefix); }
+
+    inline void setNumberSuffix(const QString &numberSuffix);
+    inline QString numberSuffix() const
+    { return stringProperty(ListNumberSuffix); }
+
 protected:
     explicit QTextListFormat(const QTextFormat &fmt);
     friend class QTextFormat;
@@ -627,6 +684,12 @@ inline void QTextListFormat::setStyle(Style astyle)
 
 inline void QTextListFormat::setIndent(int aindent)
 { setProperty(ListIndent, aindent); }
+
+inline void QTextListFormat::setNumberPrefix(const QString &np)
+{ setProperty(ListNumberPrefix, np); }
+
+inline void QTextListFormat::setNumberSuffix(const QString &ns)
+{ setProperty(ListNumberSuffix, ns); }
 
 class Q_GUI_EXPORT QTextImageFormat : public QTextCharFormat
 {

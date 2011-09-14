@@ -84,6 +84,12 @@ static void fixFlmCmd(QString *cmdLine, const QMap<QString, QString> &commandsTo
     // separator, so replace it with "&&" command concatenator.
     cmdLine->replace("\n\t", "&&");
 
+    // Strip output suppression, as sbsv2 can't handle it in FLMs. Cannot be done by simply
+    // adding "@" to commandsToReplace, as it'd get handled last due to alphabetical ordering,
+    // potentially masking other commands that need replacing.
+    if (cmdLine->contains("@"))
+        cmdLine->replace(QRegExp(cmdFind.arg("@")), cmdReplace.arg(""));
+
     // Iterate command replacements in reverse alphabetical order of keys so
     // that keys which are starts of other longer keys are iterated after longer keys.
     QMapIterator<QString, QString> cmdIter(commandsToReplace);
@@ -563,12 +569,27 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     exportFlm();
 
     // Parse extra compilers data
+    QStringList rawDefines;
     QStringList defines;
     QStringList incPath;
 
-    defines << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-            << varGlue("QMAKE_COMPILER_DEFINES", "-D", "-D", " ")
-            << varGlue("DEFINES","-D"," -D","");
+    rawDefines << project->values("PRL_EXPORT_DEFINES")
+               << project->values("QMAKE_COMPILER_DEFINES")
+               << project->values("DEFINES");
+
+    // Remove defines containing doubly-escaped characters (e.g. escaped double-quotation mark
+    // inside a string define) as bld.inf parsing done by sbsv2 toolchain breaks if they are
+    // present.
+    static QString backslashes = QLatin1String("\\\\");
+    QMutableStringListIterator i(rawDefines);
+    while (i.hasNext()) {
+        QString val = i.next();
+        if (val.indexOf(backslashes) != -1)
+            i.remove();
+    }
+
+    defines << valGlue(rawDefines,"-D"," -D","");
+
     for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
         QStringList values = it.value();
         for (int i = 0; i < values.size(); ++i) {
@@ -603,11 +624,11 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     // are not necessary.
     QStringList allPreDeps;
     foreach(QString item, project->values("PRE_TARGETDEPS")) {
-        allPreDeps.append(fileInfo(item).absoluteFilePath());
+        allPreDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(item)));
     }
 
     foreach (QString item, project->values("GENERATED_SOURCES")) {
-        allPreDeps.append(fileInfo(item).absoluteFilePath());
+        allPreDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(item)));
     }
 
     for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
@@ -617,7 +638,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
             QString sourceFile = currentSourcePath + "/" + values.at(i);
             QStringList deps = findDependencies(QDir::toNativeSeparators(sourceFile));
             foreach(QString depItem, deps) {
-                appendIfnotExist(allPreDeps, fileInfo(depItem).absoluteFilePath());
+                appendIfnotExist(allPreDeps, QDir::cleanPath(outputDir.absoluteFilePath(depItem)));
             }
         }
     }
@@ -628,7 +649,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     foreach(QString item, extraTargets) {
         foreach(QString targetItem, project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + item)) {
             // Make sure targetpath is absolute
-            QString absoluteTarget = fileInfo(targetItem).absoluteFilePath();
+            QString absoluteTarget = QDir::cleanPath(outputDir.absoluteFilePath(targetItem));
             if (allPreDeps.contains(absoluteTarget)) {
                 QStringList deps = project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + item + targetItem);
                 QString commandItem =  project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + item + targetItem).join(" ");
@@ -637,7 +658,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 QString absoluteDeps;
                 foreach (QString depItem, deps) {
                     if (!depItem.isEmpty()) {
-                        absoluteDeps.append(fileInfo(depItem).absoluteFilePath());
+                        absoluteDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(depItem)));
                         absoluteDeps.append(" ");
                     }
                 }
@@ -702,9 +723,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
         QFileInfo iconInfo = fileInfo(icon);
 
-        QFileInfo bldinf(project->values("MAKEFILE").first());
-        QString iconPath = bldinf.dir().relativeFilePath(iconInfo.path());
-
+        QString iconPath = outputDir.relativeFilePath(iconInfo.absolutePath());
         QString iconFile = iconInfo.baseName();
 
         QFileInfo iconTargetInfo = fileInfo(iconTargetFile);
@@ -726,11 +745,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     if (!cleanFiles.isEmpty()) {
         QStringList absoluteCleanFiles;
         foreach (QString cleanFile, cleanFiles) {
-            QFileInfo fi(cleanFile);
             QString fileName = QLatin1String("\"");
-            fileName.append(fi.absoluteFilePath());
+            fileName.append(QDir::cleanPath(outputDir.absoluteFilePath(cleanFile)));
             fileName.append(QLatin1String("\""));
-            absoluteCleanFiles << fileName;   	
+            absoluteCleanFiles << fileName;
         }
         t << "START EXTENSION qt/qmake_clean" << endl;
         t << "OPTION CLEAN_FILES " << absoluteCleanFiles.join(" ") << endl;

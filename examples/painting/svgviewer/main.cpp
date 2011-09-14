@@ -57,6 +57,10 @@ int main(int argc, char **argv)
         window.openFile(argv[1]);
     else
         window.openFile(":/files/bubbles.svg");
+#if defined(Q_OS_SYMBIAN)
+    window.showMaximized();
+#else
     window.show();
+#endif
     return app.exec();
 }

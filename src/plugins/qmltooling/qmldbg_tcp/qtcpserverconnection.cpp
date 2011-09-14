@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,7 @@
 
 #include "qtcpserverconnection.h"
 
+#include <QtCore/qplugin.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 
@@ -54,6 +55,7 @@ public:
     QTcpServerConnectionPrivate();
 
     int port;
+    bool block;
     QTcpSocket *socket;
     QPacketProtocol *protocol;
     QTcpServer *tcpServer;
@@ -63,6 +65,7 @@ public:
 
 QTcpServerConnectionPrivate::QTcpServerConnectionPrivate() :
     port(0),
+    block(false),
     socket(0),
     protocol(0),
     tcpServer(0),
@@ -119,10 +122,23 @@ void QTcpServerConnection::disconnect()
     d->socket = 0;
 }
 
+bool QTcpServerConnection::waitForMessage()
+{
+    Q_D(QTcpServerConnection);
+    if (d->protocol->packetsAvailable() > 0) {
+        QPacket packet = d->protocol->read();
+        d->debugServer->receiveMessage(packet.data());
+        return true;
+    } else {
+        return d->protocol->waitForReadyRead(-1);
+    }
+}
+
 void QTcpServerConnection::setPort(int port, bool block)
 {
     Q_D(QTcpServerConnection);
     d->port = port;
+    d->block = block;
 
     listen();
     if (block)
@@ -135,10 +151,11 @@ void QTcpServerConnection::listen()
 
     d->tcpServer = new QTcpServer(this);
     QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
-    if (d->tcpServer->listen(QHostAddress::Any, d->port))
+    if (d->tcpServer->listen(QHostAddress::Any, d->port)) {
         qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
-    else
+    } else {
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
+    }
 }
 
 
@@ -148,10 +165,10 @@ void QTcpServerConnection::readyRead()
     if (!d->protocol)
         return;
 
-    QPacket packet = d->protocol->read();
-
-    QByteArray content = packet.data();
-    d->debugServer->receiveMessage(content);
+    while (d->protocol->packetsAvailable() > 0) {
+        QPacket packet = d->protocol->read();
+        d->debugServer->receiveMessage(packet.data());
+    }
 }
 
 void QTcpServerConnection::newConnection()
@@ -169,8 +186,11 @@ void QTcpServerConnection::newConnection()
     d->socket->setParent(this);
     d->protocol = new QPacketProtocol(d->socket, this);
     QObject::connect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
-}
 
+    if (d->block) {
+        d->protocol->waitForReadyRead(-1);
+    }
+}
 
 Q_EXPORT_PLUGIN2(tcpserver, QTcpServerConnection)
 

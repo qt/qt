@@ -124,6 +124,7 @@ public:
         manifestWriter.writeNamespace(manifestNS, QString::fromLatin1("manifest"));
         manifestWriter.writeStartDocument();
         manifestWriter.writeStartElement(manifestNS, QString::fromLatin1("manifest"));
+        manifestWriter.writeAttribute(manifestNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
         addFile(QString::fromLatin1("/"), QString::fromLatin1("application/vnd.oasis.opendocument.text"));
         addFile(QString::fromLatin1("content.xml"), QString::fromLatin1("text/xml"));
     }
@@ -590,6 +591,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         QString value;
         switch (format.verticalAlignment()) {
         case QTextCharFormat::AlignMiddle:
+        case QTextCharFormat::AlignBaseline:
         case QTextCharFormat::AlignNormal: value = QString::fromLatin1("0%"); break;
         case QTextCharFormat::AlignSuperScript: value = QString::fromLatin1("super"); break;
         case QTextCharFormat::AlignSubScript: value = QString::fromLatin1("sub"); break;
@@ -636,7 +638,15 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
             || style == QTextListFormat::ListUpperRoman) {
         writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-number"));
         writer.writeAttribute(styleNS, QString::fromLatin1("num-format"), bulletChar(style));
-        writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));
+
+        if (format.hasProperty(QTextFormat::ListNumberSuffix))
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), format.numberSuffix());
+        else
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));
+
+        if (format.hasProperty(QTextFormat::ListNumberPrefix))
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-prefix"), format.numberPrefix());
+
     } else {
         writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-bullet"));
         writer.writeAttribute(textNS, QString::fromLatin1("bullet-char"), bulletChar(style));
@@ -778,6 +788,7 @@ bool QTextOdfWriter::writeAll()
     writer.writeNamespace(svgNS, QString::fromLatin1("svg"));
     writer.writeStartDocument();
     writer.writeStartElement(officeNS, QString::fromLatin1("document-content"));
+    writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
     // add fragments. (for character formats)
     QTextDocumentPrivate::FragmentIterator fragIt = m_document->docHandle()->begin();

@@ -124,21 +124,20 @@ QMutexPool *QMutexPool::instance()
 }
 
 /*!
+    \fn QMutexPool::get(const void *address)
     Returns a QMutex from the pool. QMutexPool uses the value \a address
     to determine which mutex is returned from the pool.
 */
-QMutex *QMutexPool::get(const void *address)
+
+/*! \internal
+  create the mutex for the given index
+ */
+QMutex *QMutexPool::createMutex(int index)
 {
-    Q_ASSERT_X(address != 0, "QMutexPool::get()", "'address' argument cannot be zero");
-    int index = int((quintptr(address) >> (sizeof(address) >> 1)) % mutexes.count());
-
-    if (!mutexes[index]) {
-        // mutex not created, create one
-        QMutex *newMutex = new QMutex(recursionMode);
-        if (!mutexes[index].testAndSetOrdered(0, newMutex))
-            delete newMutex;
-    }
-
+    // mutex not created, create one
+    QMutex *newMutex = new QMutex(recursionMode);
+    if (!mutexes[index].testAndSetOrdered(0, newMutex))
+        delete newMutex;
     return mutexes[index];
 }
 

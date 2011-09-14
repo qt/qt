@@ -265,7 +265,7 @@ public:
         hz->setValidator(new QDoubleValidator(hz));
 #endif
         for (int i=0; ffmpegprofiles[i].name; ++i) {
-            profile->addItem(ffmpegprofiles[i].name);
+            profile->addItem(QString::fromAscii(ffmpegprofiles[i].name));
         }
     }
 
@@ -273,9 +273,9 @@ public:
     {
         int i;
         for (i=0; ffmpegprofiles[i].args[0]; ++i) {
-            if (ffmpegprofiles[i].args == a) {
+            if (QString::fromAscii(ffmpegprofiles[i].args) == a) {
                 profile->setCurrentIndex(i);
-                args->setText(QLatin1String(ffmpegprofiles[i].args));
+                args->setText(QString::fromAscii(ffmpegprofiles[i].args));
                 return;
             }
         }
@@ -465,14 +465,14 @@ private:
             }
         }
         QSettings settings;
-        settings.setValue("Cookies",data);
+        settings.setValue(QLatin1String("Cookies"), data);
     }
 
     void load()
     {
         QMutexLocker lock(&mutex);
         QSettings settings;
-        QByteArray data = settings.value("Cookies").toByteArray();
+        QByteArray data = settings.value(QLatin1String("Cookies")).toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
 
@@ -490,7 +490,7 @@ public:
         if (proxyDirty)
             setupProxy();
         QString protocolTag = query.protocolTag();
-        if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+        if (httpProxyInUse && (protocolTag == QLatin1String("http") || protocolTag == QLatin1String("https"))) {
             QList<QNetworkProxy> ret;
             ret << httpProxy;
             return ret;
@@ -597,7 +597,7 @@ QString QDeclarativeViewer::getVideoFileName()
     if (convertAvailable) types += tr("GIF Animation")+QLatin1String(" (*.gif)");
     types += tr("Individual PNG frames")+QLatin1String(" (*.png)");
     if (ffmpegAvailable) types += tr("All ffmpeg formats (*.*)");
-    return QFileDialog::getSaveFileName(this, title, "", types.join(";; "));
+    return QFileDialog::getSaveFileName(this, title, QString(), types.join(QLatin1String(";; ")));
 }
 
 QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
@@ -725,18 +725,18 @@ void QDeclarativeViewer::createMenu()
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
     QAction *snapshotAction = new QAction(tr("&Take Snapshot"), this);
-    snapshotAction->setShortcut(QKeySequence("F3"));
+    snapshotAction->setShortcut(QKeySequence(tr("F3")));
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
 
     recordAction = new QAction(tr("Start Recording &Video"), this);
-    recordAction->setShortcut(QKeySequence("F9"));
+    recordAction->setShortcut(QKeySequence(tr("F9")));
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
 
     QAction *recordOptions = new QAction(tr("Video &Options..."), this);
     connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
 
     QAction *slowAction = new QAction(tr("&Slow Down Animations"), this);
-    slowAction->setShortcut(QKeySequence("Ctrl+."));
+    slowAction->setShortcut(QKeySequence(tr("Ctrl+.")));
     slowAction->setCheckable(true);
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
 
@@ -755,7 +755,7 @@ void QDeclarativeViewer::createMenu()
     connect(fullscreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
 
     rotateAction = new QAction(tr("Rotate orientation"), this);
-    rotateAction->setShortcut(QKeySequence("Ctrl+T"));
+    rotateAction->setShortcut(QKeySequence(tr("Ctrl+T")));
     connect(rotateAction, SIGNAL(triggered()), this, SLOT(rotateOrientation()));
 
     orientation = new QActionGroup(this);
@@ -963,7 +963,7 @@ void QDeclarativeViewer::chooseRecordingOptions()
 
 
     // Profile
-    recdlg->setArguments(record_args.join(" "));
+    recdlg->setArguments(record_args.join(QLatin1String(" ")));
     if (recdlg->exec()) {
         // File
         record_file = recdlg->file->text();
@@ -972,7 +972,7 @@ void QDeclarativeViewer::chooseRecordingOptions()
         // Rate
         record_rate = recdlg->videoRate();
         // Profile
-        record_args = recdlg->arguments().split(" ",QString::SkipEmptyParts);
+        record_args = recdlg->arguments().split(QLatin1Char(' '),QString::SkipEmptyParts);
     }
 }
 
@@ -983,8 +983,8 @@ void QDeclarativeViewer::toggleRecordingWithSelection()
             QString fileName = getVideoFileName();
             if (fileName.isEmpty())
                 return;
-            if (!fileName.contains(QRegExp(".[^\\/]*$")))
-                fileName += ".avi";
+            if (!fileName.contains(QRegExp(QLatin1String(".[^\\/]*$"))))
+                fileName += QLatin1String(".avi");
             setRecordFile(fileName);
         }
     }
@@ -1026,7 +1026,7 @@ void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        open("qrc:/browser/Browser.qml");
+        open(QLatin1String("qrc:/browser/Browser.qml"));
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
@@ -1072,7 +1072,7 @@ void QDeclarativeViewer::loadTranslationFile(const QString& directory)
 
 void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
 {
-    QDir dir(directory+"/dummydata", "*.qml");
+    QDir dir(directory + QLatin1String("/dummydata"), QLatin1String("*.qml"));
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
         QString qml = list.at(i);
@@ -1114,14 +1114,14 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     delete canvas->rootObject();
     canvas->engine()->clearComponentCache();
     QDeclarativeContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("qmlViewer", this);
+    ctxt->setContextProperty(QLatin1String("qmlViewer"), this);
 #ifdef Q_OS_SYMBIAN
-    ctxt->setContextProperty("qmlViewerFolder", "E:\\"); // Documents on your S60 phone
+    ctxt->setContextProperty(QLatin1String("qmlViewerFolder"), QLatin1String("E:\\")); // Documents on your S60 phone
 #else
-    ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
+    ctxt->setContextProperty(QLatin1String("qmlViewerFolder"), QDir::currentPath());
 #endif
 
-    ctxt->setContextProperty("runtime", Runtime::instance());
+    ctxt->setContextProperty(QLatin1String("runtime"), Runtime::instance());
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
@@ -1224,26 +1224,26 @@ bool QDeclarativeViewer::event(QEvent *event)
 void QDeclarativeViewer::senseImageMagick()
 {
     QProcess proc;
-    proc.start("convert", QStringList() << "-h");
+    proc.start(QLatin1String("convert"), QStringList() << QLatin1String("-h"));
     proc.waitForFinished(2000);
-    QString help = proc.readAllStandardOutput();
-    convertAvailable = help.contains("ImageMagick");
+    QString help = QString::fromAscii(proc.readAllStandardOutput());
+    convertAvailable = help.contains(QLatin1String("ImageMagick"));
 }
 
 void QDeclarativeViewer::senseFfmpeg()
 {
     QProcess proc;
-    proc.start("ffmpeg", QStringList() << "-h");
+    proc.start(QLatin1String("ffmpeg"), QStringList() << QLatin1String("-h"));
     proc.waitForFinished(2000);
-    QString ffmpegHelp = proc.readAllStandardOutput();
-    ffmpegAvailable = ffmpegHelp.contains("-s ");
-    ffmpegHelp = tr("Video recording uses ffmpeg:")+"\n\n"+ffmpegHelp;
+    QString ffmpegHelp = QString::fromAscii(proc.readAllStandardOutput());
+    ffmpegAvailable = ffmpegHelp.contains(QLatin1String("-s "));
+    ffmpegHelp = tr("Video recording uses ffmpeg:") + QLatin1String("\n\n") + ffmpegHelp;
 
     QDialog *d = new QDialog(recdlg);
     QVBoxLayout *l = new QVBoxLayout(d);
     QTextBrowser *b = new QTextBrowser(d);
     QFont f = b->font();
-    f.setFamily("courier");
+    f.setFamily(QLatin1String("courier"));
     b->setFont(f);
     b->setText(ffmpegHelp);
     l->addWidget(b);
@@ -1266,7 +1266,7 @@ void QDeclarativeViewer::setRecording(bool on)
         recordTimer.start();
         frame_fmt = record_file.right(4).toLower();
         frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
-        if (frame_fmt != ".png" && (!convertAvailable || frame_fmt != ".gif")) {
+        if (frame_fmt != QLatin1String(".png") && (!convertAvailable || frame_fmt != QLatin1String(".gif"))) {
             // Stream video to ffmpeg
 
             QProcess *proc = new QProcess(this);
@@ -1274,19 +1274,19 @@ void QDeclarativeViewer::setRecording(bool on)
             frame_stream = proc;
 
             QStringList args;
-            args << "-y";
-            args << "-r" << QString::number(record_rate);
-            args << "-f" << "rawvideo";
-            args << "-pix_fmt" << (frame_fmt == ".gif" ? "rgb24" : "rgb32");
-            args << "-s" << QString("%1x%2").arg(canvas->width()).arg(canvas->height());
-            args << "-i" << "-";
+            args << QLatin1String("-y");
+            args << QLatin1String("-r") << QString::number(record_rate);
+            args << QLatin1String("-f") << QLatin1String("rawvideo");
+            args << QLatin1String("-pix_fmt") << (frame_fmt == QLatin1String(".gif") ? QLatin1String("rgb24") : QLatin1String("rgb32"));
+            args << QLatin1String("-s") << QString::fromAscii("%1x%2").arg(canvas->width()).arg(canvas->height());
+            args << QLatin1String("-i") << QLatin1String("-");
             if (record_outsize.isValid()) {
-                args << "-s" << QString("%1x%2").arg(record_outsize.width()).arg(record_outsize.height());
-                args << "-aspect" << QString::number(double(canvas->width())/canvas->height());
+                args << QLatin1String("-s") << QString::fromAscii("%1x%2").arg(record_outsize.width()).arg(record_outsize.height());
+                args << QLatin1String("-aspect") << QString::number(double(canvas->width())/canvas->height());
             }
             args += record_args;
             args << record_file;
-            proc->start("ffmpeg",args);
+            proc->start(QLatin1String("ffmpeg"), args);
 
         } else {
             // Store frames, save to GIF/PNG
@@ -1309,14 +1309,14 @@ void QDeclarativeViewer::setRecording(bool on)
 
             QString framename;
             bool png_output = false;
-            if (record_file.right(4).toLower()==".png") {
-                if (record_file.contains('%'))
+            if (record_file.right(4).toLower() == QLatin1String(".png")) {
+                if (record_file.contains(QLatin1Char('%')))
                     framename = record_file;
                 else
-                    framename = record_file.left(record_file.length()-4)+"%04d"+record_file.right(4);
+                    framename = record_file.left(record_file.length()-4) + QLatin1String("%04d") + record_file.right(4);
                 png_output = true;
             } else {
-                framename = "tmp-frame%04d.png";
+                framename = QLatin1String("tmp-frame%04d.png");
                 png_output = false;
             }
             foreach (QImage* img, frames) {
@@ -1327,11 +1327,11 @@ void QDeclarativeViewer::setRecording(bool on)
                 name.sprintf(framename.toLocal8Bit(),frame++);
                 if (record_outsize.isValid())
                     *img = img->scaled(record_outsize,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
-                if (record_dither=="ordered")
+                if (record_dither==QLatin1String("ordered"))
                     img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither|Qt::OrderedDither).save(name);
-                else if (record_dither=="threshold")
+                else if (record_dither==QLatin1String("threshold"))
                     img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither|Qt::ThresholdDither).save(name);
-                else if (record_dither=="floyd")
+                else if (record_dither==QLatin1String("floyd"))
                     img->convertToFormat(QImage::Format_Indexed8,Qt::PreferDither).save(name);
                 else
                     img->save(name);
@@ -1341,25 +1341,26 @@ void QDeclarativeViewer::setRecording(bool on)
 
             if (!progress.wasCanceled()) {
                 if (png_output) {
-                    framename.replace(QRegExp("%\\d*."),"*");
+                    framename.replace(QRegExp(QLatin1String("%\\d*.")), QLatin1String("*"));
                     qDebug() << "Wrote frames" << framename;
                     inputs.clear(); // don't remove them
                 } else {
                     // ImageMagick and gifsicle for GIF encoding
                     progress.setLabelText(tr("Converting frames to GIF file..."));
                     QStringList args;
-                    args << "-delay" << QString::number(period/10);
+                    args << QLatin1String("-delay") << QString::number(period/10);
                     args << inputs;
                     args << record_file;
                     qDebug() << "Converting..." << record_file << "(this may take a while)";
-                    if (0!=QProcess::execute("convert", args)) {
+                    if (0!=QProcess::execute(QLatin1String("convert"), args)) {
                         qWarning() << "Cannot run ImageMagick 'convert' - recorded frames not converted";
                         inputs.clear(); // don't remove them
                         qDebug() << "Wrote frames tmp-frame*.png";
                     } else {
-                        if (record_file.right(4).toLower() == ".gif") {
+                        if (record_file.right(4).toLower() == QLatin1String(".gif")) {
                             qDebug() << "Compressing..." << record_file;
-                            if (0!=QProcess::execute("gifsicle", QStringList() << "-O2" << "-o" << record_file << record_file))
+                            if (0!=QProcess::execute(QLatin1String("gifsicle"), QStringList() << QLatin1String("-O2")
+                                                     << QLatin1String("-o") << record_file << record_file))
                                 qWarning() << "Cannot run 'gifsicle' - not compressed";
                         }
                         qDebug() << "Wrote" << record_file;
@@ -1392,6 +1393,7 @@ void QDeclarativeViewer::appAboutToQuit()
     loggerWindow = 0;
     delete tester;
     tester = 0;
+    close();
 }
 
 void QDeclarativeViewer::autoStartRecording()
@@ -1410,7 +1412,7 @@ void QDeclarativeViewer::recordFrame()
 {
     canvas->QWidget::render(&frame);
     if (frame_stream) {
-        if (frame_fmt == ".gif") {
+        if (frame_fmt == QLatin1String(".gif")) {
             // ffmpeg can't do 32bpp with gif
             QImage rgb24 = frame.convertToFormat(QImage::Format_RGB888);
             frame_stream->write((char*)rgb24.bits(),rgb24.numBytes());
@@ -1541,8 +1543,8 @@ void QDeclarativeViewer::registerTypes()
 
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
-        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
-        qmlRegisterUncreatableType<DeviceOrientation>("QtQuick",1,0,"Orientation","");
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt", 4, 7, "Orientation", QString());
+        qmlRegisterUncreatableType<DeviceOrientation>("QtQuick", 1, 0, "Orientation", QString());
         registered = true;
     }
 }

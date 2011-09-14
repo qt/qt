@@ -16,7 +16,9 @@ SUBDIRS       = \
                 threadedfortuneserver \
                 googlesuggest \
                 torrent \
-                bearermonitor
+                bearermonitor \
+                multicastreceiver \
+                multicastsender
 
     contains(QT_CONFIG, svg) {
         SUBDIRS += bearercloud
@@ -36,4 +38,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/network
 INSTALLS += sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

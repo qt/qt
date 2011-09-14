@@ -77,6 +77,7 @@ private slots:
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
     void lastResortFont();
+    void styleName();
 };
 
 // Testing get/set functions
@@ -148,6 +149,13 @@ void tst_QFont::exactMatch()
 #ifdef Q_WS_WIN
     QSKIP("Exact matching on windows misses a lot because of the sample chars", SkipAll);
     return;
+#endif
+
+#ifdef Q_WS_X11
+    QVERIFY(QFont("sans").exactMatch());
+    QVERIFY(QFont("sans-serif").exactMatch());
+    QVERIFY(QFont("serif").exactMatch());
+    QVERIFY(QFont("monospace").exactMatch());
 #endif
 
     QSKIP("This test is bogus on Unix with support for font aliases in fontconfig", SkipAll);
@@ -603,6 +611,18 @@ void tst_QFont::lastResortFont()
 #endif
     QFont font;
     QVERIFY(!font.lastResortFont().isEmpty());
+}
+
+void tst_QFont::styleName()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("Only tested on Mac", SkipAll);
+#else
+    QFont font("Helvetica Neue");
+    font.setStyleName("UltraLight");
+
+    QCOMPARE(QFontInfo(font).styleName(), QString("UltraLight"));
+#endif
 }
 
 QTEST_MAIN(tst_QFont)

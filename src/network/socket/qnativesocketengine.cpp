@@ -98,6 +98,7 @@
 
 #include <qabstracteventdispatcher.h>
 #include <qsocketnotifier.h>
+#include <qnetworkinterface.h>
 
 #include "qnativesocketengine_p.h"
 #include <private/qthread_p.h>
@@ -157,12 +158,12 @@ QT_BEGIN_NAMESPACE
     concurrent QNativeSocketEngine. This is safe, because WSAStartup and
     WSACleanup are reference counted.
 */
-QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
+QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
+    socketDescriptor(-1),
+    readNotifier(0),
+    writeNotifier(0),
+    exceptNotifier(0)
 {
-    socketDescriptor = -1;
-    readNotifier = 0;
-    writeNotifier = 0;
-    exceptNotifier = 0;
 }
 
 /*! \internal
@@ -386,7 +387,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
 
 
     // Make sure we receive out-of-band data
-    // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
@@ -645,6 +645,54 @@ int QNativeSocketEngine::accept()
 
     return d->nativeAccept();
 }
+
+#ifndef QT_NO_NETWORKINTERFACE
+
+/*!
+    \since 4.8
+*/
+bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
+                                             const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::joinMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
+    return d->nativeJoinMulticastGroup(groupAddress, iface);
+}
+
+/*!
+    \since 4.8
+*/
+bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
+                                              const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::leaveMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::UdpSocket, false);
+    return d->nativeLeaveMulticastGroup(groupAddress, iface);
+}
+
+/*! \since 4.8 */
+QNetworkInterface QNativeSocketEngine::multicastInterface() const
+{
+    Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::multicastInterface(), QNetworkInterface());
+    Q_CHECK_TYPE(QNativeSocketEngine::multicastInterface(), QAbstractSocket::UdpSocket, QNetworkInterface());
+    return d->nativeMulticastInterface();
+}
+
+/*! \since 4.8 */
+bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::setMulticastInterface(), false);
+    Q_CHECK_TYPE(QNativeSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
+    return d->nativeSetMulticastInterface(iface);
+}
+
+#endif // QT_NO_NETWORKINTERFACE
 
 /*!
     Returns the number of bytes that are currently available for

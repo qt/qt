@@ -3,4 +3,5 @@ SUBDIRS=\
     qgl \
     qglthreads \
     qglbuffer \
+    qglfunctions \
 

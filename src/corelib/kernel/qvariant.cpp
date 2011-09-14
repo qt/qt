@@ -947,11 +947,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         case QMetaType::UChar:
         case QMetaType::UShort:
         case QMetaType::ULong:
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            *f = (double)(qlonglong)qMetaTypeUNumber(d);
-#else
             *f = double(qMetaTypeUNumber(d));
-#endif
             break;
         default:
             *f = 0.0;
@@ -986,11 +982,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         case QMetaType::UChar:
         case QMetaType::UShort:
         case QMetaType::ULong:
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            *f = (float)(qlonglong)qMetaTypeUNumber(d);
-#else
             *f = float(qMetaTypeUNumber(d));
-#endif
             break;
         default:
             *f = 0.0f;
@@ -1084,7 +1076,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << v.toFloat();
         break;
     case QMetaType::QObjectStar:
-        dbg.nospace() << qVariantValue<QObject *>(v);
+        dbg.nospace() << qvariant_cast<QObject *>(v);
         break;
     case QVariant::Double:
         dbg.nospace() << v.toDouble();
@@ -1245,7 +1237,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     conversion functions to data types defined in QtGui, such as
     QColor, QImage, and QPixmap. In other words, there is no \c
     toColor() function. Instead, you can use the QVariant::value() or
-    the qVariantValue() template function. For example:
+    the qvariant_cast() template function. For example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 2
 
@@ -1360,12 +1352,12 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
 
     Note that you have to pass the address of the variable you want stored.
 
-    Usually, you never have to use this constructor, use qVariantFromValue()
+    Usually, you never have to use this constructor, use QVariant::fromValue()
     instead to construct variants from the pointer types represented by
     \c QMetaType::VoidStar, \c QMetaType::QObjectStar and
     \c QMetaType::QWidgetStar.
 
-    \sa qVariantFromValue(), Type
+    \sa QVariant::fromValue(), Type
 */
 
 /*!
@@ -1814,6 +1806,14 @@ QVariant& QVariant::operator=(const QVariant &variant)
 
     return *this;
 }
+
+/*!
+    \fn void QVariant::swap(QVariant &other)
+    \since 4.8
+
+    Swaps variant \a other with this variant. This operation is very
+    fast and never fails.
+*/
 
 /*!
     \fn void QVariant::detach()
@@ -3074,10 +3074,6 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 4
 
-    \warning This function is not available with MSVC 6. Use
-    qVariantSetValue() instead if you need to support that version of
-    the compiler.
-
     \sa value(), fromValue(), canConvert()
  */
 
@@ -3095,10 +3091,6 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 5
 
-    \warning This function is not available with MSVC 6. Use
-    qVariantValue() or qvariant_cast() instead if you need to support
-    that version of the compiler.
-
     \sa setValue(), fromValue(), canConvert()
 */
 
@@ -3110,10 +3102,6 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 6
-
-    \warning This function is not available with MSVC 6. Use
-    qVariantCanConvert() instead if you need to support that version
-    of the compiler.
 
     \sa convert()
 */
@@ -3130,23 +3118,22 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \note If you are working with custom types, you should use
     the Q_DECLARE_METATYPE() macro to register your custom type.
 
-    \warning This function is not available with MSVC 6. Use
-    qVariantFromValue() instead if you need to support that version
-    of the compiler.
-
     \sa setValue(), value()
 */
 
 /*!
     \fn QVariant qVariantFromValue(const T &value)
     \relates QVariant
+    \obsolete
 
     Returns a variant containing a copy of the given \a value
     with template type \c{T}.
 
-    This function is equivalent to QVariant::fromValue(\a value). It
-    is provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    This function is equivalent to QVariant::fromValue(\a value).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     For example, a QObject pointer can be stored in a variant with the
     following code:
@@ -3158,13 +3145,16 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
 /*! \fn void qVariantSetValue(QVariant &variant, const T &value)
     \relates QVariant
+    \obsolete
 
     Sets the contents of the given \a variant to a copy of the
     \a value with the specified template type \c{T}.
 
-    This function is equivalent to QVariant::setValue(\a value). It
-    is provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    This function is equivalent to QVariant::setValue(\a value).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QVariant::setValue()
 */
@@ -3175,33 +3165,39 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Returns the given \a value converted to the template type \c{T}.
 
-    This function is equivalent to qVariantValue().
+    This function is equivalent to QVariant::value().
 
-    \sa qVariantValue(), QVariant::value()
+    \sa QVariant::value()
 */
 
 /*! \fn T qVariantValue(const QVariant &value)
     \relates QVariant
+    \obsolete
 
     Returns the given \a value converted to the template type \c{T}.
 
     This function is equivalent to
-    \l{QVariant::value()}{QVariant::value}<T>(\a value). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \l{QVariant::value()}{QVariant::value}<T>(\a value).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QVariant::value(), qvariant_cast()
 */
 
 /*! \fn bool qVariantCanConvert(const QVariant &value)
     \relates QVariant
+    \obsolete
 
     Returns true if the given \a value can be converted to the
     template type specified; otherwise returns false.
 
-    This function is equivalent to QVariant::canConvert(\a value). It
-    is provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    This function is equivalent to QVariant::canConvert(\a value).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QVariant::canConvert()
 */

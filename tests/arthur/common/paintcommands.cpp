@@ -48,6 +48,7 @@
 #include <qtextstream.h>
 #include <qtextlayout.h>
 #include <qdebug.h>
+#include <QStaticText>
 
 #ifdef QT3_SUPPORT
 #include <q3painter.h>
@@ -94,6 +95,13 @@ const char *PaintCommands::fontWeightTable[] = {
     "DemiBold",
     "Bold",
     "Black"
+};
+
+const char *PaintCommands::fontHintingTable[] = {
+    "Default",
+    "None",
+    "Vertical",
+    "Full"
 };
 
 const char *PaintCommands::clipOperationTable[] = {
@@ -177,14 +185,16 @@ const char *PaintCommands::imageFormatTable[] = {
 
 int PaintCommands::translateEnum(const char *table[], const QString &pattern, int limit)
 {
+    QByteArray p = pattern.toLatin1().toLower();
     for (int i=0; i<limit; ++i)
-        if (pattern.toLower() == QString(QLatin1String(table[i])).toLower())
+        if (p == QByteArray::fromRawData(table[i], qstrlen(table[i])).toLower())
             return i;
     return -1;
 }
 
 QList<PaintCommands::PaintCommandInfos> PaintCommands::s_commandInfoTable = QList<PaintCommands::PaintCommandInfos>();
 QList<QPair<QString,QStringList> > PaintCommands::s_enumsTable = QList<QPair<QString,QStringList> >();
+QMultiHash<QString, int> PaintCommands::s_commandHash;
 
 #define DECL_PAINTCOMMAND(identifier, method, regexp, syntax, sample) \
     s_commandInfoTable << PaintCommandInfos(QLatin1String(identifier), &PaintCommands::method, QRegExp(regexp), \
@@ -286,9 +296,9 @@ void PaintCommands::staticInit()
                       "setCompositionMode <composition mode enum>",
                       "setCompositionMode SourceOver");
     DECL_PAINTCOMMAND("setFont", command_setFont,
-                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
-                      "setFont <fontFace> [size] [font weight|font weight enum] [italic]\n  - font weight is an integer between 0 and 99",
-                      "setFont \"times\" normal");
+                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
+                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum]\n  - font weight is an integer between 0 and 99",
+                      "setFont \"times\" 12");
     DECL_PAINTCOMMAND("setPen", command_setPen,
                       "^setPen\\s+#?(\\w*)$",
                       "setPen <color>\nsetPen <pen style enum>\nsetPen brush",
@@ -337,8 +347,12 @@ void PaintCommands::staticInit()
                       "gradient_setLinear 1.0 1.0 2.0 2.0");
     DECL_PAINTCOMMAND("gradient_setRadial", command_gradient_setRadial,
                       "^gradient_setRadial\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)$",
-                      "gradient_setRadial <cx> <cy> <rad> <fx> <fy>\n  - C is the center\n  - rad is the angle in degrees\n  - F is the focal point",
+                      "gradient_setRadial <cx> <cy> <rad> <fx> <fy>\n  - C is the center\n  - rad is the radius\n  - F is the focal point",
                       "gradient_setRadial 1.0 1.0 45.0 2.0 2.0");
+    DECL_PAINTCOMMAND("gradient_setRadialExtended", command_gradient_setRadialExtended,
+                      "^gradient_setRadialExtended\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)$",
+                      "gradient_setRadialExtended <cx> <cy> <rad> <fx> <fy> <frad>\n  - C is the center\n  - rad is the center radius\n  - F is the focal point\n  - frad is the focal radius",
+                      "gradient_setRadialExtended 1.0 1.0 45.0 2.0 2.0 45.0");
     DECL_PAINTCOMMAND("gradient_setLinearPen", command_gradient_setLinearPen,
                       "^gradient_setLinearPen\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)$",
                       "gradient_setLinearPen <x1> <y1> <x2> <y2>",
@@ -451,6 +465,10 @@ void PaintCommands::staticInit()
                       "^drawText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawText <x> <y> <text>",
                       "drawText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawStaticText", command_drawStaticText,
+                      "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawStaticText <x> <y> <text>",
+                      "drawStaticText 10 10 \"my text\"");
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -627,10 +645,20 @@ void PaintCommands::staticInit()
                       "\n  - where vertices 1 to 4 defines the source quad and 5 to 8 the destination quad",
                       "mapQuadToQuad 0.0 0.0 1.0 1.0 0.0 0.0 -1.0 -1.0");
 
+    // populate the command lookup hash
+    for (int i=0; i<s_commandInfoTable.size(); i++) {
+        if (s_commandInfoTable.at(i).isSectionHeader() ||
+            s_commandInfoTable.at(i).identifier == QLatin1String("comment") ||
+            s_commandInfoTable.at(i).identifier == QLatin1String("noop"))
+            continue;
+        s_commandHash.insert(s_commandInfoTable.at(i).identifier, i);
+    }
+
     // populate the enums list
     ADD_ENUMLIST("brush styles", brushStyleTable);
     ADD_ENUMLIST("pen styles", penStyleTable);
     ADD_ENUMLIST("font weights", fontWeightTable);
+    ADD_ENUMLIST("font hintings", fontHintingTable);
     ADD_ENUMLIST("clip operations", clipOperationTable);
     ADD_ENUMLIST("spread methods", spreadMethodTable);
     ADD_ENUMLIST("composition modes", compositionModeTable);
@@ -686,12 +714,23 @@ void PaintCommands::insertAt(int commandIndex, const QStringList &newCommands)
 **********************************************************************************/
 void PaintCommands::runCommand(const QString &scriptLine)
 {
-    staticInit();
-    foreach (PaintCommandInfos command, s_commandInfoTable)
-        if (!command.isSectionHeader() && command.regExp.indexIn(scriptLine) >= 0) {
+    if (scriptLine.isEmpty()) {
+        command_noop(QRegExp());
+        return;
+    }
+    if (scriptLine.startsWith('#')) {
+        command_comment(QRegExp());
+        return;
+    }
+    QString firstWord = scriptLine.section(QRegExp("\\s"), 0, 0);
+    QList<int> indices = s_commandHash.values(firstWord);
+    foreach(int idx, indices) {
+        const PaintCommandInfos &command = s_commandInfoTable.at(idx);
+        if (command.regExp.indexIn(scriptLine) >= 0) {
             (this->*(command.paintMethod))(command.regExp);
             return;
         }
+    }
     qWarning("ERROR: unknown command or argument syntax error in \"%s\"", qPrintable(scriptLine));
 }
 
@@ -1357,6 +1396,8 @@ void PaintCommands::command_qt3_drawArc(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_drawText(QRegExp re)
 {
+    if (!m_shouldDrawText)
+        return;
     QStringList caps = re.capturedTexts();
     int x = convertToInt(caps.at(1));
     int y = convertToInt(caps.at(2));
@@ -1366,6 +1407,21 @@ void PaintCommands::command_drawText(QRegExp re)
         printf(" -(lance) drawText(%d, %d, %s)\n", x, y, qPrintable(txt));
 
     m_painter->drawText(x, y, txt);
+}
+
+void PaintCommands::command_drawStaticText(QRegExp re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    QString txt = caps.at(3);
+
+    if (m_verboseMode)
+        printf(" -(lance) drawStaticText(%d, %d, %s)\n", x, y, qPrintable(txt));
+
+    m_painter->drawStaticText(x, y, QStaticText(txt));
 }
 
 /***************************************************************************************************/
@@ -2038,11 +2094,22 @@ void PaintCommands::command_setFont(QRegExp re)
 
     bool italic = caps.at(4).toLower() == "true" || caps.at(4).toLower() == "italic";
 
-    if (m_verboseMode)
-        printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d\n",
-               qPrintable(family), size, weight, italic);
+    QFont font(family, size, weight, italic);
 
-    m_painter->setFont(QFont(family, size, weight, italic));
+#if QT_VERSION >= 0x040800
+    int hinting = translateEnum(fontHintingTable, caps.at(5), 4);
+    if (hinting == -1)
+        hinting = 0;
+    else
+        font.setHintingPreference(QFont::HintingPreference(hinting));
+#else
+    int hinting = 1;
+#endif
+    if (m_verboseMode)
+        printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d hinting=%s\n",
+               qPrintable(family), size, weight, italic, fontHintingTable[hinting]);
+
+    m_painter->setFont(font);
 }
 
 /***************************************************************************************************/
@@ -2357,11 +2424,41 @@ void PaintCommands::command_gradient_setRadial(QRegExp re)
     double fy = convertToDouble(caps.at(5));
 
     if (m_verboseMode)
-        printf(" -(lance) gradient_setRadial center=(%.2f, %.2f), radius=%.2f focal=(%.2f, %.2f), "
+        printf(" -(lance) gradient_setRadial center=(%.2f, %.2f), radius=%.2f, focal=(%.2f, %.2f), "
                "spread=%d\n",
                cx, cy, rad, fx, fy, m_gradientSpread);
 
     QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
+    rg.setStops(m_gradientStops);
+    rg.setSpread(m_gradientSpread);
+    rg.setCoordinateMode(m_gradientCoordinate);
+    QBrush brush(rg);
+    QTransform brush_matrix = m_painter->brush().transform();
+    brush.setTransform(brush_matrix);
+    m_painter->setBrush(brush);
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_gradient_setRadialExtended(QRegExp re)
+{
+    QStringList caps = re.capturedTexts();
+    double cx = convertToDouble(caps.at(1));
+    double cy = convertToDouble(caps.at(2));
+    double rad = convertToDouble(caps.at(3));
+    double fx = convertToDouble(caps.at(4));
+    double fy = convertToDouble(caps.at(5));
+    double frad = convertToDouble(caps.at(6));
+
+    if (m_verboseMode)
+        printf(" -(lance) gradient_setRadialExtended center=(%.2f, %.2f), radius=%.2f, focal=(%.2f, %.2f), "
+               "focal radius=%.2f, spread=%d\n",
+               cx, cy, rad, fx, fy, frad, m_gradientSpread);
+
+#if QT_VERSION >= 0x040800
+    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy), frad);
+#else
+    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
+#endif
     rg.setStops(m_gradientStops);
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);

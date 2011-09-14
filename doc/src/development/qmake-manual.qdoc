@@ -252,8 +252,7 @@
 
     Normally, variables are used to contain whitespace-separated lists
     of values. However, it is sometimes necessary to specify values containing
-    spaces. These must be quoted by using the
-    \l{qmake Function Reference#quote-string}{quote()} function in the following way:
+    spaces. These must be quoted by using double quotes:
 
     \snippet doc/src/snippets/qmake/quoting.pro 0
 
@@ -261,9 +260,7 @@
     the variable. A similar approach is used to deal with paths that contain
     spaces, particularly when defining the
     \l{qmake Variable Reference#INCLUDEPATH}{INCLUDEPATH} and
-    \l{qmake Variable Reference#LIBS}{LIBS} variables for the Windows platform.
-    In cases like these, the \l{qmake Function Reference#quote(string)}{quote()}
-    function can be used in the following way:
+    \l{qmake Variable Reference#LIBS}{LIBS} variables for the Windows platform:
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
@@ -1123,6 +1120,44 @@
 
     \tableofcontents{3}
 
+
+    \target BACKUP_REGISTRATION_FILE_MAEMO
+    \section1 BACKUP_REGISTRATION_FILE_MAEMO
+
+    \e {This is only used on the Maemo platform.}
+
+    This variable is used to specify the backup registration file to use with
+    \c enable_backup \c CONFIG value for Maemo platform. The default value is:
+    \c{$$_PRO_FILE_PWD_/backup_registration/maemo/$$basename(TARGET).conf}.
+
+    Unfortunately it is not possible to have a common registration file for Maemo like there is
+    for Symbian, so the developer must always provide one if the platform default backup support is
+    not sufficient.
+
+    For documentation about how to create backup registration files and how the device
+    backup works in general, see:
+    (\l{http://wiki.maemo.org/Documentation/Maemo_5_Developer_Guide/Generic_Platform_Components/Using_Backup_Application}{Using Backup Application})
+
+    \target BACKUP_REGISTRATION_FILE_SYMBIAN
+    \section1 BACKUP_REGISTRATION_FILE_SYMBIAN
+
+    \e {This is only used on the Symbian platform.}
+
+    This variable is used to specify the backup registration file to use with
+    \c enable_backup \c CONFIG value for Symbian platform. The default value is
+    determined as follows:
+
+    If a custom registration file \c{$$_PRO_FILE_PWD_/backup_registration/symbian/backup_registration.xml}
+    exists, it is used. Otherwise, the common registration file \c{$$[QT_INSTALL_DATA]/mkspecs/common/symbian/backup_registration.xml}
+    is used. This common registration file will define backing up of application binaries,
+    resources, and all files under application private directory. Also note that \c{C:/Data}
+    contents are backed up by default on Symbian devices, so no registration is needed for any
+    files found there.
+
+    For documentation about how to create backup registration files and how the device
+    backup works in general, see:
+    (\l{http://library.forum.nokia.com/index.jsp?topic=/S60_5th_Edition_Cpp_Developers_Library/GUID-35228542-8C95-4849-A73F-2B4F082F0C44/sdk/doc_source/guide/Connectivity-subsystem-guide/Connectivity/PC_Connectivity_How-To_Write_Backup_Aware_Software.html}{How-To Write Backup-aware Software})
+
     \target BLD_INF_RULES
     \section1 BLD_INF_RULES
 
@@ -1148,6 +1183,10 @@
 
     Any rules you define will be added after automatically generated
     rules in each section.
+
+    \note Content specified using \c BLD_INF_RULES is inserted as-is into the \c bld.inf
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
 
     \target CONFIG
     \section1 CONFIG
@@ -1256,11 +1295,12 @@
         automatically be added to the project.
     \row \o console \o The target is a Win32 console application (app only). The
         proper include paths, compiler flags and libraries will
-        automatically be added to the
-        project.
+        automatically be added to the project.
     \row \o shared \o{1,3} The target is a shared object/DLL. The proper
         include paths, compiler flags and libraries will automatically be
-        added to the project.
+        added to the project. Note that \c dll can also be used on all platforms;
+        a shared library file with the appropriate suffix for the target platform
+        (dll, so, dylib) will be created.
     \row \o dll \o
     \row \o dylib \o
     \row \o static \o{1,2} The target is a static library (lib only).  The proper
@@ -1342,6 +1382,17 @@
          to work. E.g. \c{myapp_en.ts}.
          \bold{Note:} All languages supported by Qt are not supported by Symbian,
          so some \c{.ts} files may be ignored by qmake.
+    \endtable
+
+    These options only have an effect on Symbian and Maemo platforms:
+
+    \table 95%
+    \header \o Option \o Description
+    \row \o enable_backup \o Generates deployment for backup registration file
+         to enable backing up the application during device backup.
+         See \l{#BACKUP_REGISTRATION_FILE_MAEMO}{BACKUP_REGISTRATION_FILE_MAEMO}
+         and \l{#BACKUP_REGISTRATION_FILE_SYMBIAN}{BACKUP_REGISTRATION_FILE_SYMBIAN}
+         for more information about backup.
     \endtable
 
     These options have an effect on Linux/Unix platforms:
@@ -1473,6 +1524,10 @@
     attention that also other statements stay valid. For example if you
     override languages statement, you must override also package-header
     statement and all other statements which are language specific.
+
+    \note Custom deployments specified using \c pkg_postrules are inserted
+    as-is into the \c PKG file, so any rules that specify host side paths may not
+    work correctly when doing a shadow build.
 
     On the Symbian platform, three separate PKG files are generated:
 
@@ -1699,9 +1754,7 @@
 
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
-    document. For example, paths with spaces can be specified on Windows
-    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
-    function in the following way:
+    document.
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting include paths with spaces
 
@@ -1722,6 +1775,9 @@
     Note that \l{qmake Manual#qmake}{\c qmake} will skip files that are
     executable. If you need to install executable files, you can unset the
     files' executable flags.
+
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
 
     \target LEXIMPLS
     \section1 LEXIMPLS
@@ -1764,9 +1820,7 @@
 
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
-    document. For example, paths with spaces can be specified on Windows
-    and Unix platforms by using the \l{qmake Function Reference#quote-string}{quote()}
-    function in the following way:
+    document.
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting library paths with spaces
 
@@ -1817,6 +1871,8 @@
 
     \bold{Note:} On the Symbian platform, this variable is ignored.
 
+    \bold{Note:} On the Symbian platform, this variable is ignored.
+
     \target MAKEFILE_GENERATOR
     \section1 MAKEFILE_GENERATOR
 
@@ -1862,6 +1918,10 @@
     explicitly supported by their own variables, such as
     \c TARGET.EPOCSTACKSIZE.
     Doing so could result in duplicate statements in the MMP file.
+
+    \note Content specified using \c MMP_RULES is inserted as-is into the \c MMP
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
 
     \target MOC_DIR
     \section1 MOC_DIR
@@ -1944,8 +2004,17 @@
     \target PWD
     \section1 PWD
 
-    This variable contains the full path leading to the directory where
-    the \l{qmake Manual#qmake}{\c qmake} project file (project.pro) is located.
+    The \c PWD variable specifies the full path leading to the directory
+    containing the current file being parsed. This can be useful
+    to refer to files within the source tree when writing project files to
+    support shadow builds.
+
+    See also \l{#_PRO_FILE_PWD_}{_PRO_FILE_PWD_}.
+
+    \note IN_PWD is an alias for PWD.
+
+    \note Function calls have no effect on the value of PWD. PWD will refer to
+    the path of the calling file.
 
     \target OUT_PWD
     \section1 OUT_PWD
@@ -2788,6 +2857,13 @@
     \l{qmake Manual#qmake}{\c qmake} or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
 
+    \section1 QMAKE_LN_SHLIB
+
+    This variable contains the command to execute when creating a link
+    to a shared library. The
+    value of this variable is typically handled by \c qmake or
+     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_POST_LINK
 
     This variable contains the command to execute after linking the TARGET
@@ -2802,12 +2878,14 @@
     executed, additionally some backends will not support this - mostly only
     Makefile backends.
 
-    \section1 QMAKE_LN_SHLIB
+    \section1 QMAKE_PROJECT_NAME
 
-    This variable contains the command to execute when creating a link to a
-    shared library. The value of this variable is typically handled by
-    \l{qmake Manual#qmake}{\c qmake} or \l{#QMAKESPEC}{qmake.conf} and rarely
-    needs to be modified.
+    \e {This is used for Visual Studio project files only.}
+
+    This variable determines the name of the project when generating project
+    files for IDEs. The default value is the target name. The value of this
+    variable is typically handled by \l {qmake Manual#qmake}{ \c qmake} and
+    rarely needs to be modified.
 
     \section1 QMAKE_MAC_SDK
 
@@ -3050,6 +3128,23 @@
     platform application shell. In addition it will make the application to
     be launched in background.
 
+    From S60 version 5.4 onwards, you can specify \c graphics_memory value using \c RSS_RULES
+    to specify the graphics memory quota for the application. The value is in kilobytes and
+    defaults to 24576 (i.e. 24MB) for applications that link against QtGui. The default for all
+    other applications is zero.
+
+    The graphics memory quota tells the operating system how much graphics memory the
+    application is likely to need so that it can free up enough graphics memory prior to
+    application launch. If the value is too small, it can cause random slowdowns later when
+    the memory is freed on on-demand basis. On the other hand, too large values can delay
+    the application launch unnecessarily.
+
+    For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 159
+
+    This example sets the graphics memory quota to 12MB.
+
     For detailed list of possible \c APP_REGISTRATION_INFO statements, please refer to the
     Symbian platform help.
 
@@ -3167,6 +3262,29 @@
     For example, define a subdirectory that is only build for emulator builds in Qt for Symbian:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 150
+
+    \section2 Ordered Targets and Visual Studio Solution Files
+
+    The \c ordered option is not supported for Visual Studio. The following list describes how
+    you can get around without it--dependencies are generated automatically if:
+
+    \list
+        \o 1a) There is a Lib/DLL project of which TARGET (the .lib is used and not the .dll)
+        is used on the link line of another project in your solution (you can modify the link
+        line with LIBS).
+
+        \o 1b) There is an Exe project of which TARGET is used in a custom
+        build-step of another project in your solution.
+
+        \o 2) You don't use paths in the TARGET variable (use DESTDIR/DLLDESTDIR for that),
+        e.g, TARGET=$(SOME_VARIABLE)/myLib, won't work.
+
+        \o 3) If you have a special location for your libs, you specify the -Lmy/library/path and
+        LIBS += mylib, instead of just using LIBS += my/library/path/mylib
+
+        \o 4) The leaf projects are created before you generate the solution file. (You can use the
+        recursive flag for qmake to do this, like "qmake -tp vc -r [yourproject.pro]" 
+    \endlist
 
     \target SYMBIAN_VERSION
     \section1 SYMBIAN_VERSION
@@ -3488,6 +3606,19 @@
 
     \tableofcontents{2}
 
+    \section1 packagesExist(packages)
+
+    Uses the PKGCONFIG mechanism to determine whether or not the given packages
+    exist at the time of project parsing.
+
+    This can be useful to optionally enable or disable features. For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 157
+
+    And then, in the code:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 158
+
     \section1 basename(variablename)
 
     Returns the basename of the file specified. For example:
@@ -3682,10 +3813,7 @@
     \section1 quote(string)
 
     Converts a whole \e string into a single entity and returns the result.
-    Newlines, carriage returns, and tabs can be specified in the string
-    with \\n \\r and \\t. The return value does not contain either single
-    or double quotation marks unless you explicitly include them yourself,
-    but will be placed into a single entry (for literal expansion).
+    This is just a fancy way of enclosing the string into double quotes.
 
     \section1 replace(string, old_string, new_string)
 

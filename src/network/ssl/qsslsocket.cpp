@@ -56,7 +56,7 @@
     QSslSocket establishes a secure, encrypted TCP connection you can
     use for transmitting encrypted data. It can operate in both client
     and server mode, and it supports modern SSL protocols, including
-    SSLv3 and TLSv1. By default, QSslSocket uses SSLv3, but you can
+    SSLv3 and TLSv1. By default, QSslSocket uses TLSv1, but you can
     change the SSL protocol by calling setProtocol() as long as you do
     it before the handshake has started.
 
@@ -142,6 +142,15 @@
     addDefaultCaCertificate(), addDefaultCaCertificates(), and
     setDefaultCaCertificates().
     \endlist
+
+    \note If available, root certificates on Unix (excluding Mac OS X) will be
+    loaded on demand from the standard certificate directories. If
+    you do not want to load root certificates on demand, you need to call either
+    the static function setDefaultCaCertificates() before the first SSL handshake
+    is made in your application, (e.g. via
+    "QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());"),
+    or call setCaCertificates() on your QSslSocket instance prior to the SSL
+    handshake.
 
     For more information about ciphers and certificates, refer to QSslCipher and
     QSslCertificate.
@@ -543,7 +552,7 @@ bool QSslSocket::isEncrypted() const
 }
 
 /*!
-    Returns the socket's SSL protocol. By default, \l QSsl::SslV3 is used.
+    Returns the socket's SSL protocol. By default, \l QSsl::SecureProtocols is used.
 
     \sa setProtocol()
 */
@@ -647,6 +656,34 @@ void QSslSocket::setPeerVerifyDepth(int depth)
         return;
     }
     d->configuration.peerVerifyDepth = depth;
+}
+
+/*!
+    \since 4.8
+
+    Returns the different hostname for the certificate validation, as set by
+    setPeerVerifyName or by connectToHostEncrypted.
+
+    \sa setPeerVerifyName(), connectToHostEncrypted()
+*/
+QString QSslSocket::peerVerifyName() const
+{
+    Q_D(const QSslSocket);
+    return d->verificationPeerName;
+}
+
+/*!
+    \since 4.8
+
+    Sets a different host name, given by \a hostName, for the certificate
+    validation instead of the one used for the TCP connection.
+
+    \sa connectToHostEncrypted()
+*/
+void QSslSocket::setPeerVerifyName(const QString &hostName)
+{
+    Q_D(QSslSocket);
+    d->verificationPeerName = hostName;
 }
 
 /*!
@@ -791,14 +828,8 @@ void QSslSocket::setReadBufferSize(qint64 size)
     Q_D(QSslSocket);
     d->readBufferMaxSize = size;
 
-    // set the plain socket's buffer size to 1k if we have a limit
-    // see also the same logic in QSslSocketPrivate::createPlainSocket
-    if (d->plainSocket) {
-        if (d->mode == UnencryptedMode)
-            d->plainSocket->setReadBufferSize(size);
-        else
-            d->plainSocket->setReadBufferSize(size ? 1024 : 0);
-    }
+    if (d->plainSocket)
+        d->plainSocket->setReadBufferSize(size);
 }
 
 /*!
@@ -865,6 +896,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
+    d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -1249,6 +1281,7 @@ void QSslSocket::setCaCertificates(const QList<QSslCertificate> &certificates)
 {
     Q_D(QSslSocket);
     d->configuration.caCertificates = certificates;
+    d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -1257,6 +1290,9 @@ void QSslSocket::setCaCertificates(const QList<QSslCertificate> &certificates)
   validate the peer's certificate. It can be moodified prior to the
   handshake with addCaCertificate(), addCaCertificates(), and
   setCaCertificates().
+
+  \note On Unix, this method may return an empty list if the root
+  certificates are loaded on demand.
 
   \sa addCaCertificate(), addCaCertificates(), setCaCertificates()
 */
@@ -1311,10 +1347,9 @@ void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certific
 /*!
     Sets the default CA certificate database to \a certificates. The
     default CA certificate database is originally set to your system's
-    default CA certificate database. If no system default database is
-    found, Qt will provide its own default database. You can override
-    the default CA certificate database with your own CA certificate
-    database using this function.
+    default CA certificate database. You can override the default CA
+    certificate database with your own CA certificate database using
+    this function.
 
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
@@ -1335,6 +1370,9 @@ void QSslSocket::setDefaultCaCertificates(const QList<QSslCertificate> &certific
 
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
+
+    \note On Unix, this method may return an empty list if the root
+    certificates are loaded on demand.
 
     \sa caCertificates()
 */
@@ -1805,6 +1843,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , connectionEncrypted(false)
     , ignoreAllSslErrors(false)
     , readyReadEmittedPointer(0)
+    , allowRootCertOnDemandLoading(true)
     , plainSocket(0)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
@@ -1881,6 +1920,7 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 */
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
+    // ### Qt5: rename everything containing "caCertificates" to "rootCertificates" or similar
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->caCertificates;
@@ -1895,6 +1935,9 @@ void QSslSocketPrivate::setDefaultCaCertificates(const QList<QSslCertificate> &c
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates = certs;
+    // when the certificates are set explicitly, we do not want to
+    // load the system certificates on demand
+    s_loadRootCertsOnDemand = false;
 }
 
 /*!
@@ -2002,6 +2045,10 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setPeerName(QString());
 
     plainSocket = new QTcpSocket(q);
+#ifndef QT_NO_BEARERMANAGEMENT
+    //copy network session down to the plain socket (if it has been set)
+    plainSocket->setProperty("_q_networksession", q->property("_q_networksession"));
+#endif
     q->connect(plainSocket, SIGNAL(connected()),
                q, SLOT(_q_connectedSlot()),
                Qt::DirectConnection);
@@ -2192,6 +2239,20 @@ void QSslSocketPrivate::_q_flushReadBuffer()
     // trigger a read from the plainSocket into SSL
     if (mode != QSslSocket::UnencryptedMode)
         transmit();
+}
+
+/*!
+    \internal
+*/
+QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
+{
+    return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
+                               << "/usr/lib/ssl/certs/" // Gentoo, Mandrake
+                               << "/usr/share/ssl/" // Centos, Redhat, SuSE
+                               << "/usr/local/ssl/" // Normal OpenSSL Tarball
+                               << "/var/ssl/certs/" // AIX
+                               << "/usr/local/ssl/certs/" // Solaris
+                               << "/opt/openssl/certs/"; // HP-UX
 }
 
 QT_END_NAMESPACE

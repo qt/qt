@@ -123,6 +123,14 @@
 */
 
 /*!
+    \fn void QSet::swap(QSet<T> &other)
+    \since 4.8
+
+    Swaps set \a other with this set. This operation is very fast and
+    never fails.
+*/
+
+/*!
     \fn bool QSet::operator==(const QSet<T> &other) const
 
     Returns true if the \a other set is equal to this set; otherwise

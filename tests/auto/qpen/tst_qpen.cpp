@@ -59,6 +59,7 @@ public:
 
 private slots:
     void getSetCheck();
+    void swap();
     void operator_eq_eq();
     void operator_eq_eq_data();
 
@@ -93,6 +94,14 @@ void tst_QPen::getSetCheck()
         obj1.setWidth(i);
         QCOMPARE(i, obj1.width());
     }
+}
+
+void tst_QPen::swap()
+{
+    QPen p1(Qt::black), p2(Qt::white);
+    p1.swap(p2);
+    QCOMPARE(p1.color(), QColor(Qt::white));
+    QCOMPARE(p2.color(), QColor(Qt::black));
 }
 
 Q_DECLARE_METATYPE(QPen)

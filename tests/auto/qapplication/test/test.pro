@@ -4,19 +4,19 @@ SOURCES += ../tst_qapplication.cpp
 TARGET = ../tst_qapplication
 
 wince* {
-  additional.sources = ../desktopsettingsaware/desktopsettingsaware.exe
+  additional.files = ../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
-  someTest.sources = test.pro
+  someTest.files = test.pro
   someTest.path = test
-  DEPLOYMENT = additional deploy someTest
+  DEPLOYMENT += additional deploy someTest
 }
 
 symbian: {
-  additional.sources = $$OUT_PWD/../desktopsettingsaware/desktopsettingsaware.exe
+  additional.files = $$OUT_PWD/../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
-  someTest.sources = test.pro
+  someTest.files = test.pro
   someTest.path = test
-  windowIcon.sources = ../heart.svg
+  windowIcon.files = ../heart.svg
   DEPLOYMENT += additional deploy someTest windowIcon
   LIBS += -lcone -lavkon
 }

@@ -583,19 +583,15 @@ void tst_QDirModel::unreadable()
 
 void tst_QDirModel::filePath()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("OS doesn't support symbolic links", SkipAll);
+#else
     QFile::remove(SRCDIR "test.lnk");
     QVERIFY(QFile(SRCDIR "tst_qdirmodel.cpp").link(SRCDIR "test.lnk"));
     QDirModel model;
     model.setResolveSymlinks(false);
     QModelIndex index = model.index(SRCDIR "test.lnk");
     QVERIFY(index.isValid());
-#if defined(Q_OS_SYMBIAN)
-    // Since model will force lowercase path in Symbian, make case insensitive compare
-    // Note: Windows should fail this, too, if test path has any uppercase letters.
-    QCOMPARE(model.filePath(index).toLower(), QString(SRCDIR).toLower() + "test.lnk");
-    model.setResolveSymlinks(true);
-    QCOMPARE(model.filePath(index).toLower(), QString(SRCDIR).toLower() + "tst_qdirmodel.cpp");
-#else
 #ifndef Q_OS_WINCE
     QString path = SRCDIR;
 #else
@@ -604,19 +600,14 @@ void tst_QDirModel::filePath()
     QCOMPARE(model.filePath(index), path + QString( "test.lnk"));
     model.setResolveSymlinks(true);
     QCOMPARE(model.filePath(index), path + QString( "tst_qdirmodel.cpp"));
-#endif
     QFile::remove(SRCDIR "test.lnk");
+#endif
 }
 
 void tst_QDirModel::task196768_sorting()
 {
     //this task showed that the persistent model indexes got corrupted when sorting
     QString path = SRCDIR;
-
-#ifdef Q_OS_SYMBIAN
-    if(!RProcess().HasCapability(ECapabilityAllFiles))
-        QEXPECT_FAIL("", "QTBUG-9746", Continue);
-#endif
 
     QDirModel model;
 
@@ -637,6 +628,11 @@ void tst_QDirModel::task196768_sorting()
     QCOMPARE(index.data(), index2.data());
     view.setSortingEnabled(true);
     index2 = model.index(path);
+
+#ifdef Q_OS_SYMBIAN
+    if(!RProcess().HasCapability(ECapabilityAllFiles))
+        QEXPECT_FAIL("", "QTBUG-9746", Continue);
+#endif
     QCOMPARE(index.data(), index2.data());
 }
 
@@ -645,10 +641,10 @@ void tst_QDirModel::filter()
     QDirModel model;
     model.setNameFilters(QStringList() << "*.nada");
     QModelIndex index = model.index(SRCDIR "test");
-    Q_ASSERT(model.rowCount(index) == 0);
+    QCOMPARE(model.rowCount(index), 0);
     QModelIndex index2 = model.index(SRCDIR "test/file01.tst");
-    Q_ASSERT(!index2.isValid());
-    Q_ASSERT(model.rowCount(index) == 0);
+    QVERIFY(!index2.isValid());
+    QCOMPARE(model.rowCount(index), 0);
 }
 
 void tst_QDirModel::task244669_remove()

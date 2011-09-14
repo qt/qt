@@ -80,6 +80,9 @@
 #if defined(Q_WS_S60)
 #include "private/qt_s60_p.h"
 #endif
+#ifndef QT_NO_ACCESSIBILITY
+#include "qaccessible.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -116,7 +119,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
 
     QPalette resolvedpalette = option.palette.resolve(QApplication::palette("QMenu"));
     QVariant value = index.data(Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(value)) {
+    if (value.canConvert<QBrush>()) {
         resolvedpalette.setBrush(QPalette::WindowText, qvariant_cast<QBrush>(value));
         resolvedpalette.setBrush(QPalette::ButtonText, qvariant_cast<QBrush>(value));
         resolvedpalette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
@@ -152,7 +155,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.icon = qvariant_cast<QPixmap>(variant);
         break;
     }
-    if (qVariantCanConvert<QBrush>(index.data(Qt::BackgroundRole))) {
+    if (index.data(Qt::BackgroundRole).canConvert<QBrush>()) {
         menuOption.palette.setBrush(QPalette::All, QPalette::Background,
                                     qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
     }
@@ -369,6 +372,7 @@ void QComboBoxPrivateContainer::timerEvent(QTimerEvent *timerEvent)
     if (timerEvent->timerId() == adjustSizeTimer.timerId()) {
         adjustSizeTimer.stop();
         if (combo->sizeAdjustPolicy() == QComboBox::AdjustToContents) {
+            combo->updateGeometry();
             combo->adjustSize();
             combo->update();
         }
@@ -1017,6 +1021,9 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
         }
         q->update();
     }
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+#endif
 }
 
 void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int end)
@@ -1093,6 +1100,8 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
         container->setPalette(q->palette());
         container->setWindowOpacity(1.0);
     }
+    if (lineEdit)
+        lineEdit->setPalette(q->palette());
 }
 
 /*!
@@ -1268,6 +1277,9 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     Q_Q(QComboBox);
     emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(itemText(index));
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+#endif
 }
 
 QString QComboBoxPrivate::itemText(const QModelIndex &index) const
@@ -1303,7 +1315,7 @@ QComboBox::~QComboBox()
     By default, this property has a value of 10.
 
     \note This property is ignored for non-editable comboboxes in styles that returns
-    false for QStyle::SH_ComboBox_Popup such as the Mac style or the Gtk+ Style.
+    true for QStyle::SH_ComboBox_Popup such as the Mac style or the Gtk+ Style.
 */
 int QComboBox::maxVisibleItems() const
 {
@@ -2013,11 +2025,18 @@ void QComboBox::setCurrentIndex(int index)
 void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 {
     Q_Q(QComboBox);
-    bool indexChanged = (mi != currentIndex);
+
+    QModelIndex normalized;
+    if (mi.column() != modelColumn)
+        normalized = model->index(mi.row(), modelColumn, mi.parent());
+    if (!normalized.isValid())
+        normalized = mi;    // Fallback to passed index.
+
+    bool indexChanged = (normalized != currentIndex);
     if (indexChanged)
-        currentIndex = QPersistentModelIndex(mi);
+        currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
-        QString newText = q->itemText(currentIndex.row());
+        QString newText = q->itemText(normalized.row());
         if (lineEdit->text() != newText)
             lineEdit->setText(newText);
         updateLineEditGeometry();
@@ -2353,7 +2372,12 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
+#ifndef Q_WS_S60
     QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+#else
+    QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+#endif
+
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();
     QPoint above = mapToGlobal(listRect.topLeft());
@@ -2476,18 +2500,10 @@ void QComboBox::showPopup()
             listRect.setWidth(screen.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty()) {
-                TRect cbaRect = TRect();
-                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-                switch (cbaLocation) {
-                case AknLayoutUtils::EAknCbaLocationRight:
-                    listRect.setRight(screen.right());
-                    break;
-                case AknLayoutUtils::EAknCbaLocationLeft:
-                    listRect.setLeft(screen.left());
-                    break;
-                }
+            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
+                // landscape without stacon, menu should be at the right
+                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
+                                                     listRect.setLeft(screen.left());
             }
         }
 #endif
@@ -2628,6 +2644,9 @@ void QComboBox::clear()
 {
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!
@@ -2644,6 +2663,9 @@ void QComboBox::clearEditText()
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->clear();
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!
@@ -2654,6 +2676,9 @@ void QComboBox::setEditText(const QString &text)
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->setText(text);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!
@@ -2706,7 +2731,7 @@ void QComboBox::changeEvent(QEvent *e)
             initStyleOption(&opt);
 
             if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                const QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
+                QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
 
                 QRect listRect(style()->subControlRect(QStyle::CC_ComboBox, &opt,
                     QStyle::SC_ComboBoxListBoxPopup, this));
@@ -2721,13 +2746,14 @@ void QComboBox::changeEvent(QEvent *e)
                     listRect.setWidth(listRect.height());
                     //by default popup is centered on screen in landscape
                     listRect.moveCenter(screen.center());
-                    if (staConTopRect.IsEmpty()) {
+                    if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
                         // landscape without stacon, menu should be at the right
                         (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
                                                              listRect.setLeft(screen.left());
                     }
-                    d->container->setGeometry(listRect);
                 }
+                
+                d->container->setGeometry(listRect);
             }
         }
 #endif
@@ -2760,6 +2786,10 @@ void QComboBox::changeEvent(QEvent *e)
 void QComboBox::resizeEvent(QResizeEvent *)
 {
     Q_D(QComboBox);
+#ifdef Q_WS_S60
+    if (d->viewContainer() && d->viewContainer()->isVisible())
+        showPopup();
+#endif
     d->updateLineEditGeometry();
 }
 

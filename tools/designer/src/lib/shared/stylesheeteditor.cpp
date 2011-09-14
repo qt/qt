@@ -394,14 +394,14 @@ StyleSheetPropertyEditorDialog::StyleSheetPropertyEditorDialog(QWidget *parent,
             qt_extension<QDesignerPropertySheetExtension*>(m_fw->core()->extensionManager(), m_widget);
     Q_ASSERT(sheet != 0);
     const int index = sheet->indexOf(QLatin1String(styleSheetProperty));
-    const PropertySheetStringValue value = qVariantValue<PropertySheetStringValue>(sheet->property(index));
+    const PropertySheetStringValue value = qvariant_cast<PropertySheetStringValue>(sheet->property(index));
     setText(value.value());
 }
 
 void StyleSheetPropertyEditorDialog::applyStyleSheet()
 {
     const PropertySheetStringValue value(text(), false);
-    m_fw->cursor()->setWidgetProperty(m_widget, QLatin1String(styleSheetProperty), qVariantFromValue(value));
+    m_fw->cursor()->setWidgetProperty(m_widget, QLatin1String(styleSheetProperty), QVariant::fromValue(value));
 }
 
 } // namespace qdesigner_internal

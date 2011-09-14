@@ -128,6 +128,10 @@ public:
 
     QDir &operator=(const QDir &);
     QDir &operator=(const QString &path);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QDir &operator=(QDir &&other)
+    { qSwap(d_ptr, other.d_ptr); return *this; }
+#endif
 
     void setPath(const QString &path);
     QString path() const;

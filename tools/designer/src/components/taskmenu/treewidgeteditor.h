@@ -46,6 +46,8 @@
 
 #include "listwidgeteditor.h"
 
+#include <QtGui/QDialog>
+
 QT_BEGIN_NAMESPACE
 
 class QTreeWidget;
@@ -60,7 +62,7 @@ class TreeWidgetEditor: public AbstractItemEditor
 {
     Q_OBJECT
 public:
-    TreeWidgetEditor(QDesignerFormWindowInterface *form, QWidget *parent);
+    explicit TreeWidgetEditor(QDesignerFormWindowInterface *form, QDialog *dialog);
 
     TreeWidgetContents fillContentsFromTreeWidget(QTreeWidget *treeWidget);
     TreeWidgetContents contents() const;
@@ -93,6 +95,7 @@ protected:
     virtual QVariant getItemData(int role) const;
 
 private:
+    void setPropertyBrowserVisible(bool v);
     QtVariantProperty *setupPropertyGroup(const QString &title, PropertyDefinition *propDefs);
     void updateEditor();
     void moveColumnItems(const PropertyDefinition *propList, QTreeWidgetItem *item, int fromColumn, int toColumn, int step);
@@ -104,6 +107,19 @@ private:
     Ui::TreeWidgetEditor ui;
     ItemListEditor *m_columnEditor;
     bool m_updatingBrowser;
+};
+
+class TreeWidgetEditorDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit TreeWidgetEditorDialog(QDesignerFormWindowInterface *form, QWidget *parent);
+
+    TreeWidgetContents fillContentsFromTreeWidget(QTreeWidget *treeWidget);
+    TreeWidgetContents contents() const;
+
+private:
+    TreeWidgetEditor m_editor;
 };
 
 }  // namespace qdesigner_internal

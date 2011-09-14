@@ -77,7 +77,7 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
     }
 
     QUrl url = request.url();
-    if (url.scheme() == QLatin1String("ftp"))
+    if (url.scheme().compare(QLatin1String("ftp"), Qt::CaseInsensitive) == 0)
         return new QNetworkAccessFtpBackend;
     return 0;
 }
@@ -153,6 +153,10 @@ void QNetworkAccessFtpBackend::open()
     if (!objectCache->requestEntry(cacheKey, this,
                              SLOT(ftpConnectionReady(QNetworkAccessCache::CacheableObject*)))) {
         ftp = new QNetworkAccessCachedFtpConnection;
+#ifndef QT_NO_BEARERMANAGEMENT
+        //copy network session down to the QFtp
+        ftp->setProperty("_q_networksession", property("_q_networksession"));
+#endif
 #ifndef QT_NO_NETWORKPROXY
         if (proxy.type() == QNetworkProxy::FtpCachingProxy)
             ftp->setProxy(proxy.hostName(), proxy.port());

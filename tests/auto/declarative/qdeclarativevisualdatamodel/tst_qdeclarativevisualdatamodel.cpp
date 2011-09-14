@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "../../../shared/util.h"
 #include <qtest.h>
 #include <QtTest/QSignalSpy>
 #include <QStandardItemModel>
@@ -87,6 +88,13 @@ public:
         list << "one" << "two" << "three" << "four";
     }
 
+    void emitMove(int sourceFirst, int sourceLast, int destinationChild) {
+        emit beginMoveRows(QModelIndex(), sourceFirst, sourceLast, QModelIndex(), destinationChild);
+        emit endMoveRows();
+    }
+
+    QStringList list;
+
 public slots:
     void set(int idx, QString string) {
         list[idx] = string;
@@ -102,9 +110,6 @@ protected:
             return list.at(index.row());
         return QVariant();
     }
-
-private:
-    QStringList list;
 };
 
 
@@ -122,6 +127,8 @@ private slots:
     void singleRole();
     void modelProperties();
     void noDelegate();
+    void qaimRowsMoved();
+    void qaimRowsMoved_data();
 
 private:
     QDeclarativeEngine engine;
@@ -498,6 +505,72 @@ void tst_qdeclarativevisualdatamodel::noDelegate()
 
     vdm->setDelegate(0);
     QCOMPARE(vdm->count(), 0);
+}
+
+
+void tst_qdeclarativevisualdatamodel::qaimRowsMoved()
+{
+    // Test parameters passed in QAIM::rowsMoved() signal are converted correctly
+    // when translated and emitted as the QListModelInterface::itemsMoved() signal
+    QFETCH(int, sourceFirst);
+    QFETCH(int, sourceLast);
+    QFETCH(int, destinationChild);
+    QFETCH(int, expectFrom);
+    QFETCH(int, expectTo);
+    QFETCH(int, expectCount);
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/visualdatamodel.qml"));
+
+    SingleRoleModel model;
+    model.list.clear();
+    for (int i=0; i<30; i++)
+        model.list << ("item " + i);
+    engine.rootContext()->setContextProperty("myModel", &model);
+
+    QDeclarativeVisualDataModel *obj = qobject_cast<QDeclarativeVisualDataModel*>(c.create());
+    QVERIFY(obj != 0);
+
+    QSignalSpy spy(obj, SIGNAL(itemsMoved(int,int,int)));
+    model.emitMove(sourceFirst, sourceLast, destinationChild);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QCOMPARE(spy[0].count(), 3);
+    QCOMPARE(spy[0][0].toInt(), expectFrom);
+    QCOMPARE(spy[0][1].toInt(), expectTo);
+    QCOMPARE(spy[0][2].toInt(), expectCount);
+
+    delete obj;
+}
+
+void tst_qdeclarativevisualdatamodel::qaimRowsMoved_data()
+{
+    QTest::addColumn<int>("sourceFirst");
+    QTest::addColumn<int>("sourceLast");
+    QTest::addColumn<int>("destinationChild");
+    QTest::addColumn<int>("expectFrom");
+    QTest::addColumn<int>("expectTo");
+    QTest::addColumn<int>("expectCount");
+
+    QTest::newRow("move 1 forward")
+        << 1 << 1 << 6
+        << 1 << 5 << 1;
+
+    QTest::newRow("move 1 backwards")
+        << 4 << 4 << 1
+        << 4 << 1 << 1;
+
+    QTest::newRow("move multiple forwards")
+        << 0 << 2 << 13
+        << 0 << 10 << 3;
+
+    QTest::newRow("move multiple forwards, with same to")
+        << 0 << 1 << 3
+        << 0 << 1 << 2;
+
+    QTest::newRow("move multiple backwards")
+        << 10 << 14 << 1
+        << 10 << 1 << 5;
 }
 
 

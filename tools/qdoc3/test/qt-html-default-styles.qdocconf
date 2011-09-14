@@ -8,8 +8,10 @@ HTML.stylesheets = style/offline.css
 
 HTML.scripts     =
 
-# Files not referenced in any qdoc file (last four needed by qtdemo)
-# See also qhp.Qt.extraFiles
+# Files not referenced in any qdoc file, many needed by style sheets.
+# These also need to be listed in qhp.Qt.extraFiles with the correct
+# directory prefixes.
+
 extraimages.HTML        = qt-logo.png \
                           arrow_down.png \
                           breadcrumb.png \

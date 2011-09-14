@@ -140,9 +140,9 @@ void tst_QMetaObjectBuilder::mocVersionCheck()
     // whenenver moc changes.  Once QMetaObjectBuilder has been
     // updated, this test can be changed to check for the next version.
     int version = int(QObject::staticMetaObject.d.data[0]);
-    QVERIFY(version == 4 || version == 5);
+    QVERIFY(version == 4 || version == 5 || version == 6);
     version = int(staticMetaObject.d.data[0]);
-    QVERIFY(version == 4 || version == 5);
+    QVERIFY(version == 4 || version == 5 || version == 6);
 }
 
 void tst_QMetaObjectBuilder::create()
@@ -546,6 +546,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!nullProp.isUser());
     QVERIFY(!nullProp.hasStdCppSet());
     QVERIFY(!nullProp.isEnumOrFlag());
+    QVERIFY(!nullProp.isConstant());
+    QVERIFY(!nullProp.isFinal());
     QCOMPARE(nullProp.index(), 0);
 
     // Add a property and check its attributes.
@@ -563,6 +565,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop1.isUser());
     QVERIFY(!prop1.hasStdCppSet());
     QVERIFY(!prop1.isEnumOrFlag());
+    QVERIFY(!prop1.isConstant());
+    QVERIFY(!prop1.isFinal());
     QCOMPARE(prop1.index(), 0);
     QCOMPARE(builder.propertyCount(), 1);
 
@@ -581,6 +585,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isConstant());
+    QVERIFY(!prop2.isFinal());
     QCOMPARE(prop2.index(), 1);
     QCOMPARE(builder.propertyCount(), 2);
 
@@ -602,6 +608,8 @@ void tst_QMetaObjectBuilder::property()
     prop1.setUser(true);
     prop1.setStdCppSet(true);
     prop1.setEnumOrFlag(true);
+    prop1.setConstant(true);
+    prop1.setFinal(true);
 
     // Check that prop1 is changed, but prop2 is not.
     QCOMPARE(prop1.name(), QByteArray("foo"));
@@ -616,6 +624,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop1.isUser());
     QVERIFY(prop1.hasStdCppSet());
     QVERIFY(prop1.isEnumOrFlag());
+    QVERIFY(prop1.isConstant());
+    QVERIFY(prop1.isFinal());
     QVERIFY(prop2.isReadable());
     QVERIFY(prop2.isWritable());
     QCOMPARE(prop2.name(), QByteArray("bar"));
@@ -628,6 +638,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isConstant());
+    QVERIFY(!prop2.isFinal());
 
     // Remove prop1 and check that prop2 becomes index 0.
     builder.removeProperty(0);
@@ -643,6 +655,8 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isConstant());
+    QVERIFY(!prop2.isFinal());
     QCOMPARE(prop2.index(), 0);
 
     // Perform index-based lookup again.
@@ -666,6 +680,8 @@ void tst_QMetaObjectBuilder::property()
             prop2.setUser(false); \
             prop2.setStdCppSet(false); \
             prop2.setEnumOrFlag(false); \
+            prop2.setConstant(false); \
+            prop2.setFinal(false); \
         } while (0)
 #define COUNT_FLAGS() \
         ((prop2.isReadable() ? 1 : 0) + \
@@ -677,7 +693,9 @@ void tst_QMetaObjectBuilder::property()
          (prop2.isEditable() ? 1 : 0) + \
          (prop2.isUser() ? 1 : 0) + \
          (prop2.hasStdCppSet() ? 1 : 0) + \
-         (prop2.isEnumOrFlag() ? 1 : 0))
+         (prop2.isEnumOrFlag() ? 1 : 0) + \
+         (prop2.isConstant() ? 1 : 0) + \
+         (prop2.isFinal() ? 1 : 0))
 #define CHECK_FLAG(setFunc,isFunc) \
         do { \
             CLEAR_FLAGS(); \
@@ -696,6 +714,8 @@ void tst_QMetaObjectBuilder::property()
     CHECK_FLAG(setUser, isUser);
     CHECK_FLAG(setStdCppSet, hasStdCppSet);
     CHECK_FLAG(setEnumOrFlag, isEnumOrFlag);
+    CHECK_FLAG(setConstant, isConstant);
+    CHECK_FLAG(setFinal, isFinal);
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Properties));
@@ -920,9 +940,9 @@ void tst_QMetaObjectBuilder::relatedMetaObject()
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::RelatedMetaObjects));
 }
 
-static int smetacall(QMetaObject::Call, int, void **)
+static void smetacall(QObject *, QMetaObject::Call, int, void **)
 {
-    return 0;
+    return;
 }
 
 void tst_QMetaObjectBuilder::staticMetacall()

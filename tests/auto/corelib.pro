@@ -59,6 +59,7 @@ SUBDIRS=\
    qresourceengine \
    qringbuffer \
    qscopedpointer \
+   qscopedvaluerollback \
    qsemaphore \
    qsequentialanimationgroup \
    qset \
@@ -75,6 +76,7 @@ SUBDIRS=\
    qstringbuilder4 \
    qstringlist \
    qstringmatcher \
+   qstringref \
    qtconcurrentfilter \
    qtconcurrentiteratekernel \
    qtconcurrentmap \
@@ -100,6 +102,8 @@ SUBDIRS=\
    qwritelocker \
    selftests \
    utf8 \
+   qfilesystementry \
+   qabstractfileengine
 
 symbian:SUBDIRS -= \
    qtconcurrentfilter \

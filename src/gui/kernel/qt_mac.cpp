@@ -61,7 +61,6 @@ QFont qfontForThemeFont(ThemeFontID themeID)
     SInt16 f_size;
     Style f_style;
     GetThemeFont(themeID, Script, f_name, &f_size, &f_style);
-    extern QString qt_mac_from_pascal_string(const Str255); //qglobal.cpp
     return QFont(qt_mac_from_pascal_string(f_name), f_size,
                  (f_style & ::bold) ? QFont::Bold : QFont::Normal,
                  (bool)(f_style & ::italic));

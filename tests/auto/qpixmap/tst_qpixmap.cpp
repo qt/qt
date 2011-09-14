@@ -100,6 +100,8 @@ public slots:
     void cleanup();
 
 private slots:
+    void swap();
+
     void setAlphaChannel_data();
     void setAlphaChannel();
 
@@ -256,6 +258,20 @@ void tst_QPixmap::init()
 
 void tst_QPixmap::cleanup()
 {
+}
+
+void tst_QPixmap::swap()
+{
+    QPixmap p1( 16, 16 ), p2( 32, 32 );
+    p1.fill( Qt::white );
+    p2.fill( Qt::black );
+    const qint64 p1k = p1.cacheKey();
+    const qint64 p2k = p2.cacheKey();
+    p1.swap(p2);
+    QCOMPARE(p1.cacheKey(), p2k);
+    QCOMPARE(p1.size(), QSize(32,32));
+    QCOMPARE(p2.cacheKey(), p1k);
+    QCOMPARE(p2.size(), QSize(16,16));
 }
 
 void tst_QPixmap::setAlphaChannel_data()
@@ -1324,7 +1340,7 @@ void tst_QPixmap::toSymbianCFbsBitmap()
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {
-#if !defined(Q_WS_WIN)
+#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
     class Thread : public QThread
     {
     public:
@@ -1357,7 +1373,7 @@ void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
     thread.wait();
 #endif
 
-#endif // !defined(Q_WS_WIN)
+#endif // !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
 }
 
 void tst_QPixmap::refUnref()
@@ -1683,8 +1699,8 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);
 
-    Q_ASSERT(referenceReader.canRead());
-    Q_ASSERT(referenceReader.imageCount() > 1);
+    QVERIFY(referenceReader.canRead());
+    QVERIFY(referenceReader.imageCount() > 1);
 
     for (int i = 0; i < referenceReader.imageCount(); ++i) {
         QImage refImage = referenceReader.read();

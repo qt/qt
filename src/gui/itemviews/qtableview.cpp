@@ -926,14 +926,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
 
     q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, q);
 
-    if (const QWidget *widget = editorForIndex(index).editor) {
-        painter->save();
-        painter->setClipRect(widget->geometry());
-        q->itemDelegate(index)->paint(painter, opt, index);
-        painter->restore();
-    } else {
-        q->itemDelegate(index)->paint(painter, opt, index);
-    }
+    q->itemDelegate(index)->paint(painter, opt, index);
 }
 
 /*!
@@ -1106,6 +1099,21 @@ void QTableView::setRootIndex(const QModelIndex &index)
     d->verticalHeader->setRootIndex(index);
     d->horizontalHeader->setRootIndex(index);
     QAbstractItemView::setRootIndex(index);
+}
+
+/*!
+  \internal
+*/
+void QTableView::doItemsLayout()
+{
+    Q_D(QTableView);
+    QAbstractItemView::doItemsLayout();
+    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem)
+        d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
+    else
+        d->verticalHeader->setOffset(verticalScrollBar()->value());
+    if (!d->verticalHeader->updatesEnabled())
+        d->verticalHeader->setUpdatesEnabled(true);
 }
 
 /*!
@@ -1292,7 +1300,6 @@ void QTableView::paintEvent(QPaintEvent *event)
     const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;
-    const QStyle::State state = option.state;
     const bool alternate = d->alternatingColors;
     const bool rightToLeft = isRightToLeft();
 
@@ -1982,9 +1989,13 @@ QModelIndexList QTableView::selectedIndexes() const
     previous number of rows is specified by \a oldCount, and the new
     number of rows is specified by \a newCount.
 */
-void QTableView::rowCountChanged(int /*oldCount*/, int /*newCount*/ )
+void QTableView::rowCountChanged(int oldCount, int newCount )
 {
     Q_D(QTableView);
+    //when removing rows, we need to disable updates for the header until the geometries have been
+    //updated and the offset has been adjusted, or we risk calling paintSection for all the sections
+    if (newCount < oldCount)
+        d->verticalHeader->setUpdatesEnabled(false);
     d->doDelayedItemsLayout();
 }
 
@@ -2166,7 +2177,7 @@ int QTableView::sizeHintForRow(int row) const
             option.rect.setWidth(columnWidth(index.column()));
         }
         
-        QWidget *editor = d->editorForIndex(index).editor;
+        QWidget *editor = d->editorForIndex(index).widget.data();
         if (editor && d->persistent.contains(editor)) {
             hint = qMax(hint, editor->sizeHint().height());
             int min = editor->minimumSize().height();
@@ -2219,7 +2230,7 @@ int QTableView::sizeHintForColumn(int column) const
             continue;
         index = d->model->index(logicalRow, column, d->root);
         
-        QWidget *editor = d->editorForIndex(index).editor;
+        QWidget *editor = d->editorForIndex(index).widget.data();
         if (editor && d->persistent.contains(editor)) {
             hint = qMax(hint, editor->sizeHint().width());
             int min = editor->minimumSize().width();
@@ -3153,10 +3164,16 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
+#ifdef Q_WS_X11
+            Q_D(QTableView);
+            int entry = d->accessibleTable2Index(current);
+            QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+#else
             int entry = visualIndex(current) + 1;
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Focus);
+#endif
         }
     }
 #endif
@@ -3169,22 +3186,33 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 void QTableView::selectionChanged(const QItemSelection &selected,
                                   const QItemSelection &deselected)
 {
+    Q_D(QTableView);
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = d->accessibleTable2Index(sel);
+            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+#else
             int entry = visualIndex(sel);
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Selection);
+#endif
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = d->accessibleTable2Index(sel);
+            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+#else
             int entry = visualIndex(sel);
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::SelectionRemove);
+#endif
         }
     }
 #endif

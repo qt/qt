@@ -95,7 +95,7 @@ QT_END_NAMESPACE
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qmap.h>
+#include <qhash.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>
@@ -105,6 +105,10 @@ QT_END_NAMESPACE
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef Q_OS_QNX
+#  include <spawn.h>
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -120,7 +124,7 @@ static inline char *strdup(const char *data)
 #endif
 
 static int qt_qprocess_deadChild_pipe[2];
-static void (*qt_sa_old_sigchld_handler)(int) = 0;
+static struct sigaction qt_sa_old_sigchld_handler;
 static void qt_sa_sigchld_handler(int signum)
 {
     qt_safe_write(qt_qprocess_deadChild_pipe[1], "", 1);
@@ -128,8 +132,10 @@ static void qt_sa_sigchld_handler(int signum)
     fprintf(stderr, "*** SIGCHLD\n");
 #endif
 
-    if (qt_sa_old_sigchld_handler && qt_sa_old_sigchld_handler != SIG_IGN)
-        qt_sa_old_sigchld_handler(signum);
+    // load it as volatile
+    void (*oldAction)(int) = ((volatile struct sigaction *)&qt_sa_old_sigchld_handler)->sa_handler;
+    if (oldAction && oldAction != SIG_IGN)
+        oldAction(signum);
 }
 
 static inline void add_fd(int &nfds, int fd, fd_set *fdset)
@@ -163,7 +169,7 @@ public:
 
 private:
     QMutex mutex;
-    QMap<int, QProcessInfo *> children;
+    QHash<int, QProcessInfo *> children;
 };
 
 
@@ -190,14 +196,11 @@ QProcessManager::QProcessManager()
 
     // set up the SIGCHLD handler, which writes a single byte to the dead
     // child pipe every time a child dies.
-    struct sigaction oldAction;
     struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler)
-	qt_sa_old_sigchld_handler = oldAction.sa_handler;
+    ::sigaction(SIGCHLD, &action, &qt_sa_old_sigchld_handler);
 }
 
 QProcessManager::~QProcessManager()
@@ -217,14 +220,10 @@ QProcessManager::~QProcessManager()
     qDeleteAll(children.values());
     children.clear();
 
-    struct sigaction oldAction;
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = qt_sa_old_sigchld_handler;
-    action.sa_flags = SA_NOCLDSTOP;
-    ::sigaction(SIGCHLD, &action, &oldAction);
-    if (oldAction.sa_handler != qt_sa_sigchld_handler) {
-        ::sigaction(SIGCHLD, &oldAction, 0);
+    struct sigaction currentAction;
+    ::sigaction(SIGCHLD, 0, &currentAction);
+    if (currentAction.sa_handler == qt_sa_sigchld_handler) {
+        ::sigaction(SIGCHLD, &qt_sa_old_sigchld_handler, 0);
     }
 }
 
@@ -267,7 +266,7 @@ void QProcessManager::catchDeadChildren()
 
     // try to catch all children whose pid we have registered, and whose
     // deathPipe is still valid (i.e, we have not already notified it).
-    QMap<int, QProcessInfo *>::Iterator it = children.begin();
+    QHash<int, QProcessInfo *>::Iterator it = children.begin();
     while (it != children.end()) {
         // notify all children that they may have died. they need to run
         // waitpid() in their own thread.
@@ -306,15 +305,11 @@ void QProcessManager::remove(QProcess *process)
     QMutexLocker locker(&mutex);
 
     int serial = process->d_func()->serial;
-    QProcessInfo *info = children.value(serial);
-    if (!info)
-        return;
-
+    QProcessInfo *info = children.take(serial);
 #if defined (QPROCESS_DEBUG)
-    qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
+    if (info)
+        qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
 #endif
-
-    children.remove(serial);
     delete info;
 }
 
@@ -462,7 +457,35 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment, int *envc)
+QT_BEGIN_INCLUDE_NAMESPACE
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+# include <crt_externs.h>
+# define environ (*_NSGetEnviron())
+#else
+  extern char **environ;
+#endif
+QT_END_INCLUDE_NAMESPACE
+
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(Q_OS_MAC) || !defined(QT_NO_CORESERVICES)
+    const char *entry;
+    for (int count = 0; (entry = environ[count]); ++count) {
+        const char *equal = strchr(entry, '=');
+        if (!equal)
+            continue;
+
+        QByteArray name(entry, equal - entry);
+        QByteArray value(equal + 1);
+        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
+                           QProcessEnvironmentPrivate::Value(value));
+    }
+#endif
+    return env;
+}
+
+static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
 {
     *envc = 0;
     if (environment.isEmpty())
@@ -478,17 +501,17 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
 #endif
     const QByteArray envLibraryPath = qgetenv(libraryPath);
     bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(libraryPath);
+                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
 
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
 
-    QHash<QByteArray, QByteArray>::ConstIterator it = environment.constBegin();
-    const QHash<QByteArray, QByteArray>::ConstIterator end = environment.constEnd();
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
+    const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key();
-        QByteArray value = it.value();
+        QByteArray key = it.key().key;
+        QByteArray value = it.value().bytes();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
         key.append(value);
@@ -497,19 +520,9 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
     }
 
     if (needToAddLibraryPath)
-        envp[(*envc)++] = ::strdup(QByteArray(libraryPath) + '=' +
-                                 envLibraryPath);
+        envp[(*envc)++] = ::strdup(QByteArray(QByteArray(libraryPath) + '=' +
+                                 envLibraryPath).constData());
     return envp;
-}
-
-// under QNX RTOS we have to use vfork() when multithreading
-inline pid_t qt_fork()
-{
-#if defined(Q_OS_QNX)
-    return vfork();
-#else
-    return fork();
-#endif
 }
 
 #ifdef Q_OS_MAC
@@ -531,15 +544,18 @@ void QProcessPrivate::startProcess()
         !createChannel(stdoutChannel) ||
         !createChannel(stderrChannel))
         return;
+#if !defined(Q_OS_QNX)
     qt_create_pipe(childStartedPipe);
+#endif
     qt_create_pipe(deathPipe);
 
     if (threadData->eventDispatcher) {
+#if !defined(Q_OS_QNX)
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_startupNotification()));
-
+#endif
         deathNotifier = new QSocketNotifier(deathPipe[0],
                                             QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
@@ -631,7 +647,11 @@ void QProcessPrivate::startProcess()
 
     // Start the process manager, and fork off the child process.
     processManager()->lock();
-    pid_t childPid = qt_fork();
+#if defined(Q_OS_QNX)
+    pid_t childPid = spawnChild(workingDirPtr, argv, envp);
+#else
+    pid_t childPid = fork();
+#endif
     int lastForkErrno = errno;
     if (childPid != 0) {
         // Clean up duplicated memory.
@@ -649,7 +669,7 @@ void QProcessPrivate::startProcess()
     if (childPid < 0) {
         // Cleanup, report error and return
 #if defined (QPROCESS_DEBUG)
-        qDebug("qt_fork failed: %s", qt_error_string(lastForkErrno));
+        qDebug("fork() failed: %s", qPrintable(qt_error_string(lastForkErrno)));
 #endif
         processManager()->unlock();
         q->setProcessState(QProcess::NotRunning);
@@ -660,11 +680,13 @@ void QProcessPrivate::startProcess()
         return;
     }
 
+#if !defined(Q_OS_QNX)
     // Start the child.
     if (childPid == 0) {
         execChild(workingDirPtr, path, argv, envp);
         ::_exit(-1);
     }
+#endif
 
     // Register the child. In the mean time, we can get a SIGCHLD, so we need
     // to keep the lock held to avoid a race to catch the child.
@@ -675,14 +697,15 @@ void QProcessPrivate::startProcess()
     // parent
     // close the ends we don't use and make all pipes non-blocking
     ::fcntl(deathPipe[0], F_SETFL, ::fcntl(deathPipe[0], F_GETFL) | O_NONBLOCK);
+#if !defined(Q_OS_QNX)
     qt_safe_close(childStartedPipe[1]);
     childStartedPipe[1] = -1;
+#endif
 
     if (stdinChannel.pipe[0] != -1) {
         qt_safe_close(stdinChannel.pipe[0]);
         stdinChannel.pipe[0] = -1;
     }
-
     if (stdinChannel.pipe[1] != -1)
         ::fcntl(stdinChannel.pipe[1], F_SETFL, ::fcntl(stdinChannel.pipe[1], F_GETFL) | O_NONBLOCK);
 
@@ -690,7 +713,6 @@ void QProcessPrivate::startProcess()
         qt_safe_close(stdoutChannel.pipe[1]);
         stdoutChannel.pipe[1] = -1;
     }
-
     if (stdoutChannel.pipe[0] != -1)
         ::fcntl(stdoutChannel.pipe[0], F_SETFL, ::fcntl(stdoutChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 
@@ -702,6 +724,7 @@ void QProcessPrivate::startProcess()
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 }
 
+#if !defined(Q_OS_QNX)
 void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv, char **envp)
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
@@ -709,17 +732,17 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     Q_Q(QProcess);
 
     // copy the stdin socket (without closing on exec)
-    qt_safe_dup2(stdinChannel.pipe[0], fileno(stdin), 0);
+    qt_safe_dup2(stdinChannel.pipe[0], QT_FILENO(stdin), 0);
 
     // copy the stdout and stderr if asked to
     if (processChannelMode != QProcess::ForwardedChannels) {
-        qt_safe_dup2(stdoutChannel.pipe[1], fileno(stdout), 0);
+        qt_safe_dup2(stdoutChannel.pipe[1], QT_FILENO(stdout), 0);
 
         // merge stdout and stderr if asked to
         if (processChannelMode == QProcess::MergedChannels) {
-            qt_safe_dup2(fileno(stdout), fileno(stderr), 0);
+            qt_safe_dup2(QT_FILENO(stdout), QT_FILENO(stderr), 0);
         } else {
-            qt_safe_dup2(stderrChannel.pipe[1], fileno(stderr), 0);
+            qt_safe_dup2(stderrChannel.pipe[1], QT_FILENO(stderr), 0);
         }
     }
 
@@ -788,6 +811,87 @@ bool QProcessPrivate::processStarted()
     return i <= 0;
 }
 
+#else // Q_OS_QNX
+
+static pid_t doSpawn(int fd_count, int fd_map[], char **argv, char **envp, bool spawn_detached)
+{
+    // A multi threaded QNX Process can't fork so we call spawn() instead.
+
+    struct inheritance inherit;
+    memset(&inherit, 0, sizeof(inherit));
+    inherit.flags |= SPAWN_SETSID;
+    inherit.flags |= SPAWN_CHECK_SCRIPT;
+    if (spawn_detached)
+        inherit.flags |= SPAWN_NOZOMBIE;
+    inherit.flags |= SPAWN_SETSIGDEF;
+    sigaddset(&inherit.sigdefault, SIGPIPE); // reset the signal that we ignored
+
+    pid_t childPid;
+    EINTR_LOOP(childPid, ::spawn(argv[0], fd_count, fd_map, &inherit, argv, envp));
+    if (childPid == -1) {
+        inherit.flags |= SPAWN_SEARCH_PATH;
+        EINTR_LOOP(childPid, ::spawn(argv[0], fd_count, fd_map, &inherit, argv, envp));
+    }
+
+    return childPid;
+}
+
+pid_t QProcessPrivate::spawnChild(const char *workingDir, char **argv, char **envp)
+{
+    Q_Q(QProcess);
+
+    const int fd_count = 3;
+    int fd_map[fd_count];
+    switch (processChannelMode) {
+    case QProcess::ForwardedChannels:
+        fd_map[0] = stdinChannel.pipe[0];
+        fd_map[1] = QT_FILENO(stdout);
+        fd_map[2] = QT_FILENO(stderr);
+        break;
+    case QProcess::MergedChannels:
+        fd_map[0] = stdinChannel.pipe[0];
+        fd_map[1] = stdoutChannel.pipe[1];
+        fd_map[2] = stdoutChannel.pipe[1];
+        break;
+    case QProcess::SeparateChannels:
+        fd_map[0] = stdinChannel.pipe[0];
+        fd_map[1] = stdoutChannel.pipe[1];
+        fd_map[2] = stderrChannel.pipe[1];
+        break;
+    }
+
+    // enter the working directory
+    char *oldWorkingDir = 0;
+    char buff[PATH_MAX + 1];
+    if (workingDir) {
+        oldWorkingDir = QT_GETCWD(buff, PATH_MAX + 1);
+        QT_CHDIR(workingDir);
+    }
+
+    pid_t childPid = doSpawn(fd_count, fd_map, argv, envp, false);
+
+    if (oldWorkingDir)
+        QT_CHDIR(oldWorkingDir);
+
+    if (childPid != -1) {
+        q->setProcessState(QProcess::Running);
+        QMetaObject::invokeMethod(q, "_q_startupNotification", Qt::QueuedConnection);
+    }
+
+    return childPid;
+}
+
+bool QProcessPrivate::processStarted()
+{
+    return processState == QProcess::Running;
+}
+
+bool QProcessPrivate::waitForStarted(int /*msecs*/)
+{
+    return processStarted();
+}
+#endif // Q_OS_QNX
+
 qint64 QProcessPrivate::bytesAvailableFromStdout() const
 {
     int nbytes = 0;
@@ -852,7 +956,14 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);
+    if (written == -1)
+        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qPrintable(qt_error_string(errno)));
 #endif
+    // If the O_NONBLOCK flag is set and If some data can be written without blocking
+    // the process, write() will transfer what it can and return the number of bytes written.
+    // Otherwise, it will return -1 and set errno to EAGAIN
+    if (written == -1 && errno == EAGAIN)
+        written = 0;
     return written;
 }
 
@@ -898,6 +1009,7 @@ static int qt_timeout_value(int msecs, int elapsed)
     return timeout < 0 ? 0 : timeout;
 }
 
+#if !defined(Q_OS_QNX)
 bool QProcessPrivate::waitForStarted(int msecs)
 {
     Q_Q(QProcess);
@@ -925,6 +1037,7 @@ bool QProcessPrivate::waitForStarted(int msecs)
 #endif
     return startedEmitted;
 }
+#endif // Q_OS_QNX
 
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
@@ -946,8 +1059,10 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         int nfds = deathPipe[0];
         FD_SET(deathPipe[0], &fdread);
 
+#if !defined(Q_OS_QNX)
         if (processState == QProcess::Starting)
             add_fd(nfds, childStartedPipe[0], &fdread);
+#endif
 
         if (stdoutChannel.pipe[0] != -1)
             add_fd(nfds, stdoutChannel.pipe[0], &fdread);
@@ -968,10 +1083,12 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 	    return false;
 	}
 
+#if !defined(Q_OS_QNX)
 	if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
             if (!_q_startupNotification())
                 return false;
 	}
+#endif
 
         bool readyReadEmitted = false;
 	if (stdoutChannel.pipe[0] != -1 && FD_ISSET(stdoutChannel.pipe[0], &fdread)) {
@@ -1018,8 +1135,10 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
         int nfds = deathPipe[0];
         FD_SET(deathPipe[0], &fdread);
 
+#if !defined(Q_OS_QNX)
         if (processState == QProcess::Starting)
             add_fd(nfds, childStartedPipe[0], &fdread);
+#endif
 
         if (stdoutChannel.pipe[0] != -1)
             add_fd(nfds, stdoutChannel.pipe[0], &fdread);
@@ -1042,10 +1161,12 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
 	    return false;
 	}
 
+#if !defined(Q_OS_QNX)
 	if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
 	    if (!_q_startupNotification())
 		return false;
 	}
+#endif
 
 	if (stdinChannel.pipe[1] != -1 && FD_ISSET(stdinChannel.pipe[1], &fdwrite))
 	    return _q_canWrite();
@@ -1083,8 +1204,10 @@ bool QProcessPrivate::waitForFinished(int msecs)
         FD_ZERO(&fdread);
         FD_ZERO(&fdwrite);
 
+#if !defined(Q_OS_QNX)
         if (processState == QProcess::Starting)
             add_fd(nfds, childStartedPipe[0], &fdread);
+#endif
 
         if (stdoutChannel.pipe[0] != -1)
             add_fd(nfds, stdoutChannel.pipe[0], &fdread);
@@ -1108,10 +1231,12 @@ bool QProcessPrivate::waitForFinished(int msecs)
 	    return false;
 	}
 
+#if !defined(Q_OS_QNX)
 	if (childStartedPipe[0] != -1 && FD_ISSET(childStartedPipe[0], &fdread)) {
 	    if (!_q_startupNotification())
 		return false;
 	}
+#endif
 	if (stdinChannel.pipe[1] != -1 && FD_ISSET(stdinChannel.pipe[1], &fdwrite))
 	    _q_canWrite();
 
@@ -1173,6 +1298,47 @@ void QProcessPrivate::_q_notified()
 {
 }
 
+#if defined(Q_OS_QNX)
+bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
+{
+    QByteArray encodedWorkingDirectory = QFile::encodeName(workingDirectory);
+
+    // enter the working directory
+    char *oldWorkingDir = 0;
+    char buff[PATH_MAX + 1];
+    if (!encodedWorkingDirectory.isEmpty()) {
+        oldWorkingDir = QT_GETCWD(buff, PATH_MAX + 1);
+        QT_CHDIR(encodedWorkingDirectory.constData());
+    }
+
+    const int fd_count = 3;
+    int fd_map[fd_count] = { QT_FILENO(stdin), QT_FILENO(stdout), QT_FILENO(stderr) };
+
+    QList<QByteArray> enc_args;
+    enc_args.append(QFile::encodeName(program));
+    for (int i = 0; i < arguments.size(); ++i)
+        enc_args.append(arguments.at(i).toLocal8Bit());
+
+    const int argc = enc_args.size();
+    QScopedArrayPointer<char*> raw_argv(new char*[argc + 1]);
+    for (int i = 0; i < argc; ++i)
+        raw_argv[i] = const_cast<char *>(enc_args.at(i).data());
+    raw_argv[argc] = 0;
+
+    char **envp = 0; // inherit environment
+
+    pid_t childPid = doSpawn(fd_count, fd_map, raw_argv.data(), envp, true);
+    if (pid && childPid != -1)
+        *pid = childPid;
+
+    if (oldWorkingDir)
+        QT_CHDIR(oldWorkingDir);
+
+    return childPid != -1;
+}
+
+#else
+
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
 {
     processManager()->start();
@@ -1186,7 +1352,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     int pidPipe[2];
     qt_safe_pipe(pidPipe);
 
-    pid_t childPid = qt_fork();
+    pid_t childPid = fork();
     if (childPid == 0) {
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
@@ -1198,7 +1364,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
         qt_safe_close(startedPipe[0]);
         qt_safe_close(pidPipe[0]);
 
-        pid_t doubleForkPid = qt_fork();
+        pid_t doubleForkPid = fork();
         if (doubleForkPid == 0) {
             qt_safe_close(pidPipe[1]);
 
@@ -1286,6 +1452,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     qt_safe_close(pidPipe[0]);
     return success;
 }
+#endif // Q_OS_QNX
 
 void QProcessPrivate::initializeProcessManager()
 {

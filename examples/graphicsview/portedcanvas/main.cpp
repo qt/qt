@@ -38,13 +38,13 @@
 **
 ****************************************************************************/
 
-#include <qstatusbar.h>
-#include <qmessagebox.h>
-#include <qmenubar.h>
-#include <qapplication.h>
-#include <qdesktopwidget.h>
-#include <qimage.h>
-#include <qtimer.h>
+#include <QStatusBar>
+#include <QMessageBox>
+#include <QMenuBar>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QImage>
+#include <QTimer>
 
 #include "canvas.h"
 
@@ -73,12 +73,19 @@ int main(int argc, char** argv)
     canvas.setSceneRect(0, 0, 800, 600);
     Main m(canvas);
     m.resize(m.sizeHint());
-    m.setCaption("Ported Canvas Example");
+    m.setWindowTitle("Ported Canvas Example");
+
+#if defined(Q_OS_SYMBIAN)
+    m.showMaximized();
+#elif defined(Q_WS_MAEMO_5)    
+    m.show();
+#else
     if ( QApplication::desktop()->width() > m.width() + 10
 	&& QApplication::desktop()->height() > m.height() +30 )
 	m.show();
     else
 	m.showMaximized();
+#endif
     
     QTimer timer;
     QObject::connect(&timer, SIGNAL(timeout()), &canvas, SLOT(advance()));

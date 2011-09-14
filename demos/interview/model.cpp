@@ -109,7 +109,7 @@ QVariant Model::headerData(int section, Qt::Orientation orientation, int role) c
     if (role == Qt::DisplayRole)
         return QString::number(section);
     if (role == Qt::DecorationRole)
-        return qVariantFromValue(services);
+        return QVariant::fromValue(services);
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 

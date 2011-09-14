@@ -81,6 +81,10 @@ namespace QDBusUtil
 
     Q_DBUS_EXPORT bool isValidObjectPath(const QString &path);
 
+    Q_DBUS_EXPORT bool isValidFixedType(int c);
+
+    Q_DBUS_EXPORT bool isValidBasicType(int c);
+
     Q_DBUS_EXPORT bool isValidSignature(const QString &signature);
 
     Q_DBUS_EXPORT bool isValidSingleSignature(const QString &signature);

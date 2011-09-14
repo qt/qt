@@ -133,4 +133,26 @@ The \l {declarative/animation/states}{States and Transitions example}
 demonstrates how to declare a basic set of states and apply animated
 transitions between them.
 
+\l{Using QML Behaviors with States} explains a common problem when using Behaviors
+to animate state changes.
+
+\section1 State Fast Forwarding
+
+In order for Transition to correctly animate state changes, it is sometimes necessary
+for the engine to fast forward and rewind a state (that is, internally set and unset the state)
+before it is finally applied. The process is as follows:
+
+\list 1
+\o The state is fast forwarded to determine the complete set of end values.
+\o The state is rewound.
+\o The state is fully applied, with transitions.
+\endlist
+
+In some cases this may cause unintended behavior. For example, a state that changes
+a view's \i model or a Loader's \i sourceComponent will set these properties
+multiple times (to apply, rewind, and then reapply), which can be relatively expensive.
+
+State fast forwarding should be considered an implementation detail,
+and may change in later versions.
+
 */

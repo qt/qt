@@ -57,10 +57,10 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace qdesigner_internal;
+namespace qdesigner_internal {
 
-TableWidgetEditor::TableWidgetEditor(QDesignerFormWindowInterface *form, QWidget *parent)
-    : AbstractItemEditor(form, parent), m_updatingBrowser(false)
+TableWidgetEditor::TableWidgetEditor(QDesignerFormWindowInterface *form, QDialog *dialog)
+    : AbstractItemEditor(form, 0), m_updatingBrowser(false)
 {
     m_columnEditor = new ItemListEditor(form, this);
     m_columnEditor->setObjectName(QLatin1String("columnEditor"));
@@ -68,12 +68,12 @@ TableWidgetEditor::TableWidgetEditor(QDesignerFormWindowInterface *form, QWidget
     m_rowEditor = new ItemListEditor(form, this);
     m_rowEditor->setObjectName(QLatin1String("rowEditor"));
     m_rowEditor->setNewItemText(tr("New Row"));
-    ui.setupUi(this);
+    ui.setupUi(dialog);
 
     injectPropertyBrowser(ui.itemsTab, ui.widget);
     connect(ui.showPropertiesButton, SIGNAL(clicked()),
             this, SLOT(togglePropertyBrowser()));
-    togglePropertyBrowser();
+    setPropertyBrowserVisible(false);
 
     ui.tabWidget->insertTab(0, m_columnEditor, tr("&Columns"));
     ui.tabWidget->insertTab(1, m_rowEditor, tr("&Rows"));
@@ -83,6 +83,36 @@ TableWidgetEditor::TableWidgetEditor(QDesignerFormWindowInterface *form, QWidget
     ui.tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
     connect(iconCache(), SIGNAL(reloaded()), this, SLOT(cacheReloaded()));
+
+    connect(ui.tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
+            this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+    connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
+            this, SLOT(on_tableWidget_itemChanged(QTableWidgetItem*)));
+    connect(m_columnEditor, SIGNAL(indexChanged(int)),
+            this, SLOT(on_columnEditor_indexChanged(int)));
+    connect(m_columnEditor, SIGNAL(itemChanged(int,int,QVariant)),
+            this, SLOT(on_columnEditor_itemChanged(int,int,QVariant)));
+    connect(m_columnEditor, SIGNAL(itemInserted(int)),
+            this, SLOT(on_columnEditor_itemInserted(int)));
+    connect(m_columnEditor, SIGNAL(itemDeleted(int)),
+            this, SLOT(on_columnEditor_itemDeleted(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedUp(int)),
+            this, SLOT(on_columnEditor_itemMovedUp(int)));
+    connect(m_columnEditor, SIGNAL(itemMovedDown(int)),
+            this, SLOT(on_columnEditor_itemMovedDown(int)));
+
+    connect(m_rowEditor, SIGNAL(indexChanged(int)),
+            this, SLOT(on_rowEditor_indexChanged(int)));
+    connect(m_rowEditor, SIGNAL(itemChanged(int,int,QVariant)),
+            this, SLOT(on_rowEditor_itemChanged(int,int,QVariant)));
+    connect(m_rowEditor, SIGNAL(itemInserted(int)),
+            this, SLOT(on_rowEditor_itemInserted(int)));
+    connect(m_rowEditor, SIGNAL(itemDeleted(int)),
+            this, SLOT(on_rowEditor_itemDeleted(int)));
+    connect(m_rowEditor, SIGNAL(itemMovedUp(int)),
+            this, SLOT(on_rowEditor_itemMovedUp(int)));
+    connect(m_rowEditor, SIGNAL(itemMovedDown(int)),
+            this, SLOT(on_rowEditor_itemMovedDown(int)));
 }
 
 static AbstractItemEditor::PropertyDefinition tableHeaderPropList[] = {
@@ -152,8 +182,8 @@ void TableWidgetEditor::setItemData(int role, const QVariant &v)
     QVariant newValue = v;
     if (role == Qt::FontRole && newValue.type() == QVariant::Font) {
         QFont oldFont = ui.tableWidget->font();
-        QFont newFont = qVariantValue<QFont>(newValue).resolve(oldFont);
-        newValue = qVariantFromValue(newFont);
+        QFont newFont = qvariant_cast<QFont>(newValue).resolve(oldFont);
+        newValue = QVariant::fromValue(newFont);
         item->setData(role, QVariant()); // force the right font with the current resolve mask is set (item view bug)
     }
     item->setData(role, newValue);
@@ -179,10 +209,10 @@ void TableWidgetEditor::on_tableWidget_itemChanged(QTableWidgetItem *item)
     if (m_updatingBrowser)
         return;
 
-    PropertySheetStringValue val = qVariantValue<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
+    PropertySheetStringValue val = qvariant_cast<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
     val.setValue(item->text());
     BoolBlocker block(m_updatingBrowser);
-    item->setData(Qt::DisplayPropertyRole, qVariantFromValue(val));
+    item->setData(Qt::DisplayPropertyRole, QVariant::fromValue(val));
 
     updateBrowser();
 }
@@ -207,16 +237,15 @@ void TableWidgetEditor::on_rowEditor_itemChanged(int idx, int role, const QVaria
     ui.tableWidget->verticalHeaderItem(idx)->setData(role, v);
 }
 
+void TableWidgetEditor::setPropertyBrowserVisible(bool v)
+{
+    ui.showPropertiesButton->setText(v ? tr("Properties &>>") : tr("Properties &<<"));
+    m_propertyBrowser->setVisible(v);
+}
+
 void TableWidgetEditor::togglePropertyBrowser()
 {
-    // Always hide in case parent widget is not visible -> on startup
-    const bool isVisible =
-            !this->isVisible() ? true : m_propertyBrowser->isVisible();
-    if (isVisible)
-        ui.showPropertiesButton->setText(tr("Properties &<<"));
-    else
-        ui.showPropertiesButton->setText(tr("Properties &>>"));
-    m_propertyBrowser->setVisible(!isVisible);
+    setPropertyBrowserVisible(!m_propertyBrowser->isVisible());
 }
 
 void TableWidgetEditor::updateEditor()
@@ -317,7 +346,7 @@ void TableWidgetEditor::on_columnEditor_itemInserted(int idx)
     ui.tableWidget->setColumnCount(columnCount + 1);
 
     QTableWidgetItem *newItem = new QTableWidgetItem(m_columnEditor->newItemText());
-    newItem->setData(Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(m_columnEditor->newItemText())));
+    newItem->setData(Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(m_columnEditor->newItemText())));
     ui.tableWidget->setHorizontalHeaderItem(columnCount, newItem);
 
     moveColumnsLeft(idx, columnCount);
@@ -359,7 +388,7 @@ void TableWidgetEditor::on_rowEditor_itemInserted(int idx)
     ui.tableWidget->setRowCount(rowCount + 1);
 
     QTableWidgetItem *newItem = new QTableWidgetItem(m_rowEditor->newItemText());
-    newItem->setData(Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(m_rowEditor->newItemText())));
+    newItem->setData(Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(m_rowEditor->newItemText())));
     ui.tableWidget->setVerticalHeaderItem(rowCount, newItem);
 
     moveRowsDown(idx, rowCount);
@@ -399,5 +428,23 @@ void TableWidgetEditor::cacheReloaded()
 {
     reloadIconResources(iconCache(), ui.tableWidget);
 }
+
+TableWidgetEditorDialog::TableWidgetEditorDialog(QDesignerFormWindowInterface *form, QWidget *parent) :
+    QDialog(parent), m_editor(form, this)
+{
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+}
+
+TableWidgetContents TableWidgetEditorDialog::fillContentsFromTableWidget(QTableWidget *tableWidget)
+{
+    return m_editor.fillContentsFromTableWidget(tableWidget);
+}
+
+TableWidgetContents TableWidgetEditorDialog::contents() const
+{
+    return m_editor.contents();
+}
+
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE

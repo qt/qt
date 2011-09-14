@@ -63,6 +63,7 @@
 #include "qstyleoption.h"
 #include "q3stylesheet.h"
 #include "qtextstream.h"
+#include <private/qtextdocument_p.h>
 #include <private/qtextengine_p.h>
 
 #include <stdlib.h>
@@ -120,7 +121,7 @@ static inline bool isBreakable(Q3TextString *string, int pos)
 {
     if (string->at(pos).nobreak)
         return false;
-    return (pos < string->length()-1 && string->at(pos+1).softBreak);
+    return (pos+1 < string->length() && string->at(pos+1).softBreak);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -8078,9 +8079,9 @@ bool Q3TextTable::down(Q3TextCursor *c, Q3TextDocument *&doc, Q3TextParagraph *&
             break;
         }
     }
-    doc = cell->richText();
     if (!cell)
         return false;
+    doc = cell->richText();
     parag = doc->firstParagraph();
     idx = 0;
     ox += cell->geometry().x() + cell->horizontalAlignmentOffset() + outerborder + parent->x();
@@ -8116,9 +8117,9 @@ bool Q3TextTable::up(Q3TextCursor *c, Q3TextDocument *&doc, Q3TextParagraph *&pa
             break;
         }
     }
-    doc = cell->richText();
     if (!cell)
         return false;
+    doc = cell->richText();
     parag = doc->lastParagraph();
     idx = parag->length() - 1;
     ox += cell->geometry().x() + cell->horizontalAlignmentOffset() + outerborder + parent->x();

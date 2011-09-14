@@ -50,23 +50,10 @@
 #include <qmenu.h>
 #include <qplaintextedit.h>
 #include <qtoolbar.h>
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
-
-// Will try to wait for the condition while allowing event processing
-#define QTRY_COMPARE(__expr, __expected) \
-    do { \
-        const int __step = 50; \
-        const int __timeout = 5000; \
-        if ((__expr) != (__expected)) { \
-            QTest::qWait(0); \
-        } \
-        for (int __i = 0; __i < __timeout && ((__expr) != (__expected)); __i+=__step) { \
-            QTest::qWait(__step); \
-        } \
-        QCOMPARE(__expr, __expected); \
-    } while(0)
 
 // Can't use QTest::qWait() because it causes event loop to hang on some platforms
 static void qsWait(int ms)
@@ -97,6 +84,8 @@ private slots:
     void debuggerSignals();
     void consoleCommands();
     void multithreadedDebugging();
+    void autoShowStandardWindow();
+    void standardWindowOwnership();
 };
 
 tst_QScriptEngineDebugger::tst_QScriptEngineDebugger()
@@ -782,6 +771,69 @@ void tst_QScriptEngineDebugger::multithreadedDebugging()
     QTRY_COMPARE(evaluationResumedSpy.count(), 0);
     thread.quit();
     QTRY_COMPARE(threadFinishedSpy.count(), 1);
+}
+
+void tst_QScriptEngineDebugger::autoShowStandardWindow()
+{
+    {
+        QScriptEngine engine;
+        QScriptEngineDebugger debugger;
+        QCOMPARE(debugger.autoShowStandardWindow(), true);
+        debugger.attachTo(&engine);
+        QObject::connect(&debugger, SIGNAL(evaluationSuspended()),
+                         debugger.action(QScriptEngineDebugger::ContinueAction),
+                         SLOT(trigger()));
+        engine.evaluate("debugger");
+        QTRY_VERIFY(debugger.standardWindow()->isVisible());
+
+        debugger.setAutoShowStandardWindow(true);
+        QCOMPARE(debugger.autoShowStandardWindow(), true);
+
+        debugger.setAutoShowStandardWindow(false);
+        QCOMPARE(debugger.autoShowStandardWindow(), false);
+
+        debugger.setAutoShowStandardWindow(true);
+        QCOMPARE(debugger.autoShowStandardWindow(), true);
+
+        debugger.standardWindow()->hide();
+
+        engine.evaluate("debugger");
+        QTRY_VERIFY(debugger.standardWindow()->isVisible());
+    }
+
+    {
+        QScriptEngine engine;
+        QScriptEngineDebugger debugger;
+        debugger.setAutoShowStandardWindow(false);
+        debugger.attachTo(&engine);
+        QObject::connect(&debugger, SIGNAL(evaluationSuspended()),
+                         debugger.action(QScriptEngineDebugger::ContinueAction),
+                         SLOT(trigger()));
+        QSignalSpy evaluationResumedSpy(&debugger, SIGNAL(evaluationResumed()));
+        engine.evaluate("debugger");
+        QTRY_COMPARE(evaluationResumedSpy.count(), 1);
+        QVERIFY(!debugger.standardWindow()->isVisible());
+    }
+}
+
+void tst_QScriptEngineDebugger::standardWindowOwnership()
+{
+    QScriptEngine engine;
+    QPointer<QMainWindow> win;
+    {
+        QScriptEngineDebugger debugger;
+        win = debugger.standardWindow();
+    }
+    QVERIFY(win == 0);
+
+    // Reparent the window.
+    QWidget widget;
+    {
+        QScriptEngineDebugger debugger;
+        win = debugger.standardWindow();
+        win->setParent(&widget);
+    }
+    QVERIFY(win != 0);
 }
 
 QTEST_MAIN(tst_QScriptEngineDebugger)

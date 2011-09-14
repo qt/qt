@@ -57,6 +57,7 @@ public:
     virtual ~QmlDocVisitor();
 
     bool visit(QDeclarativeJS::AST::UiImportList *imports);
+    void endVisit(QDeclarativeJS::AST::UiImportList *definition);
 
     bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
     void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
@@ -67,7 +68,7 @@ public:
     bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
 
 private:
-    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
+    QDeclarativeJS::AST::SourceLocation precedingComment(quint32 offset) const;
     void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
 
     QDeclarativeJS::Engine *engine;
@@ -77,6 +78,7 @@ private:
     QString document;
     QList<QPair<QString, QString> > importList;
     QSet<QString> commands;
+    QSet<quint32> usedComments;
     Tree *tree;
     InnerNode *current;
 };

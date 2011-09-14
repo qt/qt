@@ -477,8 +477,6 @@ void QPicturePaintEngine::drawImage(const QRectF &r, const QImage &image, const 
     writeCmdLength(pos, r, false);
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpi();
-
 void QPicturePaintEngine::drawTextItem(const QPointF &p , const QTextItem &ti)
 {
     Q_D(QPicturePaintEngine);

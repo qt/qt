@@ -139,10 +139,10 @@ QAction *LoggerWidget::showAction()
 void LoggerWidget::readSettings()
 {
     QSettings settings;
-    QString warningsPreferences = settings.value("warnings", "hide").toString();
-    if (warningsPreferences == "show") {
+    QString warningsPreferences = settings.value(QLatin1String("warnings"), QLatin1String("hide")).toString();
+    if (warningsPreferences == QLatin1String("show")) {
         m_visibility = ShowWarnings;
-    } else if (warningsPreferences == "hide") {
+    } else if (warningsPreferences == QLatin1String("hide")) {
         m_visibility = HideWarnings;
     } else {
         m_visibility = AutoShowWarnings;
@@ -154,15 +154,15 @@ void LoggerWidget::saveSettings()
     if (m_visibilityOrigin != SettingsOrigin)
         return;
 
-    QString value = "autoShow";
+    QString value = QLatin1String("autoShow");
     if (defaultVisibility() == ShowWarnings) {
-        value = "show";
+        value = QLatin1String("show");
     } else if (defaultVisibility() == HideWarnings) {
-        value = "hide";
+        value = QLatin1String("hide");
     }
 
     QSettings settings;
-    settings.setValue("warnings", value);
+    settings.setValue(QLatin1String("warnings"), value);
 }
 
 void LoggerWidget::warningsPreferenceChanged(QAction *action)

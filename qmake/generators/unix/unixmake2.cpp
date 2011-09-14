@@ -96,7 +96,8 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (project->values("TEMPLATE").first() == "app" ||
-        project->values("TEMPLATE").first() == "lib") {
+        project->values("TEMPLATE").first() == "lib" ||
+        project->values("TEMPLATE").first() == "aux") {
         if(Option::mkfile::do_stub_makefile && MakefileGenerator::writeStubMakefile(t))
             return true;
         writeMakeParts(t);
@@ -178,6 +179,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "export MACOSX_DEPLOYMENT_TARGET = " //exported to children processes
           << project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET") << endl;
 
+    if(!project->isEmpty("QMAKE_IPHONEOS_DEPLOYMENT_TARGET"))
+        t << "export IPHONEOS_DEPLOYMENT_TARGET = " //exported to children processes
+		<< project->first("QMAKE_IPHONEOS_DEPLOYMENT_TARGET") << endl;
+	
     if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
         t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(":") << endl;
         t << "vpath %.lib " << project->values("QMAKE_LIBDIR").join(":") << endl;
@@ -536,7 +541,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t"
                   << "-$(MOVE) $(TARGET) " << destdir;
             if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\n\t" << var("QMAKE_POST_LINK") << "\n\t";
+                t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
             t << "\n\t"
@@ -712,11 +717,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << info_plist_out << ": " << "\n\t";
         if(!destdir.isEmpty())
             t << mkdir_p_asstring(destdir) << "\n\t";
+        QStringList commonSedArgs;
+        if (!project->values("VERSION").isEmpty())
+            commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
+        commonSedArgs << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
+                   QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
         if(project->first("TEMPLATE") == "app") {
             QString icon = fileFixify(var("ICON"));
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed "
-              << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
+              << "@sed ";
+            foreach (const QString &arg, commonSedArgs)
+                t << arg;
+            t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
               << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                          QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
@@ -732,9 +744,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         } else {
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-              << "@sed "
-              << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
-              << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" "
+              << "@sed ";
+            foreach (const QString &arg, commonSedArgs)
+                t << arg;
+            t << "-e \"s,@LIBRARY@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"
               << (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                   QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "
@@ -836,7 +849,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
         if(!project->isEmpty("PRECOMPILED_DIR"))
             precomph_out_dir = project->first("PRECOMPILED_DIR");
-        precomph_out_dir += project->first("QMAKE_ORIG_TARGET") + project->first("QMAKE_PCH_OUTPUT_EXT");
+        precomph_out_dir += project->first("QMAKE_ORIG_TARGET");
+        if (!project->isActiveConfig("clang_pch_style"))
+            precomph_out_dir += project->first("QMAKE_PCH_OUTPUT_EXT");
 
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
@@ -850,19 +865,22 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
             precomp_files << precomph_out_dir << sourceFile << objectFile;
         } else {
-            // gcc style
+            // gcc style (including clang_pch_style)
             precomph_out_dir += Option::dir_sep;
 
             QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
+            QString header_suffix = project->isActiveConfig("clang_pch_style")
+                               ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
+
             if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c";
+                precomp_files += precomph_out_dir + header_prefix + "c" + header_suffix;
             if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c++";
+                precomp_files += precomph_out_dir + header_prefix + "c++" + header_suffix;
             if(project->isActiveConfig("objective_c")) {
                 if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c";
+                    precomp_files += precomph_out_dir + header_prefix + "objective-c" + header_suffix;
                 if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c++";
+                    precomp_files += precomph_out_dir + header_prefix + "objective-c++" + header_suffix;
             }
         }
         t << "-$(DEL_FILE) " << precomp_files.join(" ") << "\n\t";
@@ -931,7 +949,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString pchOutput;
             if(!project->isEmpty("PRECOMPILED_DIR"))
                 pchOutput = project->first("PRECOMPILED_DIR");
-            pchOutput += pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT");
+            pchOutput += pchBaseName;
+            if (!project->isActiveConfig("clang_pch_style"))
+                pchOutput += project->first("QMAKE_PCH_OUTPUT_EXT");
 
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
@@ -944,9 +964,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 pchFlags = pchFlags.replace("${QMAKE_PCH_TEMP_SOURCE}", sourceFile)
                            .replace("${QMAKE_PCH_TEMP_OBJECT}", objectFile);
             } else {
-                // gcc style
+                // gcc style (including clang_pch_style)
                 QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
-
+                QString header_suffix = project->isActiveConfig("clang_pch_style")
+                                  ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
                 pchOutput += Option::dir_sep;
                 QString pchOutputDir = pchOutput, pchOutputFile;
 
@@ -962,7 +983,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
                 if(pchOutputFile.isEmpty())
                     continue;
-                pchOutput += header_prefix + pchOutputFile;
+                pchOutput += header_prefix + pchOutputFile + header_suffix;
 
                 t << pchOutput << ": " << pchInput << " " << findDependencies(pchInput).join(" \\\n\t\t")
                   << "\n\t" << mkdir_p_asstring(pchOutputDir);
@@ -1000,6 +1021,9 @@ void UnixMakefileGenerator::init2()
     project->values("VER_PAT").append(l[2]);
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
+
+    if (project->values("TEMPLATE").first() == "aux")
+        return;
 
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -1331,179 +1355,6 @@ UnixMakefileGenerator::writeLibtoolFile()
         install_dir = project->first("DESTDIR");
     t << "# Directory that this library needs to be installed in:\n"
         "libdir='" << Option::fixPathToTargetOS(install_dir, false) << "'\n";
-}
-
-QString
-UnixMakefileGenerator::pkgConfigFileName(bool fixify)
-{
-    QString ret = var("TARGET");
-    int slsh = ret.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        ret = ret.right(ret.length() - slsh - 1);
-    if(ret.startsWith("lib"))
-        ret = ret.mid(3);
-    int dot = ret.indexOf('.');
-    if(dot != -1)
-        ret = ret.left(dot);
-    ret += Option::pkgcfg_ext;
-    if(!project->isEmpty("QMAKE_PKGCONFIG_DESTDIR"))
-        ret.prepend(project->first("QMAKE_PKGCONFIG_DESTDIR") + Option::dir_sep);
-    if(fixify) {
-        if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
-            ret.prepend(project->first("DESTDIR"));
-        ret = Option::fixPathToLocalOS(fileFixify(ret, qmake_getpwd(), Option::output_dir));
-    }
-    return ret;
-}
-
-QString
-UnixMakefileGenerator::pkgConfigPrefix() const
-{
-    if(!project->isEmpty("QMAKE_PKGCONFIG_PREFIX"))
-        return project->first("QMAKE_PKGCONFIG_PREFIX");
-    return QLibraryInfo::location(QLibraryInfo::PrefixPath);
-}
-
-QString
-UnixMakefileGenerator::pkgConfigFixPath(QString path) const
-{
-    QString prefix = pkgConfigPrefix();
-    if(path.startsWith(prefix))
-        path = path.replace(prefix, "${prefix}");
-    return path;
-}
-
-void
-UnixMakefileGenerator::writePkgConfigFile()
-{
-    QString fname = pkgConfigFileName(), lname = fname;
-    mkdir(fileInfo(fname).path());
-    int slsh = lname.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        lname = lname.right(lname.length() - slsh - 1);
-    QFile ft(fname);
-    if(!ft.open(QIODevice::WriteOnly))
-        return;
-    project->values("ALL_DEPS").append(fileFixify(fname));
-    QTextStream t(&ft);
-
-    QString prefix = pkgConfigPrefix();
-    QString libDir = project->first("QMAKE_PKGCONFIG_LIBDIR");
-    if(libDir.isEmpty())
-        libDir = prefix + Option::dir_sep + "lib" + Option::dir_sep;
-    QString includeDir = project->first("QMAKE_PKGCONFIG_INCDIR");
-    if(includeDir.isEmpty())
-        includeDir = prefix + "/include";
-
-    t << "prefix=" << prefix << endl;
-    t << "exec_prefix=${prefix}\n"
-      << "libdir=" << pkgConfigFixPath(libDir) << "\n"
-      << "includedir=" << pkgConfigFixPath(includeDir) << endl;
-    // non-standard entry. Provides useful info normally only
-    // contained in the internal .qmake.cache file
-    t << varGlue("CONFIG", "qt_config=", " ", "") << endl;
-
-    //extra PKGCONFIG variables
-    const QStringList &pkgconfig_vars = project->values("QMAKE_PKGCONFIG_VARIABLES");
-    for(int i = 0; i < pkgconfig_vars.size(); ++i) {
-        QString var = project->first(pkgconfig_vars.at(i) + ".name"),
-                val = project->values(pkgconfig_vars.at(i) + ".value").join(" ");
-        if(var.isEmpty())
-            continue;
-        if(val.isEmpty()) {
-            const QStringList &var_vars = project->values(pkgconfig_vars.at(i) + ".variable");
-            for(int v = 0; v < var_vars.size(); ++v) {
-                const QStringList &vars = project->values(var_vars.at(v));
-                for(int var = 0; var < vars.size(); ++var) {
-                    if(!val.isEmpty())
-                        val += " ";
-                    val += pkgConfigFixPath(vars.at(var));
-                }
-            }
-        }
-        t << var << "=" << val << endl;
-    }
-
-    t << endl;
-
-    QString name = project->first("QMAKE_PKGCONFIG_NAME");
-    if(name.isEmpty()) {
-        name = project->first("QMAKE_ORIG_TARGET").toLower();
-        name.replace(0, 1, name[0].toUpper());
-    }
-    t << "Name: " << name << endl;
-    QString desc = project->values("QMAKE_PKGCONFIG_DESCRIPTION").join(" ");
-    if(desc.isEmpty()) {
-        if(name.isEmpty()) {
-            desc = project->first("QMAKE_ORIG_TARGET").toLower();
-            desc.replace(0, 1, desc[0].toUpper());
-        } else {
-            desc = name;
-        }
-        if(project->first("TEMPLATE") == "lib") {
-            if(project->isActiveConfig("plugin"))
-               desc += " Plugin";
-            else
-               desc += " Library";
-        } else if(project->first("TEMPLATE") == "app") {
-            desc += " Application";
-        }
-    }
-    t << "Description: " << desc << endl;
-    t << "Version: " << project->first("VERSION") << endl;
-
-    // libs
-    t << "Libs: ";
-    QString pkgConfiglibDir;
-    QString pkgConfiglibName;
-    if (Option::target_mode == Option::TARG_MACX_MODE && project->isActiveConfig("lib_bundle")) {
-        pkgConfiglibDir = "-F${libdir}";
-        QString bundle;
-        if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
-            bundle = unescapeFilePath(project->first("QMAKE_FRAMEWORK_BUNDLE_NAME"));
-        else
-            bundle = unescapeFilePath(project->first("TARGET"));
-        int suffix = bundle.lastIndexOf(".framework");
-        if (suffix != -1)
-            bundle = bundle.left(suffix);
-        pkgConfiglibName = "-framework " + bundle + " ";
-    } else {
-        pkgConfiglibDir = "-L${libdir}";
-        pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
-    }
-    t << pkgConfiglibDir << " " << pkgConfiglibName << " " << endl;
-
-    QStringList libs;
-    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
-        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-    } else {
-        libs << "QMAKE_LIBS"; //obvious one
-    }
-    libs << "QMAKE_LIBS_PRIVATE";
-    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
-    t << "Libs.private: ";
-    for(QStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it) {
-        t << project->values((*it)).join(" ") << " ";
-    }
-    t << endl;
-
-    // flags
-    // ### too many
-    t << "Cflags: "
-        // << var("QMAKE_CXXFLAGS") << " "
-      << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-      << project->values("PRL_EXPORT_CXXFLAGS").join(" ")
-      << project->values("QMAKE_PKGCONFIG_CFLAGS").join(" ")
-        //      << varGlue("DEFINES","-D"," -D"," ")
-      << " -I${includedir}" << endl;
-
-    // requires
-    const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(" ");
-    if (!requires.isEmpty()) {
-        t << "Requires: " << requires << endl;
-    }
-
-    t << endl;
 }
 
 QT_END_NAMESPACE

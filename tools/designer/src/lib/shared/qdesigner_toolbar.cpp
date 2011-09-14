@@ -146,7 +146,7 @@ ActionList ToolBarEventFilter::contextMenuActions(const QPoint &globalPos)
     // Insert before
     if (action && index != 0 && !action->isSeparator()) {
         QAction *newSeperatorAct = new QAction(tr("Insert Separator before '%1'").arg(action->objectName()), 0);
-        qVariantSetValue(itemData, action);
+        itemData.setValue(action);
         newSeperatorAct->setData(itemData);
         connect(newSeperatorAct, SIGNAL(triggered()), this, SLOT(slotInsertSeparator()));
         rc.push_back(newSeperatorAct);
@@ -155,7 +155,7 @@ ActionList ToolBarEventFilter::contextMenuActions(const QPoint &globalPos)
     // Append separator
     if (actions.empty() || !actions.back()->isSeparator()) {
         QAction *newSeperatorAct = new QAction(tr("Append Separator"), 0);
-        qVariantSetValue(itemData, static_cast<QAction*>(0));
+        itemData.setValue(static_cast<QAction*>(0));
         newSeperatorAct->setData(itemData);
         connect(newSeperatorAct, SIGNAL(triggered()), this, SLOT(slotInsertSeparator()));
         rc.push_back(newSeperatorAct);
@@ -167,7 +167,7 @@ ActionList ToolBarEventFilter::contextMenuActions(const QPoint &globalPos)
     // Remove
     if (action) {
         QAction *a = new QAction(tr("Remove action '%1'").arg(action->objectName()), 0);
-        qVariantSetValue(itemData, action);
+        itemData.setValue(action);
         a->setData(itemData);
         connect(a, SIGNAL(triggered()), this, SLOT(slotRemoveSelectedAction()));
         rc.push_back(a);

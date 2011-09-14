@@ -274,6 +274,15 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     \sa operator=()
 */
 
+/*! \fn QVector::QVector(std::initializer_list<T> args)
+    \since 4.8
+
+    Construct a vector from the std::initilizer_list given by \a args.
+
+    This constructor is only enabled if the compiler supports C++0x
+*/
+
+
 /*! \fn QVector::~QVector()
 
     Destroys the vector.
@@ -283,6 +292,13 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
 
     Assigns \a other to this vector and returns a reference to this
     vector.
+*/
+
+/*! \fn void QVector::swap(QVector<T> &other)
+    \since 4.8
+
+    Swaps vector \a other with this vector. This operation is very fast and
+    never fails.
 */
 
 /*! \fn bool QVector::operator==(const QVector<T> &other) const

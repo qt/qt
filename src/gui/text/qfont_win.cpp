@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
         
 extern HDC   shared_dc();                // common dc for all fonts
+extern QFont::Weight weightFromInteger(int weight); // qfontdatabase.cpp
 
 // ### maybe move to qapplication_win
 QFont qt_LOGFONTtoQFont(LOGFONT& lf, bool /*scale*/)
@@ -65,20 +66,8 @@ QFont qt_LOGFONTtoQFont(LOGFONT& lf, bool /*scale*/)
     QString family = QString::fromWCharArray(lf.lfFaceName);
     QFont qf(family);
     qf.setItalic(lf.lfItalic);
-    if (lf.lfWeight != FW_DONTCARE) {
-        int weight;
-        if (lf.lfWeight < 400)
-            weight = QFont::Light;
-        else if (lf.lfWeight < 600)
-            weight = QFont::Normal;
-        else if (lf.lfWeight < 700)
-            weight = QFont::DemiBold;
-        else if (lf.lfWeight < 800)
-            weight = QFont::Bold;
-        else
-            weight = QFont::Black;
-        qf.setWeight(weight);
-    }
+    if (lf.lfWeight != FW_DONTCARE)
+        qf.setWeight(weightFromInteger(lf.lfWeight));
     int lfh = qAbs(lf.lfHeight);
     qf.setPointSizeF(lfh * 72.0 / GetDeviceCaps(shared_dc(),LOGPIXELSY));
     qf.setUnderline(false);

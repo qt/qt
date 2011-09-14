@@ -165,7 +165,7 @@ while (i.hasNext()) {
 
 
 //! [18]
-QList<QWidget *> myWidgets = qFindChildren<QWidget *>(myParent);
+QList<QWidget *> myWidgets = myParent->findChildren<QWidget *>();
 //! [18]
 
 

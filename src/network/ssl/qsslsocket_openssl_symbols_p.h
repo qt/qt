@@ -204,6 +204,7 @@ bool q_resolveOpenSslSymbols();
 long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
 unsigned char * q_ASN1_STRING_data(ASN1_STRING *a);
 int q_ASN1_STRING_length(ASN1_STRING *a);
+int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
 int q_BIO_free(BIO *a);
 BIO *q_BIO_new(BIO_METHOD *a);
@@ -316,6 +317,13 @@ long q_SSL_get_verify_result(SSL *a);
 int q_SSL_library_init();
 void q_SSL_load_error_strings();
 SSL *q_SSL_new(SSL_CTX *a);
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+long q_SSL_ctrl(SSL *ssl,int cmd, long larg, void *parg);
+#else
+long q_SSL_ctrl(SSL *ssl,int cmd, long larg, const void *parg);
+#endif
+#endif
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
 void q_SSL_set_accept_state(SSL *a);
@@ -357,7 +365,10 @@ void *q_X509_get_ext_d2i(X509 *a, int b, int *c, int *d);
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
 int q_X509_verify_cert(X509_STORE_CTX *ctx);
-char *q_X509_NAME_oneline(X509_NAME *a, char *b, int c);
+int q_X509_NAME_entry_count(X509_NAME *a);
+X509_NAME_ENTRY *q_X509_NAME_get_entry(X509_NAME *a,int b);
+ASN1_STRING *q_X509_NAME_ENTRY_get_data(X509_NAME_ENTRY *a);
+ASN1_OBJECT *q_X509_NAME_ENTRY_get_object(X509_NAME_ENTRY *a);
 EVP_PKEY *q_X509_PUBKEY_get(X509_PUBKEY *a);
 void q_X509_STORE_free(X509_STORE *store);
 X509_STORE *q_X509_STORE_new();
@@ -412,6 +423,8 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 #endif
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
+int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
+long q_SSLeay();
 
 // Helper function
 class QDateTime;

@@ -348,11 +348,11 @@ Translator merge(const Translator &tor, const Translator &virginTor,
 
         if (m.sourceText().isEmpty() && m.id().isEmpty()) {
             // context/file comment
-            TranslatorMessage mv = virginTor.find(m.context());
-            if (!mv.isNull())
-                m.setComment(mv.comment());
+            int mvi = virginTor.find(m.context());
+            if (mvi >= 0)
+                m.setComment(virginTor.constMessage(mvi).comment());
         } else {
-            TranslatorMessage mv;
+            const TranslatorMessage *mv;
             int mvi = virginTor.find(m);
             if (mvi < 0) {
                 if (!(options & HeuristicSimilarText)) {
@@ -362,16 +362,17 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                         obsoleted++;
                     m.clearReferences();
                 } else {
-                    mv = virginTor.find(m.context(), m.comment(), m.allReferences());
-                    if (mv.isNull()) {
+                    mvi = virginTor.find(m.context(), m.comment(), m.allReferences());
+                    if (mvi < 0) {
                         // did not find it in the virgin, mark it as obsolete
                         goto makeObsolete;
                     } else {
+                        mv = &virginTor.constMessage(mvi);
                         // Do not just accept it if its on the same line number,
                         // but different source text.
                         // Also check if the texts are more or less similar before
                         // we consider them to represent the same message...
-                        if (getSimilarityScore(m.sourceText(), mv.sourceText()) >= textSimilarityThreshold) {
+                        if (getSimilarityScore(m.sourceText(), mv->sourceText()) >= textSimilarityThreshold) {
                             // It is just slightly modified, assume that it is the same string
 
                             // Mark it as unfinished. (Since the source text
@@ -382,7 +383,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
 
                           outdateSource:
                             m.setOldSourceText(m.sourceText());
-                            m.setSourceText(mv.sourceText());
+                            m.setSourceText(mv->sourceText());
                             const QString &oldpluralsource = m.extra(QLatin1String("po-msgid_plural"));
                             if (!oldpluralsource.isEmpty()) {
                                 m.setExtra(QLatin1String("po-old_msgid_plural"), oldpluralsource);
@@ -397,22 +398,22 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                     }
                 }
             } else {
-                mv = virginTor.message(mvi);
-                if (!mv.id().isEmpty()
-                    && (mv.context() != m.context()
-                        || mv.sourceText() != m.sourceText()
-                        || mv.comment() != m.comment())) {
+                mv = &virginTor.message(mvi);
+                if (!mv->id().isEmpty()
+                    && (mv->context() != m.context()
+                        || mv->sourceText() != m.sourceText()
+                        || mv->comment() != m.comment())) {
                     known++;
                     newType = TranslatorMessage::Unfinished;
-                    m.setContext(mv.context());
-                    m.setComment(mv.comment());
-                    if (mv.sourceText() != m.sourceText())
+                    m.setContext(mv->context());
+                    m.setComment(mv->comment());
+                    if (mv->sourceText() != m.sourceText())
                         goto outdateSource;
                 } else {
                     switch (m.type()) {
                     case TranslatorMessage::Finished:
                     default:
-                        if (m.isPlural() == mv.isPlural()) {
+                        if (m.isPlural() == mv->isPlural()) {
                             newType = TranslatorMessage::Finished;
                         } else {
                             newType = TranslatorMessage::Unfinished;
@@ -435,11 +436,11 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 // have the <location> element.
                 // why not use operator=()? Because it overwrites e.g. userData.
               copyAttribs:
-                m.setReferences(mv.allReferences());
-                m.setPlural(mv.isPlural());
-                m.setUtf8(mv.isUtf8());
-                m.setExtraComment(mv.extraComment());
-                m.setId(mv.id());
+                m.setReferences(mv->allReferences());
+                m.setPlural(mv->isPlural());
+                m.setUtf8(mv->isUtf8());
+                m.setExtraComment(mv->extraComment());
+                m.setId(mv->id());
             }
         }
 
@@ -453,15 +454,16 @@ Translator merge(const Translator &tor, const Translator &virginTor,
     */
     foreach (const TranslatorMessage &mv, virginTor.messages()) {
         if (mv.sourceText().isEmpty() && mv.id().isEmpty()) {
-            if (tor.contains(mv.context()))
+            if (tor.find(mv.context()) >= 0)
                 continue;
         } else {
             if (tor.find(mv) >= 0)
                 continue;
             if (options & HeuristicSimilarText) {
-                TranslatorMessage m = tor.find(mv.context(), mv.comment(), mv.allReferences());
-                if (!m.isNull()) {
-                    if (getSimilarityScore(m.sourceText(), mv.sourceText()) >= textSimilarityThreshold)
+                int mi = tor.find(mv.context(), mv.comment(), mv.allReferences());
+                if (mi >= 0) {
+                    if (getSimilarityScore(tor.constMessage(mi).sourceText(), mv.sourceText())
+                            >= textSimilarityThreshold)
                         continue;
                 }
             }

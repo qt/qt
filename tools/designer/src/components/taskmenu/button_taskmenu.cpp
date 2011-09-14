@@ -508,7 +508,7 @@ bool ButtonTaskMenu::refreshAssignMenu(const QDesignerFormWindowInterface *fw, i
             QButtonGroup *bg = *it;
             if (*it != currentGroup) {
                 QAction *a = new QAction(bg->objectName(), m_assignGroupSubMenu);
-                a->setData(qVariantFromValue(bg));
+                a->setData(QVariant::fromValue(bg));
                 m_assignActionGroup->addAction(a);
                 m_assignGroupSubMenu->addAction(a);
             }
@@ -528,7 +528,7 @@ bool ButtonTaskMenu::refreshAssignMenu(const QDesignerFormWindowInterface *fw, i
 QList<QAction*> ButtonTaskMenu::taskActions() const
 {
     ButtonTaskMenu *ncThis = const_cast<ButtonTaskMenu*>(this);
-    QButtonGroup *buttonGroup;
+    QButtonGroup *buttonGroup = 0;
 
     QDesignerFormWindowInterface *fw = formWindow();
     const SelectionType st = selectionType(fw->cursor(), &buttonGroup);

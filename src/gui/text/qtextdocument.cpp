@@ -60,6 +60,7 @@
 #include <qdir.h>
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
+#include "qfont_p.h"
 #include "private/qtextedit_p.h"
 #include "private/qdataurl_p.h"
 
@@ -582,6 +583,29 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
     d->defaultTextOption = option;
     if (d->lout)
         d->lout->documentChanged(0, 0, d->length());
+}
+
+/*!
+    \since 4.8
+
+    The default cursor movement style is used by all QTextCursor objects
+    created from the document. The default is Qt::LogicalMoveStyle.
+*/
+Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle() const
+{
+    Q_D(const QTextDocument);
+    return d->defaultCursorMoveStyle;
+}
+
+/*!
+    \since 4.8
+
+    Sets the default cursor movement style to the given \a style.
+*/
+void QTextDocument::setDefaultCursorMoveStyle(Qt::CursorMoveStyle style)
+{
+    Q_D(QTextDocument);
+    d->defaultCursorMoveStyle = style;
 }
 
 /*!
@@ -1671,8 +1695,6 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
     painter->restore();
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpi();
-
 /*!
     Prints the document to the given \a printer. The QPrinter must be
     set up before being used with this function.
@@ -1985,6 +2007,8 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
             if (fi.exists()) {
                 resourceUrl =
                     QUrl::fromLocalFile(fi.absolutePath() + QDir::separator()).resolved(name);
+            } else if (currentURL.isEmpty()) {
+                resourceUrl.setScheme(QLatin1String("file"));
             }
         }
 
@@ -2075,6 +2099,10 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
             html += QLatin1String(" font-size:");
             html += QString::number(defaultCharFormat.fontPointSize());
             html += QLatin1String("pt;");
+        } else if (defaultCharFormat.hasProperty(QTextFormat::FontPixelSize)) {
+            html += QLatin1String(" font-size:");
+            html += QString::number(defaultCharFormat.intProperty(QTextFormat::FontPixelSize));
+            html += QLatin1String("px;");
         }
 
         html += QLatin1String(" font-weight:");
@@ -2155,6 +2183,10 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             html += QLatin1Char(';');
             attributesEmitted = true;
         }
+    } else if (format.hasProperty(QTextFormat::FontPixelSize)) {
+        html += QLatin1String(" font-size:");
+        html += QString::number(format.intProperty(QTextFormat::FontPixelSize));
+        html += QLatin1String("px;");
     }
 
     if (format.hasProperty(QTextFormat::FontWeight)
@@ -2602,14 +2634,40 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 
-            html += QLatin1String(" style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+            QString styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
 
             if (format.hasProperty(QTextFormat::ListIndent)) {
-                html += QLatin1String(" -qt-list-indent: ");
-                html += QString::number(format.indent());
-                html += QLatin1Char(';');
+                styleString += QLatin1String(" -qt-list-indent: ");
+                styleString += QString::number(format.indent());
+                styleString += QLatin1Char(';');
             }
 
+            if (format.hasProperty(QTextFormat::ListNumberPrefix)) {
+                QString numberPrefix = format.numberPrefix();
+                numberPrefix.replace(QLatin1Char('"'), QLatin1String("\\22"));
+                numberPrefix.replace(QLatin1Char('\''), QLatin1String("\\27")); // FIXME: There's a problem in the CSS parser the prevents this from being correctly restored
+                styleString += QLatin1String(" -qt-list-number-prefix: ");
+                styleString += QLatin1Char('\'');
+                styleString += numberPrefix;
+                styleString += QLatin1Char('\'');
+                styleString += QLatin1Char(';');
+            }
+
+            if (format.hasProperty(QTextFormat::ListNumberSuffix)) {
+                if (format.numberSuffix() != QLatin1String(".")) { // this is our default
+                    QString numberSuffix = format.numberSuffix();
+                    numberSuffix.replace(QLatin1Char('"'), QLatin1String("\\22"));
+                    numberSuffix.replace(QLatin1Char('\''), QLatin1String("\\27")); // see above
+                    styleString += QLatin1String(" -qt-list-number-suffix: ");
+                    styleString += QLatin1Char('\'');
+                    styleString += numberSuffix;
+                    styleString += QLatin1Char('\'');
+                    styleString += QLatin1Char(';');
+                }
+            }
+
+            html += QLatin1String(" style=\"");
+            html += styleString;
             html += QLatin1String("\">");
         }
 
@@ -2651,6 +2709,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     emitBlockAttributes(block);
 
     html += QLatin1Char('>');
+    if (block.begin().atEnd())
+        html += QLatin1String("<br />");
 
     QTextBlock::Iterator it = block.begin();
     if (fragmentMarkers && !it.atEnd() && block == doc->begin())

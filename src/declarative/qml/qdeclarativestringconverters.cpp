@@ -92,7 +92,7 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
     QSizeF sz = sizeFFromString(s, &ok);
     if (ok) return QVariant(sz);
     QVector3D v = vector3DFromString(s, &ok);
-    if (ok) return qVariantFromValue(v);
+    if (ok) return QVariant::fromValue(v);
 
     return QVariant(s);
 }

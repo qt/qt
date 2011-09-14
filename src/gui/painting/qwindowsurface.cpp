@@ -52,17 +52,17 @@ class QWindowSurfacePrivate
 public:
     QWindowSurfacePrivate(QWidget *w)
         : window(w)
-        , staticContentsSupport(0)
-        , partialUpdateSupport(1)
     {
     }
 
     QWidget *window;
+#if !defined(Q_WS_QPA)
     QRect geometry;
+#else
+    QSize size;
+#endif //Q_WS_QPA
     QRegion staticContents;
     QList<QImage*> bufferImages;
-    uint staticContentsSupport : 1;
-    uint partialUpdateSupport : 1;
 };
 
 /*!
@@ -70,7 +70,7 @@ public:
     \since 4.3
     \internal
     \preliminary
-    \ingroup qws
+    \ingroup qws qpa
 
     \brief The QWindowSurface class provides the drawing area for top-level
     windows.
@@ -114,11 +114,11 @@ public:
 /*!
     Constructs an empty surface for the given top-level \a window.
 */
-QWindowSurface::QWindowSurface(QWidget *window)
+QWindowSurface::QWindowSurface(QWidget *window, bool setDefaultSurface)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
     if (!QApplicationPrivate::runtime_graphics_system) {
-        if(window)
+        if(setDefaultSurface && window)
             window->setWindowSurface(this);
     }
 }
@@ -153,6 +153,7 @@ void QWindowSurface::endPaint(const QRegion &)
     d_ptr->bufferImages.clear();
 }
 
+#if !defined(Q_WS_QPA)
 /*!
     Sets the currently allocated area to be the given \a rect.
 
@@ -173,6 +174,26 @@ QRect QWindowSurface::geometry() const
 {
     return d_ptr->geometry;
 }
+#else
+
+/*!
+      Sets the size of the windowsurface to be \a size.
+
+      \sa size()
+*/
+void QWindowSurface::resize(const QSize &size)
+{
+    d_ptr->size = size;
+}
+
+/*!
+    Returns the current size of the windowsurface.
+*/
+QSize QWindowSurface::size() const
+{
+    return d_ptr->size;
+}
+#endif //Q_WS_QPA
 
 /*!
     Scrolls the given \a area \a dx pixels to the right and \a dy
@@ -286,20 +307,6 @@ QPoint QWindowSurface::offset(const QWidget *widget) const
   window surface.
 */
 
-bool QWindowSurface::hasStaticContentsSupport() const
-{
-    return d_ptr->staticContentsSupport;
-}
-
-void QWindowSurface::setStaticContentsSupport(bool enable)
-{
-    if (enable && !d_ptr->partialUpdateSupport) {
-        qWarning("QWindowSurface::setStaticContentsSupport: static contents support requires partial update support");
-        return;
-    }
-    d_ptr->staticContentsSupport = enable;
-}
-
 void QWindowSurface::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
@@ -312,24 +319,21 @@ QRegion QWindowSurface::staticContents() const
 
 bool QWindowSurface::hasStaticContents() const
 {
-    return d_ptr->staticContentsSupport && !d_ptr->staticContents.isEmpty();
+    return hasFeature(QWindowSurface::StaticContents) && !d_ptr->staticContents.isEmpty();
 }
 
-bool QWindowSurface::hasPartialUpdateSupport() const
+QWindowSurface::WindowSurfaceFeatures QWindowSurface::features() const
 {
-    return d_ptr->partialUpdateSupport;
+    return PartialUpdates | PreservedContents;
 }
 
-void QWindowSurface::setPartialUpdateSupport(bool enable)
-{
-    if (!enable && d_ptr->staticContentsSupport) {
-        qWarning("QWindowSurface::setPartialUpdateSupport: static contents support requires partial update support");
-        return;
-    }
-    d_ptr->partialUpdateSupport = enable;
-}
+#ifdef Q_WS_QPA
+#define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
+#else
+#define Q_EXPORT_SCROLLRECT
+#endif
 
-void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+void Q_EXPORT_SCROLLRECT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
     uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());

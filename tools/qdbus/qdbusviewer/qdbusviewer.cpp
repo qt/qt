@@ -217,7 +217,7 @@ void QDBusViewer::setProperty(const BusSignature &sig)
 
     QDBusMessage message = QDBusMessage::createMethodCall(sig.mService, sig.mPath, QLatin1String("org.freedesktop.DBus.Properties"), QLatin1String("Set"));
     QList<QVariant> arguments;
-    arguments << sig.mInterface << sig.mName << qVariantFromValue(QDBusVariant(value));
+    arguments << sig.mInterface << sig.mName << QVariant::fromValue(QDBusVariant(value));
     message.setArguments(arguments);
     c.callWithCallback(message, this, SLOT(dumpMessage(QDBusMessage)));
 
@@ -283,7 +283,7 @@ void QDBusViewer::callMethod(const BusSignature &sig)
     // interface wants a variant
     for (int i = 0; i < args.count(); ++i) {
         if (types.at(i) == qMetaTypeId<QDBusVariant>())
-            args[i] = qVariantFromValue(QDBusVariant(args.at(i)));
+            args[i] = QVariant::fromValue(QDBusVariant(args.at(i)));
     }
 
     QDBusMessage message = QDBusMessage::createMethodCall(sig.mService, sig.mPath, sig.mInterface,

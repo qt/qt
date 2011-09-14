@@ -3,16 +3,16 @@ SOURCES  += tst_qpixmap.cpp
 contains(QT_CONFIG, qt3support): QT += qt3support
 wince*|symbian: {
 
-   task31722_0.sources = convertFromImage/task31722_0/*.png
+   task31722_0.files = convertFromImage/task31722_0/*.png
    task31722_0.path    = convertFromImage/task31722_0
 
-   task31722_1.sources = convertFromImage/task31722_1/*.png
+   task31722_1.files = convertFromImage/task31722_1/*.png
    task31722_1.path    = convertFromImage/task31722_1
  
-   icons.sources = convertFromToHICON/*       
+   icons.files = convertFromToHICON/*       
    icons.path = convertFromToHICON
    
-   loadFromData.sources = loadFromData/*
+   loadFromData.files = loadFromData/*
    loadFromData.path = loadFromData
 
    DEPLOYMENT += task31722_0 task31722_1 icons loadFromData

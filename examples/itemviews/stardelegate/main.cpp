@@ -71,7 +71,7 @@ void populateTableWidget(QTableWidget *tableWidget)
         QTableWidgetItem *item2 = new QTableWidgetItem(staticData[row].artist);
         QTableWidgetItem *item3 = new QTableWidgetItem;
         item3->setData(0,
-                       qVariantFromValue(StarRating(staticData[row].rating)));
+                       QVariant::fromValue(StarRating(staticData[row].rating)));
 
         tableWidget->setItem(row, 0, item0);
         tableWidget->setItem(row, 1, item1);
@@ -100,7 +100,11 @@ int main(int argc, char *argv[])
 
     tableWidget.resizeColumnsToContents();
     tableWidget.resize(500, 300);
+#if defined(Q_OS_SYMBIAN)
+    tableWidget.showMaximized();
+#else
     tableWidget.show();
+#endif
 
     return app.exec();
 }

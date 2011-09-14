@@ -877,7 +877,7 @@ void tst_Q3Accel::unicodeCompose()
     sendKeyEvents( META+Qt::Key_9, 0 );
     QCOMPARE( currentResult, Accel1Triggered );
 #else
-    QSKIP( "Unicode composing non-existant in Qt 3.y.z", SkipAll);
+    QSKIP( "Unicode composing non-existent in Qt 3.y.z", SkipAll);
 #endif
 }
 

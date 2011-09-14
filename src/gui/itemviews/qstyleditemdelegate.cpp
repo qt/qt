@@ -331,7 +331,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
         option->displayAlignment = Qt::Alignment(value.toInt());
 
     value = index.data(Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(value))
+    if (value.canConvert<QBrush>())
         option->palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
     if (QStyleOptionViewItemV4 *v4 = qstyleoption_cast<QStyleOptionViewItemV4 *>(option)) {
@@ -732,7 +732,8 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
 
     // make sure that we have the right event type
     if ((event->type() == QEvent::MouseButtonRelease)
-        || (event->type() == QEvent::MouseButtonDblClick)) {
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
         QStyleOptionViewItemV4 viewOpt(option);
         initStyleOption(&viewOpt, index);
         QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
@@ -740,8 +741,8 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
             return false;
 
-        // eat the double click events inside the check rect
-        if (event->type() == QEvent::MouseButtonDblClick)
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick))
             return true;
 
     } else if (event->type() == QEvent::KeyPress) {

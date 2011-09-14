@@ -117,7 +117,20 @@ QString QFont::lastResortFamily() const
     const bool isJapaneseOrChineseSystem =
         User::Language() == ELangJapanese || User::Language() == ELangPrcChinese;
 
-    return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":"Series 60 Sans");
+    static QString family;
+    if (family.isEmpty()) {
+        QStringList families = qt_symbian_fontFamiliesOnFontServer();
+        const char* const preferredFamilies[] = {"Nokia Sans S60", "Series 60 Sans"};
+        for (int i = 0; i < sizeof preferredFamilies / sizeof preferredFamilies[0]; ++i) {
+            const QString preferredFamily = QLatin1String(preferredFamilies[i]);
+            if (families.contains(preferredFamily)) {
+                family = preferredFamily;
+                break;
+            }
+        }
+    }
+
+    return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":family.toLatin1());
 #endif // QT_NO_FREETYPE
 }
 

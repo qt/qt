@@ -95,9 +95,11 @@ public:
         WritingState = 2,       // writing the data
         WaitingState = 4,       // waiting for reply
         ReadingState = 8,       // reading the reply
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState)
+        ClosingState = 16,
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|ClosingState)
     };
     QAbstractSocket *socket;
+    bool ssl;
     ChannelState state;
     QHttpNetworkRequest request; // current request
     QHttpNetworkReply *reply; // current reply for this request
@@ -115,6 +117,9 @@ public:
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
 #endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSession;
+#endif
 
     // HTTP pipelining -> http://en.wikipedia.org/wiki/Http_pipelining
     enum PipeliningSupport {
@@ -124,7 +129,11 @@ public:
     };
     PipeliningSupport pipeliningSupported;
     QList<HttpMessagePair> alreadyPipelinedRequests;
-
+    QByteArray pipeline; // temporary buffer that gets sent to socket in pipelineFlush
+    void pipelineInto(HttpMessagePair &pair);
+    void pipelineFlush();
+    void requeueCurrentlyPipelinedRequests();
+    void detectPipeliningSupport();
 
     QHttpNetworkConnectionChannel();
     
@@ -144,14 +153,8 @@ public:
 
     bool resetUploadData(); // return true if resetting worked or there is no upload data
 
-    void pipelineInto(HttpMessagePair &pair);
-    void requeueCurrentlyPipelinedRequests();
-    void detectPipeliningSupport();
-
     void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
-
-    void eatWhitespace();
 
     bool isSocketBusy() const;
     bool isSocketWriting() const;

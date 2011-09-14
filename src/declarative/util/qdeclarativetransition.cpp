@@ -130,6 +130,9 @@ public:
         endState->complete();
     }
     static void append_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, QDeclarativeAbstractAnimation *a);
+    static int animation_count(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list);
+    static QDeclarativeAbstractAnimation* animation_at(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int pos);
+    static void clear_animations(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list);
     QList<QDeclarativeAbstractAnimation *> animations;
 };
 
@@ -139,6 +142,28 @@ void QDeclarativeTransitionPrivate::append_animation(QDeclarativeListProperty<QD
     q->d_func()->animations.append(a);
     q->d_func()->group.addAnimation(a->qtAnimation());
     a->setDisableUserControl();
+}
+
+int QDeclarativeTransitionPrivate::animation_count(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    return q->d_func()->animations.count();
+}
+
+QDeclarativeAbstractAnimation* QDeclarativeTransitionPrivate::animation_at(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int pos)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    return q->d_func()->animations.at(pos);
+}
+
+void QDeclarativeTransitionPrivate::clear_animations(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list)
+{
+    QDeclarativeTransition *q = static_cast<QDeclarativeTransition *>(list->object);
+    while (q->d_func()->animations.count()) {
+        QDeclarativeAbstractAnimation *firstAnim = q->d_func()->animations.at(0);
+        q->d_func()->group.removeAnimation(firstAnim->qtAnimation());
+        q->d_func()->animations.removeAll(firstAnim);
+    }
 }
 
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
@@ -309,7 +334,10 @@ void QDeclarativeTransition::setToState(const QString &t)
 QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeTransition::animations()
 {
     Q_D(QDeclarativeTransition);
-    return QDeclarativeListProperty<QDeclarativeAbstractAnimation>(this, &d->animations, QDeclarativeTransitionPrivate::append_animation);
+    return QDeclarativeListProperty<QDeclarativeAbstractAnimation>(this, &d->animations, QDeclarativeTransitionPrivate::append_animation,
+                                                                   QDeclarativeTransitionPrivate::animation_count,
+                                                                   QDeclarativeTransitionPrivate::animation_at,
+                                                                   QDeclarativeTransitionPrivate::clear_animations);
 }
 
 QT_END_NAMESPACE

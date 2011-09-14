@@ -93,6 +93,8 @@ inline bool operator<(const QPostEvent &pe, int priority)
     return priority < pe.priority;
 }
 
+// This class holds the list of posted events.
+//  The list has to be kept sorted by priority
 class QPostEventList : public QList<QPostEvent>
 {
 public:
@@ -109,6 +111,25 @@ public:
     inline QPostEventList()
         : QList<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0)
     { }
+
+    void addEvent(const QPostEvent &ev) {
+        int priority = ev.priority;
+        if (isEmpty() || last().priority >= priority) {
+            // optimization: we can simply append if the last event in
+            // the queue has higher or equal priority
+            append(ev);
+        } else {
+            // insert event in descending priority order, using upper
+            // bound for a given priority (to ensure proper ordering
+            // of events with the same priority)
+            QPostEventList::iterator at = qUpperBound(begin() + insertionOffset, end(), priority);
+            insert(at, ev);
+        }
+    }
+private:
+    //hides because they do not keep that list sorted. addEvent must be used
+    using QList<QPostEvent>::append;
+    using QList<QPostEvent>::insert;
 };
 
 #ifndef QT_NO_THREAD
@@ -126,6 +147,7 @@ public:
     bool running;
     bool finished;
     bool terminated;
+    bool isInFinish; //when in QThreadPrivate::finish
 
     bool exited;
     int returnCode;
@@ -145,6 +167,7 @@ public:
 #else
     static void finish(void *);
 #endif
+
 #endif // Q_OS_UNIX
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -200,6 +223,7 @@ public:
     void deref();
 
     QThread *thread;
+    Qt::HANDLE threadId;
     bool quitNow;
     int loopLevel;
     QAbstractEventDispatcher *eventDispatcher;
@@ -207,8 +231,7 @@ public:
     QPostEventList postEventList;
     bool canWait;
     QVector<void *> tls;
-
-    QMutex mutex;
+    bool isAdopted;
 
 # ifdef Q_OS_SYMBIAN
     RThread symbian_thread_handle;

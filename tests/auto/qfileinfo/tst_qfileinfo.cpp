@@ -46,6 +46,7 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qcoreapplication.h>
+#include <qlibrary.h>
 #include <qtemporaryfile.h>
 #include <qdir.h>
 #include <qfileinfo.h>
@@ -53,9 +54,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 #ifdef Q_OS_WIN
+#define _WIN32_WINNT  0x500
 #include <qt_windows.h>
+#include <qlibrary.h>
+#include <lm.h>
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
@@ -65,9 +71,11 @@
 #endif
 #include "../network-settings.h"
 #include <private/qfileinfo_p.h>
+#include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
+# define NO_SYMLINKS
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -155,6 +163,9 @@ private slots:
 
     void isHidden_data();
     void isHidden();
+#if defined(Q_OS_MAC)
+    void isHiddenFromFinder();
+#endif
 
     void isBundle_data();
     void isBundle();
@@ -165,6 +176,8 @@ private slots:
     void refresh();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    void ntfsJunctionPointsAndSymlinks_data();
+    void ntfsJunctionPointsAndSymlinks();
     void brokenShortcut();
 #endif
 
@@ -178,6 +191,13 @@ private slots:
     void notEqualOperator() const;
 
     void detachingOperations();
+
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    void owner();
+#endif
+    void group();
+
+    void invalidState();
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -190,6 +210,8 @@ tst_QFileInfo::~tst_QFileInfo()
     QFile::remove("link.lnk");
     QFile::remove("file1");
     QFile::remove("dummyfile");
+    QFile::remove("simplefile.txt");
+    QFile::remove("longFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileName.txt");
 #ifdef Q_OS_SYMBIAN
     QFile::remove("hidden.txt");
     QFile::remove("nothidden.txt");
@@ -199,9 +221,17 @@ tst_QFileInfo::~tst_QFileInfo()
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
+    QFile::remove("link_to_tst_qfileinfo");
 #endif
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QDir().rmdir("./hidden-directory");
+    QDir().rmdir("abs_symlink");
+    QDir().rmdir("rel_symlink");
+    QDir().rmdir("junction_pwd");
+    QDir().rmdir("junction_root");
+    QDir().rmdir("mountpoint");
+    QFile::remove("abs_symlink.cpp");
+    QFile::remove("rel_symlink.cpp");
 #endif
 }
 
@@ -396,6 +426,7 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("data9") << SRCDIR "resources/file?.ext1" << false;
     QTest::newRow("data10") << "." << true;
     QTest::newRow("data11") << ". " << false;
+    QTest::newRow("empty") << "" << false;
 
     QTest::newRow("simple dir") << SRCDIR "resources" << true;
     QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
@@ -451,6 +482,11 @@ void tst_QFileInfo::absolutePath_data()
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
 #endif
+    QTest::newRow("QTBUG-19995.1") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                   << drivePrefix + "/System/Library"
+                                   << "Frameworks";
+    QTest::newRow("QTBUG-19995.2") << drivePrefix + "/System/Library/StartupItems/../Frameworks/"
+                                   << drivePrefix + "/System/Library/Frameworks" << "";
 }
 
 void tst_QFileInfo::absolutePath()
@@ -472,6 +508,7 @@ void tst_QFileInfo::absFilePath_data()
 
     QTest::newRow("relativeFile") << "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
+    QString drivePrefix;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QString curr = QDir::currentPath();
 
@@ -480,7 +517,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
 
     // Make sure drive-relative paths return correct absolute paths (task 255326)
-    QString drivePrefix = QDir::currentPath().left(2);
+    drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
@@ -490,6 +527,8 @@ void tst_QFileInfo::absFilePath_data()
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "/home/andy/tmp.txt";
 #endif
+    QTest::newRow("QTBUG-19995") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                 << drivePrefix + "/System/Library/Frameworks";
 }
 
 void tst_QFileInfo::absFilePath()
@@ -498,7 +537,11 @@ void tst_QFileInfo::absFilePath()
     QFETCH(QString, expected);
 
     QFileInfo fi(file);
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QVERIFY(QString::compare(fi.absoluteFilePath(), expected, Qt::CaseInsensitive) == 0);
+#else
     QCOMPARE(fi.absoluteFilePath(), expected);
+#endif
 }
 
 void tst_QFileInfo::canonicalPath()
@@ -584,6 +627,34 @@ void tst_QFileInfo::canonicalFilePath()
     }
 #  endif
 #endif
+
+#ifdef Q_OS_WIN
+    typedef BOOL (WINAPI *PtrCreateSymbolicLink)(LPTSTR, LPTSTR, DWORD);
+    PtrCreateSymbolicLink ptrCreateSymbolicLink =
+            (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLinkW");
+
+    if (!ptrCreateSymbolicLink) {
+        QSKIP("Symbolic links aren't supported by FS", SkipAll);
+    } else {
+        // CreateSymbolicLink can return TRUE & still fail to create the link,
+        // the error code in that case is ERROR_PRIVILEGE_NOT_HELD (1314)
+        SetLastError(0);
+        BOOL ret = ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1);
+        DWORD dwErr = GetLastError();
+        if (!ret)
+            QSKIP("Symbolic links aren't supported by FS", SkipAll);
+        QString currentPath = QDir::currentPath();
+        bool is_res_Current = QDir::setCurrent("res");
+        if (!is_res_Current && dwErr == 1314)
+            QSKIP("Not enough privilages to create Symbolic links", SkipAll);
+        QCOMPARE(is_res_Current, true);
+
+        QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
+
+        QCOMPARE(QDir::setCurrent(currentPath), true);
+        QDir::current().rmdir("res");
+    }
+#endif
 }
 
 void tst_QFileInfo::fileName_data()
@@ -660,10 +731,19 @@ void tst_QFileInfo::dir()
     QFETCH(QString, expected);
 
     QFileInfo fi(file);
-    if (absPath)
+    if (absPath) {
         QCOMPARE(fi.absolutePath(), expected);
-    else
+        QCOMPARE(fi.absoluteDir().path(), expected);
+#ifdef QT3_SUPPORT
+        QCOMPARE(fi.dir(true).path(), expected);
+#endif
+    } else {
         QCOMPARE(fi.path(), expected);
+        QCOMPARE(fi.dir().path(), expected);
+#ifdef QT3_SUPPORT
+        QCOMPARE(fi.dir(false).path(), expected);
+#endif
+    }
 }
 
 
@@ -1051,6 +1131,7 @@ void tst_QFileInfo::fileTimes_oldFile()
 
 void tst_QFileInfo::isSymLink_data()
 {
+#ifndef NO_SYMLINKS
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
@@ -1070,10 +1151,12 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+#endif
 }
 
 void tst_QFileInfo::isSymLink()
 {
+#ifndef NO_SYMLINKS
     QFETCH(QString, path);
     QFETCH(bool, isSymLink);
     QFETCH(QString, linkTarget);
@@ -1081,6 +1164,9 @@ void tst_QFileInfo::isSymLink()
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
     QCOMPARE(fi.symLinkTarget(), linkTarget);
+#else
+    QSKIP("no symbolic link support on this platform", SkipAll);
+#endif
 }
 
 void tst_QFileInfo::isHidden_data()
@@ -1156,6 +1242,27 @@ void tst_QFileInfo::isHidden()
     QCOMPARE(fi.isHidden(), isHidden);
 }
 
+#if defined(Q_OS_MAC)
+void tst_QFileInfo::isHiddenFromFinder()
+{
+    const char *filename = "test_foobar.txt";
+
+    QFile testFile(filename);
+    testFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    testFile.write(QByteArray("world"));
+    testFile.close();
+
+    struct stat buf;
+    stat(filename, &buf);
+    chflags(filename, buf.st_flags | UF_HIDDEN);
+
+    QFileInfo fi(filename);
+    QCOMPARE(fi.isHidden(), true);
+
+    testFile.remove();
+}
+#endif
+
 void tst_QFileInfo::isBundle_data()
 {
     QTest::addColumn<QString>("path");
@@ -1193,9 +1300,10 @@ void tst_QFileInfo::isLocalFs()
 
     QFileInfo info(path);
     QFileInfoPrivate *privateInfo = getPrivate(info);
-    QVERIFY(privateInfo->fileEngine);
-    QCOMPARE(bool(privateInfo->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
-                  & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
+    QCOMPARE((privateInfo->fileEngine == 0), isLocalFs);
+    if (privateInfo->fileEngine)
+       QCOMPARE(bool(privateInfo->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+                     & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 
 void tst_QFileInfo::refresh()
@@ -1247,6 +1355,131 @@ void tst_QFileInfo::refresh()
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isSymLink");
+    QTest::addColumn<QString>("linkTarget");
+    QTest::addColumn<QString>("canonicalFilePath");
+
+    QDir pwd;
+    pwd.mkdir("target");
+
+    QLibrary kernel32("kernel32");
+    typedef BOOLEAN (WINAPI *PtrCreateSymbolicLink)(LPCWSTR, LPCWSTR, DWORD);
+    PtrCreateSymbolicLink createSymbolicLinkW = 0;
+    createSymbolicLinkW = (PtrCreateSymbolicLink) kernel32.resolve("CreateSymbolicLinkW");
+    if (!createSymbolicLinkW) {
+        //we need at least one data set for the test not to fail when skipping _data function
+        QDir target("target");
+        QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
+        QSKIP("symbolic links not supported by operating system",SkipSingle);
+    }
+    {
+        //Directory symlinks
+        QDir target("target");
+        QVERIFY(target.exists());
+
+        QString absTarget = QDir::toNativeSeparators(target.absolutePath());
+        QString absSymlink = QDir::toNativeSeparators(pwd.absolutePath()).append("\\abs_symlink");
+        QString relTarget = "target";
+        QString relSymlink = "rel_symlink";
+        QString fileInTarget(absTarget);
+        fileInTarget.append("\\file");
+        QString fileInSymlink(absSymlink);
+        fileInSymlink.append("\\file");
+        QFile file(fileInTarget);
+        file.open(QIODevice::ReadWrite);
+        file.close();
+
+        DWORD err = ERROR_SUCCESS ;
+        if (!pwd.exists("abs_symlink"))
+            if (!createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x1))
+                err = GetLastError();
+        if (err == ERROR_SUCCESS && !pwd.exists(relSymlink))
+            if (!createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x1))
+                err = GetLastError();
+        if (err != ERROR_SUCCESS) {
+            wchar_t errstr[0x100];
+            DWORD count = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
+                0, err, 0, errstr, 0x100, 0);
+            QString error(QString::fromWCharArray (errstr, count));
+            qWarning() << error;
+            //we need at least one data set for the test not to assert fail when skipping _data function
+            QDir target("target");
+            QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
+            QSKIP("link not supported by FS or insufficient privilege", SkipSingle);
+        }
+        QVERIFY(file.exists());
+
+        QTest::newRow("absolute dir symlink") << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
+        QTest::newRow("relative dir symlink") << relSymlink << true << QDir::fromNativeSeparators(relTarget) << target.canonicalPath();
+        QTest::newRow("file in symlink dir") << fileInSymlink << false << "" << target.canonicalPath().append("/file");
+    }
+    {
+        //File symlinks
+        QFileInfo target(SRCDIR "tst_qfileinfo.cpp");
+        QString absTarget = QDir::toNativeSeparators(target.absoluteFilePath());
+        QString absSymlink = QDir::toNativeSeparators(pwd.absolutePath()).append("\\abs_symlink.cpp");
+        QString relTarget = QDir::toNativeSeparators(pwd.relativeFilePath(target.absoluteFilePath()));
+        QString relSymlink = "rel_symlink.cpp";
+        QVERIFY(pwd.exists("abs_symlink.cpp") || createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x0));
+        QVERIFY(pwd.exists(relSymlink) || createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x0));
+
+        QTest::newRow("absolute file symlink") << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
+        QTest::newRow("relative file symlink") << relSymlink << true << QDir::fromNativeSeparators(relTarget) << target.canonicalFilePath();
+    }
+
+    //Junctions
+    QString target = "target";
+    QString junction = "junction_pwd";
+    FileSystem::createNtfsJunction(target, junction);
+    QFileInfo targetInfo(target);
+    QTest::newRow("junction_pwd") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+
+    QFileInfo fileInJunction(targetInfo.absoluteFilePath().append("/file"));
+    QFile file(fileInJunction.absoluteFilePath());
+    file.open(QIODevice::ReadWrite);
+    file.close();
+    QVERIFY(file.exists());
+    QTest::newRow("file in junction") << fileInJunction.absoluteFilePath() << false << "" << fileInJunction.canonicalFilePath();
+
+    target = QDir::rootPath();
+    junction = "junction_root";
+    FileSystem::createNtfsJunction(target, junction);
+    targetInfo.setFile(target);
+    QTest::newRow("junction_root") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+
+    //Mountpoint
+    typedef BOOLEAN (WINAPI *PtrGetVolumeNameForVolumeMountPointW)(LPCWSTR, LPWSTR, DWORD);
+    PtrGetVolumeNameForVolumeMountPointW getVolumeNameForVolumeMountPointW = 0;
+    getVolumeNameForVolumeMountPointW = (PtrGetVolumeNameForVolumeMountPointW) kernel32.resolve("GetVolumeNameForVolumeMountPointW");
+    if(getVolumeNameForVolumeMountPointW)
+    {
+        wchar_t buffer[MAX_PATH];
+        QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
+        QVERIFY(getVolumeNameForVolumeMountPointW((wchar_t*)rootPath.utf16(), buffer, MAX_PATH));
+        QString rootVolume = QString::fromWCharArray(buffer);
+        junction = "mountpoint";
+        rootVolume.replace("\\\\?\\","\\??\\");
+        FileSystem::createNtfsJunction(rootVolume, junction);
+        QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
+    }
+}
+
+void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isSymLink);
+    QFETCH(QString, linkTarget);
+    QFETCH(QString, canonicalFilePath);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.isSymLink(), isSymLink);
+    QCOMPARE(fi.symLinkTarget(), linkTarget);
+    QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+}
+
 void tst_QFileInfo::brokenShortcut()
 {
     QString linkName("borkenlink.lnk");
@@ -1265,10 +1498,6 @@ void tst_QFileInfo::brokenShortcut()
 
 void tst_QFileInfo::isWritable()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Currently skipped on Symbian OS, but surely there is a writeable file somewhere???", SkipAll);
-#endif
-
     QFile tempfile("tempfile.txt");
     tempfile.open(QIODevice::WriteOnly);
     tempfile.write("This file is generated by the QFileInfo autotest.");
@@ -1286,7 +1515,7 @@ void tst_QFileInfo::isWritable()
     QVERIFY(fi.exists());
     QVERIFY(!fi.isWritable());
 #endif
-#ifdef Q_OS_UNIX
+#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
@@ -1297,9 +1526,6 @@ void tst_QFileInfo::isWritable()
 void tst_QFileInfo::isExecutable()
 {
 #ifdef Q_OS_SYMBIAN
-# if defined(Q_CC_NOKIAX86)
-    QSKIP("Impossible to implement reading/touching of application binaries in Symbian emulator", SkipAll);
-# endif
     QString appPath = "c:/sys/bin/tst_qfileinfo.exe";
 #else
     QString appPath = QCoreApplication::applicationDirPath();
@@ -1431,6 +1657,161 @@ void tst_QFileInfo::detachingOperations()
 
     info1.detach();
     QVERIFY(!info1.caching());
+}
+
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_WIN)
+BOOL IsUserAdmin()
+{
+    BOOL b;
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    b = AllocateAndInitializeSid(
+                &NtAuthority,
+                2,
+                SECURITY_BUILTIN_DOMAIN_RID,
+                DOMAIN_ALIAS_RID_ADMINS,
+                0, 0, 0, 0, 0, 0,
+                &AdministratorsGroup);
+    if (b) {
+        if (!CheckTokenMembership( NULL, AdministratorsGroup, &b))
+            b = FALSE;
+        FreeSid(AdministratorsGroup);
+    }
+
+    return(b);
+}
+#endif
+
+void tst_QFileInfo::owner()
+{
+    QString userName;
+#if defined(Q_OS_UNIX)
+    {
+        passwd *user = getpwuid(geteuid());
+        QVERIFY(user);
+        char *usernameBuf = user->pw_name;
+        userName = QString::fromLocal8Bit(usernameBuf);
+    }
+#endif
+#if defined(Q_OS_WIN)
+    wchar_t  usernameBuf[1024];
+    DWORD  bufSize = 1024;
+    if (GetUserNameW(usernameBuf, &bufSize)) {
+        userName = QString::fromWCharArray(usernameBuf);
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && IsUserAdmin()) {
+            // Special case : If the user is a member of Administrators group, all files
+            // created by the current user are owned by the Administrators group.
+            LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
+            DWORD dwLevel = 0;
+            DWORD dwFlags = LG_INCLUDE_INDIRECT ;
+            DWORD dwPrefMaxLen = MAX_PREFERRED_LENGTH;
+            DWORD dwEntriesRead = 0;
+            DWORD dwTotalEntries = 0;
+            NET_API_STATUS nStatus;
+            nStatus = NetUserGetLocalGroups(0, usernameBuf, dwLevel, dwFlags, (LPBYTE *) &pBuf,
+                                            dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
+            // Check if the current user is a member of Administrators group
+            if (nStatus == NERR_Success && pBuf){
+                for (int i = 0; i < dwEntriesRead; i++) {
+                    QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);
+                    if (!groupName.compare(QLatin1String("Administrators")))
+                        userName = groupName;
+                }
+            }
+            if (pBuf != NULL)
+                NetApiBufferFree(pBuf);
+        }
+    }
+    extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+    qt_ntfs_permission_lookup = 1;
+#endif
+    if (userName.isEmpty())
+        QSKIP("Can't retrieve the user name", SkipAll);
+    QString fileName("ownertest.txt");
+    QVERIFY(!QFile::exists(fileName) || QFile::remove(fileName));
+    {
+        QFile testFile(fileName);
+        QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+        QByteArray testData("testfile");
+        QVERIFY(testFile.write(testData) != -1);
+    }
+    QFileInfo fi(fileName);
+    QVERIFY(fi.exists());
+    QCOMPARE(fi.owner(), userName);
+
+    QFile::remove(fileName);
+#if defined(Q_OS_WIN)
+    qt_ntfs_permission_lookup = 0;
+#endif
+}
+#endif
+
+void tst_QFileInfo::group()
+{
+    QString expected;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    struct group *gr;
+    gid_t gid = getegid();
+    gr = getgrgid(gid);
+    expected = QString::fromLocal8Bit(gr->gr_name);
+#endif
+
+    QString fileName("ownertest.txt");
+    if (QFile::exists(fileName))
+        QFile::remove(fileName);
+    QFile testFile(fileName);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    QByteArray testData("testfile");
+    QVERIFY(testFile.write(testData) != -1);
+    testFile.close();
+    QFileInfo fi(fileName);
+    QVERIFY(fi.exists());
+
+    QCOMPARE(fi.group(), expected);
+}
+
+void tst_QFileInfo::invalidState()
+{
+    // Shouldn't crash;
+
+    {
+        QFileInfo info;
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    {
+        QFileInfo info("");
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    {
+        QFileInfo info("file-doesn't-really-exist.txt");
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QFileInfo)

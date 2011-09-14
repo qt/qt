@@ -807,7 +807,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                         continue;
                     QByteArray frameworkCandidate = include.left(slashPos);
                     frameworkCandidate.append(".framework/Headers/");
-                    fi.setFile(QString::fromLocal8Bit(p.path + '/' + frameworkCandidate), QString::fromLocal8Bit(include.mid(slashPos + 1)));
+                    fi.setFile(QString::fromLocal8Bit(QByteArray(p.path + '/' + frameworkCandidate)), QString::fromLocal8Bit(include.mid(slashPos + 1)));
                 } else {
                     fi.setFile(QString::fromLocal8Bit(p.path), QString::fromLocal8Bit(include));
                 }

@@ -118,7 +118,7 @@ void tst_linguist::fetchtr()
     //qDebug() << "resname:" << resname;
     ////qDebug() << "resfile:" << resfile;
     //qDebug() << "resline:" << resline;
-    //qDebug() << "ressource:" << ressrc;
+    //qDebug() << "resource:" << ressrc;
 
     QCOMPARE(src + ":    " + resname, src + ":    " + name);
     QCOMPARE(src + ":    " + resline, src + ":    " + line);

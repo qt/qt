@@ -278,7 +278,7 @@ QVariant Context2D::strokeStyle() const
 
 void Context2D::setStrokeStyle(const QVariant &style)
 {
-    if (qVariantCanConvert<CanvasGradient>(style)) {
+    if (style.canConvert<CanvasGradient>()) {
         CanvasGradient cg = qvariant_cast<CanvasGradient>(style);
         m_state.strokeStyle = cg.value;
     } else {
@@ -296,7 +296,7 @@ QVariant Context2D::fillStyle() const
 //! [3]
 void Context2D::setFillStyle(const QVariant &style)
 {
-    if (qVariantCanConvert<CanvasGradient>(style)) {
+    if (style.canConvert<CanvasGradient>()) {
         CanvasGradient cg = qvariant_cast<CanvasGradient>(style);
         m_state.fillStyle = cg.value;
     } else {

@@ -52,10 +52,10 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-class OutputEdit : public QTextEdit
+class QScriptErrorLogWidgetOutputEdit : public QTextEdit
 {
 public:
-    OutputEdit(QWidget *parent = 0)
+    QScriptErrorLogWidgetOutputEdit(QWidget *parent = 0)
         : QTextEdit(parent)
     {
         setReadOnly(true);
@@ -80,7 +80,7 @@ public:
     QScriptErrorLogWidgetPrivate();
     ~QScriptErrorLogWidgetPrivate();
 
-    OutputEdit *outputEdit;
+    QScriptErrorLogWidgetOutputEdit *outputEdit;
 };
 
 QScriptErrorLogWidgetPrivate::QScriptErrorLogWidgetPrivate()
@@ -95,7 +95,7 @@ QScriptErrorLogWidget::QScriptErrorLogWidget(QWidget *parent)
     : QScriptErrorLogWidgetInterface(*new QScriptErrorLogWidgetPrivate, parent, 0)
 {
     Q_D(QScriptErrorLogWidget);
-    d->outputEdit = new OutputEdit();
+    d->outputEdit = new QScriptErrorLogWidgetOutputEdit();
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setMargin(0);
     vbox->setSpacing(0);

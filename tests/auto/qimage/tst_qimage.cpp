@@ -59,6 +59,7 @@
 #endif
 
 Q_DECLARE_METATYPE(QImage::Format)
+Q_DECLARE_METATYPE(Qt::GlobalColor)
 
 class tst_QImage : public QObject
 {
@@ -68,6 +69,7 @@ public:
     tst_QImage();
 
 private slots:
+    void swap();
     void create();
     void createInvalidXPM();
     void createFromUChar();
@@ -140,6 +142,11 @@ private slots:
 
     void compareIndexed();
 
+    void fillColor_data();
+    void fillColor();
+
+    void fillColorWithAlpha();
+
     void rgbSwapped_data();
     void rgbSwapped();
 
@@ -150,6 +157,20 @@ private slots:
 tst_QImage::tst_QImage()
 
 {
+}
+
+void tst_QImage::swap()
+{
+    QImage i1( 16, 16, QImage::Format_RGB32 ), i2( 32, 32, QImage::Format_RGB32 );
+    i1.fill( Qt::white );
+    i2.fill( Qt::black );
+    const qint64 i1k = i1.cacheKey();
+    const qint64 i2k = i2.cacheKey();
+    i1.swap(i2);
+    QCOMPARE(i1.cacheKey(), i2k);
+    QCOMPARE(i1.size(), QSize(32,32));
+    QCOMPARE(i2.cacheKey(), i1k);
+    QCOMPARE(i2.size(), QSize(16,16));
 }
 
 // Test if QImage (or any functions called from QImage) throws an
@@ -1824,6 +1845,112 @@ void tst_QImage::compareIndexed()
     }
 
     QCOMPARE(img, imgInverted);
+}
+
+void tst_QImage::fillColor_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<Qt::GlobalColor>("color");
+    QTest::addColumn<uint>("pixelValue");
+
+    QTest::newRow("Mono, color0") << QImage::Format_Mono << Qt::color0 << 0u;
+    QTest::newRow("Mono, color1") << QImage::Format_Mono << Qt::color1 << 1u;
+
+    QTest::newRow("MonoLSB, color0") << QImage::Format_MonoLSB << Qt::color0 << 0u;
+    QTest::newRow("MonoLSB, color1") << QImage::Format_MonoLSB << Qt::color1 << 1u;
+
+    const char *names[] = {
+        "Indexed8",
+        "RGB32",
+        "ARGB32",
+        "ARGB32pm",
+        "RGB16",
+        "ARGB8565pm",
+        "RGB666",
+        "ARGB6666pm",
+        "RGB555",
+        "ARGB8555pm",
+        "RGB888",
+        "RGB444",
+        "ARGB4444pm",
+        0
+    };
+
+    QImage::Format formats[] = {
+        QImage::Format_Indexed8,
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_ARGB8565_Premultiplied,
+        QImage::Format_RGB666,
+        QImage::Format_ARGB6666_Premultiplied,
+        QImage::Format_RGB555,
+        QImage::Format_ARGB8555_Premultiplied,
+        QImage::Format_RGB888,
+        QImage::Format_RGB444,
+        QImage::Format_ARGB4444_Premultiplied
+    };
+
+    for (int i=0; names[i] != 0; ++i) {
+        QByteArray name;
+        name.append(names[i]).append(", ");
+
+        QTest::newRow(QByteArray(name).append("black").constData()) << formats[i] << Qt::black << 0xff000000;
+        QTest::newRow(QByteArray(name).append("white").constData()) << formats[i] << Qt::white << 0xffffffff;
+        QTest::newRow(QByteArray(name).append("red").constData())   << formats[i] << Qt::red   << 0xffff0000;
+        QTest::newRow(QByteArray(name).append("green").constData()) << formats[i] << Qt::green << 0xff00ff00;
+        QTest::newRow(QByteArray(name).append("blue").constData())  << formats[i] << Qt::blue  << 0xff0000ff;
+    }
+
+    QTest::newRow("RGB16, transparent") << QImage::Format_RGB16 << Qt::transparent << 0xff000000;
+    QTest::newRow("RGB32, transparent") << QImage::Format_RGB32 << Qt::transparent << 0xff000000;
+    QTest::newRow("ARGB32, transparent") << QImage::Format_ARGB32 << Qt::transparent << 0x00000000u;
+    QTest::newRow("ARGB32pm, transparent") << QImage::Format_ARGB32_Premultiplied << Qt::transparent << 0x00000000u;
+}
+
+void tst_QImage::fillColor()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(Qt::GlobalColor, color);
+    QFETCH(uint, pixelValue);
+
+    QImage image(1, 1, format);
+
+    if (image.depth() == 8) {
+        QVector<QRgb> table;
+        table << 0xff000000;
+        table << 0xffffffff;
+        table << 0xffff0000;
+        table << 0xff00ff00;
+        table << 0xff0000ff;
+        image.setColorTable(table);
+    }
+
+    image.fill(color);
+    if (image.depth() == 1) {
+        QCOMPARE(image.pixelIndex(0, 0), (int) pixelValue);
+    } else {
+        QCOMPARE(image.pixel(0, 0), pixelValue);
+    }
+
+    image.fill(QColor(color));
+    if (image.depth() == 1) {
+        QCOMPARE(image.pixelIndex(0, 0), (int) pixelValue);
+    } else {
+        QCOMPARE(image.pixel(0, 0), pixelValue);
+    }
+}
+
+void tst_QImage::fillColorWithAlpha()
+{
+    QImage argb32(1, 1, QImage::Format_ARGB32);
+    argb32.fill(QColor(255, 0, 0, 127));
+    QCOMPARE(argb32.pixel(0, 0), qRgba(255, 0, 0, 127));
+
+    QImage argb32pm(1, 1, QImage::Format_ARGB32_Premultiplied);
+    argb32pm.fill(QColor(255, 0, 0, 127));
+    QCOMPARE(argb32pm.pixel(0, 0), 0x7f7f0000u);
 }
 
 void tst_QImage::rgbSwapped_data()

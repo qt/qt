@@ -1,5 +1,6 @@
 QT          += xmlpatterns
-FORMS       += forms/querywidget.ui
+FORMS       += forms/querywidget.ui \
+               forms/querywidget_mobiles.ui
 HEADERS     = querymainwindow.h ../shared/xmlsyntaxhighlighter.h
 RESOURCES   = recipes.qrc
 SOURCES     = main.cpp querymainwindow.cpp ../shared/xmlsyntaxhighlighter.cpp
@@ -14,3 +15,5 @@ symbian {
     TARGET.UID3 = 0xA000D7C5
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

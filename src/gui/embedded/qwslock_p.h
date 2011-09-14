@@ -55,17 +55,20 @@
 
 #include <qglobal.h>
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_QWS_MULTIPROCESS
+
+#ifdef QT_POSIX_IPC
+#  include <semaphore.h>
+#endif
+
+QT_BEGIN_NAMESPACE
 
 class QWSLock
 {
 public:
     enum LockType { BackingStore, Communication, RegionEvent };
 
-    QWSLock();
-    QWSLock(int lockId);
+    QWSLock(int lockId = -1);
     ~QWSLock();
 
     bool lock(LockType type, int timeout = -1);
@@ -75,11 +78,20 @@ public:
     int id() const { return semId; }
 
 private:
+    bool up(unsigned short semNum);
+    bool down(unsigned short semNum, int timeout);
+    int getValue(unsigned short semNum) const;
+
     int semId;
     int lockCount[2];
+#ifdef QT_POSIX_IPC
+    sem_t *sems[3];
+    bool owned;
+#endif
 };
 
-
 QT_END_NAMESPACE
+
 #endif // QT_NO_QWS_MULTIPROCESS
+
 #endif // QWSLOCK_P_H

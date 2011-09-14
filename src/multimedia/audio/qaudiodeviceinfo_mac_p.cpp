@@ -133,7 +133,7 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
                 }
             }
 
-            delete streams;
+            delete[] streams;
         }
     }
 
@@ -207,7 +207,7 @@ QList<int> QAudioDeviceInfoInternal::frequencyList()
                     rc << vr[i].mMaximum;
             }
 
-            delete vr;
+            delete[] vr;
         }
     }
 
@@ -351,7 +351,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
                 }
             }
 
-            delete audioDevices;
+            delete[] audioDevices;
         }
     }
 

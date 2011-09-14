@@ -55,10 +55,14 @@
 
 #include "private/qpixmapdata_p.h"
 #include "private/qwindowsurface_p.h"
+#include "private/qpaintengine_blitter_p.h"
+
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
 class QPixmapFilter;
+class QBlittable;
 class QGraphicsSystemEx;
 
 class Q_GUI_EXPORT QGraphicsSystem
@@ -68,7 +72,7 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData *origin);
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
 
-    virtual ~QGraphicsSystem() = 0;
+    virtual ~QGraphicsSystem();
 
     //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
     //    to have a graphics system.

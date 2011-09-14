@@ -83,7 +83,7 @@ bool MetaInfo::parse(const QByteArray &data)
     if (!dict.contains("info"))
         return false;
 
-    QMap<QByteArray, QVariant> info = qVariantValue<Dictionary>(dict.value("info"));
+    QMap<QByteArray, QVariant> info = qvariant_cast<Dictionary>(dict.value("info"));
 
     if (info.contains("files")) {
         metaInfoFileForm = MultiFileForm;
@@ -91,7 +91,7 @@ bool MetaInfo::parse(const QByteArray &data)
         QList<QVariant> files = info.value("files").toList();
 
         for (int i = 0; i < files.size(); ++i) {
-            QMap<QByteArray, QVariant> file = qVariantValue<Dictionary>(files.at(i));
+            QMap<QByteArray, QVariant> file = qvariant_cast<Dictionary>(files.at(i));
             QList<QVariant> pathElements = file.value("path").toList();
             QByteArray path;
             foreach (QVariant p, pathElements) {

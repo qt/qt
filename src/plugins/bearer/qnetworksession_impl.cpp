@@ -45,9 +45,10 @@
 #include <QtNetwork/qnetworksession.h>
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
 
-#include <QtCore/qstringlist.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qstringlist.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
@@ -71,10 +72,11 @@ class QNetworkSessionManagerPrivate : public QObject
     Q_OBJECT
 
 public:
-    QNetworkSessionManagerPrivate(QObject *parent = 0);
-    ~QNetworkSessionManagerPrivate();
+    QNetworkSessionManagerPrivate(QObject *parent = 0) : QObject(parent) {}
+    ~QNetworkSessionManagerPrivate() {}
 
-    void forceSessionClose(const QNetworkConfiguration &config);
+    inline void forceSessionClose(const QNetworkConfiguration &config)
+    { emit forcedSessionClose(config); }
 
 Q_SIGNALS:
     void forcedSessionClose(const QNetworkConfiguration &config);
@@ -83,20 +85,6 @@ Q_SIGNALS:
 #include "qnetworksession_impl.moc"
 
 Q_GLOBAL_STATIC(QNetworkSessionManagerPrivate, sessionManager);
-
-QNetworkSessionManagerPrivate::QNetworkSessionManagerPrivate(QObject *parent)
-:   QObject(parent)
-{
-}
-
-QNetworkSessionManagerPrivate::~QNetworkSessionManagerPrivate()
-{
-}
-
-void QNetworkSessionManagerPrivate::forceSessionClose(const QNetworkConfiguration &config)
-{
-    emit forcedSessionClose(config);
-}
 
 void QNetworkSessionPrivateImpl::syncStateWithInterface()
 {
@@ -108,8 +96,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
-    qRegisterMetaType<QBearerEngineImpl::ConnectionError>
-        ("QBearerEngineImpl::ConnectionError");
+    qRegisterMetaType<QBearerEngineImpl::ConnectionError>("QBearerEngineImpl::ConnectionError");
 
     switch (publicConfig.type()) {
     case QNetworkConfiguration::InternetAccessPoint:
@@ -145,9 +132,8 @@ void QNetworkSessionPrivateImpl::open()
         lastError = QNetworkSession::OperationNotSupportedError;
         emit QNetworkSessionPrivate::error(lastError);
     } else if (!isOpen) {
-        if ((activeConfig.state() & QNetworkConfiguration::Discovered) !=
-            QNetworkConfiguration::Discovered) {
-            lastError =QNetworkSession::InvalidConfigurationError;
+        if ((activeConfig.state() & QNetworkConfiguration::Discovered) != QNetworkConfiguration::Discovered) {
+            lastError = QNetworkSession::InvalidConfigurationError;
             state = QNetworkSession::Invalid;
             emit stateChanged(state);
             emit QNetworkSessionPrivate::error(lastError);
@@ -221,11 +207,10 @@ void QNetworkSessionPrivateImpl::reject()
 #ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
-    if (!publicConfig.isValid() || !engine || state != QNetworkSession::Connected)
+    if (!engine || state != QNetworkSession::Connected || !publicConfig.isValid())
         return QNetworkInterface();
 
     QString interface = engine->getInterfaceFromId(activeConfig.identifier());
-
     if (interface.isEmpty())
         return QNetworkInterface();
     return QNetworkInterface::interfaceFromName(interface);
@@ -237,10 +222,7 @@ QVariant QNetworkSessionPrivateImpl::sessionProperty(const QString &key) const
     if (key == QLatin1String("AutoCloseSessionTimeout")) {
         if (engine && engine->requiresPolling() &&
             !(engine->capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces)) {
-            if (sessionTimeout >= 0)
-                return sessionTimeout * 10000;
-            else
-                return -1;
+            return sessionTimeout >= 0 ? sessionTimeout * 10000 : -1;
         }
     }
 
@@ -278,7 +260,8 @@ QString QNetworkSessionPrivateImpl::errorString() const
         return tr("The specified configuration cannot be used.");
     case QNetworkSession::RoamingError:
         return tr("Roaming was aborted or is not possible.");
-
+    default:
+        break;
     }
 
     return QString();
@@ -293,24 +276,21 @@ quint64 QNetworkSessionPrivateImpl::bytesWritten() const
 {
     if (engine && state == QNetworkSession::Connected)
         return engine->bytesWritten(activeConfig.identifier());
-    else
-        return Q_UINT64_C(0);
+    return Q_UINT64_C(0);
 }
 
 quint64 QNetworkSessionPrivateImpl::bytesReceived() const
 {
     if (engine && state == QNetworkSession::Connected)
         return engine->bytesReceived(activeConfig.identifier());
-    else
-        return Q_UINT64_C(0);
+    return Q_UINT64_C(0);
 }
 
 quint64 QNetworkSessionPrivateImpl::activeTime() const
 {
     if (state == QNetworkSession::Connected && startTime != Q_UINT64_C(0))
         return QDateTime::currentDateTime().toTime_t() - startTime;
-    else
-        return Q_UINT64_C(0);
+    return Q_UINT64_C(0);
 }
 
 void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
@@ -323,17 +303,15 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 
         if (activeConfig != config) {
             if (engine) {
-                disconnect(engine,
-                           SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
-                           this,
-                           SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)));
+                disconnect(engine, SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
+                           this, SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)));
             }
 
             activeConfig = config;
             engine = getEngineFromId(activeConfig.identifier());
+
             if (engine) {
-                connect(engine,
-                        SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
+                connect(engine, SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
                         this, SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)),
                         Qt::QueuedConnection);
             }
@@ -362,7 +340,6 @@ void QNetworkSessionPrivateImpl::updateStateFromActiveConfig()
         return;
 
     QNetworkSession::State oldState = state;
-
     state = engine->sessionStateForId(activeConfig.identifier());
 
     bool oldActive = isOpen;
@@ -410,8 +387,7 @@ void QNetworkSessionPrivateImpl::forcedSessionClose(const QNetworkConfiguration 
     }
 }
 
-void QNetworkSessionPrivateImpl::connectionError(const QString &id,
-                                                 QBearerEngineImpl::ConnectionError error)
+void QNetworkSessionPrivateImpl::connectionError(const QString &id, QBearerEngineImpl::ConnectionError error)
 {
     if (activeConfig.identifier() == id) {
         networkConfigurationsChanged();
@@ -443,4 +419,3 @@ void QNetworkSessionPrivateImpl::decrementTimeout()
 QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
-

@@ -58,6 +58,7 @@ public:
     tst_QNetworkAccessManager_And_QProgressDialog();
 private slots:
     void downloadCheck();
+    void downloadCheck_data();
 };
 
 class DownloadCheckWidget : public QWidget
@@ -72,9 +73,14 @@ public:
         QMetaObject::invokeMethod(this, "go", Qt::QueuedConnection);
     }
     bool lateReadyRead;
+    bool zeroCopy;
 public slots:
     void go()
     {
+        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile"));
+        if (zeroCopy)
+            request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 10*1024*1024);
+                
         QNetworkReply *reply = netmanager.get(
                 QNetworkRequest(
                 QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile")
@@ -106,20 +112,30 @@ public slots:
         QTestEventLoop::instance().exitLoop();
     }
 
-
 private:
     QProgressDialog progressDlg;
     QNetworkAccessManager netmanager;
 };
+
 
 tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QProgressDialog()
 {
     Q_SET_DEFAULT_IAP
 }
 
+void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck_data()
+{
+    QTest::addColumn<bool>("useZeroCopy");
+    QTest::newRow("with-zeroCopy") << true;
+    QTest::newRow("without-zeroCopy") << false;
+}
+
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck()
 {
+    QFETCH(bool, useZeroCopy);
+
     DownloadCheckWidget widget;
+    widget.zeroCopy = useZeroCopy;
     widget.show();
     // run and exit on finished()
     QTestEventLoop::instance().enterLoop(10);

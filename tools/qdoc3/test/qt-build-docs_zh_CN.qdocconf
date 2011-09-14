@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://qt.nokia.com/doc/zh_CN/4.7
+url                     = http://qt.nokia.com/doc/zh_CN/4.8
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
@@ -17,15 +17,15 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.474
+qhp.Qt.namespace           = com.trolltech.qt.480
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.title               = 教程
 qhp.Qt.indexTitle          = 教程
 qhp.Qt.selectors           = fake:example
 
-qhp.Qt.filterAttributes    = qt 4.7.4 qtrefdoc zh_CN
-qhp.Qt.customFilters.Qt.name = Qt 4.7.4
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.4
+qhp.Qt.filterAttributes    = qt 4.8.0 qtrefdoc zh_CN
+qhp.Qt.customFilters.Qt.name = Qt 4.8.0
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.0
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML

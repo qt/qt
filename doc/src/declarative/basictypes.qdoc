@@ -567,7 +567,7 @@
 
     An enumeration type consists of a set of named values.
 
-    An enumeration value may be specifed as either a string:
+    An enumeration value may be specified as either a string:
     \qml
     Text { horizontalAlignment: "AlignRight" }
     \endqml

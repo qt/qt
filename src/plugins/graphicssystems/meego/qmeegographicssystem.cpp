@@ -225,7 +225,7 @@ QPixmapData *QMeeGoGraphicsSystem::createPixmapData(QPixmapData *origin)
     // and if the pixmap pointer matches our mapping...
     // create a shared image instead with the given handle.
 
-    if (origin->classId() == QPixmapData::RasterClass) {
+    if (!origin->isNull() && origin->classId() == QPixmapData::RasterClass) {
         QRasterPixmapData *rasterClass = static_cast <QRasterPixmapData *> (origin);
         void *rawResource = static_cast <void *> (rasterClass->buffer()->data_ptr()->data);
 

@@ -77,7 +77,8 @@ public:
           samples(0),
           attachment(QGLFramebufferObject::NoAttachment),
           target(GL_TEXTURE_2D),
-          internal_format(DEFAULT_FORMAT)
+          internal_format(DEFAULT_FORMAT),
+          mipmap(false)
     {
     }
     QGLFramebufferObjectFormatPrivate
@@ -86,7 +87,8 @@ public:
           samples(other->samples),
           attachment(other->attachment),
           target(other->target),
-          internal_format(other->internal_format)
+          internal_format(other->internal_format),
+          mipmap(other->mipmap)
     {
     }
     bool equals(const QGLFramebufferObjectFormatPrivate *other)
@@ -94,7 +96,8 @@ public:
         return samples == other->samples &&
                attachment == other->attachment &&
                target == other->target &&
-               internal_format == other->internal_format;
+               internal_format == other->internal_format &&
+               mipmap == other->mipmap;
     }
 
     QAtomicInt ref;
@@ -102,6 +105,7 @@ public:
     QGLFramebufferObject::Attachment attachment;
     GLenum target;
     GLenum internal_format;
+    uint mipmap : 1;
 };
 
 class QGLFBOGLPaintDevice : public QGLPaintDevice
@@ -132,7 +136,8 @@ public:
 
     void init(QGLFramebufferObject *q, const QSize& sz,
               QGLFramebufferObject::Attachment attachment,
-              GLenum internal_format, GLenum texture_target, GLint samples = 0);
+              GLenum internal_format, GLenum texture_target,
+              GLint samples = 0, bool mipmap = false);
     bool checkFramebufferStatus() const;
     QGLSharedResourceGuard fbo_guard;
     GLuint texture;

@@ -46,6 +46,10 @@
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
 
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -174,8 +178,12 @@ public:
         : url(url)
     {
     }
+    ~QFileOpenEventPrivate();
 
     QUrl url;
+#ifdef Q_OS_SYMBIAN
+    RFile file;
+#endif
 };
 
 QT_END_NAMESPACE

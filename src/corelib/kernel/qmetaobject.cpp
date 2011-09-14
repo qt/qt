@@ -218,12 +218,20 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 */
 int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 {
-    if (priv(d.data)->revision < 2)
-        return 0;
-    const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(d.extradata);
-    if (!extra || !extra->static_metacall)
-        return 0;
-    return extra->static_metacall(cl, idx, argv);
+    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(d.extradata);
+    if (priv(d.data)->revision >= 6) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        extra->static_metacall(0, cl, idx, argv);
+        return -1;
+    } else if (priv(d.data)->revision >= 2) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        typedef int (*OldMetacall)(QMetaObject::Call, int, void **);
+        OldMetacall o = reinterpret_cast<OldMetacall>(extra->static_metacall);
+        return o(cl, idx, argv);
+    }
+    return 0;
 }
 
 /*!
@@ -266,7 +274,25 @@ QObject *QMetaObject::cast(QObject *obj) const
         const QMetaObject *m = obj->metaObject();
         do {
             if (m == this)
-                return const_cast<QObject*>(obj);
+                return obj;
+        } while ((m = m->d.superdata));
+    }
+    return 0;
+}
+
+/*!
+    \internal
+
+    Returns \a obj if object \a obj inherits from this
+    meta-object; otherwise returns 0.
+*/
+const QObject *QMetaObject::cast(const QObject *obj) const
+{
+    if (obj) {
+        const QMetaObject *m = obj->metaObject();
+        do {
+            if (m == this)
+                return obj;
         } while ((m = m->d.superdata));
     }
     return 0;
@@ -406,9 +432,10 @@ int QMetaObject::constructorCount() const
 }
 
 /*!
-    Returns the number of methods in this class, including the number of
-    properties provided by each base class. These include signals and slots
-    as well as normal member functions.
+    Returns the number of methods known to the meta-object system in this class,
+    including the number of properties provided by each base class. These
+    include signals and slots as well as member functions declared with the
+    Q_INVOKABLE macro.
 
     Use code like the following to obtain a QStringList containing the methods
     specific to a given class:
@@ -621,20 +648,21 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
 */
 int QMetaObject::indexOfSlot(const char *slot) const
 {
-    int i = QMetaObjectPrivate::indexOfSlot(this, slot, false);
+    const QMetaObject *m = this;
+    int i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, false);
     if (i < 0)
-        i = QMetaObjectPrivate::indexOfSlot(this, slot, true);
-    return i;
-}
-
-int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m,
-                                    const char *slot,
-                                    bool normalizeStringData)
-{
-    int i = indexOfMethodRelative<MethodSlot>(&m, slot, normalizeStringData);
+        i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, true);
     if (i >= 0)
         i += m->methodOffset();
     return i;
+}
+
+// same as indexOfSignalRelative but for slots.
+int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
+                                    const char *slot,
+                                    bool normalizeStringData)
+{
+    return indexOfMethodRelative<MethodSlot>(m, slot, normalizeStringData);
 }
 
 static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)
@@ -1218,6 +1246,10 @@ bool QMetaObject::invokeMethod(QObject *obj,
     tag(), and an access() specifier. You can use invoke() to invoke
     the method on an arbitrary QObject.
 
+    A method will only be registered with the meta-object system if it
+    is a slot, a signal, or declared with the Q_INVOKABLE macro.
+    Constructors can also be registered with Q_INVOKABLE.
+
     \sa QMetaObject, QMetaEnum, QMetaProperty, {Qt's Property System}
 */
 
@@ -1577,6 +1609,12 @@ bool QMetaMethod::invoke(QObject *object,
                          : Qt::QueuedConnection;
     }
 
+#ifdef QT_NO_THREAD
+    if (connectionType == Qt::BlockingQueuedConnection) {
+        connectionType = Qt::DirectConnection;
+    }
+#endif
+
     // invoke!
     void *param[] = {
         returnValue.data(),
@@ -1592,10 +1630,20 @@ bool QMetaMethod::invoke(QObject *object,
         val9.data()
     };
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
-    int methodIndex = ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
+    int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
+    int idx_offset =  mobj->methodOffset();
+    QObjectPrivate::StaticMetaCallFunction callFunction =
+        (QMetaObjectPrivate::get(mobj)->revision >= 6 && mobj->d.extradata)
+        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
+
     if (connectionType == Qt::DirectConnection) {
-        return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
-    } else {
+        if (callFunction) {
+            callFunction(object, QMetaObject::InvokeMetaMethod, idx_relative, param);
+            return true;
+        } else {
+            return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, idx_relative + idx_offset, param) < 0;
+        }
+    } else if (connectionType == Qt::QueuedConnection) {
         if (returnValue.data()) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
                      "queued connections");
@@ -1628,40 +1676,21 @@ bool QMetaMethod::invoke(QObject *object,
             }
         }
 
-        if (connectionType == Qt::QueuedConnection) {
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args));
-        } else {
-            if (currentThread == objectThread) {
-                qWarning("QMetaMethod::invoke: Dead lock detected in "
-                         "BlockingQueuedConnection: Receiver is %s(%p)",
-                         mobj->className(), object);
-            }
-
-            // blocking queued connection
-#ifdef QT_NO_THREAD
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args));
-#else
-            QSemaphore semaphore;
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args,
-                                                                   &semaphore));
-            semaphore.acquire();
-#endif // QT_NO_THREAD
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
+                                                        0, -1, nargs, types, args));
+    } else { // blocking queued connection
+#ifndef QT_NO_THREAD
+        if (currentThread == objectThread) {
+            qWarning("QMetaMethod::invoke: Dead lock detected in "
+                        "BlockingQueuedConnection: Receiver is %s(%p)",
+                        mobj->className(), object);
         }
+
+        QSemaphore semaphore;
+        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
+                                                        0, -1, 0, 0, param, &semaphore));
+        semaphore.acquire();
+#endif // QT_NO_THREAD
     }
     return true;
 }

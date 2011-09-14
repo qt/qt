@@ -56,6 +56,10 @@
 #include <qglobal.h>
 #include "private/qwindowsurface_p.h"
 
+#ifdef QT_MAC_USE_COCOA
+# include <private/qt_cocoa_helpers_mac_p.h>
+#endif // QT_MAC_USE_COCOA
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -97,7 +101,7 @@ class QNativeImage;
 class Q_GUI_EXPORT QRasterWindowSurface : public QWindowSurface
 {
 public:
-    QRasterWindowSurface(QWidget *widget);
+    QRasterWindowSurface(QWidget *widget, bool setDefaultSurface = true);
     ~QRasterWindowSurface();
 
     QPaintDevice *paintDevice();
@@ -105,8 +109,19 @@ public:
     void beginPaint(const QRegion &rgn);
     void setGeometry(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
+    WindowSurfaceFeatures features() const;
+
+#ifdef QT_MAC_USE_COCOA
+    CGContextRef imageContext();
+
+    bool needsFlush;
+    QRegion regionToFlush;
+#endif // QT_MAC_USE_COCOA
 
 private:
+#if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
+    void syncX();
+#endif
     void prepareBuffer(QImage::Format format, QWidget *widget);
     Q_DECLARE_PRIVATE(QRasterWindowSurface)
     QScopedPointer<QRasterWindowSurfacePrivate> d_ptr;

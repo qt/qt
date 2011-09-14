@@ -231,7 +231,7 @@ void ConnectDialog::populateSlotList(const QString &signal)
 
     QFont font = QApplication::font();
     font.setItalic(true);
-    QVariant variantFont = qVariantFromValue(font);
+    QVariant variantFont = QVariant::fromValue(font);
 
     QListWidgetItem *curr = 0;
     QMap<QString, QString>::ConstIterator itMember = memberToClassName.constBegin();
@@ -271,7 +271,7 @@ void ConnectDialog::populateSignalList()
 
     QFont font = QApplication::font();
     font.setItalic(true);
-    QVariant variantFont = qVariantFromValue(font);
+    QVariant variantFont = QVariant::fromValue(font);
 
     QListWidgetItem *curr = 0;
     QMap<QString, QString>::ConstIterator itMember = memberToClassName.constBegin();

@@ -83,7 +83,6 @@ protected:
     virtual void processRcFileVar();
     virtual void processFileTagsVar();
     virtual QString getLibTarget();
-    virtual QString getPdbTarget();
 };
 
 inline Win32MakefileGenerator::~Win32MakefileGenerator()

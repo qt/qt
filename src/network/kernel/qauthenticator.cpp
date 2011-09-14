@@ -223,7 +223,7 @@ void QAuthenticator::setUser(const QString &user)
         } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
             //domain name is present
             d->realm.clear();
-            d->userDomain = user.left(separatorPosn);
+            d->userDomain = user.mid(separatorPosn + 1);
             d->extractedUser = user.left(separatorPosn);
             d->user = user;
         } else {
@@ -395,7 +395,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     case Basic:
         if(realm.isEmpty())
             this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
-        if (user.isEmpty())
+        if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
     case Ntlm:
@@ -406,7 +406,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
-        if (user.isEmpty())
+        if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
     }

@@ -246,6 +246,7 @@ private slots:
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
     void QTBUG_7438_cursor();
+    void hoverLeave();
     void QTBUG_16063_microFocusRect();
 
 public slots:
@@ -2966,7 +2967,7 @@ protected:
 void tst_QGraphicsView::task186827_deleteReplayedItem()
 {
     // make sure the mouse is not over the window, causing spontaneous mouse moves
-    QCursor::setPos(0, 0);
+    QCursor::setPos(1, 1);
 
     QGraphicsScene scene;
     scene.addRect(0, 0, 50, 50);
@@ -3053,7 +3054,7 @@ void tst_QGraphicsView::task210599_unsetDragWhileDragging()
         QApplication::sendEvent(view.viewport(), &move);
     }
 
-    // Check that no draggin has occured...
+    // Check that no draggin has occurred...
     QCOMPARE(basePos, view.mapFromScene(0, 0));
 }
 
@@ -3356,6 +3357,10 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+#ifdef QT_MAC_USE_COCOA
+    if (QApplicationPrivate::graphicsSystem() == 0)
+        QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
+#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4457,6 +4462,60 @@ void tst_QGraphicsView::QTBUG_7438_cursor()
     sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 #endif
+}
+
+class GraphicsItemWithHover : public QGraphicsRectItem
+{
+public:
+    GraphicsItemWithHover()
+        : receivedEnterEvent(false), receivedLeaveEvent(false),
+          enterWidget(0), leaveWidget(0)
+    {
+        setRect(0, 0, 100, 100);
+        setAcceptHoverEvents(true);
+    }
+
+    bool sceneEvent(QEvent *event)
+    {
+        if (event->type() == QEvent::GraphicsSceneHoverEnter) {
+            receivedEnterEvent = true;
+            enterWidget = static_cast<QGraphicsSceneHoverEvent *>(event)->widget();
+        } else if (event->type() == QEvent::GraphicsSceneHoverLeave) {
+            receivedLeaveEvent = true;
+            leaveWidget = static_cast<QGraphicsSceneHoverEvent *>(event)->widget();
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+
+    bool receivedEnterEvent;
+    bool receivedLeaveEvent;
+    QWidget *enterWidget;
+    QWidget *leaveWidget;
+};
+
+void tst_QGraphicsView::hoverLeave()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    GraphicsItemWithHover *item = new GraphicsItemWithHover;
+    scene.addItem(item);
+
+    // move the cursor out of the way
+    QCursor::setPos(1,1);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
+    QCursor::setPos(pos);
+    QTest::qWait(200);
+    QVERIFY(item->receivedEnterEvent);
+    QCOMPARE(item->enterWidget, view.viewport());
+
+    QCursor::setPos(1,1);
+    QTest::qWait(200);
+    QVERIFY(item->receivedLeaveEvent);
+    QCOMPARE(item->leaveWidget, view.viewport());
 }
 
 class IMItem : public QGraphicsRectItem

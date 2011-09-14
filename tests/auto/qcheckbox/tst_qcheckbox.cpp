@@ -92,6 +92,7 @@ private slots:
     void setAccel();
     void group();
     void foregroundRole();
+    void minimumSizeHint();
 
 protected slots:
     void onClicked();
@@ -423,6 +424,12 @@ void tst_QCheckBox::group()
 void tst_QCheckBox::foregroundRole()
 {
     QVERIFY(testWidget->foregroundRole() == QPalette::WindowText);
+}
+
+void tst_QCheckBox::minimumSizeHint()
+{
+    QCheckBox box(tr("CheckBox's sizeHint is the same as it's minimumSizeHint"));
+    QCOMPARE(box.sizeHint(), box.minimumSizeHint());
 }
 
 QTEST_MAIN(tst_QCheckBox)

@@ -105,6 +105,7 @@ private slots:
     //at the end because it mess with the style.
     void widgetStyle();
     void appStyle();
+    void QTBUG11658_cachecrash();
 private:
     QColor COLOR(const QWidget& w) {
         w.ensurePolished();
@@ -450,7 +451,7 @@ void tst_QStyleSheetStyle::widgetStyle()
     window2->setStyleSheet("");
     qApp->setStyle(0);
 
-    qApp->setStyleSheet("may_insanity_prevail { }"); // app has styleshet
+    qApp->setStyleSheet("may_insanity_prevail { }"); // app has stylesheet
     QCOMPARE(window1->style(), qApp->style());
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle");
     QCOMPARE(widget1->style()->metaObject()->className(), "QStyleSheetStyle"); // check the child
@@ -1607,7 +1608,12 @@ class ChangeEventWidget : public QWidget
             static bool recurse = false;
             if (!recurse) {
                 recurse = true;
+
+#ifdef Q_OS_SYMBIAN
+                QStyle *style = new QWindowsStyle();
+#else
                 QStyle *style = new QMotifStyle;
+#endif
                 style->setParent(this);
                 setStyle(style);
                 recurse = false;
@@ -1625,6 +1631,36 @@ void tst_QStyleSheetStyle::changeStyleInChangeEvent()
     wid.ensurePolished();
     wid.setStyleSheet(" /* ** */ ");
     wid.ensurePolished();
+}
+
+void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
+{
+    //should not crash
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent = 0)
+        : QWidget(parent)
+        {
+            QVBoxLayout* pLayout = new QVBoxLayout(this);
+            QCheckBox* pCheckBox = new QCheckBox(this);
+            pLayout->addWidget(pCheckBox);
+            setLayout(pLayout);
+
+            QString szStyleSheet = QLatin1String("* { color: red; }");
+            qApp->setStyleSheet(szStyleSheet);
+            qApp->setStyle(QStyleFactory::create(QLatin1String("Windows")));
+        }
+    };
+
+    Widget *w = new Widget();
+    delete w;
+    w = new Widget();
+    w->show();
+
+    QTest::qWaitForWindowShown(w);
+    delete w;
+    qApp->setStyleSheet(QString());
 }
 
 void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()

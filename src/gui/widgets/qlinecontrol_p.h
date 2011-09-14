@@ -61,10 +61,10 @@
 #include "QtGui/qtextlayout.h"
 #include "QtGui/qstyleoption.h"
 #include "QtCore/qpointer.h"
-#include "QtGui/qlineedit.h"
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
 #include "QtGui/qcompleter.h"
+#include "QtGui/qaccessible.h"
 
 #include "qplatformdefs.h"
 
@@ -165,6 +165,8 @@ public:
     int cursorWidth() const { return m_cursorWidth; }
     void setCursorWidth(int value) { m_cursorWidth = value; }
 
+    Qt::CursorMoveStyle cursorMoveStyle() const { return m_textLayout.cursorMoveStyle(); }
+    void setCursorMoveStyle(Qt::CursorMoveStyle style) { m_textLayout.setCursorMoveStyle(style); }
 
     void moveCursor(int pos, bool mark = false);
     void cursorForward(bool mark, int steps)
@@ -172,10 +174,12 @@ public:
         int c = m_cursor;
         if (steps > 0) {
             while (steps--)
-                c = m_textLayout.nextCursorPosition(c);
+                c = cursorMoveStyle() == Qt::VisualMoveStyle ? m_textLayout.rightCursorPosition(c)
+                                                             : m_textLayout.nextCursorPosition(c);
         } else if (steps < 0) {
             while (steps++)
-                c = m_textLayout.previousCursorPosition(c);
+                c = cursorMoveStyle() == Qt::VisualMoveStyle ? m_textLayout.leftCursorPosition(c)
+                                                             : m_textLayout.previousCursorPosition(c);
         }
         moveCursor(c, mark);
     }

@@ -160,6 +160,13 @@ QMakeProperty::setValue(QString var, const QString &val)
     settings->setValue(keyBase() + var, val);
 }
 
+void
+QMakeProperty::remove(const QString &var)
+{
+    initSettings();
+    settings->remove(keyBase() + var);
+}
+
 bool
 QMakeProperty::exec()
 {
@@ -229,6 +236,13 @@ QMakeProperty::exec()
             }
             if(!var.startsWith("."))
                 setValue(var, (*it));
+        }
+    } else if(Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY) {
+        for(QStringList::ConstIterator it = Option::prop::properties.begin();
+            it != Option::prop::properties.end(); it++) {
+            QString var = (*it);
+            if(!var.startsWith("."))
+                remove(var);
         }
     }
     return ret;

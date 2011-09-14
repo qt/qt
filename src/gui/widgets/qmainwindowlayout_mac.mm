@@ -43,6 +43,7 @@
 #include <qtoolbar.h>
 #include <private/qtoolbarlayout_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qtoolbar_p.h>
 
 #ifndef QT_MAC_USE_COCOA
 #include <Carbon/Carbon.h>
@@ -354,7 +355,11 @@ void QMainWindowLayout::updateHIToolBarStatus()
         // Move everything out of the HIToolbar into the main toolbar.
         while (!qtoolbarsInUnifiedToolbarList.isEmpty()) {
             // Should shrink the list by one every time.
-            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, qtoolbarsInUnifiedToolbarList.first());
+            QToolBar *toolbar = qtoolbarsInUnifiedToolbarList.first();
+#if defined(QT_MAC_USE_COCOA)
+            unifiedSurface->removeToolbar(toolbar);
+#endif
+            layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
         }
         macWindowToolbarSet(qt_mac_window_for(layoutState.mainWindow), 0);
     } else {
@@ -362,7 +367,8 @@ void QMainWindowLayout::updateHIToolBarStatus()
         for (int i = 0; i < toolbars.size(); ++i) {
             QToolBar *toolbar = toolbars.at(i);
             if (toolBarArea(toolbar) == Qt::TopToolBarArea) {
-                removeWidget(toolbar);  // Do this here, because we are in an in-between state.
+                // Do this here, because we are in an in-between state.
+                removeWidget(toolbar);
                 layoutState.mainWindow->addToolBar(Qt::TopToolBarArea, toolbar);
             }
         }
@@ -386,10 +392,20 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     if (toolbar == 0)
         return;
 
+#if defined(QT_MAC_USE_COCOA)
+    // toolbar will now become native (if not already) since we need
+    // an nsview for it inside the corresponding NSToolbarItem.
+    // Setting isInUnifiedToolbar will (among other things) stop alien
+    // siblings from becoming native when this happends since the toolbar
+    // will not overlap with other children of the QMainWindow. NB: Switching
+    // unified toolbar off after this stage is not supported, as this means
+    // that either the menubar must be alien again, or the sibling must
+    // be backed by an nsview to protect from overlapping issues:
+    toolbar->d_func()->isInUnifiedToolbar = true;
+#endif
 
     QToolBarLayout *toolbarLayout = static_cast<QToolBarLayout *>(toolbar->layout());
-    toolbarSaveState.insert(toolbar, ToolBarSaveState(toolbar->isMovable(),
-                                                      toolbar->maximumSize()));
+    toolbarSaveState.insert(toolbar, ToolBarSaveState(toolbar->isMovable(), toolbar->maximumSize()));
 
     if (toolbarLayout->hasExpandFlag() == false)
         toolbar->setMaximumSize(toolbar->sizeHint());
@@ -398,8 +414,8 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     toolbarLayout->setUsePopupMenu(true);
     // Make the toolbar a child of the mainwindow to avoid creating a window.
     toolbar->setParent(layoutState.mainWindow);
-    toolbar->createWinId();  // Now create the OSViewRef.
 
+    toolbar->winId();  // Now create the OSViewRef.
     layoutState.mainWindow->createWinId();
 
     OSWindowRef window = qt_mac_window_for(layoutState.mainWindow);
@@ -408,6 +424,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         beforeIndex = qtoolbarsInUnifiedToolbarList.size();
 
     int toolbarIndex = qtoolbarsInUnifiedToolbarList.indexOf(toolbar);
+
 #ifndef QT_MAC_USE_COCOA
     HIToolbarRef macToolbar = NULL;
     if ((GetWindowToolbar(window, &macToolbar) == noErr) && !macToolbar) {
@@ -444,6 +461,18 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
 #endif
     }
     qtoolbarsInUnifiedToolbarList.insert(beforeIndex, toolbar);
+
+    // Adding to the unified toolbar surface for the raster engine.
+    if (layoutState.mainWindow->windowSurface()) {
+        QPoint offset(0, 0);
+        for (int i = 0; i < beforeIndex; ++i) {
+            offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i)->size().width());
+        }
+#ifdef QT_MAC_USE_COCOA
+        unifiedSurface->insertToolbar(toolbar, offset);
+#endif // QT_MAC_USE_COCOA
+    }
+
 #ifndef QT_MAC_USE_COCOA
     QCFType<HIToolbarItemRef> outItem;
     const QObject *stupidArray[] = { toolbar, this };
@@ -459,6 +488,19 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     [macToolbar insertItemWithItemIdentifier:toolbarID atIndex:beforeIndex];
 #endif
 }
+
+#ifdef QT_MAC_USE_COCOA
+void QMainWindowLayout::updateUnifiedToolbarOffset()
+{
+    QPoint offset(0, 0);
+
+    for (int i = 1; i < qtoolbarsInUnifiedToolbarList.length(); ++i) {
+        offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i - 1)->size().width());
+        qtoolbarsInUnifiedToolbarList.at(i)->d_func()->toolbar_offset = offset;
+    }
+}
+#endif // QT_MAC_USE_COCOA
+
 
 void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
 {
@@ -533,11 +575,11 @@ void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const
         QMacCocoaAutoReleasePool pool;
         QWidgetItem layoutItem(tb);
         QSize size = layoutItem.maximumSize();
-        NSSize nssize = NSMakeSize(size.width(), size.height() - 2);
+        NSSize nssize = NSMakeSize(size.width(), size.height());
         [item setMaxSize:nssize];
         size = layoutItem.minimumSize();
         nssize.width = size.width();
-        nssize.height = size.height() - 2;
+        nssize.height = size.height();
         [item setMinSize:nssize];
     }
 #else

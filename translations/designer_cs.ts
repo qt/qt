@@ -3259,7 +3259,7 @@ Chcete tuto předlohu přepsat?</translation>
         <translation>&lt;br/&gt;Qt Designer je obrazový návrhář uživatelského rozhraní pro programy Qt.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
         <translation>%1&lt;br/&gt;Autorské právo (C) 2009 Nokia Corporation a/nebo její dceřinná společnost(i).</translation>
     </message>
     <message>

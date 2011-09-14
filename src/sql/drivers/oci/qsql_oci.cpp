@@ -331,9 +331,9 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                          SQLT_FLT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QVariant::UserType:
-        if (qVariantCanConvert<QOCIRowIdPointer>(val) && !isOutValue(pos)) {
+        if (val.canConvert<QOCIRowIdPointer>() && !isOutValue(pos)) {
             // use a const pointer to prevent a detach
-            const QOCIRowIdPointer rptr = qVariantValue<QOCIRowIdPointer>(val);
+            const QOCIRowIdPointer rptr = qvariant_cast<QOCIRowIdPointer>(val);
             r = OCIBindByPos(sql, hbnd, err,
                              pos + 1,
                              // it's an IN value, so const_cast is ok
@@ -1454,8 +1454,8 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                         break;
                     }
                     case QVariant::UserType:
-                        if (qVariantCanConvert<QOCIRowIdPointer>(val)) {
-                            const QOCIRowIdPointer rptr = qVariantValue<QOCIRowIdPointer>(val);
+                        if (val.canConvert<QOCIRowIdPointer>()) {
+                            const QOCIRowIdPointer rptr = qvariant_cast<QOCIRowIdPointer>(val);
                             *reinterpret_cast<OCIRowid**>(dataPtr) = rptr->id;
                             columns[i].lengths[row] = 0;
                             break;
@@ -1809,7 +1809,7 @@ QOCIResult::~QOCIResult()
 
 QVariant QOCIResult::handle() const
 {
-    return qVariantFromValue(d->sql);
+    return QVariant::fromValue(d->sql);
 }
 
 bool QOCIResult::reset (const QString& query)
@@ -2037,7 +2037,7 @@ QVariant QOCIResult::lastInsertId() const
         int r = OCIAttrGet(d->sql, OCI_HTYPE_STMT, ptr.constData()->id,
                            0, OCI_ATTR_ROWID, d->err);
         if (r == OCI_SUCCESS)
-            return qVariantFromValue(ptr);
+            return QVariant::fromValue(ptr);
     }
     return QVariant();
 }
@@ -2639,7 +2639,7 @@ QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
 
 QVariant QOCIDriver::handle() const
 {
-    return qVariantFromValue(d->env);
+    return QVariant::fromValue(d->env);
 }
 
 QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const

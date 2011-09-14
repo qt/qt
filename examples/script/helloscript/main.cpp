@@ -39,8 +39,11 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QFile>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTextStream>
+#include <QTranslator>
 #include <QtScript>
 
 //! [0]
@@ -74,6 +77,10 @@ int main(int argc, char *argv[])
     QString contents = stream.readAll();
     scriptFile.close();
 //! [3]
+
+#ifdef Q_OS_SYMBIAN
+    contents.replace("button.show()", "button.showMaximized()");
+#endif
 
 //! [4]
     QScriptValue result = engine.evaluate(contents, fileName);

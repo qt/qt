@@ -6,7 +6,7 @@ include (../xmlpatterns.pri)
 TARGET = tst_xmlpatternsview
 
 wince*: {
-    viewexe.sources = $$QT_BUILD_TREE/xmlpatternsview.exe
+    viewexe.files = $$QT_BUILD_TREE/xmlpatternsview.exe
     viewexe.path = .
     DEPLOYMENT += viewexe
 }

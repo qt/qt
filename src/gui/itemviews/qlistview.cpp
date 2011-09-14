@@ -756,10 +756,13 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
     // if the parent is above d->root in the tree, nothing will happen
     QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
     if (parent == d->root) {
-        for (int i = d->hiddenRows.count() - 1; i >= 0; --i) {
-            int hiddenRow = d->hiddenRows.at(i).row();
+        QSet<QPersistentModelIndex>::iterator it = d->hiddenRows.begin();
+        while (it != d->hiddenRows.end()) {
+            int hiddenRow = it->row();
             if (hiddenRow >= start && hiddenRow <= end) {
-                d->hiddenRows.remove(i);
+                it = d->hiddenRows.erase(it);
+            } else {
+                ++it;
             }
         }
     }
@@ -1033,16 +1036,7 @@ void QListView::paintEvent(QPaintEvent *e)
             previousRow = row;
         }
 
-        if (const QWidget *widget = d->editorForIndex(*it).editor) {
-            QRegion itemGeometry(option.rect);
-            QRegion widgetGeometry(widget->geometry());
-            painter.save();
-            painter.setClipRegion(itemGeometry.subtracted(widgetGeometry));
-            d->delegateForIndex(*it)->paint(&painter, option, *it);
-            painter.restore();
-        } else {
-            d->delegateForIndex(*it)->paint(&painter, option, *it);
-        }
+        d->delegateForIndex(*it)->paint(&painter, option, *it);
     }
 
 #ifndef QT_NO_DRAGANDDROP
@@ -1496,19 +1490,20 @@ void QListView::updateGeometries()
 
     // if the scroll bars are turned off, we resize the contents to the viewport
     if (d->movement == Static && !d->isWrapping()) {
-        d->layoutChildren(); // we need the viewport size to be updated
+        const QSize maxSize = maximumViewportSize();
         if (d->flow == TopToBottom) {
             if (horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(viewport()->width(), contentsSize().height());
+                d->setContentsSize(maxSize.width(), contentsSize().height());
                 horizontalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         } else { // LeftToRight
             if (verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(contentsSize().width(), viewport()->height());
+                d->setContentsSize(contentsSize().width(), maxSize.height());
                 verticalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         }
     }
+
 }
 
 /*!
@@ -1833,6 +1828,14 @@ QAbstractItemView::DropIndicatorPosition QListViewPrivate::position(const QPoint
     else
         return QAbstractItemViewPrivate::position(pos, rect, idx);
 }
+
+bool QListViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QModelIndex *dropIndex)
+{
+    if (viewMode == QListView::ListMode && flow == QListView::LeftToRight)
+        return static_cast<QListModeViewBase *>(commonListView)->dropOn(event, dropRow, dropCol, dropIndex);
+    else
+        return QAbstractItemViewPrivate::dropOn(event, dropRow, dropCol, dropIndex);
+}
 #endif
 
 /*
@@ -1841,12 +1844,12 @@ QAbstractItemView::DropIndicatorPosition QListViewPrivate::position(const QPoint
 
 void QCommonListViewBase::appendHiddenRow(int row)
 {
-    dd->hiddenRows.append(dd->model->index(row, 0, qq->rootIndex()));
+    dd->hiddenRows.insert(dd->model->index(row, 0, qq->rootIndex()));
 }
 
 void QCommonListViewBase::removeHiddenRow(int row)
 {
-    dd->hiddenRows.remove(dd->hiddenRows.indexOf(dd->model->index(row, 0, qq->rootIndex())));
+    dd->hiddenRows.remove(dd->model->index(row, 0, qq->rootIndex()));
 }
 
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
@@ -1960,7 +1963,13 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
     // ignore by default
     event->ignore();
 
-    QModelIndex index = qq->indexAt(event->pos());
+    // can't use indexAt, doesn't account for spacing.
+    QPoint p = event->pos();
+    QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
+    rect.adjust(-dd->spacing(), -dd->spacing(), dd->spacing(), dd->spacing());
+    const QVector<QModelIndex> intersectVector = dd->intersectingSet(rect);
+    QModelIndex index = intersectVector.count() > 0
+                        ? intersectVector.last() : QModelIndex();
     dd->hover = index;
     if (!dd->droppingOnItself(event, index)
         && dd->canDecode(event)) {
@@ -1968,10 +1977,11 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
         if (index.isValid() && dd->showDropIndicator) {
             QRect rect = qq->visualRect(index);
             dd->dropIndicatorPosition = position(event->pos(), rect, index);
+            // if spacing, should try to draw between items, not just next to item.
             switch (dd->dropIndicatorPosition) {
             case QAbstractItemView::AboveItem:
                 if (dd->isIndexDropEnabled(index.parent())) {
-                    dd->dropIndicatorRect = QRect(rect.left(), rect.top(), 0, rect.height());
+                    dd->dropIndicatorRect = QRect(rect.left()-dd->spacing(), rect.top(), 0, rect.height());
                     event->accept();
                 } else {
                     dd->dropIndicatorRect = QRect();
@@ -1979,7 +1989,7 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
                 break;
             case QAbstractItemView::BelowItem:
                 if (dd->isIndexDropEnabled(index.parent())) {
-                    dd->dropIndicatorRect = QRect(rect.right(), rect.top(), 0, rect.height());
+                    dd->dropIndicatorRect = QRect(rect.right()+dd->spacing(), rect.top(), 0, rect.height());
                     event->accept();
                 } else {
                     dd->dropIndicatorRect = QRect();
@@ -2012,6 +2022,68 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
 
     if (dd->shouldAutoScroll(event->pos()))
         qq->startAutoScroll();
+}
+
+/*!
+    If the event hasn't already been accepted, determines the index to drop on.
+
+    if (row == -1 && col == -1)
+        // append to this drop index
+    else
+        // place at row, col in drop index
+
+    If it returns true a drop can be done, and dropRow, dropCol and dropIndex reflects the position of the drop.
+    \internal
+  */
+bool QListModeViewBase::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QModelIndex *dropIndex)
+{
+    if (event->isAccepted())
+        return false;
+
+    QModelIndex index;
+    if (dd->viewport->rect().contains(event->pos())) {
+        // can't use indexAt, doesn't account for spacing.
+        QPoint p = event->pos();
+        QRect rect(p.x() + horizontalOffset(), p.y() + verticalOffset(), 1, 1);
+        rect.adjust(-dd->spacing(), -dd->spacing(), dd->spacing(), dd->spacing());
+        const QVector<QModelIndex> intersectVector = dd->intersectingSet(rect);
+        index = intersectVector.count() > 0
+            ? intersectVector.last() : QModelIndex();
+        if (!index.isValid())
+            index = dd->root;
+    }
+
+    // If we are allowed to do the drop
+    if (dd->model->supportedDropActions() & event->dropAction()) {
+        int row = -1;
+        int col = -1;
+        if (index != dd->root) {
+            dd->dropIndicatorPosition = position(event->pos(), qq->visualRect(index), index);
+            switch (dd->dropIndicatorPosition) {
+            case QAbstractItemView::AboveItem:
+                row = index.row();
+                col = index.column();
+                index = index.parent();
+                break;
+            case QAbstractItemView::BelowItem:
+                row = index.row() + 1;
+                col = index.column();
+                index = index.parent();
+                break;
+            case QAbstractItemView::OnItem:
+            case QAbstractItemView::OnViewport:
+                break;
+            }
+        } else {
+            dd->dropIndicatorPosition = QAbstractItemView::OnViewport;
+        }
+        *dropIndex = index;
+        *dropRow = row;
+        *dropCol = col;
+        if (!dd->droppingOnItself(event, index))
+            return true;
+    }
+    return false;
 }
 
 #endif //QT_NO_DRAGANDDROP
@@ -2107,7 +2179,7 @@ int QListModeViewBase::verticalOffset() const
                 int value = verticalScrollBar()->value();
                 if (value >= segmentPositions.count())
                     return 0;
-                return segmentPositions.at(value);
+                return segmentPositions.at(value) - spacing();
             }
         } else if (flow() == QListView::TopToBottom && !flowPositions.isEmpty()) {
             int value = verticalScrollBar()->value();
@@ -2155,14 +2227,14 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
         if (horizontal && flow() == QListView::TopToBottom && dx != 0) {
             int currentValue = qBound(0, horizontalValue, max);
             int previousValue = qBound(0, currentValue + dx, max);
-            int currentCoordinate = segmentPositions.at(currentValue);
-            int previousCoordinate = segmentPositions.at(previousValue);
+            int currentCoordinate = segmentPositions.at(currentValue) - spacing();
+            int previousCoordinate = segmentPositions.at(previousValue) - spacing();
             dx = previousCoordinate - currentCoordinate;
         } else if (vertical && flow() == QListView::LeftToRight && dy != 0) {
             int currentValue = qBound(0, verticalValue, max);
             int previousValue = qBound(0, currentValue + dy, max);
-            int currentCoordinate = segmentPositions.at(currentValue);
-            int previousCoordinate = segmentPositions.at(previousValue);
+            int currentCoordinate = segmentPositions.at(currentValue) - spacing();
+            int previousCoordinate = segmentPositions.at(previousValue) - spacing();
             dy = previousCoordinate - currentCoordinate;
         }
     } else {
@@ -2330,6 +2402,8 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
                 segmentExtents.append(flowPosition);
                 flowPosition = info.spacing + segStartPosition;
                 segPosition += deltaSegPosition;
+                if (info.wrap)
+                    segPosition += info.spacing;
                 segmentPositions.append(segPosition);
                 segmentStartRows.append(row);
                 deltaSegPosition = 0;
@@ -3094,7 +3168,11 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive()) {
         if (current.isValid()) {
             int entry = visualIndex(current) + 1;
+#ifdef Q_WS_X11
+            QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+#else
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Focus);
+#endif
         }
     }
 #endif
@@ -3113,12 +3191,20 @@ void QListView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = visualIndex(sel) + 1;
+#ifdef Q_WS_X11
+            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+#else
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Selection);
+#endif
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = visualIndex(desel) + 1;
+#ifdef Q_WS_X11
+            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+#else
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::SelectionRemove);
+#endif
         }
     }
 #endif

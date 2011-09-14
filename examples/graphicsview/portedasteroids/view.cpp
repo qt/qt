@@ -48,16 +48,16 @@
 #include <math.h>
 #include <qapplication.h>
 #include <qnamespace.h>
-#include <q3accel.h>
-#include <qmessagebox.h>
-#include <q3scrollview.h>
-#include <qdir.h>
+#include <QAction>
+#include <QMessageBox>
+#include <QScrollArea>
+#include <QDir>
 #include <QGraphicsItem>
-//Added by qt3to4:
 #include <QTimerEvent>
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QShowEvent>
+#include <QtDebug>
 
 #include "view.h"
 
@@ -110,10 +110,10 @@ kas_animations [] =
     { 0,                   0,                          0 }
 };
 
-KAsteroidsView::KAsteroidsView( QWidget *parent, const char *name )
-    : QWidget( parent, name ),
+KAsteroidsView::KAsteroidsView( QWidget *parent)
+    : QWidget( parent),
       field(0, 0, 640, 440),
-      view(&field,this)
+      view(&field, this)
 {
     view.setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     view.setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
@@ -123,11 +123,6 @@ KAsteroidsView::KAsteroidsView( QWidget *parent, const char *name )
                               | QGraphicsView::DontSavePainterState
                               | QGraphicsView::DontAdjustForAntialiasing);
     view.viewport()->setFocusProxy( this );
-    rocks.setAutoDelete( TRUE );
-    missiles.setAutoDelete( TRUE );
-    bits.setAutoDelete( TRUE );
-    powerups.setAutoDelete( TRUE );
-    exhaust.setAutoDelete( TRUE );
 
     QPixmap pm( IMG_BACKGROUND );
     field.setBackgroundBrush( pm );
@@ -164,6 +159,11 @@ KAsteroidsView::KAsteroidsView( QWidget *parent, const char *name )
 
 KAsteroidsView::~KAsteroidsView()
 {
+    qDeleteAll(rocks);     rocks.clear();
+    qDeleteAll(missiles);  missiles.clear();
+    qDeleteAll(bits);      bits.clear();
+    qDeleteAll(powerups);  powerups.clear();
+    qDeleteAll(exhaust);   exhaust.clear();
 }
 
 // - - -
@@ -172,11 +172,11 @@ void KAsteroidsView::reset()
 {
     if ( !initialized )
 	return;
-    rocks.clear();
-    missiles.clear();
-    bits.clear();
-    powerups.clear();
-    exhaust.clear();
+    qDeleteAll(rocks);      rocks.clear();
+    qDeleteAll(missiles);   missiles.clear();
+    qDeleteAll(bits);       bits.clear();
+    qDeleteAll(powerups);   powerups.clear();
+    qDeleteAll(exhaust);    exhaust.clear();
 
     shotsFired = 0;
     shotsHit = 0;
@@ -217,6 +217,11 @@ void KAsteroidsView::newGame()
 
 void KAsteroidsView::endGame()
 {
+    qDeleteAll(rocks);     rocks.clear();
+    qDeleteAll(missiles);  missiles.clear();
+    qDeleteAll(bits);      bits.clear();
+    qDeleteAll(powerups);  powerups.clear();
+    qDeleteAll(exhaust);   exhaust.clear();
 }
 
 void KAsteroidsView::pause( bool p )
@@ -266,7 +271,7 @@ void KAsteroidsView::newShip()
     ship->show();
     shield->show();
     mShieldCount = 1;   // just in case the ship appears on a rock.
-    shieldTimer->start( 1000, TRUE );
+    shieldTimer->start(1000);
 }
 
 void KAsteroidsView::setShield( bool s )
@@ -410,11 +415,9 @@ void KAsteroidsView::timerEvent( QTimerEvent * )
 {
     field.advance();
 
-    AnimatedPixmapItem *rock;
-
     // move rocks forward
-    for ( rock = rocks.first(); rock; rock = rocks.next() ) {
-	((KRock *)rock)->nextFrame();
+    foreach(AnimatedPixmapItem *rock, rocks) {
+        ((KRock *)rock)->nextFrame();
 	wrapSprite( rock );
     }
 
@@ -424,21 +427,24 @@ void KAsteroidsView::timerEvent( QTimerEvent * )
     processMissiles();
 
     // these are generated when a ship explodes
-    for ( KBit *bit = bits.first(); bit; bit = bits.next() )
+    for(QList<KBit*>::iterator it = bits.begin(); it != bits.end(); it++)
     {
-	if ( bit->expired() )
+        KBit *bit = *it;
+        if( bit->expired() )
 	{
-	    bits.removeRef( bit );
+            delete bit;
+            it = bits.erase(it);
+            break;
 	}
 	else
 	{
-	    bit->growOlder();
-	    bit->setFrame( ( bit->frame()+1 ) % bit->frameCount() );
+            bit->growOlder();
+            bit->setFrame( ( bit->frame()+1 ) % bit->frameCount() );
 	}
     }
 
-    for ( KExhaust *e = exhaust.first(); e; e = exhaust.next() )
-	exhaust.removeRef( e );
+    qDeleteAll(exhaust);
+    exhaust.clear();
 
     // move / rotate ship.
     // check for collision with a rock.
@@ -570,7 +576,16 @@ void KAsteroidsView::rockHit( AnimatedPixmapItem *hit )
     }
     else if ( hit->type() == ID_ROCK_SMALL )
 	emit rockHit( 2 );
-    rocks.removeRef( hit );
+
+    for(QList<AnimatedPixmapItem*>::iterator it = rocks.begin(); it != rocks.end(); it++)
+    {
+        if((*it) == hit) {
+            delete *it;
+            it = rocks.erase(it);
+            break;
+        }
+    }
+
     if ( rocks.count() == 0 )
 	emit rocksRemoved();
 }
@@ -605,38 +620,43 @@ void KAsteroidsView::addExhaust( double x, double y, double dx,
 
 void KAsteroidsView::processMissiles()
 {
-    KMissile *missile;
-
     // if a missile has hit a rock, remove missile and break rock into smaller
     // rocks or remove completely.
-    Q3PtrListIterator<KMissile> it(missiles);
-
-    for ( ; it.current(); ++it )
+    QList<KMissile*>::iterator itMissile = missiles.begin();
+    while(itMissile != missiles.end())
     {
-	missile = it.current();
-	missile->growOlder();
+        (*itMissile)->growOlder();
 
-	if ( missile->expired() )
+        if ( (*itMissile)->expired() )
 	{
-	    missiles.removeRef( missile );
-	    continue;
+            delete (*itMissile);
+            itMissile = missiles.erase(itMissile);
+            continue;
 	}
 
-	wrapSprite( missile );
+        wrapSprite(*itMissile);
 
-	QList<QGraphicsItem *> hits = missile->collidingItems(Qt::IntersectsItemBoundingRect);
-	QList<QGraphicsItem *>::Iterator hit;
-	for ( hit = hits.begin(); hit != hits.end(); ++hit )
+        bool missileErased = false;
+        QList<QGraphicsItem*> hits = (*itMissile)->collidingItems(Qt::IntersectsItemBoundingRect);
+        QList<QGraphicsItem*>::iterator itHit = hits.begin();
+
+        while (itHit != hits.end())
 	{
-	    if ( (*hit)->type() >= ID_ROCK_LARGE &&
-		 (*hit)->type() <= ID_ROCK_SMALL && (*hit)->collidesWithItem(missile) )
+            if ( (*itHit)->type() >= ID_ROCK_LARGE &&
+                 (*itHit)->type() <= ID_ROCK_SMALL && (*itHit)->collidesWithItem(*itMissile) )
 	    {
                 shotsHit++;
-                rockHit( static_cast<AnimatedPixmapItem *>(*hit) );
-                missiles.removeRef( missile );
+                rockHit( static_cast<AnimatedPixmapItem *>(*itHit) );
+                delete *itMissile;
+                itMissile = missiles.erase(itMissile);
+                missileErased = true;
                 break;
 	    }
+            itHit++;
 	}
+
+        if(!missileErased)
+            itMissile++;
     }
 }
 
@@ -712,7 +732,7 @@ void KAsteroidsView::processShip()
 		      bit->setVelocity( 1-randDouble()*2,
 					1-randDouble()*2 );
 		      bit->setDeath( 60 + randInt(60) );
-		      bits.append( bit );
+                      bits.push_back( bit );
 		    }
 		    ship->hide();
 		    shield->hide();
@@ -820,15 +840,15 @@ void KAsteroidsView::processShip()
 
 	if ( shootShip )
 	{
-	    if ( !shootDelay && (int)missiles.count() < mShootCount + 2 )
+            if ( !shootDelay && (int)missiles.size() < mShootCount + 2 )
 	    {
-	      KMissile *missile = new KMissile( animation[ID_MISSILE], &field );
+              KMissile *missile = new KMissile( animation[ID_MISSILE], &field );
 	      missile->setPos( 21+ship->x()+cosangle*21,
 			     21+ship->y()+sinangle*21 );
               missile->setFrame( 0 );
 	      missile->setVelocity( shipDx + cosangle*MISSILE_SPEED,
 				    shipDy + sinangle*MISSILE_SPEED );
-	      missiles.append( missile );
+              missiles.push_back( missile );
 	      shotsFired++;
 	      reducePower( 1 );
 
@@ -857,75 +877,83 @@ void KAsteroidsView::processShip()
 
 void KAsteroidsView::processPowerups()
 {
-    if ( !powerups.isEmpty() )
+    // if player gets the powerup remove it from the screen, if option
+    // "Can destroy powerups" is enabled and a missile hits the powerup
+    // destroy it
+    QList<KPowerup*>::iterator itPup = powerups.begin();
+
+    while(itPup != powerups.end())
     {
-	// if player gets the powerup remove it from the screen, if option
-	// "Can destroy powerups" is enabled and a missile hits the powerup
-	// destroy it
+        (*itPup)->growOlder();
 
-	KPowerup *pup;
-	Q3PtrListIterator<KPowerup> it( powerups );
+        if((*itPup)->expired())
+        {
+            delete *itPup;
+            itPup = powerups.erase(itPup);
+            continue;
+        }
 
-	for( ; it.current(); ++it )
-	{
-	    pup = it.current();
-	    pup->growOlder();
+        wrapSprite(*itPup);
 
-	    if( pup->expired() )
-	    {
-		powerups.removeRef( pup );
-		continue;
-	    }
+        bool pupErased = false;
 
-	    wrapSprite( pup );
+        QList<QGraphicsItem *> hits = (*itPup)->collidingItems();
+        for(QList<QGraphicsItem *>::Iterator itHits = hits.begin(); itHits != hits.end(); itHits++)
+        {
+            if ( (*itHits) == ship )
+            {
+                switch( (*itPup)->type() )
+                {
+                  case ID_ENERGY_POWERUP:
+                    shipPower += 150;
+                    if ( shipPower > MAX_POWER_LEVEL )
+                        shipPower = MAX_POWER_LEVEL;
+                    break;
+                  case ID_TELEPORT_POWERUP:
+                    mTeleportCount++;
+                    break;
+                  case ID_BRAKE_POWERUP:
+                    if ( mBrakeCount < MAX_BRAKES )
+                        mBrakeCount++;
+                    break;
+                  case ID_SHIELD_POWERUP:
+                    if ( mShieldCount < MAX_SHIELDS )
+                        mShieldCount++;
+                    break;
+                  case ID_SHOOT_POWERUP:
+                    if ( mShootCount < MAX_FIREPOWER )
+                        mShootCount++;
+                    break;
+                }
 
-	    QList<QGraphicsItem *> hits = pup->collidingItems();
-	    QList<QGraphicsItem *>::Iterator it;
-	    for ( it = hits.begin(); it != hits.end(); ++it )
-	    {
-		if ( (*it) == ship )
-		{
-		    switch( pup->type() )
-		    {
-		      case ID_ENERGY_POWERUP:
-			shipPower += 150;
-			if ( shipPower > MAX_POWER_LEVEL )
-			    shipPower = MAX_POWER_LEVEL;
-			break;
-		      case ID_TELEPORT_POWERUP:
-			mTeleportCount++;
-			break;
-		      case ID_BRAKE_POWERUP:
-			if ( mBrakeCount < MAX_BRAKES )
-			    mBrakeCount++;
-			break;
-		      case ID_SHIELD_POWERUP:
-			if ( mShieldCount < MAX_SHIELDS )
-			    mShieldCount++;
-			break;
-		      case ID_SHOOT_POWERUP:
-			if ( mShootCount < MAX_FIREPOWER )
-			    mShootCount++;
-			break;
-		    }
+                delete *itPup;
+                itPup = powerups.erase(itPup);
+                pupErased = true;
+                vitalsChanged = TRUE;
+                break;
+            }
+            else if((*itHits) == shield )
+            {
+                delete *itPup;
+                itPup = powerups.erase(itPup);
+                pupErased = true;
+                break;
+            }
+            else if ( (*itHits)->type() == ID_MISSILE )
+            {
+                if ( can_destroy_powerups )
+                {
+                    delete *itPup;
+                    itPup = powerups.erase(itPup);
+                    pupErased = true;
+                    break;
+                }
+            }
+        }
 
-		    powerups.removeRef( pup );
-		    vitalsChanged = TRUE;
-		}
-		else if ( (*it) == shield )
-		{
-		    powerups.removeRef( pup );
-		}
-		else if ( (*it)->type() == ID_MISSILE )
-		{
-		    if ( can_destroy_powerups )
-		    {
-                        powerups.removeRef( pup );
-		    }
-		}
-	    }
-	}
-    }         // -- if( powerups.isEmpty() )
+        if(!pupErased)
+            itPup++;
+    }
 }
 
 // - - -

@@ -394,7 +394,10 @@ void tst_QPauseAnimation::multipleSequentialGroups()
     QVERIFY(subgroup3.state() == QAbstractAnimation::Running);
     QVERIFY(subgroup4.state() == QAbstractAnimation::Running);
 
-    QTest::qWait(group.totalDuration() + 100);
+    // This is a pretty long animation so it tends to get rather out of sync
+    // when using the consistent timer, so run for an extra half second for good
+    // measure...
+    QTest::qWait(group.totalDuration() + 500);
 
 #ifdef Q_OS_WIN
     if (group.state() != QAbstractAnimation::Stopped)

@@ -56,6 +56,8 @@
 
 #include "qfilesystemwatcher_p.h"
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qthread.h>
@@ -72,7 +74,7 @@ typedef uint64_t FSEventStreamEventId;
 
 QT_BEGIN_NAMESPACE
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined(QT_NO_CORESERVICES)
 // Yes, I use a stat64 element here. QFileInfo requires too much knowledge about implementation
 // details to be used as a long-standing record. Since I'm going to have to store this information, I can
 // do the stat myself too.
@@ -115,13 +117,15 @@ private:
     QMutex mutex;
     QWaitCondition waitCondition;
     QWaitCondition waitForStop;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     PathHash filePathInfoHash;
     PathHash dirPathInfoHash;
     void updateHash(PathHash &pathHash);
     void updateList(PathInfoList &list, bool directory, bool emitSignals);
 #endif
 };
+
+#endif //QT_NO_FILESYSTEMWATCHER
 
 #endif
 

@@ -215,4 +215,4 @@ EXPORTS
 	_ZN13QVGPixmapData35createFromNativeImageHandleProviderEv @ 214 NONAME
 	_ZN13QVGPixmapData12forceToImageEb @ 215 NONAME
 	_ZNK13QVGPixmapData15toVolatileImageEv @ 216 NONAME
-
+	_ZNK16QVGWindowSurface8featuresEv @ 217 NONAME

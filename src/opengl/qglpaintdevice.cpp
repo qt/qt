@@ -145,8 +145,10 @@ bool QGLPaintDevice::alphaRequested() const
     return context()->d_func()->reqFormat.alpha();
 }
 
-
-
+bool QGLPaintDevice::isFlipped() const
+{
+    return false;
+}
 
 ////////////////// QGLWidgetGLPaintDevice //////////////////
 

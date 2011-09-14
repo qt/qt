@@ -99,14 +99,7 @@ public:
 };
 
 
-static QHash<const QWidget *, QVector<StyleRule> > *styleRulesCache = 0;
-static QHash<const QWidget *, QHash<int, bool> > *hasStyleRuleCache = 0;
-typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
-static QHash<const QWidget *, QRenderRules> *renderRulesCache = 0;
-static QHash<const QWidget *, QPalette> *customPaletteWidgets = 0; // widgets whose palette we tampered
-static QHash<const void *, StyleSheet> *styleSheetCache = 0; // parsed style sheets
-static QSet<const QWidget *> *autoFillDisabledWidgets = 0;
-
+static QStyleSheetStyleCaches *styleSheetCaches = 0;
 
 /* RECURSION_GUARD:
  * the QStyleSheetStyle is a proxy. If used with others proxy style, we may end up with something like:
@@ -1525,8 +1518,8 @@ private:
 
 QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
 {
-    QHash<const QWidget *, QVector<StyleRule> >::const_iterator cacheIt = styleRulesCache->constFind(w);
-    if (cacheIt != styleRulesCache->constEnd())
+    QHash<const QWidget *, QVector<StyleRule> >::const_iterator cacheIt = styleSheetCaches->styleRulesCache.constFind(w);
+    if (cacheIt != styleSheetCaches->styleRulesCache.constEnd())
         return cacheIt.value();
 
     if (!initWidget(w)) {
@@ -1536,12 +1529,12 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
     QStyleSheetStyleSelector styleSelector;
 
     StyleSheet defaultSs;
-    QHash<const void *, StyleSheet>::const_iterator defaultCacheIt = styleSheetCache->constFind(baseStyle());
-    if (defaultCacheIt == styleSheetCache->constEnd()) {
+    QHash<const void *, StyleSheet>::const_iterator defaultCacheIt = styleSheetCaches->styleSheetCache.constFind(baseStyle());
+    if (defaultCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
         defaultSs = getDefaultStyleSheet();
         QStyle *bs = baseStyle();
-        styleSheetCache->insert(bs, defaultSs);
-        QObject::connect(bs, SIGNAL(destroyed(QObject*)), this, SLOT(styleDestroyed(QObject*)), Qt::UniqueConnection);
+        styleSheetCaches->styleSheetCache.insert(bs, defaultSs);
+        QObject::connect(bs, SIGNAL(destroyed(QObject*)), styleSheetCaches, SLOT(styleDestroyed(QObject*)), Qt::UniqueConnection);
     } else {
         defaultSs = defaultCacheIt.value();
     }
@@ -1549,8 +1542,8 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
 
     if (!qApp->styleSheet().isEmpty()) {
         StyleSheet appSs;
-        QHash<const void *, StyleSheet>::const_iterator appCacheIt = styleSheetCache->constFind(qApp);
-        if (appCacheIt == styleSheetCache->constEnd()) {
+        QHash<const void *, StyleSheet>::const_iterator appCacheIt = styleSheetCaches->styleSheetCache.constFind(qApp);
+        if (appCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
             QString ss = qApp->styleSheet();
             if (ss.startsWith(QLatin1String("file:///")))
                 ss.remove(0, 8);
@@ -1559,7 +1552,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
                 qWarning("Could not parse application stylesheet");
             appSs.origin = StyleSheetOrigin_Inline;
             appSs.depth = 1;
-            styleSheetCache->insert(qApp, appSs);
+            styleSheetCaches->styleSheetCache.insert(qApp, appSs);
         } else {
             appSs = appCacheIt.value();
         }
@@ -1571,8 +1564,8 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
         if (wid->styleSheet().isEmpty())
             continue;
         StyleSheet ss;
-        QHash<const void *, StyleSheet>::const_iterator widCacheIt = styleSheetCache->constFind(wid);
-        if (widCacheIt == styleSheetCache->constEnd()) {
+        QHash<const void *, StyleSheet>::const_iterator widCacheIt = styleSheetCaches->styleSheetCache.constFind(wid);
+        if (widCacheIt == styleSheetCaches->styleSheetCache.constEnd()) {
             parser.init(wid->styleSheet());
             if (!parser.parse(&ss)) {
                 parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1Char('}'));
@@ -1580,7 +1573,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
                    qWarning("Could not parse stylesheet of widget %p", wid);
             }
             ss.origin = StyleSheetOrigin_Inline;
-            styleSheetCache->insert(wid, ss);
+            styleSheetCaches->styleSheetCache.insert(wid, ss);
         } else {
             ss = widCacheIt.value();
         }
@@ -1595,7 +1588,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
     StyleSelector::NodePtr n;
     n.ptr = (void *)w;
     QVector<QCss::StyleRule> rules = styleSelector.styleRulesForNode(n);
-    styleRulesCache->insert(w, rules);
+    styleSheetCaches->styleRulesCache.insert(w, rules);
     return rules;
 }
 
@@ -1724,7 +1717,7 @@ static void qt_check_if_internal_widget(const QWidget **w, int *element)
 QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, int element, quint64 state) const
 {
     qt_check_if_internal_widget(&w, &element);
-    QHash<quint64, QRenderRule> &cache = (*renderRulesCache)[w][element];
+    QHash<quint64, QRenderRule> &cache = styleSheetCaches->renderRulesCache[w][element];
     QHash<quint64, QRenderRule>::const_iterator cacheIt = cache.constFind(state);
     if (cacheIt != cache.constEnd())
         return cacheIt.value();
@@ -2035,7 +2028,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
 
 bool QStyleSheetStyle::hasStyleRule(const QWidget *w, int part) const
 {
-    QHash<int, bool> &cache = (*hasStyleRuleCache)[w];
+    QHash<int, bool> &cache = styleSheetCaches->hasStyleRuleCache[w];
     QHash<int, bool>::const_iterator cacheIt = cache.constFind(part);
     if (cacheIt != cache.constEnd())
         return cacheIt.value();
@@ -2342,7 +2335,7 @@ static QWidget *embeddedWidget(QWidget *w)
 
 #ifndef QT_NO_SPINBOX
     if (QAbstractSpinBox *sb = qobject_cast<QAbstractSpinBox *>(w))
-        return qFindChild<QLineEdit *>(sb);
+        return sb->findChild<QLineEdit *>();
 #endif
 
 #ifndef QT_NO_SCROLLAREA
@@ -2565,7 +2558,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         rule.configurePalette(&p, map[i].group, ew, ew != w);
     }
 
-    customPaletteWidgets->insert(w, w->palette());
+    styleSheetCaches->customPaletteWidgets.insert(w, w->palette());
     w->setPalette(p);
     if (ew != w)
         ew->setPalette(p);
@@ -2573,32 +2566,32 @@ void QStyleSheetStyle::setPalette(QWidget *w)
 
 void QStyleSheetStyle::unsetPalette(QWidget *w)
 {
-    if (customPaletteWidgets->contains(w)) {
-        QPalette p = customPaletteWidgets->value(w);
+    if (styleSheetCaches->customPaletteWidgets.contains(w)) {
+        QPalette p = styleSheetCaches->customPaletteWidgets.value(w);
         w->setPalette(p);
         QWidget *ew = embeddedWidget(w);
         if (ew != w)
             ew->setPalette(p);
-        customPaletteWidgets->remove(w);
+        styleSheetCaches->customPaletteWidgets.remove(w);
     }
     QVariant oldFont = w->property("_q_styleSheetWidgetFont");
     if (oldFont.isValid()) {
-        w->setFont(qVariantValue<QFont>(oldFont));
+        w->setFont(qvariant_cast<QFont>(oldFont));
     }
-    if (autoFillDisabledWidgets->contains(w)) {
+    if (styleSheetCaches->autoFillDisabledWidgets.contains(w)) {
         embeddedWidget(w)->setAutoFillBackground(true);
-        autoFillDisabledWidgets->remove(w);
+        styleSheetCaches->autoFillDisabledWidgets.remove(w);
     }
 }
 
 static void updateWidgets(const QList<const QWidget *>& widgets)
 {
-    if (!styleRulesCache->isEmpty() || !hasStyleRuleCache->isEmpty() || !renderRulesCache->isEmpty()) {
+    if (!styleSheetCaches->styleRulesCache.isEmpty() || !styleSheetCaches->hasStyleRuleCache.isEmpty() || !styleSheetCaches->renderRulesCache.isEmpty()) {
         for (int i = 0; i < widgets.size(); ++i) {
             const QWidget *widget = widgets.at(i);
-            styleRulesCache->remove(widget);
-            hasStyleRuleCache->remove(widget);
-            renderRulesCache->remove(widget);
+            styleSheetCaches->styleRulesCache.remove(widget);
+            styleSheetCaches->hasStyleRuleCache.remove(widget);
+            styleSheetCaches->renderRulesCache.remove(widget);
         }
     }
     for (int i = 0; i < widgets.size(); ++i) {
@@ -2622,12 +2615,7 @@ QStyleSheetStyle::QStyleSheetStyle(QStyle *base)
 {
     ++numinstances;
     if (numinstances == 1) {
-        styleRulesCache = new QHash<const QWidget *, QVector<StyleRule> >;
-        hasStyleRuleCache = new QHash<const QWidget *, QHash<int, bool> >;
-        renderRulesCache = new QHash<const QWidget *, QRenderRules>;
-        customPaletteWidgets = new QHash<const QWidget *, QPalette>;
-        styleSheetCache = new QHash<const void *, StyleSheet>;
-        autoFillDisabledWidgets = new QSet<const QWidget *>;
+        styleSheetCaches = new QStyleSheetStyleCaches;
     }
 }
 
@@ -2635,18 +2623,7 @@ QStyleSheetStyle::~QStyleSheetStyle()
 {
     --numinstances;
     if (numinstances == 0) {
-        delete styleRulesCache;
-        styleRulesCache = 0;
-        delete hasStyleRuleCache;
-        hasStyleRuleCache = 0;
-        delete renderRulesCache;
-        renderRulesCache = 0;
-        delete customPaletteWidgets;
-        customPaletteWidgets = 0;
-        delete styleSheetCache;
-        styleSheetCache = 0;
-        delete autoFillDisabledWidgets;
-        autoFillDisabledWidgets = 0;
+        delete styleSheetCaches;
     }
 }
 QStyle *QStyleSheetStyle::baseStyle() const
@@ -2658,19 +2635,19 @@ QStyle *QStyleSheetStyle::baseStyle() const
     return QApplication::style();
 }
 
-void QStyleSheetStyle::widgetDestroyed(QObject *o)
+void QStyleSheetStyleCaches::widgetDestroyed(QObject *o)
 {
-    styleRulesCache->remove((const QWidget *)o);
-    hasStyleRuleCache->remove((const QWidget *)o);
-    renderRulesCache->remove((const QWidget *)o);
-    customPaletteWidgets->remove((const QWidget *)o);
-    styleSheetCache->remove((const QWidget *)o);
-    autoFillDisabledWidgets->remove((const QWidget *)o);
+    styleRulesCache.remove((const QWidget *)o);
+    hasStyleRuleCache.remove((const QWidget *)o);
+    renderRulesCache.remove((const QWidget *)o);
+    customPaletteWidgets.remove((const QWidget *)o);
+    styleSheetCache.remove((const QWidget *)o);
+    autoFillDisabledWidgets.remove((const QWidget *)o);
 }
 
-void QStyleSheetStyle::styleDestroyed(QObject *o)
+void QStyleSheetStyleCaches::styleDestroyed(QObject *o)
 {
-    styleSheetCache->remove(o);
+    styleSheetCache.remove(o);
 }
 
 /*!
@@ -2688,7 +2665,7 @@ bool QStyleSheetStyle::initWidget(const QWidget *w) const
         return false;
 
     const_cast<QWidget *>(w)->setAttribute(Qt::WA_StyleSheet, true);
-    QObject::connect(w, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)));
+    QObject::connect(w, SIGNAL(destroyed(QObject*)), styleSheetCaches, SLOT(widgetDestroyed(QObject*)), Qt::UniqueConnection);
     return true;
 }
 
@@ -2700,12 +2677,12 @@ void QStyleSheetStyle::polish(QWidget *w)
     if (!initWidget(w))
         return;
 
-    if (styleRulesCache->contains(w)) {
+    if (styleSheetCaches->styleRulesCache.contains(w)) {
         // the widget accessed its style pointer before polish (or repolish)
         // (exemple: the QAbstractSpinBox constructor ask for the stylehint)
-        styleRulesCache->remove(w);
-        hasStyleRuleCache->remove(w);
-        renderRulesCache->remove(w);
+        styleSheetCaches->styleRulesCache.remove(w);
+        styleSheetCaches->hasStyleRuleCache.remove(w);
+        styleSheetCaches->renderRulesCache.remove(w);
     }
     setGeometry(w);
     setProperties(w);
@@ -2771,7 +2748,7 @@ void QStyleSheetStyle::polish(QWidget *w)
         QWidget *ew = embeddedWidget(w);
         if (ew->autoFillBackground()) {
             ew->setAutoFillBackground(false);
-            autoFillDisabledWidgets->insert(w);
+            styleSheetCaches->autoFillDisabledWidgets.insert(w);
             if (ew != w) { //eg. viewport of a scrollarea
                 //(in order to draw the background anyway in case we don't.)
                 ew->setAttribute(Qt::WA_StyledBackground, true);
@@ -2795,20 +2772,20 @@ void QStyleSheetStyle::polish(QPalette &pal)
 
 void QStyleSheetStyle::repolish(QWidget *w)
 {
-    QList<const QWidget *> children = qFindChildren<const QWidget *>(w, QString());
+    QList<const QWidget *> children = w->findChildren<const QWidget *>(QString());
     children.append(w);
-    styleSheetCache->remove(w);
+    styleSheetCaches->styleSheetCache.remove(w);
     updateWidgets(children);
 }
 
 void QStyleSheetStyle::repolish(QApplication *app)
 {
     Q_UNUSED(app);
-    const QList<const QWidget*> allWidgets = styleRulesCache->keys();
-    styleSheetCache->remove(qApp);
-    styleRulesCache->clear();
-    hasStyleRuleCache->clear();
-    renderRulesCache->clear();
+    const QList<const QWidget*> allWidgets = styleSheetCaches->styleRulesCache.keys();
+    styleSheetCaches->styleSheetCache.remove(qApp);
+    styleSheetCaches->styleRulesCache.clear();
+    styleSheetCaches->hasStyleRuleCache.clear();
+    styleSheetCaches->renderRulesCache.clear();
     updateWidgets(allWidgets);
 }
 
@@ -2819,10 +2796,10 @@ void QStyleSheetStyle::unpolish(QWidget *w)
         return;
     }
 
-    styleRulesCache->remove(w);
-    hasStyleRuleCache->remove(w);
-    renderRulesCache->remove(w);
-    styleSheetCache->remove(w);
+    styleSheetCaches->styleRulesCache.remove(w);
+    styleSheetCaches->hasStyleRuleCache.remove(w);
+    styleSheetCaches->renderRulesCache.remove(w);
+    styleSheetCaches->styleSheetCache.remove(w);
     unsetPalette(w);
     w->setProperty("_q_stylesheet_minw", QVariant());
     w->setProperty("_q_stylesheet_minh", QVariant());
@@ -2849,10 +2826,10 @@ void QStyleSheetStyle::unpolish(QApplication *app)
 {
     baseStyle()->unpolish(app);
     RECURSION_GUARD(return)
-    styleRulesCache->clear();
-    hasStyleRuleCache->clear();
-    renderRulesCache->clear();
-    styleSheetCache->remove(qApp);
+    styleSheetCaches->styleRulesCache.clear();
+    styleSheetCaches->hasStyleRuleCache.clear();
+    styleSheetCaches->renderRulesCache.clear();
+    styleSheetCaches->styleSheetCache.remove(qApp);
 }
 
 #ifndef QT_NO_TABBAR
@@ -3048,6 +3025,13 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 titleRule.configurePalette(&pal, QPalette::WindowText, QPalette::Window);
                 drawItemText(p, labelRect,  alignment, pal, gb->state & State_Enabled,
                              gb->text, QPalette::WindowText);
+
+                if (gb->state & State_HasFocus) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*gb);
+                    fropt.rect = labelRect;
+                    drawPrimitive(PE_FrameFocusRect, &fropt, p, w);
+                }
             }
 
                         return;
@@ -3724,7 +3708,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         editRect.translate(cb->iconSize.width() + spacing, 0);
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, cb->palette,
+                QPalette styledPalette(cb->palette);
+                rule.configurePalette(&styledPalette, QPalette::Text, QPalette::Base);
+                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, styledPalette,
                              cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();
@@ -4157,6 +4143,10 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         pseudoElement = PseudoElement_DownArrow;
         break;
 
+    case PE_IndicatorArrowUp:
+        pseudoElement = PseudoElement_UpArrow;
+        break;
+
     case PE_IndicatorRadioButton:
         pseudoElement = PseudoElement_ExclusiveIndicator;
         break;
@@ -4257,7 +4247,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     case PE_Widget:
         if (w && !rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
-            if (autoFillDisabledWidgets->contains(container)
+            if (styleSheetCaches->autoFillDisabledWidgets.contains(container)
                 && (container == w || !renderRule(container, opt).hasBackground())) {
                 //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
                 // (this may happen if we have rules like :focus)
@@ -5081,7 +5071,7 @@ QIcon QStyleSheetStyle::standardIconImplementation(StandardPixmap standardIcon, 
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s))
-            return qVariantValue<QIcon>(rule.styleHint(s));
+            return qvariant_cast<QIcon>(rule.styleHint(s));
     }
     return baseStyle()->standardIcon(standardIcon, opt, w);
 }
@@ -5099,7 +5089,7 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s)) {
-            QIcon icon = qVariantValue<QIcon>(rule.styleHint(s));
+            QIcon icon = qvariant_cast<QIcon>(rule.styleHint(s));
             return icon.pixmap(16, 16); // ###: unhard-code this if someone complains
         }
     }
@@ -5193,7 +5183,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ComboBox_PopupFrameStyle:
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
-                QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
+                QAbstractItemView *view = w->findChild<QAbstractItemView *>();
                 if (view) {
                     view->ensurePolished();
                     QRenderRule subRule = renderRule(view, PseudoElement_None);

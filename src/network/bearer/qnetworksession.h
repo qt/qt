@@ -71,6 +71,7 @@ class QNetworkSessionPrivate;
 class QNetworkSessionExport QNetworkSession : public QObject
 {
     Q_OBJECT
+
 public:
     enum State {
         Invalid = 0,
@@ -89,7 +90,8 @@ public:
         OperationNotSupportedError,
         InvalidConfigurationError
     };
-	explicit QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
+
+    explicit QNetworkSession(const QNetworkConfiguration &connConfig, QObject *parent = 0);
     virtual ~QNetworkSession();
 
     bool isOpen() const;
@@ -101,8 +103,8 @@ public:
     State state() const;
     SessionError error() const;
     QString errorString() const;
-    QVariant sessionProperty(const QString& key) const;
-    void setSessionProperty(const QString& key, const QVariant& value);
+    QVariant sessionProperty(const QString &key) const;
+    void setSessionProperty(const QString &key, const QVariant &value);
 
     quint64 bytesWritten() const;
     quint64 bytesReceived() const;
@@ -121,13 +123,12 @@ public Q_SLOTS:
     void accept();
     void reject();
 
-
 Q_SIGNALS:
     void stateChanged(QNetworkSession::State);
     void opened();
     void closed();
     void error(QNetworkSession::SessionError);
-    void preferredConfigurationChanged(const QNetworkConfiguration& config, bool isSeamless);
+    void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
     void newConfigurationActivated();
 
 protected:
@@ -135,9 +136,9 @@ protected:
     virtual void disconnectNotify(const char *signal);
 
 private:
-    QNetworkSessionPrivate* d;
     friend class QNetworkSessionPrivate;
-    };
+    QNetworkSessionPrivate *d;
+};
 
 #ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
@@ -151,4 +152,4 @@ QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKSESSION_H
+#endif // QNETWORKSESSION_H

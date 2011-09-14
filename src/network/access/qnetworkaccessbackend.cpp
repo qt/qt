@@ -41,12 +41,13 @@
 
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
+#include "qnetworkconfigmanager.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
-#include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
@@ -106,12 +107,10 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
 
 QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 {
-    QNonContiguousByteDevice* device = 0;
-
     if (reply->outgoingDataBuffer)
-        device = QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer);
+        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer));
     else if (reply->outgoingData) {
-        device = QNonContiguousByteDeviceFactory::create(reply->outgoingData);
+        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingData));
     } else {
         return 0;
     }
@@ -120,21 +119,20 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
             reply->request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
                           QVariant(false)) == QVariant(true);
     if (bufferDisallowed)
-        device->disableReset();
+        uploadByteDevice->disableReset();
 
-    // make sure we delete this later
-    device->setParent(this);
+    // We want signal emissions only for normal asynchronous uploads
+    if (!isSynchronous())
+        connect(uploadByteDevice.data(), SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));
 
-    connect(device, SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));
-
-    return device;
+    return uploadByteDevice.data();
 }
 
 // need to have this function since the reply is a private member variable
 // and the special backends need to access this.
 void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
-    if (reply->isFinished())
+    if (reply->isFinished)
         return;
     reply->emitUploadProgress(bytesSent, bytesTotal);
 }
@@ -241,6 +239,17 @@ void QNetworkAccessBackend::writeDownstreamData(QIODevice *data)
     reply->appendDownstreamData(data);
 }
 
+// not actually appending data, it was already written to the user buffer
+void QNetworkAccessBackend::writeDownstreamDataDownloadBuffer(qint64 bytesReceived, qint64 bytesTotal)
+{
+    reply->appendDownstreamDataDownloadBuffer(bytesReceived, bytesTotal);
+}
+
+char* QNetworkAccessBackend::getDownloadBuffer(qint64 size)
+{
+    return reply->getDownloadBuffer(size);
+}
+
 QVariant QNetworkAccessBackend::header(QNetworkRequest::KnownHeaders header) const
 {
     return reply->q_func()->header(header);
@@ -316,11 +325,6 @@ void QNetworkAccessBackend::authenticationRequired(QAuthenticator *authenticator
     manager->authenticationRequired(this, authenticator);
 }
 
-void QNetworkAccessBackend::cacheCredentials(QAuthenticator *authenticator)
-{
-    manager->cacheCredentials(this->reply->url, authenticator);
-}
-
 void QNetworkAccessBackend::metaDataChanged()
 {
     reply->metaDataChanged();
@@ -340,8 +344,6 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
-
 /*!
     Starts the backend.  Returns true if the backend is started.  Returns false if the backend
     could not be started due to an unopened or roaming session.  The caller should recall this
@@ -349,29 +351,62 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-    if (!manager->networkSession) {
-        open();
-        return true;
-    }
+#ifndef QT_NO_BEARERMANAGEMENT
+    // For bearer, check if session start is required
+    if (manager->networkSession) {
+        // session required
+        if (manager->networkSession->isOpen() &&
+            manager->networkSession->state() == QNetworkSession::Connected) {
+            // Session is already open and ready to use.
+            // copy network session down to the backend
+            setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
+        } else {
+            // Session not ready, but can skip for loopback connections
 
-    // This is not ideal.
-    const QString host = reply->url.host();
-    if (host == QLatin1String("localhost") ||
-        QHostAddress(host) == QHostAddress::LocalHost ||
-        QHostAddress(host) == QHostAddress::LocalHostIPv6) {
-        // Don't need an open session for localhost access.
-        open();
-        return true;
-    }
+            // This is not ideal.
+            const QString host = reply->url.host();
 
-    if (manager->networkSession->isOpen() &&
-        manager->networkSession->state() == QNetworkSession::Connected) {
-        open();
-        return true;
+            if (host == QLatin1String("localhost") ||
+                QHostAddress(host) == QHostAddress::LocalHost ||
+                QHostAddress(host) == QHostAddress::LocalHostIPv6) {
+                // Don't need an open session for localhost access.
+            } else {
+                // need to wait for session to be opened
+                return false;
+            }
+        }
     }
-
-    return false;
-}
 #endif
+
+#ifndef QT_NO_NETWORKPROXY
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Get the proxy settings from the network session (in the case of service networks,
+    // the proxy settings change depending which AP was activated)
+    QNetworkSession *session = manager->networkSession.data();
+    QNetworkConfiguration config;
+    if (session) {
+        QNetworkConfigurationManager configManager;
+        // The active configuration tells us what IAP is in use
+        QVariant v = session->sessionProperty(QLatin1String("ActiveConfiguration"));
+        if (v.isValid())
+            config = configManager.configurationFromIdentifier(qvariant_cast<QString>(v));
+        // Fallback to using the configuration if no active configuration
+        if (!config.isValid())
+            config = session->configuration();
+        // or unspecified configuration if that is no good either
+        if (!config.isValid())
+            config = QNetworkConfiguration();
+    }
+    reply->proxyList = manager->queryProxy(QNetworkProxyQuery(config, url()));
+#else // QT_NO_BEARERMANAGEMENT
+    // Without bearer management, the proxy depends only on the url
+    reply->proxyList = manager->queryProxy(QNetworkProxyQuery(url()));
+#endif
+#endif
+
+    // now start the request
+    open();
+    return true;
+}
 
 QT_END_NAMESPACE

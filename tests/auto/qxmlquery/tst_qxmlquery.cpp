@@ -55,6 +55,7 @@
 #include <QXmlQuery>
 #include <QXmlResultItems>
 #include <QXmlSerializer>
+#include <QDebug>
 
 #include "MessageSilencer.h"
 #include "MessageValidator.h"
@@ -455,6 +456,7 @@ void tst_QXmlQuery::assignmentOperator() const
     class ReturnURI : public QAbstractUriResolver
     {
     public:
+        ReturnURI() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {
@@ -966,6 +968,7 @@ void tst_QXmlQuery::evaluateToReceiver()
     QString produced;
     QTextStream stream(&produced, QIODevice::WriteOnly);
     PushBaseliner push(stream, query.namePool());
+    QVERIFY(push.isValid());
     query.evaluateTo(&push);
 
     const QString baselineName(inputFile(QLatin1String(SRCDIR "pushBaselines/") + inputQuery.left(inputQuery.length() - 2) + QString::fromLatin1("ref")));
@@ -1684,6 +1687,7 @@ void tst_QXmlQuery::constCorrectness() const
         QString dummyString;
         QTextStream dummyStream(&dummyString);
         PushBaseliner dummy(dummyStream, query.namePool());
+        QVERIFY(dummy.isValid());
         query.evaluateTo(&dummy);
     }
 }
@@ -2871,6 +2875,7 @@ void tst_QXmlQuery::useUriResolver() const
                           , private TestFundament
     {
     public:
+        TestUriResolver() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {
@@ -3076,6 +3081,7 @@ void tst_QXmlQuery::setNetworkAccessManager() const
     {
         NetworkOverrider networkOverrider(QUrl(QLatin1String("tag:example.com:DOESNOTEXIST")),
                                           QUrl(inputFileAsURI(QLatin1String(XMLPATTERNSDIR "/queries/simpleDocument.xml"))));
+        QVERIFY(networkOverrider.isValid());
 
         QXmlQuery query;
         query.setNetworkAccessManager(&networkOverrider);
@@ -3092,6 +3098,7 @@ void tst_QXmlQuery::setNetworkAccessManager() const
     {
         NetworkOverrider networkOverrider(QUrl(QLatin1String("tag:example.com:DOESNOTEXIST")),
                                           QUrl(inputFileAsURI(QLatin1String(XMLPATTERNSDIR "/queries/concat.xq"))));
+        QVERIFY(networkOverrider.isValid());
 
         QXmlQuery query;
         query.setNetworkAccessManager(&networkOverrider);
@@ -3299,7 +3306,7 @@ void tst_QXmlQuery::bindVariableQXmlQueryInvalidate() const
     QXmlQuery query2;
     query2.setQuery("'query2'");
 
-    query.bindVariable(QLatin1String("name"), query);
+    query.bindVariable(QLatin1String("name"), query2);
     QVERIFY(!query.isValid());
 }
 

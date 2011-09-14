@@ -7,11 +7,11 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
-!win32:!embedded:!mac:!symbian:CONFIG	   += x11
+!win32:!embedded:!mac:!symbian:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
@@ -20,6 +20,7 @@ contains(QT_CONFIG, egl):CONFIG += egl
 HEADERS += qgl.h \
            qgl_p.h \
            qglcolormap.h \
+           qglfunctions.h \
            qglpixelbuffer.h \
            qglpixelbuffer_p.h \
            qglframebufferobject.h  \
@@ -29,8 +30,9 @@ HEADERS += qgl.h \
            qglbuffer.h \
 
 
-SOURCES	+= qgl.cpp \
+SOURCES += qgl.cpp \
            qglcolormap.cpp \
+           qglfunctions.cpp \
            qglpixelbuffer.cpp \
            qglframebufferobject.cpp \
            qglextensions.cpp \
@@ -58,7 +60,9 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglcustomshaderstage_p.h \
                 gl2paintengineex/qtriangulatingstroker_p.h \
                 gl2paintengineex/qtriangulator_p.h \
-                gl2paintengineex/qtextureglyphcache_gl_p.h
+                gl2paintengineex/qtextureglyphcache_gl_p.h \
+                gl2paintengineex/qglshadercache_p.h \
+                gl2paintengineex/qglshadercache_meego_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
@@ -75,6 +79,11 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qtriangulator.cpp \
                 gl2paintengineex/qtextureglyphcache_gl.cpp
 
+}
+
+qpa {
+    SOURCES +=  qgl_qpa.cpp \
+                qglpixelbuffer_stub.cpp
 }
 
 x11 {
@@ -111,7 +120,7 @@ x11 {
     LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
 }
 
-mac {
+mac:!qpa {
     OBJECTIVE_SOURCES += qgl_mac.mm \
                          qglpixelbuffer_mac.mm
     LIBS_PRIVATE += -framework AppKit -framework Carbon
@@ -158,6 +167,13 @@ symbian {
 
     HEADERS += qgl_egl_p.h \
                qgltexturepool_p.h
+
+    contains(QT_CONFIG, freetype) {
+        DEFINES += QT_NO_FONTCONFIG
+        INCLUDEPATH += \
+            ../3rdparty/freetype/src \
+            ../3rdparty/freetype/include
+    }
 
     symbian:TARGET.UID3 = 0x2002131A
 }

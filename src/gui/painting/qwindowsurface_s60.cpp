@@ -88,7 +88,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     const bool opaque = widgetPrivate->isOpaque && !blitWriteAlpha(widgetPrivate);
     TDisplayMode mode = displayMode(opaque);
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-    CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    CFbsBitmap *bitmap = new CFbsBitmap;	// CBase derived object needs check on new
+    Q_CHECK_PTR(bitmap);
     qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
 
     QSymbianRasterPixmapData *data = new QSymbianRasterPixmapData(QPixmapData::PixmapType);
@@ -96,8 +97,6 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         data->fromSymbianBitmap(bitmap, true);
         d_ptr->device = QPixmap(data);
     }
-
-    setStaticContentsSupport(true);
 }
 
 QS60WindowSurface::~QS60WindowSurface()
@@ -238,6 +237,11 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     data->resize(rect.width(), rect.height());
 
     QWindowSurface::setGeometry(rect);
+}
+
+QWindowSurface::WindowSurfaceFeatures QS60WindowSurface::features() const
+{
+    return QWindowSurface::AllFeatures;
 }
 
 CFbsBitmap* QS60WindowSurface::symbianBitmap() const

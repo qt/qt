@@ -44,18 +44,20 @@
 #include "qcoreapplication.h"
 #include <qdebug.h>
 
-QT_BEGIN_NAMESPACE
-        
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
+//#define QSYSTEMSEMAPHORE_DEBUG
+
+QT_BEGIN_NAMESPACE
+
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-        semaphore(0), error(QSystemSemaphore::NoError)
+    semaphore(0), error(QSystemSemaphore::NoError)
 {
 }
 
 void QSystemSemaphorePrivate::setErrorString(const QString &function)
 {
-    BOOL windowsError = GetLastError();
+    DWORD windowsError = GetLastError();
     if (windowsError == 0)
         return;
 
@@ -72,9 +74,10 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
     default:
         errorString = QCoreApplication::translate("QSystemSemaphore", "%1: unknown error %2").arg(function).arg(windowsError);
         error = QSystemSemaphore::UnknownError;
-#if defined QSYSTEMSEMAPHORE_DEBUG
+#ifdef QSYSTEMSEMAPHORE_DEBUG
         qDebug() << errorString << "key" << key;
 #endif
+        break;
     }
 }
 
@@ -110,7 +113,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         return false;
 
     if (count > 0) {
-	if (0 == ReleaseSemaphore(semaphore, count, 0)) {
+        if (0 == ReleaseSemaphore(semaphore, count, 0)) {
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug() << QLatin1String("QSystemSemaphore::modifySemaphore ReleaseSemaphore failed");
@@ -130,6 +133,6 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
     return true;
 }
 
-#endif //QT_NO_SYSTEMSEMAPHORE
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_SYSTEMSEMAPHORE

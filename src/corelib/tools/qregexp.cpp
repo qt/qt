@@ -3858,6 +3858,14 @@ QRegExp &QRegExp::operator=(const QRegExp &rx)
 }
 
 /*!
+    \fn void QRegExp::swap(QRegExp &other)
+    \since 4.8
+
+    Swaps regular expression \a other with this regular
+    expression. This operation is very fast and never fails.
+*/
+
+/*!
     Returns true if this regular expression is equal to \a rx;
     otherwise returns false.
 
@@ -4168,6 +4176,8 @@ int QRegExp::matchedLength() const
 }
 
 #ifndef QT_NO_REGEXP_CAPTURE
+
+#ifndef QT_NO_DEPRECATED
 /*!
   \obsolete
   Returns the number of captures contained in the regular expression.
@@ -4178,6 +4188,7 @@ int QRegExp::numCaptures() const
 {
     return captureCount();
 }
+#endif
 
 /*!
   \since 4.6

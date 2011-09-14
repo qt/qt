@@ -53,6 +53,7 @@ QT_MODULE(Network)
 
 #ifndef QT_NO_UDPSOCKET
 
+class QNetworkInterface;
 class QUdpSocketPrivate;
 
 class Q_NETWORK_EXPORT QUdpSocket : public QAbstractSocket
@@ -75,6 +76,18 @@ public:
     bool bind(const QHostAddress &address, quint16 port, BindMode mode);
     bool bind(quint16 port, BindMode mode);
     // ### Qt 5: Merge the bind functions
+
+#ifndef QT_NO_NETWORKINTERFACE
+    bool joinMulticastGroup(const QHostAddress &groupAddress);
+    bool joinMulticastGroup(const QHostAddress &groupAddress,
+                            const QNetworkInterface &iface);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress,
+                             const QNetworkInterface &iface);
+
+    QNetworkInterface multicastInterface() const;
+    void setMulticastInterface(const QNetworkInterface &iface);
+#endif
 
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;

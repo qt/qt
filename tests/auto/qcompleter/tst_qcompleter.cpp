@@ -49,6 +49,7 @@
 #include <QPointer>
 
 #include "../../shared/util.h"
+#include "../../shared/filesystem.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -276,7 +277,9 @@ retry:
         case 'L': row = completer->completionCount() - 1; break;
         case 'F': row = 0; break;
         default:
-            Q_ASSERT(false);
+            QFAIL(qPrintable(QString(
+                "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
+            ).arg(step[i])));
         }
         completer->setCurrentRow(row);
     }
@@ -1247,9 +1250,7 @@ public:
 void tst_QCompleter::task189564_omitNonSelectableItems()
 {
     const QString prefix("a");
-    Q_ASSERT(!prefix.isEmpty());
     const int n = 5;
-    Q_ASSERT(n > 0);
 
     QStringList strings;
     for (int i = 0; i < n; ++i)
@@ -1277,10 +1278,11 @@ public:
     {
         setEditable(true);
         setInsertPolicy(NoInsert);
-        Q_ASSERT(completer());
-        completer()->setCompletionMode(QCompleter::PopupCompletion);
-        completer()->setCompletionRole(Qt::DisplayRole);
-        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        if (completer()) {
+            completer()->setCompletionMode(QCompleter::PopupCompletion);
+            completer()->setCompletionRole(Qt::DisplayRole);
+            connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        }
     }
 private slots:
     void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
@@ -1289,6 +1291,7 @@ private slots:
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
     task246056_ComboBox *comboBox = new task246056_ComboBox;
+    QVERIFY(comboBox->completer());
     comboBox->addItem("");
     comboBox->addItem("a1");
     comboBox->addItem("a2");
@@ -1455,24 +1458,16 @@ void tst_QCompleter::task247560_keyboardNavigation()
 
 void tst_QCompleter::QTBUG_14292_filesystem()
 {
-    QDir tmpDir = QDir::temp();
+    FileSystem fs;
+    QDir tmpDir = QDir::currentPath();
+
     qsrand(QTime::currentTime().msec());
     QString d = "tst_QCompleter_" + QString::number(qrand());
-    QVERIFY(tmpDir.mkdir(d));
-
-#if 0
-    struct Cleanup {
-        QString dir;
-        ~Cleanup() {
-            qDebug() << dir <<
-            QFile::remove(dir); }
-    } cleanup;
-    cleanup.dir = tmpDir.absolutePath()+"/" +d;
-#endif
+    QVERIFY(fs.createDirectory(tmpDir.filePath(d)));
 
     QVERIFY(tmpDir.cd(d));
-    QVERIFY(tmpDir.mkdir("hello"));
-    QVERIFY(tmpDir.mkdir("holla"));
+    QVERIFY(fs.createDirectory(tmpDir.filePath("hello")));
+    QVERIFY(fs.createDirectory(tmpDir.filePath("holla")));
 
     QLineEdit edit;
     QCompleter comp;
@@ -1500,12 +1495,12 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QCOMPARE(comp.popup()->model()->rowCount(), 1);
     QTest::keyClick(&edit, 'r');
     QTRY_VERIFY(!comp.popup()->isVisible());
-    QVERIFY(tmpDir.mkdir("hero"));
+    QVERIFY(fs.createDirectory(tmpDir.filePath("hero")));
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 1);
     QTest::keyClick(comp.popup(), Qt::Key_Escape);
     QTRY_VERIFY(!comp.popup()->isVisible());
-    QVERIFY(tmpDir.mkdir("nothingThere"));
+    QVERIFY(fs.createDirectory(tmpDir.filePath("nothingThere")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
     QTest::qWait(60);
     QVERIFY(!comp.popup()->isVisible());
@@ -1522,7 +1517,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTest::qWaitForWindowShown(&w);
     QTRY_VERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
 
-    QVERIFY(tmpDir.mkdir("hemo"));
+    QVERIFY(fs.createDirectory(tmpDir.filePath("hemo")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
     QTest::qWait(60);
     QVERIFY(!comp.popup()->isVisible());

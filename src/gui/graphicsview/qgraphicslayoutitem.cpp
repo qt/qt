@@ -296,10 +296,6 @@ bool QGraphicsLayoutItemPrivate::hasHeightForWidth() const
 
 bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
 {
-    // enable this code when we add QSizePolicy::hasWidthForHeight() (For 4.8)
-#if 1
-    return false;
-#else
     Q_Q(const QGraphicsLayoutItem);
     if (isLayout) {
         const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
@@ -316,7 +312,6 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
         }
     }
     return q->sizePolicy().hasWidthForHeight();
-#endif
 }
 
 /*!
@@ -710,7 +705,7 @@ void QGraphicsLayoutItem::setMaximumHeight(qreal height)
     is equivalent to the item's position in parent coordinates).
 
     You must reimplement this function in a subclass of QGraphicsLayoutItem to
-    receive geometry updates. The layout will call this function when it does a 
+    receive geometry updates. The layout will call this function when it does a
     rearrangement.
 
     If \a rect is outside of the bounds of minimumSize and maximumSize, it

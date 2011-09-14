@@ -144,7 +144,15 @@ SOURCES += \
         widgets/qplaintextedit.cpp \
         widgets/qprintpreviewwidget.cpp
 
-!embedded:mac {
+x11: {
+    HEADERS += \
+        widgets/qabstractplatformmenubar_p.h
+
+    SOURCES += \
+        widgets/qmenubar_x11.cpp
+}
+
+!embedded:!qpa:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
                widgets/qmaccocoaviewcontainer_mac.h
     OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \ 

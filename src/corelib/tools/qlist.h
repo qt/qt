@@ -50,6 +50,10 @@
 #include <iterator>
 #include <list>
 #endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <iterator>
+#include <initializer_list>
+#endif
 
 #include <new>
 #include <limits.h>
@@ -118,6 +122,15 @@ public:
     inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     ~QList();
     QList<T> &operator=(const QList<T> &l);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QList &operator=(QList &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+    inline void swap(QList<T> &other) { qSwap(d, other.d); }
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QList(std::initializer_list<T> args) : d(&QListData::shared_null)
+    { d->ref.ref(); qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
+#endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
@@ -715,7 +728,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 {
-    if (d && !d->ref.deref())
+    if (!d->ref.deref())
         free(d);
 }
 
@@ -743,8 +756,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::free(QListData::Data *data)
 {
     node_destruct(reinterpret_cast<Node *>(data->array + data->begin),
                   reinterpret_cast<Node *>(data->array + data->end));
-    if (data->ref == 0)
-        qFree(data);
+    qFree(data);
 }
 
 
@@ -757,25 +769,32 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::clear()
 template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::removeAll(const T &_t)
 {
-    detachShared();
+    int index = indexOf(_t);
+    if (index == -1)
+        return 0;
+
     const T t = _t;
-    int removedCount=0, i=0;
-    Node *n;
-    while (i < p.size())
-        if ((n = reinterpret_cast<Node *>(p.at(i)))->t() == t) {
-            node_destruct(n);
-            p.remove(i);
-            ++removedCount;
-        } else {
-            ++i;
-        }
+    detach();
+
+    Node *i = reinterpret_cast<Node *>(p.at(index));
+    Node *e = reinterpret_cast<Node *>(p.end());
+    Node *n = i;
+    node_destruct(i);
+    while (++i != e) {
+        if (i->t() == t)
+            node_destruct(i);
+        else
+            *n++ = *i;
+    }
+
+    int removedCount = e - n;
+    d->end -= removedCount;
     return removedCount;
 }
 
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::removeOne(const T &_t)
 {
-    detachShared();
     int index = indexOf(_t);
     if (index != -1) {
         removeAt(index);

@@ -67,7 +67,7 @@ public:
     virtual void updateSoftKeys_sys() {};
 
 protected:
-    static QSoftKeyManager *self;
+    static QScopedPointer<QSoftKeyManager> self;
     QHash<QAction*, Qt::Key> keyedActions;
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;

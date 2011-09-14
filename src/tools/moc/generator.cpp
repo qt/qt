@@ -173,7 +173,7 @@ void Generator::generateCode()
     int index = 14;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", 5);
+    fprintf(out, "    %4d,       // revision\n", 6);
     fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;
@@ -291,12 +291,11 @@ void Generator::generateCode()
     }
     fprintf(out, "\"\n};\n\n");
 
-
 //
 // Generate internal qt_static_metacall() function
 //
-    if (isConstructible)
-        generateStaticMetacall(qualifiedClassNameIdentifier);
+    if (cdef->hasQObject && !isQt)
+        generateStaticMetacall();
 
 //
 // Build extra array
@@ -329,17 +328,19 @@ void Generator::generateCode()
         fprintf(out, "    0\n};\n\n");
     }
 
-    if (isConstructible || !extraList.isEmpty()) {
-        fprintf(out, "static const QMetaObjectExtraData qt_meta_extradata2_%s = {\n    ",
-                qualifiedClassNameIdentifier.constData());
+    bool hasExtraData = (cdef->hasQObject && !isQt) || !extraList.isEmpty();
+    if (hasExtraData) {
+        fprintf(out, "const QMetaObjectExtraData %s::staticMetaObjectExtraData = {\n    ",
+                cdef->qualified.constData());
         if (extraList.isEmpty())
             fprintf(out, "0, ");
         else
             fprintf(out, "qt_meta_extradata_%s, ", qualifiedClassNameIdentifier.constData());
-        if (!isConstructible)
-            fprintf(out, "0");
+
+        if (cdef->hasQObject && !isQt)
+            fprintf(out, " qt_static_metacall");
         else
-            fprintf(out, "%s_qt_static_metacall", qualifiedClassNameIdentifier.constData());
+            fprintf(out, " 0");
         fprintf(out, " \n};\n\n");
     }
 
@@ -359,10 +360,10 @@ void Generator::generateCode()
         fprintf(out, "    { 0, ");
     fprintf(out, "qt_meta_stringdata_%s,\n      qt_meta_data_%s, ",
              qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
-    if (!isConstructible && extraList.isEmpty())
+    if (!hasExtraData)
         fprintf(out, "0 }\n");
     else
-        fprintf(out, "&qt_meta_extradata2_%s }\n", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "&staticMetaObjectExtraData }\n");
     fprintf(out, "};\n");
 
     if(isQt)
@@ -657,34 +658,11 @@ void Generator::generateMetacall()
 
     if (methodList.size()) {
         needElse = true;
-        fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n        ");
-        fprintf(out, "switch (_id) {\n");
-        for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
-            const FunctionDef &f = methodList.at(methodindex);
-            fprintf(out, "        case %d: ", methodindex);
-            if (f.normalizedType.size())
-                fprintf(out, "{ %s _r = ", noRef(f.normalizedType).constData());
-            if (f.inPrivateClass.size())
-                fprintf(out, "%s->", f.inPrivateClass.constData());
-            fprintf(out, "%s(", f.name.constData());
-            int offset = 1;
-            for (int j = 0; j < f.arguments.count(); ++j) {
-                const ArgumentDef &a = f.arguments.at(j);
-                if (j)
-                    fprintf(out, ",");
-                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
-            }
-            fprintf(out, ");");
-            if (f.normalizedType.size())
-                fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = _r; } ",
-                        noRef(f.normalizedType).constData());
-            fprintf(out, " break;\n");
-        }
-        fprintf(out, "        default: ;\n");
-        fprintf(out, "        }\n");
-    }
-    if (methodList.size())
+        fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
+        fprintf(out, "        if (_id < %d)\n", methodList.size());
+        fprintf(out, "            qt_static_metacall(this, _c, _id, _a);\n");
         fprintf(out, "        _id -= %d;\n    }", methodList.size());
+    }
 
     if (cdef->propertyList.size()) {
         bool needGet = false;
@@ -900,40 +878,97 @@ void Generator::generateMetacall()
     fprintf(out,"return _id;\n}\n");
 }
 
-void Generator::generateStaticMetacall(const QByteArray &prefix)
+void Generator::generateStaticMetacall()
 {
-    bool isQObject = (cdef->classname == "QObject");
+    fprintf(out, "void %s::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)\n{\n",
+            cdef->qualified.constData());
 
-    fprintf(out, "static int %s_qt_static_metacall(QMetaObject::Call _c, int _id, void **_a)\n{\n",
-            prefix.constData());
+    bool needElse = false;
+    bool isUsed_a = false;
 
-    fprintf(out, "    if (_c == QMetaObject::CreateInstance) {\n");
-    fprintf(out, "        switch (_id) {\n");
-    for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
-        fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
-                cdef->qualified.constData(), cdef->qualified.constData());
-        const FunctionDef &f = cdef->constructorList.at(ctorindex);
-        int offset = 1;
-        for (int j = 0; j < f.arguments.count(); ++j) {
-            const ArgumentDef &a = f.arguments.at(j);
-            if (j)
-                fprintf(out, ",");
-            fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", a.typeNameForCast.constData(), offset++);
+    if (!cdef->constructorList.isEmpty()) {
+        fprintf(out, "    if (_c == QMetaObject::CreateInstance) {\n");
+        fprintf(out, "        switch (_id) {\n");
+        for (int ctorindex = 0; ctorindex < cdef->constructorList.count(); ++ctorindex) {
+            fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
+                    cdef->classname.constData(), cdef->classname.constData());
+            const FunctionDef &f = cdef->constructorList.at(ctorindex);
+            int offset = 1;
+            for (int j = 0; j < f.arguments.count(); ++j) {
+                const ArgumentDef &a = f.arguments.at(j);
+                if (j)
+                    fprintf(out, ",");
+                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", a.typeNameForCast.constData(), offset++);
+            }
+            fprintf(out, ");\n");
+            fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
         }
-        fprintf(out, ");\n");
-        fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
+        fprintf(out, "        }\n");
+        fprintf(out, "    }");
+        needElse = true;
+        isUsed_a = true;
     }
-    fprintf(out, "        }\n");
-    fprintf(out, "        _id -= %d;\n", cdef->constructorList.count());
-    fprintf(out, "        return _id;\n");
-    fprintf(out, "    }\n");
 
-    if (!isQObject)
-        fprintf(out, "    _id = %s::staticMetaObject.superClass()->static_metacall(_c, _id, _a);\n", cdef->qualified.constData());
+    QList<FunctionDef> methodList;
+    methodList += cdef->signalList;
+    methodList += cdef->slotList;
+    methodList += cdef->methodList;
 
-    fprintf(out, "    if (_id < 0)\n        return _id;\n");
+    if (!methodList.isEmpty()) {
+        if (needElse)
+            fprintf(out, " else ");
+        else
+            fprintf(out, "    ");
+        fprintf(out, "if (_c == QMetaObject::InvokeMetaMethod) {\n");
+#ifndef QT_NO_DEBUG
+        fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
+#endif
+        fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
+        fprintf(out, "        switch (_id) {\n");
+        for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
+            const FunctionDef &f = methodList.at(methodindex);
+            fprintf(out, "        case %d: ", methodindex);
+            if (f.normalizedType.size())
+                fprintf(out, "{ %s _r = ", noRef(f.normalizedType).constData());
+            fprintf(out, "_t->");
+            if (f.inPrivateClass.size())
+                fprintf(out, "%s->", f.inPrivateClass.constData());
+            fprintf(out, "%s(", f.name.constData());
+            int offset = 1;
+            for (int j = 0; j < f.arguments.count(); ++j) {
+                const ArgumentDef &a = f.arguments.at(j);
+                if (j)
+                    fprintf(out, ",");
+                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
+                isUsed_a = true;
+            }
+            fprintf(out, ");");
+            if (f.normalizedType.size()) {
+                fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = _r; } ",
+                        noRef(f.normalizedType).constData());
+                isUsed_a = true;
+            }
+            fprintf(out, " break;\n");
+        }
+        fprintf(out, "        default: ;\n");
+        fprintf(out, "        }\n");
+        fprintf(out, "    }");
+        needElse = true;
+    }
 
-    fprintf(out, "    return _id;\n");
+    if (needElse)
+        fprintf(out, "\n");
+
+    if (methodList.isEmpty()) {
+        fprintf(out, "    Q_UNUSED(_o);\n");
+        if (cdef->constructorList.isEmpty()) {
+            fprintf(out, "    Q_UNUSED(_id);\n");
+            fprintf(out, "    Q_UNUSED(_c);\n");
+        }
+    }
+    if (!isUsed_a)
+        fprintf(out, "    Q_UNUSED(_a);\n");
+
     fprintf(out, "}\n\n");
 }
 

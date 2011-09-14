@@ -5,9 +5,9 @@ SOURCES += tst_qdeclarativeanimatedimage.cpp ../shared/testhttpserver.cpp
 macx:CONFIG -= app_bundle
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

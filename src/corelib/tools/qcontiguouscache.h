@@ -110,6 +110,11 @@ public:
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+    inline void swap(QContiguousCache<T> &other) { qSwap(d, other.d); }
     bool operator==(const QContiguousCache<T> &other) const;
     inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
 

@@ -140,6 +140,11 @@ private slots:
 #endif
 
     void ampm();
+    void currency();
+    void quoteString();
+    void uiLanguages();
+    void weekendDays();
+    void listPatterns();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -181,6 +186,7 @@ void tst_QLocale::ctor()
         QCOMPARE(l.language(), QLocale::C);
         QCOMPARE(l.country(), QLocale::AnyCountry);
     }
+    TEST_CTOR(AnyLanguage, AnyCountry, default_lang, default_country)
     TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
     TEST_CTOR(Aymara, AnyCountry, default_lang, default_country)
     TEST_CTOR(Aymara, France, default_lang, default_country)
@@ -306,6 +312,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("en@", English, UnitedStates)
     TEST_CTOR("en.@", English, UnitedStates)
     TEST_CTOR("en_", English, UnitedStates)
+    TEST_CTOR("en_U", English, UnitedStates)
     TEST_CTOR("en_.", English, UnitedStates)
     TEST_CTOR("en_.@", English, UnitedStates)
     TEST_CTOR("en.bla", English, UnitedStates)
@@ -316,8 +323,10 @@ void tst_QLocale::ctor()
     TEST_CTOR("en_GB.bla", English, UnitedKingdom)
     TEST_CTOR("en_GB@.bla", English, UnitedKingdom)
     TEST_CTOR("en_GB@bla", English, UnitedKingdom)
+    TEST_CTOR("en-GB", English, UnitedKingdom)
+    TEST_CTOR("en-GB@bla", English, UnitedKingdom)
 
-    Q_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", Norwegian, Norway)
     TEST_CTOR("nb", Norwegian, Norway)
     TEST_CTOR("nn", NorwegianNynorsk, Norway)
@@ -326,13 +335,38 @@ void tst_QLocale::ctor()
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
     TEST_CTOR("es_ES", Spanish, Spain)
     TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
+    TEST_CTOR("es-419", Spanish, LatinAmericaAndTheCaribbean)
 
     // test default countries for languages
+    TEST_CTOR("zh", Chinese, China)
+    TEST_CTOR("zh-Hans", Chinese, China)
     TEST_CTOR("mn", Mongolian, Mongolia)
     TEST_CTOR("ne", Nepali, Nepal)
 
 #undef TEST_CTOR
+#define TEST_CTOR(req_lc, exp_lang, exp_script, exp_country) \
+    { \
+    QLocale l(req_lc); \
+    QVERIFY2(l.language() == QLocale::exp_lang \
+        && l.script() == QLocale::exp_script \
+        && l.country() == QLocale::exp_country, \
+        QString("requested: \"" + QString(req_lc) + "\", got: " \
+        + QLocale::languageToString(l.language()) \
+        + "/" + QLocale::scriptToString(l.script()) \
+        + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+    }
 
+    TEST_CTOR("zh_CN", Chinese, AnyScript, China)
+    TEST_CTOR("zh_Hans_CN", Chinese, SimplifiedHanScript, China)
+    TEST_CTOR("zh_Hans", Chinese, SimplifiedHanScript, China)
+    TEST_CTOR("zh_Hant", Chinese, TraditionalHanScript, HongKong)
+    TEST_CTOR("zh_Hans_MO", Chinese, SimplifiedHanScript, Macau)
+    TEST_CTOR("zh_Hant_MO", Chinese, TraditionalHanScript, Macau)
+    TEST_CTOR("az_Latn_AZ", Azerbaijani, LatinScript, Azerbaijan)
+    TEST_CTOR("ha_Arab_NG", Hausa, ArabicScript, Nigeria)
+    TEST_CTOR("ha_Latn_NG", Hausa, LatinScript, Nigeria)
+
+#undef TEST_CTOR
 }
 
 void tst_QLocale::emptyCtor()
@@ -397,7 +431,7 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("en_GB@bla", "en_GB")
     TEST_CTOR("de", "de_DE")
 
-    Q_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", "nb_NO")
     TEST_CTOR("nb", "nb_NO")
     TEST_CTOR("nn", "nn_NO")
@@ -405,11 +439,12 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("nb_NO", "nb_NO")
     TEST_CTOR("nn_NO", "nn_NO")
 
+    TEST_CTOR("DE", "de_DE");
+    TEST_CTOR("EN", "en_US");
+
     TEST_CTOR("en/", defaultLoc)
-    TEST_CTOR("DE", defaultLoc);
     TEST_CTOR("asdfghj", defaultLoc);
     TEST_CTOR("123456", defaultLoc);
-    TEST_CTOR("EN", defaultLoc);
 
 #undef TEST_CTOR
 #endif
@@ -1095,6 +1130,11 @@ void tst_QLocale::macDefaultLocale()
 	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
+    QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234.00"));
+    QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("($1,234.00)"));
+    QCOMPARE(locale.toCurrencyString(double(1234.56)), QString("$1,234.56"));
+    QCOMPARE(locale.toCurrencyString(double(-1234.56)), QString("($1,234.56)"));
+
     // Depending on the configured time zone, the time string might not
     // contain a GMT specifier. (Sometimes it just names the zone, like "CEST")
     if (timeString.contains(QString("GMT"))) {
@@ -1107,12 +1147,23 @@ void tst_QLocale::macDefaultLocale()
             expectedGMTSpecifier.append(QString("0%1").arg(qAbs(diff)));
         else
             expectedGMTSpecifier.append(QString("%1").arg(qAbs(diff)));
-        QVERIFY(timeString.contains(expectedGMTSpecifier));
+        QVERIFY2(timeString.contains(expectedGMTSpecifier), qPrintable(
+            QString("timeString `%1', expectedGMTSpecifier `%2'")
+            .arg(timeString)
+            .arg(expectedGMTSpecifier)
+        ));
     }
     QCOMPARE(locale.dayName(1), QString("Monday"));
     QCOMPARE(locale.dayName(7), QString("Sunday"));
     QCOMPARE(locale.monthName(1), QString("January"));
     QCOMPARE(locale.monthName(12), QString("December"));
+    QCOMPARE(locale.firstDayOfWeek(), Qt::Sunday);
+    QCOMPARE(locale.quoteString("string"), QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
+    QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
+
+    QList<Qt::DayOfWeek> days;
+    days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
+    QCOMPARE(locale.weekdays(), days);
 
 }
 
@@ -1768,6 +1819,7 @@ void tst_QLocale::measurementSystems_data()
 
 void tst_QLocale::measurementSystems()
 {
+    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
     QFETCH(QString, localeName);
     QFETCH(int, mSystem);
 
@@ -1829,6 +1881,7 @@ void tst_QLocale::systemMeasurementSystems_data()
 
 void tst_QLocale::systemMeasurementSystems()
 {
+    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
     // Theoretically, we could include HPUX in this test, but its setenv implementation
     // stinks. It's called putenv, and it requires you to keep the variable you pass
     // to it around forever.
@@ -1951,6 +2004,7 @@ void tst_QLocale::queryMeasureSystem_data()
 
 void tst_QLocale::queryMeasureSystem()
 {
+    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
     // Theoretically, we could include HPUX in this test, but its setenv implementation
     // stinks. It's called putenv, and it requires you to keep the variable you pass
     // to it around forever.
@@ -2066,6 +2120,10 @@ void tst_QLocale::monthName()
     QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
     QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
+
+    // check that our CLDR scripts handle surrogate pairs correctly
+    QLocale dsrt("en-Dsrt-US");
+    QCOMPARE(dsrt.monthName(1, QLocale::LongFormat), QString::fromUtf8("\xf0\x90\x90\x96\xf0\x90\x90\xb0\xf0\x90\x91\x8c\xf0\x90\x90\xb7\xf0\x90\x90\xad\xf0\x90\x90\xaf\xf0\x90\x91\x89\xf0\x90\x90\xa8"));
 }
 
 void tst_QLocale::standaloneMonthName()
@@ -2122,6 +2180,103 @@ void tst_QLocale::symbianSystemLocale()
 # endif
 }
 #endif
+
+void tst_QLocale::currency()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.toCurrencyString(qulonglong(1234)), QString("1234"));
+    QCOMPARE(c.toCurrencyString(qlonglong(-1234)), QString("-1234"));
+    QCOMPARE(c.toCurrencyString(double(1234.56)), QString("1234.56"));
+    QCOMPARE(c.toCurrencyString(double(-1234.56)), QString("-1234.56"));
+
+    const QLocale ru_RU("ru_RU");
+    QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+    QCOMPARE(ru_RU.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
+
+    const QLocale de_DE("de_DE");
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qulonglong(1234), QLatin1String("BAZ")), QString::fromUtf8("1234\xc2\xa0" "BAZ"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234)), QString::fromUtf8("-1234\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(qlonglong(-1234), QLatin1String("BAZ")), QString::fromUtf8("-1234\xc2\xa0" "BAZ"));
+    QCOMPARE(de_DE.toCurrencyString(double(1234.56)), QString::fromUtf8("1234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56)), QString::fromUtf8("-1234,56\xc2\xa0\xe2\x82\xac"));
+    QCOMPARE(de_DE.toCurrencyString(double(-1234.56), QLatin1String("BAZ")), QString::fromUtf8("-1234,56\xc2\xa0" "BAZ"));
+
+    const QLocale system = QLocale::system();
+    QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
+}
+
+void tst_QLocale::quoteString()
+{
+    const QString someText("text");
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.quoteString(someText), QString::fromUtf8("\x22" "text" "\x22"));
+    QCOMPARE(c.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\x27" "text" "\x27"));
+
+    const QLocale de_CH("de_CH");
+    QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xc2\xab" "text" "\xc2\xbb"));
+    QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\xb9" "text" "\xe2\x80\xba"));
+
+}
+
+void tst_QLocale::uiLanguages()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.uiLanguages().size(), 1);
+    QCOMPARE(c.uiLanguages().at(0), QLatin1String("C"));
+
+    const QLocale en_US("en_US");
+    QCOMPARE(en_US.uiLanguages().size(), 1);
+    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en-US"));
+
+    const QLocale ru_RU("ru_RU");
+    QCOMPARE(ru_RU.uiLanguages().size(), 1);
+    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru-RU"));
+}
+
+void tst_QLocale::weekendDays()
+{
+    const QLocale c(QLocale::C);
+    QList<Qt::DayOfWeek> days;
+    days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
+    QCOMPARE(c.weekdays(), days);
+}
+
+void tst_QLocale::listPatterns()
+{
+    QStringList sl1;
+    QStringList sl2;
+    sl2 << "aaa";
+    QStringList sl3;
+    sl3 << "aaa" << "bbb";
+    QStringList sl4;
+    sl4 << "aaa" << "bbb" << "ccc";
+    QStringList sl5;
+    sl5 << "aaa" << "bbb" << "ccc" << "ddd";
+
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.createSeparatedList(sl1), QString(""));
+    QCOMPARE(c.createSeparatedList(sl2), QString("aaa"));
+    QCOMPARE(c.createSeparatedList(sl3), QString("aaa, bbb"));
+    QCOMPARE(c.createSeparatedList(sl4), QString("aaa, bbb, ccc"));
+    QCOMPARE(c.createSeparatedList(sl5), QString("aaa, bbb, ccc, ddd"));
+
+    const QLocale en_US("en_US");
+    QCOMPARE(en_US.createSeparatedList(sl1), QString(""));
+    QCOMPARE(en_US.createSeparatedList(sl2), QString("aaa"));
+    QCOMPARE(en_US.createSeparatedList(sl3), QString("aaa and bbb"));
+    QCOMPARE(en_US.createSeparatedList(sl4), QString("aaa, bbb, and ccc"));
+    QCOMPARE(en_US.createSeparatedList(sl5), QString("aaa, bbb, ccc, and ddd"));
+
+    const QLocale zh_CN("zh_CN");
+    QCOMPARE(zh_CN.createSeparatedList(sl1), QString(""));
+    QCOMPARE(zh_CN.createSeparatedList(sl2), QString("aaa"));
+    QCOMPARE(zh_CN.createSeparatedList(sl3), QString::fromUtf8("aaa" "\xe5\x92\x8c" "bbb"));
+    QCOMPARE(zh_CN.createSeparatedList(sl4), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe5\x92\x8c" "ccc"));
+    QCOMPARE(zh_CN.createSeparatedList(sl5), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe3\x80\x81" "ccc" "\xe5\x92\x8c" "ddd"));
+}
 
 QTEST_APPLESS_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"

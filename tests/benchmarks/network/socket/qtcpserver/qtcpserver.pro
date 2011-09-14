@@ -11,3 +11,8 @@ CONFIG += release
 
 # Input
 SOURCES += tst_qtcpserver.cpp
+
+symbian: {
+    TARGET.CAPABILITY = NetworkServices
+    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
+}

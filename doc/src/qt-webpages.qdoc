@@ -65,6 +65,10 @@
     \title Visual Studio Integration
 */
 /*!
+    \externalpage http://qt.nokia.com/products/developer-tools
+    \title Qt Creator Product Page
+*/
+/*!
     \externalpage http://qt.nokia.com/products/add-on-products/catalog/4/Widgets/qtcalendarwidget/
     \title Calendar Widget
 */
@@ -141,7 +145,7 @@
     \title Task Tracker
 */
 /*!
-    \externalpage http://lists.trolltech.com
+    \externalpage http://lists.qt.nokia.com/
     \title Qt Mailing Lists
 */
 /*!
@@ -200,7 +204,10 @@
     \externalpage http://labs.qt.nokia.com
     \title Qt Labs
 */
-
+/*!
+    \externalpage http://doc.qt.nokia.com/
+    \title Qt Docs Web Start Page
+*/
 /*!
     \externalpage http://doc.qt.nokia.com/qtcreator/creator-qml-application.html
     \title external: Developing Qt Quick Applications with Creator
@@ -208,6 +215,14 @@
 /*!
     \externalpage http://qt.gitorious.org/qt/pages/QtCodingStyle
     \title Qt Coding Style
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/forums
+    \title Forums on Qt Developer Network
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/wiki
+    \title Wiki on Qt Developer Network
 */
 /*!
     \externalpage http://developer.qt.nokia.com/wiki/QtCreatorWhitepaper
@@ -248,6 +263,10 @@
 /*!
     \externalpage http://doc.qt.nokia.com/qtsimulator/index.html
     \title external: Qt Simulator Manual
+*/
+/*!
+    \externalpage http://qt.nokia.com/products/qt-sdk
+    \title Qt SDK Product Page
 */
 /*!
     \externalpage http://doc.qt.nokia.com/nokia-qtsdk-latest/index.html
@@ -298,12 +317,24 @@
     \title external: Mobility Location
 */
 /*!
+    \externalpage http://qt.nokia.com/partners/training/
+    \title Qt Training Partners
+*/
+/*!
+    \externalpage http://qt.nokia.com/partners/training/course-schedule
+    \title Open Enrollment Qt Training Courses
+*/
+/*!
     \externalpage http://qt.nokia.com/developer/learning/online/training/training-day-at-developer-days-2009/
     \title Training Day at Qt Developer Days 2009
 */
 /*!
     \externalpage http://doc.qt.nokia.com/qtmobility/all-examples.html
     \title external: Qt Mobility Examples
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning
+    \title Qt Video Portal
 */
 /*!
     \externalpage http://qt.nokia.com/developer/learning/online/training
@@ -317,4 +348,209 @@
     \externalpage http://qt.nokia.com/developer/learning/online/talks/developerdays2010
     \title Qt Developer Days 2010
 */
+/*!
+    \externalpage http://developer.qt.nokia.com/wiki/Category:LanguageBindings
+    \title Qt Language Bindings on Wiki
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_programming_essentials_by_ics_part_1
+    \title Qt Essentials by ICS part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_programming_essentials_by_ics_part_2
+    \title Qt Essentials by ICS part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_programming_essentials_by_kdab_part_1
+    \title Qt Essentials by KDAB part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_programming_essentials_by_kdab_part_2
+    \title Qt Essentials by KDAB part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_qgraphicsview_by_ics
+    \title QGraphicsView by ICS
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_qgraphicsview_by_kdab
+    \title QGraphicsView by KDAB
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_multithreading_by_ics
+    \title Multithreading by ICS
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_multithreading_by_kdab
+    \title Multithreading by KDAB
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/training_teaser_ui_development_with_qt_by_ics
+    \title UI Development with Qt by ICS
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/training_teaser_ui_development_with_qt_by_kdab
+    \title UI Development with Qt by KDAB
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/training_teaser_embedded_development_by_basyskom
+    \title Embedded Development by basysKom
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/training_teaser_embedded_development_by_ics
+    \title Embedded Development by ICS
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_model_view_programming_by_basyskom
+    \title ModelView Programming by basysKom
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_model_view_programming_by_kdab
+    \title ModelView Programming by KDAB
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/programming_with_qt_webkit_by_kdab
+    \title QWebKit by KDAB
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_quick_introduction_to_qt_quick_part_1_4
+    \title Quick by KDAB part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_quick_user_interaction_user_input_and_states_part_2_4
+    \title Quick by KDAB part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_quick_animations_and_visual_effects_part_3_4
+    \title Quick by KDAB part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_quick_small_projects_arranging_items_qmlcomponentsand_debugging_qml_part
+    \title Quick by KDAB part 4
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_mobile_development_for_nokia_devices_introduction_to_qt_on_mobile_part_1
+    \title Qt Mobile Development for Nokia Devices by Digia part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_mobile_development_for_nokia_devices_mobile_ui_design_technologies_and_a
+    \title Qt Mobile Development for Nokia Devices by Digia part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_mobile_development_for_nokia_devices_getting_started_with_nokia_qt_sdk_p
+    \title Qt Mobile Development for Nokia Devices by Digia part 3
+*/
 
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_2_hello_world_in_qtcre
+    \title Qt Essentials - Fundamentals of Qt part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_1_your_first_qt_applic
+    \title Qt Essentials - Fundamentals of Qt part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_application_creation_part_1_mainwindows
+    \title Qt Essentials - Application Creation part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/application_creation_part_2_settings_resources_and_application_deployment
+    \title Qt Essentials - Application Creation part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/application_creation_part_3_translation_for_developers
+    \title Qt Essentials - Application Creation part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_1_common_widgets
+    \title Qt Essentials - Widgets part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_2_layout_management
+    \title Qt Essentials - Widgets part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_3_guidelines_for_custom_widgets
+    \title Qt Essentials - Widgets part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_1_using_graphicsview_classes
+    \title Qt Essentials - Graphics View part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_2_transformations_and_coordinate_systems
+    \title Qt Essentials - Graphics View part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_3_creating_custom_items
+    \title Qt Essentials - Graphics View part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_1_model_view_concept
+    \title Qt Essentials - Model/View I part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_2_showing_simple_data
+    \title Qt Essentials - Model/View I part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_3_proxy_models
+    \title Qt Essentials - Model/View I part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_4_custom_models
+    \title Qt Essentials - Model/View I part 4
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_1_editing_item_data
+    \title Qt Essentials - Model/View II part 1
+*/
+/*!
+    \externalpage
+    \title Qt Essentials - Model/View II part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_3_data_widget_mapper
+    \title Qt Essentials - Model/View II part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_4_custom_tree_model
+    \title Qt Essentials - Model/View II part 4
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_5_drag_and_drop
+    \title Qt Essentials - Model/View II part 5
+*/
+/*!
+    \externalpage http://qt.nokia.com/certification
+    \title Qt Certification
+*/
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/certification/exams/preparation-prerequisites
+    \title Qt Certification Exam Preparation and Prerequisites
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/online/training/materials
+    \title Download Qt training materials
+*/
+
+/*!
+    \externalpage http://qt.nokia.com/partners/qt-in-education/qt-in-education-course-material/
+    \title Qt in Education Course Material
+*/
+
+/*!
+    \externalpage http://developer.qt.nokia.com/
+    \title Qt Developer Network
+*/
+
+/*!
+    \externalpage http://developer.qt.nokia.com/wiki/Qt_Modules_Maturity_Level
+    \title Qt Modules' Maturity Levels - Modules List
+*/
+
+/*!
+    \externalpage http://labs.qt.nokia.com/2011/05/03/qt-modules-maturity-level/
+    \title Qt Modules' Maturity Level - Description
+*/

@@ -103,10 +103,19 @@ private slots:
     void adoptedThreadExit();
     void adoptedThreadExec();
     void adoptedThreadFinished();
+    void adoptedThreadExecFinished();
     void adoptMultipleThreads();
+    void adoptMultipleThreadsOverlap();
 
     void QTBUG13810_exitAndStart();
     void QTBUG15378_exitAndExec();
+
+    void connectThreadFinishedSignalToObjectDeleteLaterSlot();
+    void wait2();
+    void wait3_slowDestructor();
+    void destroyFinishRace();
+    void startFinishRace();
+    void startAndQuitCustomEventLoop();
 
     void stressTest();
 };
@@ -200,7 +209,7 @@ public:
             cond.wait(&mutex, five_minutes);
         }
         setTerminationEnabled(true);
-        Q_ASSERT_X(false, "tst_QThread", "test case hung");
+        qFatal("tst_QThread: test case hung");
     }
 };
 
@@ -656,7 +665,9 @@ void tst_QThread::usleep()
 typedef void (*FunctionPointer)(void *);
 void noop(void*) { }
 
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_SYMBIAN
+typedef RThread ThreadHandle;
+#elif defined Q_OS_UNIX
     typedef pthread_t ThreadHandle;
 #elif defined Q_OS_WIN
     typedef HANDLE ThreadHandle;
@@ -687,6 +698,7 @@ public:
 protected:
     static void *runUnix(void *data);
     static unsigned WIN_FIX_STDCALL runWin(void *data);
+    static int runSymbian(void *data);
 
     FunctionPointer functionPointer;
     void *data;
@@ -696,7 +708,10 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
 {
     this->functionPointer = functionPointer;
     this->data = data;
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_SYMBIAN
+    qt_symbian_throwIfError(nativeThreadHandle.Create(KNullDesC(), NativeThreadWrapper::runSymbian, 1024, &User::Allocator(), this));
+    nativeThreadHandle.Resume();
+#elif defined Q_OS_UNIX
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
 #elif defined(Q_OS_WINCE)
@@ -716,7 +731,12 @@ void NativeThreadWrapper::startAndWait(FunctionPointer functionPointer, void *da
 
 void NativeThreadWrapper::join()
 {
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_SYMBIAN
+    TRequestStatus stat;
+    nativeThreadHandle.Logon(stat);
+    User::WaitForRequest(stat);
+    nativeThreadHandle.Close();
+#elif defined Q_OS_UNIX
     pthread_join(nativeThreadHandle, 0);
 #elif defined Q_OS_WIN
     WaitForSingleObject(nativeThreadHandle, INFINITE);
@@ -751,6 +771,12 @@ void *NativeThreadWrapper::runUnix(void *that)
 }
 
 unsigned WIN_FIX_STDCALL NativeThreadWrapper::runWin(void *data)
+{
+    runUnix(data);
+    return 0;
+}
+
+int NativeThreadWrapper::runSymbian(void *data)
 {
     runUnix(data);
     return 0;
@@ -888,6 +914,21 @@ void tst_QThread::adoptedThreadFinished()
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
+void tst_QThread::adoptedThreadExecFinished()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.setWaitForStop();
+    nativeThread.startAndWait(adoptedThreadExecFunction);
+
+    QObject::connect(nativeThread.qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    nativeThread.stop();
+    nativeThread.join();
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
 void tst_QThread::adoptMultipleThreads()
 {
 #if defined(Q_OS_WIN)
@@ -917,6 +958,7 @@ void tst_QThread::adoptMultipleThreads()
     for (int i = 0; i < numThreads; ++i) {
         nativeThreads.at(i)->stop();
         nativeThreads.at(i)->join();
+        delete nativeThreads.at(i);
     }
 
     QTestEventLoop::instance().enterLoop(5);
@@ -924,6 +966,50 @@ void tst_QThread::adoptMultipleThreads()
     QCOMPARE(int(recorder.activationCount), numThreads);
 }
 
+void tst_QThread::adoptMultipleThreadsOverlap()
+{
+#if defined(Q_OS_WIN)
+    // Windows CE is not capable of handling that many threads. On the emulator it is dead with 26 threads already.
+#  if defined(Q_OS_WINCE)
+    const int numThreads = 20;
+#  else
+    // need to test lots of threads, so that we exceed MAXIMUM_WAIT_OBJECTS in qt_adopted_thread_watcher()
+    const int numThreads = 200;
+#  endif
+#elif defined(Q_OS_SYMBIAN)
+    // stress the monitoring thread's add function
+    const int numThreads = 100;
+#else
+    const int numThreads = 5;
+#endif
+    QVector<NativeThreadWrapper*> nativeThreads;
+
+    SignalRecorder recorder;
+
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.append(new NativeThreadWrapper());
+        nativeThreads.at(i)->setWaitForStop();
+        nativeThreads.at(i)->mutex.lock();
+        nativeThreads.at(i)->start();
+    }
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.at(i)->startCondition.wait(&nativeThreads.at(i)->mutex);
+        QObject::connect(nativeThreads.at(i)->qthread, SIGNAL(finished()), &recorder, SLOT(slot()));
+        nativeThreads.at(i)->mutex.unlock();
+    }
+
+    QObject::connect(nativeThreads.at(numThreads - 1)->qthread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    for (int i = 0; i < numThreads; ++i) {
+        nativeThreads.at(i)->stop();
+        nativeThreads.at(i)->join();
+        delete nativeThreads.at(i);
+    }
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(int(recorder.activationCount), numThreads);
+}
 void tst_QThread::stressTest()
 {
 #if defined(Q_OS_WINCE)
@@ -976,7 +1062,6 @@ void tst_QThread::QTBUG13810_exitAndStart()
     QCOMPARE(sync1.m_prop, 89);
 }
 
-
 void tst_QThread::QTBUG15378_exitAndExec()
 {
     class Thread : public QThread {
@@ -999,7 +1084,7 @@ void tst_QThread::QTBUG15378_exitAndExec()
     thread.sem2.acquire();
     int v = thread.value;
     QCOMPARE(v, 556);
-
+    
     //test that the thread is running by executing queued connected signal there
     Syncronizer sync1;
     sync1.moveToThread(&thread);
@@ -1015,6 +1100,149 @@ void tst_QThread::QTBUG15378_exitAndExec()
     QCOMPARE(sync1.m_prop, 89);
 }
 
+void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
+{
+    QThread thread;
+    QObject *object = new QObject;
+    QWeakPointer<QObject> p = object;
+    QVERIFY(!p.isNull());
+    connect(&thread, SIGNAL(started()), &thread, SLOT(quit()), Qt::DirectConnection);
+    connect(&thread, SIGNAL(finished()), object, SLOT(deleteLater()));
+    object->moveToThread(&thread);
+    thread.start();
+    QVERIFY(thread.wait(30000));
+    QVERIFY(p.isNull());
+}
+
+class Waiting_Thread : public QThread
+{
+public:
+    enum { WaitTime = 800 };
+    QMutex mutex;
+    QWaitCondition cond1;
+    QWaitCondition cond2;
+
+    void run()
+    {
+        QMutexLocker locker(&mutex);
+        cond1.wait(&mutex);
+        cond2.wait(&mutex, WaitTime);
+    }
+};
+
+void tst_QThread::wait2()
+{
+    QElapsedTimer timer;
+    Waiting_Thread thread;
+    thread.start();
+    timer.start();
+    QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
+    qint64 elapsed = timer.elapsed();
+
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+
+    timer.start();
+    thread.cond1.wakeOne();
+    QVERIFY(thread.wait(/*Waiting_Thread::WaitTime * 1.4*/));
+    elapsed = timer.elapsed();
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+}
+
+
+class SlowSlotObject : public QObject {
+    Q_OBJECT
+public:
+    QMutex mutex;
+    QWaitCondition cond;
+public slots:
+    void slowSlot() {
+        QMutexLocker locker(&mutex);
+        cond.wait(&mutex);
+    }
+};
+
+void tst_QThread::wait3_slowDestructor()
+{
+    SlowSlotObject slow;
+    QThread thread;
+    QObject::connect(&thread, SIGNAL(finished()), &slow, SLOT(slowSlot()), Qt::DirectConnection);
+
+    enum { WaitTime = 1800 };
+    QElapsedTimer timer;
+
+    thread.start();
+    thread.quit();
+    //the quit function will cause the thread to finish and enter the slowSlot that is blocking
+
+    timer.start();
+    QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
+    qint64 elapsed = timer.elapsed();
+
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+
+    slow.cond.wakeOne();
+    //now the thread should finish quickly
+    QVERIFY(thread.wait(one_minute));
+}
+
+void tst_QThread::destroyFinishRace()
+{
+    class Thread : public QThread { void run() {} };
+    for (int i = 0; i < 15; i++) {
+        Thread *thr = new Thread;
+        connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
+        QWeakPointer<QThread> weak(static_cast<QThread*>(thr));
+        thr->start();
+        while (weak) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+    }
+}
+
+void tst_QThread::startFinishRace()
+{
+    class Thread : public QThread {
+    public:
+        Thread() : i (50) {}
+        void run() {
+            i--;
+            if (!i) disconnect(this, SIGNAL(finished()), 0, 0);
+        }
+        int i;
+    };
+    for (int i = 0; i < 15; i++) {
+        Thread thr;
+        connect(&thr, SIGNAL(finished()), &thr, SLOT(start()));
+        thr.start();
+        while (!thr.isFinished() || thr.i != 0) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+        QCOMPARE(thr.i, 0);
+    }
+}
+
+void tst_QThread::startAndQuitCustomEventLoop()
+{
+    struct Thread : QThread {
+        void run() { QEventLoop().exec(); }
+    };
+
+   for (int i = 0; i < 5; i++) {
+       Thread t;
+       t.start();
+       t.quit();
+       t.wait();
+   }
+}
 
 
 QTEST_MAIN(tst_QThread)

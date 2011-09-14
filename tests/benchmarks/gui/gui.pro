@@ -9,3 +9,9 @@ SUBDIRS = \
         painting \
         styles \
         text
+
+TRUSTED_BENCHMARKS += \
+    graphicsview/functional/GraphicsViewBenchmark \
+    graphicsview/qgraphicsview
+
+include(../trusted-benchmarks.pri)

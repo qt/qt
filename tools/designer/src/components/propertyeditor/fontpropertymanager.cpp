@@ -123,7 +123,7 @@ namespace qdesigner_internal {
 
         // This will cause a recursion
         QtVariantProperty *antialiasing = vm->addProperty(enumTypeId, QCoreApplication::translate("FontPropertyManager", "Antialiasing"));
-        const QFont font = qVariantValue<QFont>(vm->variantProperty(property)->value());
+        const QFont font = qvariant_cast<QFont>(vm->variantProperty(property)->value());
 
         antialiasing->setAttribute(QLatin1String("enumNames"), m_aliasingEnumNames);
         antialiasing->setValue(antialiasingToIndex(font.styleStrategy()));
@@ -196,7 +196,7 @@ namespace qdesigner_internal {
 
         mask &= ~flag;
         font.resolve(mask);
-        qVariantSetValue(v, font);
+        v.setValue(font);
         fontProperty->setValue(v);
         return true;
     }
@@ -250,13 +250,13 @@ namespace qdesigner_internal {
         QtVariantProperty *fontProperty = vm->variantProperty(antialiasingProperty);
         const QFont::StyleStrategy newValue = indexToAntialiasing(value.toInt());
 
-        QFont font = qVariantValue<QFont>(fontProperty->value());
+        QFont font = qvariant_cast<QFont>(fontProperty->value());
         const QFont::StyleStrategy oldValue = font.styleStrategy();
         if (newValue == oldValue)
             return Unchanged;
 
         font.setStyleStrategy(newValue);
-        fontProperty->setValue(qVariantFromValue(font));
+        fontProperty->setValue(QVariant::fromValue(font));
         return Changed;
     }
 
@@ -268,7 +268,7 @@ namespace qdesigner_internal {
 
         const PropertyList &subProperties = it.value();
 
-        QFont font = qVariantValue<QFont>(value);
+        QFont font = qvariant_cast<QFont>(value);
         const unsigned mask = font.resolve();
 
         const int count = subProperties.size();
@@ -285,7 +285,7 @@ namespace qdesigner_internal {
         if (QtProperty *antialiasingProperty = m_propertyToAntialiasing.value(property, 0)) {
             QtVariantProperty *antialiasing = vm->variantProperty(antialiasingProperty);
             if (antialiasing) {
-                QFont font = qVariantValue<QFont>(value);
+                QFont font = qvariant_cast<QFont>(value);
                 antialiasing->setValue(antialiasingToIndex(font.styleStrategy()));
             }
         }

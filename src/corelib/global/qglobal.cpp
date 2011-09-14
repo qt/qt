@@ -74,7 +74,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
+#if defined(Q_OS_MACX) && !defined(QT_NO_CORESERVICES)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -1173,6 +1173,7 @@ bool qSharedBuild()
     \value MV_10_4     Mac OS X 10.4
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
+    \value MV_10_7     Mac OS X 10.7
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1182,6 +1183,7 @@ bool qSharedBuild()
     \value MV_TIGER    Apple codename for MV_10_4
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
+    \value MV_LION     Apple codename for MV_10_7
 
     \sa WinVersion, SymbianVersion
 */
@@ -1235,7 +1237,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1244,7 +1246,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1253,7 +1255,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1262,7 +1264,16 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QPA, Q_WS_S60
+*/
+
+/*!
+    \macro Q_WS_QPA
+    \relates <QtGlobal>
+
+    Defined on Qt for Embedded Linux, Lite version.
+
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1644,62 +1655,14 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qnamespace.h"
 QT_END_INCLUDE_NAMESPACE
 
-Q_CORE_EXPORT OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref)
-{
-    return FSPathMakeRef(reinterpret_cast<const UInt8 *>(file.toUtf8().constData()), fsref, 0);
-}
-
-// Don't use this function, it won't work in 10.5 (Leopard) and up
-Q_CORE_EXPORT OSErr qt_mac_create_fsspec(const QString &file, FSSpec *spec)
-{
-    FSRef fsref;
-    OSErr ret = qt_mac_create_fsref(file, &fsref);
-    if (ret == noErr)
-        ret = FSGetCatalogInfo(&fsref, kFSCatInfoNone, 0, 0, spec, 0);
-    return ret;
-}
-
-Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1)
-{
-    if(len == -1)
-        len = s.length();
-#if 0
-    UnicodeMapping mapping;
-    mapping.unicodeEncoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
-                                                 kTextEncodingDefaultVariant,
-                                                 kUnicode16BitFormat);
-    mapping.otherEncoding = (encoding ? encoding : );
-    mapping.mappingVersion = kUnicodeUseLatestMapping;
-
-    UnicodeToTextInfo info;
-    OSStatus err = CreateUnicodeToTextInfo(&mapping, &info);
-    if(err != noErr) {
-        qDebug("Qt: internal: Unable to create pascal string '%s'::%d [%ld]",
-               s.left(len).latin1(), (int)encoding, err);
-        return;
-    }
-    const int unilen = len * 2;
-    const UniChar *unibuf = (UniChar *)s.unicode();
-    ConvertFromUnicodeToPString(info, unilen, unibuf, str);
-    DisposeUnicodeToTextInfo(&info);
-#else
-    Q_UNUSED(encoding);
-    CFStringGetPascalString(QCFString(s), str, 256, CFStringGetSystemEncoding());
-#endif
-}
-
-Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
-    return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
-}
-
-
-
 static QSysInfo::MacVersion macVersion()
 {
+#ifndef QT_NO_CORESERVICES
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
     }
+#endif
     return QSysInfo::MV_Unknown;
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = macVersion();
@@ -1729,7 +1692,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
     winver = QSysInfo::WV_NT;
-    OSVERSIONINFOW osver;
+    OSVERSIONINFO osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
     GetVersionEx(&osver);
 #ifdef Q_OS_WINCE
@@ -2016,7 +1979,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
 */
 void qt_check_pointer(const char *n, int l)
 {
-    qWarning("In file %s, line %d: Out of memory", n, l);
+    qFatal("In file %s, line %d: Out of memory", n, l);
 }
 
 /* \internal
@@ -2091,7 +2054,7 @@ static void mac_default_handler(const char *msg)
 {
     if (qt_is_gui_used) {
         Str255 pmsg;
-        qt_mac_to_pascal_string(msg, pmsg);
+        qt_mac_to_pascal_string(QString::fromAscii(msg), pmsg);
         DebugStr(pmsg);
     } else {
         fprintf(stderr, msg);
@@ -2247,7 +2210,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         _LIT(format, "[Qt Message] %S");
         const int maxBlockSize = 256 - ((const TDesC &)format).Length();
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = q_check_ptr(HBufC::New(qMin(maxBlockSize, ptr.Length())));
+        HBufC* hbuffer = HBufC::New(qMin(maxBlockSize, ptr.Length()));
+        Q_CHECK_PTR(hbuffer);
         for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
             hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
             RDebug::Print(format, hbuffer);
@@ -2585,7 +2549,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2616,7 +2580,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2624,10 +2588,10 @@ void qsrand(uint seed)
             seedStorage->setLocalData(pseed = new SeedStorageType);
         *pseed = seed;
     } else {
-        //golbal static seed storage should always exist,
+        //global static seed storage should always exist,
         //except after being deleted by QGlobalStaticDeleter.
         //But since it still can be called from destructor of another
-        //global static object, fallback to sqrand(seed)
+        //global static object, fallback to srand(seed)
         srand(seed);
     }
 #else
@@ -2655,7 +2619,7 @@ void qsrand(uint seed)
 */
 int qrand()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2665,10 +2629,10 @@ int qrand()
         }
         return rand_r(pseed);
     } else {
-        //golbal static seed storage should always exist,
+        //global static seed storage should always exist,
         //except after being deleted by QGlobalStaticDeleter.
         //But since it still can be called from destructor of another
-        //global static object, fallback to qrand()
+        //global static object, fallback to rand()
         return rand();
     }
 #else
@@ -2861,6 +2825,40 @@ int qrand()
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qttrid_noop
 
     \sa qtTrId(), {Internationalization with Qt}
+*/
+
+/*!
+    \macro Q_LIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints to the compiler that the enclosed condition, \a expr, is
+    likely to evaluate to \c true.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qlikely
+
+    \sa Q_UNLIKELY()
+*/
+
+/*!
+    \macro Q_UNLIKELY(expr)
+    \relates <QtGlobal>
+    \since 4.8
+
+    \brief Hints to the compiler that the enclosed condition, \a expr, is
+    likely to evaluate to \c false.
+
+    Use of this macro can help the compiler to optimize the code.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qunlikely
+
+    \sa Q_LIKELY()
 */
 
 /*!

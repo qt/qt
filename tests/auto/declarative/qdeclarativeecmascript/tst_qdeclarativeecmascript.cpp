@@ -176,6 +176,8 @@ private slots:
     void aliasBindingsOverrideTarget();
     void aliasWritesOverrideBindings();
     void pushCleanContext();
+    void realToInt();
+    void qtbug_20648();
 
     void include();
 
@@ -2161,16 +2163,12 @@ public:
     ~CppOwnershipReturnValue() { delete value; }
 
     Q_INVOKABLE QObject *create() {
-        Q_ASSERT(value == 0);
-
         value = new QObject;
         QDeclarativeEngine::setObjectOwnership(value, QDeclarativeEngine::CppOwnership);
         return value;
     }
 
     Q_INVOKABLE MyQmlObject *createQmlObject() {
-        Q_ASSERT(value == 0);
-
         MyQmlObject *rv = new MyQmlObject;
         value = rv;
         return rv;
@@ -3079,6 +3077,27 @@ void tst_qdeclarativeecmascript::pushCleanContext()
     // Check that function objects created in these contexts work
     QCOMPARE(func1.call().toInt32(), 15);
     QCOMPARE(func2.call().toInt32(), 6);
+}
+
+void tst_qdeclarativeecmascript::realToInt()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("realToInt.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QMetaObject::invokeMethod(object, "test1");
+    QCOMPARE(object->value(), int(4));
+    QMetaObject::invokeMethod(object, "test2");
+    QCOMPARE(object->value(), int(8));
+}
+
+void tst_qdeclarativeecmascript::qtbug_20648()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_20648.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toInt(), 100);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

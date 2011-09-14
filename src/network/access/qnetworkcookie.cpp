@@ -395,8 +395,8 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // qdtext         = <any TEXT except <">>
         // quoted-pair    = "\" CHAR
 
-        // If its NAME=VALUE, retain the value as is
-        // refer to ttp://bugreports.qt.nokia.com/browse/QTBUG-17746
+        // If it is NAME=VALUE, retain the value as is
+        // refer to http://bugreports.qt.nokia.com/browse/QTBUG-17746
         if (isNameValue)
             second += '"';
         ++i;
@@ -432,7 +432,9 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         position = i;
         for ( ; i < length; ++i) {
             register char c = text.at(i);
-            if (c == ',' || c == ';' || isLWS(c))
+            // for name value pairs, we want to parse until reaching the next ';'
+            // and not break when reaching a space char
+            if (c == ',' || c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))
                 break;
         }
 
@@ -487,7 +489,6 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
     result += '=';
     if ((d->value.contains(';') ||
         d->value.contains(',') ||
-        d->value.contains(' ') ||
         d->value.contains('"')) &&
         (!d->value.startsWith('"') &&
         !d->value.endsWith('"'))) {
@@ -737,7 +738,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // 4 digit Year
         if (isNum
             && year == -1
-            && dateString.length() >= at + 3) {
+            && dateString.length() > at + 3) {
             if (isNumber(dateString[at + 1])
                 && isNumber(dateString[at + 2])
                 && isNumber(dateString[at + 3])) {

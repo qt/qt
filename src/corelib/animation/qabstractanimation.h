@@ -54,6 +54,7 @@ QT_MODULE(Core)
 
 class QAnimationGroup;
 class QSequentialAnimationGroup;
+class QAnimationDriver;
 
 class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject
@@ -131,6 +132,36 @@ private:
     Q_DISABLE_COPY(QAbstractAnimation)
     Q_DECLARE_PRIVATE(QAbstractAnimation)
 };
+
+class QAnimationDriverPrivate;
+class Q_CORE_EXPORT QAnimationDriver : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QAnimationDriver)
+
+public:
+    QAnimationDriver(QObject *parent = 0);
+
+    void advance();
+    void install();
+
+    bool isRunning() const;
+
+protected:
+    virtual void started() {};
+    virtual void stopped() {};
+
+    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
+
+private:
+    friend class QUnifiedTimer;
+
+    void start();
+    void stop();
+};
+
+
+
 
 #endif //QT_NO_ANIMATION
 

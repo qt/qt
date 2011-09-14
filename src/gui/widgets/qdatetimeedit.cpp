@@ -890,7 +890,13 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
         const bool dateShown = (d->sections & DateSections_Mask);
         Q_ASSERT(dateShown || timeShown);
         if (timeShown && !dateShown) {
+            QTime time = d->value.toTime();
             setDateRange(d->value.toDate(), d->value.toDate());
+            if (d->minimum.toTime() >= d->maximum.toTime()) {
+                setTimeRange(QDATETIMEEDIT_TIME_MIN, QDATETIMEEDIT_TIME_MAX);
+                // if the time range became invalid during the adjustment, the time would have been reset
+                setTime(time);
+            }
         } else if (dateShown && !timeShown) {
             setTimeRange(QDATETIMEEDIT_TIME_MIN, QDATETIMEEDIT_TIME_MAX);
             d->value = QDateTime(d->value.toDate(), QTime(), d->spec);
@@ -1654,6 +1660,15 @@ void QDateTimeEditPrivate::updateTimeSpec()
     minimum = minimum.toDateTime().toTimeSpec(spec);
     maximum = maximum.toDateTime().toTimeSpec(spec);
     value = value.toDateTime().toTimeSpec(spec);
+
+    // time zone changes can lead to 00:00:00 becomes 01:00:00 and 23:59:59 becomes 00:59:59 (invalid range)
+    const bool dateShown = (sections & QDateTimeEdit::DateSections_Mask);
+    if (!dateShown) {
+        if (minimum.toTime() >= maximum.toTime()){
+            minimum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MIN, spec);
+            maximum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MAX, spec);
+        }
+    }
 }
 
 void QDateTimeEditPrivate::updateEdit()
@@ -2523,20 +2538,32 @@ void QDateTimeEditPrivate::syncCalendarWidget()
 }
 
 QCalendarPopup::QCalendarPopup(QWidget * parent, QCalendarWidget *cw)
-    : QWidget(parent, Qt::Popup), calendar(0)
+    : QWidget(parent, Qt::Popup)
 {
     setAttribute(Qt::WA_WindowPropagation);
 
     dateChanged = false;
     if (!cw) {
-        cw = new QCalendarWidget(this);
+        verifyCalendarInstance();
+    } else {
+        setCalendarWidget(cw);
+    }
+}
+
+QCalendarWidget *QCalendarPopup::verifyCalendarInstance()
+{
+    if (calendar.isNull()) {
+        QCalendarWidget *cw = new QCalendarWidget(this);
         cw->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())
             cw->setHorizontalHeaderFormat(QCalendarWidget::SingleLetterDayNames);
 #endif
+        setCalendarWidget(cw);
+        return cw;
+    } else {
+        return calendar.data();
     }
-    setCalendarWidget(cw);
 }
 
 void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
@@ -2548,28 +2575,29 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
         widgetLayout->setMargin(0);
         widgetLayout->setSpacing(0);
     }
-    delete calendar;
-    calendar = cw;
-    widgetLayout->addWidget(calendar);
+    delete calendar.data();
+    calendar = QWeakPointer<QCalendarWidget>(cw);
+    widgetLayout->addWidget(cw);
 
-    connect(calendar, SIGNAL(activated(QDate)), this, SLOT(dateSelected(QDate)));
-    connect(calendar, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
-    connect(calendar, SIGNAL(selectionChanged()), this, SLOT(dateSelectionChanged()));
+    connect(cw, SIGNAL(activated(QDate)), this, SLOT(dateSelected(QDate)));
+    connect(cw, SIGNAL(clicked(QDate)), this, SLOT(dateSelected(QDate)));
+    connect(cw, SIGNAL(selectionChanged()), this, SLOT(dateSelectionChanged()));
 
-    calendar->setFocus();
+    cw->setFocus();
 }
 
 
 void QCalendarPopup::setDate(const QDate &date)
 {
     oldDate = date;
-    calendar->setSelectedDate(date);
+    verifyCalendarInstance()->setSelectedDate(date);
 }
 
 void QCalendarPopup::setDateRange(const QDate &min, const QDate &max)
 {
-    calendar->setMinimumDate(min);
-    calendar->setMaximumDate(max);
+    QCalendarWidget *cw = verifyCalendarInstance();
+    cw->setMinimumDate(min);
+    cw->setMaximumDate(max);
 }
 
 void QCalendarPopup::mousePressEvent(QMouseEvent *event)
@@ -2605,7 +2633,7 @@ bool QCalendarPopup::event(QEvent *event)
 void QCalendarPopup::dateSelectionChanged()
 {
     dateChanged = true;
-    emit newDateSelected(calendar->selectedDate());
+    emit newDateSelected(verifyCalendarInstance()->selectedDate());
 }
 void QCalendarPopup::dateSelected(const QDate &date)
 {

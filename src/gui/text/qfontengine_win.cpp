@@ -224,15 +224,12 @@ void QFontEngineWin::getCMap()
 
 inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
-        uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
-            ++i;
-        }
+    uint ucs4 = str[i].unicode();
+    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
+        ++i;
+        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
     }
-    return uc;
+    return ucs4;
 }
 
 int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs, bool mirrored) const
@@ -1251,7 +1248,7 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
 #define SPI_GETFONTSMOOTHINGCONTRAST           0x200C
 #define SPI_SETFONTSMOOTHINGCONTRAST           0x200D
 
-QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &t)
+QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, const QTransform &t)
 {
     HFONT font = hfont;
 
@@ -1284,9 +1281,26 @@ QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTra
     return rgbMask;
 }
 
+// From qfontdatabase_win.cpp
+extern QFontEngine *qt_load_font_engine_win(const QFontDef &request);
+QFontEngine *QFontEngineWin::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef request = fontDef;
+    QString actualFontName = request.family;
+    if (!uniqueFamilyName.isEmpty())
+        request.family = uniqueFamilyName;
+    request.pixelSize = pixelSize;
+
+    QFontEngine *fontEngine = qt_load_font_engine_win(request);
+    if (fontEngine != NULL)
+        fontEngine->fontDef.family = actualFontName;
+
+    return fontEngine;
+}
+
 // -------------------------------------- Multi font engine
 
-QFontEngineMultiWin::QFontEngineMultiWin(QFontEngineWin *first, const QStringList &fallbacks)
+QFontEngineMultiWin::QFontEngineMultiWin(QFontEngine *first, const QStringList &fallbacks)
         : QFontEngineMulti(fallbacks.size()+1),
           fallbacks(fallbacks)
 {

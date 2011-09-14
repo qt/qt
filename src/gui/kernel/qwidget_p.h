@@ -102,6 +102,9 @@ class QWSManager;
 #if defined(Q_WS_MAC)
 class QCoreGraphicsPaintEnginePrivate;
 #endif
+#if defined(Q_WS_QPA)
+class QPlatformWindow;
+#endif
 class QPaintEngine;
 class QPixmap;
 class QWidgetBackingStore;
@@ -109,6 +112,8 @@ class QGraphicsProxyWidget;
 class QWidgetItemV2;
 
 class QStyle;
+
+class QUnifiedToolbarSurface;
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
@@ -228,6 +233,10 @@ struct QTLWExtra {
     uint inExpose : 1; // Prevents drawing recursion
     uint nativeWindowTransparencyEnabled : 1; // Tracks native window transparency
     uint forcedToRaster : 1;
+#elif defined(Q_WS_QPA)
+    QPlatformWindow *platformWindow;
+    QPlatformWindowFormat platformWindowFormat;
+    quint32 screenIndex; // index in qplatformscreenlist
 #endif
 };
 
@@ -360,7 +369,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontSetCompositionMode = 0x20,
-        DontDrawOpaqueChildren = 0x40
+        DontDrawOpaqueChildren = 0x40,
+        DontDrawNativeChildren = 0x80
     };
 
     enum CloseMode {
@@ -550,6 +560,7 @@ public:
 
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
+    virtual bool hasHeightForWidth() const;
     void setConstraints_sys();
     bool pointInsideRectAndMask(const QPoint &) const;
     QWidget *childAt_helper(const QPoint &, bool) const;
@@ -795,7 +806,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -826,6 +836,7 @@ public:
     void macUpdateIgnoreMouseEvents();
     void macUpdateMetalAttribute();
     void macUpdateIsOpaque();
+    void macSetNeedsDisplay(QRegion region);
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
     void adjustWithinMaxAndMinSize(int &w, int &h);
@@ -854,7 +865,15 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
-#endif
+
+    // Unified toolbar variables
+    bool isInUnifiedToolbar;
+    QUnifiedToolbarSurface *unifiedSurface;
+    QPoint toolbar_offset;
+    QWidget *toolbar_ancestor;
+    bool flushRequested;
+    bool touchEventsEnabled;
+#endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
     bool qt_mac_dnd_event(uint, DragRef);
@@ -866,7 +885,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    void registerTouchWindow();
+    void registerTouchWindow(bool enable = true);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
@@ -881,6 +900,12 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
+#elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
+    void setMaxWindowState_helper();
+    void setFullScreenSize_helper();
+#ifndef QT_NO_CURSOR
+    void updateCursor() const;
+#endif
 #elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;

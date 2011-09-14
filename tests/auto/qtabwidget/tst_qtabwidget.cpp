@@ -44,7 +44,9 @@
 #include <qtabwidget.h>
 #include <qdebug.h>
 #include <qapplication.h>
+#include <private/qapplication_p.h>
 #include <qlabel.h>
+#include <QtGui/qboxlayout.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -120,6 +122,9 @@ class tst_QTabWidget:public QObject {
     void clear();
     void keyboardNavigation();
     void paintEventCount();
+    void minimumSizeHint();
+    void heightForWidth_data();
+    void heightForWidth();
 
   private:
     int addPage();
@@ -614,6 +619,10 @@ void tst_QTabWidget::paintEventCount()
     QTest::qWait(100);
 
     QCOMPARE(tab1->count, initalPaintCount);
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QEXPECT_FAIL(0, "Cocoa sends an extra updates when the view is shown", Abort);
+#endif
     QCOMPARE(tab2->count, 1);
 
     tw->setCurrentIndex(0);
@@ -622,6 +631,74 @@ void tst_QTabWidget::paintEventCount()
 
     QCOMPARE(tab1->count, initalPaintCount + 1);
     QCOMPARE(tab2->count, 1);
+}
+
+void tst_QTabWidget::minimumSizeHint()
+{
+    QTabWidget tw;
+    QWidget *page = new QWidget;
+    QVBoxLayout *lay = new QVBoxLayout;
+
+    QLabel *label = new QLabel(QLatin1String("XXgypq lorem ipsum must be long, must be long. lorem ipsumMMMW"));
+    lay->addWidget(label);
+
+    page->setLayout(lay);
+
+    tw.addTab(page, QLatin1String("page1"));
+
+    tw.show();
+    QTest::qWaitForWindowShown(&tw);
+    tw.resize(tw.minimumSizeHint());
+
+    QSize minSize = label->minimumSizeHint();
+    QSize actSize = label->geometry().size();
+    QVERIFY(minSize.width() <= actSize.width());
+    QVERIFY(minSize.height() <= actSize.height());
+}
+
+void tst_QTabWidget::heightForWidth_data()
+{
+    QTest::addColumn<int>("tabPosition");
+    QTest::newRow("West") << int(QTabWidget::West);
+    QTest::newRow("North") << int(QTabWidget::North);
+    QTest::newRow("East") << int(QTabWidget::East);
+    QTest::newRow("South") << int(QTabWidget::South);
+}
+
+void tst_QTabWidget::heightForWidth()
+{
+    QFETCH(int, tabPosition);
+
+    QWidget *window = new QWidget;
+    QVBoxLayout *lay = new QVBoxLayout(window);
+    lay->setMargin(0);
+    lay->setSpacing(0);
+    QTabWidget *tabWid = new QTabWidget(window);
+    QWidget *w = new QWidget;
+    tabWid->addTab(w, QLatin1String("HFW page"));
+    tabWid->setTabPosition(QTabWidget::TabPosition(tabPosition));
+    QVBoxLayout *lay2 = new QVBoxLayout(w);
+    QLabel *label = new QLabel("Label with wordwrap turned on makes it trade height for width."
+                               " Make it a really long text so that it spans on several lines"
+                               " when the label is on its narrowest."
+                               " I don't like to repeat myself."
+                               " I don't like to repeat myself."
+                               " I don't like to repeat myself."
+                               " I don't like to repeat myself."
+                               );
+    label->setWordWrap(true);
+    lay2->addWidget(label);
+    lay2->setMargin(0);
+
+    lay->addWidget(tabWid);
+    int h = window->heightForWidth(160);
+    window->resize(160, h);
+    window->show();
+
+    QTest::qWaitForWindowShown(window);
+    QVERIFY(label->height() >= label->heightForWidth(label->width()));
+
+    delete window;
 }
 
 

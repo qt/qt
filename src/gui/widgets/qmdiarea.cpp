@@ -674,6 +674,8 @@ QMdiAreaPrivate::QMdiAreaPrivate()
       viewMode(QMdiArea::SubWindowView),
 #ifndef QT_NO_TABBAR
       documentMode(false),
+      tabsClosable(false),
+      tabsMovable(false),
 #endif
 #ifndef QT_NO_TABWIDGET
       tabShape(QTabWidget::Rounded),
@@ -789,6 +791,27 @@ void QMdiAreaPrivate::_q_currentTabChanged(int index)
     QMdiSubWindow *subWindow = childWindows.at(index);
     Q_ASSERT(subWindow);
     activateWindow(subWindow);
+#endif // QT_NO_TABBAR
+}
+
+void QMdiAreaPrivate::_q_closeTab(int index)
+{
+#ifdef QT_NO_TABBAR
+    Q_UNUSED(index);
+#else
+    QMdiSubWindow *subWindow = childWindows.at(index);
+    Q_ASSERT(subWindow);
+    subWindow->close();
+#endif // QT_NO_TABBAR
+}
+
+void QMdiAreaPrivate::_q_moveTab(int from, int to)
+{
+#ifdef QT_NO_TABBAR
+    Q_UNUSED(from);
+    Q_UNUSED(to);
+#else
+    childWindows.move(from, to);
 #endif // QT_NO_TABBAR
 }
 
@@ -1519,6 +1542,8 @@ void QMdiAreaPrivate::setViewMode(QMdiArea::ViewMode mode)
         Q_ASSERT(!tabBar);
         tabBar = new QMdiAreaTabBar(q);
         tabBar->setDocumentMode(documentMode);
+        tabBar->setTabsClosable(tabsClosable);
+        tabBar->setMovable(tabsMovable);
 #ifndef QT_NO_TABWIDGET
         tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
 #endif
@@ -1550,6 +1575,8 @@ void QMdiAreaPrivate::setViewMode(QMdiArea::ViewMode mode)
         updateTabBarGeometry();
 
         QObject::connect(tabBar, SIGNAL(currentChanged(int)), q, SLOT(_q_currentTabChanged(int)));
+        QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), q, SLOT(_q_closeTab(int)));
+        QObject::connect(tabBar, SIGNAL(tabMoved(int,int)), q, SLOT(_q_moveTab(int,int)));
     } else
 #endif // QT_NO_TABBAR
     { // SubWindowView
@@ -1636,6 +1663,8 @@ void QMdiAreaPrivate::refreshTabBar()
         return;
 
     tabBar->setDocumentMode(documentMode);
+    tabBar->setTabsClosable(tabsClosable);
+    tabBar->setMovable(tabsMovable);
 #ifndef QT_NO_TABWIDGET
     tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
 #endif
@@ -2112,6 +2141,56 @@ void QMdiArea::setDocumentMode(bool enabled)
         return;
 
     d->documentMode = enabled;
+    d->refreshTabBar();
+}
+
+/*!
+    \property QMdiArea::tabsClosable
+    \brief whether the tab bar should place close buttons on each tab in tabbed view mode.
+    \since 4.8
+
+    Tabs are not closable by default.
+
+    \sa QTabBar::tabsClosable, setViewMode()
+*/
+bool QMdiArea::tabsClosable() const
+{
+    Q_D(const QMdiArea);
+    return d->tabsClosable;
+}
+
+void QMdiArea::setTabsClosable(bool closable)
+{
+    Q_D(QMdiArea);
+    if (d->tabsClosable == closable)
+        return;
+
+    d->tabsClosable = closable;
+    d->refreshTabBar();
+}
+
+/*!
+    \property QMdiArea::tabsMovable
+    \brief whether the user can move the tabs within the tabbar area in tabbed view mode.
+    \since 4.8
+
+    Tabs are not movable by default.
+
+    \sa QTabBar::movable, setViewMode()
+*/
+bool QMdiArea::tabsMovable() const
+{
+    Q_D(const QMdiArea);
+    return d->tabsMovable;
+}
+
+void QMdiArea::setTabsMovable(bool movable)
+{
+    Q_D(QMdiArea);
+    if (d->tabsMovable == movable)
+        return;
+
+    d->tabsMovable = movable;
     d->refreshTabBar();
 }
 #endif // QT_NO_TABBAR

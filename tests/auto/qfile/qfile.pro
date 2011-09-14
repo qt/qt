@@ -7,3 +7,4 @@ wince*|symbian:{
 
 !symbian:SUBDIRS += largefile
 
+CONFIG += parallel_test

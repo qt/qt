@@ -129,6 +129,8 @@ public:
 
     virtual QPoint offset(const QWidget *widget) const;
 
+    virtual WindowSurfaceFeatures features() const;
+
     QScopedPointer<QWindowSurface> m_windowSurface;
     QScopedPointer<QWindowSurface> m_pendingWindowSurface;
 

@@ -44,6 +44,8 @@
 
 #include <QtScript/private/qscriptdeclarativeclass_p.h>
 
+Q_DECLARE_METATYPE(QScriptValue)
+
 //TESTED_FILES=
 
 class tst_QScriptEngine : public QObject
@@ -60,32 +62,65 @@ public slots:
 
 private slots:
     void constructor();
+    void defaultPrototype();
+    void setDefaultPrototype();
     void evaluate_data();
     void evaluate();
     void evaluateProgram_data();
     void evaluateProgram();
     void connectAndDisconnect();
+    void globalObject();
+    void hasUncaughtException();
+    void isEvaluating();
+    void newArray_data();
+    void newArray();
+    void newDate();
+    void newDateFromMs();
     void newObject();
+    void newObjectWithScriptClass();
+    void newQMetaObject();
     void newQObject();
     void newFunction();
+    void newRegExp();
+    void newRegExpFromString();
     void newVariant();
+    void nullValue();
+    void undefinedValue();
     void collectGarbage();
+    void currentContext();
     void pushAndPopContext();
+    void availableExtensions();
+    void importedExtensions();
+    void toObject_data();
+    void toObject();
     void toStringHandle();
     void castValueToQreal();
     void nativeCall();
+    void installTranslatorFunctions();
     void translation_data();
     void translation();
     void readScopeProperty_data();
     void readScopeProperty();
+
+private:
+    void defineStandardTestValues();
+    void newEngine()
+    {
+        delete m_engine;
+        m_engine = new QScriptEngine;
+    }
+
+    QScriptEngine *m_engine;
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
+    : m_engine(0)
 {
 }
 
 tst_QScriptEngine::~tst_QScriptEngine()
 {
+    delete m_engine;
 }
 
 void tst_QScriptEngine::init()
@@ -101,6 +136,26 @@ void tst_QScriptEngine::constructor()
     QBENCHMARK {
         QScriptEngine engine;
         (void)engine.parent();
+    }
+}
+
+void tst_QScriptEngine::defaultPrototype()
+{
+    newEngine();
+    int type = qMetaTypeId<int>();
+    m_engine->setDefaultPrototype(type, m_engine->newObject());
+    QBENCHMARK {
+        m_engine->defaultPrototype(type);
+    }
+}
+
+void tst_QScriptEngine::setDefaultPrototype()
+{
+    newEngine();
+    int type = qMetaTypeId<int>();
+    QScriptValue proto = m_engine->newObject();
+    QBENCHMARK {
+        m_engine->setDefaultPrototype(type, proto);
     }
 }
 
@@ -144,20 +199,20 @@ void tst_QScriptEngine::evaluate_data()
 void tst_QScriptEngine::evaluate()
 {
     QFETCH(QString, code);
-    QScriptEngine engine;
+    newEngine();
 
     QBENCHMARK {
-        (void)engine.evaluate(code);
+        (void)m_engine->evaluate(code);
     }
 }
 
 void tst_QScriptEngine::connectAndDisconnect()
 {
-    QScriptEngine engine;
-    QScriptValue fun = engine.evaluate("(function() { })");
+    newEngine();
+    QScriptValue fun = m_engine->evaluate("(function() { })");
     QBENCHMARK {
-        qScriptConnect(&engine, SIGNAL(destroyed()), QScriptValue(), fun);
-        qScriptDisconnect(&engine, SIGNAL(destroyed()), QScriptValue(), fun);
+        qScriptConnect(m_engine, SIGNAL(destroyed()), QScriptValue(), fun);
+        qScriptDisconnect(m_engine, SIGNAL(destroyed()), QScriptValue(), fun);
     }
 }
 
@@ -169,27 +224,105 @@ void tst_QScriptEngine::evaluateProgram_data()
 void tst_QScriptEngine::evaluateProgram()
 {
     QFETCH(QString, code);
-    QScriptEngine engine;
     QScriptProgram program(code);
+    newEngine();
 
     QBENCHMARK {
-        (void)engine.evaluate(program);
+        (void)m_engine->evaluate(program);
+    }
+}
+
+void tst_QScriptEngine::globalObject()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->globalObject();
+    }
+}
+
+void tst_QScriptEngine::hasUncaughtException()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->hasUncaughtException();
+    }
+}
+
+void tst_QScriptEngine::isEvaluating()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->isEvaluating();
+    }
+}
+
+void tst_QScriptEngine::newArray_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::newRow("size=0") << 0;
+    QTest::newRow("size=10") << 10;
+    QTest::newRow("size=100") << 0;
+    QTest::newRow("size=1000") << 0;
+    QTest::newRow("size=10000") << 0;
+    QTest::newRow("size=50000") << 0;
+}
+
+void tst_QScriptEngine::newArray()
+{
+    QFETCH(int, size);
+    newEngine();
+    QBENCHMARK {
+        m_engine->newArray(size);
+    }
+}
+
+void tst_QScriptEngine::newDate()
+{
+    newEngine();
+    QDateTime dt = QDateTime::currentDateTime();
+    QBENCHMARK {
+        m_engine->newDate(dt);
+    }
+}
+
+void tst_QScriptEngine::newDateFromMs()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->newDate(0);
     }
 }
 
 void tst_QScriptEngine::newObject()
 {
-    QScriptEngine engine;
+    newEngine();
     QBENCHMARK {
-        (void)engine.newObject();
+        (void)m_engine->newObject();
+    }
+}
+
+void tst_QScriptEngine::newObjectWithScriptClass()
+{
+    newEngine();
+    QScriptClass cls(m_engine);
+    QBENCHMARK {
+        m_engine->newObject(&cls);
+    }
+}
+
+void tst_QScriptEngine::newQMetaObject()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->newQMetaObject(&QScriptEngine::staticMetaObject);
     }
 }
 
 void tst_QScriptEngine::newQObject()
 {
-    QScriptEngine engine;
+    newEngine();
     QBENCHMARK {
-        (void)engine.newQObject(QCoreApplication::instance());
+        (void)m_engine->newQObject(QCoreApplication::instance());
     }
 }
 
@@ -200,50 +333,145 @@ static QScriptValue testFunction(QScriptContext *, QScriptEngine *)
 
 void tst_QScriptEngine::newFunction()
 {
-    QScriptEngine engine;
+    newEngine();
     QBENCHMARK {
-        (void)engine.newFunction(testFunction);
+        (void)m_engine->newFunction(testFunction);
+    }
+}
+
+void tst_QScriptEngine::newRegExp()
+{
+    newEngine();
+    QRegExp re = QRegExp("foo");
+    QBENCHMARK {
+        m_engine->newRegExp(re);
+    }
+}
+
+void tst_QScriptEngine::newRegExpFromString()
+{
+    newEngine();
+    QString pattern("foo");
+    QString flags("gim");
+    QBENCHMARK {
+        m_engine->newRegExp(pattern, flags);
     }
 }
 
 void tst_QScriptEngine::newVariant()
 {
-    QScriptEngine engine;
+    newEngine();
     QVariant var(123);
     QBENCHMARK {
-        (void)engine.newVariant(var);
+        (void)m_engine->newVariant(var);
+    }
+}
+
+void tst_QScriptEngine::nullValue()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->nullValue();
+    }
+}
+
+void tst_QScriptEngine::undefinedValue()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->undefinedValue();
     }
 }
 
 void tst_QScriptEngine::collectGarbage()
 {
-    QScriptEngine engine;
+    newEngine();
     QBENCHMARK {
-        engine.collectGarbage();
+        m_engine->collectGarbage();
+    }
+}
+
+void tst_QScriptEngine::availableExtensions()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->availableExtensions();
+    }
+}
+
+void tst_QScriptEngine::importedExtensions()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->importedExtensions();
+    }
+}
+
+void tst_QScriptEngine::currentContext()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->currentContext();
     }
 }
 
 void tst_QScriptEngine::pushAndPopContext()
 {
-    QScriptEngine engine;
+    newEngine();
     QBENCHMARK {
-        (void)engine.pushContext();
-        engine.popContext();
+        (void)m_engine->pushContext();
+        m_engine->popContext();
+    }
+}
+
+void tst_QScriptEngine::toObject_data()
+{
+    newEngine();
+    QTest::addColumn<QScriptValue>("val");
+    QTest::newRow("bool") << m_engine->evaluate("true");
+    QTest::newRow("number") << m_engine->evaluate("123");
+    QTest::newRow("string") << m_engine->evaluate("'ciao'");
+    QTest::newRow("null") << m_engine->evaluate("null");
+    QTest::newRow("undefined") << m_engine->evaluate("undefined");
+    QTest::newRow("object") << m_engine->evaluate("({foo:123})");
+    QTest::newRow("array") << m_engine->evaluate("[10,20,30]");
+    QTest::newRow("function") << m_engine->evaluate("(function foo(a, b, c) { return a + b + c; })");
+    QTest::newRow("date") << m_engine->evaluate("new Date");
+    QTest::newRow("regexp") << m_engine->evaluate("new RegExp('foo')");
+    QTest::newRow("error") << m_engine->evaluate("new Error");
+
+    QTest::newRow("qobject") << m_engine->newQObject(this);
+    QTest::newRow("qmetaobject") << m_engine->newQMetaObject(&QScriptEngine::staticMetaObject);
+    QTest::newRow("variant") << m_engine->newVariant(123);
+    QTest::newRow("qscriptclassobject") << m_engine->newObject(new QScriptClass(m_engine));
+
+    QTest::newRow("invalid") << QScriptValue();
+    QTest::newRow("bool-no-engine") << QScriptValue(true);
+    QTest::newRow("number-no-engine") << QScriptValue(123.0);
+    QTest::newRow("string-no-engine") << QScriptValue(QString::fromLatin1("hello"));
+    QTest::newRow("null-no-engine") << QScriptValue(QScriptValue::NullValue);
+    QTest::newRow("undefined-no-engine") << QScriptValue(QScriptValue::UndefinedValue);
+}
+
+void tst_QScriptEngine::toObject()
+{
+    QFETCH(QScriptValue, val);
+    QBENCHMARK {
+        m_engine->toObject(val);
     }
 }
 
 void tst_QScriptEngine::toStringHandle()
 {
-    QScriptEngine engine;
+    newEngine();
     QString str = QString::fromLatin1("foobarbaz");
     QBENCHMARK {
-        (void)engine.toStringHandle(str);
+        (void)m_engine->toStringHandle(str);
     }
 }
 
 void tst_QScriptEngine::castValueToQreal()
 {
-    QScriptEngine engine;
     QScriptValue val(123);
     QBENCHMARK {
         (void)qscriptvalue_cast<qreal>(val);
@@ -257,16 +485,24 @@ static QScriptValue native_function(QScriptContext *, QScriptEngine *)
 
 void tst_QScriptEngine::nativeCall()
 {
-    QScriptEngine eng;
-    eng.globalObject().setProperty("fun", eng.newFunction(native_function));
+    newEngine();
+    m_engine->globalObject().setProperty("fun", m_engine->newFunction(native_function));
     QBENCHMARK{
 #if !defined(Q_OS_SYMBIAN)
-        eng.evaluate("var w = 0; for (i = 0; i < 100000; ++i) {\n"
+        m_engine->evaluate("var w = 0; for (i = 0; i < 100000; ++i) {\n"
                      "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
 #else
-        eng.evaluate("var w = 0; for (i = 0; i < 25000; ++i) {\n"
+        m_engine->evaluate("var w = 0; for (i = 0; i < 25000; ++i) {\n"
                      "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
 #endif
+    }
+}
+
+void tst_QScriptEngine::installTranslatorFunctions()
+{
+    newEngine();
+    QBENCHMARK {
+        m_engine->installTranslatorFunctions();
     }
 }
 
@@ -284,11 +520,11 @@ void tst_QScriptEngine::translation()
 {
     QFETCH(QString, text);
     QFETCH(QString, fileName);
-    QScriptEngine engine;
-    engine.installTranslatorFunctions();
+    newEngine();
+    m_engine->installTranslatorFunctions();
 
     QBENCHMARK {
-        (void)engine.evaluate(text, fileName);
+        (void)m_engine->evaluate(text, fileName);
     }
 }
 
@@ -307,33 +543,33 @@ void tst_QScriptEngine::readScopeProperty()
     QFETCH(bool, staticScope);
     QFETCH(bool, nestedScope);
 
-    QScriptEngine engine;
-    QScriptContext *ctx = engine.pushContext();
+    newEngine();
+    QScriptContext *ctx = m_engine->pushContext();
 
     QScriptValue scope;
     if (staticScope)
-        scope = QScriptDeclarativeClass::newStaticScopeObject(&engine);
+        scope = QScriptDeclarativeClass::newStaticScopeObject(m_engine);
     else
-        scope = engine.newObject();
+        scope = m_engine->newObject();
     scope.setProperty("foo", 123);
     ctx->pushScope(scope);
 
     if (nestedScope) {
         QScriptValue scope2;
         if (staticScope)
-            scope2 = QScriptDeclarativeClass::newStaticScopeObject(&engine);
+            scope2 = QScriptDeclarativeClass::newStaticScopeObject(m_engine);
         else
-            scope2 = engine.newObject();
+            scope2 = m_engine->newObject();
         scope2.setProperty("bar", 456); // ensure a miss in inner scope
         ctx->pushScope(scope2);
     }
 
-    QScriptValue fun = engine.evaluate("(function() {\n"
+    QScriptValue fun = m_engine->evaluate("(function() {\n"
                                        "  for (var i = 0; i < 10000; ++i) {\n"
                                        "    foo; foo; foo; foo; foo; foo; foo; foo;\n"
                                        "  }\n"
                                        "})");
-    engine.popContext();
+    m_engine->popContext();
     QVERIFY(fun.isFunction());
     QBENCHMARK {
         fun.call();

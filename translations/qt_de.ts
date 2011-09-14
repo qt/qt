@@ -2219,6 +2219,40 @@ nach
     </message>
 </context>
 <context>
+    <name>QDeclarativeTypeData</name>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="obsolete">Der Typ  %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="obsolete">Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="obsolete">%1 %2</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>Das Skript %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>Der Typ %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
@@ -2513,6 +2547,10 @@ nach
     <message>
         <source>Cannot create %1 for output</source>
         <translation>%1 kann nicht erstellt werden</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>Es ist kein Datei-Engine verfügbar oder der gegenwärtig aktive Engine unterstützt die UnMap-Erweiterung nicht</translation>
     </message>
 </context>
 <context>
@@ -3483,6 +3521,18 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>Das Symbol &quot;%1&quot; kann in %2 nicht aufgelöst werden: %3</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos; ist keine ELF-Objektdatei (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos; ist keine ELF-Objektdatei</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos; ist keine gültige ELF-Objektdatei (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3579,6 +3629,10 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: Unbekannter Fehler %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: Zugriff verweigert</translation>
     </message>
 </context>
 <context>
@@ -3922,7 +3976,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>Diese Operation wird von %1 nicht unterstützt</translation>
+        <translation type="obsolete">Diese Operation wird von %1 nicht unterstützt</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>

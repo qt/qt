@@ -65,6 +65,7 @@ public:
 
 
     QSize sizeHint() const;
+    QSize minimumSizeHint() const;
 
     void setTristate(bool y = true);
     bool isTristate() const;

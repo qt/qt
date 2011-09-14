@@ -2494,7 +2494,7 @@ QWSWindow *QWSServer::windowAt(const QPoint& pos)
 }
 
 #ifndef QT_NO_QWS_KEYBOARD
-static int keyUnicode(int keycode)
+static inline int keyUnicode(int keycode)
 {
     int code = 0xffff;
 
@@ -2550,18 +2550,16 @@ void QWSServer::sendKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers mod
 void QWSServerPrivate::sendKeyEventUnfiltered(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
                                        bool isPress, bool autoRepeat)
 {
+    QWSWindow *win = keyboardGrabber ? keyboardGrabber : qwsServerPrivate->focusw;
+
+#ifndef QT_NO_QWS_KEYBOARD
+    if (unicode < 0)
+        unicode = keyUnicode(keycode);
+#endif
 
     QWSKeyEvent event;
-    QWSWindow *win = keyboardGrabber ? keyboardGrabber :
-        qwsServerPrivate->focusw;
-
     event.simpleData.window = win ? win->winId() : 0;
-
-    event.simpleData.unicode =
-#ifndef QT_NO_QWS_KEYBOARD
-        unicode < 0 ? keyUnicode(keycode) :
-#endif
-        unicode;
+    event.simpleData.unicode = unicode;
     event.simpleData.keycode = keycode;
     event.simpleData.modifiers = modifiers;
     event.simpleData.is_press = isPress;
@@ -4127,11 +4125,11 @@ void QWSServer::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers 
 #endif
 
     // If we press a key and it's going to be blocked, wake up the screen
-    if ( block && isPress )
-        qwsServerPrivate->_q_screenSaverWake();
-
-    if ( block )
+    if (block) {
+        if (isPress)
+            qwsServerPrivate->_q_screenSaverWake();
         return;
+    }
 
     if (keyFilters) {
         for (int i = 0; i < keyFilters->size(); ++i) {

@@ -73,14 +73,15 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     QString part1 = key;
     part1.replace(QRegExp(QLatin1String("[^A-Za-z]")), QString());
     result.append(part1);
-#ifdef Q_OS_SYMBIAN
-    return result.left(KMaxKernelName);
-#endif
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));
 #ifdef Q_OS_WIN
     return result;
+#elif defined(Q_OS_SYMBIAN)
+    return result.left(KMaxKernelName);
+#elif defined(QT_POSIX_IPC)
+    return QLatin1Char('/') + result;
 #else
     return QDir::tempPath() + QLatin1Char('/') + result;
 #endif
@@ -118,6 +119,9 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   process crashes without running the QSharedMemory destructor, the
   shared memory segment survives the crash.
 
+  \o QNX: Due to possible race conditions in the POSIX IPC implementation, create()
+  should be called prior to any attach() calls (even across multiple threads).
+
   \o HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
   multiple threads in the same process in HP-UX.
@@ -142,9 +146,12 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   remain. Do not mix using QtSharedMemory and QSharedMemory. Port
   everything to QSharedMemory.
 
-  \warning QSharedMemory changes the key in a Qt-specific way.
-  It is therefore currently not possible to use the shared memory of
-  non-Qt applications with QSharedMemory.
+  \warning QSharedMemory changes the key in a Qt-specific way, unless otherwise
+  specified. Interoperation with non-Qt applications is achieved by first creating
+  a default shared memory with QSharedMemory() and then setting a native key with
+  setNativeKey(). When using native keys, shared memory is not protected against
+  multiple accesses on it (e.g. unable to lock()) and a user-defined mechanism
+  should be used to achieve a such protection.
  */
 
 /*!
@@ -153,8 +160,8 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   Constructs a shared memory object with the given \a parent.  The
   shared memory object's key is not set by the constructor, so the
   shared memory object does not have an underlying shared memory
-  segment attached. The key must be set with setKey() before create()
-  or attach() can be used.
+  segment attached. The key must be set with setKey() or setNativeKey()
+  before create() or attach() can be used.
 
   \sa setKey()
  */
@@ -191,30 +198,68 @@ QSharedMemory::~QSharedMemory()
 }
 
 /*!
-  Sets a new \a key for this shared memory object.  If \a key and the
-  current key are the same, the function returns without doing
-  anything. If the shared memory object is attached to an underlying
-  shared memory segment, it will \l {detach()} {detach} from it before
-  setting the new key. This function does not do an attach().
+  Sets the platform independent \a key for this shared memory object. If \a key
+  is the same as the current key, the function returns without doing anything.
 
-  \sa key() isAttached()
- */
+  You can call key() to retrieve the platform independent key. Internally,
+  QSharedMemory converts this key into a platform specific key. If you instead
+  call nativeKey(), you will get the platform specific, converted key.
+
+  If the shared memory object is attached to an underlying shared memory
+  segment, it will \l {detach()} {detach} from it before setting the new key.
+  This function does not do an attach().
+
+  \sa key() nativeKey() isAttached()
+*/
 void QSharedMemory::setKey(const QString &key)
 {
     Q_D(QSharedMemory);
-    if (key == d->key)
+    if (key == d->key && d->makePlatformSafeKey(key) == d->nativeKey)
         return;
 
     if (isAttached())
         detach();
     d->cleanHandle();
     d->key = key;
+    d->nativeKey = d->makePlatformSafeKey(key);
+}
+
+/*!
+  \since 4.8
+
+  Sets the native, platform specific, \a key for this shared memory object. If
+  \a key is the same as the current native key, the function returns without
+  doing anything. If all you want is to assign a key to a segment, you should
+  call setKey() instead.
+
+  You can call nativeKey() to retrieve the native key. If a native key has been
+  assigned, calling key() will return a null string.
+
+  If the shared memory object is attached to an underlying shared memory
+  segment, it will \l {detach()} {detach} from it before setting the new key.
+  This function does not do an attach().
+
+  The application will not be portable if you set a native key.
+
+  \sa nativeKey() key() isAttached()
+*/
+void QSharedMemory::setNativeKey(const QString &key)
+{
+    Q_D(QSharedMemory);
+    if (key == d->nativeKey && d->key.isNull())
+        return;
+
+    if (isAttached())
+        detach();
+    d->cleanHandle();
+    d->key.clear();
+    d->nativeKey = key;
 }
 
 bool QSharedMemoryPrivate::initKey()
 {
-    if (!cleanHandle())
-        return false;
+    cleanHandle();
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
     systemSemaphore.setKey(QString(), 1);
     systemSemaphore.setKey(key, 1);
@@ -245,19 +290,21 @@ bool QSharedMemoryPrivate::initKey()
         return false;
     }
 #endif
-    errorString = QString();
+    errorString.clear();
     error = QSharedMemory::NoError;
     return true;
 }
 
 /*!
-  Returns the key assigned to this shared memory. The key is the
-  identifier used by the operating system to identify the shared
-  memory segment. When QSharedMemory is used for interprocess
-  communication, the key is how each process attaches to the shared
-  memory segment through which the IPC occurs.
+  Returns the key assigned with setKey() to this shared memory, or a null key
+  if no key has been assigned, or if the segment is using a nativeKey(). The
+  key is the identifier used by Qt applications to identify the shared memory
+  segment.
 
-    \sa setKey()
+  You can find the native, platform specific, key used by the operating system
+  by calling nativeKey().
+
+  \sa setKey() setNativeKey()
  */
 QString QSharedMemory::key() const
 {
@@ -266,13 +313,30 @@ QString QSharedMemory::key() const
 }
 
 /*!
-  Creates a shared memory segment of \a size bytes with the key passed
-  to the constructor or set with setKey(), attaches to the new shared
-  memory segment with the given access \a mode, and returns \tt true.
-  If a shared memory segment identified by the key already exists, the
-  attach operation is not performed, and \tt false is returned. When
-  the return value is \tt false, call error() to determine which error
-  occurred.
+  \since 4.8
+
+  Returns the native, platform specific, key for this shared memory object. The
+  native key is the identifier used by the operating system to identify the
+  shared memory segment.
+
+  You can use the native key to access shared memory segments that have not
+  been created by Qt, or to grant shared memory access to non-Qt applications.
+
+  \sa setKey() setNativeKey()
+*/
+QString QSharedMemory::nativeKey() const
+{
+    Q_D(const QSharedMemory);
+    return d->nativeKey;
+}
+
+/*!
+  Creates a shared memory segment of \a size bytes with the key passed to the
+  constructor, set with setKey() or set with setNativeKey(), then attaches to
+  the new shared memory segment with the given access \a mode and returns
+  \tt true. If a shared memory segment identified by the key already exists,
+  the attach operation is not performed and \tt false is returned. When the
+  return value is \tt false, call error() to determine which error occurred.
 
   \sa error()
  */
@@ -283,27 +347,23 @@ bool QSharedMemory::create(int size, AccessMode mode)
     if (!d->initKey())
         return false;
 
+    if (size <= 0) {
+        d->error = QSharedMemory::InvalidSize;
+        d->errorString = QSharedMemory::tr("%1: create size is less then 0").arg(QLatin1String("QSharedMemory::create"));
+        return false;
+    }
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 #ifndef Q_OS_WIN
     // Take ownership and force set initialValue because the semaphore
     // might have already existed from a previous crash.
     d->systemSemaphore.setKey(d->key, 1, QSystemSemaphore::Create);
 #endif
-#endif
 
-    QString function = QLatin1String("QSharedMemory::create");
-#ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->tryLocker(&lock, function))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::create")))
         return false;
 #endif
-
-    if (size <= 0) {
-        d->error = QSharedMemory::InvalidSize;
-        d->errorString =
-	    QSharedMemory::tr("%1: create size is less then 0").arg(function);
-        return false;
-    }
 
     if (!d->create(size))
         return false;
@@ -338,7 +398,7 @@ int QSharedMemory::size() const
 /*!
   Attempts to attach the process to the shared memory segment
   identified by the key that was passed to the constructor or to a
-  call to setKey(). The access \a mode is \l {QSharedMemory::}
+  call to setKey() or setNativeKey(). The access \a mode is \l {QSharedMemory::}
   {ReadWrite} by default. It can also be \l {QSharedMemory::}
   {ReadOnly}. Returns true if the attach operation is successful. If
   false is returned, call error() to determine which error occurred.
@@ -355,7 +415,7 @@ bool QSharedMemory::attach(AccessMode mode)
         return false;
 #ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->tryLocker(&lock, QLatin1String("QSharedMemory::attach")))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::attach")))
         return false;
 #endif
 
@@ -395,7 +455,7 @@ bool QSharedMemory::detach()
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
     QSharedMemoryLocker lock(this);
-    if (!d->tryLocker(&lock, QLatin1String("QSharedMemory::detach")))
+    if (!d->key.isNull() && !d->tryLocker(&lock, QLatin1String("QSharedMemory::detach")))
         return false;
 #endif
 
@@ -447,9 +507,9 @@ const void *QSharedMemory::data() const
   by this process and returns true. If another process has locked the
   segment, this function blocks until the lock is released. Then it
   acquires the lock and returns true. If this function returns false,
-  it means either that you have ignored a false return from create()
-  or attach(), or that QSystemSemaphore::acquire() failed due to an
-  unknown system error.
+  it means that you have ignored a false return from create() or attach(),
+  that you have set the key with setNativeKey() or that
+  QSystemSemaphore::acquire() failed due to an unknown system error.
 
   \sa unlock(), data(), QSystemSemaphore::acquire()
  */

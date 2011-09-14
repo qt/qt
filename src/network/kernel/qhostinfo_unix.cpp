@@ -132,9 +132,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     // Load res_init on demand.
     static volatile bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_res_init));
-#endif
         if (!triedResolve) {
             resolveLibrary();
             triedResolve = true;
@@ -149,7 +147,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     if (address.setAddress(hostName)) {
         // Reverse lookup
 // Reverse lookups using getnameinfo are broken on darwin, use gethostbyaddr instead.
-#if !defined (QT_NO_GETADDRINFO) && !defined (Q_OS_DARWIN) && !defined (Q_OS_SYMBIAN)
+#if !defined (QT_NO_GETADDRINFO) && !defined (Q_OS_DARWIN)
         sockaddr_in sa4;
 #ifndef QT_NO_IPV6
         sockaddr_in6 sa6;
@@ -210,23 +208,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #ifdef Q_ADDRCONFIG
     hints.ai_flags = Q_ADDRCONFIG;
 #endif
-#ifdef Q_OS_SYMBIAN
-#   ifdef QHOSTINFO_DEBUG
-        qDebug() << "Setting flags: 'hints.ai_flags &= AI_V4MAPPED | AI_ALL'";
-#   endif
-#endif
 
     int result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
 # ifdef Q_ADDRCONFIG
     if (result == EAI_BADFLAGS) {
         // if the lookup failed with AI_ADDRCONFIG set, try again without it
         hints.ai_flags = 0;
-#ifdef Q_OS_SYMBIAN
-#   ifdef QHOSTINFO_DEBUG
-        qDebug() << "Setting flags: 'hints.ai_flags &= AI_V4MAPPED | AI_ALL'";
-#   endif
-        hints.ai_flags &= AI_V4MAPPED | AI_ALL;
-#endif
         result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
     }
 # endif

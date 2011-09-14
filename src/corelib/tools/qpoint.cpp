@@ -187,7 +187,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QPoint &QPoint::operator*=(qreal factor)
+    \fn QPoint &QPoint::operator*=(float factor)
+    \since 4.8
+
+    Multiplies this point's coordinates by the given \a factor, and
+    returns a reference to this point.
+
+    Note that the result is rounded to the nearest integer as points are held as
+    integers. Use QPointF for floating point accuracy.
+
+    \sa operator/=()
+*/
+
+/*!
+    \fn QPoint &QPoint::operator*=(double factor)
+    \since 4.8
 
     Multiplies this point's coordinates by the given \a factor, and
     returns a reference to this point. For example:
@@ -200,6 +214,15 @@ QT_BEGIN_NAMESPACE
     \sa operator/=()
 */
 
+/*!
+    \fn QPoint &QPoint::operator*=(int factor)
+    \since 4.8
+
+    Multiplies this point's coordinates by the given \a factor, and
+    returns a reference to this point.
+
+    \sa operator/=()
+*/
 
 /*!
     \fn bool operator==(const QPoint &p1, const QPoint &p2)
@@ -237,8 +260,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QPoint operator*(const QPoint &point, qreal factor)
+    \fn const QPoint operator*(const QPoint &point, float factor)
     \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 
@@ -249,9 +273,51 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QPoint operator*(qreal factor, const QPoint &point)
+    \fn const QPoint operator*(const QPoint &point, double factor)
+    \relates QPoint
+    \since 4.8
+
+    Returns a copy of the given \a point multiplied by the given \a factor.
+
+    Note that the result is rounded to the nearest integer as points
+    are held as integers. Use QPointF for floating point accuracy.
+
+    \sa QPoint::operator*=()
+*/
+
+/*!
+    \fn const QPoint operator*(const QPoint &point, int factor)
+    \relates QPoint
+    \since 4.8
+
+    Returns a copy of the given \a point multiplied by the given \a factor.
+
+    \sa QPoint::operator*=()
+*/
+
+/*!
+    \fn const QPoint operator*(float factor, const QPoint &point)
     \overload
     \relates QPoint
+    \since 4.8
+
+    Returns a copy of the given \a point multiplied by the given \a factor.
+*/
+
+/*!
+    \fn const QPoint operator*(double factor, const QPoint &point)
+    \overload
+    \relates QPoint
+    \since 4.8
+
+    Returns a copy of the given \a point multiplied by the given \a factor.
+*/
+
+/*!
+    \fn const QPoint operator*(int factor, const QPoint &point)
+    \overload
+    \relates QPoint
+    \since 4.8
 
     Returns a copy of the given \a point multiplied by the given \a factor.
 */

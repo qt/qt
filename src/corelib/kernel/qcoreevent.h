@@ -328,6 +328,7 @@ private:
     friend class QETWidget;
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
+    friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;

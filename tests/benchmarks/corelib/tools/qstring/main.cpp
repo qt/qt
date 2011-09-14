@@ -48,7 +48,12 @@
 #define SRCDIR ""
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#include "private/qcore_mac_p.h"
+#endif
+
 #ifdef Q_OS_UNIX
+#include <sys/ipc.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
@@ -70,6 +75,24 @@ private slots:
     void ucstrncmp_data() const;
     void ucstrncmp() const;
     void fromUtf8() const;
+    void fromLatin1_data() const;
+    void fromLatin1() const;
+    void fromLatin1Alternatives_data() const;
+    void fromLatin1Alternatives() const;
+    void fromUtf8Alternatives_data() const;
+    void fromUtf8Alternatives() const;
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+    void QCFString_data() const;
+    void QCFString_toCFStringRef_data() const;
+    void QCFString_toCFStringRef() const;
+    void QCFString_operatorCFStringRef_data() const;
+    void QCFString_operatorCFStringRef() const;
+    void QCFString_toQString_data() const;
+    void QCFString_toQString() const;
+    void QCFString_operatorQString_data() const;
+    void QCFString_operatorQString() const;
+#endif // !defined(QWS) && defined(Q_OS_MAC)
 };
 
 void tst_QString::equals() const
@@ -282,7 +305,7 @@ static bool equals2_sse2_aligned(const ushort *p1, const ushort *p2, int len)
     return equals2_short_tail(p1, p2, len);
 }
 
-static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse2(const ushort *p1, const ushort *p2, int len)
+static bool equals2_sse2(const ushort *p1, const ushort *p2, int len)
 {
     if (p1 == p2 || !len)
         return true;
@@ -389,7 +412,7 @@ static bool equals2_sse2_aligning(const ushort *p1, const ushort *p2, int len)
 }
 
 #ifdef __SSE3__
-static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse3(const ushort *p1, const ushort *p2, int len)
+static bool equals2_sse3(const ushort *p1, const ushort *p2, int len)
 {
     if (p1 == p2 || !len)
         return true;
@@ -414,7 +437,7 @@ static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse3(const usho
 }
 
 #ifdef __SSSE3__
-template<int N> static __attribute__((optimize("unroll-loops"))) inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
+template<int N> static inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
 {
     __m128i lower = _mm_load_si128(m1);
     while (len >= 8) {
@@ -437,7 +460,7 @@ template<int N> static __attribute__((optimize("unroll-loops"))) inline bool equ
     return len == 0 || equals2_short_tail((const ushort *)m1 + N / 2, (const ushort*)m2, len);
 }
 
-static inline __attribute__((optimize("unroll-loops"))) bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
+static inline bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
 {
     while (len >= 8) {
         __m128i q2 = _mm_lddqu_si128(m2);
@@ -928,7 +951,7 @@ static inline int bsf_nonzero(register long val)
 # endif
 }
 
-static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ushort *a, const ushort *b, int len)
+static int ucstrncmp_sse2(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     while (len >= 8) {
@@ -948,7 +971,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ush
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
+static int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
 {
     if (len >= 8) {
         __m128i m1 = _mm_loadu_si128((__m128i *)a);
@@ -987,7 +1010,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
+static inline int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
 {
     quintptr counter = 0;
     while (len >= 8) {
@@ -1007,7 +1030,8 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_al
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
+#ifdef __SSSE3__
+static inline int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
 {
     quintptr counter = 0;
     while (len >= 8) {
@@ -1030,7 +1054,7 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_a
 
 typedef __m128i (* MMLoadFunction)(const __m128i *);
 template<int N, MMLoadFunction LoadFunction>
-static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
+static inline int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     __m128i lower, upper;
@@ -1135,7 +1159,7 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
     }
 }
 
-static inline __attribute__((optimize("no-unroll-loops")))
+static inline
 int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
@@ -1155,7 +1179,7 @@ int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len,
     return ucstrncmp_sse2_aligned(a + 8, b + 8, len);
 }
 
-template<int N> static inline __attribute__((optimize("no-unroll-loops"),always_inline))
+template<int N> static inline
 int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
@@ -1275,6 +1299,7 @@ static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
     }
 }
 
+#endif
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
@@ -1401,6 +1426,1275 @@ void tst_QString::fromUtf8() const
         QString::fromUtf8(d, size);
     }
 }
+
+void tst_QString::fromLatin1_data() const
+{
+    QTest::addColumn<QByteArray>("latin1");
+
+    // make all the strings have the same length
+    QTest::newRow("ascii-only") << QByteArray("HelloWorld");
+    QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f\t");
+    QTest::newRow("ascii+nul") << QByteArray("a\0zbc\0defg", 10);
+    QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff\x81\xc1\xfe\x90\xd0\xef\xa0");
+}
+
+void tst_QString::fromLatin1() const
+{
+    QFETCH(QByteArray, latin1);
+
+    while (latin1.length() < 128) {
+        latin1 += latin1;
+    }
+
+    QByteArray copy1 = latin1, copy2 = latin1, copy3 = latin1;
+    copy1.chop(1);
+    copy2.detach();
+    copy3 += latin1; // longer length
+    copy2.clear();
+
+    QBENCHMARK {
+        QString s1 = QString::fromLatin1(latin1);
+        QString s2 = QString::fromLatin1(latin1);
+        QString s3 = QString::fromLatin1(copy1);
+        QString s4 = QString::fromLatin1(copy3);
+        s3 = QString::fromLatin1(copy3);
+    }
+}
+
+typedef void (* FromLatin1Function)(ushort *, const char *, int);
+Q_DECLARE_METATYPE(FromLatin1Function)
+
+void fromLatin1_regular(ushort *dst, const char *str, int size)
+{
+    // from qstring.cpp:
+    while (size--)
+        *dst++ = (uchar)*str++;
+}
+
+#ifdef __SSE2__
+void fromLatin1_sse2_qt47(ushort *dst, const char *str, int size)
+{
+    if (size >= 16) {
+        int chunkCount = size >> 4; // divided by 16
+        const __m128i nullMask = _mm_set1_epi32(0);
+        for (int i = 0; i < chunkCount; ++i) {
+            const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+            str += 16;
+
+            // unpack the first 8 bytes, padding with zeros
+            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+            _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+            dst += 8;
+
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)dst, secondHalf); // store
+            dst += 8;
+        }
+        size = size % 16;
+    }
+    while (size--)
+        *dst++ = (uchar)*str++;
+}
+
+static inline void fromLatin1_epilog(ushort *dst, const char *str, int size)
+{
+    if (!size) return;
+    dst[0] = (uchar)str[0];
+    if (!--size) return;
+    dst[1] = (uchar)str[1];
+    if (!--size) return;
+    dst[2] = (uchar)str[2];
+    if (!--size) return;
+    dst[3] = (uchar)str[3];
+    if (!--size) return;
+    dst[4] = (uchar)str[4];
+    if (!--size) return;
+    dst[5] = (uchar)str[5];
+    if (!--size) return;
+    dst[6] = (uchar)str[6];
+    if (!--size) return;
+    dst[7] = (uchar)str[7];
+    if (!--size) return;
+    dst[8] = (uchar)str[8];
+    if (!--size) return;
+    dst[9] = (uchar)str[9];
+    if (!--size) return;
+    dst[10] = (uchar)str[10];
+    if (!--size) return;
+    dst[11] = (uchar)str[11];
+    if (!--size) return;
+    dst[12] = (uchar)str[12];
+    if (!--size) return;
+    dst[13] = (uchar)str[13];
+    if (!--size) return;
+    dst[14] = (uchar)str[14];
+    if (!--size) return;
+    dst[15] = (uchar)str[15];
+}
+
+void fromLatin1_sse2_improved(ushort *dst, const char *str, int size)
+{
+    const __m128i nullMask = _mm_set1_epi32(0);
+    qptrdiff counter = 0;
+    size -= 16;
+    while (size >= counter) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        counter += 16;
+    }
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
+}
+
+void fromLatin1_sse2_improved2(ushort *dst, const char *str, int size)
+{
+    const __m128i nullMask = _mm_set1_epi32(0);
+    qptrdiff counter = 0;
+    size -= 32;
+    while (size >= counter) {
+        const __m128i chunk1 = _mm_loadu_si128((__m128i*)(str + counter)); // load
+        const __m128i chunk2 = _mm_loadu_si128((__m128i*)(str + counter + 16)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf1 = _mm_unpacklo_epi8(chunk1, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf1); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf1 = _mm_unpackhi_epi8(chunk1, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf1); // store
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf2 = _mm_unpacklo_epi8(chunk2, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 16), firstHalf2); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf2 = _mm_unpackhi_epi8(chunk2, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 24), secondHalf2); // store
+
+        counter += 32;
+    }
+    size += 16;
+    if (size >= counter) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        counter += 16;
+    }
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
+}
+
+void fromLatin1_prolog_unrolled(ushort *dst, const char *str, int size)
+{
+    // QString's data pointer is most often ending in 0x2 or 0xa
+    // that means the two most common values for size are (8-1)=7 and (8-5)=3
+    if (size == 7)
+        goto copy_7;
+    if (size == 3)
+        goto copy_3;
+
+    if (size == 6)
+        goto copy_6;
+    if (size == 5)
+        goto copy_5;
+    if (size == 4)
+        goto copy_4;
+    if (size == 2)
+        goto copy_2;
+    if (size == 1)
+        goto copy_1;
+    return;
+
+copy_7:
+    dst[6] = (uchar)str[6];
+copy_6:
+    dst[5] = (uchar)str[5];
+copy_5:
+    dst[4] = (uchar)str[4];
+copy_4:
+    dst[3] = (uchar)str[3];
+copy_3:
+    dst[2] = (uchar)str[2];
+copy_2:
+    dst[1] = (uchar)str[1];
+copy_1:
+    dst[0] = (uchar)str[0];
+}
+
+void fromLatin1_prolog_sse2_overcommit(ushort *dst, const char *str, int)
+{
+    // do one iteration of conversion
+    const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+
+    // unpack only the first 8 bytes, padding with zeros
+    const __m128i nullMask = _mm_set1_epi32(0);
+    const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+    _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+}
+
+template<FromLatin1Function prologFunction>
+void fromLatin1_sse2_withprolog(ushort *dst, const char *str, int size)
+{
+    // same as the improved code, but we attempt to align at the prolog
+    // therefore, we issue aligned stores
+
+    if (size >= 16) {
+        uint misalignment = uint(quintptr(dst) & 0xf);
+        uint prologCount = (16 - misalignment) / 2;
+
+        prologFunction(dst, str, prologCount);
+
+        size -= prologCount;
+        dst += prologCount;
+        str += prologCount;
+    }
+
+    const __m128i nullMask = _mm_set1_epi32(0);
+    qptrdiff counter = 0;
+    size -= 16;
+    while (size >= counter) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_store_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_store_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        counter += 16;
+    }
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
+}
+
+#ifdef __SSE4_1__
+void fromLatin1_sse4_pmovzxbw(ushort *dst, const char *str, int size)
+{
+    qptrdiff counter = 0;
+    size -= 16;
+    while (size >= counter) {
+        __m128i chunk = _mm_loadu_si128((__m128i*)(str + counter)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_cvtepu8_epi16(chunk);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        chunk = _mm_srli_si128(chunk, 8);
+        const __m128i secondHalf = _mm_cvtepu8_epi16(chunk);
+        _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+        counter += 16;
+    }
+    size += 16;
+    fromLatin1_epilog(dst + counter, str + counter, size - counter);
+}
+
+void fromLatin1_prolog_sse4_overcommit(ushort *dst, const char *str, int)
+{
+    // load 8 bytes and zero-extend them to 16
+    const __m128i chunk = _mm_cvtepu8_epi16(*(__m128i*)str); // load
+    _mm_storeu_si128((__m128i*)dst, chunk); // store
+}
+#endif
+#endif
+
+#ifdef __ARM_NEON__
+static inline void fromLatin1_epilog(ushort *dst, const char *str, int size)
+{
+    if (!size) return;
+    dst[0] = (uchar)str[0];
+    if (!--size) return;
+    dst[1] = (uchar)str[1];
+    if (!--size) return;
+    dst[2] = (uchar)str[2];
+    if (!--size) return;
+    dst[3] = (uchar)str[3];
+    if (!--size) return;
+    dst[4] = (uchar)str[4];
+    if (!--size) return;
+    dst[5] = (uchar)str[5];
+    if (!--size) return;
+    dst[6] = (uchar)str[6];
+    if (!--size) return;
+    dst[7] = (uchar)str[7];
+    if (!--size) return;
+}
+
+void fromLatin1_neon_improved(ushort *dst, const char *str, int len)
+{
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)str);
+        str += 8;
+
+        // expand 8 bytes into 16 bytes in a quadword register
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded); // store
+        dst += 8;
+
+        len -= 8;
+    }
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_improved2(ushort *dst, const char *str, int len)
+{
+    while (len >= 16) {
+        // load 16 bytes into one quadword Neon register
+        const uint8x16_t chunk = vld1q_u8((uint8_t *)str);
+        str += 16;
+
+        // expand each doubleword of the quadword register into a quadword
+        const uint16x8_t expanded_low = vmovl_u8(vget_low_u8(chunk));
+        vst1q_u16(dst, expanded_low); // store
+        dst += 8;
+        const uint16x8_t expanded_high = vmovl_u8(vget_high_u8(chunk));
+        vst1q_u16(dst, expanded_high); // store
+        dst += 8;
+
+        len -= 16;
+    }
+
+    if (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)str);
+        str += 8;
+
+        // expand 8 bytes into 16 bytes in a quadword register
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded); // store
+        dst += 8;
+
+        len -= 8;
+    }
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_handwritten(ushort *dst, const char *str, int len)
+{
+    // same as above, but handwritten Neon
+    while (len >= 8) {
+        uint16x8_t chunk;
+        asm (
+            "vld1.8     %[chunk], [%[str]]!\n"
+            "vmovl.u8   %q[chunk], %[chunk]\n"
+            "vst1.16    %h[chunk], [%[dst]]!\n"
+            : [dst] "+r" (dst),
+              [str] "+r" (str),
+              [chunk] "=w" (chunk));
+        len -= 8;
+    }
+
+    fromLatin1_epilog(dst, str, len);
+}
+
+void fromLatin1_neon_handwritten2(ushort *dst, const char *str, int len)
+{
+    // same as above, but handwritten Neon
+    while (len >= 16) {
+        uint16x8_t chunk1, chunk2;
+        asm (
+            "vld1.8     %h[chunk1], [%[str]]!\n"
+            "vmovl.u8   %q[chunk2], %f[chunk1]\n"
+            "vmovl.u8   %q[chunk1], %e[chunk1]\n"
+            "vst1.16    %h[chunk1], [%[dst]]!\n"
+            "vst1.16    %h[chunk2], [%[dst]]!\n"
+          : [dst] "+r" (dst),
+            [str] "+r" (str),
+            [chunk1] "=w" (chunk1),
+            [chunk2] "=w" (chunk2));
+        len -= 16;
+    }
+
+    if (len >= 8) {
+        uint16x8_t chunk;
+        asm (
+            "vld1.8     %[chunk], [%[str]]!\n"
+            "vmovl.u8   %q[chunk], %[chunk]\n"
+            "vst1.16    %h[chunk], [%[dst]]!\n"
+            : [dst] "+r" (dst),
+              [str] "+r" (str),
+              [chunk] "=w" (chunk));
+        len -= 8;
+    }
+
+    fromLatin1_epilog(dst, str, len);
+}
+#endif
+
+void tst_QString::fromLatin1Alternatives_data() const
+{
+    QTest::addColumn<FromLatin1Function>("function");
+    QTest::newRow("empty") << FromLatin1Function(0);
+    QTest::newRow("regular") << &fromLatin1_regular;
+#ifdef __SSE2__
+    QTest::newRow("sse2-qt4.7") << &fromLatin1_sse2_qt47;
+    QTest::newRow("sse2-improved") << &fromLatin1_sse2_improved;
+    QTest::newRow("sse2-improved2") << &fromLatin1_sse2_improved2;
+    QTest::newRow("sse2-with-prolog-regular") << &fromLatin1_sse2_withprolog<&fromLatin1_regular>;
+    QTest::newRow("sse2-with-prolog-unrolled") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_unrolled>;
+    QTest::newRow("sse2-with-prolog-sse2-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse2_overcommit>;
+#ifdef __SSE4_1__
+    QTest::newRow("sse2-with-prolog-sse4-overcommit") << &fromLatin1_sse2_withprolog<&fromLatin1_prolog_sse4_overcommit>;
+    QTest::newRow("sse4-pmovzxbw") << &fromLatin1_sse4_pmovzxbw;
+#endif
+#endif
+#ifdef __ARM_NEON__
+    QTest::newRow("neon-improved") << &fromLatin1_neon_improved;
+    QTest::newRow("neon-improved2") << &fromLatin1_neon_improved2;
+    QTest::newRow("neon-handwritten") << &fromLatin1_neon_handwritten;
+    QTest::newRow("neon-handwritten2") << &fromLatin1_neon_handwritten2;
+#endif
+}
+
+extern StringData fromLatin1Data;
+static void fromLatin1Alternatives_internal(FromLatin1Function function, QString &dst, bool doVerify)
+{
+    struct Entry
+    {
+        int len;
+        int offset1, offset2;
+        int align1, align2;
+    };
+    const Entry *entries = reinterpret_cast<const Entry *>(fromLatin1Data.entries);
+
+    for (int i = 0; i < fromLatin1Data.entryCount; ++i) {
+        int len = entries[i].len;
+        const char *src = fromLatin1Data.charData + entries[i].offset1;
+
+        if (!function)
+            continue;
+        if (!doVerify) {
+            (function)(&dst.data()->unicode(), src, len);
+        } else {
+            dst.fill(QChar('x'), dst.length());
+
+            (function)(&dst.data()->unicode() + 8, src, len);
+
+            QString zeroes(8, QChar('x'));
+            QString final = dst.mid(8, len);
+            QCOMPARE(final, QString::fromLatin1(src, len));
+            QCOMPARE(dst.left(8), zeroes);
+            QCOMPARE(dst.mid(len + 8, 8), zeroes);
+        }
+    }
+}
+
+void tst_QString::fromLatin1Alternatives() const
+{
+    QFETCH(FromLatin1Function, function);
+
+    QString dst(fromLatin1Data.maxLength + 16, QChar('x'));
+    fromLatin1Alternatives_internal(function, dst, true);
+
+    QBENCHMARK {
+        fromLatin1Alternatives_internal(function, dst, false);
+    }
+}
+
+typedef int (* FromUtf8Function)(ushort *, const char *, int);
+Q_DECLARE_METATYPE(FromUtf8Function)
+
+extern QTextCodec::ConverterState *state;
+QTextCodec::ConverterState *state = 0; // just because the code in qutfcodec.cpp uses a state
+
+int fromUtf8_latin1_regular(ushort *dst, const char *chars, int len)
+{
+    fromLatin1_regular(dst, chars, len);
+    return len;
+}
+
+#ifdef __SSE2__
+int fromUtf8_latin1_qt47(ushort *dst, const char *chars, int len)
+{
+    fromLatin1_sse2_qt47(dst, chars, len);
+    return len;
+}
+
+int fromUtf8_latin1_sse2_improved(ushort *dst, const char *chars, int len)
+{
+    fromLatin1_sse2_improved(dst, chars, len);
+    return len;
+}
+#endif
+
+static inline bool isUnicodeNonCharacter(uint ucs4)
+{
+    // Unicode has a couple of "non-characters" that one can use internally,
+    // but are not allowed to be used for text interchange.
+    //
+    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
+    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
+    // U+FDEF (inclusive)
+
+    return (ucs4 & 0xfffe) == 0xfffe
+            || (ucs4 - 0xfdd0U) < 16;
+}
+
+int fromUtf8_qt47(ushort *dst, const char *chars, int len)
+{
+    // this is almost the code found in Qt 4.7's qutfcodec.cpp QUtf8Codec::convertToUnicode
+    // That function returns a QString, this one returns the number of characters converted
+    // That's to avoid doing malloc() inside the benchmark test
+    // Any differences between this code and the original are just because of that, I promise
+
+    bool headerdone = false;
+    ushort replacement = QChar::ReplacementCharacter;
+    int need = 0;
+    int error = -1;
+    uint uc = 0;
+    uint min_uc = 0;
+    if (state) {
+        if (state->flags & QTextCodec::IgnoreHeader)
+            headerdone = true;
+        if (state->flags & QTextCodec::ConvertInvalidToNull)
+            replacement = QChar::Null;
+        need = state->remainingChars;
+        if (need) {
+            uc = state->state_data[0];
+            min_uc = state->state_data[1];
+        }
+    }
+    if (!headerdone && len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+        headerdone = true;
+    }
+
+    // QString result(need + len + 1, Qt::Uninitialized); // worst case
+    // ushort *qch = (ushort *)result.unicode();
+    ushort *qch = dst;
+    uchar ch;
+    int invalid = 0;
+
+    for (int i = 0; i < len; ++i) {
+        ch = chars[i];
+        if (need) {
+            if ((ch&0xc0) == 0x80) {
+                uc = (uc << 6) | (ch & 0x3f);
+                --need;
+                if (!need) {
+                    // utf-8 bom composes into 0xfeff code point
+                    bool nonCharacter;
+                    if (!headerdone && uc == 0xfeff) {
+                        // don't do anything, just skip the BOM
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                        // surrogate pair
+                        //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
+                        *qch++ = QChar::highSurrogate(uc);
+                        *qch++ = QChar::lowSurrogate(uc);
+                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                        // error: overlong sequence, UTF16 surrogate or non-character
+                        *qch++ = replacement;
+                        ++invalid;
+                    } else {
+                        *qch++ = uc;
+                    }
+                    headerdone = true;
+                }
+            } else {
+                // error
+                i = error;
+                *qch++ = replacement;
+                ++invalid;
+                need = 0;
+                headerdone = true;
+            }
+        } else {
+            if (ch < 128) {
+                *qch++ = ushort(ch);
+                headerdone = true;
+            } else if ((ch & 0xe0) == 0xc0) {
+                uc = ch & 0x1f;
+                need = 1;
+                error = i;
+                min_uc = 0x80;
+                headerdone = true;
+            } else if ((ch & 0xf0) == 0xe0) {
+                uc = ch & 0x0f;
+                need = 2;
+                error = i;
+                min_uc = 0x800;
+            } else if ((ch&0xf8) == 0xf0) {
+                uc = ch & 0x07;
+                need = 3;
+                error = i;
+                min_uc = 0x10000;
+                headerdone = true;
+            } else {
+                // error
+                *qch++ = replacement;
+                ++invalid;
+                headerdone = true;
+            }
+        }
+    }
+    if (!state && need > 0) {
+        // unterminated UTF sequence
+        for (int i = error; i < len; ++i) {
+            *qch++ = replacement;
+            ++invalid;
+        }
+    }
+    //result.truncate(qch - (ushort *)result.unicode());
+    if (state) {
+        state->invalidChars += invalid;
+        state->remainingChars = need;
+        if (headerdone)
+            state->flags |= QTextCodec::IgnoreHeader;
+        state->state_data[0] = need ? uc : 0;
+        state->state_data[1] = need ? min_uc : 0;
+    }
+    //return result;
+    return qch - dst;
+}
+
+int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
+{
+    // This is the same code as above, but for stateless UTF-8 conversion
+    // no other improvements
+    bool headerdone = false;
+    const ushort replacement = QChar::ReplacementCharacter;
+    int need = 0;
+    int error = -1;
+    uint uc = 0;
+    uint min_uc = 0;
+
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    // QString result(need + len + 1, Qt::Uninitialized); // worst case
+    // ushort *qch = (ushort *)result.unicode();
+    ushort *qch = dst;
+    uchar ch;
+    int invalid = 0;
+
+    for (int i = 0; i < len; ++i) {
+        ch = chars[i];
+        if (need) {
+            if ((ch&0xc0) == 0x80) {
+                uc = (uc << 6) | (ch & 0x3f);
+                --need;
+                if (!need) {
+                    // utf-8 bom composes into 0xfeff code point
+                    bool nonCharacter;
+                    if (!headerdone && uc == 0xfeff) {
+                        // don't do anything, just skip the BOM
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                        // surrogate pair
+                        //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
+                        *qch++ = QChar::highSurrogate(uc);
+                        *qch++ = QChar::lowSurrogate(uc);
+                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || nonCharacter || uc >= 0x110000) {
+                        // error: overlong sequence, UTF16 surrogate or non-character
+                        *qch++ = replacement;
+                        ++invalid;
+                    } else {
+                        *qch++ = uc;
+                    }
+                    headerdone = true;
+                }
+            } else {
+                // error
+                i = error;
+                *qch++ = replacement;
+                ++invalid;
+                need = 0;
+                headerdone = true;
+            }
+        } else {
+            if (ch < 128) {
+                *qch++ = ushort(ch);
+                headerdone = true;
+            } else if ((ch & 0xe0) == 0xc0) {
+                uc = ch & 0x1f;
+                need = 1;
+                error = i;
+                min_uc = 0x80;
+                headerdone = true;
+            } else if ((ch & 0xf0) == 0xe0) {
+                uc = ch & 0x0f;
+                need = 2;
+                error = i;
+                min_uc = 0x800;
+            } else if ((ch&0xf8) == 0xf0) {
+                uc = ch & 0x07;
+                need = 3;
+                error = i;
+                min_uc = 0x10000;
+                headerdone = true;
+            } else {
+                // error
+                *qch++ = replacement;
+                ++invalid;
+                headerdone = true;
+            }
+        }
+    }
+    if (need > 0) {
+        // unterminated UTF sequence
+        for (int i = error; i < len; ++i) {
+            *qch++ = replacement;
+            ++invalid;
+        }
+    }
+    //result.truncate(qch - (ushort *)result.unicode());
+    //return result;
+    return qch - dst;
+}
+
+template <bool trusted>
+static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptrdiff &counter, int &len)
+{
+    uchar ch = chars[counter];
+
+    // is it a leading or a continuation one?
+    if (!trusted && (ch & 0xc0) == 0x80) {
+        // continuation character found without the leading
+        dst[counter++] = QChar::ReplacementCharacter;
+        return;
+    }
+
+    if ((ch & 0xe0) == 0xc0) {
+        // two-byte UTF-8 sequence
+        if (!trusted && counter + 1 == len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
+
+        uchar ch2 = chars[counter + 1];
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
+
+        ushort ucs = (ch & 0x1f);
+        ucs <<= 6;
+        ucs |= (ch2 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+1], so adjust
+        ++chars;
+        --len;
+        if (trusted || ucs >= 0x80)
+            dst[counter] = ucs;
+        else
+            dst[counter] = QChar::ReplacementCharacter;
+        ++counter;
+        return;
+    }
+
+    if ((ch & 0xf0) == 0xe0) {
+        // three-byte UTF-8 sequence
+        if (!trusted && counter + 2 >= len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
+
+        uchar ch2 = chars[counter + 1];
+        uchar ch3 = chars[counter + 2];
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
+
+        ushort ucs = (ch & 0x1f) << 12 | (ch2 & 0x3f) << 6 | (ch3 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+2], so adjust
+        chars += 2;
+        len -= 2;
+        if (!trusted &&
+            (ucs < 0x800 || isUnicodeNonCharacter(ucs) || (ucs >= 0xd800 && ucs <= 0xdfff)))
+            dst[counter] = QChar::ReplacementCharacter;
+        else
+            dst[counter] = ucs;
+        ++counter;
+        return;
+    }
+
+    if ((ch & 0xf8) == 0xf0) {
+        // four-byte UTF-8 sequence
+        // will require an UTF-16 surrogate pair
+        if (!trusted && counter + 3 >= len) {
+            dst[counter++] = QChar::ReplacementCharacter;
+            return;
+        }
+
+        uchar ch2 = chars[counter + 1];
+        uchar ch3 = chars[counter + 2];
+        uchar ch4 = chars[counter + 3];
+        if (!trusted)
+            if ((ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 || (ch4 & 0xc0) != 0x80) {
+                dst[counter++] = QChar::ReplacementCharacter;
+                return;
+            }
+
+        uint ucs = (ch & 0x1f) << 18 | (ch2 & 0x3f) << 12
+                   | (ch3 & 0x3f) << 6 | (ch4 & 0x3f);
+
+        // dst[counter] will correspond to chars[counter..counter+2], so adjust
+        chars += 3;
+        len -= 3;
+        if (trusted || (ucs >= 0x10000 && ucs < 0x110000 && !isUnicodeNonCharacter(ucs))) {
+            dst[counter + 0] = QChar::highSurrogate(ucs);
+            dst[counter + 1] = QChar::lowSurrogate(ucs);
+            counter += 2;
+        } else {
+            dst[counter++] = QChar::ReplacementCharacter;
+        }
+        return;
+    }
+
+    ++counter;
+}
+
+int fromUtf8_optimised_for_ascii(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    qptrdiff counter = 0;
+    ushort *dst = qch;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
+#ifdef __SSE2__
+int fromUtf8_sse2_optimised_for_ascii(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    qptrdiff counter = 0;
+    ushort *dst = qch;
+
+    len -= 16;
+    const __m128i nullMask = _mm_set1_epi32(0);
+    while (counter < len) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(chars + counter)); // load
+        ushort highbytes = _mm_movemask_epi8(chunk);
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        if (!uchar(highbytes)) {
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+            if (!highbytes) {
+                counter += 16;
+                continue;
+            }
+        }
+
+        // UTF-8 character found
+        // which one?
+        counter += bsf_nonzero(highbytes);
+        len += 16;
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
+        len -= 16;
+    }
+    len += 16;
+
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
+int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
+{
+    qptrdiff counter = 0;
+    ushort *dst = qch;
+
+    len -= 16;
+    const __m128i nullMask = _mm_set1_epi32(0);
+    while (counter < len) {
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(chars + counter)); // load
+        ushort highbytes = _mm_movemask_epi8(chunk);
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + counter), firstHalf); // store
+
+        if (!uchar(highbytes)) {
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)(dst + counter + 8), secondHalf); // store
+
+            if (!highbytes) {
+                counter += 16;
+                continue;
+            }
+        }
+
+        // UTF-8 character found
+        // which one?
+        counter += bsf_nonzero(highbytes);
+        len += 16;
+        extract_utf8_multibyte<true>(dst, chars, counter, len);
+        len -= 16;
+    }
+    len += 16;
+
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<true>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+#endif
+
+#ifdef __ARM_NEON__
+int fromUtf8_latin1_neon(ushort *dst, const char *chars, int len)
+{
+    fromLatin1_neon_improved(dst, chars, len);
+    return len;
+}
+
+int fromUtf8_neon(ushort *qch, const char *chars, int len)
+{
+    if (len > 3
+        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
+        // starts with a byte order mark
+        chars += 3;
+        len -= 3;
+    }
+
+    ushort *dst = qch;
+    const uint8x8_t highBit = vdup_n_u8(0x80);
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)chars);
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded);
+
+        uint8x8_t highBits = vtst_u8(chunk, highBit);
+        // we need to find the lowest byte set
+        int mask_low = vget_lane_u32(vreinterpret_u32_u8(highBits), 0);
+        int mask_high = vget_lane_u32(vreinterpret_u32_u8(highBits), 1);
+
+        if (__builtin_expect(mask_low == 0 && mask_high == 0, 1)) {
+            chars += 8;
+            dst += 8;
+            len -= 8;
+        } else {
+            // UTF-8 character found
+            // which one?
+            qptrdiff pos;
+            asm ("rbit  %0, %1\n"
+                 "clz   %1, %1\n"
+               : "=r" (pos)
+               : "r" (mask_low ? mask_low : mask_high));
+            // now mask_low contains the number of leading zeroes
+            // or the value 32 (0x20) if no zeroes were found
+            // the number of leading zeroes is 8*pos
+            pos /= 8;
+
+            extract_utf8_multibyte<false>(dst, chars, pos, len);
+            chars += pos;
+            dst += pos;
+            len -= pos;
+        }
+    }
+
+    qptrdiff counter = 0;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+        // UTF-8 character found
+        extract_utf8_multibyte<false>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+
+int fromUtf8_neon_trusted(ushort *qch, const char *chars, int len)
+{
+    ushort *dst = qch;
+    const uint8x8_t highBit = vdup_n_u8(0x80);
+    while (len >= 8) {
+        // load 8 bytes into one doubleword Neon register
+        const uint8x8_t chunk = vld1_u8((uint8_t *)chars);
+        const uint16x8_t expanded = vmovl_u8(chunk);
+        vst1q_u16(dst, expanded);
+
+        uint8x8_t highBits = vtst_u8(chunk, highBit);
+        // we need to find the lowest byte set
+        int mask_low = vget_lane_u32(vreinterpret_u32_u8(highBits), 0);
+        int mask_high = vget_lane_u32(vreinterpret_u32_u8(highBits), 1);
+
+        if (__builtin_expect(mask_low == 0 && mask_high == 0, 1)) {
+            chars += 8;
+            dst += 8;
+            len -= 8;
+        } else {
+            // UTF-8 character found
+            // which one?
+            qptrdiff pos;
+            asm ("rbit  %0, %1\n"
+                 "clz   %1, %1\n"
+               : "=r" (pos)
+               : "r" (mask_low ? mask_low : mask_high));
+            // now mask_low contains the number of leading zeroes
+            // or the value 32 (0x20) if no zeroes were found
+            // the number of leading zeroes is 8*pos
+            pos /= 8;
+
+            extract_utf8_multibyte<true>(dst, chars, pos, len);
+            chars += pos;
+            dst += pos;
+            len -= pos;
+        }
+    }
+
+    qptrdiff counter = 0;
+    while (counter < len) {
+        uchar ch = chars[counter];
+        if ((ch & 0x80) == 0) {
+            dst[counter] = ch;
+            ++counter;
+            continue;
+        }
+
+        // UTF-8 character found
+        extract_utf8_multibyte<true>(dst, chars, counter, len);
+    }
+    return dst + counter - qch;
+}
+#endif
+
+void tst_QString::fromUtf8Alternatives_data() const
+{
+    QTest::addColumn<FromUtf8Function>("function");
+    QTest::newRow("empty") << FromUtf8Function(0);
+    QTest::newRow("qt-4.7") << &fromUtf8_qt47;
+    QTest::newRow("qt-4.7-stateless") << &fromUtf8_qt47_stateless;
+    QTest::newRow("optimized-for-ascii") << &fromUtf8_optimised_for_ascii;
+#ifdef __SSE2__
+    QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
+    QTest::newRow("sse2-trusted-no-bom") << &fromUtf8_sse2_trusted_no_bom;
+#endif
+#ifdef __ARM_NEON__
+    QTest::newRow("neon") << &fromUtf8_neon;
+    QTest::newRow("neon-trusted-no-bom") << &fromUtf8_neon_trusted;
+#endif
+
+    QTest::newRow("latin1-generic") << &fromUtf8_latin1_regular;
+#ifdef __SSE2__
+    QTest::newRow("latin1-sse2-qt4.7") << &fromUtf8_latin1_qt47;
+    QTest::newRow("latin1-sse2-improved") << &fromUtf8_latin1_sse2_improved;
+#endif
+#ifdef __ARM_NEON__
+    QTest::newRow("latin1-neon-improved") << &fromUtf8_latin1_neon;
+#endif
+}
+
+extern StringData fromUtf8Data;
+static void fromUtf8Alternatives_internal(FromUtf8Function function, QString &dst, bool doVerify)
+{
+    if (!doVerify) {
+        // NOTE: this only works because the Latin1 data is ASCII-only
+        fromLatin1Alternatives_internal(reinterpret_cast<FromLatin1Function>(function), dst, doVerify);
+    } else {
+        if (strncmp(QTest::currentDataTag(), "latin1-", 7) == 0)
+            return;
+    }
+
+    struct Entry
+    {
+        int len;
+        int offset1, offset2;
+        int align1, align2;
+    };
+    const Entry *entries = reinterpret_cast<const Entry *>(fromUtf8Data.entries);
+
+    for (int i = 0; i < fromUtf8Data.entryCount; ++i) {
+        int len = entries[i].len;
+        const char *src = fromUtf8Data.charData + entries[i].offset1;
+
+        if (!function)
+            continue;
+        if (!doVerify) {
+            (function)(&dst.data()->unicode(), src, len);
+        } else {
+            dst.fill(QChar('x'), dst.length());
+
+            int utf8len = (function)(&dst.data()->unicode() + 8, src, len);
+
+            QString expected = QString::fromUtf8(src, len);
+            QString final = dst.mid(8, expected.length());
+            if (final != expected || utf8len != expected.length())
+                qDebug() << i << entries[i].offset1 << utf8len << final << expected.length() << expected;
+
+            QCOMPARE(final, expected);
+            QCOMPARE(utf8len, expected.length());
+
+            QString zeroes(8, QChar('x'));
+            QCOMPARE(dst.left(8), zeroes);
+            QCOMPARE(dst.mid(len + 8, 8), zeroes);
+        }
+    }
+}
+
+void tst_QString::fromUtf8Alternatives() const
+{
+    QFETCH(FromUtf8Function, function);
+
+    QString dst(fromUtf8Data.maxLength + 16, QChar('x'));
+    fromUtf8Alternatives_internal(function, dst, true);
+
+    QBENCHMARK {
+        fromUtf8Alternatives_internal(function, dst, false);
+    }
+}
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+void tst_QString::QCFString_data() const
+{
+    QTest::addColumn<QString>("string");
+
+    QString base(QLatin1String("I'm some cool string"));
+    QTest::newRow("base") << base;
+
+    base = base.repeated(25);
+    QTest::newRow("25 bases") << base;
+
+    QTest::newRow("raw 25 bases") << QString::fromRawData(base.constData(), base.size());
+}
+
+void tst_QString::QCFString_toCFStringRef_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_toCFStringRef() const
+{
+    QFETCH(QString, string);
+
+    QBENCHMARK {
+        CFStringRef cfstr = QCFString::toCFStringRef(string);
+        CFRelease(cfstr);
+    }
+}
+
+void tst_QString::QCFString_operatorCFStringRef_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_operatorCFStringRef() const
+{
+    QFETCH(QString, string);
+
+    CFStringRef cfstr;
+    QBENCHMARK {
+        QCFString qcfstr(string);
+        cfstr = qcfstr;
+    }
+}
+
+void tst_QString::QCFString_toQString_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_toQString() const
+{
+    QFETCH(QString, string);
+
+    QCFString qcfstr(string);
+
+    QString qstr;
+    QBENCHMARK {
+        qstr = QCFString::toQString(qcfstr);
+    }
+    QVERIFY(qstr == string);
+}
+
+void tst_QString::QCFString_operatorQString_data() const
+{
+    QCFString_data();
+}
+
+void tst_QString::QCFString_operatorQString() const
+{
+    QFETCH(QString, string);
+
+    QCFString qcfstr_base(string);
+
+    QString qstr;
+    QBENCHMARK {
+        QCFString qcfstr(qcfstr_base);
+        qstr = qcfstr;
+    }
+    QVERIFY(qstr == string);
+}
+#endif // !defined(QWS) && defined(Q_OS_MAC)
 
 QTEST_MAIN(tst_QString)
 

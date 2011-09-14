@@ -84,10 +84,13 @@ public:
        && permissions() == fileInfo.permissions();
     }
 
+#ifndef QT_NO_FSFILEENGINE
     bool isCaseSensitive() const {
         QFSFileEngine fe(mFileInfo.absoluteFilePath());
         return fe.caseSensitive();
     }
+#endif
+
     QFile::Permissions permissions() const {
         return mFileInfo.permissions();
     }

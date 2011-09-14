@@ -195,6 +195,7 @@ public:
     void _q_removeTab(int);
     void _q_tabMoved(int from, int to);
     void init();
+    bool hasHeightForWidth() const;
 
     QTabBar *tabs;
     QStackedWidget *stack;
@@ -245,6 +246,15 @@ void QTabWidgetPrivate::init()
                       QStyle::SH_TabWidget_DefaultTabPosition, 0, q )));
 
 }
+
+bool QTabWidgetPrivate::hasHeightForWidth() const
+{
+    bool has = size_policy.hasHeightForWidth();
+    if (!has && stack)
+        has = qt_widget_private(stack)->hasHeightForWidth();
+    return has;
+}
+
 
 /*!
     Initialize \a option with the values from this QTabWidget. This method is useful
@@ -816,8 +826,8 @@ QSize QTabWidget::sizeHint() const
 {
     Q_D(const QTabWidget);
     QSize lc(0, 0), rc(0, 0);
-    QStyleOption opt(0);
-    opt.init(this);
+    QStyleOptionTabWidgetFrameV2 opt;
+    initStyleOption(&opt);
     opt.state = QStyle::State_None;
 
     if (d->leftCornerWidget)
@@ -865,13 +875,58 @@ QSize QTabWidget::minimumSizeHint() const
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
-    QStyleOption opt(0);
-    opt.rect = rect();
+    QStyleOptionTabWidgetFrameV2 opt;
+    initStyleOption(&opt);
     opt.palette = palette();
     opt.state = QStyle::State_None;
     return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this)
                     .expandedTo(QApplication::globalStrut());
 }
+
+/*!
+    \reimp
+    \since 4.8
+*/
+int QTabWidget::heightForWidth(int width) const
+{
+    Q_D(const QTabWidget);
+    QStyleOptionTabWidgetFrameV2 opt;
+    initStyleOption(&opt);
+    opt.state = QStyle::State_None;
+
+    QSize zero(0,0);
+    const QSize padding = style()->sizeFromContents(QStyle::CT_TabWidget, &opt, zero, this)
+                                  .expandedTo(QApplication::globalStrut());
+
+    QSize lc(0, 0), rc(0, 0);
+    if (d->leftCornerWidget)
+        lc = d->leftCornerWidget->sizeHint();
+    if(d->rightCornerWidget)
+        rc = d->rightCornerWidget->sizeHint();
+    if (!d->dirty) {
+        QTabWidget *that = (QTabWidget*)this;
+        that->setUpLayout(true);
+    }
+    QSize t(d->tabs->sizeHint());
+
+    if(usesScrollButtons())
+        t = t.boundedTo(QSize(200,200));
+    else
+        t = t.boundedTo(QApplication::desktop()->size());
+
+    const bool tabIsHorizontal = (d->pos == North || d->pos == South);
+    const int contentsWidth = width - padding.width();
+    int stackWidth = contentsWidth;
+    if (!tabIsHorizontal)
+        stackWidth -= qMax(t.width(), qMax(lc.width(), rc.width()));
+
+    int stackHeight = d->stack->heightForWidth(stackWidth);
+    QSize s(stackWidth, stackHeight);
+
+    QSize contentSize = basicSize(tabIsHorizontal, lc, rc, s, t);
+    return (contentSize + padding).expandedTo(QApplication::globalStrut()).height();
+}
+
 
 /*!
     \reimp

@@ -64,6 +64,7 @@
 #include "qgraphicssceneevent.h"
 #include "qprinter.h"
 #include "qtextdocumentwriter.h"
+#include "private/qtextcursor_p.h"
 
 #include <qtextformat.h>
 #include <qdatetime.h>
@@ -1637,16 +1638,13 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         return;
     }
 
-    if (!mousePressed)
-        return;
-
     const qreal mouseX = qreal(mousePos.x());
 
     int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
     if (newCursorPos == -1)
         return;
 
-    if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
+    if (mousePressed && wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
         selectedWordOnDoubleClick = cursor;
         selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
     }
@@ -1655,7 +1653,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         extendBlockwiseSelection(newCursorPos);
     else if (selectedWordOnDoubleClick.hasSelection())
         extendWordwiseSelection(newCursorPos, mouseX);
-    else
+    else if (mousePressed)
         setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
 
     if (interactionFlags & Qt::TextEditable) {
@@ -1983,6 +1981,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     }
     layout->setAdditionalFormats(overrides);
     cursor.endEditBlock();
+    if (cursor.d)
+        cursor.d->setX();
     if (oldPreeditCursor != preeditCursor)
         emit q->microFocusChanged();
 }
@@ -3000,7 +3000,7 @@ QAbstractTextDocumentLayout::PaintContext QTextControl::getPaintContext(QWidget 
             if (widget)
                 style = widget->style();
             style->styleHint(QStyle::SH_TextControl_FocusIndicatorTextCharFormat, &opt, widget, &ret);
-            selection.format = qVariantValue<QTextFormat>(ret.variant).toCharFormat();
+            selection.format = qvariant_cast<QTextFormat>(ret.variant).toCharFormat();
         } else {
             QPalette::ColorGroup cg = d->hasFocus ? QPalette::Active : QPalette::Inactive;
             selection.format.setBackground(ctx.palette.brush(cg, QPalette::Highlight));

@@ -15,11 +15,11 @@ win32 {
 }
 
 wince*|symbian: {
-    addApp.sources = ../clientserver/clientserver.exe
+    addApp.files = ../clientserver/clientserver.exe
     addApp.path = clientserver
     DEPLOYMENT += addApp
 }
 
 TARGET = tst_qudpsocket
 
-
+symbian: TARGET.CAPABILITY += NetworkServices

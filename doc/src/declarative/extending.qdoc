@@ -194,7 +194,7 @@ The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
 
 QML can set properties of types that are more complex than basic intrinsics like
 integers and strings.  Properties can also be object pointers, Qt interface
-pointers,  lists of object points, and lists of Qt interface pointers.  As QML
+pointers,  lists of object pointers, and lists of Qt interface pointers.  As QML
 is typesafe it ensures that only valid types are assigned to these properties,
 just like it does for primitive types.
 

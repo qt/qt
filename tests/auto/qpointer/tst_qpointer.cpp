@@ -39,11 +39,8 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
-#include <QApplication>
-#include <QDebug>
 #include <QPointer>
 #include <QWidget>
 
@@ -51,17 +48,9 @@ class tst_QPointer : public QObject
 {
     Q_OBJECT
 public:
-    tst_QPointer();
-    ~tst_QPointer();
-
     inline tst_QPointer *me() const
     { return const_cast<tst_QPointer *>(this); }
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void constructors();
     void destructor();
@@ -71,27 +60,8 @@ private slots:
     void dereference_operators();
     void disconnect();
     void castDuringDestruction();
-    void data() const;
-    void dataSignature() const;
+    void threadSafety();
 };
-
-tst_QPointer::tst_QPointer()
-{ }
-
-tst_QPointer::~tst_QPointer()
-{ }
-
-void tst_QPointer::initTestCase()
-{ }
-
-void tst_QPointer::cleanupTestCase()
-{ }
-
-void tst_QPointer::init()
-{ }
-
-void tst_QPointer::cleanup()
-{ }
 
 void tst_QPointer::constructors()
 {
@@ -105,11 +75,20 @@ void tst_QPointer::constructors()
 
 void tst_QPointer::destructor()
 {
+    // Make two QPointer's to the same object
     QObject *object = new QObject;
-    QPointer<QObject> p = object;
-    QCOMPARE(p, QPointer<QObject>(object));
+    QPointer<QObject> p1 = object;
+    QPointer<QObject> p2 = object;
+    // Check that they point to the correct object
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
+    QCOMPARE(p1, p2);
+    // Destroy the guarded object
     delete object;
-    QCOMPARE(p, QPointer<QObject>(0));
+    // Check that both pointers were zeroed
+    QCOMPARE(p1, QPointer<QObject>(0));
+    QCOMPARE(p2, QPointer<QObject>(0));
+    QCOMPARE(p1, p2);
 }
 
 void tst_QPointer::assignment_operators()
@@ -117,19 +96,21 @@ void tst_QPointer::assignment_operators()
     QPointer<QObject> p1;
     QPointer<QObject> p2;
 
+    // Test assignment with a QObject-derived object pointer
     p1 = this;
     p2 = p1;
-
     QCOMPARE(p1, QPointer<QObject>(this));
     QCOMPARE(p2, QPointer<QObject>(this));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a null pointer
     p1 = 0;
     p2 = p1;
     QCOMPARE(p1, QPointer<QObject>(0));
     QCOMPARE(p2, QPointer<QObject>(0));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
+    // Test assignment with a real QObject pointer
     QObject *object = new QObject;
 
     p1 = object;
@@ -138,10 +119,15 @@ void tst_QPointer::assignment_operators()
     QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
 
-    delete object;
-    QCOMPARE(p1, QPointer<QObject>(0));
-    QCOMPARE(p2, QPointer<QObject>(0));
+    // Test assignment with the same pointer that's already guarded
+    p1 = object;
+    p2 = p1;
+    QCOMPARE(p1, QPointer<QObject>(object));
+    QCOMPARE(p2, QPointer<QObject>(object));
     QCOMPARE(p1, QPointer<QObject>(p2));
+
+    // Cleanup
+    delete object;
 }
 
 void tst_QPointer::equality_operators()
@@ -195,19 +181,28 @@ void tst_QPointer::isNull()
 void tst_QPointer::dereference_operators()
 {
     QPointer<tst_QPointer> p1 = this;
+    QPointer<tst_QPointer> p2;
 
+    // operator->() -- only makes sense if not null
     QObject *object = p1->me();
-    QVERIFY(object == this);
+    QCOMPARE(object, this);
 
+    // operator*() -- only makes sense if not null
     QObject &ref = *p1;
-    QVERIFY(&ref == this);
+    QCOMPARE(&ref, this);
 
-    object = static_cast<QObject *>(p1);
-    QVERIFY(object == this);
+    // operator T*()
+    QCOMPARE(static_cast<QObject *>(p1), this);
+    QCOMPARE(static_cast<QObject *>(p2), static_cast<QObject *>(0));
+
+    // data()
+    QCOMPARE(p1.data(), this);
+    QCOMPARE(p2.data(), static_cast<QObject *>(0));
 }
 
 void tst_QPointer::disconnect()
 {
+    // Verify that pointer remains guarded when all signals are disconencted.
     QPointer<QObject> p1 = new QObject;
     QVERIFY(!p1.isNull());
     p1->disconnect();
@@ -313,37 +308,36 @@ void tst_QPointer::castDuringDestruction()
     }
 }
 
-void tst_QPointer::data() const
-{
-    /* Check value of a default constructed object. */
-    {
-        QPointer<QObject> p;
-        QCOMPARE(p.data(), static_cast<QObject *>(0));
+class TestRunnable : public QObject, public QRunnable {
+    void run() {
+        QPointer<QObject> obj1 = new QObject;
+        QPointer<QObject> obj2 = new QObject;
+        obj1->moveToThread(thread()); // this is the owner thread
+        obj1->deleteLater(); // the delete will happen in the owner thread
+        obj2->moveToThread(thread()); // this is the owner thread
+        obj2->deleteLater(); // the delete will happen in the owner thread
     }
+};
 
-    /* Check value of a default constructed object. */
-    {
-        QObject *const object = new QObject();
-        QPointer<QObject> p(object);
-        QCOMPARE(p.data(), object);
+void tst_QPointer::threadSafety()
+{
+
+    QThread owner;
+    owner.start();
+
+    QThreadPool pool;
+    for (int i = 0; i < 300; i++) {
+        QPointer<TestRunnable> task = new TestRunnable;
+        task->setAutoDelete(true);
+        task->moveToThread(&owner);
+        pool.start(task);
     }
+    pool.waitForDone();
+
+    owner.quit();
+    owner.wait();
 }
 
-void tst_QPointer::dataSignature() const
-{
-    /* data() should be const. */
-    {
-        const QPointer<QObject> p;
-        p.data();
-    }
-
-    /* The return type should be T. */
-    {
-        const QPointer<QWidget> p;
-        /* If the types differs, the QCOMPARE will fail to instansiate. */
-        QCOMPARE(p.data(), static_cast<QWidget *>(0));
-    }
-}
 
 QTEST_MAIN(tst_QPointer)
 #include "tst_qpointer.moc"

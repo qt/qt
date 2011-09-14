@@ -61,5 +61,6 @@ int main(int argc, char *argv[])
         window.showFullScreen();
     else
         window.show();
+
     return app.exec();
 }

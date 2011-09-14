@@ -4,7 +4,7 @@ SOURCES  += ../tst_qtcpserver.cpp
 win32: {
 wince*: {
 	LIBS += -lws2
-	crashApp.sources = ../crashingServer/crashingServer.exe
+	crashApp.files = ../crashingServer/crashingServer.exe
 	crashApp.path = crashingServer
 	DEPLOYMENT += crashApp
 } else {
@@ -13,9 +13,10 @@ wince*: {
 }
 
 symbian {
-	crashApp.sources = $$QT_BUILD_TREE/examples/widgets/wiggly/$${BUILD_DIR}/crashingServer.exe
-	crashApp.path = .
-	DEPLOYMENT += crashApp
+    crashApp.files = $$QT_BUILD_TREE/examples/widgets/wiggly/$${BUILD_DIR}/crashingServer.exe
+    crashApp.path = .
+    DEPLOYMENT += crashApp
+    TARGET.CAPABILITY += NetworkServices ReadUserData
 }
 
 TARGET = ../tst_qtcpserver

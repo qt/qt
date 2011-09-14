@@ -480,6 +480,21 @@
 */
 
 /*!
+    \externalpage http://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_event_i_d_8idl.html
+    \title AccessibleEventID.idl File Reference
+*/
+
+/*!
+    \externalpage http://msdn.microsoft.com/en-us/library/dd318066.aspx
+    \title Microsoft Active Accessibility Event Constants
+*/
+
+/*!
+    \externalpage http://www.rfc-editor.org/rfc/bcp/bcp47.txt
+    \title RFC 5646 - BCP47
+*/
+
+/*!
     \externalpage http://www.developer.nokia.com/Community/Wiki/Graphics_memory_handling
     \title Graphics Out Of Memory monitor
 */

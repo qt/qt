@@ -41,12 +41,20 @@
 
 #include "qabstractfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#ifdef QT_BUILD_CORE_LIB
+#include "private/qresource_p.h"
+#endif
 #include "qdatetime.h"
 #include "qreadwritelock.h"
 #include "qvariant.h"
 // built-in handlers
 #include "qfsfileengine.h"
 #include "qdiriterator.h"
+#include "qstringbuilder.h"
+
+#include <QtCore/private/qfilesystementry_p.h>
+#include <QtCore/private/qfilesystemmetadata_p.h>
+#include <QtCore/private/qfilesystemengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,6 +102,8 @@ QT_BEGIN_NAMESPACE
     \sa QAbstractFileEngine, QAbstractFileEngine::create()
 */
 
+static bool qt_file_engine_handlers_in_use = false;
+
 /*
     All application-wide handlers are stored in this list. The mutex must be
     acquired to ensure thread safety.
@@ -123,6 +133,7 @@ Q_GLOBAL_STATIC(QAbstractFileEngineHandlerList, fileEngineHandlers)
 QAbstractFileEngineHandler::QAbstractFileEngineHandler()
 {
     QWriteLocker locker(fileEngineHandlerMutex());
+    qt_file_engine_handlers_in_use = true;
     fileEngineHandlers()->prepend(this);
 }
 
@@ -134,8 +145,35 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 {
     QWriteLocker locker(fileEngineHandlerMutex());
     // Remove this handler from the handler list only if the list is valid.
-    if (!qt_abstractfileenginehandlerlist_shutDown)
-        fileEngineHandlers()->removeAll(this);
+    if (!qt_abstractfileenginehandlerlist_shutDown) {
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        handlers->removeOne(this);
+        if (handlers->isEmpty())
+            qt_file_engine_handlers_in_use = false;
+    }
+}
+
+/*
+   \ìnternal
+
+   Handles calls to custom file engine handlers.
+*/
+QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
+{
+    QAbstractFileEngine *engine = 0;
+
+    if (qt_file_engine_handlers_in_use) {
+        QReadLocker locker(fileEngineHandlerMutex());
+
+        // check for registered handlers that can load the file
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        for (int i = 0; i < handlers->size(); i++) {
+            if ((engine = handlers->at(i)->create(path)))
+                break;
+        }
+    }
+
+    return engine;
 }
 
 /*!
@@ -166,42 +204,17 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 */
 QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 {
-    {
-        QReadLocker locker(fileEngineHandlerMutex());
+    QFileSystemEntry entry(fileName);
+    QFileSystemMetaData metaData;
+    QAbstractFileEngine *engine = QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, metaData);
 
-        // check for registered handlers that can load the file
-        for (int i = 0; i < fileEngineHandlers()->size(); i++) {
-            if (QAbstractFileEngine *ret = fileEngineHandlers()->at(i)->create(fileName))
-                return ret;
-        }
-    }
-
-#ifdef QT_BUILD_CORE_LIB
-    if (!fileName.startsWith(QLatin1Char('/'))) {
-        int prefixSeparator = fileName.indexOf(QLatin1Char(':'));
-        if (prefixSeparator > 1) {
-            QString prefix = fileName.left(prefixSeparator);
-            QString fileNameWithoutPrefix = fileName.mid(prefixSeparator + 1).prepend(QLatin1Char('/'));
-            const QStringList &paths = QDir::searchPaths(prefix);
-            for (int i = 0; i < paths.count(); i++) {
-                QString path = paths.at(i);
-                path.append(fileNameWithoutPrefix);
-                QAbstractFileEngine *engine = create(path);
-                if (engine && (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
-                    return engine;
-                }
-                delete engine;
-            }
-        }
-    }
+#ifndef QT_NO_FSFILEENGINE
+    if (!engine)
+        // fall back to regular file engine
+        return new QFSFileEngine(entry.filePath());
 #endif
 
-#ifdef QT_NO_FSFILEENGINE
-    return 0;
-#else
-    // fall back to regular file engine
-    return new QFSFileEngine(fileName);
-#endif
+    return engine;
 }
 
 /*!

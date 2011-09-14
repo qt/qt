@@ -4,11 +4,10 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.7.4
+   VERSION=4.8.0
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
-mac:!contains(QMAKE_EXT_C, .mm):QMAKE_EXT_C += .mm
 
 #load up the headers info
 CONFIG += qt_install_headers
@@ -152,11 +151,19 @@ unix:!symbian {
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
 }
 
+win32-g++* {
+   CONFIG += create_pc
+   QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
+   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS]
+   QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+}
+
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
-DEFINES *= QT_USE_FAST_OPERATOR_PLUS QT_USE_FAST_CONCATENATION
+DEFINES *= QT_USE_QSTRINGBUILDER
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
@@ -201,7 +208,7 @@ symbian {
         pu_header = "; Partial upgrade package for testing $${TARGET} changes without reinstalling everything" \
                     "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$PARTIAL_UPGRADE_UID), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
         partial_upgrade.pkg_prerules = pu_header vendorinfo
-        partial_upgrade.sources = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
+        partial_upgrade.files = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
         partial_upgrade.path = c:/sys/bin
         DEPLOYMENT += partial_upgrade
     }

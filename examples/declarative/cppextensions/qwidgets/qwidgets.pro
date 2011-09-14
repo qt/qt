@@ -17,8 +17,9 @@ symbian:{
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCALLOWDLLDATA = 1
 
-    importFiles.sources = QWidgets/qmlqwidgetsplugin.dll QWidgets/qmldir
+    importFiles.files = QWidgets/qmlqwidgetsplugin.dll QWidgets/qmldir
     importFiles.path = QWidgets
 
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

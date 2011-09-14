@@ -53,6 +53,7 @@
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMessageBox>
 #include <QtGui/QSortFilterProxyModel>
+#include <QtGui/QToolBar>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,11 +137,18 @@ QWidget* BookmarkManager::bookmarkDockWidget() const
     return 0;
 }
 
-void BookmarkManager::takeBookmarksMenu(QMenu* menu)
+void BookmarkManager::setBookmarksMenu(QMenu* menu)
 {
     TRACE_OBJ
     bookmarkMenu = menu;
-    refeshBookmarkMenu();
+    refreshBookmarkMenu();
+}
+
+void BookmarkManager::setBookmarksToolbar(QToolBar *toolBar)
+{
+    TRACE_OBJ
+    m_toolBar = toolBar;
+    refreshBookmarkToolBar();
 }
 
 // -- public slots
@@ -157,7 +165,10 @@ void BookmarkManager::addBookmark(const QString &title, const QString &url)
 BookmarkManager::BookmarkManager()
     : typeAndSearch(false)
     , bookmarkMenu(0)
+    , m_toolBar(0)
     , bookmarkModel(new BookmarkModel)
+    , bookmarkFilterModel(0)
+    , typeAndSearchModel(0)
     , bookmarkWidget(new BookmarkWidget)
     , bookmarkTreeView(new BookmarkTreeView)
     , bookmarkManagerWidget(0)
@@ -186,11 +197,18 @@ BookmarkManager::BookmarkManager()
     connect(&HelpEngineWrapper::instance(), SIGNAL(setupFinished()), this,
         SLOT(setupFinished()));
     connect(bookmarkModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
-        SLOT(refeshBookmarkMenu()));
+        SLOT(refreshBookmarkMenu()));
     connect(bookmarkModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this,
-        SLOT(refeshBookmarkMenu()));
+        SLOT(refreshBookmarkMenu()));
     connect(bookmarkModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
-        SLOT(refeshBookmarkMenu()));
+        SLOT(refreshBookmarkMenu()));
+
+    connect(bookmarkModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
+        SLOT(refreshBookmarkToolBar()));
+    connect(bookmarkModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this,
+        SLOT(refreshBookmarkToolBar()));
+    connect(bookmarkModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
+        SLOT(refreshBookmarkToolBar()));
 }
 
 BookmarkManager::~BookmarkManager()
@@ -283,7 +301,7 @@ void BookmarkManager::buildBookmarksMenu(const QModelIndex &index, QMenu* menu)
         return;
 
     const QString &text = index.data().toString();
-    const QIcon &icon = qVariantValue<QIcon>(index.data(Qt::DecorationRole));
+    const QIcon &icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
     if (index.data(UserRoleFolder).toBool()) {
         if (QMenu* subMenu = menu->addMenu(icon, text)) {
             for (int i = 0; i < bookmarkModel->rowCount(index); ++i)
@@ -310,17 +328,20 @@ void BookmarkManager::setupFinished()
     bookmarkModel->setBookmarks(HelpEngineWrapper::instance().bookmarks());
     bookmarkModel->expandFoldersIfNeeeded(bookmarkTreeView);
 
-    refeshBookmarkMenu();
+    refreshBookmarkMenu();
+    refreshBookmarkToolBar();
 
     bookmarkTreeView->hideColumn(1);
     bookmarkTreeView->header()->setVisible(false);
     bookmarkTreeView->header()->setStretchLastSection(true);
 
-    bookmarkFilterModel = new BookmarkFilterModel(this);
+    if (!bookmarkFilterModel)
+        bookmarkFilterModel = new BookmarkFilterModel(this);
     bookmarkFilterModel->setSourceModel(bookmarkModel);
     bookmarkFilterModel->filterBookmarkFolders();
 
-    typeAndSearchModel = new QSortFilterProxyModel(this);
+    if (!typeAndSearchModel)
+        typeAndSearchModel = new QSortFilterProxyModel(this);
     typeAndSearchModel->setDynamicSortFilter(true);
     typeAndSearchModel->setSourceModel(bookmarkFilterModel);
 }
@@ -354,7 +375,7 @@ void BookmarkManager::manageBookmarks()
     bookmarkManagerWidget->raise();
 }
 
-void BookmarkManager::refeshBookmarkMenu()
+void BookmarkManager::refreshBookmarkMenu()
 {
     TRACE_OBJ
     if (!bookmarkMenu)
@@ -365,16 +386,56 @@ void BookmarkManager::refeshBookmarkMenu()
     bookmarkMenu->addAction(tr("Manage Bookmarks..."), this,
         SLOT(manageBookmarks()));
     bookmarkMenu->addAction(QIcon::fromTheme("bookmark-new"),
-                            tr("Add Bookmark..."), this, SLOT(addBookmark()),
-                            QKeySequence(tr("Ctrl+D")));
+        tr("Add Bookmark..."), this, SLOT(addBookmark()), QKeySequence(tr("Ctrl+D")));
+
     bookmarkMenu->addSeparator();
 
-    const QModelIndex &root = bookmarkModel->index(0, 0, QModelIndex());
+    QModelIndex root = bookmarkModel->index(0, 0, QModelIndex()).parent();
+    buildBookmarksMenu(bookmarkModel->index(0, 0, root), bookmarkMenu);
+
+    bookmarkMenu->addSeparator();
+
+    root = bookmarkModel->index(1, 0, QModelIndex());
     for (int i = 0; i < bookmarkModel->rowCount(root); ++i)
         buildBookmarksMenu(bookmarkModel->index(i, 0, root), bookmarkMenu);
 
     connect(bookmarkMenu, SIGNAL(triggered(QAction*)), this,
         SLOT(setSourceFromAction(QAction*)));
+}
+
+void BookmarkManager::refreshBookmarkToolBar()
+{
+    TRACE_OBJ
+    if (!m_toolBar)
+        return;
+
+    m_toolBar->clear();
+    m_toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    const QModelIndex &root = bookmarkModel->index(0, 0, QModelIndex());
+    for (int i = 0; i < bookmarkModel->rowCount(root); ++i) {
+        const QModelIndex &index = bookmarkModel->index(i, 0, root);
+        if (index.data(UserRoleFolder).toBool()) {
+            QToolButton *button = new QToolButton(m_toolBar);
+            button->setPopupMode(QToolButton::InstantPopup);
+            button->setText(index.data().toString());
+            QMenu *menu = new QMenu(button);
+            for (int j = 0; j < bookmarkModel->rowCount(index); ++j)
+                buildBookmarksMenu(bookmarkModel->index(j, 0, index), menu);
+            connect(menu, SIGNAL(triggered(QAction*)), this,
+                SLOT(setSourceFromAction(QAction*)));
+            button->setMenu(menu);
+            button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            button->setIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+            QAction *a = m_toolBar->addWidget(button);
+            a->setText(index.data().toString());
+        } else {
+            QAction *action = m_toolBar->addAction(
+                qvariant_cast<QIcon>(index.data(Qt::DecorationRole)),
+                index.data().toString(), this, SLOT(setSourceFromAction()));
+            action->setData(index.data(UserRoleUrl).toString());
+        }
+    }
 }
 
 void BookmarkManager::renameBookmark(const QModelIndex &index)
@@ -388,13 +449,21 @@ void BookmarkManager::renameBookmark(const QModelIndex &index)
     bookmarkModel->setItemsEditable(false);
 }
 
+
+void BookmarkManager::setSourceFromAction()
+{
+    TRACE_OBJ
+    setSourceFromAction(qobject_cast<QAction*> (sender()));
+}
+
 void BookmarkManager::setSourceFromAction(QAction *action)
 {
     TRACE_OBJ
-    const QVariant &data = action->data();
-
-    if (data.canConvert<QUrl>())
-        emit setSource(data.toUrl());
+    if (action) {
+        const QVariant &data = action->data();
+        if (data.canConvert<QUrl>())
+            emit setSource(data.toUrl());
+    }
 }
 
 void BookmarkManager::setSourceFromIndex(const QModelIndex &index, bool newTab)

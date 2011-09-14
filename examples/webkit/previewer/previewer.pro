@@ -4,7 +4,8 @@ HEADERS =   previewer.h \
 SOURCES =   main.cpp \
             previewer.cpp \
             mainwindow.cpp
-FORMS   =   previewer.ui
+FORMS   =   previewer.ui \
+            previewer_mobiles.ui
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webkit/previewer
@@ -15,4 +16,6 @@ INSTALLS += target sources
 symbian {
     TARGET.UID3 = 0xA000CF6F
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.CAPABILITY = NetworkServices
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

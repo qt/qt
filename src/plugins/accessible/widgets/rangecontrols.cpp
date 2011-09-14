@@ -83,8 +83,6 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
 /*! \reimp */
 int QAccessibleAbstractSpinBox::childCount() const
 {
-    if (!abstractSpinBox()->isVisible())
-        return 0;
     return ValueDown;
 }
 
@@ -214,7 +212,7 @@ QVariant QAccessibleAbstractSpinBox::currentValue()
 
 void QAccessibleAbstractSpinBox::setCurrentValue(const QVariant &value)
 {
-    abstractSpinBox()->setProperty("setValue", value);
+    abstractSpinBox()->setProperty("value", value);
 }
 
 QVariant QAccessibleAbstractSpinBox::maximumValue()
@@ -233,7 +231,7 @@ QVariant QAccessibleAbstractSpinBox::invokeMethodEx(Method method, int child, co
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
-        return qVariantFromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
+        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
                     QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
     }
     default:
@@ -344,8 +342,6 @@ QDoubleSpinBox *QAccessibleDoubleSpinBox::doubleSpinBox() const
 /*! \reimp */
 int QAccessibleDoubleSpinBox::childCount() const
 {
-    if (!doubleSpinBox()->isVisible())
-        return 0;
     return ValueDown;
 }
 
@@ -410,8 +406,6 @@ QVariant QAccessibleDoubleSpinBox::invokeMethodEx(QAccessible::Method, int, cons
 /*! \reimp */
 QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
 {
-    if (!doubleSpinBox()->isVisible())
-        return QString();
     switch (textType) {
     case Name:
         if (child == ValueUp)
@@ -540,16 +534,12 @@ QRect QAccessibleScrollBar::rect(int child) const
 /*! \reimp */
 int QAccessibleScrollBar::childCount() const
 {
-    if (!scrollBar()->isVisible())
-        return 0;
     return LineDown;
 }
 
 /*! \reimp */
 QString QAccessibleScrollBar::text(Text t, int child) const
 {
-    if (!scrollBar()->isVisible())
-        return QString();
     switch (t) {
     case Value:
         if (!child || child == Position)
@@ -698,16 +688,12 @@ QRect QAccessibleSlider::rect(int child) const
 /*! \reimp */
 int QAccessibleSlider::childCount() const
 {
-    if (!slider()->isVisible())
-        return 0;
     return PageRight;
 }
 
 /*! \reimp */
 QString QAccessibleSlider::text(Text t, int child) const
 {
-    if (!slider()->isVisible())
-        return QString();
     switch (t) {
     case Value:
         if (!child || child == 2)
@@ -814,7 +800,7 @@ QVariant QAccessibleAbstractSlider::invokeMethodEx(Method method, int child, con
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
-        return qVariantFromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
+        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
                     QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
     }
     default:
@@ -932,15 +918,11 @@ QRect QAccessibleDial::rect(int child) const
 
 int QAccessibleDial::childCount() const
 {
-    if (!dial()->isVisible())
-        return 0;
     return SliderHandle;
 }
 
 QString QAccessibleDial::text(Text textType, int child) const
 {
-    if (!dial()->isVisible())
-        return QString();
     if (textType == Value && child >= Self && child <= SliderHandle)
         return QString::number(dial()->value());
     if (textType == Name) {

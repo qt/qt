@@ -10,3 +10,4 @@ QT = core
 # Temporary:
 SOURCES += qthreadonce.cpp
 
+CONFIG += parallel_test

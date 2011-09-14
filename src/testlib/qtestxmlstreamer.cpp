@@ -42,6 +42,7 @@
 #include "qtestxmlstreamer.h"
 #include "qtestelement.h"
 #include "qtestelementattribute.h"
+#include "qtestlogger_p.h"
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -204,8 +205,13 @@ void QTestXmlStreamer::output(QTestElement *element) const
                        quotedTc.constData());
     outputString(buf.constData());
 
-    QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
-                       qVersion(), QTEST_VERSION_STR );
+    if (logger()->hasRandomSeed()) {
+        QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n    <RandomSeed>%d</RandomSeed>\n",
+                           qVersion(), QTEST_VERSION_STR, logger()->randomSeed() );
+    } else {
+        QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
+                           qVersion(), QTEST_VERSION_STR );
+    }
     outputString(buf.constData());
 
     QTest::qt_asprintf(&buf, "</Environment>\n");

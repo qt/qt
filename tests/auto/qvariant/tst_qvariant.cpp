@@ -100,6 +100,7 @@ private slots:
     void constructor();
     void copy_constructor();
     void isNull();
+    void swap();
 
     void canConvert_data();
     void canConvert();
@@ -274,6 +275,8 @@ private slots:
     void variantInVariant();
 
     void colorInteger();
+
+    void forwardDeclare();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -370,6 +373,16 @@ void tst_QVariant::isNull()
     QCOMPARE(var7.asInt(), 0);
 #endif
     QVERIFY(var7.isNull());
+}
+
+void tst_QVariant::swap()
+{
+    QVariant v1 = 1, v2 = 2.0;
+    v1.swap(v2);
+    QCOMPARE(v1.type(),QVariant::Double);
+    QCOMPARE(v1.toDouble(),2.0);
+    QCOMPARE(v2.type(),QVariant::Int);
+    QCOMPARE(v2.toInt(),1);
 }
 
 void tst_QVariant::canConvert_data()
@@ -2637,7 +2650,6 @@ void tst_QVariant::invalidAsByteArray()
 void tst_QVariant::invalidQColor() const
 {
     QVariant va("An invalid QColor::name() value.");
-    QTest::ignoreMessage(QtWarningMsg, "QColor::setNamedColor: Unknown color name 'An invalid QColor::name() value.'");
     QVERIFY(va.canConvert(QVariant::Color));
 
     QVERIFY(!va.convert(QVariant::Color));
@@ -2649,7 +2661,10 @@ void tst_QVariant::qvariant_cast_QObject_data() {
 
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject(this)) << true;
+    QObject *obj = new QObject(this);
+    obj->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true;
+    QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
 }
@@ -2661,6 +2676,9 @@ void tst_QVariant::qvariant_cast_QObject() {
 
     QObject *o = qvariant_cast<QObject *>(data);
     QCOMPARE(o != 0, success);
+    if (success) {
+        QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+    }
 }
 
 Q_DECLARE_METATYPE(qint8);
@@ -3221,18 +3239,24 @@ struct MyData
 {
     void *ptr;
     MyData() : ptr(this) {}
-    ~MyData() { Q_ASSERT(ptr == this); }
-    MyData(const MyData& o) : ptr(this) { Q_ASSERT(o.ptr == &o); }
+    ~MyData()
+    {
+        if (ptr != this) qWarning("%s: object has moved", Q_FUNC_INFO);
+    }
+    MyData(const MyData& o) : ptr(this)
+    {
+        if (o.ptr != &o) qWarning("%s: other object has moved", Q_FUNC_INFO);
+    }
     MyData &operator=(const MyData &o)
     {
-        Q_ASSERT(ptr == this);
-        Q_ASSERT(o.ptr == &o);
+        if (ptr != this) qWarning("%s: object has moved", Q_FUNC_INFO);
+        if (o.ptr != &o) qWarning("%s: other object has moved", Q_FUNC_INFO);
         return *this;
     }
     bool operator==(const MyData &o) const
     {
-        Q_ASSERT(ptr == this);
-        Q_ASSERT(o.ptr == &o);
+        if (ptr != this) qWarning("%s: object has moved", Q_FUNC_INFO);
+        if (o.ptr != &o) qWarning("%s: other object has moved", Q_FUNC_INFO);
         return true;
     }
 };
@@ -3421,6 +3445,17 @@ void tst_QVariant::colorInteger()
     QCOMPARE(v.type(), QVariant::Color);
     QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
 }
+
+class Forward;
+Q_DECLARE_METATYPE(Forward*);
+
+void tst_QVariant::forwardDeclare()
+{
+    Forward *f = 0;
+    QVariant v = QVariant::fromValue(f);
+    QCOMPARE(qvariant_cast<Forward*>(v), f);
+}
+
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

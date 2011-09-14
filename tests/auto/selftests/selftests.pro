@@ -5,10 +5,12 @@ SUBDIRS = subtest test warnings maxwarnings cmptest globaldata skipglobal skip \
           skipinit skipinitdata datetime singleskip assert waitwithoutgui differentexec \
           exceptionthrow qexecstringlist datatable commandlinedata\
           benchlibwalltime benchlibcallgrind benchlibeventcounter benchlibtickcounter \
-          benchliboptions xunit badxml longstring
+          benchliboptions xunit badxml longstring printdatatags \
+          printdatatagswithglobaltags
 
 INSTALLS =
 
 QT = core
 
 
+CONFIG += parallel_test

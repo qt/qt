@@ -273,6 +273,11 @@ private slots:
 
     void task196924();
     void focusNextPrevChild();
+
+    void taskQTBUG_12384_timeSpecShowTimeOnly();
+    
+    void deleteCalendarWidget();
+
 private:
     EditorDateEdit* testWidget;
     QWidget *testFocusWidget;
@@ -2696,17 +2701,10 @@ void tst_QDateTimeEdit::task98554()
     QCOMPARE(testWidget->time(), QTime(0, 0, 10, 0));
 }
 
-static QList<int> makeList(int val1, int val2 = -1, int val3 = -1, int val4 = -1, int val5 = -1, int val6 = -1, int val7 = -1)
+static QList<int> makeList(int val1, int val2, int val3)
 {
     QList<int> ret;
-    Q_ASSERT(val1 >= 0);
-    ret << val1;
-    if (val2 < 0) {return ret;} else {ret << val2;}
-    if (val3 < 0) {return ret;} else {ret << val3;}
-    if (val4 < 0) {return ret;} else {ret << val4;}
-    if (val5 < 0) {return ret;} else {ret << val5;}
-    if (val6 < 0) {return ret;} else {ret << val6;}
-    if (val7 >= 0) {ret << val2;}
+    ret << val1 << val2 << val3;
     return ret;
 }
 
@@ -2748,7 +2746,7 @@ void tst_QDateTimeEdit::setCurrentSection()
     QFETCH(QList<int>, setCurrentSections);
     QFETCH(QList<int>, expectedCursorPositions);
 
-    Q_ASSERT(setCurrentSections.size() == expectedCursorPositions.size());
+    QCOMPARE(setCurrentSections.size(), expectedCursorPositions.size());
     testWidget->setDisplayFormat(format);
     testWidget->setDateTime(dateTime);
 #ifdef Q_WS_MAC
@@ -3420,7 +3418,41 @@ void tst_QDateTimeEdit::focusNextPrevChild()
     QCOMPARE(edit.currentSection(), QDateTimeEdit::MonthSection);
 }
 
+void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
+{
+    QDateTime time = QDateTime::fromString("20100723 04:02:40", "yyyyMMdd hh:mm:ss");
+    time.setTimeSpec(Qt::UTC);
 
+    EditorDateEdit edit;
+    edit.setDisplayFormat("hh:mm:ss");
+    edit.setTimeSpec(Qt::UTC);
+    edit.setDateTime(time);
+
+    QCOMPARE(edit.minimumTime(), QTime(0, 0, 0, 0));
+    QCOMPARE(edit.maximumTime(), QTime(23, 59, 59, 999));
+    QCOMPARE(edit.time(), time.time());
+}
+
+void tst_QDateTimeEdit::deleteCalendarWidget()
+{
+    {
+        // setup
+        QCalendarWidget *cw = 0;
+        QDateEdit edit;
+        QVERIFY(!edit.calendarWidget());
+        edit.setCalendarPopup(true);
+        QVERIFY(edit.calendarWidget());
+        edit.calendarWidget()->setObjectName("cw1");;
+        
+        // delete
+        cw = edit.calendarWidget();
+        delete cw;
+        
+        // it should create a new widget
+        QVERIFY(edit.calendarWidget());
+        QVERIFY(edit.calendarWidget()->objectName() != "cw1");
+    }
+}
 
 QTEST_MAIN(tst_QDateTimeEdit)
 #include "tst_qdatetimeedit.moc"

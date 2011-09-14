@@ -133,6 +133,7 @@ private slots:
     void task217070_scrollbarsAdjusted();
     void task258949_keypressHangup();
     void QTBUG8086_currentItemChangedOnClick();
+    void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
 
 
 protected slots:
@@ -259,7 +260,7 @@ void tst_QListWidget::addItem2()
 {
     int count = testWidget->count();
 
-    // Boundry Checking
+    // Boundary Checking
     testWidget->addItem(0);
     QCOMPARE(testWidget->count(), count);
 
@@ -275,7 +276,7 @@ void tst_QListWidget::addItems()
 {
     int count = testWidget->count();
 
-    // Boundry Checking
+    // Boundary Checking
     testWidget->addItems(QStringList());
     QCOMPARE(testWidget->count(), count);
 
@@ -293,7 +294,7 @@ void tst_QListWidget::addItems()
 
 void tst_QListWidget::openPersistentEditor()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->openPersistentEditor(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
     testWidget->openPersistentEditor(item);
@@ -311,7 +312,7 @@ void tst_QListWidget::closePersistentEditor()
     QTest::qWait(1000);
 #endif
 
-    // Boundry checking
+    // Boundary checking
     int childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
@@ -336,7 +337,7 @@ void tst_QListWidget::closePersistentEditor()
 
 void tst_QListWidget::setItemHidden()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->setItemHidden(0, true);
     testWidget->setItemHidden(0, false);
 
@@ -393,7 +394,7 @@ void tst_QListWidget::setCurrentItem()
     for (int i = 0; i < fill; ++i)
         testWidget->addItem(QString("%1").arg(i));
 
-    // Boundry checking
+    // Boundary checking
     testWidget->setCurrentItem((QListWidgetItem *)0);
     QCOMPARE((QListWidgetItem *)0, testWidget->currentItem());
     QListWidgetItem item;
@@ -425,7 +426,7 @@ void tst_QListWidget::setCurrentRow()
     for (int i = 0; i < fill; ++i)
         testWidget->addItem(QString("%1").arg(i));
 
-    // Boundry checking
+    // Boundary checking
     testWidget->setCurrentRow(-1);
     QCOMPARE(-1, testWidget->currentRow());
     testWidget->setCurrentRow(testWidget->count());
@@ -482,7 +483,7 @@ void tst_QListWidget::editItem_data()
 
 void tst_QListWidget::editItem()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->editItem(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
     testWidget->editItem(item);
@@ -516,7 +517,7 @@ void tst_QListWidget::findItems()
 {
     // This really just tests that the items that are returned are converted from index's to items correctly.
 
-    // Boundry checking
+    // Boundary checking
     QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).count(), 0);
 
     populate();
@@ -1647,6 +1648,45 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
     QCOMPARE(spy.count(), 1);
 
 }
+
+
+class ItemDelegate : public QItemDelegate
+{
+public:
+	ItemDelegate(QObject *parent = 0) : QItemDelegate(parent)
+	{}
+	virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+	{
+		QLineEdit *lineEdit = new QLineEdit(parent);
+		lineEdit->setFrame(false);
+		QCompleter *completer = new QCompleter(QStringList() << "completer", lineEdit);
+		completer->setCompletionMode(QCompleter::InlineCompletion);
+		lineEdit->setCompleter(completer);
+		return lineEdit;
+	}
+};
+
+void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
+{
+	QListWidget listWidget;
+	listWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
+    listWidget.setItemDelegate(new ItemDelegate);
+    QListWidgetItem *item = new QListWidgetItem(QLatin1String("select an item (don't start editing)"), &listWidget);
+    item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsEditable);
+    new QListWidgetItem(QLatin1String("try to type the letter 'c'"), &listWidget);
+    new QListWidgetItem(QLatin1String("completer"), &listWidget);
+	listWidget.show();
+    listWidget.setCurrentItem(item);
+    QTest::qWaitForWindowShown(&listWidget);
+
+    QTest::keyClick(listWidget.viewport(), Qt::Key_C);
+
+    QLineEdit *le = qobject_cast<QLineEdit*>(listWidget.itemWidget(item));
+    QVERIFY(le);
+    QCOMPARE(le->text(), QString("completer"));
+    QCOMPARE(le->completer()->currentCompletion(), QString("completer"));
+}
+
 
 
 QTEST_MAIN(tst_QListWidget)

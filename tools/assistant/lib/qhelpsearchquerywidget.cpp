@@ -215,37 +215,36 @@ private:
 
         queryHist->curQuery += addend;
         const QList<QHelpSearchQuery> &query =
-                queryHist->queries.at(queryHist->curQuery);
+            queryHist->queries.at(queryHist->curQuery);
         foreach (const QHelpSearchQuery &queryPart, query) {
-            QLineEdit *lineEdit = 0;
-            switch (queryPart.fieldName) {
-            case QHelpSearchQuery::DEFAULT:
-                lineEdit = defaultQuery;
-                break;
-            case QHelpSearchQuery::ALL:
-                lineEdit = allQuery;
-                break;
-            case QHelpSearchQuery::ATLEAST:
-                lineEdit = atLeastQuery;
-                break;
-            case QHelpSearchQuery::FUZZY:
-                lineEdit = similarQuery;
-                break;
-            case QHelpSearchQuery::WITHOUT:
-                lineEdit = withoutQuery;
-                break;
-            case QHelpSearchQuery::PHRASE:
-                lineEdit = exactQuery;
-                break;
-            default:
-                Q_ASSERT(0);
-            }
-            lineEdit->setText(queryPart.wordList.join(" "));
+            if (QLineEdit *lineEdit = lineEditFor(queryPart.fieldName))
+                lineEdit->setText(queryPart.wordList.join(" "));
         }
 
         if (queryHist->curQuery == maxOrMinIndex)
             thisButton->setEnabled(false);
         otherButton->setEnabled(true);
+    }
+
+    QLineEdit* lineEditFor(const QHelpSearchQuery::FieldName &fieldName) const
+    {
+        switch (fieldName) {
+            case QHelpSearchQuery::DEFAULT:
+                return defaultQuery;
+            case QHelpSearchQuery::ALL:
+                return allQuery;
+            case QHelpSearchQuery::ATLEAST:
+                return atLeastQuery;
+            case QHelpSearchQuery::FUZZY:
+                return similarQuery;
+            case QHelpSearchQuery::WITHOUT:
+                return withoutQuery;
+            case QHelpSearchQuery::PHRASE:
+                return exactQuery;
+            default:
+                Q_ASSERT(0);
+        }
+        return 0;
     }
 
     void enableOrDisableToolButtons()
@@ -512,8 +511,31 @@ QHelpSearchQueryWidget::~QHelpSearchQueryWidget()
 }
 
 /*!
+    \since 4.8
+
+    Expands the search query widget so that the extended search fields are shown.
+*/
+void QHelpSearchQueryWidget::expandExtendedSearch()
+{
+    if (d->simpleSearch)
+        d->showHideAdvancedSearch();
+}
+
+/*!
+    \since 4.8
+
+    Collapses the search query widget so that only the default search field is
+    shown.
+*/
+void QHelpSearchQueryWidget::collapseExtendedSearch()
+{
+    if (!d->simpleSearch)
+        d->showHideAdvancedSearch();
+}
+
+/*!
     Returns a list of queries to use in combination with the search engines
-    search(QList<QHelpSearchQuery> &query) function.
+    search(QList<QHelpSearchQuery> &queryList) function.
 */
 QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const
 {
@@ -521,6 +543,30 @@ QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const
         d->simpleSearch ? d->simpleQueries : d->complexQueries;
     return queryHist.queries.isEmpty() ?
         QList<QHelpSearchQuery>() : queryHist.queries.last();
+}
+
+/*!
+    \since 4.8
+
+    Sets the QHelpSearchQueryWidget input fields to the values specified by
+    \a queryList search field name. Please note that one has to call the search
+    engine's search(QList<QHelpSearchQuery> &queryList) function to perform the
+    actual search.
+*/
+void QHelpSearchQueryWidget::setQuery(const QList<QHelpSearchQuery> &queryList)
+{
+    QList<QLineEdit *> lineEdits;
+    lineEdits << d->defaultQuery << d->allQuery << d->atLeastQuery
+        << d->similarQuery << d->withoutQuery << d->exactQuery;
+    foreach (QLineEdit *lineEdit, lineEdits)
+        lineEdit->clear();
+
+    const QLatin1String space(" ");
+    foreach (const QHelpSearchQuery &q, queryList) {
+        if (QLineEdit *lineEdit = d->lineEditFor(q.fieldName))
+            lineEdit->setText(lineEdit->text() + q.wordList.join(space) + space);
+    }
+    d->searchRequested();
 }
 
 /*!

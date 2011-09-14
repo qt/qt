@@ -1168,8 +1168,17 @@ DEFINE_STUB_FUNCTION(int, timeout_check)
         globalData->exception = createInterruptedExecutionException(globalData);
         VM_THROW_EXCEPTION_AT_END();
     }
-    
-    CHECK_FOR_EXCEPTION_AT_END();
+#ifdef QT_BUILD_SCRIPT_LIB
+    else {
+        // It's possible that the call to QtScript's implementation of
+        // TimeoutChecker::didTimeOut() caused an error to be thrown.
+        // In that case, didTimeOut() should still return false, since
+        // we don't want the interrupted-exception to override the
+        // user-thrown error. But we need to check for exception here,
+        // otherwise JSC would continue normal execution.
+        CHECK_FOR_EXCEPTION_AT_END();
+    }
+#endif
     return timeoutChecker->ticksUntilNextCheck();
 }
 

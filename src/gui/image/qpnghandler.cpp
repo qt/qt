@@ -58,6 +58,29 @@
 #include <pngconf.h>
 #endif
 
+#if PNG_LIBPNG_VER >= 10400 && PNG_LIBPNG_VER <= 10502 \
+        && defined(PNG_PEDANTIC_WARNINGS_SUPPORTED)
+/*
+    Versions 1.4.0 to 1.5.2 of libpng declare png_longjmp_ptr to
+    have a noreturn attribute if PNG_PEDANTIC_WARNINGS_SUPPORTED
+    is enabled, but most declarations of longjmp in the wild do
+    not add this attribute. This causes problems when the png_jmpbuf
+    macro expands to calling png_set_longjmp_fn with a mismatched
+    longjmp, as compilers such as Clang will treat this as an error.
+
+    To work around this we override the png_jmpbuf macro to cast
+    longjmp to a png_longjmp_ptr.
+*/
+#   undef png_jmpbuf
+#   ifdef PNG_SETJMP_SUPPORTED
+#       define png_jmpbuf(png_ptr) \
+            (*png_set_longjmp_fn((png_ptr), (png_longjmp_ptr)longjmp, sizeof(jmp_buf)))
+#   else
+#       define png_jmpbuf(png_ptr) \
+            (LIBPNG_WAS_COMPILED_WITH__PNG_NO_SETJMP)
+#   endif
+#endif
+
 #ifdef Q_OS_WINCE
 #define CALLBACK_CALL_TYPE        __cdecl
 #else
@@ -100,6 +123,7 @@ public:
     float gamma;
     int quality;
     QString description;
+    QStringList readTexts;
 
     png_struct *png_ptr;
     png_info *info_ptr;
@@ -108,6 +132,7 @@ public:
 
     bool readPngHeader();
     bool readPngImage(QImage *image);
+    void readPngTexts(png_info *info);
 
     QImage::Format readImageFormat();
 
@@ -217,6 +242,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
     png_colorp palette = 0;
     int num_palette;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+    png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
         // Black & White or 8-bit grayscale
@@ -362,6 +388,38 @@ static void CALLBACK_CALL_TYPE qt_png_warning(png_structp /*png_ptr*/, png_const
 /*!
     \internal
 */
+void Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngTexts(png_info *info)
+{
+#ifndef QT_NO_IMAGE_TEXT
+    png_textp text_ptr;
+    int num_text=0;
+    png_get_text(png_ptr, info, &text_ptr, &num_text);
+
+    while (num_text--) {
+        QString key, value;
+        key = QString::fromLatin1(text_ptr->key);
+#if defined(PNG_iTXt_SUPPORTED)
+        if (text_ptr->itxt_length) {
+            value = QString::fromUtf8(text_ptr->text, int(text_ptr->itxt_length));
+        } else
+#endif
+        {
+            value = QString::fromLatin1(text_ptr->text, int(text_ptr->text_length));
+        }
+        if (!description.isEmpty())
+            description += QLatin1String("\n\n");
+        description += key + QLatin1String(": ") + value.simplified();
+        readTexts.append(key);
+        readTexts.append(value);
+        text_ptr++;
+    }
+#endif
+}
+
+
+/*!
+    \internal
+*/
 bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
 {
     state = Error;
@@ -394,35 +452,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
     png_set_read_fn(png_ptr, this, iod_read_fn);
     png_read_info(png_ptr, info_ptr);
 
-#ifndef QT_NO_IMAGE_TEXT
-    png_textp text_ptr;
-    int num_text=0;
-    png_get_text(png_ptr,info_ptr,&text_ptr,&num_text);
-
-    while (num_text--) {
-        QString key, value;
-#if defined(PNG_iTXt_SUPPORTED) && !defined(QT_NO_TEXTCODEC)
-        if (text_ptr->lang) {
-            QTextCodec *codec = QTextCodec::codecForName(text_ptr->lang);
-            if (codec) {
-                key = codec->toUnicode(text_ptr->lang_key);
-                value = codec->toUnicode(QByteArray(text_ptr->text, text_ptr->itxt_length));
-            } else {
-                key = QString::fromLatin1(text_ptr->key);
-                value = QString::fromLatin1(QByteArray(text_ptr->text, int(text_ptr->text_length)));
-            }
-        } else
-#endif
-        {
-            key = QString::fromLatin1(text_ptr->key);
-            value = QString::fromLatin1(QByteArray(text_ptr->text, int(text_ptr->text_length)));
-        }
-        if (!description.isEmpty())
-            description += QLatin1String("\n\n");
-        description += key + QLatin1String(": ") + value.simplified();
-        text_ptr++;
-    }
-#endif
+    readPngTexts(info_ptr);
 
     state = ReadHeader;
     return true;
@@ -497,28 +527,15 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
     outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
 
-#ifndef QT_NO_IMAGE_TEXT
-    png_textp text_ptr;
-    int num_text=0;
-    png_get_text(png_ptr,info_ptr,&text_ptr,&num_text);
-    while (num_text--) {
-        outImage->setText(text_ptr->key,0,QString::fromAscii(text_ptr->text));
-        text_ptr++;
-    }
-
-    foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            outImage->setText(QLatin1String("Description"), pair.simplified());
-        } else {
-            QString key = pair.left(index);
-            outImage->setText(key, pair.mid(index + 2).simplified());
-        }
-    }
-#endif
-
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
+
+#ifndef QT_NO_IMAGE_TEXT
+    readPngTexts(end_info);
+    for (int i = 0; i < readTexts.size()-1; i+=2)
+        outImage->setText(readTexts.at(i), readTexts.at(i+1));
+#endif
+
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     delete [] row_pointers;
     png_ptr = 0;
@@ -647,29 +664,40 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
         return;
 
     png_textp text_ptr = new png_text[text.size()];
+    qMemSet(text_ptr, 0, text.size() * sizeof(png_text));
 
     QMap<QString, QString>::ConstIterator it = text.constBegin();
     int i = 0;
     while (it != text.constEnd()) {
-        QString t = it.value();
-        if (t.length() < 40)
-            text_ptr[i].compression = PNG_TEXT_COMPRESSION_NONE;
-        else
-            text_ptr[i].compression = PNG_TEXT_COMPRESSION_zTXt;
         text_ptr[i].key = qstrdup(it.key().left(79).toLatin1().constData());
+        bool noCompress = (it.value().length() < 40);
 
-#ifndef PNG_iTXt_SUPPORTED
-        QByteArray value = it.value().toLatin1();
-        text_ptr[i].text = qstrdup(value.constData());
-        text_ptr[i].text_length = value.size();
-#else
-        QByteArray value = it.value().toUtf8();
-        text_ptr[i].text = qstrdup(value.constData());
-        text_ptr[i].text_length = 0;
-        text_ptr[i].itxt_length = value.size();
-        text_ptr[i].lang = const_cast<char*>("UTF-8");
-        text_ptr[i].lang_key = qstrdup(it.key().toUtf8().constData());
+#ifdef PNG_iTXt_SUPPORTED
+        bool needsItxt = false;
+        foreach(const QChar c, it.value()) {
+            uchar ch = c.cell();
+            if (c.row() || (ch < 0x20 && ch != '\n') || (ch > 0x7e && ch < 0xa0)) {
+                needsItxt = true;
+                break;
+            }
+        }
+
+        if (needsItxt) {
+            text_ptr[i].compression = noCompress ? PNG_ITXT_COMPRESSION_NONE : PNG_ITXT_COMPRESSION_zTXt;
+            QByteArray value = it.value().toUtf8();
+            text_ptr[i].text = qstrdup(value.constData());
+            text_ptr[i].itxt_length = value.size();
+            text_ptr[i].lang = const_cast<char*>("UTF-8");
+            text_ptr[i].lang_key = qstrdup(it.key().toUtf8().constData());
+        }
+        else
 #endif
+        {
+            text_ptr[i].compression = noCompress ? PNG_TEXT_COMPRESSION_NONE : PNG_TEXT_COMPRESSION_zTXt;
+            QByteArray value = it.value().toLatin1();
+            text_ptr[i].text = qstrdup(value.constData());
+            text_ptr[i].text_length = value.size();
+        }
         ++i;
         ++it;
     }

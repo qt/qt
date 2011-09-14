@@ -96,7 +96,7 @@ void Window::setupGui()
     fileNameLineEdit = new QLineEdit;
     insertTextObjectButton = new QPushButton(tr("Insert Image"));
 
-    fileNameLineEdit->setText("./files/heart.svg");
+    fileNameLineEdit->setText(":/files/heart.svg");
     connect(insertTextObjectButton, SIGNAL(clicked()),
             this, SLOT(insertTextObject()));
 

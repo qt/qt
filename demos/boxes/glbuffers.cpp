@@ -42,6 +42,16 @@
 #include "glbuffers.h"
 #include <QtGui/qmatrix4x4.h>
 
+
+void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+{
+    const GLdouble ymax = zNear * tan(fovy * M_PI / 360.0);
+    const GLdouble ymin = -ymax;
+    const GLdouble xmin = ymin * aspect;
+    const GLdouble xmax = ymax * aspect;
+    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+}
+
 //============================================================================//
 //                                  GLTexture                                 //
 //============================================================================//

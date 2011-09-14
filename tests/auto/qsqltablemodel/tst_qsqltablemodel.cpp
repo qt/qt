@@ -569,9 +569,9 @@ void tst_QSqlTableModel::insertMultiRecords()
 
     QVERIFY(model.insertRow(2));
 
-    QCOMPARE(model.data(model.index(2, 0)), QVariant());
-    QCOMPARE(model.data(model.index(2, 1)), QVariant());
-    QCOMPARE(model.data(model.index(2, 2)), QVariant());
+    QCOMPARE(model.data(model.index(2, 0)), QVariant(model.record().field(0).type()));
+    QCOMPARE(model.data(model.index(2, 1)), QVariant(model.record().field(1).type()));
+    QCOMPARE(model.data(model.index(2, 2)), QVariant(model.record().field(2).type()));
 
     QVERIFY(model.insertRow(3));
     QVERIFY(model.insertRow(0));
@@ -1293,7 +1293,7 @@ void tst_QSqlTableModel::tableModifyWithBlank()
     QCOMPARE(model.rowCount(), 1); //verify only one entry
     QCOMPARE(model.record(0).value(0).toString(), timeString); //verify correct record
 
-    //At this point we know that the intial value (timestamp) was succsefully stored in the database
+    //At this point we know that the initial value (timestamp) was succsefully stored in the database
     //Attempt to modify the data in the new record
     //equivalent to query.exec("update test set column3="... command in direct test
     //set the data in the first column to "col1ModelData"

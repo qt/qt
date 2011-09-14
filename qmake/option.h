@@ -139,9 +139,18 @@ struct Option
         return fixString(in, flags);
     }
 
+    inline static bool hasFileExtension(const QString &str, const QStringList &extensions)
+    {
+        foreach (const QString &ext, extensions)
+            if (str.endsWith(ext))
+                return true;
+        return false;
+    }
+
     //global qmake mode, can only be in one mode per invocation!
-    enum QMAKE_MODE { QMAKE_GENERATE_NOTHING, QMAKE_GENERATE_PROJECT, QMAKE_GENERATE_MAKEFILE,
-                      QMAKE_GENERATE_PRL, QMAKE_SET_PROPERTY, QMAKE_QUERY_PROPERTY };
+    enum QMAKE_MODE { QMAKE_GENERATE_NOTHING,
+                      QMAKE_GENERATE_PROJECT, QMAKE_GENERATE_MAKEFILE, QMAKE_GENERATE_PRL,
+                      QMAKE_SET_PROPERTY, QMAKE_UNSET_PROPERTY, QMAKE_QUERY_PROPERTY };
     static QMAKE_MODE qmake_mode;
 
     //all modes
@@ -156,7 +165,7 @@ struct Option
     enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
     static HOST_MODE host_mode;
     enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
-                     TARG_SYMBIAN_MODE };
+                     TARG_SYMBIAN_MODE, TARG_INTEGRITY_MODE };
     static TARG_MODE target_mode;
     static bool target_mode_overridden;
     static QString user_template, user_template_prefix;
@@ -194,7 +203,6 @@ private:
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
 inline QStringList splitPathList(const QString &paths) { return paths.split(Option::dirlist_sep); }
-
 
 // this is a stripped down version of the one found in QtCore
 class QLibraryInfo

@@ -57,13 +57,16 @@
 
 #ifndef QT_NO_QWS_SIGNALHANDLER
 
-#include <QtCore/qmap.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qobjectcleanuphandler.h>
 
 QT_BEGIN_NAMESPACE
 
 typedef void (*qt_sighandler_t)(int);
+
+class QLock;
+class QWSLock;
 
 class QWSSignalHandlerPrivate;
 
@@ -75,17 +78,24 @@ public:
     ~QWSSignalHandler();
 
 #ifndef QT_NO_QWS_MULTIPROCESS
-    inline void addSemaphore(int semno) { semaphores.append(semno); }
-    void removeSemaphore(int semno);
+    inline void addLock(QLock *lock) { locks.append(lock); }
+    inline void removeLock(QLock *lock) { locks.removeOne(lock); }
+    inline void addWSLock(QWSLock *wslock) { wslocks.append(wslock); }
+    inline void removeWSLock(QWSLock *wslock) { wslocks.removeOne(wslock); }
 #endif
     inline void addObject(QObject *object) { (void)objects.add(object); }
 
 private:
     QWSSignalHandler();
+
+    void clear();
+
     static void handleSignal(int signal);
-    QMap<int, qt_sighandler_t> oldHandlers;
+
+    QHash<int, qt_sighandler_t> oldHandlers;
 #ifndef QT_NO_QWS_MULTIPROCESS
-    QVector<int> semaphores;
+    QList<QLock *> locks;
+    QList<QWSLock *> wslocks;
 #endif
     QObjectCleanupHandler objects;
 

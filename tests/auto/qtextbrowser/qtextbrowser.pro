@@ -6,9 +6,9 @@ contains(QT_CONFIG, qt3support): QT += qt3support
 
 
 wince*|symbian: {
-   addFiles.sources = *.html
+   addFiles.files = *.html
    addFiles.path = .
-   addDir.sources = subdir/*
+   addDir.files = subdir/*
    addDir.path = subdir
    DEPLOYMENT += addFiles addDir
 }

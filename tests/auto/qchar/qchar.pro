@@ -4,8 +4,8 @@ SOURCES  += tst_qchar.cpp
 QT = core
 
 wince*|symbian: {
-deploy.sources += NormalizationTest.txt
-DEPLOYMENT = deploy
+deploy.files += NormalizationTest.txt
+DEPLOYMENT += deploy
 }
 
 symbian: {
@@ -13,3 +13,4 @@ symbian: {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+CONFIG += parallel_test

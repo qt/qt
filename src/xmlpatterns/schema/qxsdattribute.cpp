@@ -59,12 +59,12 @@ XsdAttribute::Scope::Variety XsdAttribute::Scope::variety() const
 
 void XsdAttribute::Scope::setParent(const NamedSchemaComponent::Ptr &parent)
 {
-    m_parent = parent;
+    m_parent = parent.data();
 }
 
 NamedSchemaComponent::Ptr XsdAttribute::Scope::parent() const
 {
-    return m_parent;
+    return NamedSchemaComponent::Ptr(m_parent);
 }
 
 void XsdAttribute::ValueConstraint::setVariety(Variety variety)

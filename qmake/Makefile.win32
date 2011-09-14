@@ -31,7 +31,7 @@ CFLAGS_EXTRA      = /MP
 CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O2 \
               $(CFLAGS_EXTRA) \
-              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian \
+              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian -Igenerators\integrity \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
               -I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
@@ -62,7 +62,8 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
-              symmake_abld.obj symmake_sbsv2.obj symbiancommon.obj registry.obj epocroot.obj
+              symmake_abld.obj symmake_sbsv2.obj symbiancommon.obj registry.obj epocroot.obj \
+              gbuild.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
 CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
@@ -73,6 +74,10 @@ QTOBJS= \
 	qbitarray.obj \
 	qbuffer.obj \
 	qcryptographichash.obj \
+	qfilesystementry.obj \
+	qfilesystemengine.obj \
+	qfilesystemengine_win.obj \
+	qfilesystemiterator_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
 	qbytearray.obj \
@@ -86,7 +91,6 @@ QTOBJS= \
 	qabstractfileengine.obj \
 	qfsfileengine_win.obj \
 	qsystemlibrary.obj \
-	qfsfileengine_iterator_win.obj \
 	qfileinfo.obj \
 	qglobal.obj \
 	qhash.obj \
@@ -94,6 +98,8 @@ QTOBJS= \
 	qlist.obj \
 	qlinkedlist.obj \
 	qlocale.obj \
+	qlocale_tools.obj \
+	qlocale_win.obj \
 	qmalloc.obj \
 	qmap.obj \
 	qregexp.obj \
@@ -101,6 +107,7 @@ QTOBJS= \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
+	qsystemerror.obj \
 	qtextstream.obj \
 	qdatastream.obj \
 	quuid.obj \
@@ -151,9 +158,6 @@ distclean:: clean
 
 $(OBJS): qmake_pch.obj
 
-qsystemlibrary.obj: $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
-
 $(QTOBJS): qmake_pch.obj
 
 qmake_pch.obj:
@@ -163,6 +167,9 @@ qmake_pch.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\qmake\generators\symbian}.cpp{}.obj::
+	$(CXX) $(CXXFLAGS) $<
+
+{$(SOURCE_PATH)\qmake\generators\integrity}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\qmake\generators\unix}.cpp{}.obj::

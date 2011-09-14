@@ -184,12 +184,9 @@ public:
 #if defined (QT_NO_STL)
         : begin(_begin), end(_end), current(_begin), currentIndex(0),
            forIteration(false), progressReportingEnabled(true)
-#elif !defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
+#else
         : begin(_begin), end(_end), current(_begin), currentIndex(0),
            forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category())), progressReportingEnabled(true)
-#else
-        : begin(_begin), end(_end), currentIndex(0),
-          forIteration(selectIteration(std::iterator_category(_begin))), progressReportingEnabled(true)
 #endif
     {
 #if defined (QT_NO_STL)

@@ -41,6 +41,7 @@
 
 #include "qdesigner_taskmenu_p.h"
 #include "qdesigner_command_p.h"
+#include "qdesigner_command2_p.h"
 #include "richtexteditor_p.h"
 #include "plaintexteditor_p.h"
 #include "stylesheeteditor_p.h"
@@ -132,7 +133,7 @@ static QString objName(const QDesignerFormEditorInterface *core, QObject *object
     const QString objectNameProperty = QLatin1String("objectName");
     const int index = sheet->indexOf(objectNameProperty);
     const qdesigner_internal::PropertySheetStringValue objectNameValue
-            = qVariantValue<qdesigner_internal::PropertySheetStringValue>(sheet->property(index));
+            = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(sheet->property(index));
     return objectNameValue.value();
 }
 
@@ -180,10 +181,128 @@ QString ObjectNameDialog::newObjectName() const
 {
     return m_editor->text();
 }
-
-}
+} // namespace
 
 namespace qdesigner_internal {
+
+// Sub menu displaying the alignment options of a widget in a managed
+// grid/box layout cell.
+class LayoutAlignmentMenu {
+public:
+    explicit LayoutAlignmentMenu(QObject *parent);
+
+    QAction *subMenuAction() const { return m_subMenuAction; }
+
+    void connect(QObject *receiver, const char *aSlot);
+
+    // Set up enabled state and checked actions according to widget (managed box/grid)
+    bool setAlignment(const QDesignerFormEditorInterface *core, QWidget *w);
+
+    // Return the currently checked alignment
+    Qt::Alignment alignment() const;
+
+private:
+    enum Actions { HorizNone, Left, HorizCenter, Right, VerticalNone, Top, VerticalCenter, Bottom };
+    static QAction *createAction(const QString &text, int data, QMenu *menu, QActionGroup *ag);
+
+    QAction *m_subMenuAction;
+    QActionGroup *m_horizGroup;
+    QActionGroup *m_verticalGroup;
+    QAction *m_actions[Bottom + 1];
+};
+
+QAction *LayoutAlignmentMenu::createAction(const QString &text, int data, QMenu *menu, QActionGroup *ag)
+{
+    QAction * a = new QAction(text, 0);
+    a->setCheckable(true);
+    a->setData(QVariant(data));
+    menu->addAction(a);
+    ag->addAction(a);
+    return a;
+}
+
+LayoutAlignmentMenu::LayoutAlignmentMenu(QObject *parent) :
+    m_subMenuAction(new QAction(QDesignerTaskMenu::tr("Layout Alignment"), parent)),
+    m_horizGroup(new QActionGroup(parent)),
+    m_verticalGroup(new QActionGroup(parent))
+{
+    m_horizGroup->setExclusive(true);
+    m_verticalGroup->setExclusive(true);
+
+    QMenu *menu = new QMenu;
+    m_subMenuAction->setMenu(menu);
+
+    m_actions[HorizNone] = createAction(QDesignerTaskMenu::tr("No Horizontal Alignment"), 0, menu, m_horizGroup);
+    m_actions[Left] = createAction(QDesignerTaskMenu::tr("Left"), Qt::AlignLeft, menu, m_horizGroup);
+    m_actions[HorizCenter] = createAction(QDesignerTaskMenu::tr("Center Horizontally"), Qt::AlignHCenter, menu, m_horizGroup);
+    m_actions[Right] = createAction(QDesignerTaskMenu::tr("Right"), Qt::AlignRight, menu, m_horizGroup);
+    menu->addSeparator();
+    m_actions[VerticalNone] = createAction(QDesignerTaskMenu::tr("No Vertical Alignment"), 0, menu, m_verticalGroup);
+    m_actions[Top] = createAction(QDesignerTaskMenu::tr("Top"), Qt::AlignTop, menu, m_verticalGroup);
+    m_actions[VerticalCenter] = createAction(QDesignerTaskMenu::tr("Center Vertically"), Qt::AlignVCenter, menu, m_verticalGroup);
+    m_actions[Bottom] = createAction(QDesignerTaskMenu::tr("Bottom"), Qt::AlignBottom, menu, m_verticalGroup);
+}
+
+void LayoutAlignmentMenu::connect(QObject *receiver, const char *aSlot)
+{
+    QObject::connect(m_horizGroup, SIGNAL(triggered(QAction*)), receiver, aSlot);
+    QObject::connect(m_verticalGroup, SIGNAL(triggered(QAction*)), receiver, aSlot);
+}
+
+bool LayoutAlignmentMenu::setAlignment(const QDesignerFormEditorInterface *core, QWidget *w)
+{
+    bool enabled;
+    const Qt::Alignment alignment = LayoutAlignmentCommand::alignmentOf(core, w, &enabled);
+    if (!enabled) {
+        m_subMenuAction->setEnabled(false);
+        m_actions[HorizNone]->setChecked(true);
+        m_actions[VerticalNone]->setChecked(true);
+        return false;
+    }
+    // Get alignment
+    switch (alignment & Qt::AlignHorizontal_Mask) {
+    case Qt::AlignLeft:
+        m_actions[Left]->setChecked(true);
+        break;
+    case Qt::AlignHCenter:
+        m_actions[HorizCenter]->setChecked(true);
+        break;
+    case Qt::AlignRight:
+        m_actions[Right]->setChecked(true);
+        break;
+    default:
+        m_actions[HorizNone]->setChecked(true);
+        break;
+    }
+    switch (alignment & Qt::AlignVertical_Mask) {
+    case Qt::AlignTop:
+        m_actions[Top]->setChecked(true);
+        break;
+    case Qt::AlignVCenter:
+        m_actions[VerticalCenter]->setChecked(true);
+        break;
+    case Qt::AlignBottom:
+        m_actions[Bottom]->setChecked(true);
+        break;
+    default:
+        m_actions[VerticalNone]->setChecked(true);
+        break;
+    }
+    return true;
+}
+
+Qt::Alignment LayoutAlignmentMenu::alignment() const
+{
+    Qt::Alignment alignment = 0;
+    if (const QAction *horizAction = m_horizGroup->checkedAction())
+        if (const int horizAlign = horizAction->data().toInt())
+            alignment |= static_cast<Qt::Alignment>(horizAlign);
+    if (const QAction *vertAction = m_verticalGroup->checkedAction())
+        if (const int vertAlign = vertAction->data().toInt())
+            alignment |= static_cast<Qt::Alignment>(vertAlign);
+    return alignment;
+}
+
 // -------------- QDesignerTaskMenuPrivate
 class QDesignerTaskMenuPrivate {
 public:
@@ -214,6 +333,7 @@ public:
     QAction *m_navigateToSlot;
     PromotionTaskMenu* m_promotionTaskMenu;
     QActionGroup *m_sizeActionGroup;
+    LayoutAlignmentMenu m_layoutAlignmentMenu;
     QAction *m_sizeActionsSubMenu;
 };
 
@@ -242,6 +362,7 @@ QDesignerTaskMenuPrivate::QDesignerTaskMenuPrivate(QWidget *widget, QObject *par
     m_navigateToSlot(new QAction(QDesignerTaskMenu::tr("Go to slot..."), parent)),
     m_promotionTaskMenu(new PromotionTaskMenu(widget, PromotionTaskMenu::ModeManagedMultiSelection, parent)),
     m_sizeActionGroup(new QActionGroup(parent)),
+    m_layoutAlignmentMenu(parent),
     m_sizeActionsSubMenu(new QAction(QDesignerTaskMenu::tr("Size Constraints"), parent))
 {
     QMenu *sizeMenu = new QMenu;
@@ -293,6 +414,7 @@ QDesignerTaskMenu::QDesignerTaskMenu(QWidget *widget, QObject *parent) :
     connect(d->m_containerFakeMethods, SIGNAL(triggered()), this, SLOT(containerFakeMethods()));
     connect(d->m_navigateToSlot, SIGNAL(triggered()), this, SLOT(slotNavigateToSlot()));
     connect(d->m_sizeActionGroup, SIGNAL(triggered(QAction*)), this,  SLOT(applySize(QAction*)));
+    d->m_layoutAlignmentMenu.connect(this, SLOT(slotLayoutAlignment()));
 }
 
 QDesignerTaskMenu::~QDesignerTaskMenu()
@@ -410,6 +532,9 @@ QList<QAction*> QDesignerTaskMenu::taskActions() const
     actions.append(d->m_changeStyleSheet);
     actions.append(d->m_separator6);
     actions.append(d->m_sizeActionsSubMenu);
+    if (d->m_layoutAlignmentMenu.setAlignment(formWindow->core(), d->m_widget))
+        actions.append(d->m_layoutAlignmentMenu.subMenuAction());
+
     d->m_promotionTaskMenu->setMode(formWindow->isManaged(d->m_widget) ?
                                     PromotionTaskMenu::ModeManagedMultiSelection : PromotionTaskMenu::ModeUnmanagedMultiSelection);
     d->m_promotionTaskMenu->addActions(formWindow, PromotionTaskMenu::LeadingSeparator, actions);
@@ -447,7 +572,7 @@ void QDesignerTaskMenu::changeObjectName()
             const QString objectNameProperty = QLatin1String("objectName");
             PropertySheetStringValue objectNameValue;
             objectNameValue.setValue(newObjectName);
-            setProperty(fw, CurrentWidgetMode, objectNameProperty, qVariantFromValue(objectNameValue));
+            setProperty(fw, CurrentWidgetMode, objectNameProperty, QVariant::fromValue(objectNameValue));
         }
     }
 }
@@ -465,7 +590,7 @@ void QDesignerTaskMenu::changeTextProperty(const QString &propertyName, const QS
         qDebug() << "** WARNING Invalid property" << propertyName << " passed to changeTextProperty!";
         return;
     }
-    PropertySheetStringValue textValue = qVariantValue<PropertySheetStringValue>(sheet->property(index));
+    PropertySheetStringValue textValue = qvariant_cast<PropertySheetStringValue>(sheet->property(index));
     const QString oldText = textValue.value();
     // Pop up respective dialog
     bool accepted = false;
@@ -498,7 +623,7 @@ void QDesignerTaskMenu::changeTextProperty(const QString &propertyName, const QS
 
 
     textValue.setValue(newText);
-    setProperty(fw, pm, propertyName, qVariantFromValue(textValue));
+    setProperty(fw, pm, propertyName, QVariant::fromValue(textValue));
 }
 
 void QDesignerTaskMenu::changeToolTip()
@@ -673,7 +798,7 @@ void QDesignerTaskMenu::navigateToSlot(QDesignerFormEditorInterface *core,
     if (selectSignalDialog.exec() == QDialog::Accepted) {
         QTreeWidgetItem *selectedItem = dialogUi.signalList->selectedItems().first();
         const QString signalSignature = selectedItem->text(0);
-        const QStringList parameterNames = qVariantValue<QStringList>(selectedItem->data(0, Qt::UserRole));
+        const QStringList parameterNames = qvariant_cast<QStringList>(selectedItem->data(0, Qt::UserRole));
 
         // TODO: Check whether signal is connected to slot
         integr->emitNavigateToSlot(objectName, signalSignature, parameterNames);
@@ -771,7 +896,17 @@ void QDesignerTaskMenu::setProperty(QDesignerFormWindowInterface *fw,  PropertyM
     }
 }
 
-
+void QDesignerTaskMenu::slotLayoutAlignment()
+{
+    QDesignerFormWindowInterface *fw = formWindow();
+    const Qt::Alignment newAlignment = d->m_layoutAlignmentMenu.alignment();
+    LayoutAlignmentCommand *cmd = new LayoutAlignmentCommand(fw);
+    if (cmd->init(d->m_widget, newAlignment)) {
+        fw->commandHistory()->push(cmd);
+    } else {
+        delete cmd;
+    }
+}
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE

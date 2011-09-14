@@ -171,7 +171,7 @@ QDesignerResourceBuilder::QDesignerResourceBuilder(QDesignerFormEditorInterface 
 {
 }
 
-static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, 
+static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory,
                                  QString path, PropertySheetIconValue &icon,
                                  const QDesignerLanguageExtension *lang = 0)
 {
@@ -197,12 +197,13 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, dp->attributeResource()).absoluteFilePath(), false);
 #endif
             }
-            return qVariantFromValue(pixmap);
+            return QVariant::fromValue(pixmap);
         }
 
         case DomProperty::IconSet: {
             PropertySheetIconValue icon;
             DomResourceIcon *di = property->elementIconSet();
+            icon.setTheme(di->attributeTheme());
             if (const int flags = iconStateFlags(di)) { // new, post 4.4 format
                 if (flags & NormalOff)
                     setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon, m_lang);
@@ -227,7 +228,7 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, di->attributeResource()).absoluteFilePath(), false);
 #endif
             }
-            return qVariantFromValue(icon);
+            return QVariant::fromValue(icon);
         }
         default:
             break;
@@ -237,12 +238,12 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
 
 QVariant QDesignerResourceBuilder::toNativeValue(const QVariant &value) const
 {
-    if (qVariantCanConvert<PropertySheetPixmapValue>(value)) {
+    if (value.canConvert<PropertySheetPixmapValue>()) {
         if (m_pixmapCache)
-            return m_pixmapCache->pixmap(qVariantValue<PropertySheetPixmapValue>(value));
-    } else if (qVariantCanConvert<PropertySheetIconValue>(value)) {
+            return m_pixmapCache->pixmap(qvariant_cast<PropertySheetPixmapValue>(value));
+    } else if (value.canConvert<PropertySheetIconValue>()) {
         if (m_iconCache)
-            return m_iconCache->icon(qVariantValue<PropertySheetIconValue>(value));
+            return m_iconCache->icon(qvariant_cast<PropertySheetIconValue>(value));
     }
     return value;
 }
@@ -250,7 +251,7 @@ QVariant QDesignerResourceBuilder::toNativeValue(const QVariant &value) const
 DomProperty *QDesignerResourceBuilder::saveResource(const QDir &workingDirectory, const QVariant &value) const
 {
     DomProperty *p = new DomProperty;
-    if (qVariantCanConvert<PropertySheetPixmapValue>(value)) {
+    if (value.canConvert<PropertySheetPixmapValue>()) {
         const PropertySheetPixmapValue pix = qvariant_cast<PropertySheetPixmapValue>(value);
         DomResourcePixmap *rp = new DomResourcePixmap;
         const QString pixPath = pix.path();
@@ -275,11 +276,14 @@ DomProperty *QDesignerResourceBuilder::saveResource(const QDir &workingDirectory
         }
         p->setElementPixmap(rp);
         return p;
-    } else if (qVariantCanConvert<PropertySheetIconValue>(value)) {
+    } else if (value.canConvert<PropertySheetIconValue>()) {
         const PropertySheetIconValue icon = qvariant_cast<PropertySheetIconValue>(value);
         const QMap<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> pixmaps = icon.paths();
-        if (!pixmaps.isEmpty()) {
+        const QString theme = icon.theme();
+        if (!pixmaps.isEmpty() || !theme.isEmpty()) {
             DomResourceIcon *ri = new DomResourceIcon;
+            if (!theme.isEmpty())
+                ri->setAttributeTheme(theme);
             QMapIterator<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> itPix(pixmaps);
             while (itPix.hasNext()) {
                 const QIcon::Mode mode = itPix.next().key().first;
@@ -331,7 +335,7 @@ DomProperty *QDesignerResourceBuilder::saveResource(const QDir &workingDirectory
 
 bool QDesignerResourceBuilder::isResourceType(const QVariant &value) const
 {
-    if (qVariantCanConvert<PropertySheetPixmapValue>(value) || qVariantCanConvert<PropertySheetIconValue>(value))
+    if (value.canConvert<PropertySheetPixmapValue>() || value.canConvert<PropertySheetIconValue>())
         return true;
     return false;
 }
@@ -364,26 +368,26 @@ QVariant QDesignerTextBuilder::loadText(const DomProperty *text) const
         if (!translatable)
             strVal.setTranslatable(translatable);
     }
-    return qVariantFromValue(strVal);
+    return QVariant::fromValue(strVal);
 }
 
 QVariant QDesignerTextBuilder::toNativeValue(const QVariant &value) const
 {
-    if (qVariantCanConvert<PropertySheetStringValue>(value))
-        return qVariantFromValue(qVariantValue<PropertySheetStringValue>(value).value());
+    if (value.canConvert<PropertySheetStringValue>())
+        return QVariant::fromValue(qvariant_cast<PropertySheetStringValue>(value).value());
     return value;
 }
 
 DomProperty *QDesignerTextBuilder::saveText(const QVariant &value) const
 {
-    if (!qVariantCanConvert<PropertySheetStringValue>(value) && !qVariantCanConvert<QString>(value))
+    if (!value.canConvert<PropertySheetStringValue>() && !value.canConvert<QString>())
         return 0;
 
     DomProperty *property = new DomProperty();
     DomString *domStr = new DomString();
 
-    if (qVariantCanConvert<PropertySheetStringValue>(value)) {
-        PropertySheetStringValue str = qVariantValue<PropertySheetStringValue>(value);
+    if (value.canConvert<PropertySheetStringValue>()) {
+        PropertySheetStringValue str = qvariant_cast<PropertySheetStringValue>(value);
 
         domStr->setText(str.value());
 
@@ -475,7 +479,7 @@ void QDesignerResource::saveDom(DomUI *ui, QWidget *widget)
     if (classVar.canConvert(QVariant::String))
         classStr = classVar.toString();
     else
-        classStr = qVariantValue<PropertySheetStringValue>(classVar).value();
+        classStr = qvariant_cast<PropertySheetStringValue>(classVar).value();
     ui->setElementClass(classStr);
 
     for (int index = 0; index < m_formWindow->toolCount(); ++index) {
@@ -737,7 +741,10 @@ QWidget *QDesignerResource::load(QIODevice *dev, QWidget *parentWidget)
     case LoadPreCheckOk:
         break;
     }
-    return QEditorFormBuilder::load(dev, parentWidget);
+    QWidget *w = QEditorFormBuilder::load(dev, parentWidget);
+    if (w) // Store the class name as 'reset' value for the main container's object name.
+        w->setProperty("_q_classname", w->objectName());
+    return w;
 }
 
 bool QDesignerResource::saveRelative() const
@@ -946,7 +953,7 @@ QWidget *QDesignerResource::create(DomWidget *ui_widget, QWidget *parentWidget)
             w->addAction(a);
         } else if (QActionGroup *g = m_actionGroups.value(name)) {
             w->addActions(g->actions());
-        } else if (QMenu *menu = qFindChild<QMenu*>(w, name)) {
+        } else if (QMenu *menu = w->findChild<QMenu*>(name)) {
             w->addAction(menu->menuAction());
             addMenuAction(menu->menuAction());
         }
@@ -1045,7 +1052,7 @@ static bool readDomEnumerationValue(const DomProperty *p,
     switch (p->kind()) {
     case DomProperty::Set: {
         const QVariant sheetValue = sheet->property(index);
-        if (qVariantCanConvert<PropertySheetFlagValue>(sheetValue)) {
+        if (sheetValue.canConvert<PropertySheetFlagValue>()) {
             const PropertySheetFlagValue f = qvariant_cast<PropertySheetFlagValue>(sheetValue);
             bool ok = false;
             v = f.metaFlags.parseFlags(p->elementSet(), &ok);
@@ -1057,7 +1064,7 @@ static bool readDomEnumerationValue(const DomProperty *p,
         break;
     case DomProperty::Enum: {
         const QVariant sheetValue = sheet->property(index);
-        if (qVariantCanConvert<PropertySheetEnumValue>(sheetValue)) {
+        if (sheetValue.canConvert<PropertySheetEnumValue>()) {
             const PropertySheetEnumValue e = qvariant_cast<PropertySheetEnumValue>(sheetValue);
             bool ok = false;
             v = e.metaEnum.parseEnum(p->elementEnum(), &ok);
@@ -1110,7 +1117,7 @@ void QDesignerResource::applyProperties(QObject *o, const QList<DomProperty*> &p
                     if (!translatable)
                         keyVal.setTranslatable(translatable);
                 }
-                v = qVariantFromValue(keyVal);
+                v = QVariant::fromValue(keyVal);
             } else {
                 const DomString *str = p->elementString();
                 PropertySheetStringValue strVal(v.toString());
@@ -1124,7 +1131,7 @@ void QDesignerResource::applyProperties(QObject *o, const QList<DomProperty*> &p
                     if (!translatable)
                         strVal.setTranslatable(translatable);
                 }
-                v = qVariantFromValue(strVal);
+                v = QVariant::fromValue(strVal);
             }
         }
 
@@ -1135,18 +1142,18 @@ void QDesignerResource::applyProperties(QObject *o, const QList<DomProperty*> &p
         } else if (dynamicPropertiesAllowed) {
             QVariant defaultValue = QVariant(v.type());
             bool isDefault = (v == defaultValue);
-            if (qVariantCanConvert<PropertySheetIconValue>(v)) {
+            if (v.canConvert<PropertySheetIconValue>()) {
                 defaultValue = QVariant(QVariant::Icon);
-                isDefault = (qVariantValue<PropertySheetIconValue>(v) == PropertySheetIconValue());
-            } else if (qVariantCanConvert<PropertySheetPixmapValue>(v)) {
+                isDefault = (qvariant_cast<PropertySheetIconValue>(v) == PropertySheetIconValue());
+            } else if (v.canConvert<PropertySheetPixmapValue>()) {
                 defaultValue = QVariant(QVariant::Pixmap);
-                isDefault = (qVariantValue<PropertySheetPixmapValue>(v) == PropertySheetPixmapValue());
-            } else if (qVariantCanConvert<PropertySheetStringValue>(v)) {
+                isDefault = (qvariant_cast<PropertySheetPixmapValue>(v) == PropertySheetPixmapValue());
+            } else if (v.canConvert<PropertySheetStringValue>()) {
                 defaultValue = QVariant(QVariant::String);
-                isDefault = (qVariantValue<PropertySheetStringValue>(v) == PropertySheetStringValue());
-            } else if (qVariantCanConvert<PropertySheetKeySequenceValue>(v)) {
+                isDefault = (qvariant_cast<PropertySheetStringValue>(v) == PropertySheetStringValue());
+            } else if (v.canConvert<PropertySheetKeySequenceValue>()) {
                 defaultValue = QVariant(QVariant::KeySequence);
-                isDefault = (qVariantValue<PropertySheetKeySequenceValue>(v) == PropertySheetKeySequenceValue());
+                isDefault = (qvariant_cast<PropertySheetKeySequenceValue>(v) == PropertySheetKeySequenceValue());
             }
             if (defaultValue.type() != QVariant::UserType) {
                 const int idx = dynamicSheet->addDynamicProperty(p->attributeName(), defaultValue);
@@ -1185,12 +1192,12 @@ QWidget *QDesignerResource::createWidget(const QString &widgetName, QWidget *par
     if (!qobject_cast<QMenu*>(w) && (!parentWidget || !container)) {
         m_formWindow->manageWidget(w);
         if (parentWidget) {
-            QList<QWidget *> list = qVariantValue<QWidgetList>(parentWidget->property("_q_widgetOrder"));
+            QList<QWidget *> list = qvariant_cast<QWidgetList>(parentWidget->property("_q_widgetOrder"));
             list.append(w);
-            parentWidget->setProperty("_q_widgetOrder", qVariantFromValue(list));
-            QList<QWidget *> zOrder = qVariantValue<QWidgetList>(parentWidget->property("_q_zOrder"));
+            parentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(list));
+            QList<QWidget *> zOrder = qvariant_cast<QWidgetList>(parentWidget->property("_q_zOrder"));
             zOrder.append(w);
-            parentWidget->setProperty("_q_zOrder", qVariantFromValue(zOrder));
+            parentWidget->setProperty("_q_zOrder", QVariant::fromValue(zOrder));
         }
     } else {
         core()->metaDataBase()->add(w);
@@ -1320,7 +1327,7 @@ DomLayout *QDesignerResource::createDom(QLayout *layout, DomLayout *ui_parentLay
     QDesignerMetaDataBaseItemInterface *item = core()->metaDataBase()->item(layout);
 
     if (item == 0) {
-        layout = qFindChild<QLayout*>(layout);
+        layout = layout->findChild<QLayout*>();
         // refresh the meta database item
         item = core()->metaDataBase()->item(layout);
     }
@@ -1377,34 +1384,6 @@ DomLayoutItem *QDesignerResource::createDom(QLayoutItem *item, DomLayout *ui_lay
     } else {
         return 0;
     }
-
-    if (m_chain.size() && item->widget()) {
-        if (QGridLayout *grid = qobject_cast<QGridLayout*>(m_chain.top())) {
-            const int index = Utils::indexOfWidget(grid, item->widget());
-
-            int row, column, rowspan, colspan;
-            grid->getItemPosition(index, &row, &column, &rowspan, &colspan);
-            ui_item->setAttributeRow(row);
-            ui_item->setAttributeColumn(column);
-
-            if (colspan != 1)
-                ui_item->setAttributeColSpan(colspan);
-
-            if (rowspan != 1)
-                ui_item->setAttributeRowSpan(rowspan);
-        } else {
-            if (QFormLayout *form = qobject_cast<QFormLayout*>(m_chain.top())) {
-                const int index = Utils::indexOfWidget(form, item->widget());
-                int row, column, colspan;
-                getFormLayoutItemPosition(form, index, &row, &column, 0, &colspan);
-                ui_item->setAttributeRow(row);
-                ui_item->setAttributeColumn(column);
-                if (colspan != 1)
-                    ui_item->setAttributeColSpan(colspan);
-            }
-        }
-    }
-
     return ui_item;
 }
 
@@ -1440,7 +1419,7 @@ void QDesignerResource::applyTabStops(QWidget *widget, DomTabStops *tabStops)
 
     QList<QWidget*> tabOrder;
     foreach (const QString &widgetName, tabStops->elementTabStop()) {
-        if (QWidget *w = qFindChild<QWidget*>(widget, widgetName)) {
+        if (QWidget *w = widget->findChild<QWidget*>(widgetName)) {
             tabOrder.append(w);
         }
     }
@@ -1605,8 +1584,8 @@ DomWidget *QDesignerResource::saveWidget(QTabWidget *widget, DomWidget *ui_paren
             // attribute `icon'
             widget->setCurrentIndex(i);
             QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(core()->extensionManager(), widget);
-            PropertySheetIconValue icon = qVariantValue<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String("currentTabIcon"))));
-            DomProperty *p = resourceBuilder()->saveResource(workingDirectory(), qVariantFromValue(icon));
+            PropertySheetIconValue icon = qvariant_cast<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String("currentTabIcon"))));
+            DomProperty *p = resourceBuilder()->saveResource(workingDirectory(), QVariant::fromValue(icon));
             if (p) {
                 p->setAttributeName(strings.iconAttribute);
                 ui_attribute_list.append(p);
@@ -1620,7 +1599,7 @@ DomWidget *QDesignerResource::saveWidget(QTabWidget *widget, DomWidget *ui_paren
 
             // attribute `toolTip'
             QVariant v = sheet->property(sheet->indexOf(QLatin1String("currentTabToolTip")));
-            if (!qVariantValue<PropertySheetStringValue>(v).value().isEmpty()) {
+            if (!qvariant_cast<PropertySheetStringValue>(v).value().isEmpty()) {
                 p = textBuilder()->saveText(v);
                 if (p) {
                     p->setAttributeName(strings.toolTipAttribute);
@@ -1630,7 +1609,7 @@ DomWidget *QDesignerResource::saveWidget(QTabWidget *widget, DomWidget *ui_paren
 
             // attribute `whatsThis'
             v = sheet->property(sheet->indexOf(QLatin1String("currentTabWhatsThis")));
-            if (!qVariantValue<PropertySheetStringValue>(v).value().isEmpty()) {
+            if (!qvariant_cast<PropertySheetStringValue>(v).value().isEmpty()) {
                 p = textBuilder()->saveText(v);
                 if (p) {
                     p->setAttributeName(strings.whatsThisAttribute);
@@ -1676,8 +1655,8 @@ DomWidget *QDesignerResource::saveWidget(QToolBox *widget, DomWidget *ui_parentW
             // attribute `icon'
             widget->setCurrentIndex(i);
             QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(core()->extensionManager(), widget);
-            PropertySheetIconValue icon = qVariantValue<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String("currentItemIcon"))));
-            DomProperty *p = resourceBuilder()->saveResource(workingDirectory(), qVariantFromValue(icon));
+            PropertySheetIconValue icon = qvariant_cast<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String("currentItemIcon"))));
+            DomProperty *p = resourceBuilder()->saveResource(workingDirectory(), QVariant::fromValue(icon));
             if (p) {
                 p->setAttributeName(strings.iconAttribute);
                 ui_attribute_list.append(p);
@@ -1690,7 +1669,7 @@ DomWidget *QDesignerResource::saveWidget(QToolBox *widget, DomWidget *ui_parentW
 
             // attribute `toolTip'
             QVariant v = sheet->property(sheet->indexOf(QLatin1String("currentItemToolTip")));
-            if (!qVariantValue<PropertySheetStringValue>(v).value().isEmpty()) {
+            if (!qvariant_cast<PropertySheetStringValue>(v).value().isEmpty()) {
                 p = textBuilder()->saveText(v);
                 if (p) {
                     p->setAttributeName(strings.toolTipAttribute);
@@ -2209,8 +2188,8 @@ DomProperty *QDesignerResource::createProperty(QObject *object, const QString &p
         return 0;
     }
 
-    if (qVariantCanConvert<PropertySheetFlagValue>(value)) {
-        const PropertySheetFlagValue f = qVariantValue<PropertySheetFlagValue>(value);
+    if (value.canConvert<PropertySheetFlagValue>()) {
+        const PropertySheetFlagValue f = qvariant_cast<PropertySheetFlagValue>(value);
         const QString flagString = f.metaFlags.toString(f.value, DesignerMetaFlags::FullyQualified);
         if (flagString.isEmpty())
             return 0;
@@ -2222,8 +2201,8 @@ DomProperty *QDesignerResource::createProperty(QObject *object, const QString &p
         p->setAttributeName(propertyName);
         p->setElementSet(flagString);
         return applyProperStdSetAttribute(object, propertyName, p);
-    } else if (qVariantCanConvert<PropertySheetEnumValue>(value)) {
-        const PropertySheetEnumValue e = qVariantValue<PropertySheetEnumValue>(value);
+    } else if (value.canConvert<PropertySheetEnumValue>()) {
+        const PropertySheetEnumValue e = qvariant_cast<PropertySheetEnumValue>(value);
         bool ok;
         const QString id = e.metaEnum.toString(e.value, DesignerMetaEnum::FullyQualified, &ok);
         if (!ok)
@@ -2238,8 +2217,8 @@ DomProperty *QDesignerResource::createProperty(QObject *object, const QString &p
         p->setAttributeName(propertyName);
         p->setElementEnum(id);
         return applyProperStdSetAttribute(object, propertyName, p);
-    } else if (qVariantCanConvert<PropertySheetStringValue>(value)) {
-        const PropertySheetStringValue strVal = qVariantValue<PropertySheetStringValue>(value);
+    } else if (value.canConvert<PropertySheetStringValue>()) {
+        const PropertySheetStringValue strVal = qvariant_cast<PropertySheetStringValue>(value);
         DomProperty *p = new DomProperty;
         if (!hasSetter(core(), object, propertyName))
             p->setAttributeStdset(0);
@@ -2249,8 +2228,8 @@ DomProperty *QDesignerResource::createProperty(QObject *object, const QString &p
         saveStringProperty(p, strVal);
 
         return applyProperStdSetAttribute(object, propertyName, p);
-    } else if (qVariantCanConvert<PropertySheetKeySequenceValue>(value)) {
-        const PropertySheetKeySequenceValue keyVal = qVariantValue<PropertySheetKeySequenceValue>(value);
+    } else if (value.canConvert<PropertySheetKeySequenceValue>()) {
+        const PropertySheetKeySequenceValue keyVal = qvariant_cast<PropertySheetKeySequenceValue>(value);
         DomProperty *p = new DomProperty;
         if (!hasSetter(core(), object, propertyName))
             p->setAttributeStdset(0);
@@ -2302,6 +2281,7 @@ void QDesignerResource::createResources(DomResources *resources)
                     path = core()->dialogGui()->getOpenFileName(dialogParent, fileDialogTitle, fi.absolutePath(), fileDialogPattern);
                     if (path.isEmpty())
                         break;
+                    m_formWindow->setProperty("_q_resourcepathchanged", QVariant(true));
                 } else {
                     break;
                 }

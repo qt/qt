@@ -182,12 +182,12 @@ public:
         return (attributes & (1 << bit)) != 0;
     }
     // 32 bits
-    quint32 refCountInvokeRelayout : 16;
     quint32 attributes : 10;
     quint32 inSetGeometry : 1;
     quint32 polished: 1;
     quint32 inSetPos : 1;
     quint32 autoFillBackground : 1;
+    quint32 refCountInvokeRelayout : 16;
     quint32 padding : 2;    // feel free to use
 
     // Focus

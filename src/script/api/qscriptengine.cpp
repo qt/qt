@@ -779,6 +779,8 @@ JSC::JSValue JSC_HOST_CALL functionVersion(JSC::ExecState *exec, JSC::JSObject*,
     return JSC::JSValue(exec, 1);
 }
 
+#ifndef QT_NO_TRANSLATION
+
 static JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionQsTranslateNoOp(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -808,7 +810,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     JSC::UString comment;
     if (args.size() > 2)
         comment = args.at(2).toString(exec);
-    QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
+    QCoreApplication::Encoding encoding = QCoreApplication::UnicodeUTF8;
     if (args.size() > 3) {
         JSC::UString encStr = args.at(3).toString(exec);
         if (encStr == "CodecForTr")
@@ -824,9 +826,9 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
 #endif
     JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
-                                         QScript::convertToLatin1(text).constData(),
-                                         QScript::convertToLatin1(comment).constData(),
+    result = QCoreApplication::translate(context.UTF8String().c_str(),
+                                         text.UTF8String().c_str(),
+                                         comment.UTF8String().c_str(),
                                          encoding, n);
 #else
     result = text;
@@ -879,10 +881,10 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
 #endif
     JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
-                                         QScript::convertToLatin1(text).constData(),
-                                         QScript::convertToLatin1(comment).constData(),
-                                         QCoreApplication::CodecForTr, n);
+    result = QCoreApplication::translate(context.UTF8String().c_str(),
+                                         text.UTF8String().c_str(),
+                                         comment.UTF8String().c_str(),
+                                         QCoreApplication::UnicodeUTF8, n);
 #else
     result = text;
 #endif
@@ -908,7 +910,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTrId(JSC::ExecState *exec, JSC::JSObject*, 
     int n = -1;
     if (args.size() > 1)
         n = args.at(1).toInt32(exec);
-    return JSC::jsString(exec, qtTrId(QScript::convertToLatin1(id).constData(), n));
+    return JSC::jsString(exec, qtTrId(id.UTF8String().c_str(), n));
 }
 
 JSC::JSValue JSC_HOST_CALL functionQsTrIdNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
@@ -917,6 +919,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTrIdNoOp(JSC::ExecState *, JSC::JSObject*, 
         return JSC::jsUndefined();
     return args.at(0);
 }
+#endif // QT_NO_TRANSLATION
 
 static JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
@@ -1742,7 +1745,7 @@ QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue valu
             return variantValue(value);
 #ifndef QT_NO_QOBJECT
         else if (isQObject(value))
-            return qVariantFromValue(toQObject(exec, value));
+            return QVariant::fromValue(toQObject(exec, value));
 #endif
         else if (isDate(value))
             return QVariant(toDateTime(exec, value));
@@ -1755,7 +1758,9 @@ QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue valu
         else if (QScriptDeclarativeClass *dc = declarativeClass(value))
             return dc->toVariant(declarativeObject(value));
         return variantMapFromObject(exec, JSC::asObject(value));
-    } else if (value.isNumber()) {
+    } else if (value.isInt32()) {
+        return QVariant(toInt32(exec, value));
+    } else if (value.isDouble()) {
         return QVariant(toNumber(exec, value));
     } else if (value.isString()) {
         return QVariant(toString(exec, value));
@@ -2087,10 +2092,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
-    result.setProperty(QLatin1String("prototype"), prototype, QScriptValue::Undeletable);
+    result.setProperty(QLatin1String("prototype"), prototype,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     const_cast<QScriptValue&>(prototype)
-        .setProperty(QLatin1String("constructor"), result,
-                     QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+        .setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2356,9 +2361,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2374,9 +2379,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
     QScriptValue proto = newObject();
-    result.setProperty(QLatin1String("prototype"), proto, QScriptValue::Undeletable);
-    proto.setProperty(QLatin1String("constructor"), result,
-                      QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    result.setProperty(QLatin1String("prototype"), proto,
+                       QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    proto.setProperty(QLatin1String("constructor"), result, QScriptValue::SkipInEnumeration);
     return result;
 }
 
@@ -2466,10 +2471,6 @@ QScriptValue QScriptEngine::newQMetaObject(
 
   \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 13
 
-  \warning This function is not available with MSVC 6. Use
-  qScriptValueFromQMetaObject() instead if you need to support that version
-  of the compiler.
-
   \sa QScriptEngine::newQMetaObject()
 */
 
@@ -2477,14 +2478,17 @@ QScriptValue QScriptEngine::newQMetaObject(
   \fn QScriptValue qScriptValueFromQMetaObject(QScriptEngine *engine)
   \since 4.3
   \relates QScriptEngine
+  \obsolete
 
   Uses \a engine to create a QScriptValue that represents the Qt class
   \c{T}.
 
   This function is equivalent to
-  QScriptEngine::scriptValueFromQMetaObject(). It is provided as a
-  work-around for MSVC 6, which doesn't support member template
-  functions.
+  QScriptEngine::scriptValueFromQMetaObject().
+
+  \note This function was provided as a workaround for MSVC 6
+  which did not support member template functions. It is advised
+  to use the other form in new code.
 
   \sa QScriptEngine::newQMetaObject()
 */
@@ -3020,14 +3024,7 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
         case QMetaType::LongLong:
             return JSC::jsNumber(exec, qsreal(*reinterpret_cast<const qlonglong*>(ptr)));
         case QMetaType::ULongLong:
-#if defined(Q_OS_WIN) && defined(_MSC_FULL_VER) && _MSC_FULL_VER <= 12008804
-#pragma message("** NOTE: You need the Visual Studio Processor Pack to compile support for 64bit unsigned integers.")
-            return JSC::jsNumber(exec, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
-#elif defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            return JSC::jsNumber(exec, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
-#else
             return JSC::jsNumber(exec, qsreal(*reinterpret_cast<const qulonglong*>(ptr)));
-#endif
         case QMetaType::Double:
             return JSC::jsNumber(exec, qsreal(*reinterpret_cast<const double*>(ptr)));
         case QMetaType::QString:
@@ -3071,7 +3068,7 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
             break;
 #endif
         case QMetaType::QVariant:
-            result = jscValueFromVariant(exec, *reinterpret_cast<const QVariant*>(ptr));
+            result = eng->newVariant(*reinterpret_cast<const QVariant*>(ptr));
             break;
         default:
             if (type == qMetaTypeId<QScriptValue>()) {
@@ -3492,12 +3489,15 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
     if (!jscObject || !jscObject.isObject())
         jscObject = d->globalObject();
 //    unsigned attribs = JSC::DontEnum;
+
+#ifndef QT_NO_TRANSLATION
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 5, JSC::Identifier(exec, "qsTranslate"), QScript::functionQsTranslate));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 2, JSC::Identifier(exec, "QT_TRANSLATE_NOOP"), QScript::functionQsTranslateNoOp));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "QT_TR_NOOP"), QScript::functionQsTrNoOp));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "qsTrId"), QScript::functionQsTrId));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "QT_TRID_NOOP"), QScript::functionQsTrIdNoOp));
+#endif
 
     glob->stringPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "arg"), QScript::stringProtoFuncArg));
 }
@@ -3789,10 +3789,6 @@ QStringList QScriptEngine::importedExtensions() const
     to newVariant()); you can change this behavior by installing your
     own type conversion functions with qScriptRegisterMetaType().
 
-    \warning This function is not available with MSVC 6. Use
-    qScriptValueFromValue() instead if you need to support that
-    version of the compiler.
-
     \sa fromScriptValue(), qScriptRegisterMetaType()
 */
 
@@ -3806,10 +3802,6 @@ QStringList QScriptEngine::importedExtensions() const
     description of the built-in type conversion provided by
     QtScript.
 
-    \warning This function is not available with MSVC 6. Use
-    qScriptValueToValue() or qscriptvalue_cast() instead if you need
-    to support that version of the compiler.
-
     \sa toScriptValue(), qScriptRegisterMetaType()
 */
 
@@ -3817,29 +3809,35 @@ QStringList QScriptEngine::importedExtensions() const
     \fn QScriptValue qScriptValueFromValue(QScriptEngine *engine, const T &value)
     \since 4.3
     \relates QScriptEngine
+    \obsolete
 
     Creates a QScriptValue using the given \a engine with the given \a
     value of template type \c{T}.
 
     This function is equivalent to QScriptEngine::toScriptValue().
-    It is provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
 
-    \sa qScriptValueToValue()
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
+
+    \sa QScriptEngine::toScriptValue(), qscriptvalue_cast()
 */
 
 /*!
     \fn T qScriptValueToValue(const QScriptValue &value)
     \since 4.3
     \relates QScriptEngine
+    \obsolete
 
     Returns the given \a value converted to the template type \c{T}.
 
     This function is equivalent to QScriptEngine::fromScriptValue().
-    It is provided as a work-around for MSVC 6, which doesn't
-    support member template functions.
 
-    \sa qScriptValueFromValue()
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
+
+    \sa QScriptEngine::fromScriptValue()
 */
 
 /*!
@@ -3858,7 +3856,7 @@ QStringList QScriptEngine::importedExtensions() const
     \l{Conversion Between QtScript and C++ Types} for more information
     about the restrictions on types that can be used with QScriptValue.
 
-    \sa qScriptValueFromValue()
+    \sa QScriptEngine::fromScriptValue()
 */
 
 /*!

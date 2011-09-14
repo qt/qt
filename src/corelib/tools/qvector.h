@@ -53,6 +53,9 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_HEADER
 
@@ -112,12 +115,22 @@ class QVector
     };
 
 public:
+    // ### Qt 5: Consider making QVector non-shared to get at least one
+    // "really fast" container. See tests/benchmarks/corelib/tools/qvector/
     inline QVector() : d(&QVectorData::shared_null) { d->ref.ref(); }
     explicit QVector(int size);
     QVector(int size, const T &t);
     inline QVector(const QVector<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     inline ~QVector() { if (!d) return; if (!d->ref.deref()) free(p); }
     QVector<T> &operator=(const QVector<T> &v);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVector<T> operator=(QVector<T> &&other)
+    { qSwap(p, other.p); return *this; }
+#endif
+    inline void swap(QVector<T> &other) { qSwap(d, other.d); }
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QVector(std::initializer_list<T> args);
+#endif
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
 
@@ -293,11 +306,10 @@ public:
 
 #ifndef QT_NO_STL
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
-    { QVector<T> tmp; tmp.reserve(vector.size()); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { QVector<T> tmp; tmp.reserve(int(vector.size())); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
     { std::vector<T> tmp; tmp.reserve(size()); qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
-
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
@@ -425,6 +437,22 @@ QVector<T>::QVector(int asize, const T &t)
     while (i != p->array)
         new (--i) T(t);
 }
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+template <typename T>
+QVector<T>::QVector(std::initializer_list<T> args)
+{
+    d = malloc(int(args.size()));
+    d->ref = 1;
+    d->alloc = d->size = int(args.size());
+    d->sharable = true;
+    d->capacity = false;
+    T* i = p->array + d->size;
+    auto it = args.end();
+    while (i != p->array)
+        new (--i) T(*(--it));
+}
+#endif
 
 template <typename T>
 void QVector<T>::free(Data *x)
@@ -790,11 +818,8 @@ QT_END_INCLUDE_NAMESPACE
 #else
 #define Q_TEMPLATE_EXTERN extern
 #endif
-# pragma warning(push)          /* MSVC 6.0 doesn't care about the disabling in qglobal.h (why?), so do it here */
-# pragma warning(disable: 4231) /* nonstandard extension used : 'extern' before template explicit instantiation */
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPointF>;
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPoint>;
-# pragma warning(pop)
 #endif
 
 QT_END_NAMESPACE

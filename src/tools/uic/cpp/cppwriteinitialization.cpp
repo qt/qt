@@ -139,11 +139,15 @@ namespace {
             << indent << "QWidgetList childWidgets;\n";
     }
 
-    static inline bool isIconFormat44(const DomResourceIcon *i) {
+    static inline bool iconHasStatePixmaps(const DomResourceIcon *i) {
         return i->hasElementNormalOff()   || i->hasElementNormalOn() ||
                i->hasElementDisabledOff() || i->hasElementDisabledOn() ||
                i->hasElementActiveOff()   || i->hasElementActiveOn() ||
                i->hasElementSelectedOff() || i->hasElementSelectedOn();
+    }
+
+    static inline bool isIconFormat44(const DomResourceIcon *i) {
+        return iconHasStatePixmaps(i) || !i->attributeTheme().isEmpty();
     }
 
     // Check on properties. Filter out empty legacy pixmap/icon properties
@@ -258,6 +262,9 @@ IconHandle::IconHandle(const DomResourceIcon *domIcon) :
 
 int IconHandle::compare(const IconHandle &rhs) const
 {
+    if (const int comp = m_domIcon->attributeTheme().compare(rhs.m_domIcon->attributeTheme()))
+        return comp;
+
     const QString normalOff    =     m_domIcon->hasElementNormalOff() ?     m_domIcon->elementNormalOff()->text() : QString();
     const QString rhsNormalOff = rhs.m_domIcon->hasElementNormalOff() ? rhs.m_domIcon->elementNormalOff()->text() : QString();
     if (const int comp = normalOff.compare(rhsNormalOff))
@@ -478,7 +485,8 @@ WriteInitialization::WriteInitialization(Uic *uic, bool activateScripts) :
       m_delayedOut(&m_delayedInitialization, QIODevice::WriteOnly),
       m_refreshOut(&m_refreshInitialization, QIODevice::WriteOnly),
       m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly),
-      m_activateScripts(activateScripts), m_layoutWidget(false)
+      m_activateScripts(activateScripts), m_layoutWidget(false),
+      m_firstThemeIcon(true)
 {
 }
 
@@ -1088,6 +1096,8 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
         const int colSpan = node->hasAttributeColSpan() ? node->attributeColSpan() : 1;
 
         addArgs = QString::fromLatin1("%1, %2, %3, %4, %5").arg(itemName).arg(row).arg(col).arg(rowSpan).arg(colSpan);
+        if (!node->attributeAlignment().isEmpty())
+            addArgs += QLatin1String(", ") + node->attributeAlignment();
     } else {
         if (layout->attributeClass() == QLatin1String("QFormLayout")) {
             methodPrefix = QLatin1String("set");
@@ -1097,6 +1107,8 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
             addArgs = QString::fromLatin1("%1, %2, %3").arg(row).arg(role).arg(itemName);
         } else {
             addArgs = itemName;
+            if (layout->attributeClass().contains(QLatin1String("Box")) && !node->attributeAlignment().isEmpty())
+                addArgs += QLatin1String(", 0, ") + node->attributeAlignment();
         }
     }
 
@@ -1515,7 +1527,7 @@ void WriteInitialization::writeProperties(const QString &varName,
 
         case DomProperty::Url: {
             const DomUrl* u = p->elementUrl();
-            propertyValue = QString::fromLatin1("QUrl(%1)")
+            propertyValue = QString::fromLatin1("QUrl(QString::fromUtf8(%1))")
                             .arg(fixString(u->elementString()->text(), m_dindent));
             break;
         }
@@ -1670,6 +1682,30 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     return  fontName;
 }
 
+// Post 4.4 write resource icon
+static void writeResourceIcon(QTextStream &output,
+                              const QString &iconName,
+                              const QString &indent,
+                              const DomResourceIcon *i)
+{
+    if (i->hasElementNormalOff())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), indent) << "), QSize(), QIcon::Normal, QIcon::Off);\n";
+    if (i->hasElementNormalOn())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOn()->text(), indent) << "), QSize(), QIcon::Normal, QIcon::On);\n";
+    if (i->hasElementDisabledOff())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOff()->text(), indent) << "), QSize(), QIcon::Disabled, QIcon::Off);\n";
+    if (i->hasElementDisabledOn())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOn()->text(), indent) << "), QSize(), QIcon::Disabled, QIcon::On);\n";
+    if (i->hasElementActiveOff())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOff()->text(), indent) << "), QSize(), QIcon::Active, QIcon::Off);\n";
+    if (i->hasElementActiveOn())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOn()->text(), indent) << "), QSize(), QIcon::Active, QIcon::On);\n";
+    if (i->hasElementSelectedOff())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOff()->text(), indent) << "), QSize(), QIcon::Selected, QIcon::Off);\n";
+    if (i->hasElementSelectedOn())
+        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOn()->text(), indent) << "), QSize(), QIcon::Selected, QIcon::On);\n";
+}
+
 QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
 {
     // check cache
@@ -1683,25 +1719,41 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     const QString iconName = m_driver->unique(QLatin1String("icon"));
     m_iconPropertiesNameMap.insert(IconHandle(i), iconName);
     if (isIconFormat44(i)) {
-        const QString pixmap = QLatin1String("QPixmap");
-        m_output << m_indent << "QIcon " << iconName << ";\n";
-        if (i->hasElementNormalOff())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), m_dindent) << "), QSize(), QIcon::Normal, QIcon::Off);\n";
-        if (i->hasElementNormalOn())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOn()->text(), m_dindent) << "), QSize(), QIcon::Normal, QIcon::On);\n";
-        if (i->hasElementDisabledOff())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOff()->text(), m_dindent) << "), QSize(), QIcon::Disabled, QIcon::Off);\n";
-        if (i->hasElementDisabledOn())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOn()->text(), m_dindent) << "), QSize(), QIcon::Disabled, QIcon::On);\n";
-        if (i->hasElementActiveOff())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOff()->text(), m_dindent) << "), QSize(), QIcon::Active, QIcon::Off);\n";
-        if (i->hasElementActiveOn())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOn()->text(), m_dindent) << "), QSize(), QIcon::Active, QIcon::On);\n";
-        if (i->hasElementSelectedOff())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOff()->text(), m_dindent) << "), QSize(), QIcon::Selected, QIcon::Off);\n";
-        if (i->hasElementSelectedOn())
-            m_output << m_indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOn()->text(), m_dindent) << "), QSize(), QIcon::Selected, QIcon::On);\n";
-    } else { // pre-4.4 legacy
+        if (i->attributeTheme().isEmpty()) {
+            // No theme: Write resource icon as is
+            m_output << m_indent << "QIcon " << iconName << ";\n";
+            writeResourceIcon(m_output, iconName, m_indent, i);
+        } else {
+            // Theme: Generate code to check the theme and default to resource
+            const QString themeIconName = fixString(i->attributeTheme(), QString());
+            if (iconHasStatePixmaps(i)) {
+                // Theme + default state pixmaps:
+                // Generate code to check the theme and default to state pixmaps
+                m_output << m_indent << "QIcon " << iconName << ";\n";
+                const char themeNameStringVariableC[] = "iconThemeName";
+                // Store theme name in a variable
+                m_output << m_indent;
+                if (m_firstThemeIcon) { // Declare variable string
+                    m_output << "QString ";
+                    m_firstThemeIcon = false;
+                }
+                m_output << themeNameStringVariableC << " = QString::fromUtf8("
+                         << themeIconName << ");\n";
+                m_output << m_indent << "if (QIcon::hasThemeIcon("
+                         << themeNameStringVariableC
+                         << ")) {\n"
+                         << m_dindent << iconName << " = QIcon::fromTheme(" << themeNameStringVariableC << ");\n"
+                         << m_indent << "} else {\n";
+                writeResourceIcon(m_output, iconName, m_dindent, i);
+                m_output << m_indent << "}\n";
+            } else {
+                // Theme, but no state pixmaps: Construct from theme directly.
+                m_output << m_indent << "QIcon " << iconName
+                         << "(QIcon::fromTheme(QString::fromUtf8("
+                         << themeIconName << ")));\n";
+            } // Theme, but not state
+        }     // >= 4.4
+    } else {  // pre-4.4 legacy
         m_output <<  m_indent << "const QIcon " << iconName << " = " << pixCall(QLatin1String("QIcon"), i->text())<< ";\n";
     }
     return iconName;

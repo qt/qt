@@ -45,6 +45,8 @@
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
 #include <qtcpsocket.h>
+#include <QNetworkConfigurationManager>
+#include <QNetworkSession>
 #include "../network-settings.h"
 
 //TESTED_FILES=qnetworkinterface.cpp qnetworkinterface.h qnetworkinterface_unix.cpp qnetworkinterface_win.cpp
@@ -58,23 +60,59 @@ public:
     virtual ~tst_QNetworkInterface();
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
     void dump();
     void loopbackIPv4();
     void loopbackIPv6();
     void localAddress();
     void interfaceFromXXX();
     void copyInvalidInterface();
+
+private:
+#ifndef QT_NO_BEARER_MANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 tst_QNetworkInterface::tst_QNetworkInterface()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QNetworkInterface::~tst_QNetworkInterface()
 {
 }
 
+void tst_QNetworkInterface::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
+}
+
+void tst_QNetworkInterface::cleanupTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (networkSession && networkSession->isOpen()) {
+        networkSession->close();
+    }
+#endif
+}
 
 void tst_QNetworkInterface::dump()
 {
@@ -127,10 +165,6 @@ void tst_QNetworkInterface::loopbackIPv4()
 
 void tst_QNetworkInterface::loopbackIPv6()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP( "Symbian: IPv6 is not yet supported", SkipAll );
-#else
-
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
 
     bool loopbackfound = false;
@@ -144,7 +178,6 @@ void tst_QNetworkInterface::loopbackIPv6()
             anyIPv6 = true;
 
     QVERIFY(!anyIPv6 || loopbackfound);
-#endif
 }
 
 void tst_QNetworkInterface::localAddress()

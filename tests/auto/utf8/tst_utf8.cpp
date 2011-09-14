@@ -210,7 +210,9 @@ void tst_Utf8::invalidUtf8_data()
     QTest::addColumn<QByteArray>("utf8");
 
     QTest::newRow("1char") << QByteArray("\x80");
-    QTest::newRow("2chars") << QByteArray("\xC2\xC0");
+    QTest::newRow("2chars-1") << QByteArray("\xC2\xC0");
+    QTest::newRow("2chars-2") << QByteArray("\xC3\xDF");
+    QTest::newRow("2chars-3") << QByteArray("\xC7\xF0");
     QTest::newRow("3chars-1") << QByteArray("\xE0\xA0\xC0");
     QTest::newRow("3chars-2") << QByteArray("\xE0\xC0\xA0");
     QTest::newRow("4chars-1") << QByteArray("\xF0\x90\x80\xC0");

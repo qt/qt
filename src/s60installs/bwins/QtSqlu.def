@@ -458,7 +458,17 @@ EXPORTS
 	?staticMetaObject@QSqlDriver@@2UQMetaObject@@B @ 457 NONAME ; struct QMetaObject const QSqlDriver::staticMetaObject
 	?staticMetaObject@QSqlQueryModel@@2UQMetaObject@@B @ 458 NONAME ; struct QMetaObject const QSqlQueryModel::staticMetaObject
 	?staticMetaObject@QSQLiteDriver@@2UQMetaObject@@B @ 459 NONAME ; struct QMetaObject const QSQLiteDriver::staticMetaObject
-	??4QSqlRelation@@QAEAAV0@ABV0@@Z @ 460 NONAME ABSENT ; class QSqlRelation & QSqlRelation::operator=(class QSqlRelation const &)
-	??0QSqlDriverFactoryInterface@@QAE@XZ @ 461 NONAME ABSENT ; QSqlDriverFactoryInterface::QSqlDriverFactoryInterface(void)
-	??0QSqlRelation@@QAE@ABV0@@Z @ 462 NONAME ABSENT ; QSqlRelation::QSqlRelation(class QSqlRelation const &)
+	?qt_static_metacall@QSqlQueryModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 460 NONAME ; void QSqlQueryModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSQLiteDriver@@0UQMetaObjectExtraData@@B @ 461 NONAME ; struct QMetaObjectExtraData const QSQLiteDriver::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlTableModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 462 NONAME ; void QSqlTableModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlTableModel@@0UQMetaObjectExtraData@@B @ 463 NONAME ; struct QMetaObjectExtraData const QSqlTableModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlDriver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 464 NONAME ; void QSqlDriver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlDriverPlugin@@0UQMetaObjectExtraData@@B @ 465 NONAME ; struct QMetaObjectExtraData const QSqlDriverPlugin::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QSqlDriver@@0UQMetaObjectExtraData@@B @ 466 NONAME ; struct QMetaObjectExtraData const QSqlDriver::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QSqlQueryModel@@0UQMetaObjectExtraData@@B @ 467 NONAME ; struct QMetaObjectExtraData const QSqlQueryModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSQLiteDriver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 468 NONAME ; void QSQLiteDriver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QSqlRelationalTableModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 469 NONAME ; void QSqlRelationalTableModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlRelationalTableModel@@0UQMetaObjectExtraData@@B @ 470 NONAME ; struct QMetaObjectExtraData const QSqlRelationalTableModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlDriverPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 471 NONAME ; void QSqlDriverPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?setJoinMode@QSqlRelationalTableModel@@QAEXW4JoinMode@1@@Z @ 472 NONAME ; void QSqlRelationalTableModel::setJoinMode(enum QSqlRelationalTableModel::JoinMode)
 

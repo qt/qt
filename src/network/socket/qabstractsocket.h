@@ -64,6 +64,7 @@ class QAuthenticator;
 class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
 {
     Q_OBJECT
+    Q_ENUMS(SocketType NetworkLayerProtocol SocketError SocketState SocketOption)
 public:
     enum SocketType {
         TcpSocket,
@@ -118,7 +119,9 @@ public:
     };
     enum SocketOption {
         LowDelayOption, // TCP_NODELAY
-        KeepAliveOption // SO_KEEPALIVE
+        KeepAliveOption, // SO_KEEPALIVE
+        MulticastTtlOption, // IP_MULTICAST_TTL
+        MulticastLoopbackOption // IP_MULTICAST_LOOPBACK
     };
 
     QAbstractSocket(SocketType socketType, QObject *parent);

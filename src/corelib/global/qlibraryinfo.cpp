@@ -531,6 +531,9 @@ void qt_core_boilerplate()
 #ifdef QT_BUILD_KEY_COMPAT2
            "| " QT_BUILD_KEY_COMPAT2 " "
 #endif
+#ifdef QT_BUILD_KEY_COMPAT3
+           "| " QT_BUILD_KEY_COMPAT3 " "
+#endif
            "|\n"
            "Build date:          %s\n"
            "Installation prefix: %s\n"

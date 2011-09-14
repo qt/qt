@@ -183,6 +183,9 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 /*!
     Creates a QDeclarativeProperty for the property \a name of \a obj
     using the \l{QDeclarativeContext} {context} \a ctxt.
+
+    Creating a QDeclarativeProperty without a context will render some 
+    properties - like attached properties - inaccessible.
 */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
@@ -1029,7 +1032,7 @@ bool QDeclarativePropertyPrivate::writeEnumProperty(const QMetaProperty &prop, i
             else
                 v = QVariant(menum.keyToValue(value.toByteArray()));
         } else if (v.userType() != QVariant::Int && v.userType() != QVariant::UInt) {
-            int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope()) + "::" + menum.name());
+            int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope() + QByteArray("::") + menum.name()));
             if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
             v = QVariant(*reinterpret_cast<const int *>(v.constData()));

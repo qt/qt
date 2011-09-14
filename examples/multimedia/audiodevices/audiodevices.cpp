@@ -47,7 +47,7 @@
 
 QString toString(QAudioFormat::SampleType sampleType)
 {
-    QString result("Unknown");
+    QString result;
     switch (sampleType) {
     case QAudioFormat::SignedInt:
         result = "SignedInt";
@@ -58,7 +58,9 @@ QString toString(QAudioFormat::SampleType sampleType)
     case QAudioFormat::Float:
         result = "Float";
         break;
+    default:
     case QAudioFormat::Unknown:
+        result = "Unknown";
         break;
     }
     return result;
@@ -155,7 +157,7 @@ void AudioTest::modeChanged(int idx)
 
     deviceBox->clear();
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(mode))
-        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
+        deviceBox->addItem(deviceInfo.deviceName(), QVariant::fromValue(deviceInfo));
 
     deviceBox->setCurrentIndex(0);
     deviceChanged(0);

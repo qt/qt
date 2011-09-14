@@ -59,6 +59,13 @@ QT_BEGIN_NAMESPACE
 const int QLineEditPrivate::verticalMargin(1);
 const int QLineEditPrivate::horizontalMargin(2);
 
+QRect QLineEditPrivate::adjustedControlRect(const QRect &rect) const
+{
+    QRect cr = adjustedContentsRect();
+    int cix = cr.x() - hscroll + horizontalMargin;
+    return rect.translated(QPoint(cix, vscroll));
+}
+
 int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
 {
     QRect cr = adjustedContentsRect();
@@ -68,11 +75,7 @@ int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
 
 QRect QLineEditPrivate::cursorRect() const
 {
-    QRect cr = adjustedContentsRect();
-    int cix = cr.x() - hscroll + horizontalMargin;
-    QRect crect = control->cursorRect();
-    crect.moveTo(crect.topLeft() + QPoint(cix, vscroll));
-    return crect;
+    return adjustedControlRect(control->cursorRect());
 }
 
 #ifndef QT_NO_COMPLETER
@@ -141,10 +144,16 @@ void QLineEditPrivate::_q_selectionChanged()
     emit q->selectionChanged();
 }
 
+void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
+{
+    q_func()->update(adjustedControlRect(rect));
+}
+
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
+    control->setParent(q);
     control->setFont(q->font());
     QObject::connect(control, SIGNAL(textChanged(QString)),
             q, SIGNAL(textChanged(QString)));
@@ -176,7 +185,7 @@ void QLineEditPrivate::init(const QString& txt)
             q, SLOT(update()));
 
     QObject::connect(control, SIGNAL(updateNeeded(QRect)),
-            q, SLOT(update()));
+            q, SLOT(_q_updateNeeded(QRect)));
 
     QStyleOptionFrameV2 opt;
     q->initStyleOption(&opt);
@@ -216,9 +225,8 @@ void QLineEditPrivate::setCursorVisible(bool visible)
     if ((bool)cursorVisible == visible)
         return;
     cursorVisible = visible;
-    QRect r = cursorRect();
     if (control->inputMask().isEmpty())
-        q->update(r);
+        q->update(cursorRect());
     else
         q->update();
 }

@@ -139,7 +139,8 @@ public:
 
     virtual ~Data()
     {
-        Q_ASSERT_X(generation > 0, "tst_QSharedPointer", "Double deletion!");
+        if (generation <= 0)
+            qFatal("tst_qsharedpointer: Double deletion!");
         generation = 0;
         ++destructorCounter;
     }
@@ -283,8 +284,8 @@ void tst_QSharedPointer::operators()
     QSharedPointer<char> p1;
     QSharedPointer<char> p2(new char);
     qptrdiff diff = p2.data() - p1.data();
-    Q_ASSERT(p1.data() != p2.data());
-    Q_ASSERT(diff != 0);
+    QVERIFY(p1.data() != p2.data());
+    QVERIFY(diff != 0);
 
     // operator-
     QCOMPARE(p2 - p1.data(), diff);
@@ -698,7 +699,7 @@ void tst_QSharedPointer::noSharedPointerFromWeakQObject()
     QSharedPointer<QObject> strong = weak.toStrongRef();
     QVERIFY(strong.isNull());
 
-    // is something went wrong, we'll probably crash here
+    // if something went wrong, we'll probably crash here
 }
 
 void tst_QSharedPointer::weakQObjectFromSharedPointer()
@@ -732,7 +733,6 @@ void tst_QSharedPointer::objectCast()
         ptr = baseptr.objectCast<OtherObject>();
         QVERIFY(ptr == data);
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         ptr = qobject_cast<OtherObject *>(baseptr);
         QVERIFY(ptr == data);
@@ -740,7 +740,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         ptr = qobject_cast<QSharedPointer<OtherObject> >(baseptr);
         QVERIFY(ptr == data);
-#endif
     }
     check();
 
@@ -760,7 +759,6 @@ void tst_QSharedPointer::objectCast()
         ptr = baseptr.objectCast<const OtherObject>();
         QVERIFY(ptr == data);
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         ptr = qobject_cast<const OtherObject *>(baseptr);
         QVERIFY(ptr == data);
@@ -768,7 +766,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         ptr = qobject_cast<QSharedPointer<const OtherObject> >(baseptr);
         QVERIFY(ptr == data);
-#endif
     }
     check();
 
@@ -802,7 +799,6 @@ void tst_QSharedPointer::objectCast()
         QSharedPointer<OtherObject> otherptr = qSharedPointerObjectCast<OtherObject>(weakptr);
         QVERIFY(otherptr.isNull());
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         otherptr = qobject_cast<OtherObject *>(weakptr);
         QVERIFY(otherptr.isNull());
@@ -810,7 +806,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         otherptr = qobject_cast<QSharedPointer<OtherObject> >(weakptr);
         QVERIFY(otherptr.isNull());
-#endif
     }
     check();
 }
@@ -873,8 +868,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
         QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerCast<DiffPtrDerivedData>(baseptr);
@@ -891,8 +886,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -914,8 +909,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
@@ -934,8 +929,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -1611,7 +1606,7 @@ void hashAndMapTest()
     QVERIFY(it != c.find(Key()));
 
     if (Ordered) {
-        Q_ASSERT(k0 < k1);
+        QVERIFY(k0 < k1);
 
         it = c.begin();
         QCOMPARE(it.key(), k0);
@@ -1736,12 +1731,10 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
         "qSharedPointerObjectCast<QCoreApplication>(baseptr);";
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
     QTest::newRow("const-dropping-object-cast2")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
         "qobject_cast<QCoreApplication *>(baseptr);";
-#endif
 
     // arithmethics through automatic cast operators
     QTest::newRow("arithmethic1")
@@ -1755,7 +1748,6 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QSharedPointer<Data> b;\n"
            "if (a + b) return;";
 
-#if QT_VERSION >= 0x040600
     // two objects with the same pointer
     QTest::newRow("same-pointer")
         << &QTest::QExternalTest::tryRunFail
@@ -1769,7 +1761,6 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "Data *aData = new Data;\n"
            "QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);"
            "ptr1 = QSharedPointer<Data>(aData);";
-#endif
 
     // any type of cast for unrelated types:
     // (we have no reinterpret_cast)

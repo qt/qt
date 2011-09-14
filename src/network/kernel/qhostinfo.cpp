@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 #include <qthread.h>
 #include <qurl.h>
+#include <private/qnetworksession_p.h>
 
 #ifdef Q_OS_UNIX
 #  include <unistd.h>
@@ -56,11 +57,13 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_THREAD
-Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
-#endif
-
 //#define QHOSTINFO_DEBUG
+
+#ifndef Q_OS_SYMBIAN
+Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
+#else
+Q_GLOBAL_STATIC(QSymbianHostInfoLookupManager, theHostInfoLookupManager)
+#endif
 
 /*!
     \class QHostInfo
@@ -87,10 +90,8 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
     \snippet doc/src/snippets/code/src_network_kernel_qhostinfo.cpp 0
 
 
-    The slot is invoked when the results are ready. (If you use
-    Qt for Embedded Linux and disabled multithreading support by defining
-    \c QT_NO_THREAD, lookupHost() will block until the lookup has
-    finished.) The results are stored in a QHostInfo object. Call
+    The slot is invoked when the results are ready. The results are
+    stored in a QHostInfo object. Call
     addresses() to get the list of IP addresses for the host, and
     hostName() to get the host name that was looked up.
 
@@ -156,6 +157,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     qDebug("QHostInfo::lookupHost(\"%s\", %p, %s)",
            name.toLatin1().constData(), receiver, member ? member + 1 : 0);
 #endif
+
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
         return -1;
@@ -176,15 +178,9 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         return id;
     }
 
-#ifdef QT_NO_THREAD
-    QHostInfo hostInfo = QHostInfoAgent::fromName(name);
-    hostInfo.setLookupId(id);
-    QScopedPointer<QHostInfoResult> result(new QHostInfoResult);
-    QObject::connect(result.data(), SIGNAL(resultsReady(QHostInfo)),
-                     receiver, member, Qt::QueuedConnection);
-    result.data()->emitResultsReady(hostInfo);
-#else
+#ifndef Q_OS_SYMBIAN
     QHostInfoLookupManager *manager = theHostInfoLookupManager();
+
     if (manager) {
         // the application is still alive
         if (manager->cache.isEnabled()) {
@@ -199,10 +195,42 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
                 return id;
             }
         }
+
         // cache is not enabled or it was not in the cache, do normal lookup
         QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
         QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
+    }
+#else
+    QSymbianHostInfoLookupManager *manager = theHostInfoLookupManager();
+
+    if (manager) {
+        // the application is still alive
+        if (manager->cache.isEnabled()) {
+            // check cache first
+            bool valid = false;
+            QHostInfo info = manager->cache.get(name, &valid);
+            if (valid) {
+                info.setLookupId(id);
+                QHostInfoResult result;
+                QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
+                result.emitResultsReady(info);
+                return id;
+            }
+        }
+
+        // cache is not enabled or it was not in the cache, do normal lookup
+#ifndef QT_NO_BEARERMANAGEMENT
+        QSharedPointer<QNetworkSession> networkSession;
+        QVariant v(receiver->property("_q_networksession"));
+        if (v.isValid())
+            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
+#endif
+
+        QSymbianHostResolver *symbianResolver = 0;
+        QT_TRAP_THROWING(symbianResolver = new QSymbianHostResolver(name, id, networkSession));
+        QObject::connect(&symbianResolver->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
+        manager->scheduleLookup(symbianResolver);
     }
 #endif
 
@@ -216,12 +244,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 */
 void QHostInfo::abortHostLookup(int id)
 {
-#ifndef QT_NO_THREAD
     theHostInfoLookupManager()->abortLookup(id);
-#else
-    // we cannot abort if it was non threaded.. the result signal has already been posted
-    Q_UNUSED(id);
-#endif
 }
 
 /*!
@@ -244,10 +267,33 @@ QHostInfo QHostInfo::fromName(const QString &name)
 #endif
 
     QHostInfo hostInfo = QHostInfoAgent::fromName(name);
-    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     manager->cache.put(name, hostInfo);
     return hostInfo;
 }
+
+#ifndef QT_NO_BEARERMANAGEMENT
+QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetworkSession> session)
+{
+#if defined QHOSTINFO_DEBUG
+    qDebug("QHostInfoPrivate::fromName(\"%s\") with session %p",name.toLatin1().constData(), session.data());
+#endif
+
+    QHostInfo hostInfo = QHostInfoAgent::fromName(name, session);
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
+    manager->cache.put(name, hostInfo);
+    return hostInfo;
+}
+#endif
+
+#ifndef Q_OS_SYMBIAN
+// This function has a special implementation for symbian right now in qhostinfo_symbian.cpp but not on other OS.
+QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession>)
+{
+    return QHostInfoAgent::fromName(hostName);
+}
+#endif
+
 
 /*!
     \enum QHostInfo::HostInfoError
@@ -425,7 +471,7 @@ void QHostInfo::setErrorString(const QString &str)
     \sa hostName()
 */
 
-#ifndef QT_NO_THREAD
+#ifndef Q_OS_SYMBIAN
 QHostInfoRunnable::QHostInfoRunnable(QString hn, int i) : toBeLookedUp(hn), id(i)
 {
     setAutoDelete(true);
@@ -653,6 +699,7 @@ void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
     finishedLookups.append(r);
     work();
 }
+#endif
 
 // This function returns immediately when we had a result in the cache, else it will later emit a signal
 QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id)
@@ -661,7 +708,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
     *id = -1;
 
     // check cache
-    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager && manager->cache.isEnabled()) {
         QHostInfo info = manager->cache.get(name, valid);
         if (*valid) {
@@ -678,7 +725,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
 
 void qt_qhostinfo_clear_cache()
 {
-    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {
         manager->clear();
     }
@@ -686,7 +733,7 @@ void qt_qhostinfo_clear_cache()
 
 void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 {
-    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    QAbstractHostInfoLookupManager* manager = theHostInfoLookupManager();
     if (manager) {
         manager->cache.setEnabled(e);
     }
@@ -754,6 +801,9 @@ void QHostInfoCache::clear()
     cache.clear();
 }
 
-#endif // QT_NO_THREAD
+QAbstractHostInfoLookupManager* QAbstractHostInfoLookupManager::globalInstance()
+{
+    return theHostInfoLookupManager();
+}
 
 QT_END_NAMESPACE

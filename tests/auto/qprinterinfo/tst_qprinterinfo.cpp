@@ -134,7 +134,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     QString output = getOutputFromCommand(command);
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9_-]+)");
+    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9-_@]+)");
     for (int c = 0; c < list.size(); ++c) {
         if (reg.indexIn(list[c]) >= 0) {
             QString printer = reg.cap(1);
@@ -292,7 +292,7 @@ void tst_QPrinterInfo::testForPrinters()
 
     for (int i = 0; i < sysPrinters.size(); ++i) {
         if (!qtPrinters.value(sysPrinters.at(i))) {
-            qDebug() << "Avaliable printers: " << qtPrinters;
+            qDebug() << "Available printers: " << qtPrinters;
             QFAIL(qPrintable(QString("Printer '%1' reported by system, but not reported by Qt").arg(sysPrinters.at(i))));
         }
     }

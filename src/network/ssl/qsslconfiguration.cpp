@@ -47,18 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template<> void QSharedDataPointer<QSslConfigurationPrivate>::detach()
-{
-    if (d && d->ref == 1)
-        return;
-    QSslConfigurationPrivate *x = (d ? new QSslConfigurationPrivate(*d)
-                                   : new QSslConfigurationPrivate);
-    x->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = x;
-}
-
 /*!
     \class QSslConfiguration
     \brief The QSslConfiguration class holds the configuration and state of an SSL connection
@@ -126,7 +114,7 @@ template<> void QSharedDataPointer<QSslConfigurationPrivate>::detach()
     Once any setter methods are called, isNull() will return false.
 */
 QSslConfiguration::QSslConfiguration()
-    : d(0)
+    : d(new QSslConfigurationPrivate)
 {
 }
 
@@ -176,7 +164,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->privateKey == other.d->privateKey &&
         d->sessionCipher == other.d->sessionCipher &&
         d->ciphers == other.d->ciphers &&
-        d->caCertificates == d->caCertificates &&
+        d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
         d->peerVerifyDepth == other.d->peerVerifyDepth;
@@ -203,7 +191,15 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
 */
 bool QSslConfiguration::isNull() const
 {
-    return d == 0;
+    return (d->protocol == QSsl::SecureProtocols &&
+            d->peerVerifyMode == QSslSocket::AutoVerifyPeer &&
+            d->peerVerifyDepth == 0 &&
+            d->caCertificates.count() == 0 &&
+            d->ciphers.count() == 0 &&
+            d->localCertificate.isNull() &&
+            d->privateKey.isNull() &&
+            d->peerCertificate.isNull() &&
+            d->peerCertificateChain.count() == 0);
 }
 
 /*!
@@ -213,7 +209,7 @@ bool QSslConfiguration::isNull() const
 */
 QSsl::SslProtocol QSslConfiguration::protocol() const
 {
-    return d ? d->protocol : QSsl::SslV3;
+    return d->protocol;
 }
 
 /*!
@@ -237,13 +233,13 @@ void QSslConfiguration::setProtocol(QSsl::SslProtocol protocol)
     client), and whether it should require that this certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients, QueryPeer for servers.
 
     \sa setPeerVerifyMode()
 */
 QSslSocket::PeerVerifyMode QSslConfiguration::peerVerifyMode() const
 {
-    return d ? d->peerVerifyMode : QSslSocket::AutoVerifyPeer;
+    return d->peerVerifyMode;
 }
 
 /*!
@@ -253,7 +249,7 @@ QSslSocket::PeerVerifyMode QSslConfiguration::peerVerifyMode() const
     client), and whether it should require that this certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients, QueryPeer for servers.
 
     \sa peerVerifyMode()
 */
@@ -276,7 +272,7 @@ void QSslConfiguration::setPeerVerifyMode(QSslSocket::PeerVerifyMode mode)
 */
 int QSslConfiguration::peerVerifyDepth() const
 {
-    return d ? d->peerVerifyDepth : 0;
+    return d->peerVerifyDepth;
 }
 
 /*!
@@ -307,7 +303,7 @@ void QSslConfiguration::setPeerVerifyDepth(int depth)
 */
 QSslCertificate QSslConfiguration::localCertificate() const
 {
-    return d ? d->localCertificate : QSslCertificate();
+    return d->localCertificate;
 }
 
 /*!
@@ -361,7 +357,7 @@ void QSslConfiguration::setLocalCertificate(const QSslCertificate &certificate)
 */
 QSslCertificate QSslConfiguration::peerCertificate() const
 {
-    return d ? d->peerCertificate : QSslCertificate();
+    return d->peerCertificate;
 }
 
 /*!
@@ -393,7 +389,7 @@ QSslCertificate QSslConfiguration::peerCertificate() const
 */
 QList<QSslCertificate> QSslConfiguration::peerCertificateChain() const
 {
-    return d ? d->peerCertificateChain : QList<QSslCertificate>();
+    return d->peerCertificateChain;
 }
 
 /*!
@@ -411,7 +407,7 @@ QList<QSslCertificate> QSslConfiguration::peerCertificateChain() const
 */
 QSslCipher QSslConfiguration::sessionCipher() const
 {
-    return d ? d->sessionCipher : QSslCipher();
+    return d->sessionCipher;
 }
 
 /*!
@@ -422,7 +418,7 @@ QSslCipher QSslConfiguration::sessionCipher() const
 */
 QSslKey QSslConfiguration::privateKey() const
 {
-    return d ? d->privateKey : QSslKey();
+    return d->privateKey;
 }
 
 /*!
@@ -464,7 +460,7 @@ void QSslConfiguration::setPrivateKey(const QSslKey &key)
 */
 QList<QSslCipher> QSslConfiguration::ciphers() const
 {
-    return d ? d->ciphers : QList<QSslCipher>();
+    return d->ciphers;
 }
 
 /*!
@@ -494,7 +490,7 @@ void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
 */
 QList<QSslCertificate> QSslConfiguration::caCertificates() const
 {
-    return d ? d->caCertificates : QList<QSslCertificate>();
+    return d->caCertificates;
 }
 
 /*!
@@ -518,7 +514,7 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 
     \list
       \o no local certificate and no private key
-      \o protocol SSLv3
+      \o protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
       \o the system's default CA certificate list
       \o the cipher list equal to the list of the SSL libraries'
          supported SSL ciphers

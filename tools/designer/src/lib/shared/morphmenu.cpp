@@ -193,7 +193,7 @@ static QStringList classesOfCategory(MorphCategory cat)
                 << QLatin1String("QSpinBox") << QLatin1String("QDoubleSpinBox");
             break;
         case MorphTextEdit:
-             l << QLatin1String("QTextEdit") << QLatin1String("QPlainTextEdit");
+             l << QLatin1String("QTextEdit") << QLatin1String("QPlainTextEdit") << QLatin1String("QTextBrowser");
             break;
         }
     }
@@ -240,7 +240,7 @@ static QString suggestObjectName(const QString &oldClassName, const QString &new
 QLabel *buddyLabelOf(QDesignerFormWindowInterface *fw, QWidget *w)
 {
     typedef QList<QLabel*> LabelList;
-    const LabelList labelList = qFindChildren<QLabel*>(fw);
+    const LabelList labelList = fw->findChildren<QLabel*>();
     if (labelList.empty())
         return 0;
     const LabelList::const_iterator cend = labelList.constEnd();
@@ -256,11 +256,11 @@ static void replaceWidgetListDynamicProperty(QWidget *parentWidget,
                                              QWidget *oldWidget, QWidget *newWidget,
                                              const char *name)
 {
-    QWidgetList list = qVariantValue<QWidgetList>(parentWidget->property(name));
+    QWidgetList list = qvariant_cast<QWidgetList>(parentWidget->property(name));
     const int index = list.indexOf(oldWidget);
     if (index != -1) {
         list.replace(index, newWidget);
-         parentWidget->setProperty(name, qVariantFromValue(list));
+         parentWidget->setProperty(name, QVariant::fromValue(list));
     }
 }
 

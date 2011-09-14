@@ -65,7 +65,8 @@ public:
         LocationHeader,
         LastModifiedHeader,
         CookieHeader,
-        SetCookieHeader
+        SetCookieHeader,
+        ContentDispositionHeader  // added for QMultipartMessage
     };
     enum Attribute {
         HttpStatusCodeAttribute,
@@ -84,9 +85,7 @@ public:
         CookieSaveControlAttribute,
         MaximumDownloadBufferSizeAttribute, // internal
         DownloadBufferAttribute, // internal
-
-        // (DownloadBufferAttribute + 1) is reserved internal for QSynchronousHttpNetworkReply
-        // add the enum in 4.8
+        SynchronousRequestAttribute, // internal
 
         User = 1000,
         UserMax = 32767

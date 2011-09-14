@@ -850,7 +850,7 @@ void QItemDelegate::drawBackground(QPainter *painter,
         painter->fillRect(option.rect, option.palette.brush(cg, QPalette::Highlight));
     } else {
         QVariant value = index.data(Qt::BackgroundRole);
-        if (qVariantCanConvert<QBrush>(value)) {
+        if (value.canConvert<QBrush>()) {
             QPointF oldBO = painter->brushOrigin();
             painter->setBrushOrigin(option.rect.topLeft());
             painter->fillRect(option.rect, qvariant_cast<QBrush>(value));
@@ -1278,7 +1278,8 @@ bool QItemDelegate::editorEvent(QEvent *event,
 
     // make sure that we have the right event type
     if ((event->type() == QEvent::MouseButtonRelease)
-        || (event->type() == QEvent::MouseButtonDblClick)) {
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
         QRect checkRect = check(option, option.rect, Qt::Checked);
         QRect emptyRect;
         doLayout(option, &checkRect, &emptyRect, &emptyRect, false);
@@ -1287,7 +1288,8 @@ bool QItemDelegate::editorEvent(QEvent *event,
             return false;
 
         // eat the double click events inside the check rect
-        if (event->type() == QEvent::MouseButtonDblClick)
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick))
             return true;
 
     } else if (event->type() == QEvent::KeyPress) {
@@ -1326,7 +1328,7 @@ QStyleOptionViewItem QItemDelegate::setOptions(const QModelIndex &index,
 
     // set foreground brush
     value = index.data(Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(value))
+    if (value.canConvert<QBrush>())
         opt.palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
     return opt;

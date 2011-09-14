@@ -394,7 +394,7 @@ int ArthurStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QWid
 void ArthurStyle::polish(QWidget *widget)
 {
     if (widget->layout() && qobject_cast<QGroupBox *>(widget)) {
-        if (qFindChildren<QGroupBox *>(widget).size() == 0) {
+        if (widget->findChildren<QGroupBox *>().size() == 0) {
             widget->layout()->setSpacing(0);
             widget->layout()->setMargin(12);
         } else {

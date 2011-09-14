@@ -275,8 +275,8 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
     qreal rightSlope = (bottomRight.x - topRight.x) / (bottomRight.y - topRight.y);
     int dx_l = int(leftSlope * 0x10000);
     int dx_r = int(rightSlope * 0x10000);
-    int x_l = int((topLeft.x + (0.5 + fromY - topLeft.y) * leftSlope + 0.5) * 0x10000);
-    int x_r = int((topRight.x + (0.5 + fromY - topRight.y) * rightSlope + 0.5) * 0x10000);
+    int x_l = int((topLeft.x + (qreal(0.5) + fromY - topLeft.y) * leftSlope + qreal(0.5)) * 0x10000);
+    int x_r = int((topRight.x + (qreal(0.5) + fromY - topRight.y) * rightSlope + qreal(0.5)) * 0x10000);
 
     int fromX, toX, x1, x2, u, v, i, ii;
     DestT *line;
@@ -471,8 +471,8 @@ void qt_transform_image(DestT *destPixels, int dbpl,
     int dvdx = int(m21 * 0x10000);
     int dudy = int(m12 * 0x10000);
     int dvdy = int(m22 * 0x10000);
-    int u0 = qCeil((0.5 * m11 + 0.5 * m12 + mdx) * 0x10000) - 1;
-    int v0 = qCeil((0.5 * m21 + 0.5 * m22 + mdy) * 0x10000) - 1;
+    int u0 = qCeil((qreal(0.5) * m11 + qreal(0.5) * m12 + mdx) * 0x10000) - 1;
+    int v0 = qCeil((qreal(0.5) * m21 + qreal(0.5) * m22 + mdy) * 0x10000) - 1;
 
     int x1 = qFloor(sourceRect.left());
     int y1 = qFloor(sourceRect.top());

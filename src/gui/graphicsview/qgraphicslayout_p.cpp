@@ -136,13 +136,13 @@ static bool removeLayoutItemFromLayout(QGraphicsLayout *lay, QGraphicsLayoutItem
 /*!
     \internal
 
-    This function is called from subclasses to add a layout item \a layoutItem 
+    This function is called from subclasses to add a layout item \a layoutItem
     to a layout.
 
     It takes care of automatically reparenting graphics items, if needed.
 
     If \a layoutItem is a  is already in a layout, it will remove it  from that layout.
-    
+
 */
 void QGraphicsLayoutPrivate::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
 {
@@ -150,14 +150,14 @@ void QGraphicsLayoutPrivate::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
     if (QGraphicsLayoutItem *maybeLayout = layoutItem->parentLayoutItem()) {
         if (maybeLayout->isLayout())
             removeLayoutItemFromLayout(static_cast<QGraphicsLayout*>(maybeLayout), layoutItem);
-    }    
+    }
     layoutItem->setParentLayoutItem(q);
     if (layoutItem->isLayout()) {
         if (QGraphicsItem *parItem = parentItem()) {
             static_cast<QGraphicsLayout*>(layoutItem)->d_func()->reparentChildItems(parItem);
         }
     } else {
-        if (QGraphicsItem *item = layoutItem->graphicsItem()) {        
+        if (QGraphicsItem *item = layoutItem->graphicsItem()) {
             QGraphicsItem *newParent = parentItem();
             QGraphicsItem *oldParent = item->parentItem();
             if (oldParent == newParent || !newParent)
@@ -187,7 +187,7 @@ void QGraphicsLayoutPrivate::activateRecursive(QGraphicsLayoutItem *item)
                 layout->invalidate();   // ### LOOKS SUSPICIOUSLY WRONG!!???
             }
         }
-        
+
         for (int i = layout->count() - 1; i >= 0; --i) {
             QGraphicsLayoutItem *childItem = layout->itemAt(i);
             if (childItem)
@@ -199,5 +199,5 @@ void QGraphicsLayoutPrivate::activateRecursive(QGraphicsLayoutItem *item)
 
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW

@@ -71,6 +71,11 @@ private slots:
     void floatVariantValue();
     void rectVariantValue();
     void stringVariantValue();
+
+    void createCoreType_data();
+    void createCoreType();
+    void createCoreTypeCopy_data();
+    void createCoreTypeCopy();
 };
 
 void tst_qvariant::testBound()
@@ -217,6 +222,48 @@ void tst_qvariant::stringVariantValue()
         for(int i = 0; i < ITERATION_COUNT; ++i) {
             v.toString();
         }
+    }
+}
+
+void tst_qvariant::createCoreType_data()
+{
+    QTest::addColumn<int>("typeId");
+    for (int i = 0; i <= QMetaType::LastCoreType; ++i)
+        QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstCoreExtType; i <= QMetaType::LastCoreExtType; ++i)
+        QTest::newRow(QMetaType::typeName(i)) << i;
+}
+
+// Tests how fast a Qt core type can be default-constructed by a
+// QVariant. The purpose of this benchmark is to measure the overhead
+// of creating (and destroying) a QVariant compared to creating the
+// type directly.
+void tst_qvariant::createCoreType()
+{
+    QFETCH(int, typeId);
+    QBENCHMARK {
+        for (int i = 0; i < ITERATION_COUNT; ++i)
+            QVariant(typeId, (void *)0);
+    }
+}
+
+void tst_qvariant::createCoreTypeCopy_data()
+{
+    createCoreType_data();
+}
+
+// Tests how fast a Qt core type can be copy-constructed by a
+// QVariant. The purpose of this benchmark is to measure the overhead
+// of creating (and destroying) a QVariant compared to creating the
+// type directly.
+void tst_qvariant::createCoreTypeCopy()
+{
+    QFETCH(int, typeId);
+    QVariant other(typeId, (void *)0);
+    const void *copy = other.constData();
+    QBENCHMARK {
+        for (int i = 0; i < ITERATION_COUNT; ++i)
+            QVariant(typeId, copy);
     }
 }
 

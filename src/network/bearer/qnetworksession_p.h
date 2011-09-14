@@ -55,8 +55,15 @@
 
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
+#include "QtCore/qsharedpointer.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
+
+#ifdef Q_OS_SYMBIAN
+class RConnection;
+class RSocket;
+class RHostResolver;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -67,14 +74,11 @@ class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
     friend class QNetworkSession;
 
 public:
-    QNetworkSessionPrivate()
-    :   state(QNetworkSession::Invalid), isOpen(false)
-    {
-    }
-
+    QNetworkSessionPrivate() : QObject(),
+        state(QNetworkSession::Invalid), isOpen(false), mutex(QMutex::Recursive)
+    {}
     virtual ~QNetworkSessionPrivate()
-    {
-    }
+    {}
 
     //called by QNetworkSession constructor and ensures
     //that the state is immediately updated (w/o actually opening
@@ -85,14 +89,14 @@ public:
 #ifndef QT_NO_NETWORKINTERFACE
     virtual QNetworkInterface currentInterface() const = 0;
 #endif
-    virtual QVariant sessionProperty(const QString& key) const = 0;
-    virtual void setSessionProperty(const QString& key, const QVariant& value) = 0;
+    virtual QVariant sessionProperty(const QString &key) const = 0;
+    virtual void setSessionProperty(const QString &key, const QVariant &value) = 0;
 
     virtual void open() = 0;
     virtual void close() = 0;
     virtual void stop() = 0;
 
-    virtual void setALREnabled(bool /*enabled*/) { }
+    virtual void setALREnabled(bool /*enabled*/) {}
     virtual void migrate() = 0;
     virtual void accept() = 0;
     virtual void ignore() = 0;
@@ -105,6 +109,15 @@ public:
     virtual quint64 bytesReceived() const = 0;
     virtual quint64 activeTime() const = 0;
 
+#ifdef Q_OS_SYMBIAN
+    // get internal RConnection (not thread safe, call only from thread that owns the QNetworkSession)
+    static RConnection* nativeSession(QNetworkSession&);
+    virtual RConnection* nativeSession() = 0;
+    // open socket using the internal RConnection (thread safe)
+    static TInt nativeOpenSocket(QNetworkSession& session, RSocket& socket, TUint family, TUint type, TUint protocol);
+    // open host resolver using the internal RConnection (thread safe)
+    static TInt nativeOpenHostResolver(QNetworkSession& session, RHostResolver& resolver, TUint family, TUint protocol);
+#endif
 protected:
     inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
     {
@@ -144,11 +157,14 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
+
+    QMutex mutex;
 };
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
+
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKSESSIONPRIVATE_H
-
+#endif // QNETWORKSESSIONPRIVATE_H

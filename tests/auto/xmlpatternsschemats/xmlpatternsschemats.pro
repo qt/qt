@@ -25,3 +25,5 @@ INCLUDEPATH += $$QT_SOURCE_TREE/tests/auto/xmlpatternssdk/   \
                $$QT_SOURCE_TREE/tests/auto/xmlpatternsxqts   \
                ../xmlpatternsxqts                            \
                ../xmlpatternssdk
+
+requires(contains(QT_CONFIG,private_tests))

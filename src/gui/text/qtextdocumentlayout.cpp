@@ -75,8 +75,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT extern int qt_defaultDpi();
-
 // ################ should probably add frameFormatChange notification!
 
 struct QTextLayoutStruct;
@@ -513,9 +511,6 @@ public:
 
     qreal scaleToDevice(qreal value) const;
     QFixed scaleToDevice(QFixed value) const;
-
-    qreal lineH;
-    QTextDocumentLayout::LineHeightMode lineHeightMode;
 };
 
 QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
@@ -523,9 +518,7 @@ QTextDocumentLayoutPrivate::QTextDocumentLayoutPrivate()
       cursorWidth(1),
       currentLazyLayoutPosition(-1),
       lazyLayoutStepSize(1000),
-      lastPageCount(-1),
-      lineH(1),
-      lineHeightMode(QTextDocumentLayout::ProportionalHeight)
+      lastPageCount(-1)
 {
     showLayoutProgress = true;
     insideDocumentChange = false;
@@ -2511,6 +2504,24 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
     fd->currentLayoutStruct = 0;
 }
 
+static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, const QTextLine &line, qreal scaling,
+                                       QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight)
+{
+    *lineHeight = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+
+    if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
+        *lineBreakHeight = *lineHeight;
+        if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
+            *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), qreal(0.0))) - ((*lineHeight * 4) / 5);
+        else
+            *lineAdjustment = QFixed::fromReal(line.height()) - *lineHeight;
+    }
+    else {
+        *lineBreakHeight = QFixed::fromReal(line.height());
+        *lineAdjustment = 0;
+    }
+}
+
 void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosition, const QTextBlockFormat &blockFormat,
                                              QTextLayoutStruct *layoutStruct, int layoutFrom, int layoutTo, const QTextBlockFormat *previousBlockFormat)
 {
@@ -2644,11 +2655,12 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
             }
 
-            // TODO: replace with proper line height support in 4.8
-            QFixed lineHeight = (lineHeightMode == QTextDocumentLayout::FixedHeight)
-                    ? QFixed::fromReal(lineH) : QFixed::fromReal(line.height() * lineH);
+            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
+                            qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
 
-            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom) {
+            if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom) {
                 layoutStruct->newPage();
 
                 floatMargins(layoutStruct->y, layoutStruct, &left, &right);
@@ -2660,7 +2672,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                     right -= text_indent;
             }
 
-            line.setPosition(QPointF((left - layoutStruct->x_left).toReal(), (layoutStruct->y - cy).toReal()));
+            line.setPosition(QPointF((left - layoutStruct->x_left).toReal(), (layoutStruct->y - cy - lineAdjustment).toReal()));
             layoutStruct->y += lineHeight;
             layoutStruct->contentsWidth
                 = qMax<QFixed>(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + line.naturalTextWidth()) + totalRightMargin);
@@ -2680,11 +2692,16 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             QTextLine line = tl->lineAt(i);
             layoutStruct->contentsWidth
                 = qMax(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + tl->lineAt(i).naturalTextWidth()) + totalRightMargin);
-            const QFixed lineHeight = QFixed::fromReal(line.height());
+
+            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
+                            qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
+
             if (layoutStruct->pageHeight != QFIXED_MAX) {
-                if (layoutStruct->absoluteY() + lineHeight > layoutStruct->pageBottom)
+                if (layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom)
                     layoutStruct->newPage();
-                line.setPosition(QPointF(line.position().x(), layoutStruct->y.toReal() - tl->position().y()));
+                line.setPosition(QPointF(line.position().x(), (layoutStruct->y - lineAdjustment).toReal() - tl->position().y()));
             }
             layoutStruct->y += lineHeight;
         }
@@ -2720,13 +2737,6 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
         else
             layoutStruct->maximumWidth = qMax(layoutStruct->maximumWidth, maxW);
     }
-}
-
-void QTextDocumentLayout::setLineHeight(qreal lineH, QTextDocumentLayout::LineHeightMode mode = QTextDocumentLayout::ProportionalHeight)
-{
-    Q_D(QTextDocumentLayout);
-    d->lineH = lineH;
-    d->lineHeightMode = mode;
 }
 
 void QTextDocumentLayoutPrivate::floatMargins(const QFixed &y, const QTextLayoutStruct *layoutStruct,
@@ -2986,10 +2996,19 @@ void QTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int posInDo
 
     QSizeF inlineSize = (pos == QTextFrameFormat::InFlow ? intrinsic : QSizeF(0, 0));
     item.setWidth(inlineSize.width());
-    if (f.verticalAlignment() == QTextCharFormat::AlignMiddle) {
+
+    QFontMetrics m(f.font());
+    switch (f.verticalAlignment())
+    {
+    case QTextCharFormat::AlignMiddle:
         item.setDescent(inlineSize.height() / 2);
         item.setAscent(inlineSize.height() / 2 - 1);
-    } else {
+        break;
+    case QTextCharFormat::AlignBaseline:
+        item.setDescent(m.descent());
+        item.setAscent(inlineSize.height() - m.descent() - 1);
+        break;
+    default:
         item.setDescent(0);
         item.setAscent(inlineSize.height() - 1);
     }
@@ -3071,6 +3090,7 @@ void QTextDocumentLayoutPrivate::ensureLayouted(QFixed y) const
     if (currentLazyLayoutPosition == -1)
         return;
     const QSizeF oldSize = q->dynamicDocumentSize();
+    Q_UNUSED(oldSize);
 
     if (checkPoints.isEmpty())
         layoutStep();

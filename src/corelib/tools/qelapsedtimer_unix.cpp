@@ -167,6 +167,17 @@ qint64 QElapsedTimer::restart()
     return elapsedAndRestart(t1, t2, &t1, &t2);
 }
 
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    qint64 sec, frac;
+    do_gettime(&sec, &frac);
+    sec = sec - t1;
+    frac = frac - t2;
+    if (!monotonicClockAvailable)
+        frac *= 1000;
+    return sec * Q_INT64_C(1000000000) + frac;
+}
+
 qint64 QElapsedTimer::elapsed() const
 {
     qint64 sec, frac;

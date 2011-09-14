@@ -617,7 +617,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             if (property.access != QDBusIntrospection::Property::Read) {
                 hs << "    inline void " << setter << "(" << constRefArg(type) << "value)" << endl
                    << "    { setProperty(\"" << property.name
-                   << "\", qVariantFromValue(value)); }" << endl;
+                   << "\", QVariant::fromValue(value)); }" << endl;
             }
 
             hs << endl;
@@ -660,7 +660,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             if (!method.inputArgs.isEmpty()) {
                 hs << "        argumentList";
                 for (int argPos = 0; argPos < method.inputArgs.count(); ++argPos)
-                    hs << " << qVariantFromValue(" << argNames.at(argPos) << ')';
+                    hs << " << QVariant::fromValue(" << argNames.at(argPos) << ')';
                 hs << ";" << endl;
             }
 
@@ -693,7 +693,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 if (!method.inputArgs.isEmpty()) {
                     hs << "        argumentList";
                     for (argPos = 0; argPos < method.inputArgs.count(); ++argPos)
-                        hs << " << qVariantFromValue(" << argNames.at(argPos) << ')';
+                        hs << " << QVariant::fromValue(" << argNames.at(argPos) << ')';
                     hs << ";" << endl;
                 }
 
@@ -940,7 +940,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
                 cs << "void " << className << "::" << setter << "(" << constRefType << "value)" << endl
                    << "{" << endl
                    << "    // set the value of property " << property.name << endl
-                   << "    parent()->setProperty(\"" << property.name << "\", qVariantFromValue(value";
+                   << "    parent()->setProperty(\"" << property.name << "\", QVariant::fromValue(value";
                 if (constRefType.contains(QLatin1String("QDBusVariant")))
                     cs << ".variant()";
                 cs << "));" << endl

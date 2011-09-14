@@ -54,7 +54,8 @@
 #include <QtDesigner/QDesignerFormEditorInterface>
 
 #include <QtXml/QXmlStreamWriter>
-#include <QtCore/QtAlgorithms>
+
+#include <QtCore/QScopedPointer>
 #include <QtCore/qdebug.h>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QTextStream>
@@ -565,10 +566,10 @@ static QString xmlFromWidgetBox(const QDesignerFormEditorInterface *core, const 
     const bool found = QDesignerWidgetBox::findWidget(core->widgetBox(), className, QString(), &widget);
     if (!found)
         return QString();
-    DomUI *domUI = QDesignerWidgetBox::xmlToUi(className, widget.domXml(), false);
-    domUI->setAttributeVersion(QLatin1String("4.0"));
-    if (!domUI)
+    QScopedPointer<DomUI> domUI(QDesignerWidgetBox::xmlToUi(className, widget.domXml(), false));
+    if (domUI.isNull())
         return QString();
+    domUI->setAttributeVersion(QLatin1String("4.0"));
     DomWidget *domWidget = domUI->elementWidget();
     if (!domWidget)
         return QString();
@@ -615,7 +616,6 @@ static QString xmlFromWidgetBox(const QDesignerFormEditorInterface *core, const 
         domUI->write(writer);
         writer.writeEndDocument();
     }
-    delete domUI;
     return rc;
 }
 

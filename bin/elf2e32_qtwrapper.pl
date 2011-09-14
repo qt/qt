@@ -5,7 +5,7 @@
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
-## This file is part of the S60 port of the Qt Toolkit.
+## This file is part of the utilities of the Qt Toolkit.
 ##
 ## $QT_BEGIN_LICENSE:LGPL$
 ## GNU Lesser General Public License Usage
@@ -81,8 +81,59 @@ my $fixupFile = "";
 my $runCount = 0;
 my $returnCode = 0;
 
+# For debugging. Make it nonzero to give verbose output.
+my $debugScript = 1;
+my @usedDefFiles;
+sub recordDefFile {
+    return if (!$debugScript);
+
+    my ($msg, $file) = @_;
+    my $content = "$msg, $file:\n";
+    my $defFileFd;
+    if (!open($defFileFd, "< $file")) {
+        print("Warning: Could not open $file (for debug analysis)\n");
+        return;
+    }
+    while (<$defFileFd>) {
+        $content .= $_;
+    }
+
+    push(@usedDefFiles, $content);
+}
+sub printRecordedDefFiles {
+    return if (!$debugScript);
+
+    foreach (@usedDefFiles) {
+        print ("$_\n");
+    }
+}
+
+sub missingSymbolMismatch
+{
+    my $missingSymbolSum = $_[0];
+
+    printRecordedDefFiles;
+
+    print("Bug in the native elf2e32 tool: Number of missing symbols does not\n");
+    print("match number of removed symbols in the output DEF file.\n\n");
+
+    print("Original elf2e32 output:\n");
+    print("  $missingSymbolSum Frozen Export\(s\) missing from the ELF file\n\n");
+
+    print("However $defoutput[1] contains more missing entries than that.\n\n");
+
+    print("This needs to be fixed manually in the DEF file.\n");
+    exit(2);
+}
+
+if ($debugScript) {
+    print("PATH: $ENV{PATH}\n");
+    print("EPOCROOT: $ENV{EPOCROOT}\n");
+}
+
 while (1) {
     if (++$runCount > 2) {
+        printRecordedDefFiles if ($debugScript);
         print("Internal error in $0, link succeeded, but exports may be wrong.\n");
         last;
     }
@@ -96,6 +147,8 @@ while (1) {
 
     my %fixupSymbols;
     my $foundBrokenSymbols = 0;
+    my $missingSymbolSum = 0;
+    my $missingSymbolCount = 0;
     my $errors = 0;
     while (<$elf2e32Pipe>) {
         print;
@@ -104,11 +157,17 @@ while (1) {
         } elsif (/symbol ([a-z0-9_]+) absent in the DEF file, but present in the ELF file/io) {
             $fixupSymbols{$1} = 1;
             $foundBrokenSymbols = 1;
-        } elsif (/[0-9]+ Frozen Export\(s\) missing from the ELF file/io) {
+        } elsif (/([0-9]+) Frozen Export\(s\) missing from the ELF file/io) {
+            $missingSymbolSum = $1;
             $foundBrokenSymbols = 1;
         }
     }
     close($elf2e32Pipe);
+
+    if ($debugScript) {
+        recordDefFile("Run no $runCount, elf2e32 DEF file input", "$definput[1]");
+        recordDefFile("Run no $runCount, elf2e32 DEF file output", "$defoutput[1]");
+    }
 
     if ($errors) {
         $returnCode = 1;
@@ -125,7 +184,7 @@ while (1) {
         }
         open($newDefFile, "< $defoutput[1]") or die("Could not open $defoutput[1]");
         open($tmpDefFile, "> $defoutput[1].tmp") or die("Could not open $defoutput[1].tmp");
-        print($tmpDefFile "EXPORTS\n");
+        print($tmpDefFile "EXPORTS\n") or die("Could not write to temporary DEF file: $!");
         $fixupFile = "$defoutput[1].tmp";
         while (1) {
             my $origDefLine;
@@ -209,24 +268,25 @@ while (1) {
             } elsif ($defLine =~ s/; MISSING://) {
                 # Auto-absent symbols.
                 $extraData .= " ABSENT";
+                if (++$missingSymbolCount > $missingSymbolSum) {
+                    missingSymbolMismatch($missingSymbolSum);
+                }
             }
-            print($tmpDefFile "\t$sym \@ $ordinal $extraData\n");
+            print($tmpDefFile "\t$sym \@ $ordinal $extraData\n") or die("Could not write to temporary DEF file: $!");
         }
-        print($tmpDefFile "\n");
+        print($tmpDefFile "\n") or die("Could not write to temporary DEF file: $!");
         close($origDefFile) if ($definput[1]);
         close($newDefFile);
         close($tmpDefFile);
 
         $definput[1] = "$defoutput[1].tmp";
 
-        if (!$foundBrokenSymbols || $errors) {
-            last;
-        }
-
-        print("Rerunning elf2e32 due to DEF file / ELF file mismatch\n");
-    } else {
+    }
+    if (!$foundBrokenSymbols || $errors) {
         last;
     }
+
+    print("Rerunning elf2e32 due to DEF file / ELF file mismatch\n");
 };
 
 if ($fixupFile) {
@@ -260,6 +320,6 @@ if ($buildingLibrary) {
     }
 
     if ($differenceFound) {
-        copy($tmpdso[1], $dso[1]);
+        copy($tmpdso[1], $dso[1]) or die("Could not copy $tmpdso[1] to $dso[1]: $!");
     }
 }

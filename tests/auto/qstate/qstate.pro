@@ -3,3 +3,4 @@ QT = core
 SOURCES  += tst_qstate.cpp
 
 
+CONFIG += parallel_test

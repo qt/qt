@@ -76,6 +76,7 @@ private:
     int currIndex;
     bool wait;
     int defaultWaitMs;
+    int debug;
 };
 
 #endif

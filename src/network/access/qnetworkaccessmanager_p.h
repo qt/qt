@@ -59,6 +59,7 @@
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtNetwork/qnetworksession.h"
+#include "qnetworkaccessauthenticationmanager_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -72,16 +73,19 @@ class QNetworkAccessManagerPrivate: public QObjectPrivate
 public:
     QNetworkAccessManagerPrivate()
         : networkCache(0), cookieJar(0),
+          httpThread(0),
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
           networkSession(0),
+          lastSessionState(QNetworkSession::Invalid),
           networkAccessible(QNetworkAccessManager::Accessible),
           online(false),
           initializeSession(true),
 #endif
-          cookieJarCreated(false)
+          cookieJarCreated(false),
+          authenticationManager(new QNetworkAccessAuthenticationManager)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -116,10 +120,14 @@ public:
     void _q_networkSessionStateChanged(QNetworkSession::State state);
 #endif
 
+    QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
     QNetworkCookieJar *cookieJar;
+
+    QThread *httpThread;
 
 
 #ifndef QT_NO_NETWORKPROXY
@@ -129,6 +137,7 @@ public:
 
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
+    QNetworkSession::State lastSessionState;
     QString networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     bool online;
@@ -136,6 +145,9 @@ public:
 #endif
 
     bool cookieJarCreated;
+
+    // The cache with authorization data:
+    QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.

@@ -45,6 +45,8 @@
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_fsevents_p.h"
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include <qdebug.h>
 #include <qfile.h>
 #include <qdatetime.h>
@@ -55,13 +57,15 @@
 #include <sys/types.h>
 #include <CoreFoundation/CFRunLoop.h>
 #include <CoreFoundation/CFUUID.h>
+#if !defined( QT_NO_CORESERVICES )
 #include <CoreServices/CoreServices.h>
+#endif
 #include <AvailabilityMacros.h>
 #include <private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
 // Static operator overloading so for the sake of some convieniece.
 // They only live in this compilation unit to avoid polluting Qt in general.
 static bool operator==(const struct ::timespec &left, const struct ::timespec &right)
@@ -150,7 +154,7 @@ QFSEventsFileSystemWatcherEngine::QFSEventsFileSystemWatcherEngine()
 
 QFSEventsFileSystemWatcherEngine::~QFSEventsFileSystemWatcherEngine()
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     // I assume that at this point, QFileSystemWatcher has already called stop
     // on me, so I don't need to invalidate or stop my stream, simply
     // release it.
@@ -169,7 +173,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                        QStringList *files,
                                                        QStringList *directories)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     stop();
     wait();
     QMutexLocker locker(&mutex);
@@ -255,7 +259,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
 void QFSEventsFileSystemWatcherEngine::warmUpFSEvents()
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     // This function assumes that the mutex has already been grabbed before calling it.
     // It exits with the mutex still locked (Q_ASSERT(mutex.isLocked()) ;-).
     start();
@@ -267,7 +271,7 @@ QStringList QFSEventsFileSystemWatcherEngine::removePaths(const QStringList &pat
                                                           QStringList *files,
                                                           QStringList *directories)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     stop();
     wait();
     QMutexLocker locker(&mutex);
@@ -334,7 +338,7 @@ QStringList QFSEventsFileSystemWatcherEngine::removePaths(const QStringList &pat
 #endif
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
 void QFSEventsFileSystemWatcherEngine::updateList(PathInfoList &list, bool directory, bool emitSignals)
 {
     PathInfoList::iterator End = list.end();
@@ -394,7 +398,7 @@ void QFSEventsFileSystemWatcherEngine::fseventsCallback(ConstFSEventStreamRef ,
                                                         const FSEventStreamEventFlags eventFlags[],
                                                         const FSEventStreamEventId [])
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     QFSEventsFileSystemWatcherEngine *watcher = static_cast<QFSEventsFileSystemWatcherEngine *>(clientCallBackInfo);
     QMutexLocker locker(&watcher->mutex);
     CFArrayRef paths = static_cast<CFArrayRef>(eventPaths);
@@ -429,7 +433,7 @@ void QFSEventsFileSystemWatcherEngine::fseventsCallback(ConstFSEventStreamRef ,
 
 void QFSEventsFileSystemWatcherEngine::stop()
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     QMutexLocker locker(&mutex);
     stopFSStream(fsStream);
     if (threadsRunLoop) {
@@ -441,13 +445,13 @@ void QFSEventsFileSystemWatcherEngine::stop()
 
 void QFSEventsFileSystemWatcherEngine::updateFiles()
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     QMutexLocker locker(&mutex);
     updateHash(filePathInfoHash);
     updateHash(dirPathInfoHash);
     if (filePathInfoHash.isEmpty() && dirPathInfoHash.isEmpty()) {
         // Everything disappeared before we got to start, don't bother.
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
         // Code duplicated from stop(), with the exception that we
         // don't wait on waitForStop here. Doing this will lead to
         // a deadlock since this function is called from the worker
@@ -465,7 +469,7 @@ void QFSEventsFileSystemWatcherEngine::updateFiles()
 
 void QFSEventsFileSystemWatcherEngine::run()
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && !defined( QT_NO_CORESERVICES )
     threadsRunLoop = CFRunLoopGetCurrent();
     FSEventStreamScheduleWithRunLoop(fsStream, threadsRunLoop, kCFRunLoopDefaultMode);
     bool startedOK = FSEventStreamStart(fsStream);
@@ -487,3 +491,4 @@ void QFSEventsFileSystemWatcherEngine::run()
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_FILESYSTEMWATCHER

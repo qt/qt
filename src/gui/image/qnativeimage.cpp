@@ -45,6 +45,9 @@
 
 #include "private/qpaintengine_raster_p.h"
 
+#include "private/qapplication_p.h"
+#include "private/qgraphicssystem_p.h"
+
 #if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
 #include <qx11info_x11.h>
 #include <sys/ipc.h>
@@ -178,15 +181,17 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
     if (ok) {
         xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);
         xshminfo.shmaddr = xshmimg->data;
-        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
-            qWarning() << "Error while marking the shared memory segment to be destroyed";
         ok = (xshminfo.shmaddr != (char*)-1);
         if (ok)
             image = QImage((uchar *)xshmimg->data, width, height, format);
     }
     xshminfo.readOnly = false;
-    if (ok)
+    if (ok) {
         ok = XShmAttach(X11->display, &xshminfo);
+        XSync(X11->display, False);
+        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
+            qWarning() << "Error while marking the shared memory segment to be destroyed";
+    }
     if (!ok) {
         qWarning() << "QNativeImage: Unable to attach to shared memory segment.";
         if (xshmimg->data) {
@@ -241,8 +246,21 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
     : image(width, height, format)
 {
 
-
     uint cgflags = kCGImageAlphaNoneSkipFirst;
+    switch (format) {
+    case QImage::Format_ARGB32:
+        cgflags = kCGImageAlphaFirst;
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+    case QImage::Format_ARGB6666_Premultiplied:
+    case QImage::Format_ARGB8555_Premultiplied:
+    case QImage::Format_ARGB4444_Premultiplied:
+        cgflags = kCGImageAlphaPremultipliedFirst;
+        break;
+    default:
+        break;
+    }
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;
@@ -284,7 +302,11 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
+#ifdef Q_WS_QPA
+    return QApplicationPrivate::platformIntegration()->screens().at(0)->format();
+#else
     return QImage::Format_RGB32;
+#endif
 }
 
 #endif // platforms

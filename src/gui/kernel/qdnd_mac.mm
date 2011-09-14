@@ -491,7 +491,7 @@ bool QWidgetPrivate::qt_mac_dnd_event(uint kind, DragRef dragRef)
         SetThemeCursor(cursor);
     }
     if(found_cursor) {
-        qt_mac_set_cursor(0, QPoint()); //just use our's
+        qt_mac_set_cursor(0); //just use our's
     } else {
         QCursor cursor(Qt::ArrowCursor);
         if(qApp && qApp->overrideCursor()) {
@@ -504,7 +504,7 @@ bool QWidgetPrivate::qt_mac_dnd_event(uint kind, DragRef dragRef)
                 }
             }
         }
-        qt_mac_set_cursor(&cursor, QPoint(mouse.h, mouse.v));
+        qt_mac_set_cursor(&cursor);
     }
 
     //idle things

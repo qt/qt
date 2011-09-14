@@ -65,16 +65,16 @@ class ProcessAST: protected AST::Visitor
 {
     struct State {
         State() : object(0), property(0) {}
-        State(Object *o) : object(o), property(0) {}
-        State(Object *o, Property *p) : object(o), property(p) {}
+        State(QDeclarativeParser::Object *o) : object(o), property(0) {}
+        State(QDeclarativeParser::Object *o, Property *p) : object(o), property(p) {}
 
-        Object *object;
+        QDeclarativeParser::Object *object;
         Property *property;
     };
 
     struct StateStack : public QStack<State>
     {
-        void pushObject(Object *obj)
+        void pushObject(QDeclarativeParser::Object *obj)
         {
             push(State(obj));
         }
@@ -105,7 +105,7 @@ public:
 
 protected:
 
-    Object *defineObjectBinding(AST::UiQualifiedId *propertyName, bool onAssignment,
+    QDeclarativeParser::Object *defineObjectBinding(AST::UiQualifiedId *propertyName, bool onAssignment,
                                 const QString &objectType,
                                 AST::SourceLocation typeLocation,
                                 LocationSpan location,
@@ -134,7 +134,7 @@ protected:
     QString asString(AST::UiQualifiedId *node) const;
 
     const State state() const;
-    Object *currentObject() const;
+    QDeclarativeParser::Object *currentObject() const;
     Property *currentProperty() const;
 
     QString qualifiedNameId() const;
@@ -200,7 +200,7 @@ const ProcessAST::State ProcessAST::state() const
     return _stateStack.back();
 }
 
-Object *ProcessAST::currentObject() const
+QDeclarativeParser::Object *ProcessAST::currentObject() const
 {
     return state().object;
 }
@@ -229,7 +229,7 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
     return s;
 }
 
-Object *
+QDeclarativeParser::Object *
 ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
                                 bool onAssignment,
                                 const QString &objectType,
@@ -286,7 +286,7 @@ ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
         if (lastTypeDot >= 0)
             resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
 
-        Object *obj = new Object;
+	QDeclarativeParser::Object *obj = new QDeclarativeParser::Object;
 
         QDeclarativeScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
         obj->type = typeRef->id;
@@ -302,7 +302,7 @@ ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
 
         if (propertyCount) {
             Property *prop = currentProperty();
-            Value *v = new Value;
+            QDeclarativeParser::Value *v = new QDeclarativeParser::Value;
             v->object = obj;
             v->location = obj->location;
             if (onAssignment)
@@ -319,7 +319,7 @@ ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
                 _parser->setTree(obj);
             } else {
                 const State state = _stateStack.top();
-                Value *v = new Value;
+                QDeclarativeParser::Value *v = new QDeclarativeParser::Value;
                 v->object = obj;
                 v->location = obj->location;
                 if (state.property) {
@@ -594,7 +594,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             property.defaultValue->location =
                     location(node->expression->firstSourceLocation(),
                              node->expression->lastSourceLocation());
-            Value *value = new Value;
+            QDeclarativeParser::Value *value = new QDeclarativeParser::Value;
             value->location = location(node->expression->firstSourceLocation(),
                                        node->expression->lastSourceLocation());
             value->value = getVariant(node->expression);
@@ -698,7 +698,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 
     prop->location.range.length = prop->location.range.offset + prop->location.range.length - node->qualifiedId->identifierToken.offset;
     prop->location.range.offset = node->qualifiedId->identifierToken.offset;
-    Value *v = new Value;
+    QDeclarativeParser::Value *v = new QDeclarativeParser::Value;
     v->value = primitive;
     v->location = location(node->statement->firstSourceLocation(),
                            node->statement->lastSourceLocation());
@@ -873,7 +873,7 @@ QList<QDeclarativeScriptParser::TypeReference*> QDeclarativeScriptParser::refere
     return _refTypes;
 }
 
-Object *QDeclarativeScriptParser::tree() const
+QDeclarativeParser::Object *QDeclarativeScriptParser::tree() const
 {
     return root;
 }
@@ -1196,7 +1196,7 @@ QDeclarativeScriptParser::TypeReference *QDeclarativeScriptParser::findOrCreateT
     return type;
 }
 
-void QDeclarativeScriptParser::setTree(Object *tree)
+void QDeclarativeScriptParser::setTree(QDeclarativeParser::Object *tree)
 {
     Q_ASSERT(! root);
 

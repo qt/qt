@@ -833,25 +833,46 @@ namespace QTest
 {
     static QObject *currentTestObject = 0;
 
-    static struct TestFunction {
-        TestFunction():function(0), data(0) {}
-        ~TestFunction() { delete [] data; }
-        int function;
-        char *data;
-    } *testFuncs;
-
+    class TestFunction {
+    public:
+        TestFunction() : function_(-1), data_(0) {}
+        void set(int function, char *data) { function_ = function; data_ = data; }
+        char *data() const { return data_; }
+        int function() const { return function_; }
+        ~TestFunction() { delete[] data_; }
+    private:
+        int function_;
+        char *data_;
+    };
     /**
-     * Contains the count of test functions that was supplied
-     * on the command line, if any. Hence, if lastTestFuncIdx is
-     * more than zero, those functions should be run instead of
+     * Contains the list of test functions that was supplied
+     * on the command line, if any. Hence, if not empty,
+     * those functions should be run instead of
      * all appearing in the test case.
      */
-    static int lastTestFuncIdx = -1;
+    static TestFunction * testFuncs = 0;
+    static int testFuncCount = 0;
+
+    /** Don't leak testFuncs on exit even on error */
+    static struct TestFuncCleanup
+    {
+        void cleanup()
+        {
+            delete[] testFuncs;
+            testFuncCount = 0;
+            testFuncs = 0;
+        }
+
+        ~TestFuncCleanup() { cleanup(); }
+    } testFuncCleaner;
 
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
+    static bool randomOrder = false;
     static int keyVerbose = -1;
+    static unsigned int seed = 0;
+    static bool seedSet = false;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     static bool noCrashHandler = false;
 #endif
@@ -937,6 +958,43 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
     return keyDelay;
 }
 
+void seedRandom()
+{
+    static bool randomSeeded = false;
+    if (!randomSeeded) {
+        if (!QTest::seedSet) {
+            QElapsedTimer timer;
+            timer.start();
+            QTest::seed = timer.msecsSinceReference();
+        }
+        qsrand(QTest::seed);
+        randomSeeded = true;
+    }
+}
+
+int qTestRandomSeed()
+{
+    Q_ASSERT(QTest::seedSet);
+    return QTest::seed;
+}
+
+template<typename T>
+void swap(T * array, int pos, int otherPos)
+{
+    T tmp = array[pos];
+    array[pos] = array[otherPos];
+    array[otherPos] = tmp;
+}
+
+template<typename T>
+static void randomizeList(T * array, int size)
+{
+    for (int i = 0; i != size; i++) {
+        int pos = qrand() % size;
+        swap(array, pos, i);
+    }
+}
+
 static bool isValidSlot(const QMetaMethod &sl)
 {
     if (sl.access() != QMetaMethod::Private || !sl.parameterTypes().isEmpty()
@@ -957,6 +1015,7 @@ static bool isValidSlot(const QMetaMethod &sl)
 }
 
 Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
+Q_TESTLIB_EXPORT bool printAvailableTags = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
@@ -966,6 +1025,65 @@ static void qPrintTestSlots()
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl))
             printf("%s\n", sl.signature());
+    }
+}
+
+static void qPrintDataTags()
+{
+    // Get global data tags:
+    QTestTable::globalTestTable();
+    invokeMethod(QTest::currentTestObject, "initTestCase_data()");
+    const QTestTable *gTable = QTestTable::globalTestTable();
+
+    const QMetaObject *currTestMetaObj = QTest::currentTestObject->metaObject();
+
+    // Process test functions:
+    for (int i = 0; i < currTestMetaObj->methodCount(); ++i) {
+        QMetaMethod tf = currTestMetaObj->method(i);
+        if (isValidSlot(tf)) {
+            // Retrieve local tags:
+            QStringList localTags;
+            QTestTable table;
+            char member[512];
+            char *slot = qstrdup(tf.signature());
+            slot[strlen(slot) - 2] = '\0';
+            QTest::qt_snprintf(member, 512, "%s_data()", slot);
+            invokeMethod(QTest::currentTestObject, member);
+            for (int j = 0; j < table.dataCount(); ++j)
+                localTags << QLatin1String(table.testData(j)->dataTag());
+
+            // Print all tag combinations:
+            if (gTable->dataCount() == 0) {
+                if (localTags.count() == 0) {
+                    // No tags at all, so just print the test function:
+                    printf("%s %s\n", currTestMetaObj->className(), slot);
+                } else {
+                    // Only local tags, so print each of them:
+                    for (int k = 0; k < localTags.size(); ++k)
+                        printf(
+                            "%s %s %s\n",
+                            currTestMetaObj->className(), slot, localTags.at(k).toLatin1().data());
+                }
+            } else {
+                for (int j = 0; j < gTable->dataCount(); ++j) {
+                    if (localTags.count() == 0) {
+                        // Only global tags, so print the current one:
+                        printf(
+                            "%s %s __global__ %s\n",
+                            currTestMetaObj->className(), slot, gTable->testData(j)->dataTag());
+                    } else {
+                        // Local and global tags, so print each of the local ones and
+                        // the current global one:
+                        for (int k = 0; k < localTags.size(); ++k)
+                            printf(
+                                "%s %s %s __global__ %s\n", currTestMetaObj->className(), slot,
+                                localTags.at(k).toLatin1().data(), gTable->testData(j)->dataTag());
+                    }
+                }
+            }
+
+            delete[] slot;
+        }
     }
 }
 
@@ -982,11 +1100,11 @@ static int qToInt(char *str)
 
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 {
-    lastTestFuncIdx = -1;
-
     const char *testOptions =
          " options:\n"
          " -functions : Returns a list of current testfunctions\n"
+         " -datatags  : Returns a list of current data tags.\n"
+         "              A global data tag is preceded by ' __global__ '.\n"
          " -xunitxml  : Outputs results as XML XUnit document\n"
          " -xml       : Outputs results as XML document\n"
          " -lightxml  : Outputs results as stream of XML tags\n"
@@ -996,6 +1114,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -v1        : Print enter messages for each testfunction\n"
          " -v2        : Also print out each QVERIFY/QCOMPARE/QTEST\n"
          " -vs        : Print every signal emitted\n"
+         " -random    : Run testcases within each test in random order\n"
+         " -seed n    : Positive integer to be used as seed for -random. If not specified,\n"
+         "              the current time will be used as seed.\n"
          " -eventdelay ms    : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
          " -keydelay ms      : Set default delay for keyboard simulation to ms milliseconds\n"
          " -mousedelay ms    : Set default delay for mouse simulation to ms milliseconds\n"
@@ -1033,6 +1154,12 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 QTest::printAvailableFunctions = true;
             } else {
                 qPrintTestSlots();
+                exit(0);
+            }
+        } else if (strcmp(argv[i], "-datatags") == 0) {
+            QTest::printAvailableTags = true;
+            if (!qml) {
+                qPrintDataTags();
                 exit(0);
             }
         } else if(strcmp(argv[i], "-xunitxml") == 0){
@@ -1115,6 +1242,22 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #endif
         } else if (strcmp(argv[i], "-eventcounter") == 0) {
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::EventCounter);
+        } else if (strcmp(argv[i], "-random") == 0) {
+            QTest::randomOrder = true;
+        } else if (strcmp(argv[i], "-seed") == 0) {
+            bool argumentOk = false;
+            if (i + 1 < argc) {
+                char * endpt = 0;
+                long longSeed = strtol(argv[++i], &endpt, 10);
+                argumentOk = (*endpt == '\0' && longSeed >= 0);
+                QTest::seed = longSeed;
+            }
+            if (!argumentOk) {
+                printf("-seed needs an extra positive integer parameter to specify the seed\n");
+                exit(1);
+            } else {
+                QTest::seedSet = true;
+            }
         } else if (strcmp(argv[i], "-minimumvalue") == 0) {
             if (i + 1 >= argc) {
                 printf("-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
@@ -1181,6 +1324,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                     QString::fromLatin1(argv[i] + colon + 1);
             }
         } else {
+			if (!QTest::testFuncs) {
+		        QTest::testFuncs = new QTest::TestFunction[512];
+			}
+
             int colon = -1;
             char buf[512], *data=0;
             int off;
@@ -1202,16 +1349,15 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 qPrintTestSlots();
                 exit(1);
             }
-            ++QTest::lastTestFuncIdx;
-            if (!QTest::testFuncs) {
-                struct Cleanup { ~Cleanup() { delete[] QTest::testFuncs; } };
-                static Cleanup cleanup;
-                QTest::testFuncs = new TestFunction[512];
-            }
-            QTest::testFuncs[QTest::lastTestFuncIdx].function = idx;
-            QTest::testFuncs[QTest::lastTestFuncIdx].data = data;
-            QTEST_ASSERT(QTest::lastTestFuncIdx < 512);
+            testFuncs[testFuncCount].set(idx, data);
+			testFuncCount++;
+			QTEST_ASSERT(QTest::testFuncCount < 512);
         }
+    }
+
+    if (QTest::seedSet && !QTest::randomOrder) {
+        printf("-seed requires -random\n");
+        exit(1);
     }
 }
 
@@ -1507,9 +1653,11 @@ static void qInvokeTestMethods(QObject *testObject)
 {
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
-
-    QTestLog::startLogging();
-
+    if (QTest::randomOrder) {
+        QTestLog::startLogging(QTest::seed);
+    } else {
+        QTestLog::startLogging();
+    }
     QTestResult::setCurrentTestFunction("initTestCase");
     QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
     QTestTable::globalTestTable();
@@ -1525,21 +1673,31 @@ static void qInvokeTestMethods(QObject *testObject)
 
         if(!QTestResult::skipCurrentTest() && !previousFailed) {
 
-            if (lastTestFuncIdx >= 0) {
-                for (int i = 0; i <= lastTestFuncIdx; ++i) {
-                    if (!qInvokeTestMethod(metaObject->method(testFuncs[i].function).signature(),
-                                           testFuncs[i].data))
+            if (QTest::testFuncs) {
+                if (QTest::randomOrder)
+                    randomizeList(QTest::testFuncs, QTest::testFuncCount);
+                for (int i = 0; i != QTest::testFuncCount; i++) {
+                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).signature(),
+                                                              QTest::testFuncs[i].data())) {
                         break;
+                    }
                 }
+                testFuncCleaner.cleanup();
             } else {
                 int methodCount = metaObject->methodCount();
-                for (int i = 0; i < methodCount; ++i) {
-                    QMetaMethod slotMethod = metaObject->method(i);
-                    if (!isValidSlot(slotMethod))
+                QMetaMethod *testMethods = new QMetaMethod[methodCount];
+                for (int i = 0; i != methodCount; i++)
+                    testMethods[i] = metaObject->method(i);
+                if (QTest::randomOrder)
+                    randomizeList(testMethods, methodCount);
+                for (int i = 0; i != methodCount; i++) {
+                    if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(slotMethod.signature()))
+                    if (!qInvokeTestMethod(testMethods[i].signature()))
                         break;
                 }
+                delete[] testMethods;
+                testMethods = 0;
             }
         }
 
@@ -1569,6 +1727,14 @@ private:
 void FatalSignalHandler::signal(int signum)
 {
     qFatal("Received signal %d", signum);
+#if defined(Q_OS_INTEGRITY)
+    {
+        struct sigaction act;
+        memset(&act, 0, sizeof(struct sigaction));
+        act.sa_handler = SIG_DFL;
+        sigaction(signum, &act, NULL);
+    }
+#endif
 }
 
 FatalSignalHandler::FatalSignalHandler()
@@ -1583,8 +1749,9 @@ FatalSignalHandler::FatalSignalHandler()
     act.sa_handler = FatalSignalHandler::signal;
 
     // Remove the handler after it is invoked.
+#if !defined(Q_OS_INTEGRITY)
     act.sa_flags = SA_RESETHAND;
-
+#endif
     // Block all fatal signals in our signal handler so we don't try to close
     // the testlog twice.
     sigemptyset(&act.sa_mask);
@@ -1730,6 +1897,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     QTestResult::setCurrentTestObject(metaObject->className());
     qtest_qParseArgs(argc, argv, false);
+    if (QTest::randomOrder) {
+        seedRandom();
+    }
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         const QStringList origAppArgs(QCoreApplication::arguments());
@@ -1763,6 +1933,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
+         currentTestObject = 0;
+
          // Rethrow exception to make debugging easier.
          throw;
          return 1;

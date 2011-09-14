@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "aboutdialog.h"
+
 #include "helpviewer.h"
 #include "tracer.h"
 
@@ -50,8 +53,6 @@
 #include <QtGui/QDesktopWidget>
 #include <QtGui/QMessageBox>
 #include <QtGui/QDesktopServices>
-
-#include "aboutdialog.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -96,8 +97,8 @@ QVariant AboutLabel::loadResource(int type, const QUrl &name)
 void AboutLabel::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    if (url.isValid() && (!AbstractHelpViewer::isLocalUrl(url)
-    || !AbstractHelpViewer::canOpenPage(url.path()))) {
+    if (url.isValid() && (!HelpViewer::isLocalUrl(url)
+    || !HelpViewer::canOpenPage(url.path()))) {
         if (!QDesktopServices::openUrl(url)) {
             QMessageBox::warning(this, tr("Warning"),
                 tr("Unable to launch external application.\n"), tr("OK"));

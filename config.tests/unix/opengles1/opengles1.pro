@@ -7,3 +7,7 @@ for(p, QMAKE_LIBDIR_OPENGL_ES1) {
 
 CONFIG -= qt
 LIBS += $$QMAKE_LIBS_OPENGL_ES1
+mac {
+    DEFINES += BUILD_ON_MAC
+    CONFIG -= app_bundle
+}

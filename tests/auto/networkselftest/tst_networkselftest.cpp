@@ -42,6 +42,14 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 
+#include <time.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 // Current path (C:\private\<UID>) contains only ascii chars
@@ -62,6 +70,7 @@ public:
     QHostAddress serverIpAddress();
 
 private slots:
+    void initTestCase();
     void hostTest();
     void dnsResolution_data();
     void dnsResolution();
@@ -72,17 +81,29 @@ private slots:
 
     // specific protocol tests
     void ftpServer();
+    void ftpProxyServer();
     void imapServer();
     void httpServer();
+    void httpServerFiles_data();
+    void httpServerFiles();
+    void httpServerCGI_data();
+    void httpServerCGI();
     void httpsServer();
     void httpProxy();
     void httpProxyBasicAuth();
     void httpProxyNtlmAuth();
     void socks5Proxy();
     void socks5ProxyAuth();
+    void smbServer();
 
     // ssl supported test
     void supportsSsl();
+private:
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class Chat
@@ -158,7 +179,7 @@ static QString prettyByteArray(const QByteArray &array)
 
 static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
 {
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     forever {
         if (socket->bytesAvailable() >= minBytesAvailable)
@@ -346,6 +367,26 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
     return cachedIpAddress;
 }
 
+void tst_NetworkSelfTest::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
+}
+
 void tst_NetworkSelfTest::hostTest()
 {
     // this is a localhost self-test
@@ -410,6 +451,8 @@ void tst_NetworkSelfTest::remotePortsOpen_data()
     QTest::newRow("http-proxy-auth-ntlm") << 3130;
     QTest::newRow("socks5-proxy") << 1080;
     QTest::newRow("socks5-proxy-auth") << 1081;
+    QTest::newRow("ftp-proxy") << 2121;
+    QTest::newRow("smb") << 139;
 }
 
 void tst_NetworkSelfTest::remotePortsOpen()
@@ -457,25 +500,63 @@ void tst_NetworkSelfTest::fileLineEndingTest()
     QVERIFY2(!lineEndingType.compare("LF"), QString("Reference file %1 has %2 as line ending - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
 }
 
-static QList<Chat> ftpChat()
+static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
-    return QList<Chat>() << Chat::expect("220")
+    QList<Chat> rv;
+    rv << Chat::expect("220")
             << Chat::discardUntil("\r\n")
-            << Chat::send("USER anonymous\r\n")
+            << Chat::send("USER anonymous" + userSuffix + "\r\n")
             << Chat::expect("331")
             << Chat::discardUntil("\r\n")
             << Chat::send("PASS user@hostname\r\n")
             << Chat::expect("230")
             << Chat::discardUntil("\r\n")
-            << Chat::send("QUIT\r\n")
-            << Chat::expect("221")
+
+            << Chat::send("CWD pub\r\n")
+            << Chat::expect("250")
             << Chat::discardUntil("\r\n")
-            << Chat::RemoteDisconnect;
+            << Chat::send("CWD dir-not-readable\r\n")
+            << Chat::expect("550")
+            << Chat::discardUntil("\r\n")
+            << Chat::send("PWD\r\n")
+            << Chat::expect("257 \"/pub\"\r\n")
+            << Chat::send("SIZE file-not-readable.txt\r\n")
+            << Chat::expect("213 41\r\n")
+            << Chat::send("CWD qxmlquery\r\n")
+            << Chat::expect("250")
+            << Chat::discardUntil("\r\n")
+
+            << Chat::send("CWD /qtest\r\n")
+            << Chat::expect("250")
+            << Chat::discardUntil("\r\n")
+            << Chat::send("SIZE bigfile\r\n")
+            << Chat::expect("213 519240\r\n")
+            << Chat::send("SIZE rfc3252\r\n")
+            << Chat::expect("213 25962\r\n")
+            << Chat::send("SIZE rfc3252.txt\r\n")
+            << Chat::expect("213 25962\r\n")
+//            << Chat::send("SIZE nonASCII/german_\344\366\374\304\326\334\337\r\n")
+//            << Chat::expect("213 40\r\n")
+
+            << Chat::send("QUIT\r\n");
+#ifdef Q_OS_SYMBIAN
+    if (userSuffix.length() == 0) // received but unacknowledged packets are discarded by TCP RST, so this doesn't work with frox proxy
+#endif
+        rv  << Chat::expect("221")
+            << Chat::discardUntil("\r\n");
+
+    rv << Chat::RemoteDisconnect;
+    return rv;
 }
 
 void tst_NetworkSelfTest::ftpServer()
 {
     netChat(21, ftpChat());
+}
+
+void tst_NetworkSelfTest::ftpProxyServer()
+{
+    netChat(2121, ftpChat("@" + QtNetworkSettings::serverName().toLatin1()));
 }
 
 void tst_NetworkSelfTest::imapServer()
@@ -495,6 +576,14 @@ void tst_NetworkSelfTest::imapServer()
 
 void tst_NetworkSelfTest::httpServer()
 {
+    QString uniqueExtension;
+    qsrand(time(0));
+#ifndef Q_OS_WINCE
+    uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(qrand()).arg((qulonglong)time(0));
+#else
+    uniqueExtension = QString("%1%2").arg((qulonglong)this).arg(qrand());
+#endif
+
     netChat(80, QList<Chat>()
             // HTTP/0.9 chat:
             << Chat::send("GET /\r\n")
@@ -523,7 +612,183 @@ void tst_NetworkSelfTest::httpServer()
             << Chat::discardUntil(" ")
             << Chat::expect("200 ")
             << Chat::DiscardUntilDisconnect
+
+            // HTTP protected area
+            << Chat::Reconnect
+            << Chat::send("GET /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("401 ")
+            << Chat::DiscardUntilDisconnect
+
+            << Chat::Reconnect
+            << Chat::send("HEAD /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // DAV area
+            << Chat::Reconnect
+            << Chat::send("HEAD /dav/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // HTTP/1.0 PUT
+            << Chat::Reconnect
+            << Chat::send("PUT /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Content-Length: 5\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n"
+                          "Hello")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("201 ")
+            << Chat::DiscardUntilDisconnect
+
+            // check that the file did get uploaded
+            << Chat::Reconnect
+            << Chat::send("HEAD /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::discardUntil("\r\nContent-Length: 5\r\n")
+            << Chat::DiscardUntilDisconnect
+
+            // HTTP/1.0 DELETE
+            << Chat::Reconnect
+            << Chat::send("DELETE /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("204 ")
+            << Chat::DiscardUntilDisconnect
             );
+}
+
+void tst_NetworkSelfTest::httpServerFiles_data()
+{
+    QTest::addColumn<QString>("uri");
+    QTest::addColumn<int>("size");
+
+    QTest::newRow("fluke.gif") << "/qtest/fluke.gif" << -1;
+    QTest::newRow("bigfile") << "/qtest/bigfile" << 519240;
+    QTest::newRow("rfc3252.txt") << "/qtest/rfc3252.txt" << 25962;
+    QTest::newRow("protected/rfc3252.txt") << "/qtest/protected/rfc3252.txt" << 25962;
+    QTest::newRow("completelyEmptyQuery.xq") << "/qtest/qxmlquery/completelyEmptyQuery.xq" << -1;
+    QTest::newRow("notWellformedViaHttps.xml") << "/qtest/qxmlquery/notWellformedViaHttps.xml" << -1;
+    QTest::newRow("notWellformed.xml") << "/qtest/qxmlquery/notWellformed.xml" << -1;
+    QTest::newRow("viaHttp.xq") << "/qtest/qxmlquery/viaHttp.xq" << -1;
+    QTest::newRow("wellFormedViaHttps.xml") << "/qtest/qxmlquery/wellFormedViaHttps.xml" << -1;
+    QTest::newRow("wellFormed.xml") << "/qtest/qxmlquery/wellFormed.xml" << -1;
+}
+
+void tst_NetworkSelfTest::httpServerFiles()
+{
+    QFETCH(QString, uri);
+    QFETCH(int, size);
+
+    QList<Chat> chat;
+    chat << Chat::send("HEAD " + QUrl::toPercentEncoding(uri, "/") + " HTTP/1.0\r\n"
+                       "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                       "Connection: close\r\n"
+                       "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                       "\r\n")
+         << Chat::expect("HTTP/1.")
+         << Chat::skipBytes(1) // HTTP/1.0 or 1.1 reply
+         << Chat::expect(" 200 ");
+    if (size != -1)
+        chat << Chat::discardUntil("\r\nContent-Length: " + QByteArray::number(size) + "\r\n");
+    chat << Chat::DiscardUntilDisconnect;
+    netChat(80, chat);
+}
+
+void tst_NetworkSelfTest::httpServerCGI_data()
+{
+    QTest::addColumn<QByteArray>("request");
+    QTest::addColumn<QByteArray>("result");
+    QTest::addColumn<QByteArray>("additionalHeader");
+
+    QTest::newRow("echo.cgi")
+            << QByteArray("GET /qtest/cgi-bin/echo.cgi?Hello+World HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "\r\n")
+            << QByteArray("Hello+World")
+            << QByteArray();
+
+    QTest::newRow("echo.cgi(POST)")
+            << QByteArray("POST /qtest/cgi-bin/echo.cgi?Hello+World HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("Hello, World!\r\n")
+            << QByteArray();
+
+    QTest::newRow("md5sum.cgi")
+            << QByteArray("POST /qtest/cgi-bin/md5sum.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("29b933a8d9a0fcef0af75f1713f4940e\n")
+            << QByteArray();
+
+    QTest::newRow("protected/md5sum.cgi")
+            << QByteArray("POST /qtest/protected/cgi-bin/md5sum.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "Hello, World!\r\n")
+            << QByteArray("29b933a8d9a0fcef0af75f1713f4940e\n")
+            << QByteArray();
+
+    QTest::newRow("set-cookie.cgi")
+            << QByteArray("POST /qtest/cgi-bin/set-cookie.cgi HTTP/1.0\r\n"
+                          "Connection: close\r\n"
+                          "Content-Length: 8\r\n"
+                          "\r\n"
+                          "foo=bar\n")
+            << QByteArray("Success\n")
+            << QByteArray("\r\nSet-Cookie: foo=bar\r\n");
+}
+
+void tst_NetworkSelfTest::httpServerCGI()
+{
+    QFETCH(QByteArray, request);
+    QFETCH(QByteArray, result);
+    QFETCH(QByteArray, additionalHeader);
+    QList<Chat> chat;
+    chat << Chat::send(request)
+         << Chat::expect("HTTP/1.") << Chat::skipBytes(1)
+         << Chat::expect(" 200 ");
+
+    if (!additionalHeader.isEmpty())
+        chat << Chat::discardUntil(additionalHeader);
+
+    chat << Chat::discardUntil("\r\n\r\n")
+         << Chat::expect(result)
+         << Chat::RemoteDisconnect;
+    netChat(80, chat);
 }
 
 void tst_NetworkSelfTest::httpsServer()
@@ -727,7 +992,63 @@ void tst_NetworkSelfTest::supportsSsl()
 #ifdef QT_NO_OPENSSL
     QFAIL("SSL not compiled in");
 #else
-    QVERIFY(QSslSocket::supportsSsl());
+    QVERIFY2(QSslSocket::supportsSsl(), "Could not load SSL libraries");
+#endif
+}
+
+void tst_NetworkSelfTest::smbServer()
+{
+    static const char contents[] = "This is 34 bytes. Do not change...";
+#ifdef Q_OS_WIN
+    // use Windows's native UNC support to try and open a file on the server
+    QString filepath = QString("\\\\%1\\testshare\\test.pri").arg(QtNetworkSettings::winServerName());
+    FILE *f = fopen(filepath.toLatin1(), "rb");
+    QVERIFY2(f, qt_error_string().toLocal8Bit());
+
+    char buf[128];
+    size_t ret = fread(buf, 1, sizeof buf, f);
+    fclose(f);
+
+    QCOMPARE(ret, strlen(contents));
+    QVERIFY(memcmp(buf, contents, strlen(contents)) == 0);
+#else
+    // try to use Samba
+    QString progname = "smbclient";
+    QProcess smbclient;
+    smbclient.start(progname, QIODevice::ReadOnly);
+    if (!smbclient.waitForStarted(2000))
+        QSKIP("Could not find smbclient (from Samba), cannot continue testing", SkipAll);
+    if (!smbclient.waitForFinished(2000) || smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient isn't working, cannot continue testing", SkipAll);
+    smbclient.close();
+
+    // try listing the server
+    smbclient.start(progname, QStringList() << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName(), QIODevice::ReadOnly);
+    QVERIFY(smbclient.waitForFinished(5000));
+    if (smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient crashed", SkipAll);
+    QVERIFY2(smbclient.exitCode() == 0, "Test server not found");
+
+    QByteArray output = smbclient.readAll();
+    QVERIFY(output.contains("Disk|testshare|"));
+    QVERIFY(output.contains("Disk|testsharewritable|"));
+    QVERIFY(output.contains("Disk|testsharelargefile|"));
+    qDebug() << "Test server found and shares are correct";
+
+    // try getting a file
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("PAGER", "/bin/cat"); // just in case
+    smbclient.setProcessEnvironment(env);
+    smbclient.start(progname, QStringList() << "-N" << "-c" << "more test.pri"
+                    << QString("\\\\%1\\testshare").arg(QtNetworkSettings::winServerName()), QIODevice::ReadOnly);
+    QVERIFY(smbclient.waitForFinished(5000));
+    if (smbclient.exitStatus() != QProcess::NormalExit)
+        QSKIP("smbclient crashed", SkipAll);
+    QVERIFY2(smbclient.exitCode() == 0, "File //qt-test-server/testshare/test.pri not found");
+
+    output = smbclient.readAll();
+    QCOMPARE(output.constData(), contents);
+    qDebug() << "Test file is correct";
 #endif
 }
 

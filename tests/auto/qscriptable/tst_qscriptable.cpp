@@ -131,14 +131,14 @@ QScriptValue MyScriptable::getArguments()
 
 int MyScriptable::getArgumentCount()
 {
-    return context()->argumentCount();
+    return argumentCount();
 }
 
 void MyScriptable::foo()
 {
     m_lastEngine = engine();
-    QVERIFY(engine() != 0);
-    context()->throwError("MyScriptable.foo");
+    if (engine())
+        context()->throwError("MyScriptable.foo");
 }
 
 void MyScriptable::evalIsBar()
@@ -164,15 +164,15 @@ void MyScriptable::setOtherEngine()
 void MyScriptable::setX(int x)
 {
     m_lastEngine = engine();
-    Q_ASSERT(engine());
-    thisObject().setProperty("x", QScriptValue(engine(), x));
+    if (engine())
+        thisObject().setProperty("x", QScriptValue(engine(), x));
 }
 
 void MyScriptable::setX(const QString &x)
 {
     m_lastEngine = engine();
-    Q_ASSERT(engine());
-    thisObject().setProperty("x", QScriptValue(engine(), x));
+    if (engine())
+        thisObject().setProperty("x", QScriptValue(engine(), x));
 }
 
 void MyScriptable::setX2(int)
@@ -283,12 +283,15 @@ void tst_QScriptable::engine()
 
 void tst_QScriptable::thisObject()
 {
+    QVERIFY(!m_scriptable.thisObject().isValid());
+
     m_engine.evaluate("o = { }");
     {
         QScriptValue ret = m_engine.evaluate("o.__proto__ = scriptable;"
                                              "o.setX(123);"
                                              "o.__proto__ = Object.prototype;"
                                              "o.x");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.strictlyEquals(QScriptValue(&m_engine, 123)), true);
     }
     {
@@ -296,46 +299,55 @@ void tst_QScriptable::thisObject()
                                              "o.setX2(456);"
                                              "o.__proto__ = Object.prototype;"
                                              "o.x");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.strictlyEquals(QScriptValue(&m_engine, 456)), true);
     }
     m_engine.evaluate("o.__proto__ = scriptable");
     {
         QScriptValue ret = m_engine.evaluate("o.isBar()");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.strictlyEquals(QScriptValue(&m_engine, false)), true);
     }
     {
         QScriptValue ret = m_engine.evaluate("o.toString = function() { return 'foo@bar'; }; o.isBar()");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.strictlyEquals(QScriptValue(&m_engine, true)), true);
     }
 
     // property getter
     {
         QScriptValue ret = m_engine.evaluate("scriptable.zab");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.isQObject(), true);
         QCOMPARE(ret.toQObject(), (QObject *)&m_scriptable);
     }
     {
         QScriptValue ret = m_engine.evaluate("scriptable[1]");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.isQObject(), true);
         QCOMPARE(ret.toQObject(), (QObject *)&m_scriptable);
     }
     {
         QScriptValue ret = m_engine.evaluate("o.zab");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.toQObject(), (QObject *)0);
     }
     // property setter
     {
         QScriptValue ret = m_engine.evaluate("scriptable.setZab(null)");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QCOMPARE(ret.isQObject(), true);
         QCOMPARE(ret.toQObject(), (QObject *)&m_scriptable);
     }
     {
         QVERIFY(!m_scriptable.oofThisObject().isValid());
         m_engine.evaluate("o.oof = 123");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QVERIFY(m_scriptable.oofThisObject().strictlyEquals(m_engine.evaluate("o")));
     }
     {
         m_engine.evaluate("scriptable.oof = 123");
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         QVERIFY(m_scriptable.oofThisObject().strictlyEquals(m_engine.evaluate("scriptable")));
     }
 
@@ -343,13 +355,17 @@ void tst_QScriptable::thisObject()
     {
         {
             QScriptValue ret = m_engine.evaluate("scriptable.sig.connect(o, scriptable.setX)");
+            QCOMPARE(m_scriptable.lastEngine(), &m_engine);
             QVERIFY(ret.isUndefined());
         }
         QVERIFY(m_engine.evaluate("o.x").strictlyEquals(QScriptValue(&m_engine, 456)));
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         m_scriptable.emitSig(654321);
         QVERIFY(m_engine.evaluate("o.x").strictlyEquals(QScriptValue(&m_engine, 654321)));
+        QCOMPARE(m_scriptable.lastEngine(), &m_engine);
         {
             QScriptValue ret = m_engine.evaluate("scriptable.sig.disconnect(o, scriptable.setX)");
+            QCOMPARE(m_scriptable.lastEngine(), &m_engine);
             QVERIFY(ret.isUndefined());
         }
     }
@@ -381,6 +397,7 @@ void tst_QScriptable::arguments()
 void tst_QScriptable::throwError()
 {
     QScriptValue ret = m_engine.evaluate("scriptable.foo()");
+    QCOMPARE(m_scriptable.lastEngine(), &m_engine);
     QCOMPARE(ret.isError(), true);
     QCOMPARE(ret.toString(), QString("Error: MyScriptable.foo"));
 }

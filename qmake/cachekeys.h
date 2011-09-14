@@ -118,60 +118,9 @@ struct FileInfoCacheKey
 inline uint qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
 
 // -------------------------------------------------------------------------------------------------
-struct FileFixifyCacheKey
-{
-    mutable uint hash;
-    QString in_d, out_d;
-    QString file, pwd;
-    uint fixType;
-    bool canonicalize;
-    FileFixifyCacheKey(const QString &f, const QString &od, const QString &id,
-                       uint ft, bool c)
-    {
-        hash = 0;
-        pwd = qmake_getpwd();
-        file = f;
-        if(od.isNull())
-            out_d = Option::output_dir;
-        else
-            out_d = od;
-        if(id.isNull())
-            in_d = qmake_getpwd();
-        else
-            in_d = id;
-        fixType = ft;
-        canonicalize = c;
-    }
-    QString toString() const {
-        return file + "--" + in_d + "--" + out_d + "--" + pwd + "--" +
-            QString::number(fixType) + "--" + QString::number((int)canonicalize);
-    }
-    bool operator==(const FileFixifyCacheKey &f) const
-    {
-        return (f.canonicalize == canonicalize &&
-                f.fixType == fixType &&
-                f.file == file &&
-                f.in_d == in_d &&
-                f.out_d == out_d &&
-                f.pwd == pwd);
-    }
-    inline uint hashCode() const {
-        if(!hash)
-            hash = uint(canonicalize) | uint(fixType) |
-                   qHash(file) | qHash(in_d) | qHash(out_d) /*|qHash(pwd)*/;
-        return hash;
-    }
-};
+template <typename T>
+inline void qmakeDeleteCacheClear(void *i) { delete reinterpret_cast<T*>(i); }
 
-inline uint qHash(const FileFixifyCacheKey &f) { return f.hashCode(); }
-// -------------------------------------------------------------------------------------------------
-
-// As MSVC 6.0 can't handle template functions that well, we need a separate function for each type
-inline void qmakeDeleteCacheClear_QMapStringInt(void *i) { delete reinterpret_cast<QMap<QString,int> *>(i); }
-inline void qmakeDeleteCacheClear_QStringList(void *i) { delete reinterpret_cast<QStringList *>(i); }
-inline void qmakeDeleteCacheClear_QHashFixStringCacheKeyQString(void *i) { delete reinterpret_cast<QHash<FixStringCacheKey, QString> *>(i); }
-inline void qmakeDeleteCacheClear_QHashFileInfoCacheKeyQFileInfo(void *i) { delete reinterpret_cast<QHash<FileInfoCacheKey, QFileInfo> *>(i); }
-inline void qmakeDeleteCacheClear_QHashFileFixifyCacheKeyQString(void *i) { delete reinterpret_cast<QHash<FileFixifyCacheKey, QString> *>(i); }
 inline void qmakeFreeCacheClear(void *i) { free(i); }
 
 typedef void (*qmakeCacheClearFunc)(void *);

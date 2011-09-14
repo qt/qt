@@ -78,7 +78,7 @@ class Q_NETWORK_EXPORT QBearerEngine : public QObject
     friend class QNetworkConfigurationManagerPrivate;
 
 public:
-    QBearerEngine(QObject *parent = 0);
+    explicit QBearerEngine(QObject *parent = 0);
     virtual ~QBearerEngine();
 
     virtual bool hasIdentifier(const QString &id) = 0;
@@ -96,7 +96,6 @@ Q_SIGNALS:
     void configurationAdded(QNetworkConfigurationPrivatePointer config);
     void configurationRemoved(QNetworkConfigurationPrivatePointer config);
     void configurationChanged(QNetworkConfigurationPrivatePointer config);
-
     void updateCompleted();
 
 protected:
@@ -114,4 +113,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif
+#endif // QBEARERENGINE_P_H

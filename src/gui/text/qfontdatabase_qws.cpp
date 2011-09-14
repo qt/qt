@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 #include "qdir.h"
+#if defined(Q_WS_QWS)
 #include "qscreen_qws.h" //so we can check for rotation
 #include "qwindowsystem_qws.h"
+#endif
 #include "qlibraryinfo.h"
 #include "qabstractfileengine.h"
 #include <QtCore/qsettings.h>
@@ -71,6 +73,11 @@
 
 #ifdef QT_FONTS_ARE_RESOURCES
 #include <qresource.h>
+#endif
+
+#ifdef Q_OS_QNX
+// ### using QFontEngineQPF leads to artifacts on QNX
+#  define QT_NO_QWS_SHARE_FONTS
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -153,7 +160,11 @@ extern QString qws_fontCacheDir();
 #ifndef QT_FONTS_ARE_RESOURCES
 bool QFontDatabasePrivate::loadFromCache(const QString &fontPath)
 {
+#ifdef Q_WS_QWS
     const bool weAreTheServer = QWSServer::instance();
+#else
+    const bool weAreTheServer = true; // assume single-process
+#endif
 
     QString fontDirFile = fontPath + QLatin1String("/fontdir");
 
@@ -382,12 +393,14 @@ static void initializeDb()
 
     }
 #endif
+#ifndef QT_NO_QWS_QPF2
     QDir dir(fontpath, QLatin1String("*.qpf2"));
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
         //qDebug() << "looking at" << file;
         db->addQPF2File(file);
     }
+#endif
 #endif //QT_FONTS_ARE_RESOURCES
 
 
@@ -688,6 +701,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp,
 {
     QScopedPointer<QFontEngine> engine(loadSingleEngine(script, fp, request, family, foundry,
                                        style, size));
+#ifndef QT_NO_QWS_QPF
     if (!engine.isNull()
         && script == QUnicodeTables::Common
         && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
@@ -701,6 +715,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp,
         engine.take();
         engine.reset(fe);
     }
+#endif
     return engine.take();
 }
 
@@ -749,9 +764,6 @@ bool QFontDatabase::supportsThreadedFontRendering()
     return true;
 }
 
-/*!
-    \internal
-*/
 QFontEngine *
 QFontDatabase::findFont(int script, const QFontPrivate *fp,
                         const QFontDef &request)

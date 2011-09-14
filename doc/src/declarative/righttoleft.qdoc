@@ -100,8 +100,12 @@ Or set all child elements to also inherit the layout direction:
 \snippet doc/src/snippets/declarative/righttoleft.qml 3
 
 Applying mirroring in this manner does not change the actual value of the relevant anchor,
-\c layoutDirection or \c horizontalAlignment properties. You can use \c LayoutMirroring.enabled to
-query whether the mirroring is in effect.
+\c layoutDirection or \c horizontalAlignment properties. The separate read-only property
+\c effectiveLayoutDirection can be used to query the effective layout
+direction of positioners and model views that takes the mirroring into account. Similarly the \l Text,
+\l TextInput and \l TextEdit elements have gained the read-only property \c effectiveHorizontalAlignment
+for querying the effective visual alignment of text. For anchors, the read only
+\l {Item::anchors.top}{anchors.mirrored} property reflects whether anchors have been mirrored.
 
 Note that application layouts and animations that are defined using \l {Item::}{x} property values (as
 opposed to anchors or positioner elements) are not affected by the \l LayoutMirroring attached property.

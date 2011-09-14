@@ -88,6 +88,7 @@ private slots:
     void countBits();
     void countBits2();
     void isEmpty();
+    void swap();
     void fill();
     void toggleBit_data();
     void toggleBit();
@@ -267,6 +268,14 @@ void tst_QBitArray::isEmpty()
     QVERIFY(!a1.isEmpty());
     QVERIFY(!a1.isNull());
     QVERIFY(a1.size() == 2);
+}
+
+void tst_QBitArray::swap()
+{
+    QBitArray b1 = QStringToQBitArray("1"), b2 = QStringToQBitArray("10");
+    b1.swap(b2);
+    QCOMPARE(b1,QStringToQBitArray("10"));
+    QCOMPARE(b2,QStringToQBitArray("1"));
 }
 
 void tst_QBitArray::fill()

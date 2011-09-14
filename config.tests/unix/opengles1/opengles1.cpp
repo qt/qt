@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
-#include <GLES/gl.h>
+#ifdef BUILD_ON_MAC
+  #include <OpenGLES/ES1/gl.h>
+#else
+  #include <GLES/gl.h>
+#endif
 
 int main(int, char **)
 {

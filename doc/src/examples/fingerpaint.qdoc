@@ -29,8 +29,12 @@
     \example touch/fingerpaint
     \title Finger Paint Example
 
-    The Finger Paint example shows the use of touch with a custom widget
+    The Finger Paint example shows the use of a touchscreen with a custom widget
     to create a simple painting application.
 
     \image touch-fingerpaint-example.png
+
+    This example was specifically designed to work with a touchscreen, using
+    QTouchEvent instead of QMouseEvent to handle user input over the custom
+    widget. As a result, it is not possible to draw with the mouse cursor.
 */

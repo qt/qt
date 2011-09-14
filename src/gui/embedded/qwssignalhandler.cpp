@@ -43,24 +43,13 @@
 
 #ifndef QT_NO_QWS_SIGNALHANDLER
 
+#include "qlock_p.h"
+#include "qwslock_p.h"
+
 #include <sys/types.h>
-#ifndef QT_NO_QWS_MULTIPROCESS
-#  include <sys/ipc.h>
-#  include <sys/sem.h>
-#endif
 #include <signal.h>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef Q_OS_BSD4
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-    struct seminfo  *__buf;
-};
-#endif
-
 
 class QWSSignalHandlerPrivate : public QWSSignalHandler
 {
@@ -95,42 +84,33 @@ QWSSignalHandler::QWSSignalHandler()
 
 QWSSignalHandler::~QWSSignalHandler()
 {
-#ifndef QT_NO_QWS_MULTIPROCESS
-    while (!semaphores.isEmpty())
-        removeSemaphore(semaphores.last());
-#endif
+    clear();
 }
 
-#ifndef QT_NO_QWS_MULTIPROCESS
-void QWSSignalHandler::removeSemaphore(int semno)
+void QWSSignalHandler::clear()
 {
-    const int index = semaphores.lastIndexOf(semno);
-    if (index != -1) {
-        semun semval;
-        semval.val = 0;
-        semctl(semaphores.at(index), 0, IPC_RMID, semval);
-        semaphores.remove(index);
-    }
+#if !defined(QT_NO_QWS_MULTIPROCESS)
+    // it is safe to call d-tors directly here since, on normal exit,
+    // lists should be empty; otherwise, we don't care about semi-alive objects
+    // and the only important thing here is to unregister the system semaphores.
+    while (!locks.isEmpty())
+        locks.takeLast()->~QLock();
+    while (!wslocks.isEmpty())
+        wslocks.takeLast()->~QWSLock();
+#endif
+    objects.clear();
 }
-#endif // QT_NO_QWS_MULTIPROCESS
 
 void QWSSignalHandler::handleSignal(int signum)
 {
     QWSSignalHandler *h = instance();
-
-    signal(signum, h->oldHandlers[signum]);
-
-#ifndef QT_NO_QWS_MULTIPROCESS
-    semun semval;
-    semval.val = 0;
-    for (int i = 0; i < h->semaphores.size(); ++i)
-        semctl(h->semaphores.at(i), 0, IPC_RMID, semval);
-#endif
-
-    h->objects.clear();
+    if (h) {
+        signal(signum, h->oldHandlers[signum]);
+        h->clear();
+    }
     raise(signum);
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_QWS_NO_SIGNALHANDLER
+#endif // QT_NO_QWS_SIGNALHANDLER

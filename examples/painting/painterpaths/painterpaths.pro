@@ -3,7 +3,7 @@ HEADERS       = renderarea.h \
 SOURCES       = main.cpp \
                 renderarea.cpp \
                 window.cpp
-unix:!mac:!symbian:!vxworks:LIBS += -lm
+unix:!mac:!symbian:!vxworks:!integrity:LIBS += -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/painting/painterpaths
@@ -15,3 +15,5 @@ symbian {
     TARGET.UID3 = 0xA000A64C
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

@@ -78,6 +78,7 @@
 #include <private/qcocoaapplication_mac_p.h>
 #include <private/qcocoaapplicationdelegate_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qcocoaintrospection_p.h>
 
 QT_USE_NAMESPACE
 
@@ -116,12 +117,30 @@ QT_USE_NAMESPACE
     quint64 lower = [event data1];
     quint64 upper = [event data2];
     QCocoaPostMessageArgs *args = reinterpret_cast<QCocoaPostMessageArgs *>(lower | (upper << 32));
-    [args->target performSelector:args->selector];
+    // Special case for convenience: if the argument is an NSNumber, we unbox it directly.
+    // Use NSValue instead if this behaviour is unwanted.
+    id a1 = ([args->arg1 isKindOfClass:[NSNumber class]]) ? (id)[args->arg1 intValue] : args->arg1;
+    id a2 = ([args->arg2 isKindOfClass:[NSNumber class]]) ? (id)[args->arg2 intValue] : args->arg2;
+    switch (args->argCount) {
+    case 0:
+        [args->target performSelector:args->selector];
+        break;
+    case 1:
+        [args->target performSelector:args->selector withObject:a1];
+        break;
+    case 3:
+        [args->target performSelector:args->selector withObject:a1 withObject:a2];
+        break;
+    }
+
     delete args;
 }
 
-- (BOOL)qt_sendEvent:(NSEvent *)event
+- (BOOL)qt_filterEvent:(NSEvent *)event
 {
+    if (qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
+        return true;
+
     if ([event type] == NSApplicationDefined) {
         switch ([event subtype]) {
             case QtCocoaEventSubTypePostMessage:
@@ -138,20 +157,66 @@ QT_USE_NAMESPACE
 
 @implementation QNSApplication
 
-// WARNING: If Qt did not create NSApplication (this can e.g.
-// happend if Qt is used as a plugin from a 3rd-party cocoa
-// application), QNSApplication::sendEvent will never be called.
-// SO DO NOT RELY ON THIS FUNCTION BEING AVAILABLE. 
-// Plugin developers that _do_ control the NSApplication sub-class
-// implementation of the 3rd-party application can call qt_sendEvent
-// from the sub-class event handler (like we do here) to work around
-// any issues.
+- (void)qt_sendEvent_original:(NSEvent *)event
+{
+    Q_UNUSED(event);
+    // This method will only be used as a signature
+    // template for the method we add into NSApplication
+    // containing the original [NSApplication sendEvent:] implementation
+}
+
+- (void)qt_sendEvent_replacement:(NSEvent *)event
+{
+    // This method (or its implementation to be precise) will
+    // be called instead of sendEvent if redirection occurs.
+    // 'self' will then be an instance of NSApplication
+    // (and not QNSApplication)
+    if (![NSApp qt_filterEvent:event])
+        [self qt_sendEvent_original:event];
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
-    if (![self qt_sendEvent:event])
+    // This method will be called if
+    // no redirection occurs
+    if (![NSApp qt_filterEvent:event])
         [super sendEvent:event];
+}
+
+- (void)qtDispatcherToQAction:(id)sender
+{
+    // Forward actions sendt from the menu bar (e.g. quit) to the menu loader.
+    // Having this method here means that we are the last stop in the responder
+    // chain, and that we are able to handle menu actions even when no window is
+    // visible on screen. Note: If Qt is used as a plugin, Qt will not use a 
+    // native menu bar. Hence, we will also not need to do any redirection etc. as 
+    // we do with sendEvent.
+    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
 }
 
 @end
 
+QT_BEGIN_NAMESPACE
+
+void qt_redirectNSApplicationSendEvent()
+{
+    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
+        // No need to change implementation since Qt
+        // already controls a subclass of NSApplication
+        return;
+    }
+
+    // Change the implementation of [NSApplication sendEvent] to the
+    // implementation of qt_sendEvent_replacement found in QNSApplication.
+    // And keep the old implementation that gets overwritten inside a new
+    // method 'qt_sendEvent_original' that we add to NSApplication
+    qt_cocoa_change_implementation(
+            [NSApplication class],
+            @selector(sendEvent:),
+            [QNSApplication class],
+            @selector(qt_sendEvent_replacement:),
+            @selector(qt_sendEvent_original:));
+ }
+
+QT_END_NAMESPACE
 #endif

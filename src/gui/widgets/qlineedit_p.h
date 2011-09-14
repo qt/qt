@@ -84,7 +84,6 @@ public:
 
     ~QLineEditPrivate()
     {
-        delete control;
     }
 
     QLineControl *control;
@@ -93,6 +92,8 @@ public:
     QPointer<QAction> selectAllAction;
 #endif
     void init(const QString&);
+
+    QRect adjustedControlRect(const QRect &) const;
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
     QRect cursorRect() const;
@@ -129,6 +130,7 @@ public:
     void _q_editFocusChange(bool);
 #endif
     void _q_selectionChanged();
+    void _q_updateNeeded(const QRect &);
 #ifndef QT_NO_COMPLETER
     void _q_completionHighlighted(QString);
 #endif

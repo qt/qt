@@ -38,10 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "helpviewer_qtb.h"
 
-#include "centralwidget.h"
+#include "helpviewer.h"
+
+#include "globalactions.h"
 #include "helpenginewrapper.h"
+#include "helpviewer_p.h"
+#include "openpagesmanager.h"
 #include "tracer.h"
 
 #include <QtCore/QStringBuilder>
@@ -53,34 +56,34 @@
 
 QT_BEGIN_NAMESPACE
 
-HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
+HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
     : QTextBrowser(parent)
-    , zoomCount(zoom)
-    , controlPressed(false)
-    , lastAnchor(QString())
-    , parentWidget(parent)
-    , helpEngine(HelpEngineWrapper::instance())
-    , forceFont(false)
+    , d(new HelpViewerPrivate(zoom))
 {
     TRACE_OBJ
+    QPalette p = palette();
+    p.setColor(QPalette::Inactive, QPalette::Highlight,
+        p.color(QPalette::Active, QPalette::Highlight));
+    p.setColor(QPalette::Inactive, QPalette::HighlightedText,
+        p.color(QPalette::Active, QPalette::HighlightedText));
+    setPalette(p);
+
     installEventFilter(this);
     document()->setDocumentMargin(8);
 
     QFont font = viewerFont();
     font.setPointSize(int(font.pointSize() + zoom));
     setViewerFont(font);
-}
 
-HelpViewer::~HelpViewer()
-{
-    TRACE_OBJ
+    connect(this, SIGNAL(sourceChanged(QUrl)), this, SIGNAL(titleChanged()));
+    connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
 }
 
 QFont HelpViewer::viewerFont() const
 {
     TRACE_OBJ
     if (HelpEngineWrapper::instance().usesBrowserFont())
-        return helpEngine.browserFont();
+        return HelpEngineWrapper::instance().browserFont();
     return qApp->font();
 }
 
@@ -88,184 +91,182 @@ void HelpViewer::setViewerFont(const QFont &newFont)
 {
     TRACE_OBJ
     if (font() != newFont) {
-        forceFont = true;
+        d->forceFont = true;
         setFont(newFont);
-        forceFont = false;
+        d->forceFont = false;
     }
 }
 
 void HelpViewer::scaleUp()
 {
     TRACE_OBJ
-    if (zoomCount < 10) {
-        ++zoomCount;
-        forceFont = true;
+    if (d->zoomCount < 10) {
+        d->zoomCount++;
+        d->forceFont = true;
         zoomIn();
-        forceFont = false;
+        d->forceFont = false;
     }
 }
 
 void HelpViewer::scaleDown()
 {
     TRACE_OBJ
-    if (zoomCount > -5) {
-        --zoomCount;
-        forceFont = true;
+    if (d->zoomCount > -5) {
+        d->zoomCount--;
+        d->forceFont = true;
         zoomOut();
-        forceFont = false;
+        d->forceFont = false;
     }
 }
 
 void HelpViewer::resetScale()
 {
     TRACE_OBJ
-    if (zoomCount != 0) {
-        forceFont = true;
-        zoomOut(zoomCount);
-        forceFont = false;
+    if (d->zoomCount != 0) {
+        d->forceFont = true;
+        zoomOut(d->zoomCount);
+        d->forceFont = false;
     }
-    zoomCount = 0;
+    d->zoomCount = 0;
 }
 
-bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *e)
+qreal HelpViewer::scale() const
 {
-    if (e->button() == Qt::XButton1) {
-        QTextBrowser::backward();
-        return true;
-    }
+    TRACE_OBJ
+    return d->zoomCount;
+}
 
-    if (e->button() == Qt::XButton2) {
-        QTextBrowser::forward();
-        return true;
-    }
-    return false;
+QString HelpViewer::title() const
+{
+    TRACE_OBJ
+    return documentTitle();
+}
+
+void HelpViewer::setTitle(const QString &title)
+{
+    TRACE_OBJ
+    setDocumentTitle(title);
+}
+
+QUrl HelpViewer::source() const
+{
+    TRACE_OBJ
+    return QTextBrowser::source();
 }
 
 void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    const QString &string = url.toString();
-    if (url.isValid() && string != QLatin1String("help")) {
-        if (launchWithExternalApp(url))
-            return;
+    if (launchWithExternalApp(url))
+        return;
 
-        const QUrl &resolvedUrl = helpEngine.findFile(url);
-        if (resolvedUrl.isValid()) {
-            QTextBrowser::setSource(resolvedUrl);
-            return;
-        } 
-    }
-
-    if (string != QLatin1String("help")) {
-        QTextBrowser::setSource(url);
+    emit loadStarted();
+    QString string = url.toString();
+    const HelpEngineWrapper &engine = HelpEngineWrapper::instance();
+    const QUrl &resolvedUrl = (string == QLatin1String("help") ? LocalHelpFile :
+        engine.findFile(string));
+    QTextBrowser::setSource(resolvedUrl);
+    if (!url.isValid()) {
         setHtml(string == QLatin1String("about:blank") ? AboutBlank
             : PageNotFoundMessage.arg(url.toString()));
-        emit sourceChanged(url);
-    } else {
-        QTextBrowser::setSource(LocalHelpFile);
     }
+    emit loadFinished(true);
 }
 
-QVariant HelpViewer::loadResource(int type, const QUrl &name)
+QString HelpViewer::selectedText() const
 {
     TRACE_OBJ
-    QByteArray ba;
-    if (type < 4) {
-        ba = helpEngine.fileData(name);
-        if (name.toString().endsWith(QLatin1String(".svg"), Qt::CaseInsensitive)) {
-            QImage image;
-            image.loadFromData(ba, "svg");
-            if (!image.isNull())
-                return image;
-        }
-    }
-    return ba;
+    return textCursor().selectedText();
 }
 
-void HelpViewer::openLinkInNewTab()
+bool HelpViewer::isForwardAvailable() const
 {
     TRACE_OBJ
-    if(lastAnchor.isEmpty())
-        return;
-
-    parentWidget->setSourceInNewTab(QUrl(lastAnchor));
-    lastAnchor.clear();
+    return QTextBrowser::isForwardAvailable();
 }
 
-void HelpViewer::openLinkInNewTab(const QString &link)
+bool HelpViewer::isBackwardAvailable() const
 {
     TRACE_OBJ
-    lastAnchor = link;
-    openLinkInNewTab();
+    return QTextBrowser::isBackwardAvailable();
 }
 
-bool HelpViewer::hasAnchorAt(const QPoint& pos)
+bool HelpViewer::findText(const QString &text, FindFlags flags, bool incremental,
+    bool fromSearch)
 {
     TRACE_OBJ
-    lastAnchor = anchorAt(pos);
-    if (lastAnchor.isEmpty())
+    QTextDocument *doc = document();
+    QTextCursor cursor = textCursor();
+    if (!doc || cursor.isNull())
         return false;
 
-    lastAnchor = source().resolved(lastAnchor).toString();
-    if (lastAnchor.at(0) == QLatin1Char('#')) {
-        QString src = source().toString();
-        int hsh = src.indexOf(QLatin1Char('#'));
-        lastAnchor = (hsh>=0 ? src.left(hsh) : src) + lastAnchor;
+    const int position = cursor.selectionStart();
+    if (incremental)
+        cursor.setPosition(position);
+
+    QTextDocument::FindFlags textDocFlags;
+    if (flags & HelpViewer::FindBackward)
+        textDocFlags |= QTextDocument::FindBackward;
+    if (flags & HelpViewer::FindCaseSensitively)
+        textDocFlags |= QTextDocument::FindCaseSensitively;
+
+    QTextCursor found = doc->find(text, cursor, textDocFlags);
+    if (found.isNull()) {
+        if ((flags & HelpViewer::FindBackward) == 0)
+            cursor.movePosition(QTextCursor::Start);
+        else
+            cursor.movePosition(QTextCursor::End);
+        found = doc->find(text, cursor, textDocFlags);
     }
 
-    return true;
+    if (fromSearch) {
+        cursor.beginEditBlock();
+        viewport()->setUpdatesEnabled(false);
+
+        QTextCharFormat marker;
+        marker.setForeground(Qt::red);
+        cursor.movePosition(QTextCursor::Start);
+        setTextCursor(cursor);
+
+        while (find(text)) {
+            QTextCursor hit = textCursor();
+            hit.mergeCharFormat(marker);
+        }
+
+        viewport()->setUpdatesEnabled(true);
+        cursor.endEditBlock();
+    }
+
+    bool cursorIsNull = found.isNull();
+    if (cursorIsNull) {
+        found = textCursor();
+        found.setPosition(position);
+    }
+    setTextCursor(found);
+    return !cursorIsNull;
 }
 
-void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
+// -- public slots
+
+void HelpViewer::copy()
 {
     TRACE_OBJ
-    QMenu menu(QLatin1String(""), 0);
-
-    QUrl link;
-    QAction *copyAnchorAction = 0;
-    if (hasAnchorAt(e->pos())) {
-        link = anchorAt(e->pos());
-        if (link.isRelative())
-            link = source().resolved(link);
-        copyAnchorAction = menu.addAction(tr("Copy &Link Location"));
-        copyAnchorAction->setEnabled(!link.isEmpty() && link.isValid());
-
-        menu.addAction(tr("Open Link in New Tab\tCtrl+LMB"), this,
-            SLOT(openLinkInNewTab()));
-        menu.addSeparator();
-    }
-    menu.addActions(parentWidget->globalActions());
-    QAction *action = menu.exec(e->globalPos());
-    if (action == copyAnchorAction)
-        QApplication::clipboard()->setText(link.toString());
+    QTextBrowser::copy();
 }
 
-void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
+void HelpViewer::forward()
 {
     TRACE_OBJ
-#ifndef Q_OS_LINUX
-    if (handleForwardBackwardMouseButtons(e))
-        return;
-#endif
-
-    controlPressed = e->modifiers() & Qt::ControlModifier;
-    if ((controlPressed && hasAnchorAt(e->pos())) ||
-        (e->button() == Qt::MidButton && hasAnchorAt(e->pos()))) {
-        openLinkInNewTab();
-        return;
-    }
-
-    QTextBrowser::mouseReleaseEvent(e);
+    QTextBrowser::forward();
 }
 
-void HelpViewer::mousePressEvent(QMouseEvent *e)
+void HelpViewer::backward()
 {
-#ifdef Q_OS_LINUX
-    if (handleForwardBackwardMouseButtons(e))
-        return;
-#endif
-    QTextBrowser::mousePressEvent(e);
+    TRACE_OBJ
+    QTextBrowser::backward();
 }
+
+// -- protected
 
 void HelpViewer::keyPressEvent(QKeyEvent *e)
 {
@@ -279,11 +280,6 @@ void HelpViewer::keyPressEvent(QKeyEvent *e)
     QTextBrowser::keyPressEvent(e);
 }
 
-void HelpViewer::home()
-{
-    TRACE_OBJ
-    setSource(helpEngine.homePage());
-}
 
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
@@ -296,12 +292,93 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
     }
 }
 
+void HelpViewer::mousePressEvent(QMouseEvent *e)
+{
+    TRACE_OBJ
+#ifdef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
+        return;
+#endif
+
+    QTextBrowser::mousePressEvent(e);
+}
+
+void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
+{
+    TRACE_OBJ
+#ifndef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
+        return;
+#endif
+
+    bool controlPressed = e->modifiers() & Qt::ControlModifier;
+    if ((controlPressed && d->hasAnchorAt(this, e->pos())) ||
+        (e->button() == Qt::MidButton && d->hasAnchorAt(this, e->pos()))) {
+        d->openLinkInNewPage();
+        return;
+    }
+
+    QTextBrowser::mouseReleaseEvent(e);
+}
+
+// -- private slots
+
+void HelpViewer::actionChanged()
+{
+    // stub
+    TRACE_OBJ
+}
+
+// -- private
+
 bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 {
     TRACE_OBJ
-    if (event->type() == QEvent::FontChange && !forceFont)
+    if (event->type() == QEvent::FontChange && !d->forceFont)
         return true;
     return QTextBrowser::eventFilter(obj, event);
+}
+
+void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
+{
+    TRACE_OBJ
+
+    QMenu menu(QString(), 0);
+    QUrl link;
+    QAction *copyAnchorAction = 0;
+    if (d->hasAnchorAt(this, event->pos())) {
+        link = anchorAt(event->pos());
+        if (link.isRelative())
+            link = source().resolved(link);
+        menu.addAction(tr("Open Link"), d, SLOT(openLink()));
+        menu.addAction(tr("Open Link in New Tab\tCtrl+LMB"), d, SLOT(openLinkInNewPage()));
+
+        if (!link.isEmpty() && link.isValid())
+            copyAnchorAction = menu.addAction(tr("Copy &Link Location"));
+    } else if (!selectedText().isEmpty()) {
+        menu.addAction(tr("Copy"), this, SLOT(copy()));
+    } else {
+        menu.addAction(tr("Reload"), this, SLOT(reload()));
+    }
+
+    if (copyAnchorAction == menu.exec(event->globalPos()))
+        QApplication::clipboard()->setText(link.toString());
+}
+
+QVariant HelpViewer::loadResource(int type, const QUrl &name)
+{
+    TRACE_OBJ
+    QByteArray ba;
+    if (type < 4) {
+        ba = HelpEngineWrapper::instance().fileData(name);
+        if (name.toString().endsWith(QLatin1String(".svg"), Qt::CaseInsensitive)) {
+            QImage image;
+            image.loadFromData(ba, "svg");
+            if (!image.isNull())
+                return image;
+        }
+    }
+    return ba;
 }
 
 QT_END_NAMESPACE

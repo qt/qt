@@ -68,6 +68,8 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
     { "-qt-list-indent", QtListIndent },
+    { "-qt-list-number-prefix", QtListNumberPrefix },
+    { "-qt-list-number-suffix", QtListNumberSuffix },
     { "-qt-paragraph-type", QtParagraphType },
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
@@ -120,6 +122,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "image", QtImage },
     { "image-position", QtImageAlignment },
     { "left", Left },
+    { "line-height", LineHeight },
     { "list-style", ListStyle },
     { "list-style-type", ListStyleType },
     { "margin" , Margin },
@@ -403,7 +406,7 @@ int ValueExtractor::lengthValue(const Declaration &decl)
     if (decl.d->values.count() < 1)
         return 0;
     LengthData data = lengthValue(decl.d->values.at(0));
-    decl.d->parsed = qVariantFromValue<LengthData>(data);
+    decl.d->parsed = QVariant::fromValue<LengthData>(data);
     return lengthValueFromData(data,f);
 }
 
@@ -435,7 +438,7 @@ void ValueExtractor::lengthValues(const Declaration &decl, int *m)
 
     QList<QVariant> v;
     for (i = 0; i < 4; i++) {
-        v += qVariantFromValue<LengthData>(datas[i]);
+        v += QVariant::fromValue<LengthData>(datas[i]);
         m[i] = lengthValueFromData(datas[i], f);
     }
     decl.d->parsed = v;
@@ -541,7 +544,7 @@ QSize ValueExtractor::sizeValue(const Declaration &decl)
     else
         x[1] = x[0];
     QList<QVariant> v;
-    v << qVariantFromValue<LengthData>(x[0]) << qVariantFromValue<LengthData>(x[1]);
+    v << QVariant::fromValue<LengthData>(x[0]) << qVariantFromValue<LengthData>(x[1]);
     decl.d->parsed = v;
     return QSize(lengthValueFromData(x[0], f), lengthValueFromData(x[1], f));
 }
@@ -646,7 +649,7 @@ bool ValueExtractor::extractOutline(int *borders, QBrush *colors, BorderStyle *s
     return hit;
 }
 
-static Qt::Alignment parseAlignment(const Value *values, int count)
+static Qt::Alignment parseAlignment(const QCss::Value *values, int count)
 {
     Qt::Alignment a[2] = { 0, 0 };
     for (int i = 0; i < qMin(2, count); i++) {
@@ -669,7 +672,7 @@ static Qt::Alignment parseAlignment(const Value *values, int count)
     return a[0] | a[1];
 }
 
-static ColorData parseColorValue(Value v)
+static ColorData parseColorValue(QCss::Value v)
 {
     if (v.type == Value::Identifier || v.type == Value::String) {
         v.variant.convert(QVariant::Color);
@@ -703,7 +706,7 @@ static ColorData parseColorValue(Value v)
     if (!p.testExpr())
         return ColorData();
 
-    QVector<Value> colorDigits;
+    QVector<QCss::Value> colorDigits;
     if (!p.parseExpr(&colorDigits))
         return ColorData();
 
@@ -735,7 +738,7 @@ static QColor colorFromData(const ColorData& c, const QPalette &pal)
     return QColor();
 }
 
-static BrushData parseBrushValue(const Value &v, const QPalette &pal)
+static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
 {
     ColorData c = parseColorValue(v);
     if (c.type == ColorData::Color) {
@@ -777,7 +780,7 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
             return BrushData();
         parser.skipSpace();
         if (attr.compare(QLatin1String("stop"), Qt::CaseInsensitive) == 0) {
-            Value stop, color;
+            QCss::Value stop, color;
             parser.next();
             if (!parser.parseTerm(&stop)) return BrushData();
             parser.skipSpace();
@@ -789,7 +792,7 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
             stops.append(QGradientStop(stop.variant.toReal(), colorFromData(cd, pal)));
         } else {
             parser.next();
-            Value value;
+            QCss::Value value;
             (void)parser.parseTerm(&value);
             if (attr.compare(QLatin1String("spread"), Qt::CaseInsensitive) == 0) {
                 spread = spreads.indexOf(value.variant.toString());
@@ -853,7 +856,7 @@ static QBrush brushFromData(const BrushData& c, const QPalette &pal)
     }
 }
 
-static BorderStyle parseStyleValue(Value v)
+static BorderStyle parseStyleValue(QCss::Value v)
 {
     if (v.type == Value::KnownIdentifier) {
         switch (v.variant.toInt()) {
@@ -916,7 +919,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
         data.width = lengthValue(decl.d->values.at(i));
         *width = lengthValueFromData(data.width, f);
         if (++i >= decl.d->values.count()) {
-            decl.d->parsed = qVariantFromValue<BorderData>(data);
+            decl.d->parsed = QVariant::fromValue<BorderData>(data);
             return;
         }
     }
@@ -925,7 +928,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
     if (data.style != BorderStyle_Unknown) {
         *style = data.style;
         if (++i >= decl.d->values.count()) {
-            decl.d->parsed = qVariantFromValue<BorderData>(data);
+            decl.d->parsed = QVariant::fromValue<BorderData>(data);
             return;
         }
     } else {
@@ -935,10 +938,10 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
      data.color = parseBrushValue(decl.d->values.at(i), pal);
      *color = brushFromData(data.color, pal);
      if (data.color.type != BrushData::DependsOnThePalette)
-         decl.d->parsed = qVariantFromValue<BorderData>(data);
+         decl.d->parsed = QVariant::fromValue<BorderData>(data);
 }
 
-static void parseShorthandBackgroundProperty(const QVector<Value> &values, BrushData *brush, QString *image, Repeat *repeat, Qt::Alignment *alignment, const QPalette &pal)
+static void parseShorthandBackgroundProperty(const QVector<QCss::Value> &values, BrushData *brush, QString *image, Repeat *repeat, Qt::Alignment *alignment, const QPalette &pal)
 {
     *brush = BrushData();
     *image = QString();
@@ -946,7 +949,7 @@ static void parseShorthandBackgroundProperty(const QVector<Value> &values, Brush
     *alignment = Qt::AlignTop | Qt::AlignLeft;
 
     for (int i = 0; i < values.count(); ++i) {
-        const Value &v = values.at(i);
+        const QCss::Value &v = values.at(i);
         if (v.type == Value::Uri) {
             *image = v.variant.toString();
             continue;
@@ -993,7 +996,7 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
         const Declaration &decl = declarations.at(i);
         if (decl.d->values.isEmpty())
             continue;
-        const Value &val = decl.d->values.at(0);
+        const QCss::Value &val = decl.d->values.at(0);
         switch (decl.d->propertyId) {
             case BackgroundColor:
                     *brush = decl.brushValue();
@@ -1032,16 +1035,8 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                     parseShorthandBackgroundProperty(decl.d->values, &brushData, image, repeat, alignment, pal);
                     *brush = brushFromData(brushData, pal);
                     if (brushData.type != BrushData::DependsOnThePalette) {
-#if defined Q_CC_MSVC && _MSC_VER <= 1300
-                        BackgroundData data;
-                        data.brush = brushData;
-                        data.image = *image;
-                        data.repeat = *repeat;
-                        data.alignment = *alignment;
-#else
                         BackgroundData data = { brushData, *image, *repeat, *alignment };
-#endif
-                        decl.d->parsed = qVariantFromValue<BackgroundData>(data);
+                        decl.d->parsed = QVariant::fromValue<BackgroundData>(data);
                     }
                 }
                 break;
@@ -1055,7 +1050,7 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
     return hit;
 }
 
-static bool setFontSizeFromValue(Value value, QFont *font, int *fontSizeAdjustment)
+static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAdjustment)
 {
     if (value.type == Value::KnownIdentifier) {
         bool valid = true;
@@ -1092,7 +1087,7 @@ static bool setFontSizeFromValue(Value value, QFont *font, int *fontSizeAdjustme
     return valid;
 }
 
-static bool setFontStyleFromValue(const Value &value, QFont *font)
+static bool setFontStyleFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type != Value::KnownIdentifier)
         return false ;
@@ -1105,7 +1100,7 @@ static bool setFontStyleFromValue(const Value &value, QFont *font)
     return false;
 }
 
-static bool setFontWeightFromValue(const Value &value, QFont *font)
+static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
         switch (value.variant.toInt()) {
@@ -1126,12 +1121,12 @@ static bool setFontWeightFromValue(const Value &value, QFont *font)
  * and set it the \a font
  * \returns true if a family was extracted.
  */
-static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font, int start = 0)
+static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *font, int start = 0)
 {
     QString family;
     bool shouldAddSpace = false;
     for (int i = start; i < values.count(); ++i) {
-        const Value &v = values.at(i);
+        const QCss::Value &v = values.at(i);
         if (v.type == Value::TermOperatorComma) {
             family += QLatin1Char(',');
             shouldAddSpace = false;
@@ -1151,7 +1146,7 @@ static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font, i
     return true;
 }
 
-static void setTextDecorationFromValues(const QVector<Value> &values, QFont *font)
+static void setTextDecorationFromValues(const QVector<QCss::Value> &values, QFont *font)
 {
     for (int i = 0; i < values.count(); ++i) {
         if (values.at(i).type != Value::KnownIdentifier)
@@ -1170,7 +1165,7 @@ static void setTextDecorationFromValues(const QVector<Value> &values, QFont *fon
     }
 }
 
-static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font, int *fontSizeAdjustment)
+static void parseShorthandFontProperty(const QVector<QCss::Value> &values, QFont *font, int *fontSizeAdjustment)
 {
     font->setStyle(QFont::StyleNormal);
     font->setWeight(QFont::Normal);
@@ -1195,7 +1190,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
     }
 }
 
-static void setFontVariantFromValue(const Value &value, QFont *font)
+static void setFontVariantFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
         switch (value.variant.toInt()) {
@@ -1206,7 +1201,7 @@ static void setFontVariantFromValue(const Value &value, QFont *font)
     }
 }
 
-static void setTextTransformFromValue(const Value &value, QFont *font)
+static void setTextTransformFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
         switch (value.variant.toInt()) {
@@ -1231,7 +1226,7 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
         const Declaration &decl = declarations.at(i);
         if (decl.d->values.isEmpty())
             continue;
-        const Value &val = decl.d->values.at(0);
+        const QCss::Value &val = decl.d->values.at(0);
         switch (decl.d->propertyId) {
             case FontSize: setFontSizeFromValue(val, font, fontSizeAdjustment); break;
             case FontStyle: setFontStyleFromValue(val, font); break;
@@ -1319,10 +1314,10 @@ QColor Declaration::colorValue(const QPalette &pal) const
 
     ColorData color = parseColorValue(d->values.at(0));
     if(color.type == ColorData::Role) {
-        d->parsed = qVariantFromValue<int>(color.role);
+        d->parsed = QVariant::fromValue<int>(color.role);
         return pal.color((QPalette::ColorRole)(color.role));
     } else {
-        d->parsed = qVariantFromValue<QColor>(color.color);
+        d->parsed = QVariant::fromValue<QColor>(color.color);
         return color.color;
     }
 }
@@ -1342,11 +1337,11 @@ QBrush Declaration::brushValue(const QPalette &pal) const
     BrushData data = parseBrushValue(d->values.at(0), pal);
 
     if(data.type == BrushData::Role) {
-        d->parsed = qVariantFromValue<int>(data.role);
+        d->parsed = QVariant::fromValue<int>(data.role);
         return pal.color((QPalette::ColorRole)(data.role));
     } else {
         if (data.type != BrushData::DependsOnThePalette)
-            d->parsed = qVariantFromValue<QBrush>(data.brush);
+            d->parsed = QVariant::fromValue<QBrush>(data.brush);
         return data.brush;
     }
 }
@@ -1376,11 +1371,11 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
                 continue;
             BrushData data = parseBrushValue(d->values.at(i), pal);
             if(data.type == BrushData::Role) {
-                v += qVariantFromValue<int>(data.role);
+                v += QVariant::fromValue<int>(data.role);
                 c[i] = pal.color((QPalette::ColorRole)(data.role));
             } else {
                 if (data.type != BrushData::DependsOnThePalette) {
-                    v += qVariantFromValue<QBrush>(data.brush);
+                    v += QVariant::fromValue<QBrush>(data.brush);
                 } else {
                     v += QVariant();
                 }
@@ -1416,7 +1411,7 @@ bool Declaration::realValue(qreal *real, const char *unit) const
     return ok;
 }
 
-static bool intValueHelper(const Value &v, int *i, const char *unit)
+static bool intValueHelper(const QCss::Value &v, int *i, const char *unit)
 {
     if (unit && v.type != Value::Length)
         return false;
@@ -1453,7 +1448,7 @@ QSize Declaration::sizeValue() const
     else
         x[1] = x[0];
     QSize size(x[0], x[1]);
-    d->parsed = qVariantFromValue<QSize>(size);
+    d->parsed = QVariant::fromValue<QSize>(size);
     return size;
 }
 
@@ -1465,7 +1460,7 @@ QRect Declaration::rectValue() const
     if (d->parsed.isValid())
         return qvariant_cast<QRect>(d->parsed);
 
-    const Value &v = d->values.at(0);
+    const QCss::Value &v = d->values.at(0);
     if (v.type != Value::Function)
         return QRect();
     QStringList func = v.variant.toStringList();
@@ -1475,7 +1470,7 @@ QRect Declaration::rectValue() const
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
-    d->parsed = qVariantFromValue<QRect>(rect);
+    d->parsed = QVariant::fromValue<QRect>(rect);
     return rect;
 }
 
@@ -1496,10 +1491,10 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
         for (i = 0; i < qMin(d->values.count(), 4); i++) {
             ColorData color = parseColorValue(d->values.at(i));
             if(color.type == ColorData::Role) {
-                v += qVariantFromValue<int>(color.role);
+                v += QVariant::fromValue<int>(color.role);
                 c[i] = pal.color((QPalette::ColorRole)(color.role));
             } else {
-                v += qVariantFromValue<QColor>(color.color);
+                v += QVariant::fromValue<QColor>(color.color);
                 c[i] = color.color;
             }
         }
@@ -1691,7 +1686,7 @@ QIcon Declaration::iconValue() const
             i++;
     }
 
-    d->parsed = qVariantFromValue<QIcon>(icon);
+    d->parsed = QVariant::fromValue<QIcon>(icon);
     return icon;
 }
 

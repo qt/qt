@@ -76,6 +76,10 @@ static const int windowsRightBorder      = 15; // right border on windows
 #  define CMDLGS_PRESSED 3
 #  define CMDLGS_DISABLED 4
 #endif
+#ifndef PP_TRANSPARENTBAR
+#  define PP_TRANSPARENTBAR 11
+#  define PP_TRANSPARENTBARVERT 12
+#endif
 
 // Runtime resolved theme engine function calls
 
@@ -588,10 +592,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 if (QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
                     resolve_mask = spinbox->palette().resolve();
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_COMBOBOX
-                if (QComboBox *combobox = qobject_cast<QComboBox*>(widget->parentWidget()))
-                    resolve_mask = combobox->palette().resolve();
-#endif // QT_NO_COMBOBOX
             }
             if (resolve_mask & (1 << QPalette::Base)) {
                 // Base color is set for this widget, so use it
@@ -842,10 +842,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             const QDialogButtonBox *buttonBox = 0;
 
             if (qobject_cast<const QMessageBox *> (widget))
-                buttonBox = qFindChild<const QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+                buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
 #ifndef QT_NO_INPUTDIALOG
             else if (qobject_cast<const QInputDialog *> (widget))
-                buttonBox = qFindChild<const QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+                buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
 #endif // QT_NO_INPUTDIALOG
 
             if (buttonBox) {
@@ -973,7 +973,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))
         {
 
-            if (QWindowsVistaAnimation *anim = d->widgetAnimation(widget)) {
+            QWindowsVistaAnimation *anim = d->widgetAnimation(widget);
+            if (anim && (btn->state & State_Enabled)) {
                 anim->paint(painter, option);
             } else {
                 name = QLatin1String("BUTTON");
@@ -1000,7 +1001,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         !(state & (State_Sunken | State_On)) && !(state & State_MouseOver) &&
                          (state & State_Enabled) && (state & State_Active))
                         {
-                        QWindowsVistaAnimation *anim = d->widgetAnimation(widget);
                         if (!anim && widget) {
                             QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
                             startImage.fill(0);
@@ -1063,6 +1063,19 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         }
         break;
 #ifndef QT_NO_PROGRESSBAR
+    case CE_ProgressBarGroove:
+        {
+            Qt::Orientation orient = Qt::Horizontal;
+            if (const QStyleOptionProgressBarV2 *pb2 = qstyleoption_cast<const QStyleOptionProgressBarV2 *>(option))
+                orient = pb2->orientation;
+            partId = (orient == Qt::Horizontal) ? PP_TRANSPARENTBAR : PP_TRANSPARENTBARVERT;
+            name = QLatin1String("PROGRESS");
+            stateId = 1;
+
+            XPThemeData theme(widget, painter, name, partId, stateId, rect);
+            d->drawBackground(theme);
+        }
+        break;
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
@@ -1078,8 +1091,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
 
             if (const QProgressBar *progressbar = qobject_cast<const QProgressBar *>(widget)) {
-                if (((progressbar->value() > 0  && d->transitionsEnabled()) || isIndeterminate)) {
-                    if (!d->widgetAnimation(progressbar) && progressbar->value() < progressbar->maximum()) {
+                if (isIndeterminate || (progressbar->value() > 0 && (progressbar->value() < progressbar->maximum()) && d->transitionsEnabled())) {
+                    if (!d->widgetAnimation(progressbar)) {
                         QWindowsVistaAnimation *a = new QWindowsVistaAnimation;
                         a->setWidget(const_cast<QWidget*>(widget));
                         a->setStartTime(QTime::currentTime());
@@ -2396,14 +2409,14 @@ void QWindowsVistaStyle::polish(QWidget *widget)
         }
     } else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
     }
@@ -2435,14 +2448,14 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover, false);
     else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
     }
@@ -2506,7 +2519,6 @@ void QWindowsVistaStylePrivate::timerEvent()
             animations[i]->widget()->update();
 
         if (!animations[i]->widget() ||
-            !animations[i]->widget()->isEnabled() ||
             !animations[i]->widget()->isVisible() ||
             animations[i]->widget()->window()->isMinimized() ||
             !animations[i]->running() ||

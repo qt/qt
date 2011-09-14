@@ -359,6 +359,15 @@ void QFutureWatcherBase::connectNotify(const char * signal)
     Q_D(QFutureWatcherBase);
     if (qstrcmp(signal, SIGNAL(resultReadyAt(int))) == 0)
         d->resultAtConnected.ref();
+#ifndef QT_NO_DEBUG
+    if (qstrcmp(signal, SIGNAL(finished())) == 0) {
+        if (futureInterface().isRunning()) {
+            //connections should be established before calling stFuture to avoid race.
+            // (The future could finish before the connection is made.)
+            qWarning("QFutureWatcher::connect: connecting after calling setFuture() is likely to produce race");
+        }
+    }
+#endif
 }
 
 void QFutureWatcherBase::disconnectNotify(const char * signal)
@@ -580,4 +589,16 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CONCURRENT
+#else
+
+// On Symbian winscw target QT_NO_QFUTURE and QT_NO_CONCURRENT are both defined.
+// However moc will be run without having them set, so provide a dummy stub at
+// least for the slots to prevent linker errors.
+
+void QFutureWatcherBase::cancel() { }
+void QFutureWatcherBase::setPaused(bool) { }
+void QFutureWatcherBase::pause() { }
+void QFutureWatcherBase::resume() { }
+void QFutureWatcherBase::togglePaused() { }
+
+#endif // QT_NO_QFUTURE

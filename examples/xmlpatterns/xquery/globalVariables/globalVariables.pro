@@ -8,4 +8,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.cpp *.pro *.xq *.html 
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/xquery/globalVariables
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -94,6 +94,28 @@ private:
     QWidget *m_layoutBase;
 };
 
+// Change the alignment of a widget in a managed grid/box layout cell.
+class LayoutAlignmentCommand : public QDesignerFormWindowCommand {
+    Q_DISABLE_COPY(LayoutAlignmentCommand)
+public:
+    explicit LayoutAlignmentCommand(QDesignerFormWindowInterface *formWindow);
+
+    bool init(QWidget *w, Qt::Alignment alignment);
+
+    virtual void redo();
+    virtual void undo();
+
+    // Find out alignment and return whether command is enabled.
+    static Qt::Alignment alignmentOf(const QDesignerFormEditorInterface *core, QWidget *w, bool *enabled = 0);
+
+private:
+    static void applyAlignment(const QDesignerFormEditorInterface *core, QWidget *w, Qt::Alignment a);
+
+    Qt::Alignment m_newAlignment;
+    Qt::Alignment m_oldAlignment;
+    QWidget *m_widget;
+};
+
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE

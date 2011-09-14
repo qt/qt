@@ -57,14 +57,11 @@
 #include "private/qt_mac_p.h"
 #include "private/qpaintengine_p.h"
 #include "private/qpolygonclipper_p.h"
+#include "private/qfont_p.h"
 #include "QtCore/qhash.h"
 
 typedef struct CGColorSpace *CGColorSpaceRef;
 QT_BEGIN_NAMESPACE
-
-extern int qt_defaultDpi();
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
 
 class QCoreGraphicsPaintEnginePrivate;
 class QCoreGraphicsPaintEngine : public QPaintEngine
@@ -123,6 +120,8 @@ public:
     void drawEllipse(const QRect &r) { QPaintEngine::drawEllipse(r); }
     void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
     { QPaintEngine::drawPolygon(points, pointCount, mode); }
+
+    bool supportsTransformations(qreal, const QTransform &) const { return true; };
 
 protected:
     friend class QMacPrintEngine;

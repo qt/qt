@@ -51,17 +51,25 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-#ifdef Q_CC_MSVC
-#  if _MSC_VER < 1300
-#    define QT_CONURRENT_NONSTANDARD_COMPILER
-#  endif
-#endif
-
 #if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
 #  define QT_TYPENAME
 #else
 #  define QT_TYPENAME typename
 #endif
+
+namespace QtPrivate {
+
+template<class T>
+class HasResultType {
+    typedef char Yes;
+    typedef void *No;
+    template<typename U> static Yes test(int, const typename U::result_type * = 0);
+    template<typename U> static No test(double);
+public:
+    enum { Value = (sizeof(test<T>(0)) == sizeof(Yes)) };
+};
+
+}
 
 QT_END_NAMESPACE
 QT_END_HEADER

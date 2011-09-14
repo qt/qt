@@ -4,7 +4,7 @@ QT = core gui
 
 DEFINES += QT_BUILD_MULTIMEDIA_LIB QT_NO_USING_NAMESPACE
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 

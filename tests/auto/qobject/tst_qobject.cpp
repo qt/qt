@@ -129,6 +129,13 @@ private slots:
     void qMetaObjectConnect();
     void qMetaObjectDisconnectOne();
     void sameName();
+    void connectByMetaMethods();
+    void connectByMetaMethodSlotInsteadOfSignal();
+    void connectConstructorByMetaMethod();
+    void disconnectByMetaMethod();
+    void disconnectNotSignalMetaMethod();
+    void autoConnectionBehavior();
+    void baseDestroyed();
 protected:
 };
 
@@ -396,6 +403,8 @@ public:
     }
 
     void reset() {
+        called_slot10 = 0;
+        called_slot9 = 0;
         called_slot8 = 0;
         called_slot7 = 0;
         called_slot6 = 0;
@@ -414,6 +423,8 @@ public:
     int called_slot6;
     int called_slot7;
     int called_slot8;
+    int called_slot9;
+    int called_slot10;
 
     bool called(int slot) {
         switch (slot) {
@@ -425,6 +436,8 @@ public:
         case 6: return called_slot6;
         case 7: return called_slot7;
         case 8: return called_slot8;
+        case 9: return called_slot9;
+        case 10: return called_slot10;
         default: return false;
         }
     }
@@ -442,8 +455,8 @@ public slots:
     void slotLoopBack() { ++called_slot8; }
 
 protected slots:
-    void o() { Q_ASSERT(0); }
-    void on() { Q_ASSERT(0); }
+    void o() { ++called_slot9; }
+    void on() { ++called_slot10; }
 
 signals:
     void on_Sender_signalLoopBack();
@@ -466,6 +479,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalWithParams(0);
@@ -477,6 +492,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalWithParams(0, "string");
@@ -488,6 +505,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalManyParams(1, 2, 3, "string", true);
@@ -499,6 +518,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalManyParams2(1, 2, 3, "string", true);
@@ -510,6 +531,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), true);
     QCOMPARE(receiver.called(8), false);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 
     sender.emitSignalLoopBack();
@@ -521,6 +544,8 @@ void tst_QObject::connectByName()
     QCOMPARE(receiver.called(6), false);
     QCOMPARE(receiver.called(7), false);
     QCOMPARE(receiver.called(8), true);
+    QCOMPARE(receiver.called(9), false);
+    QCOMPARE(receiver.called(10), false);
     receiver.reset();
 }
 
@@ -663,11 +688,9 @@ void tst_QObject::findChildren()
     l = qFindChildren<QObject*>(&o, "unnamed");
     QCOMPARE(l.size(), 0);
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     tl = o.findChildren<QTimer *>("t1");
     QCOMPARE(tl.size(), 1);
     QCOMPARE(tl.at(0), &t1);
-#endif
 }
 
 
@@ -726,6 +749,24 @@ void tst_QObject::connectDisconnectNotify()
     connect( (SenderObject*)s, a_signal.toLatin1(), (ReceiverObject*)r, a_slot.toLatin1() );
     // Test disconnectNotify for a complete disconnect
     ((SenderObject*)s)->disconnect((ReceiverObject*)r);
+
+    // Obtaining meta methods
+    int signalIndx = ((SenderObject*)s)->metaObject()->indexOfSignal(
+            QMetaObject::normalizedSignature(a_signal.toLatin1().constData()+1).constData());
+    int methodIndx = ((ReceiverObject*)r)->metaObject()->indexOfMethod(
+            QMetaObject::normalizedSignature(a_slot.toLatin1().constData()+1).constData());
+    QMetaMethod signal = ((SenderObject*)s)->metaObject()->method(signalIndx);
+    QMetaMethod method = ((ReceiverObject*)r)->metaObject()->method(methodIndx);
+
+    // Test connectNotify when connecting by QMetaMethod
+    connect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
+    QCOMPARE( s->org_signal, s->nw_signal );
+    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
+
+    // Test disconnectNotify when disconnecting by QMetaMethod
+    QObject::disconnect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
+    QCOMPARE( s->org_signal, s->nw_signal );
+    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
 
     delete s;
     delete r;
@@ -1289,14 +1330,16 @@ public:
 
     void customEvent(QEvent *)
     {
-        Q_ASSERT(customEventThread == 0);
+        if (customEventThread)
+            qFatal("%s: customEventThread should be null", Q_FUNC_INFO);
         customEventThread = QThread::currentThread();
         emit theSignal();
     }
 
     void timerEvent(QTimerEvent *)
     {
-        Q_ASSERT(timerEventThread == 0);
+        if (timerEventThread)
+            qFatal("%s: timerEventThread should be null", Q_FUNC_INFO);
         timerEventThread = QThread::currentThread();
         emit theSignal();
     }
@@ -1304,7 +1347,8 @@ public:
 public slots:
     void theSlot()
     {
-        Q_ASSERT(slotThread == 0);
+        if (slotThread)
+            qFatal("%s: slotThread should be null", Q_FUNC_INFO);
         slotThread = QThread::currentThread();
         emit theSignal();
     }
@@ -1760,9 +1804,12 @@ class SuperObject : public QObject
     Q_OBJECT
 public:
     QObject *theSender;
+    int theSignalId;
+
     SuperObject()
     {
         theSender = 0;
+        theSignalId = 0;
     }
 
     friend class tst_QObject;
@@ -1773,16 +1820,17 @@ public slots:
     void rememberSender()
     {
         theSender = sender();
+        theSignalId = senderSignalIndex();
     }
 
     void deleteAndRememberSender()
     {
         delete theSender;
-        theSender = sender();
+        rememberSender();
     }
 signals:
+    void anotherSignal();
     void theSignal();
-
 };
 
 void tst_QObject::sender()
@@ -1790,12 +1838,23 @@ void tst_QObject::sender()
     {
         SuperObject sender;
         SuperObject receiver;
+        connect(&sender, SIGNAL(anotherSignal()),
+                &receiver, SLOT(rememberSender()));
         connect(&sender, SIGNAL(theSignal()),
                 &receiver, SLOT(rememberSender()));
         QCOMPARE(receiver.sender(), (QObject *)0);
+        QCOMPARE(receiver.senderSignalIndex(), -1);
         emit sender.theSignal();
         QCOMPARE(receiver.theSender, (QObject *)&sender);
         QCOMPARE(receiver.sender(), (QObject *)0);
+        QCOMPARE(receiver.theSignalId,
+                 sender.metaObject()->indexOfSignal("theSignal()"));
+        QCOMPARE(receiver.senderSignalIndex(), -1);
+
+        emit sender.anotherSignal();
+        QCOMPARE(receiver.theSignalId,
+                 sender.metaObject()->indexOfSignal("anotherSignal()"));
+        QCOMPARE(receiver.senderSignalIndex(), -1);
     }
 
     {
@@ -1812,11 +1871,16 @@ void tst_QObject::sender()
                 Qt::DirectConnection);
 
         QCOMPARE(receiver->sender(), (QObject *)0);
+        QCOMPARE(receiver->senderSignalIndex(), -1);
         receiver->theSender = 0;
+        receiver->theSignalId = -1;
         thread.start();
         emit sender->theSignal();
         QCOMPARE(receiver->theSender, (QObject *) sender);
         QCOMPARE(receiver->sender(), (QObject *)0);
+        QCOMPARE(receiver->theSignalId,
+                 sender->metaObject()->indexOfSignal("theSignal()"));
+        QCOMPARE(receiver->senderSignalIndex(), -1);
 
         QVERIFY(thread.wait(10000));
         delete receiver;
@@ -3608,6 +3672,307 @@ void tst_QObject::sameName()
     QCOMPARE(c2.aPublicSlotCalled, 0);
     QCOMPARE(c1.aPublicSlotCalled, 1);
     QCOMPARE(c1.s, 4);
+}
+
+void tst_QObject::connectByMetaMethods()
+{
+    SenderObject s;
+    ReceiverObject r;
+    const QMetaObject *smeta = s.metaObject();
+    const QMetaObject *rmeta = r.metaObject();
+    int sigIndx = smeta->indexOfSignal(QMetaObject::normalizedSignature("signal1()"));
+    int slotIndx = rmeta->indexOfSlot(QMetaObject::normalizedSignature("slot1()"));
+    QVERIFY( sigIndx != -1 );
+    QVERIFY( slotIndx != -1 );
+    QMetaMethod signal = smeta->method(sigIndx);
+    QMetaMethod slot = rmeta->method(slotIndx);
+
+    QVERIFY(connect(&s,signal, &r,slot));
+
+    QVERIFY(!r.called(1));
+    s.emitSignal1();
+    QVERIFY(r.called(1));
+}
+
+void tst_QObject::connectByMetaMethodSlotInsteadOfSignal()
+{
+    SenderObject s;
+    ReceiverObject r;
+    const QMetaObject *smeta = s.metaObject();
+    const QMetaObject *rmeta = r.metaObject();
+    int badIndx = smeta->indexOfSlot(QMetaObject::normalizedSignature("aPublicSlot()"));
+    int slotIndx = rmeta->indexOfSlot(QMetaObject::normalizedSignature("slot1()"));
+    QVERIFY( badIndx != -1 );
+    QVERIFY( slotIndx != -1 );
+    QMetaMethod badMethod = smeta->method(badIndx);
+    QMetaMethod slot = rmeta->method(slotIndx);
+
+    QTest::ignoreMessage(QtWarningMsg,"QObject::connect: Cannot connect SenderObject::aPublicSlot() to ReceiverObject::slot1()");
+    QVERIFY(!connect(&s,badMethod, &r,slot));
+}
+
+class Constructable: public QObject
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Constructable(){}
+
+};
+
+void tst_QObject::connectConstructorByMetaMethod()
+{
+    Constructable sc;
+    Constructable rc;
+    SenderObject s;
+    ReceiverObject r;
+
+    const QMetaObject cmeta = Constructable::staticMetaObject;
+    const QMetaObject *smeta = s.metaObject();
+    const QMetaObject *rmeta = r.metaObject();
+    int constructorIndx = cmeta.indexOfConstructor(QMetaObject::normalizedSignature("Constructable()"));
+    int sigIndx = smeta->indexOfSignal(QMetaObject::normalizedSignature("signal1()"));
+    int slotIndx = rmeta->indexOfSlot(QMetaObject::normalizedSignature("slot1()"));
+    QVERIFY( constructorIndx != -1 );
+    QVERIFY( sigIndx != -1 );
+    QVERIFY( slotIndx != -1 );
+
+    QMetaMethod constructor = cmeta.constructor(constructorIndx);
+    QMetaMethod signal = smeta->method(sigIndx);
+    QMetaMethod slot = rmeta->method(slotIndx);
+
+    QTest::ignoreMessage(QtWarningMsg,"QObject::connect: Cannot connect Constructable::Constructable() to ReceiverObject::slot1()");
+    QVERIFY(!connect(&sc,constructor, &r,slot));
+    QTest::ignoreMessage(QtWarningMsg,"QObject::connect: Cannot connect SenderObject::signal1() to Constructable::Constructable()");
+    QVERIFY(!connect(&s,signal, &rc,constructor));
+    QTest::ignoreMessage(QtWarningMsg,"QObject::connect: Cannot connect Constructable::Constructable() to Constructable::Constructable()");
+    QVERIFY(!connect(&sc,constructor, &rc,constructor));
+}
+
+void tst_QObject::disconnectByMetaMethod()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+
+    QMetaMethod signal1 = s->metaObject()->method(
+            s->metaObject()->indexOfMethod("signal1()"));
+    QMetaMethod signal2 = s->metaObject()->method(
+            s->metaObject()->indexOfMethod("signal2()"));
+    QMetaMethod signal3 = s->metaObject()->method(
+            s->metaObject()->indexOfMethod("signal3()"));
+    QMetaMethod signal4 = s->metaObject()->method(
+            s->metaObject()->indexOfMethod("signal4()"));
+
+    QMetaMethod slot1 = r1->metaObject()->method(
+            r1->metaObject()->indexOfMethod("slot1()"));
+    QMetaMethod slot2 = r1->metaObject()->method(
+            r1->metaObject()->indexOfMethod("slot2()"));
+    QMetaMethod slot3 = r1->metaObject()->method(
+            r1->metaObject()->indexOfMethod("slot3()"));
+    QMetaMethod slot4 = r1->metaObject()->method(
+            r1->metaObject()->indexOfMethod("slot4()"));
+
+    connect(s, signal1, r1, slot1);
+
+    s->emitSignal1();
+
+    QVERIFY(r1->called(1));
+    r1->reset();
+
+    // usual disconnect with all parameters given
+    bool ret = QObject::disconnect(s, signal1, r1, slot1);
+
+    s->emitSignal1();
+
+    QVERIFY(!r1->called(1));
+    r1->reset();
+
+    QVERIFY(ret);
+    ret = QObject::disconnect(s, signal1, r1, slot1);
+    QVERIFY(!ret);
+
+    r1->reset();
+
+    connect( s, signal1, r1, slot1 );
+    connect( s, signal1, r1, slot2 );
+    connect( s, signal1, r1, slot3 );
+    connect( s, signal2, r1, slot4 );
+
+    // disconnect s's signal1() from all slots of r1
+    QObject::disconnect(s, signal1, r1, QMetaMethod());
+
+    s->emitSignal1();
+    s->emitSignal2();
+
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r1->called(3));
+    QVERIFY(r1->called(4));
+    r1->reset();
+    // make sure all is disconnected again
+    QObject::disconnect(s, 0, r1, 0);
+
+    connect(s, signal1, r1, slot1);
+    connect(s, signal1, r2, slot1);
+    connect(s, signal2, r1, slot2);
+    connect(s, signal2, r2, slot2);
+    connect(s, signal3, r1, slot3);
+    connect(s, signal3, r2, slot3);
+
+    // disconnect signal1() from all receivers
+    QObject::disconnect(s, signal1, 0, QMetaMethod());
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r2->called(1));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
+
+    r1->reset();
+    r2->reset();
+
+    // disconnect all signals of s from all receivers
+    QObject::disconnect( s, 0, 0, 0 );
+
+    connect( s, signal1, r1, slot1 );
+    connect( s, signal1, r2, slot1 );
+
+    // disconnect all signals from slot1 of r1
+    QObject::disconnect(s, QMetaMethod(), r1, slot1);
+
+    s->emitSignal1();
+
+    QVERIFY(!r1->called(1));
+    QVERIFY(r2->called(1));
+
+    delete r2;
+    delete r1;
+    delete s;
+}
+
+void tst_QObject::disconnectNotSignalMetaMethod()
+{
+    SenderObject s;
+    ReceiverObject r;
+
+    connect(&s, SIGNAL(signal1()), &r, SLOT(slot1()));
+
+    QMetaMethod slot = s.metaObject()->method(
+            s.metaObject()->indexOfMethod("aPublicSlot()"));
+
+    QTest::ignoreMessage(QtWarningMsg,"Object::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
+    QVERIFY(!QObject::disconnect(&s, slot, &r, QMetaMethod()));
+}
+
+class ThreadAffinityThread : public QThread
+{
+public:
+    SenderObject *sender;
+
+    ThreadAffinityThread(SenderObject *sender)
+        : sender(sender)
+    { }
+    void run()
+    {
+        sender->emitSignal1();
+    }
+};
+
+void tst_QObject::autoConnectionBehavior()
+{
+    SenderObject *sender = new SenderObject;
+    ReceiverObject *receiver = new ReceiverObject;
+    connect(sender, SIGNAL(signal1()), receiver, SLOT(slot1()));
+
+    // at emit, currentThread == sender->thread(), currentThread == receiver->thread(), sender->thread() == receiver->thread()
+    QVERIFY(!receiver->called(1));
+    sender->emitSignal1();
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread != receiver->thread(), sender->thread() == receiver->thread()
+    ThreadAffinityThread emitThread1(sender);
+    QVERIFY(!receiver->called(1));
+    emitThread1.start();
+    QVERIFY(emitThread1.wait(30000));
+    QVERIFY(!receiver->called(1));
+    QCoreApplication::sendPostedEvents(receiver, QEvent::MetaCall);
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread == sender->thread(), currentThread != receiver->thread(), sender->thread() != receiver->thread()
+    sender->moveToThread(&emitThread1);
+    QVERIFY(!receiver->called(1));
+    emitThread1.start();
+    QVERIFY(emitThread1.wait(30000));
+    QVERIFY(!receiver->called(1));
+    QCoreApplication::sendPostedEvents(receiver, QEvent::MetaCall);
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread == receiver->thread(), sender->thread() != receiver->thread()
+    QVERIFY(!receiver->called(1));
+    sender->emitSignal1();
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread != receiver->thread(), sender->thread() != receiver->thread()
+    ThreadAffinityThread emitThread2(sender);
+    QThread receiverThread;
+    QTimer *timer = new QTimer;
+    timer->setSingleShot(true);
+    timer->setInterval(100);
+    connect(&receiverThread, SIGNAL(started()), timer, SLOT(start()));
+    connect(timer, SIGNAL(timeout()), &receiverThread, SLOT(quit()), Qt::DirectConnection);
+    connect(&receiverThread, SIGNAL(finished()), timer, SLOT(deleteLater()));
+    timer->moveToThread(&receiverThread);
+
+    receiver->moveToThread(&receiverThread);
+    QVERIFY(!receiver->called(1));
+    emitThread2.start();
+    QVERIFY(emitThread2.wait(30000));
+    QVERIFY(!receiver->called(1));
+    receiverThread.start();
+    QVERIFY(receiverThread.wait(30000));
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    delete sender;
+    delete receiver;
+}
+
+class BaseDestroyed : public QObject
+{ Q_OBJECT
+    QList<QString> fooList;
+    bool destroyed;
+public:
+    BaseDestroyed() : destroyed(false)
+    { fooList << "a" << "b"; }
+    ~BaseDestroyed()
+    {
+        QVERIFY(!destroyed);
+        destroyed = true;
+    }
+
+public slots:
+    void slotUseList()
+    {
+        QVERIFY(!destroyed);
+        fooList << "c" << "d";
+    }
+};
+
+void tst_QObject::baseDestroyed()
+{
+    BaseDestroyed d;
+    connect(&d, SIGNAL(destroyed()), &d, SLOT(slotUseList()));
+    //When d goes out of scope, slotUseList should not be called as the BaseDestroyed has
+    // already been destroyed while ~QObject emit destroyed
 }
 
 QTEST_MAIN(tst_QObject)

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-static QFontEngineQPF::TagType tagTypes[QFontEngineQPF::NumTags] = {
+static const QFontEngineQPF::TagType tagTypes[QFontEngineQPF::NumTags] = {
     QFontEngineQPF::StringType, // FontName
     QFontEngineQPF::StringType, // FileName
     QFontEngineQPF::UInt32Type, // FileIndex

@@ -71,6 +71,7 @@
 #  include <e32ldr.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
+#  include "private/qfilesystemengine_p.h"
 #  include <apacmdln.h>
 #elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
@@ -97,6 +98,12 @@
 #  include <taskLib.h>
 #endif
 
+#ifdef Q_OS_QNX
+#  include <sys/neutrino.h>
+#  include <pthread.h>
+#  include <sched.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMutexUnlocker
@@ -115,8 +122,6 @@ private:
 };
 
 #ifdef Q_OS_SYMBIAN
-typedef TDriveNumber (*SystemDriveFunc)(RFs&);
-static SystemDriveFunc PtrGetSystemDrive = 0;
 static CApaCommandLine* apaCommandLine = 0;
 static char *apaTail = 0;
 static QVector<char *> *apaArgv = 0;
@@ -172,6 +177,11 @@ CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
+#endif
+
+int QCoreApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
+#if defined(QT3_SUPPORT)
+bool QCoreApplicationPrivate::useQt3Support = true;
 #endif
 
 #if !defined(Q_OS_WIN)
@@ -264,6 +274,17 @@ bool QCoreApplicationPrivate::is_app_closing = false;
 Q_CORE_EXPORT bool qt_locale_initialized = false;
 
 
+/*
+  Create an instance of Trolltech.conf. This ensures that the settings will not
+  be thrown out of QSetting's cache for unused settings.
+  */
+Q_GLOBAL_STATIC_WITH_ARGS(QSettings, staticTrolltechConf, (QSettings::UserScope, QLatin1String("Trolltech")))
+
+QSettings *QCoreApplicationPrivate::trolltechConf()
+{
+    return staticTrolltechConf();
+}
+
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
     QThreadData *currentThreadData = QThreadData::current();
@@ -315,10 +336,14 @@ struct QCoreApplicationData {
 
 Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
-QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
+QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     : QObjectPrivate(), argc(aargc), argv(aargv), application_type(0), eventFilter(0),
       in_exec(false), aboutToQuitEmitted(false)
 {
+    app_compile_version = flags & 0xffffff;
+#if defined(QT3_SUPPORT)
+    useQt3Support = !(flags & 0x01000000);
+#endif
     static const char *const empty = "";
     if (argc == 0 || argv == 0) {
         argc = 0;
@@ -332,6 +357,22 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 #ifdef Q_OS_UNIX
     qt_application_thread_id = QThread::currentThreadId();
+#endif
+
+#ifdef Q_OS_QNX
+    // make the kernel attempt to emulate an instruction with a misaligned access
+    // if the attempt fails, it faults with a SIGBUS
+    int tv = -1;
+    ThreadCtl(_NTO_TCTL_ALIGN_FAULT, &tv);
+
+    // without Round Robin drawn intensive apps will hog the cpu
+    // and make the system appear frozen
+    int sched_policy;
+    sched_param param;
+    if (pthread_getschedparam(0, &sched_policy, &param) == 0 && sched_policy != SCHED_RR) {
+        sched_policy = SCHED_RR;
+        pthread_setschedparam(0, sched_policy, &param);
+    }
 #endif
 
     // note: this call to QThread::currentThread() may end up setting theMainThread!
@@ -566,7 +607,7 @@ void QCoreApplication::flush()
     one valid character string.
 */
 QCoreApplication::QCoreApplication(int &argc, char **argv)
-    : QObject(*new QCoreApplicationPrivate(argc, argv))
+    : QObject(*new QCoreApplicationPrivate(argc, argv, 0x040000))
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
@@ -582,6 +623,25 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 #endif
 }
 
+QCoreApplication::QCoreApplication(int &argc, char **argv, int _internal)
+: QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
+{
+    init();
+    QCoreApplicationPrivate::eventDispatcher->startingUp();
+#if defined(Q_OS_SYMBIAN)
+#ifndef QT_NO_LIBRARY
+    // Refresh factoryloader, as text codecs are requested during lib path
+    // resolving process and won't be therefore properly loaded.
+    // Unknown if this is symbian specific issue.
+    QFactoryLoader::refreshAll();
+#endif
+#ifndef QT_NO_SYSTEMLOCALE
+    d_func()->symbianInit();
+#endif
+#endif //Q_OS_SYMBIAN
+}
+
+
 // ### move to QCoreApplicationPrivate constructor?
 void QCoreApplication::init()
 {
@@ -594,6 +654,12 @@ void QCoreApplication::init()
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
+
+#ifdef Q_OS_SYMBIAN
+    //ensure temp and working directories exist
+    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::tempPath()), true);
+    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::currentPath()), true);
+#endif
 
 #ifndef QT_NO_THREAD
     QThread::initialize();
@@ -860,11 +926,6 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
     d->checkReceiverThread(receiver);
 #endif
 
-#ifdef QT3_SUPPORT
-    if (event->type() == QEvent::ChildRemoved && !receiver->d_func()->pendingChildInsertedEvents.isEmpty())
-        receiver->d_func()->removePendingChildInsertedEvents(static_cast<QChildEvent *>(event)->child());
-#endif // QT3_SUPPORT
-
     return receiver->isWidgetType() ? false : d->notify_helper(receiver, event);
 }
 
@@ -1074,6 +1135,7 @@ int QCoreApplication::exec()
     return returnCode;
 }
 
+
 /*!
   Tells the application to exit with a return code.
 
@@ -1226,20 +1288,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
-    if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
-        // optimization: we can simply append if the last event in
-        // the queue has higher or equal priority
-        data->postEventList.append(QPostEvent(receiver, event, priority));
-    } else {
-        // insert event in descending priority order, using upper
-        // bound for a given priority (to ensure proper ordering
-        // of events with the same priority)
-        QPostEventList::iterator begin = data->postEventList.begin()
-                                         + data->postEventList.insertionOffset,
-                                   end = data->postEventList.end();
-        QPostEventList::iterator at = qUpperBound(begin, end, priority);
-        data->postEventList.insert(at, QPostEvent(receiver, event, priority));
-    }
+    data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     eventDeleter.take();
     event->posted = true;
     ++receiver->d_func()->postedEvents;
@@ -1399,7 +1448,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
                     // don't lose the event
-                    data->postEventList.append(pe);
+                    data->postEventList.addEvent(pe);
                     const_cast<QPostEvent &>(pe).event = 0;
                 }
                 continue;
@@ -1530,7 +1579,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             --pe.receiver->d_func()->postedEvents;
 #ifdef QT3_SUPPORT
             if (pe.event->type() == QEvent::ChildInsertedRequest)
-                pe.receiver->d_func()->removePendingChildInsertedEvents(0);
+                pe.receiver->d_func()->pendingChildInsertedEvents.clear();
 #endif
             pe.event->posted = false;
             events.append(pe.event);
@@ -1908,10 +1957,7 @@ QString QCoreApplication::applicationDirPath()
         }
         if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
             & KMediaAttWriteProtected)) {
-            if(!PtrGetSystemDrive)
-                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
-            Q_ASSERT(PtrGetSystemDrive);
-            drive = PtrGetSystemDrive(fs);
+            drive = fs.GetSystemDrive();
             fs.DriveToChar(drive, driveChar);
         }
 

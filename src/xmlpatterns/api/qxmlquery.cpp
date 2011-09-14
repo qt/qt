@@ -534,7 +534,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, const QXmlItem &value)
     }
 
     const QPatternist::VariableLoader::Ptr vl(d->variableLoader());
-    const QVariant variant(qVariantFromValue(value));
+    const QVariant variant(QVariant::fromValue(value));
 
     /* If the type of the variable changed(as opposed to only the value),
      * we will have to recompile. */
@@ -610,7 +610,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, QIODevice *device)
 
     if(device)
     {
-        const QVariant variant(qVariantFromValue(device));
+        const QVariant variant(QVariant::fromValue(device));
 
         if(vl->invalidationRequired(name, variant))
             d->recompileRequired();
@@ -1184,7 +1184,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, const QXmlQuery &query)
     Q_ASSERT_X(query.isValid(), Q_FUNC_INFO, "The query being bound must be valid.");
 
     const QPatternist::VariableLoader::Ptr vl(d->variableLoader());
-    const QVariant variant(qVariantFromValue(query));
+    const QVariant variant(QVariant::fromValue(query));
 
     if(vl->invalidationRequired(name, variant))
         d->recompileRequired();

@@ -91,7 +91,10 @@ inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T **t)
 { (void) d.set(*t); }
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T **)
+{ delete static_cast<T *>(d); }
 
 // value-based specialization
 template <typename T>
@@ -116,7 +119,11 @@ inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
 { (void) d.set(new T(*t)); }
 
-#endif // QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T *)
+{ delete static_cast<T *>(d); }
+
 
 // MOC_SKIP_END
 #endif
@@ -130,7 +137,7 @@ private:
     Q_DISABLE_COPY(QThreadStorage)
 
     static inline void deleteData(void *x)
-    { delete static_cast<T>(x); }
+    { qThreadStorage_deleteData(x, reinterpret_cast<T*>(0)); }
 
 public:
     inline QThreadStorage() : d(deleteData) { }

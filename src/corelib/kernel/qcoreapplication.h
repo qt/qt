@@ -78,7 +78,23 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
 
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
-    QCoreApplication(int &argc, char **argv);
+    enum { ApplicationFlags = QT_VERSION
+#if !defined(QT3_SUPPORT)
+        | 0x01000000
+#endif
+    };
+
+#if defined(QT_BUILD_CORE_LIB) || defined(qdoc)
+    QCoreApplication(int &argc, char **argv); // ### Qt5 remove
+#endif
+#if !defined(qdoc)
+    QCoreApplication(int &argc, char **argv, int
+#if !defined(QT_BUILD_CORE_LIB)
+        = ApplicationFlags
+#endif
+        );
+#endif
+
     ~QCoreApplication();
 
 #ifdef QT_DEPRECATED

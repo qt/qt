@@ -40,72 +40,33 @@
 ****************************************************************************/
 
 
+#include "abstracttestsuite.h"
 #include <QtTest/QtTest>
-#include <QByteArray>
-
 #include <QtScript>
-
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
 
-// Uncomment the following define to have the autotest generate
-// addExpectedFailure() code for all the tests that fail.
-// This is useful when a whole new test (sub)suite is added.
-// The code is stored in addexpectedfailures.cpp.
-// Paste the contents into this file after the existing
-// addExpectedFailure() calls.
-
-//#define GENERATE_ADDEXPECTEDFAILURE_CODE
-
-static QString readFile(const QString &filename)
+class tst_QScriptV8TestSuite : public AbstractTestSuite
 {
-    QFile file(filename);
-    if (!file.open(QFile::ReadOnly))
-        return QString();
-    QTextStream stream(&file);
-    stream.setCodec("UTF-8");
-    return stream.readAll();
-}
-
-static void appendCString(QVector<char> *v, const char *s)
-{
-    char c;
-    do {
-        c = *(s++);
-        *v << c;
-    } while (c != '\0');
-}
-
-struct ExpectedFailure
-{
-    ExpectedFailure(const QString &name, const QString &act,
-                    const QString &exp, const QString &msg)
-        : testName(name), actual(act), expected(exp), message(msg)
-        { }
-
-    QString testName;
-    QString actual;
-    QString expected;
-    QString message;
-};
-
-class tst_Suite : public QObject
-{
-
 public:
-    tst_Suite();
-    virtual ~tst_Suite();
+    tst_QScriptV8TestSuite();
+    virtual ~tst_QScriptV8TestSuite();
 
-    static QMetaObject staticMetaObject;
-    virtual const QMetaObject *metaObject() const;
-    virtual void *qt_metacast(const char *);
-    virtual int qt_metacall(QMetaObject::Call, int, void **argv);
+protected:
+    struct ExpectedFailure
+    {
+        ExpectedFailure(const QString &name, const QString &act,
+                        const QString &exp, const QString &msg)
+            : testName(name), actual(act), expected(exp), message(msg)
+            { }
 
-private:
+        QString testName;
+        QString actual;
+        QString expected;
+        QString message;
+    };
+
     void addExpectedFailure(const QString &testName, const QString &actual,
                             const QString &expected, const QString &message);
     bool isExpectedFailure(const QString &testName, const QString &actual,
@@ -114,231 +75,172 @@ private:
     void addTestExclusion(const QRegExp &rx, const QString &message);
     bool isExcludedTest(const QString &testName, QString *message) const;
 
-    QDir testsDir;
+    virtual void initTestCase();
+    virtual void configData(TestConfig::Mode mode, const QStringList &parts);
+    virtual void writeSkipConfigFile(QTextStream &);
+    virtual void writeExpectFailConfigFile(QTextStream &);
+    virtual void runTestFunction(int testIndex);
+
     QStringList testNames;
     QList<ExpectedFailure> expectedFailures;
     QList<QPair<QRegExp, QString> > testExclusions;
     QString mjsunitContents;
-#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
-    QString generatedAddExpectedFailureCode;
-#endif
 };
 
-QMetaObject tst_Suite::staticMetaObject;
-
-Q_GLOBAL_STATIC(QVector<uint>, qt_meta_data_tst_Suite)
-Q_GLOBAL_STATIC(QVector<char>, qt_meta_stringdata_tst_Suite)
-
-const QMetaObject *tst_Suite::metaObject() const
-{
-    return &staticMetaObject;
-}
-
-void *tst_Suite::qt_metacast(const char *_clname)
-{
-    if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_tst_Suite()->constData()))
-        return static_cast<void*>(const_cast<tst_Suite*>(this));
-    return QObject::qt_metacast(_clname);
-}
-
+// We expect failing tests to call the fail() function (defined in
+// mjsunit.js) with arguments expected, actual, message_opt.  This
+// function intercepts the call, calls the real fail() function (which
+// will throw an exception), and sets the original arguments on the
+// exception object so that we can process them later.
 static QScriptValue qscript_fail(QScriptContext *ctx, QScriptEngine *eng)
 {
     QScriptValue realFail = ctx->callee().data();
-    Q_ASSERT(realFail.isFunction());
+    if (!realFail.isFunction())
+        qFatal("%s: realFail must be a function", Q_FUNC_INFO);
     QScriptValue ret = realFail.call(ctx->thisObject(), ctx->argumentsObject());
-    Q_ASSERT(eng->hasUncaughtException());
+    if (!eng->hasUncaughtException())
+        qFatal("%s: realFail function did not throw an exception", Q_FUNC_INFO);
     ret.setProperty("expected", ctx->argument(0));
     ret.setProperty("actual", ctx->argument(1));
+    ret.setProperty("message", ctx->argument(2));
     QScriptContextInfo info(ctx->parentContext()->parentContext());
     ret.setProperty("lineNumber", info.lineNumber());
     return ret;
 }
 
-int tst_Suite::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+void tst_QScriptV8TestSuite::writeSkipConfigFile(QTextStream &stream)
 {
-    _id = QObject::qt_metacall(_c, _id, _a);
-    if (_id < 0)
-        return _id;
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        QString name = testNames.at(_id);
-        QString path = testsDir.absoluteFilePath(name + ".js");
-        QString excludeMessage;
-        if (isExcludedTest(name, &excludeMessage)) {
-            QTest::qSkip(excludeMessage.toLatin1(), QTest::SkipAll, path.toLatin1(), -1);
-        } else {
-            QScriptEngine engine;
-            engine.evaluate(mjsunitContents).toString();
-            if (engine.hasUncaughtException()) {
-                QStringList bt = engine.uncaughtExceptionBacktrace();
-                QString err = engine.uncaughtException().toString();
-                qWarning("%s\n%s", qPrintable(err), qPrintable(bt.join("\n")));
-            } else {
-                QScriptValue fakeFail = engine.newFunction(qscript_fail);
-                fakeFail.setData(engine.globalObject().property("fail"));
-                engine.globalObject().setProperty("fail", fakeFail);
-                QString contents = readFile(path);
-                QScriptValue ret = engine.evaluate(contents);
-                if (engine.hasUncaughtException()) {
-                    if (!ret.isError()) {
-                        Q_ASSERT(ret.instanceOf(engine.globalObject().property("MjsUnitAssertionError")));
-                        QString actual = ret.property("actual").toString();
-                        QString expected = ret.property("expected").toString();
-                        int lineNumber = ret.property("lineNumber").toInt32();
-                        QString failMessage;
-                        if (isExpectedFailure(name, actual, expected, &failMessage)) {
-                            QTest::qExpectFail("", failMessage.toLatin1(),
-                                               QTest::Continue, path.toLatin1(),
-                                               lineNumber);
-                        }
-#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
-                        else {
-                            generatedAddExpectedFailureCode.append(
-                                "    addExpectedFailure(\"" + name
-                                + "\", \"" + actual + "\", \"" + expected
-                                + "\", willFixInNextReleaseMessage);\n");
-                        }
-#endif
-                        QTest::qCompare(actual, expected, "actual", "expect",
-                                        path.toLatin1(), lineNumber);
-                    } else {
-                        int lineNumber = ret.property("lineNumber").toInt32();
-                        QTest::qExpectFail("", ret.toString().toLatin1(),
-                                           QTest::Continue, path.toLatin1(), lineNumber);
-                        QTest::qVerify(false, ret.toString().toLatin1(), "", path.toLatin1(), lineNumber);
-                    }
-                }
-            }
-        }
-        _id -= testNames.size();
-    }
-    return _id;
+    stream << QString::fromLatin1("# testcase | message") << endl;
 }
 
-tst_Suite::tst_Suite()
+void tst_QScriptV8TestSuite::writeExpectFailConfigFile(QTextStream &stream)
 {
-    testsDir = QDir(SRCDIR);
-    bool testsFound = testsDir.cd("tests");
-    if (!testsFound) {
-        qWarning("*** no tests/ dir!");
+    stream << QString::fromLatin1("# testcase | actual | expected | message") << endl;
+    for (int i = 0; i < expectedFailures.size(); ++i) {
+        const ExpectedFailure &fail = expectedFailures.at(i);
+        stream << QString::fromLatin1("%0 | %1 | %2")
+            .arg(fail.testName)
+            .arg(escape(fail.actual))
+            .arg(escape(fail.expected));
+        if (!fail.message.isEmpty())
+            stream << QString::fromLatin1(" | %0").arg(escape(fail.message));
+        stream << endl;
+    }
+}
+
+void tst_QScriptV8TestSuite::runTestFunction(int testIndex)
+{
+    QString name = testNames.at(testIndex);
+    QString path = testsDir.absoluteFilePath(name + ".js");
+
+    QString excludeMessage;
+    if (isExcludedTest(name, &excludeMessage)) {
+        QTest::qSkip(excludeMessage.toLatin1(), QTest::SkipAll, path.toLatin1(), -1);
+        return;
+    }
+
+    QScriptEngine engine;
+    engine.evaluate(mjsunitContents);
+    if (engine.hasUncaughtException()) {
+        QStringList bt = engine.uncaughtExceptionBacktrace();
+        QString err = engine.uncaughtException().toString();
+        qWarning("%s\n%s", qPrintable(err), qPrintable(bt.join("\n")));
     } else {
-        if (!testsDir.exists("mjsunit.js"))
-            qWarning("*** no tests/mjsunit.js file!");
-        else {
-            mjsunitContents = readFile(testsDir.absoluteFilePath("mjsunit.js"));
-            if (mjsunitContents.isEmpty())
-                qWarning("*** tests/mjsunit.js is empty!");
+        // Prepare to intercept calls to mjsunit's fail() function.
+        QScriptValue fakeFail = engine.newFunction(qscript_fail);
+        fakeFail.setData(engine.globalObject().property("fail"));
+        engine.globalObject().setProperty("fail", fakeFail);
+
+        QString contents = readFile(path);
+        QScriptValue ret = engine.evaluate(contents);
+        if (engine.hasUncaughtException()) {
+            if (!ret.isError()) {
+                int lineNumber = ret.property("lineNumber").toInt32();
+                QTest::qVerify(ret.instanceOf(engine.globalObject().property("MjsUnitAssertionError")),
+                               ret.toString().toLatin1(),
+                               "",
+                               path.toLatin1(),
+                               lineNumber);
+                QString actual = ret.property("actual").toString();
+                QString expected = ret.property("expected").toString();
+                QString failMessage;
+                if (shouldGenerateExpectedFailures) {
+                    if (ret.property("message").isString())
+                        failMessage = ret.property("message").toString();
+                    addExpectedFailure(name, actual, expected, failMessage);
+                } else if (isExpectedFailure(name, actual, expected, &failMessage)) {
+                    QTest::qExpectFail("", failMessage.toLatin1(),
+                                       QTest::Continue, path.toLatin1(),
+                                       lineNumber);
+                }
+                QTest::qCompare(actual, expected, "actual", "expect",
+                                path.toLatin1(), lineNumber);
+            } else {
+                int lineNumber = ret.property("lineNumber").toInt32();
+                QTest::qExpectFail("", ret.toString().toLatin1(),
+                                   QTest::Continue, path.toLatin1(), lineNumber);
+                QTest::qVerify(false, ret.toString().toLatin1(), "", path.toLatin1(), lineNumber);
+            }
         }
     }
-    QString willFixInNextReleaseMessage = QString::fromLatin1("Will fix in next release");
-    addExpectedFailure("arguments-enum", "2", "0", willFixInNextReleaseMessage);
-    addExpectedFailure("const-redecl", "undefined", "TypeError", willFixInNextReleaseMessage);
-    addExpectedFailure("global-const-var-conflicts", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("string-lastindexof", "0", "-1", "test is wrong?");
+}
 
-#ifndef Q_OS_LINUX
-    addExpectedFailure("to-precision", "1.235e+27", "1.234e+27", "QTBUG-8053: toPrecision(4) gives wrong result on Mac");
-#endif
-
-#ifdef Q_OS_SOLARIS
-    addExpectedFailure("math-min-max", "Infinity", "-Infinity", willFixInNextReleaseMessage);
-    addExpectedFailure("negate-zero", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("str-to-num", "Infinity", "-Infinity", willFixInNextReleaseMessage);
-#endif
-
-    addTestExclusion("debug-*", "not applicable");
-    addTestExclusion("mirror-*", "not applicable");
-
-    addTestExclusion("array-concat", "Hangs on JSC backend");
-    addTestExclusion("array-splice", "Hangs on JSC backend");
-    addTestExclusion("sparse-array-reverse", "Hangs on JSC backend");
-
-    addTestExclusion("string-case", "V8-specific behavior? (Doesn't pass on SpiderMonkey either)");
-
-#ifdef Q_OS_WINCE
-    addTestExclusion("deep-recursion", "Demands too much memory on WinCE");
-    addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on WinCE");
-    addTestExclusion("unicode-test", "Demands too much memory on WinCE");
-    addTestExclusion("mul-exhaustive", "Demands too much memory on WinCE");
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on Symbian");
-    addTestExclusion("unicode-test", "Demands too much memory on Symbian");
-#endif
-    // Failures due to switch to JSC as back-end
-    addExpectedFailure("date-parse", "NaN", "946713600000", willFixInNextReleaseMessage);
-    addExpectedFailure("delete-global-properties", "true", "false", willFixInNextReleaseMessage);
-    addExpectedFailure("delete", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("function-arguments-null", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("function-caller", "null", "function eval() {\n    [native code]\n}", willFixInNextReleaseMessage);
-    addExpectedFailure("function-prototype", "prototype", "disconnectconnect", willFixInNextReleaseMessage);
-    addExpectedFailure("number-tostring", "0", "0.0000a7c5ac471b4788", willFixInNextReleaseMessage);
-    addExpectedFailure("parse-int-float", "1e+21", "1", willFixInNextReleaseMessage);
-    addExpectedFailure("regexp", "false", "true", willFixInNextReleaseMessage);
-    addExpectedFailure("smi-negative-zero", "-Infinity", "Infinity", willFixInNextReleaseMessage);
-    addExpectedFailure("string-split", "4", "3", willFixInNextReleaseMessage);
-    addExpectedFailure("substr", "abcdefghijklmn", "", willFixInNextReleaseMessage);
-
-    static const char klass[] = "tst_QScriptV8TestSuite";
-
-    QVector<uint> *data = qt_meta_data_tst_Suite();
-    // content:
-    *data << 1 // revision
-          << 0 // classname
-          << 0 << 0 // classinfo
-          << 0 << 10 // methods (backpatched later)
-          << 0 << 0 // properties
-          << 0 << 0 // enums/sets
-        ;
-
-    QVector<char> *stringdata = qt_meta_stringdata_tst_Suite();
-    appendCString(stringdata, klass);
-    appendCString(stringdata, "");
-
+tst_QScriptV8TestSuite::tst_QScriptV8TestSuite()
+    : AbstractTestSuite("tst_QScriptV8TestSuite",
+                        ":/tests", ":/")
+{
+    // One test function per test file.
     QFileInfoList testFileInfos;
-    if (testsFound)
-        testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
     foreach (QFileInfo tfi, testFileInfos) {
         QString name = tfi.baseName();
-        // slot: signature, parameters, type, tag, flags
-        QString slot = QString::fromLatin1("%0()").arg(name);
-        static const int nullbyte = sizeof(klass);
-        *data << stringdata->size() << nullbyte << nullbyte << nullbyte << 0x08;
-        appendCString(stringdata, slot.toLatin1());
+        addTestFunction(name);
         testNames.append(name);
     }
 
-    (*data)[4] = testFileInfos.size();
-
-    *data << 0; // eod
-
-    // initialize staticMetaObject
-    staticMetaObject.d.superdata = &QObject::staticMetaObject;
-    staticMetaObject.d.stringdata = stringdata->constData();
-    staticMetaObject.d.data = data->constData();
-    staticMetaObject.d.extradata = 0;
+    finalizeMetaObject();
 }
 
-tst_Suite::~tst_Suite()
+tst_QScriptV8TestSuite::~tst_QScriptV8TestSuite()
 {
-#ifdef GENERATE_ADDEXPECTEDFAILURE_CODE
-    if (!generatedAddExpectedFailureCode.isEmpty()) {
-        QFile file("addexpectedfailures.cpp");
-        file.open(QFile::WriteOnly);
-        QTextStream ts(&file);
-        ts << generatedAddExpectedFailureCode;
-    }
-#endif
 }
 
-void tst_Suite::addExpectedFailure(const QString &testName, const QString &actual,
+void tst_QScriptV8TestSuite::initTestCase()
+{
+    AbstractTestSuite::initTestCase();
+
+    // FIXME: These warnings should be QFAIL, but that would make the
+    // test fail right now.
+    if (!testsDir.exists("mjsunit.js"))
+        qWarning("*** no tests/mjsunit.js file!");
+    else {
+        mjsunitContents = readFile(testsDir.absoluteFilePath("mjsunit.js"));
+        if (mjsunitContents.isEmpty())
+            qWarning("*** tests/mjsunit.js is empty!");
+    }
+}
+
+void tst_QScriptV8TestSuite::configData(TestConfig::Mode mode, const QStringList &parts)
+{
+    switch (mode) {
+    case TestConfig::Skip:
+        addTestExclusion(parts.at(0), parts.value(1));
+        break;
+
+    case TestConfig::ExpectFail:
+        addExpectedFailure(parts.at(0), parts.value(1),
+                           parts.value(2), parts.value(3));
+        break;
+    }
+}
+
+void tst_QScriptV8TestSuite::addExpectedFailure(const QString &testName, const QString &actual,
                                    const QString &expected, const QString &message)
 {
     expectedFailures.append(ExpectedFailure(testName, actual, expected, message));
 }
 
-bool tst_Suite::isExpectedFailure(const QString &testName, const QString &actual,
+bool tst_QScriptV8TestSuite::isExpectedFailure(const QString &testName, const QString &actual,
                                   const QString &expected, QString *message) const
 {
     for (int i = 0; i < expectedFailures.size(); ++i) {
@@ -352,17 +254,17 @@ bool tst_Suite::isExpectedFailure(const QString &testName, const QString &actual
     return false;
 }
 
-void tst_Suite::addTestExclusion(const QString &testName, const QString &message)
+void tst_QScriptV8TestSuite::addTestExclusion(const QString &testName, const QString &message)
 {
     testExclusions.append(qMakePair(QRegExp(testName), message));
 }
 
-void tst_Suite::addTestExclusion(const QRegExp &rx, const QString &message)
+void tst_QScriptV8TestSuite::addTestExclusion(const QRegExp &rx, const QString &message)
 {
     testExclusions.append(qMakePair(rx, message));
 }
 
-bool tst_Suite::isExcludedTest(const QString &testName, QString *message) const
+bool tst_QScriptV8TestSuite::isExcludedTest(const QString &testName, QString *message) const
 {
     for (int i = 0; i < testExclusions.size(); ++i) {
         if (testExclusions.at(i).first.indexIn(testName) != -1) {
@@ -374,4 +276,4 @@ bool tst_Suite::isExcludedTest(const QString &testName, QString *message) const
     return false;
 }
 
-QTEST_MAIN(tst_Suite)
+QTEST_MAIN(tst_QScriptV8TestSuite)

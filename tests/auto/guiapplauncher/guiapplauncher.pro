@@ -3,6 +3,7 @@
 # -------------------------------------------------
 
 # Link against gui for X11,etc.
+load(qttest_p4)
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 TARGET = tst_guiapplauncher

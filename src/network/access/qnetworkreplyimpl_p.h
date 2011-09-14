@@ -62,6 +62,7 @@
 #include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
 #include "private/qbytedata_p.h"
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -163,17 +164,19 @@ public:
     void appendDownstreamData(QIODevice *data);
     void appendDownstreamData(const QByteArray &data);
 
+    void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
+    char* getDownloadBuffer(qint64 size);
+    void appendDownstreamDataDownloadBuffer(qint64, qint64);
+
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
     void redirectionRequested(const QUrl &target);
     void sslErrors(const QList<QSslError> &errors);
 
-    bool isFinished() const;
-
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
-    QRingBuffer *outgoingDataBuffer;
+    QSharedPointer<QRingBuffer> outgoingDataBuffer;
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 
@@ -191,6 +194,7 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
+    // Used for normal downloading. For "zero copy" the downloadBuffer is used
     QByteDataBuffer readBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
@@ -201,6 +205,14 @@ public:
     int httpStatusCode;
 
     State state;
+
+    // only used when the "zero copy" style is used. Else readBuffer is used.
+    // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
+    qint64 downloadBufferReadPosition;
+    qint64 downloadBufferCurrentSize;
+    qint64 downloadBufferMaximumSize;
+    QSharedPointer<char> downloadBufferPointer;
+    char* downloadBuffer;
 
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };

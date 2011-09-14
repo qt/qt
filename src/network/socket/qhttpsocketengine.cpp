@@ -45,6 +45,7 @@
 #include "qurl.h"
 #include "qhttp.h"
 #include "qelapsedtimer.h"
+#include "qnetworkinterface.h"
 
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 #include <qdebug.h>
@@ -71,6 +72,9 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     setProtocol(protocol);
     setSocketType(type);
     d->socket = new QTcpSocket(this);
+#ifndef QT_NO_BEARERMANAGEMENT
+    d->socket->setProperty("_q_networkSession", property("_q_networkSession"));
+#endif
 
     // Explicitly disable proxying on the proxy socket itself to avoid
     // unwanted recursion.
@@ -241,6 +245,36 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+#ifndef QT_NO_NETWORKINTERFACE
+bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
+                                           const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
+                                            const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+QNetworkInterface QHttpSocketEngine::multicastInterface() const
+{
+    return QNetworkInterface();
+}
+
+bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+#endif // QT_NO_NETWORKINTERFACE
+
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
                                        quint16 *)
 {
@@ -683,11 +717,10 @@ void QHttpSocketEngine::slotSocketError(QAbstractSocket::SocketError error)
 
     d->state = None;
     setError(error, d->socket->errorString());
-    if (error == QAbstractSocket::RemoteHostClosedError) {
-        emitReadNotification();
-    } else {
+    if (error != QAbstractSocket::RemoteHostClosedError)
         qDebug() << "QHttpSocketEngine::slotSocketError: got weird error =" << error;
-    }
+    //read notification needs to always be emitted, otherwise the higher layer doesn't get the disconnected signal
+    emitReadNotification();
 }
 
 void QHttpSocketEngine::slotSocketStateChanged(QAbstractSocket::SocketState state)
@@ -722,7 +755,10 @@ void QHttpSocketEngine::emitReadNotification()
 {
     Q_D(QHttpSocketEngine);
     d->readNotificationActivated = true;
-    if (d->readNotificationEnabled && !d->readNotificationPending) {
+    // if there is a connection notification pending we have to emit the readNotification
+    // incase there is connection error. This is only needed for Windows, but it does not
+    // hurt in other cases.
+    if ((d->readNotificationEnabled && !d->readNotificationPending) || d->connectionNotificationPending) {
         d->readNotificationPending = true;
         QMetaObject::invokeMethod(this, "emitPendingReadNotification", Qt::QueuedConnection);
     }

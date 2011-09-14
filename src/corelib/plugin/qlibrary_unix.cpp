@@ -56,9 +56,13 @@
 #include <string.h>
 #endif
 
+#if defined(Q_OS_VXWORKS) || defined (Q_OS_NACL)
+#define QT_NO_DYNAMIC_LIBRARY
+#endif
+
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_HPUX_LD) && !defined(Q_OS_VXWORKS)
+#if !defined(QT_HPUX_LD) && !defined(QT_NO_DYNAMIC_LIBRARY)
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <dlfcn.h>
 QT_END_INCLUDE_NAMESPACE
@@ -66,8 +70,8 @@ QT_END_INCLUDE_NAMESPACE
 
 static QString qdlerror()
 {
-#if defined(Q_OS_VXWORKS)
-    const char *err = "VxWorks does not support dynamic libraries.";
+#if defined(QT_NO_DYNAMIC_LIBRARY)
+    const char *err = "This platform does not support dynamic libraries.";
 #elif !defined(QT_HPUX_LD)
     const char *err = dlerror();
 #else
@@ -79,7 +83,7 @@ static QString qdlerror()
 bool QLibraryPrivate::load_sys()
 {
     QString attempt;
-#if !defined(Q_OS_VXWORKS)
+#if !defined(QT_NO_DYNAMIC_LIBRARY)
     QFileInfo fi(fileName);
 
 #if defined(Q_OS_SYMBIAN)
@@ -131,12 +135,12 @@ bool QLibraryPrivate::load_sys()
         } else {
             suffixes << QLatin1String(".sl");
         }
-#elif defined(Q_OS_AIX)
-        suffixes << ".a";
-
 #elif defined(Q_OS_SYMBIAN)
         suffixes << QLatin1String(".dll");
 #else
+#ifdef Q_OS_AIX
+        suffixes << ".a";
+#endif // Q_OS_AIX
         if (!fullVersion.isEmpty()) {
             suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
         } else {
@@ -223,15 +227,19 @@ bool QLibraryPrivate::load_sys()
 
 #ifdef Q_OS_MAC
     if (!pHnd) {
-        if (CFBundleRef bundle = CFBundleGetBundleWithIdentifier(QCFString(fileName))) {
+        QByteArray utf8Bundle = fileName.toUtf8();
+        QCFType<CFURLRef> bundleUrl = CFURLCreateFromFileSystemRepresentation(NULL, reinterpret_cast<const UInt8*>(utf8Bundle.data()), utf8Bundle.length(), true);
+        QCFType<CFBundleRef> bundle = CFBundleCreate(NULL, bundleUrl);
+        if(bundle) {
             QCFType<CFURLRef> url = CFBundleCopyExecutableURL(bundle);
-            QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            pHnd = dlopen(QFile::encodeName(str), dlFlags);
-            attempt = str;
+            char executableFile[FILENAME_MAX];
+            CFURLGetFileSystemRepresentation(url, true, reinterpret_cast<UInt8*>(executableFile), FILENAME_MAX);
+            attempt = QString::fromUtf8(executableFile);
+            pHnd = dlopen(QFile::encodeName(attempt), dlFlags);
         }
     }
 #endif
-#endif // Q_OS_VXWORKS
+#endif // QT_NO_DYNAMIC_LIBRARY
     if (!pHnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName).arg(qdlerror());
     }
@@ -244,7 +252,7 @@ bool QLibraryPrivate::load_sys()
 
 bool QLibraryPrivate::unload_sys()
 {
-#if !defined(Q_OS_VXWORKS)
+#if !defined(QT_NO_DYNAMIC_LIBRARY)
 #  if defined(QT_HPUX_LD)
     if (shl_unload((shl_t)pHnd)) {
 #  else
@@ -278,7 +286,7 @@ void* QLibraryPrivate::resolve_sys(const char* symbol)
     void* address = 0;
     if (shl_findsym((shl_t*)&pHnd, symbol, TYPE_UNDEFINED, &address) < 0)
         address = 0;
-#elif defined(Q_OS_VXWORKS)
+#elif defined (QT_NO_DYNAMIC_LIBRARY)
     void *address = 0;
 #else
     void* address = dlsym(pHnd, symbol);

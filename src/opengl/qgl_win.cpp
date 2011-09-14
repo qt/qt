@@ -1261,6 +1261,7 @@ void QGLContext::reset()
     }
     d->dc  = 0;
     d->win = 0;
+    d->threadId = 0;
     d->pixelFormatId = 0;
     d->sharing = false;
     d->valid = false;
@@ -1283,8 +1284,9 @@ void QGLContext::makeCurrent()
     if (d->rc == wglGetCurrentContext() || !d->valid)       // already current
         return;
 
-    if (d->win) {
+    if (d->win && (!d->dc || d->threadId != QThread::currentThreadId())) {
         d->dc = GetDC(d->win);
+        d->threadId = QThread::currentThreadId();
         if (!d->dc) {
             qwglError("QGLContext::makeCurrent()", "GetDC()");
             return;
@@ -1322,6 +1324,7 @@ void QGLContext::doneCurrent()
     if (d->win && d->dc) {
         ReleaseDC(d->win, d->dc);
         d->dc = 0;
+        d->threadId = 0;
     }
 }
 

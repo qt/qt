@@ -163,7 +163,7 @@ void BrushPropertyManager::initializeProperty(QtVariantPropertyManager *vm, QtPr
     for (int i = 0; i < brushStyleCount; i++)
         styles.push_back(QCoreApplication::translate("BrushPropertyManager", brushStyles[i]));
     styleSubProperty->setAttribute(QLatin1String("enumNames"), styles);
-    styleSubProperty->setAttribute(QLatin1String("enumIcons"), qVariantFromValue(brushStyleIcons()));
+    styleSubProperty->setAttribute(QLatin1String("enumIcons"), QVariant::fromValue(brushStyleIcons()));
     m_brushPropertyToStyleSubProperty.insert(property, styleSubProperty);
     m_brushStyleSubPropertyToProperty.insert(styleSubProperty, property);
     // color

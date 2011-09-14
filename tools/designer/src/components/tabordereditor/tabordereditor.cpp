@@ -208,7 +208,7 @@ bool TabOrderEditor::skipWidget(QWidget *w) const
         if (index != -1) {
             bool ok = false;
             Qt::FocusPolicy q = (Qt::FocusPolicy) Utils::valueOf(sheet->property(index), &ok);
-            return !ok || q == Qt::NoFocus;
+            return !ok || !(q & Qt::TabFocus);
         }
     }
 
@@ -239,7 +239,7 @@ void TabOrderEditor::initTabOrder()
     childQueue.append(formWindow()->mainContainer());
     while (!childQueue.isEmpty()) {
         QWidget *child = childQueue.takeFirst();
-        childQueue += qVariantValue<QWidgetList>(child->property("_q_widgetOrder"));
+        childQueue += qvariant_cast<QWidgetList>(child->property("_q_widgetOrder"));
 
         if (skipWidget(child))
             continue;

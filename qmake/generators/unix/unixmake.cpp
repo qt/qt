@@ -148,6 +148,8 @@ UnixMakefileGenerator::init()
                 project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdirs[i];
             if (project->isActiveConfig("rvct_linker")) {
                 project->values("QMAKE_LIBDIR_FLAGS") += "--userlibpath " + escapeFilePath(libdirs[i]);
+            } else if (project->isActiveConfig("armcc_linker")) {
+                project->values("QMAKE_LIBDIR_FLAGS") += "-L--userlibpath=" + escapeFilePath(libdirs[i]);
             } else {
                 project->values("QMAKE_LIBDIR_FLAGS") += "-L" + escapeFilePath(libdirs[i]);
             }
@@ -206,6 +208,33 @@ UnixMakefileGenerator::init()
                 // icc style
                 pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
                                             pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT"));
+            } else {
+                // gcc style (including clang_pch_style)
+                QString headerPrefix = project->first("QMAKE_PRECOMP_PREFIX");
+                QString headerSuffix;
+                if (project->isActiveConfig("clang_pch_style"))
+                    headerSuffix = project->first("QMAKE_PCH_OUTPUT_EXT");
+                else
+                    pchBaseName += project->first("QMAKE_PCH_OUTPUT_EXT");
+
+                pchBaseName += Option::dir_sep;
+                QString pchOutputFile;
+
+                if(comps[i] == "C") {
+                    pchOutputFile = "c";
+                } else if(comps[i] == "CXX") {
+                    pchOutputFile = "c++";
+                } else if(project->isActiveConfig("objective_c")) {
+                    if(comps[i] == "OBJC")
+                        pchOutputFile = "objective-c";
+                    else if(comps[i] == "OBJCXX")
+                        pchOutputFile = "objective-c++";
+                }
+
+                if(!pchOutputFile.isEmpty()) {
+                    pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
+                            pchBaseName + pchOutputFile + headerSuffix);
+                }
             }
 
             if (!pchFlags.isEmpty())
@@ -379,7 +408,9 @@ QStringList
         QString header_prefix;
         if(!project->isEmpty("PRECOMPILED_DIR"))
             header_prefix = project->first("PRECOMPILED_DIR");
-        header_prefix += project->first("QMAKE_ORIG_TARGET") + project->first("QMAKE_PCH_OUTPUT_EXT");
+        header_prefix += project->first("QMAKE_ORIG_TARGET");
+        if (!project->isActiveConfig("clang_pch_style"))
+            header_prefix += project->first("QMAKE_PCH_OUTPUT_EXT");
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
             for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
@@ -389,23 +420,25 @@ QStringList
                 }
             }
         } else {
-            // gcc style
+            // gcc style (including clang_pch_style)
+            QString header_suffix = project->isActiveConfig("clang_pch_style")
+                    ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
             header_prefix += Option::dir_sep + project->first("QMAKE_PRECOMP_PREFIX");
             for(QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
                 if(file.endsWith(*it)) {
                     if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE")) {
-                        QString precomp_c_h = header_prefix + "c";
+                        QString precomp_c_h = header_prefix + "c" + header_suffix;
                         if(!ret.contains(precomp_c_h))
                             ret += precomp_c_h;
                     }
                     if(project->isActiveConfig("objective_c")) {
                         if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE")) {
-                            QString precomp_objc_h = header_prefix + "objective-c";
+                            QString precomp_objc_h = header_prefix + "objective-c" + header_suffix;
                             if(!ret.contains(precomp_objc_h))
                                 ret += precomp_objc_h;
                         }
                         if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++";
+                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
                             if(!ret.contains(precomp_objcpp_h))
                                 ret += precomp_objcpp_h;
                         }
@@ -416,13 +449,13 @@ QStringList
             for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
                 if(file.endsWith(*it)) {
                     if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE")) {
-                        QString precomp_cpp_h = header_prefix + "c++";
+                        QString precomp_cpp_h = header_prefix + "c++" + header_suffix;
                         if(!ret.contains(precomp_cpp_h))
                             ret += precomp_cpp_h;
                     }
                     if(project->isActiveConfig("objective_c")) {
                         if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++";
+                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
                             if(!ret.contains(precomp_objcpp_h))
                                 ret += precomp_objcpp_h;
                         }
@@ -455,7 +488,7 @@ UnixMakefileGenerator::findLibraries()
                 } else if(opt.startsWith("-l")) {
                     if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE")) {
                         (*it) = opt.mid(2);
-                    } else if (project->isActiveConfig("rvct_linker")) {
+                    } else if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
                     } else {
                         stub = opt.mid(2);

@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 QBearerEngine::QBearerEngine(QObject *parent)
-:   QObject(parent), mutex(QMutex::Recursive)
+    : QObject(parent), mutex(QMutex::Recursive)
 {
 }
 
@@ -54,6 +54,7 @@ QBearerEngine::~QBearerEngine()
 {
     QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
     QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
+
     for (it = snapConfigurations.begin(), end = snapConfigurations.end(); it != end; ++it) {
         it.value()->isValid = false;
         it.value()->id.clear();
@@ -93,19 +94,20 @@ bool QBearerEngine::configurationsInUse() const
 
     QMutexLocker locker(&mutex);
 
-    for (it = accessPointConfigurations.begin(),
-         end = accessPointConfigurations.end(); it != end; ++it) {
+    for (it = accessPointConfigurations.constBegin(),
+         end = accessPointConfigurations.constEnd(); it != end; ++it) {
         if (it.value()->ref > 1)
             return true;
     }
 
-    for (it = snapConfigurations.begin(), end = snapConfigurations.end(); it != end; ++it) {
+    for (it = snapConfigurations.constBegin(),
+         end = snapConfigurations.constEnd(); it != end; ++it) {
         if (it.value()->ref > 1)
             return true;
     }
 
-    for (it = userChoiceConfigurations.begin(),
-         end = userChoiceConfigurations.end(); it != end; ++it) {
+    for (it = userChoiceConfigurations.constBegin(),
+         end = userChoiceConfigurations.constEnd(); it != end; ++it) {
         if (it.value()->ref > 1)
             return true;
     }

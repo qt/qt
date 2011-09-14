@@ -45,6 +45,7 @@
 #include <QtDesigner/sdk_global.h>
 
 #include <QtCore/QObject>
+#include <QtCore/QString>
 
 QT_BEGIN_HEADER
 
@@ -55,12 +56,21 @@ class QDesignerFormEditorInterface;
 class QDESIGNER_SDK_EXPORT QDesignerIntegrationInterface: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString headerSuffix READ headerSuffix WRITE setHeaderSuffix)
+    Q_PROPERTY(bool headerLowercase READ isHeaderLowercase WRITE setHeaderLowercase)
+
 public:
     QDesignerIntegrationInterface(QDesignerFormEditorInterface *core, QObject *parent = 0);
 
     inline QDesignerFormEditorInterface *core() const;
 
     virtual QWidget *containerWindow(QWidget *widget) const = 0;
+
+    QString headerSuffix() const;
+    void setHeaderSuffix(const QString &headerSuffix);
+
+    bool isHeaderLowercase() const;
+    void setHeaderLowercase(bool headerLowerCase);
 
 private:
     QDesignerFormEditorInterface *m_core;

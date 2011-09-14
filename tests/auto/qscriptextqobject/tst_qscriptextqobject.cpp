@@ -329,6 +329,18 @@ public:
         { m_qtFunctionInvoked = 58; m_actuals << int(arg); return arg; }
     Q_INVOKABLE MyQObject::Ability myInvokableWithQualifiedFlagsArg(MyQObject::Ability arg)
         { m_qtFunctionInvoked = 59; m_actuals << int(arg); return arg; }
+    Q_INVOKABLE QWidget *myInvokableWithQWidgetStarArg(QWidget *arg)
+        { m_qtFunctionInvoked = 63; m_actuals << qVariantFromValue((QWidget*)arg); return arg; }
+    Q_INVOKABLE short myInvokableWithShortArg(short arg)
+        { m_qtFunctionInvoked = 64; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE unsigned short myInvokableWithUShortArg(unsigned short arg)
+        { m_qtFunctionInvoked = 65; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE char myInvokableWithCharArg(char arg)
+        { m_qtFunctionInvoked = 66; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE unsigned char myInvokableWithUCharArg(unsigned char arg)
+        { m_qtFunctionInvoked = 67; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE qulonglong myInvokableWithULonglongArg(qulonglong arg)
+        { m_qtFunctionInvoked = 68; m_actuals << qVariantFromValue(arg); return arg; }
 
     Q_INVOKABLE QObjectList findObjects() const
     {  return findChildren<QObject *>();  }
@@ -394,6 +406,8 @@ public Q_SLOTS:
         { m_qtFunctionInvoked = 32; m_actuals << arg; }
     void myOverloadedSlot(const QDate &arg)
         { m_qtFunctionInvoked = 33; m_actuals << arg; }
+    void myOverloadedSlot(const QTime &arg)
+        { m_qtFunctionInvoked = 69; m_actuals << arg; }
     void myOverloadedSlot(const QRegExp &arg)
         { m_qtFunctionInvoked = 34; m_actuals << arg; }
     void myOverloadedSlot(const QVariant &arg)
@@ -514,18 +528,47 @@ protected slots:
 private slots:
     void registeredTypes();
     void getSetStaticProperty();
+    void getSetStaticProperty_propertyFlags();
+    void getSetStaticProperty_changeInCpp();
+    void getSetStaticProperty_changeInJS();
+    void getSetStaticProperty_compatibleVariantTypes();
+    void getSetStaticProperty_conversion();
+    void getSetStaticProperty_delete();
+    void getSetStaticProperty_nonScriptable();
+    void getSetStaticProperty_writeOnly();
+    void getSetStaticProperty_readOnly();
+    void getSetStaticProperty_enum();
+    void getSetStaticProperty_qflags();
+    void getSetStaticProperty_pointerDeref();
+    void getSetStaticProperty_customGetterSetter();
+    void getSetStaticProperty_methodPersistence();
     void getSetDynamicProperty();
+    void getSetDynamicProperty_deleteFromCpp();
+    void getSetDynamicProperty_hideChildObject();
+    void getSetDynamicProperty_setBeforeGet();
+    void getSetDynamicProperty_doNotHideJSProperty();
     void getSetChildren();
     void callQtInvokable();
+    void callQtInvokable2();
+    void callQtInvokable3();
+    void callQtInvokable4();
+    void callQtInvokable5();
+    void callQtInvokable6();
+    void callQtInvokable7();
     void connectAndDisconnect();
+    void connectAndDisconnect_emitFromJS();
+    void connectAndDisconnect_senderWrapperCollected();
     void connectAndDisconnectWithBadArgs();
+    void connectAndDisconnect_senderDeleted();
     void cppConnectAndDisconnect();
+    void cppConnectAndDisconnect2();
     void classEnums();
     void classConstructor();
     void overrideInvokable();
     void transferInvokable();
     void findChild();
     void findChildren();
+    void childObjects();
     void overloadedSlots();
     void enumerate_data();
     void enumerate();
@@ -640,7 +683,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     QCOMPARE(m_engine->evaluate("myObject.stringListProperty[1]").isString(), true);
     QCOMPARE(m_engine->evaluate("myObject.stringListProperty[1]").toString(),
              QLatin1String("zag"));
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_propertyFlags()
+{
     // default flags for "normal" properties
     {
         QScriptValue mobj = m_engine->globalObject().property("myObject");
@@ -662,7 +708,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QVERIFY(!(mobj.propertyFlags("mySlot()") & QScriptValue::SkipInEnumeration));
         QVERIFY(mobj.propertyFlags("mySlot()") & QScriptValue::QObjectMember);
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_changeInCpp()
+{
     // property change in C++ should be reflected in script
     m_myObject->setIntProperty(456);
     QCOMPARE(m_engine->evaluate("myObject.intProperty")
@@ -686,7 +735,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     m_myObject->setStringProperty(QLatin1String("zab"));
     QCOMPARE(m_engine->evaluate("myObject.stringProperty")
              .equals(QScriptValue(m_engine, QLatin1String("zab"))), true);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_changeInJS()
+{
     // property change in script should be reflected in C++
     QCOMPARE(m_engine->evaluate("myObject.intProperty = 123")
              .strictlyEquals(QScriptValue(m_engine, 123)), true);
@@ -769,7 +821,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
                  << QLatin1String("two")
                  << QLatin1String("true"));
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_compatibleVariantTypes()
+{
     // test setting properties where we can't convert the type natively but where the
     // types happen to be compatible variant types already
     {
@@ -788,7 +843,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         mobj.setProperty("propWithCustomType", m_engine->newVariant(qVariantFromValue(t)));
         QVERIFY(m_myObject->propWithCustomType().string == t.string);
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_conversion()
+{
     // test that we do value conversion if necessary when setting properties
     {
         QScriptValue br = m_engine->evaluate("myObject.brushProperty");
@@ -808,28 +866,41 @@ void tst_QScriptExtQObject::getSetStaticProperty()
 
         m_engine->globalObject().setProperty("myColor", QScriptValue());
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_delete()
+{
     // try to delete
     QCOMPARE(m_engine->evaluate("delete myObject.intProperty").toBoolean(), false);
     QCOMPARE(m_engine->evaluate("myObject.intProperty").toNumber(), 123.0);
 
+    m_myObject->setVariantProperty(42);
     QCOMPARE(m_engine->evaluate("delete myObject.variantProperty").toBoolean(), false);
     QCOMPARE(m_engine->evaluate("myObject.variantProperty").toNumber(), 42.0);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_nonScriptable()
+{
     // non-scriptable property
     QCOMPARE(m_myObject->hiddenProperty(), 456.0);
     QCOMPARE(m_engine->evaluate("myObject.hiddenProperty").isUndefined(), true);
     QCOMPARE(m_engine->evaluate("myObject.hiddenProperty = 123;"
                                 "myObject.hiddenProperty").toInt32(), 123);
     QCOMPARE(m_myObject->hiddenProperty(), 456.0);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_writeOnly()
+{
     // write-only property
     QCOMPARE(m_myObject->writeOnlyProperty(), 789);
     QCOMPARE(m_engine->evaluate("myObject.writeOnlyProperty").isUndefined(), true);
     QCOMPARE(m_engine->evaluate("myObject.writeOnlyProperty = 123;"
                                 "myObject.writeOnlyProperty").isUndefined(), true);
     QCOMPARE(m_myObject->writeOnlyProperty(), 123);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_readOnly()
+{
     // read-only property
     QCOMPARE(m_myObject->readOnlyProperty(), 987);
     QCOMPARE(m_engine->evaluate("myObject.readOnlyProperty").toInt32(), 987);
@@ -841,7 +912,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         QCOMPARE(mobj.propertyFlags("readOnlyProperty") & QScriptValue::ReadOnly,
                  QScriptValue::ReadOnly);
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_enum()
+{
     // enum property
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BarPolicy);
     {
@@ -866,7 +940,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
     m_engine->evaluate("myObject.enumProperty = 'nada'");
     QCOMPARE(m_myObject->enumProperty(), (MyQObject::Policy)-1);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_qflags()
+{
     // flags property
     QCOMPARE(m_myObject->flagsProperty(), MyQObject::FooAbility);
     {
@@ -885,7 +962,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     m_engine->evaluate("myObject.flagsProperty = 'ScoobyDoo'");
     // ### ouch! Shouldn't QMetaProperty::write() rather not change the value...?
     QCOMPARE(m_myObject->flagsProperty(), (MyQObject::Ability)-1);
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_pointerDeref()
+{
     // auto-dereferencing of pointers
     {
         QBrush b = QColor(0xCA, 0xFE, 0xBA, 0xBE);
@@ -905,7 +985,10 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         }
         m_engine->globalObject().setProperty("brushPointer", QScriptValue());
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_customGetterSetter()
+{
     // install custom property getter+setter
     {
         QScriptValue mobj = m_engine->globalObject().property("myObject");
@@ -915,15 +998,19 @@ void tst_QScriptExtQObject::getSetStaticProperty()
         mobj.setProperty("intProperty", 321);
         QCOMPARE(mobj.property("intProperty").toInt32(), 321);
     }
+}
 
+void tst_QScriptExtQObject::getSetStaticProperty_methodPersistence()
+{
     // method properties are persistent
     {
         QScriptValue slot = m_engine->evaluate("myObject.mySlot");
         QVERIFY(slot.isFunction());
         QScriptValue sameSlot = m_engine->evaluate("myObject.mySlot");
         QVERIFY(sameSlot.strictlyEquals(slot));
-        sameSlot = m_engine->evaluate("myObject[mySlot()]");
-        QEXPECT_FAIL("", "Signature-based method lookup creates new function wrapper object", Continue);
+        sameSlot = m_engine->evaluate("myObject['mySlot()']");
+        QVERIFY(sameSlot.isFunction());
+        QEXPECT_FAIL("", "QTBUG-17611: Signature-based method lookup creates new function wrapper object", Continue);
         QVERIFY(sameSlot.strictlyEquals(slot));
     }
 }
@@ -961,6 +1048,69 @@ void tst_QScriptExtQObject::getSetDynamicProperty()
     QCOMPARE(m_myObject->property("dynamicProperty").isValid(), false);
     QCOMPARE(m_engine->evaluate("myObject.dynamicProperty").isUndefined(), true);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('dynamicProperty')").toBoolean(), false);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_deleteFromCpp()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    m_myObject->setProperty("dynamicFromCpp", 1234);
+    QVERIFY(val.property("dynamicFromCpp").strictlyEquals(QScriptValue(m_engine, 1234)));
+
+    m_myObject->setProperty("dynamicFromCpp", 4321);
+    QVERIFY(val.property("dynamicFromCpp").strictlyEquals(QScriptValue(m_engine, 4321)));
+    QCOMPARE(m_myObject->property("dynamicFromCpp").toInt(), 4321);
+
+    // In this case we delete the property from C++
+    m_myObject->setProperty("dynamicFromCpp", QVariant());
+    QVERIFY(!m_myObject->property("dynamicFromCpp").isValid());
+    QVERIFY(!val.property("dynamicFromCpp").isValid());
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_hideChildObject()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    // Add our named child and access it
+    QObject *child = new QObject(m_myObject);
+    child->setObjectName("testName");
+    QCOMPARE(val.property("testName").toQObject(), child);
+
+    // Dynamic properties have precedence, hiding the child object
+    m_myObject->setProperty("testName", 42);
+    QVERIFY(val.property("testName").strictlyEquals(QScriptValue(m_engine, 42)));
+
+    // Remove dynamic property
+    m_myObject->setProperty("testName", QVariant());
+    QCOMPARE(val.property("testName").toQObject(), child);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_setBeforeGet()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    m_myObject->setProperty("dynamic", 1111);
+    val.setProperty("dynamic", 42);
+
+    QVERIFY(val.property("dynamic").strictlyEquals(QScriptValue(m_engine, 42)));
+    QCOMPARE(m_myObject->property("dynamic").toInt(), 42);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_doNotHideJSProperty()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    // Set property on JS and dynamically on our QObject
+    val.setProperty("x", 42);
+    m_myObject->setProperty("x", 2222);
+
+    QEXPECT_FAIL("", "QTBUG-17612: Dynamic C++ property overrides JS property", Continue);
+
+    // JS should see the original JS value
+    QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));
+
+    // The dynamic property is intact
+    QCOMPARE(m_myObject->property("x").toInt(), 2222);
 }
 
 void tst_QScriptExtQObject::getSetChildren()
@@ -1130,7 +1280,10 @@ void tst_QScriptExtQObject::callQtInvokable()
     QCOMPARE(m_myObject->qtFunctionActuals().size(), 2);
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), 123);
     QCOMPARE(m_myObject->qtFunctionActuals().at(1).toInt(), 456);
+}
 
+void tst_QScriptExtQObject::callQtInvokable2()
+{
     m_myObject->resetQtFunctionInvoked();
     QVERIFY(m_engine->evaluate("myObject.myInvokableWithVoidStarArg(null)").isUndefined());
     QCOMPARE(m_myObject->qtFunctionInvoked(), 44);
@@ -1219,7 +1372,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(ret.isArray(), true);
         QCOMPARE(m_myObject->qtFunctionInvoked(), 11);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable3()
+{
     {
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithVectorOfIntArg(myObject.myInvokableReturningVectorOfInt())");
         QCOMPARE(ret.isUndefined(), true);
@@ -1345,7 +1501,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(ret.property("0").strictlyEquals(QScriptValue(m_engine, 1)), true);
         QCOMPARE(ret.property("1").strictlyEquals(QScriptValue(m_engine, 5)), true);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable4()
+{
     m_myObject->resetQtFunctionInvoked();
     {
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQObjectStarArg(myObject)");
@@ -1361,11 +1520,80 @@ void tst_QScriptExtQObject::callQtInvokable()
 
     m_myObject->resetQtFunctionInvoked();
     {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQWidgetStarArg(null)");
+        QVERIFY(ret.isNull());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 63);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::QWidgetStar));
+        QCOMPARE(qvariant_cast<QWidget*>(v), (QObject *)0);
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
         // no implicit conversion from integer to QObject*
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQObjectStarArg(123)");
         QCOMPARE(ret.isError(), true);
     }
 
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithShortArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 64);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::Short));
+        QCOMPARE(qvariant_cast<short>(v), short(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithUShortArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 65);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::UShort));
+        QCOMPARE(qvariant_cast<ushort>(v), ushort(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithCharArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 66);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::Char));
+        QCOMPARE(qvariant_cast<char>(v), char(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithUCharArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 67);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::UChar));
+        QCOMPARE(qvariant_cast<uchar>(v), uchar(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithULonglongArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 68);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::ULongLong));
+        QCOMPARE(qvariant_cast<qulonglong>(v), qulonglong(123));
+    }
+}
+
+void tst_QScriptExtQObject::callQtInvokable5()
+{
     m_myObject->resetQtFunctionInvoked();
     {
         QScriptValue fun = m_engine->evaluate("myObject.myInvokableWithQBrushArg");
@@ -1453,7 +1681,10 @@ void tst_QScriptExtQObject::callQtInvokable()
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
         QCOMPARE(qvariant_cast<QObject*>(m_myObject->qtFunctionActuals().at(0)), (QObject*)m_myObject);
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable6()
+{
     // QScriptValue arguments should be passed on without conversion
     m_myObject->resetQtFunctionInvoked();
     {
@@ -1517,18 +1748,21 @@ void tst_QScriptExtQObject::callQtInvokable()
             QCOMPARE(m_myObject->qtFunctionInvoked(), 55);
         }
     }
+}
 
+void tst_QScriptExtQObject::callQtInvokable7()
+{
     // qscript_call()
     {
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("new myObject(123)");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a constructor."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
     {
         m_myObject->resetQtFunctionInvoked();
         QScriptValue ret = m_engine->evaluate("myObject(123)");
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'myObject' [MyQObject(name = \"\")] is not a function."));
+        QVERIFY(ret.toString().contains(QString::fromLatin1("TypeError")));
     }
 
     // task 233624
@@ -1670,6 +1904,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMySignalWithVariantArg(123);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
     QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
 
@@ -1685,16 +1920,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
 
-    // signal with QVariant arg: argument conversion should work
+    // signal with QVariant arg: QVariant should be unwrapped only once
     m_myObject->clearConnectedSignal();
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
     QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
     m_engine->evaluate("gotSignal = false");
-    m_myObject->emitMySignalWithVariantArg(123);
+    QVariant tmp(123);
+    QVariant signalArg(QMetaType::QVariant, &tmp);
+    m_myObject->emitMySignalWithVariantArg(signalArg);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
-    QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
-    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isVariant());
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toVariant().toDouble(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with QVariant arg: with an invalid QVariant
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(QVariant());
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
 
     // signal with argument type that's unknown to the meta-type system
@@ -1751,9 +1999,10 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject, 'mySlot')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(yetAnotherObject, 'func')").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(myObject, 'mySlot')").isUndefined());
+}
 
-    // check that emitting signals from script works
-
+void tst_QScriptExtQObject::connectAndDisconnect_emitFromJS()
+{
     // no arguments
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
     m_myObject->resetQtFunctionInvoked();
@@ -1802,7 +2051,10 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
     QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), 456);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithIntArg.disconnect(myObject['myOverloadedSlot(int)'])").isUndefined());
+}
 
+void tst_QScriptExtQObject::connectAndDisconnect_senderWrapperCollected()
+{
     // when the wrapper dies, the connection stays alive
     QVERIFY(m_engine->evaluate("myObject.mySignal.connect(myObject.mySlot)").isUndefined());
     m_myObject->resetQtFunctionInvoked();
@@ -1902,6 +2154,25 @@ void tst_QScriptExtQObject::connectAndDisconnectWithBadArgs()
     }
 }
 
+void tst_QScriptExtQObject::connectAndDisconnect_senderDeleted()
+{
+    QScriptEngine eng;
+    QObject *obj = new QObject;
+    eng.globalObject().setProperty("obj", eng.newQObject(obj));
+    eng.evaluate("signal = obj.destroyed");
+    delete obj;
+    {
+        QScriptValue ret = eng.evaluate("signal.connect(function(){})");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Function.prototype.connect: cannot connect to deleted QObject"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("signal.disconnect(function(){})");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Function.prototype.discconnect: cannot disconnect from deleted QObject"));
+    }
+}
+
 void tst_QScriptExtQObject::cppConnectAndDisconnect()
 {
     QScriptEngine eng;
@@ -1971,7 +2242,14 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
             QVERIFY(!qScriptDisconnect(&edit2, SIGNAL(textChanged(const QString &)), receiver, fun));
         }
     }
+}
 
+void tst_QScriptExtQObject::cppConnectAndDisconnect2()
+{
+    QScriptEngine eng;
+    QLineEdit edit;
+    QLineEdit edit2;
+    QScriptValue fun = eng.evaluate("function fun(text) { signalObject = this; signalArg = text; }; fun");
     // make sure we don't crash when engine is deleted
     {
         QScriptEngine *eng2 = new QScriptEngine;
@@ -2488,6 +2766,49 @@ void tst_QScriptExtQObject::findChildren()
     delete anotherChild;
     delete namelessChild;
     delete child;
+}
+
+void tst_QScriptExtQObject::childObjects()
+{
+    QObject *child1 = new QObject(m_myObject);
+    child1->setObjectName("child1");
+    QObject *child2 = new QObject(m_myObject);
+    QScriptValue wrapped = m_engine->newQObject(m_myObject);
+
+    QVERIFY(wrapped.property("child1").isQObject());
+    QCOMPARE(wrapped.property("child1").toQObject(), child1);
+    QVERIFY(!wrapped.property("child2").isQObject());
+    QVERIFY(!wrapped.property("child2").isValid());
+
+    // Setting the name later
+    child2->setObjectName("child2");
+
+    QVERIFY(wrapped.property("child1").isQObject());
+    QCOMPARE(wrapped.property("child1").toQObject(), child1);
+    QVERIFY(wrapped.property("child2").isQObject());
+    QCOMPARE(wrapped.property("child2").toQObject(), child2);
+
+    // Adding a child later
+    QObject *child3 = new QObject(m_myObject);
+    child3->setObjectName("child3");
+
+    QVERIFY(wrapped.property("child3").isQObject());
+    QCOMPARE(wrapped.property("child3").toQObject(), child3);
+
+    // Changing a child name
+    child1->setObjectName("anotherName");
+
+    QVERIFY(!wrapped.property("child1").isValid());
+    QVERIFY(wrapped.property("anotherName").isQObject());
+    QCOMPARE(wrapped.property("anotherName").toQObject(), child1);
+
+    // Creating another object wrapper excluding child from
+    // properties.
+    QScriptValue wrapped2 = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership, QScriptEngine::ExcludeChildObjects);
+
+    QVERIFY(!wrapped2.property("anotherName").isValid());
+    QVERIFY(!wrapped2.property("child2").isValid());
+    QVERIFY(!wrapped2.property("child3").isValid());
 }
 
 void tst_QScriptExtQObject::overloadedSlots()

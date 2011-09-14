@@ -92,6 +92,12 @@ public:
 
     ~QBrush();
     QBrush &operator=(const QBrush &brush);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QBrush &operator=(QBrush &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+    inline void swap(QBrush &other) { qSwap(d, other.d); }
+
     operator QVariant() const;
 
     inline Qt::BrushStyle style() const;
@@ -249,6 +255,7 @@ private:
     friend class QLinearGradient;
     friend class QRadialGradient;
     friend class QConicalGradient;
+    friend class QBrush;
 
     Type m_type;
     Spread m_spread;
@@ -258,7 +265,7 @@ private:
             qreal x1, y1, x2, y2;
         } linear;
         struct {
-            qreal cx, cy, fx, fy, radius;
+            qreal cx, cy, fx, fy, cradius;
         } radial;
         struct {
             qreal cx, cy, angle;
@@ -297,6 +304,9 @@ public:
     QRadialGradient(const QPointF &center, qreal radius);
     QRadialGradient(qreal cx, qreal cy, qreal radius);
 
+    QRadialGradient(const QPointF &center, qreal centerRadius, const QPointF &focalPoint, qreal focalRadius);
+    QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal fx, qreal fy, qreal focalRadius);
+
     QPointF center() const;
     void setCenter(const QPointF &center);
     inline void setCenter(qreal x, qreal y) { setCenter(QPointF(x, y)); }
@@ -307,6 +317,12 @@ public:
 
     qreal radius() const;
     void setRadius(qreal radius);
+
+    qreal centerRadius() const;
+    void setCenterRadius(qreal radius);
+
+    qreal focalRadius() const;
+    void setFocalRadius(qreal radius);
 };
 
 

@@ -50,6 +50,10 @@ int main(int argc, char * argv[])
     else
         url = QUrl("http://www.google.com/ncr");
     MainWindow *browser = new MainWindow(url);
-    browser->show();
+    #if defined Q_OS_SYMBIAN || defined Q_WS_HILDON || defined Q_WS_MAEMO_5 || defined Q_WS_SIMULATOR
+        browser->showMaximized();
+    #else
+        browser->show();
+    #endif
     return app.exec();
 }

@@ -125,7 +125,7 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
 };
 
-extern QGLWidget *qt_gl_share_widget();
+extern const QGLContext *qt_gl_share_context();
 
 QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *prototype)
 {
@@ -315,7 +315,7 @@ class QGLBlurTextureCache : public QObject
 public:
     static QGLBlurTextureCache *cacheForContext(const QGLContext *context);
 
-    QGLBlurTextureCache();
+    QGLBlurTextureCache(const QGLContext *);
     ~QGLBlurTextureCache();
 
     QGLBlurTextureInfo *takeBlurTextureInfo(const QPixmap &pixmap);
@@ -336,15 +336,9 @@ private:
 };
 
 QList<QGLBlurTextureCache *> QGLBlurTextureCache::blurTextureCaches;
+Q_GLOBAL_STATIC(QGLContextGroupResource<QGLBlurTextureCache>, qt_blur_texture_caches)
 
-static void QGLBlurTextureCache_free(void *ptr)
-{
-    delete reinterpret_cast<QGLBlurTextureCache *>(ptr);
-}
-
-Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_blur_texture_caches, (QGLBlurTextureCache_free))
-
-QGLBlurTextureCache::QGLBlurTextureCache()
+QGLBlurTextureCache::QGLBlurTextureCache(const QGLContext *)
     : timerId(0)
 {
     cache.setMaxCost(4 * 1024 * 1024);
@@ -366,12 +360,7 @@ void QGLBlurTextureCache::timerEvent(QTimerEvent *)
 
 QGLBlurTextureCache *QGLBlurTextureCache::cacheForContext(const QGLContext *context)
 {
-    QGLBlurTextureCache *p = reinterpret_cast<QGLBlurTextureCache *>(qt_blur_texture_caches()->value(context));
-    if (!p) {
-        p = new QGLBlurTextureCache;
-        qt_blur_texture_caches()->insert(context, p);
-    }
-    return p;
+    return qt_blur_texture_caches()->value(context);
 }
 
 QGLBlurTextureInfo *QGLBlurTextureCache::takeBlurTextureInfo(const QPixmap &pixmap)

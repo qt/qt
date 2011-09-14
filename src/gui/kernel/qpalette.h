@@ -78,6 +78,14 @@ public:
     QPalette(const QPalette &palette);
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QPalette &operator=(QPalette &&other)
+    {
+        resolve_mask = other.resolve_mask;
+        current_group = other.current_group;
+        qSwap(d, other.d); return *this;
+    }
+#endif
     operator QVariant() const;
 
     // Do not change the order, the serialization format depends on it

@@ -6,14 +6,14 @@ include(qt-defines.qdocconf)
 
 project                 = Qt Linguist
 description             = Qt Linguist Manual
-url                     =  http://doc.qt.nokia.com/4.7/
+url                     =  http://doc.qt.nokia.com/4.8/
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
 qhp.projects            = Linguist
 
 qhp.Linguist.file                = linguist.qhp
-qhp.Linguist.namespace           = com.trolltech.linguist.474
+qhp.Linguist.namespace           = com.trolltech.linguist.480
 qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
 qhp.Linguist.extraFiles          = images/bg_l.png \
@@ -50,7 +50,7 @@ qhp.Linguist.extraFiles          = images/bg_l.png \
 									style/style_ie8.css \
                              	    style/style.css
 
-qhp.Linguist.filterAttributes    = qt 4.7.4 tools linguist
+qhp.Linguist.filterAttributes    = qt 4.8.0 tools linguist
 qhp.Linguist.customFilters.Linguist.name = Qt Linguist Manual
 qhp.Linguist.customFilters.Linguist.filterAttributes = qt tools linguist
 qhp.Linguist.subprojects         = manual examples

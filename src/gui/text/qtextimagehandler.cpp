@@ -123,7 +123,6 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
     qreal scale = 1.0;
     QPaintDevice *pdev = doc->documentLayout()->paintDevice();
     if (pdev) {
-        Q_GUI_EXPORT extern int qt_defaultDpi();
         if (pm.isNull())
             pm = getPixmap(doc, format);
         if (!pm.isNull())
@@ -191,7 +190,6 @@ static QSize getImageSize(QTextDocument *doc, const QTextImageFormat &format)
     qreal scale = 1.0;
     QPaintDevice *pdev = doc->documentLayout()->paintDevice();
     if (pdev) {
-        extern int qt_defaultDpi();
         if (image.isNull())
             image = getImage(doc, format);
         if (!image.isNull())

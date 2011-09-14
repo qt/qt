@@ -46,7 +46,7 @@
 
 static const qreal FACE_SIZE = 0.4;
 
-static const qreal speeds[] = { 1.8f, 2.4f, 3.6f };
+static const qreal speeds[] = { 3.8f, 4.4f, 5.6f };
 static const qreal amplitudes[] = { 2.0f, 2.5f, 3.0f };
 
 static inline void qSetColor(float colorVec[], QColor c)
@@ -197,7 +197,8 @@ Tile *TileBuilder::newTile(const QVector3D &loc) const
 Cube::Cube(const QVector3D &loc)
     : Tile(loc)
     , rot(0.0f)
-    , r(0), a(0)
+    , r(0)
+    , animGroup(0)
 {
 }
 
@@ -234,8 +235,8 @@ void Cube::setRotation(qreal r)
 
 void Cube::removeBounce()
 {
-    delete a;
-    a = 0;
+    delete animGroup;
+    animGroup = 0;
     delete r;
     r = 0;
 }
@@ -247,8 +248,8 @@ void Cube::startAnimation()
         r->start();
         r->setCurrentTime(startx);
     }
-    if (a)
-        a->start();
+    if (animGroup)
+        animGroup->start();
     if (rtn)
         rtn->start();
 }
@@ -259,8 +260,8 @@ void Cube::setAnimationPaused(bool paused)
     {
         if (r)
             r->pause();
-        if (a)
-            a->pause();
+        if (animGroup)
+            animGroup->pause();
         if (rtn)
             rtn->pause();
     }
@@ -268,8 +269,8 @@ void Cube::setAnimationPaused(bool paused)
     {
         if (r)
             r->resume();
-        if (a)
-            a->resume();
+        if (animGroup)
+            animGroup->resume();
         if (rtn)
             rtn->resume();
     }
@@ -312,13 +313,29 @@ Cube *CubeBuilder::newCube(const QVector3D &loc) const
     c->r->setDuration(d * 4.0f);
     c->r->setLoopCount(-1);
     c->r->setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
+
+    c->animGroup = new QSequentialAnimationGroup(c);
+
     // Animate movement from bottom to top
-    c->a = new QPropertyAnimation(c, "altitude");
-    c->a->setEndValue(loc.y());
-    c->a->setStartValue(loc.y() + amplitudes[ix]);
-    c->a->setDuration(d / speeds[ix]);
-    c->a->setLoopCount(-1);
-    c->a->setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
+    QPropertyAnimation *a_up = new QPropertyAnimation(c, "altitude", c->animGroup);
+    a_up->setEndValue(loc.y());
+    a_up->setStartValue(loc.y() + amplitudes[ix]);
+    a_up->setDuration(d / speeds[ix]);
+    a_up->setLoopCount(1);
+    a_up->setEasingCurve(QEasingCurve(QEasingCurve::InQuad));
+
+    // Animate movement from top to bottom
+    QPropertyAnimation *a_down = new QPropertyAnimation(c, "altitude", c->animGroup);
+    a_down->setEndValue(loc.y() + amplitudes[ix]);
+    a_down->setStartValue(loc.y());
+    a_down->setDuration(d / speeds[ix]);
+    a_down->setLoopCount(1);
+    a_down->setEasingCurve(QEasingCurve(QEasingCurve::OutQuad));
+
+    c->animGroup->addAnimation(a_up);
+    c->animGroup->addAnimation(a_down);
+    c->animGroup->setLoopCount(-1);
+
     // Animate rotation
     c->rtn = new QPropertyAnimation(c, "rotation");
     c->rtn->setStartValue(c->rot);

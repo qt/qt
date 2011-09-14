@@ -141,7 +141,11 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if(project->first("TEMPLATE") == "app" ||
-       project->first("TEMPLATE") == "lib") {
+       project->first("TEMPLATE") == "lib" ||
+       project->first("TEMPLATE") == "aux") {
+        if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+            writePkgConfigFile();
+
         if(Option::mkfile::do_stub_makefile) {
             t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
             QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
@@ -299,8 +303,10 @@ void MingwMakefileGenerator::init()
 	project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
-        project->values("QMAKE_LFLAGS").append(QString("-Wl,") + project->first("DEF_FILE"));
+    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty()) {
+        QString defFileName = fileFixify(project->values("DEF_FILE")).first();
+        project->values("QMAKE_LFLAGS").append(QString("-Wl,") + escapeFilePath(defFileName));
+    }
 
     MakefileGenerator::init();
 
@@ -431,6 +437,11 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
+    if (project->first("TEMPLATE") == "aux") {
+        t << "first:" << endl;
+        return;
+    }
+
     t << "first: all" << endl;
     t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName())) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS"))," "," "," ") << " $(DESTDIR_TARGET)" << endl << endl;
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");

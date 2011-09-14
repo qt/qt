@@ -1233,10 +1233,12 @@ void tst_qdeclarativetext::lineHeight()
 
     qreal h2 = myText->height();
     myText->setLineHeight(2.0);
+    QEXPECT_FAIL("", "QTBUG-17325", Continue);
     QVERIFY(myText->height() == h2 * 2.0);
 
     myText->setLineHeightMode(QDeclarativeText::FixedHeight);
     myText->setLineHeight(10);
+    QEXPECT_FAIL("", "QTBUG-17325", Continue);
     QCOMPARE(myText->height(), myText->lineCount() * 10.0);
 
     delete canvas;

@@ -70,13 +70,21 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+
+#if !defined(Q_WS_QPA)
     void setGeometry(const QRect &rect);
+#else
+	void resize(const QSize &size);
+#endif
+
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
 
     QPaintEngine *paintEngine() const;
+
+    WindowSurfaceFeatures features() const;
 
 protected:
     int metric(PaintDeviceMetric metric) const;

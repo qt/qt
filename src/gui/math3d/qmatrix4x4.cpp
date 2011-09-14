@@ -102,8 +102,6 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
     \sa optimize()
 */
 
-#if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
-
 /*!
     \fn QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
 
@@ -112,7 +110,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
     the remaining elements are filled with elements from the identity
     matrix.
 
-    \sa toGenericMatrix(), qGenericMatrixToMatrix4x4()
+    \sa toGenericMatrix()
 */
 
 /*!
@@ -122,34 +120,32 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
     top-most M rows of this 4x4 matrix.  If N or M is greater than 4,
     then the remaining elements are filled with elements from the
     identity matrix.
-
-    \sa qGenericMatrixFromMatrix4x4()
 */
-
-#endif
 
 /*!
     \fn QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
     \relates QMatrix4x4
+    \obsolete
 
     Returns a 4x4 matrix constructed from the left-most 4 columns and
     top-most 4 rows of \a matrix.  If \a matrix has less than 4 columns
     or rows, the remaining elements are filled with elements from the
     identity matrix.
 
-    \sa qGenericMatrixFromMatrix4x4()
+    \sa QMatrix4x4(const QGenericMatrix &)
 */
 
 /*!
     \fn QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
     \relates QMatrix4x4
+    \obsolete
 
     Returns a NxM generic matrix constructed from the left-most N columns
     and top-most M rows of \a matrix.  If N or M is greater than 4,
     then the remaining elements are filled with elements from the
     identity matrix.
 
-    \sa qGenericMatrixToMatrix4x4(), QMatrix4x4::toGenericMatrix()
+    \sa QMatrix4x4::toGenericMatrix()
 */
 
 /*!

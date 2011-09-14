@@ -84,6 +84,7 @@ class Interface: public QObject
     Q_PROPERTY(RegisteredType complexProp READ complexProp WRITE setComplexProp SCRIPTABLE true)
 
     friend class tst_QDBusAbstractInterface;
+    friend class PingerServer;
     QString m_stringProp;
     QDBusVariant m_variantProp;
     RegisteredType m_complexProp;
@@ -100,6 +101,7 @@ public:
 
 public slots:
     Q_SCRIPTABLE void voidMethod() {}
+    Q_SCRIPTABLE int sleepMethod(int);
     Q_SCRIPTABLE QString stringMethod() { return "Hello, world"; }
     Q_SCRIPTABLE RegisteredType complexMethod() { return RegisteredType("Hello, world"); }
     Q_SCRIPTABLE QString multiOutMethod(int &value) { value = 42; return "Hello, world"; }

@@ -46,6 +46,7 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qregexp.h>
 #include <qtimer.h>
 #include <qthread.h>
 #include <qmutex.h>
@@ -256,51 +257,72 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 
     for (int i=0; i<arguments.size(); ++i) {
         QString tmp = arguments.at(i);
-        // in the case of \" already being in the string the \ must also be escaped
-        tmp.replace( QLatin1String("\\\""), QLatin1String("\\\\\"") );
-        // escape a single " because the arguments will be parsed
-        tmp.replace( QLatin1Char('\"'), QLatin1String("\\\"") );
+        // Quotes are escaped and their preceding backslashes are doubled.
+        tmp.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\\1\\1\\\""));
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            QString endQuote(QLatin1Char('\"'));
             int i = tmp.length();
-            while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
+            while (i > 0 && tmp.at(i - 1) == QLatin1Char('\\'))
                 --i;
-                endQuote += QLatin1Char('\\');
-            }
-            args += QLatin1String(" \"") + tmp.left(i) + endQuote;
-        } else {
-            args += QLatin1Char(' ') + tmp;
+            tmp.insert(i, QLatin1Char('"'));
+            tmp.prepend(QLatin1Char('"'));
         }
+        args += QLatin1Char(' ') + tmp;
     }
     return args;
 }
 
-static QByteArray qt_create_environment(const QHash<QString, QString> &environment)
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(Q_OS_WINCE)
+    // Calls to setenv() affect the low-level environment as well.
+    // This is not the case the other way round.
+    if (wchar_t *envStrings = GetEnvironmentStringsW()) {
+        for (const wchar_t *entry = envStrings; *entry; ) {
+            int entryLen = wcslen(entry);
+            if (const wchar_t *equal = wcschr(entry, L'=')) {
+                int nameLen = equal - entry;
+                QString name = QString::fromWCharArray(entry, nameLen);
+                QString value = QString::fromWCharArray(equal + 1, entryLen - nameLen - 1);
+                env.d->hash.insert(QProcessEnvironmentPrivate::Key(name), value);
+            }
+            entry += entryLen + 1;
+        }
+        FreeEnvironmentStringsW(envStrings);
+    }
+#endif
+    return env;
+}
+
+#if !defined(Q_OS_WINCE)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QHash<QString, QString> copy = environment;
+        QProcessEnvironmentPrivate::Hash copy = environment;
 
         // add PATH if necessary (for DLL loading)
-        if (!copy.contains(QLatin1String("PATH"))) {
+        QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
+        if (!copy.contains(pathKey)) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-                copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
+                copy.insert(pathKey, QString::fromLocal8Bit(path));
         }
 
         // add systemroot if needed
-        if (!copy.contains(QLatin1String("SYSTEMROOT"))) {
-            QByteArray systemRoot = qgetenv("SYSTEMROOT");
+        QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
+        if (!copy.contains(rootKey)) {
+            QByteArray systemRoot = qgetenv("SystemRoot");
             if (!systemRoot.isEmpty())
-                copy.insert(QLatin1String("SYSTEMROOT"), QString::fromLocal8Bit(systemRoot));
+                copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
         }
 
         int pos = 0;
-        QHash<QString, QString>::ConstIterator it = copy.constBegin(),
-                                              end = copy.constEnd();
+        QProcessEnvironmentPrivate::Hash::ConstIterator it = copy.constBegin(),
+                                                       end = copy.constEnd();
 
         static const wchar_t equal = L'=';
         static const wchar_t nul = L'\0';
@@ -335,6 +357,7 @@ static QByteArray qt_create_environment(const QHash<QString, QString> &environme
     }
     return envlist;
 }
+#endif
 
 void QProcessPrivate::startProcess()
 {

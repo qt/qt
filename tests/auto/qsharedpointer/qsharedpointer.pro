@@ -12,3 +12,4 @@ QT = core
 !symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include(externaltests.pri)
+CONFIG += parallel_test

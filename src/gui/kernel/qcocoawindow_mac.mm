@@ -47,6 +47,8 @@
 #import <private/qt_cocoa_helpers_mac_p.h>
 #import <private/qcocoawindowcustomthemeframe_mac_p.h>
 #import <private/qcocoaapplication_mac_p.h>
+#import <private/qdnd_p.h>
+#import <private/qmultitouch_mac_p.h>
 
 #include <QtGui/QWidget>
 
@@ -55,7 +57,7 @@ QT_USE_NAMESPACE
 
 @implementation NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 
-- (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget*)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask;
+- (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget*)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask
 {
     self = [self initWithContentRect:rect styleMask:mask backing:NSBackingStoreBuffered defer:YES];
     if (self) {

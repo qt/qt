@@ -274,9 +274,18 @@ EXPORTS
 	?sampleRate@QAudioFormat@@QBEHXZ @ 273 NONAME ; int QAudioFormat::sampleRate(void) const
 	?supportedSampleRates@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 274 NONAME ; class QList<int> QAudioDeviceInfo::supportedSampleRates(void) const
 	?setChannelCount@QAudioFormat@@QAEXH@Z @ 275 NONAME ; void QAudioFormat::setChannelCount(int)
-	??0QAbstractAudioInput@@QAE@XZ @ 276 NONAME ABSENT ; QAbstractAudioInput::QAbstractAudioInput(void)
-	??0QAudioEngineFactoryInterface@@QAE@XZ @ 277 NONAME ABSENT ; QAudioEngineFactoryInterface::QAudioEngineFactoryInterface(void)
-	??0QAbstractAudioDeviceInfo@@QAE@XZ @ 278 NONAME ABSENT ; QAbstractAudioDeviceInfo::QAbstractAudioDeviceInfo(void)
-	??0QAbstractAudioOutput@@QAE@XZ @ 279 NONAME ABSENT ; QAbstractAudioOutput::QAbstractAudioOutput(void)
-	??_EQAudioDeviceInfo@@QAE@I@Z @ 280 NONAME ABSENT ; QAudioDeviceInfo::~QAudioDeviceInfo(unsigned int)
+	?staticMetaObjectExtraData@QAudioOutput@@0UQMetaObjectExtraData@@B @ 276 NONAME ; struct QMetaObjectExtraData const QAudioOutput::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QAbstractAudioInput@@0UQMetaObjectExtraData@@B @ 277 NONAME ; struct QMetaObjectExtraData const QAbstractAudioInput::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractAudioOutput@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 278 NONAME ; void QAbstractAudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAudioInput@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 279 NONAME ; void QAudioInput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAudioOutput@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 280 NONAME ; void QAudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractAudioDeviceInfo@@0UQMetaObjectExtraData@@B @ 281 NONAME ; struct QMetaObjectExtraData const QAbstractAudioDeviceInfo::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QAudioInput@@0UQMetaObjectExtraData@@B @ 282 NONAME ; struct QMetaObjectExtraData const QAudioInput::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractVideoSurface@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 283 NONAME ; void QAbstractVideoSurface::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAudioEnginePlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 284 NONAME ; void QAudioEnginePlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractVideoSurface@@0UQMetaObjectExtraData@@B @ 285 NONAME ; struct QMetaObjectExtraData const QAbstractVideoSurface::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractAudioDeviceInfo@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 286 NONAME ; void QAbstractAudioDeviceInfo::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractAudioOutput@@0UQMetaObjectExtraData@@B @ 287 NONAME ; struct QMetaObjectExtraData const QAbstractAudioOutput::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractAudioInput@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 288 NONAME ; void QAbstractAudioInput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAudioEnginePlugin@@0UQMetaObjectExtraData@@B @ 289 NONAME ; struct QMetaObjectExtraData const QAudioEnginePlugin::staticMetaObjectExtraData
 

@@ -4,9 +4,9 @@ contains(QT_CONFIG,xmlpatterns) {
 }
 
 wince*: {
-    patternsdk.sources = $$QT_BUILD_TREE/lib/QtXmlPatternsSDK*.dll
+    patternsdk.files = $$QT_BUILD_TREE/lib/QtXmlPatternsSDK*.dll
     patternsdk.path = .
-    basedata.sources = xmlpaternsxqts/Baseline.xml
+    basedata.files = xmlpaternsxqts/Baseline.xml
     basedata.path = .
     DEPLOYMENT += patternsdk
     QT += network

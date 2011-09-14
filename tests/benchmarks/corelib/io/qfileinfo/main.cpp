@@ -43,15 +43,20 @@
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
+#include <QtCore/QFile>
 
 #include "private/qfsfileengine_p.h"
+#include "../../../../shared/filesystem.h"
 
 class qfileinfo : public QObject
 {
     Q_OBJECT
 private slots:
     void canonicalFileNamePerformance();
-
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    void symLinkTargetPerformanceLNK();
+    void symLinkTargetPerformanceMounpoint();
+#endif
     void initTestCase();
     void cleanupTestCase();
 public:
@@ -77,6 +82,43 @@ void qfileinfo::canonicalFileNamePerformance()
         }
     }
 }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+void qfileinfo::symLinkTargetPerformanceLNK()
+{
+    QVERIFY(QFile::link("file","link.lnk"));
+    QFileInfo info("link.lnk");
+    info.setCaching(false);
+    QVERIFY(info.isSymLink());
+    QString linkTarget;
+    QBENCHMARK {
+        for(int i=0; i<100; i++)
+            linkTarget = info.readLink();
+    }
+    QVERIFY(QFile::remove("link.lnk"));
+}
+
+void qfileinfo::symLinkTargetPerformanceMounpoint()
+{
+    wchar_t buffer[MAX_PATH];
+    QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
+    QVERIFY(GetVolumeNameForVolumeMountPointW(rootPath.utf16(), buffer, MAX_PATH));
+    QString rootVolume = QString::fromWCharArray(buffer);
+    QString mountpoint = "mountpoint";
+    rootVolume.replace("\\\\?\\","\\??\\");
+    FileSystem::createNtfsJunction(rootVolume, mountpoint);
+
+    QFileInfo info(mountpoint);
+    info.setCaching(false);
+    QVERIFY(info.isSymLink());
+    QString linkTarget;
+    QBENCHMARK {
+        for(int i=0; i<100; i++)
+            linkTarget = info.readLink();
+    }
+    QVERIFY(QDir().rmdir(mountpoint));
+}
+#endif
 
 QTEST_MAIN(qfileinfo)
 

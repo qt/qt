@@ -81,6 +81,8 @@ private slots:
 
     void readLine2_data();
     void readLine2();
+
+    void peekBug();
 };
 
 // Testing get/set functions
@@ -589,6 +591,63 @@ void tst_QIODevice::readLine2()
         QCOMPARE(buffer.readLine().size(), 10);
         QVERIFY(buffer.readLine().isNull());
     }
+}
+
+
+class PeekBug : public QIODevice {
+    Q_OBJECT
+public:
+    char alphabet[27];
+    qint64 counter;
+    PeekBug() : QIODevice(), counter(0) {
+        memcpy(alphabet,"abcdefghijklmnopqrstuvqxyz",27);
+    };
+    qint64 readData(char *data, qint64 maxlen) {
+        qint64 pos = 0;
+        while (pos < maxlen) {
+            *(data + pos) = alphabet[counter];
+            pos++;
+            counter++;
+            if (counter == 26)
+                counter = 0;
+        }
+        return maxlen;
+    }
+    qint64 writeData(const char *data, qint64 maxlen) {
+        return -1;
+    }
+
+};
+
+// This is a testcase for the bug fixed with bd287865
+void tst_QIODevice::peekBug()
+{
+    PeekBug peekBug;
+    peekBug.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+
+    char onetwo[2];
+    peekBug.peek(onetwo, 2);
+    QCOMPARE(onetwo[0], 'a');
+    QCOMPARE(onetwo[1], 'b');
+
+    peekBug.read(onetwo, 1);
+    QCOMPARE(onetwo[0], 'a');
+
+    peekBug.peek(onetwo, 2);
+    QCOMPARE(onetwo[0], 'b');
+    QCOMPARE(onetwo[1], 'c');
+
+    peekBug.read(onetwo, 1);
+    QCOMPARE(onetwo[0], 'b');
+    peekBug.read(onetwo, 1);
+    QCOMPARE(onetwo[0], 'c');
+    peekBug.read(onetwo, 1);
+    QCOMPARE(onetwo[0], 'd');
+
+    peekBug.peek(onetwo, 2);
+    QCOMPARE(onetwo[0], 'e');
+    QCOMPARE(onetwo[1], 'f');
+
 }
 
 QTEST_MAIN(tst_QIODevice)

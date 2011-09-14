@@ -614,9 +614,6 @@ public:
     void setBackgroundTexture(QApplication *application) const;
     static void deleteBackground();
 
-    static bool isTouchSupported();
-    static bool isToolBarBackground();
-    static bool hasSliderGrooveGraphic();
     static bool isSingleClickUi();
     static bool isWidgetPressed(const QWidget *widget);
 

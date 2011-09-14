@@ -58,12 +58,15 @@
 #include <QtDesigner/QDesignerFormWindowInterface>
 
 #include <QtCore/QVariant>
+#include <QtCore/QSharedDataPointer>
 #include <QtCore/QMap>
 #include <QtGui/QMainWindow>
 #include <QtGui/QIcon>
 #include <QtGui/QPixmap>
 
 QT_BEGIN_NAMESPACE
+
+class QDebug;
 
 namespace qdesigner_internal {
 class QDesignerFormWindowCommand;
@@ -252,15 +255,25 @@ private:
 
 // -------------- IconValue: Returned by the property sheet for icons
 
+class PropertySheetIconValueData;
+
 class QDESIGNER_SHARED_EXPORT PropertySheetIconValue
 {
  public:
     PropertySheetIconValue(const PropertySheetPixmapValue &pixmap);
     PropertySheetIconValue();
+    ~PropertySheetIconValue();
+    PropertySheetIconValue(const PropertySheetIconValue &);
+    PropertySheetIconValue &operator=(const PropertySheetIconValue &);
 
     bool operator==(const PropertySheetIconValue &other) const { return equals(other); }
     bool operator!=(const PropertySheetIconValue &other) const { return !equals(other); }
     bool operator<(const PropertySheetIconValue &other) const;
+
+    bool isEmpty() const;
+
+    QString theme() const;
+    void setTheme(const QString &);
 
     PropertySheetPixmapValue pixmap(QIcon::Mode mode, QIcon::State state) const;
     void setPixmap(QIcon::Mode mode, QIcon::State state, const PropertySheetPixmapValue &path); // passing the empty path resets the pixmap
@@ -269,16 +282,21 @@ class QDESIGNER_SHARED_EXPORT PropertySheetIconValue
     uint compare(const PropertySheetIconValue &other) const;
     void assign(const PropertySheetIconValue &other, uint mask);
 
+    // Convenience accessors to get themed/unthemed icons.
+    PropertySheetIconValue themed() const;
+    PropertySheetIconValue unthemed() const;
+
     typedef QPair<QIcon::Mode, QIcon::State> ModeStateKey;
     typedef QMap<ModeStateKey, PropertySheetPixmapValue> ModeStateToPixmapMap;
 
-    ModeStateToPixmapMap paths() const;
+    const ModeStateToPixmapMap &paths() const;
 
 private:
     bool equals(const PropertySheetIconValue &rhs) const;
-
-    ModeStateToPixmapMap m_paths;
+    QSharedDataPointer<PropertySheetIconValueData> m_data;
 };
+
+QDESIGNER_SHARED_EXPORT QDebug operator<<(QDebug, const PropertySheetIconValue &);
 
 class QDESIGNER_SHARED_EXPORT DesignerPixmapCache : public QObject
 {
@@ -432,15 +450,15 @@ namespace Utils {
 
 inline int valueOf(const QVariant &value, bool *ok = 0)
 {
-    if (qVariantCanConvert<PropertySheetEnumValue>(value)) {
+    if (value.canConvert<PropertySheetEnumValue>()) {
         if (ok)
             *ok = true;
-        return qVariantValue<PropertySheetEnumValue>(value).value;
+        return qvariant_cast<PropertySheetEnumValue>(value).value;
     }
-    else if (qVariantCanConvert<PropertySheetFlagValue>(value)) {
+    else if (value.canConvert<PropertySheetFlagValue>()) {
         if (ok)
             *ok = true;
-        return qVariantValue<PropertySheetFlagValue>(value).value;
+        return qvariant_cast<PropertySheetFlagValue>(value).value;
     }
     return value.toInt(ok);
 }

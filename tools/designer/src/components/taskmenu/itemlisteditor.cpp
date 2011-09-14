@@ -80,7 +80,7 @@ private:
 
 ////////////////// Item editor ///////////////
 AbstractItemEditor::AbstractItemEditor(QDesignerFormWindowInterface *form, QWidget *parent)
-    : QDialog(parent),
+    : QWidget(parent),
       m_iconCache(qobject_cast<FormWindowBase *>(form)->iconCache()),
       m_updatingBrowser(false)
 {
@@ -102,15 +102,6 @@ AbstractItemEditor::AbstractItemEditor(QDesignerFormWindowInterface *form, QWidg
 AbstractItemEditor::~AbstractItemEditor()
 {
     m_propertyBrowser->unsetFactoryForManager(m_propertyManager);
-}
-
-void AbstractItemEditor::keyPressEvent(QKeyEvent *e)
-{
-    // Avoid that embedded dialogs react to enter and escape keys.
-    if (this == window())
-        QDialog::keyPressEvent(e);
-    else
-        QWidget::keyPressEvent(e);
 }
 
 static const char * const itemFlagNames[] = {
@@ -191,8 +182,8 @@ void AbstractItemEditor::propertyChanged(QtProperty *property)
         return;
 
     if ((role == ItemFlagsShadowRole && prop->value().toInt() == (int)QListWidgetItem().flags())
-        || (role == Qt::DecorationPropertyRole && !qVariantValue<PropertySheetIconValue>(prop->value()).mask())
-        || (role == Qt::FontRole && !qVariantValue<QFont>(prop->value()).resolve())) {
+        || (role == Qt::DecorationPropertyRole && !qvariant_cast<PropertySheetIconValue>(prop->value()).mask())
+        || (role == Qt::FontRole && !qvariant_cast<QFont>(prop->value()).resolve())) {
         prop->setModified(false);
         setItemData(role, QVariant());
     } else {
@@ -202,19 +193,19 @@ void AbstractItemEditor::propertyChanged(QtProperty *property)
 
     switch (role) {
     case Qt::DecorationPropertyRole:
-        setItemData(Qt::DecorationRole, qVariantFromValue(iconCache()->icon(qVariantValue<PropertySheetIconValue>(prop->value()))));
+        setItemData(Qt::DecorationRole, QVariant::fromValue(iconCache()->icon(qvariant_cast<PropertySheetIconValue>(prop->value()))));
         break;
     case Qt::DisplayPropertyRole:
-        setItemData(Qt::EditRole, qVariantFromValue(qVariantValue<PropertySheetStringValue>(prop->value()).value()));
+        setItemData(Qt::EditRole, QVariant::fromValue(qvariant_cast<PropertySheetStringValue>(prop->value()).value()));
         break;
     case Qt::ToolTipPropertyRole:
-        setItemData(Qt::ToolTipRole, qVariantFromValue(qVariantValue<PropertySheetStringValue>(prop->value()).value()));
+        setItemData(Qt::ToolTipRole, QVariant::fromValue(qvariant_cast<PropertySheetStringValue>(prop->value()).value()));
         break;
     case Qt::StatusTipPropertyRole:
-        setItemData(Qt::StatusTipRole, qVariantFromValue(qVariantValue<PropertySheetStringValue>(prop->value()).value()));
+        setItemData(Qt::StatusTipRole, QVariant::fromValue(qvariant_cast<PropertySheetStringValue>(prop->value()).value()));
         break;
     case Qt::WhatsThisPropertyRole:
-        setItemData(Qt::WhatsThisRole, qVariantFromValue(qVariantValue<PropertySheetStringValue>(prop->value()).value()));
+        setItemData(Qt::WhatsThisRole, QVariant::fromValue(qvariant_cast<PropertySheetStringValue>(prop->value()).value()));
         break;
     default:
         break;
@@ -236,22 +227,22 @@ void AbstractItemEditor::resetProperty(QtProperty *property)
     QtVariantProperty *prop = m_propertyManager->variantProperty(property);
     int role = m_propertyToRole.value(prop);
     if (role == ItemFlagsShadowRole)
-        prop->setValue(qVariantFromValue((int)QListWidgetItem().flags()));
+        prop->setValue(QVariant::fromValue((int)QListWidgetItem().flags()));
     else
         prop->setValue(QVariant(prop->valueType(), (void *)0));
     prop->setModified(false);
 
     setItemData(role, QVariant());
     if (role == Qt::DecorationPropertyRole)
-        setItemData(Qt::DecorationRole, qVariantFromValue(QIcon()));
+        setItemData(Qt::DecorationRole, QVariant::fromValue(QIcon()));
     if (role == Qt::DisplayPropertyRole)
-        setItemData(Qt::EditRole, qVariantFromValue(QString()));
+        setItemData(Qt::EditRole, QVariant::fromValue(QString()));
     if (role == Qt::ToolTipPropertyRole)
-        setItemData(Qt::ToolTipRole, qVariantFromValue(QString()));
+        setItemData(Qt::ToolTipRole, QVariant::fromValue(QString()));
     if (role == Qt::StatusTipPropertyRole)
-        setItemData(Qt::StatusTipRole, qVariantFromValue(QString()));
+        setItemData(Qt::StatusTipRole, QVariant::fromValue(QString()));
     if (role == Qt::WhatsThisPropertyRole)
-        setItemData(Qt::WhatsThisRole, qVariantFromValue(QString()));
+        setItemData(Qt::WhatsThisRole, QVariant::fromValue(QString()));
 }
 
 void AbstractItemEditor::cacheReloaded()
@@ -268,7 +259,7 @@ void AbstractItemEditor::updateBrowser()
         QVariant val = getItemData(role);
         if (!val.isValid()) {
             if (role == ItemFlagsShadowRole)
-                val = qVariantFromValue((int)QListWidgetItem().flags());
+                val = QVariant::fromValue((int)QListWidgetItem().flags());
             else
                 val = QVariant((int)prop->value().userType(), (void *)0);
             prop->setModified(false);
@@ -304,7 +295,7 @@ ItemListEditor::ItemListEditor(QDesignerFormWindowInterface *form, QWidget *pare
     injectPropertyBrowser(this, ui.widget);
     connect(ui.showPropertiesButton, SIGNAL(clicked()),
             this, SLOT(togglePropertyBrowser()));
-    togglePropertyBrowser();
+    setPropertyBrowserVisible(false);
 
     QIcon upIcon = createIconSet(QString::fromUtf8("up.png"));
     QIcon downIcon = createIconSet(QString::fromUtf8("down.png"));
@@ -340,7 +331,7 @@ void ItemListEditor::on_newListItemButton_clicked()
     int row = ui.listWidget->currentRow() + 1;
 
     QListWidgetItem *item = new QListWidgetItem(m_newItemText);
-    item->setData(Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(m_newItemText)));
+    item->setData(Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(m_newItemText)));
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     if (row < ui.listWidget->count())
         ui.listWidget->insertItem(row, item);
@@ -403,29 +394,27 @@ void ItemListEditor::on_listWidget_itemChanged(QListWidgetItem *item)
     if (m_updatingBrowser)
         return;
 
-    PropertySheetStringValue val = qVariantValue<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
+    PropertySheetStringValue val = qvariant_cast<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
     val.setValue(item->text());
     BoolBlocker block(m_updatingBrowser);
-    item->setData(Qt::DisplayPropertyRole, qVariantFromValue(val));
+    item->setData(Qt::DisplayPropertyRole, QVariant::fromValue(val));
 
     // The checkState could change, too, but if this signal is connected,
     // checkState is not in the list anyway, as we are editing a header item.
     emit itemChanged(ui.listWidget->currentRow(), Qt::DisplayPropertyRole,
-                     qVariantFromValue(val));
+                     QVariant::fromValue(val));
     updateBrowser();
 }
 
 void ItemListEditor::togglePropertyBrowser()
 {
-    // Always hide in case parent widget is not visible -> on startup
-    const bool isVisible =
-            !this->isVisible() ? true : m_propertyBrowser->isVisible();
-    if (isVisible)
-        ui.showPropertiesButton->setText(tr("Properties &<<"));
-    else
-        ui.showPropertiesButton->setText(tr("Properties &>>"));
+    setPropertyBrowserVisible(!m_propertyBrowser->isVisible());
+}
 
-    m_propertyBrowser->setVisible(!isVisible);
+void ItemListEditor::setPropertyBrowserVisible(bool v)
+{
+    ui.showPropertiesButton->setText(v ? tr("Properties &>>") : tr("Properties &<<"));
+    m_propertyBrowser->setVisible(v);
 }
 
 void ItemListEditor::setItemData(int role, const QVariant &v)
@@ -438,8 +427,8 @@ void ItemListEditor::setItemData(int role, const QVariant &v)
     QVariant newValue = v;
     if (role == Qt::FontRole && newValue.type() == QVariant::Font) {
         QFont oldFont = ui.listWidget->font();
-        QFont newFont = qVariantValue<QFont>(newValue).resolve(oldFont);
-        newValue = qVariantFromValue(newFont);
+        QFont newFont = qvariant_cast<QFont>(newValue).resolve(oldFont);
+        newValue = QVariant::fromValue(newFont);
         item->setData(role, QVariant()); // force the right font with the current resolve mask is set (item view bug)
     }
     item->setData(role, newValue);
@@ -484,6 +473,6 @@ void ItemListEditor::updateEditor()
     else
         m_propertyBrowser->clear();
 }
-}
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE

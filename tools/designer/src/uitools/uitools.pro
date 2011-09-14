@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET = $$qtLibraryTarget(QtUiTools)
+TARGET = QtUiTools
 QT += xml
 CONFIG += qt staticlib
 DESTDIR = ../../../../lib
@@ -35,7 +35,7 @@ INSTALLS        += quitools_headers
 target.path=$$[QT_INSTALL_LIBS]
 INSTALLS        += target
 
-unix {
+unix|win32-g++* {
    CONFIG     += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
@@ -43,3 +43,5 @@ unix {
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
    QMAKE_PKGCONFIG_REQUIRES += QtXml
 }
+
+TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end

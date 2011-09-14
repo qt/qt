@@ -162,49 +162,49 @@ void QScriptDebuggerResponse::setResult(const QString &value)
 void QScriptDebuggerResponse::setResult(const QScriptBreakpointData &data)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(data);
+    d->result = QVariant::fromValue(data);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptBreakpointMap &breakpoints)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(breakpoints);
+    d->result = QVariant::fromValue(breakpoints);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptScriptMap &scripts)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(scripts);
+    d->result = QVariant::fromValue(scripts);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptScriptData &data)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(data);
+    d->result = QVariant::fromValue(data);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptDebuggerValue &value)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(value);
+    d->result = QVariant::fromValue(value);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptDebuggerValueList &values)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(values);
+    d->result = QVariant::fromValue(values);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptDebuggerValuePropertyList &props)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(props);
+    d->result = QVariant::fromValue(props);
 }
 
 void QScriptDebuggerResponse::setResult(const QScriptContextInfo &info)
 {
     Q_D(QScriptDebuggerResponse);
-    d->result = qVariantFromValue(info);
+    d->result = QVariant::fromValue(info);
 }
 
 int QScriptDebuggerResponse::resultAsInt() const

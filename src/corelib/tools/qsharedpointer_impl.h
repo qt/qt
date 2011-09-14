@@ -119,7 +119,6 @@ namespace QtSharedPointer {
     template <class T> inline void normalDeleter(T *t) { delete t; }
 
     // this uses partial template specialization
-    // the only compilers that didn't support this were MSVC 6.0 and 2002
     template <class T> struct RemovePointer;
     template <class T> struct RemovePointer<T *> { typedef T Type; };
     template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };
@@ -333,7 +332,6 @@ namespace QtSharedPointer {
     protected:
         typedef ExternalRefCountData Data;
 
-        inline void ref() const { d->weakref.ref(); d->strongref.ref(); }
         inline void deref()
         { deref(d, this->value); }
         static inline void deref(Data *d, T *value)
@@ -405,7 +403,13 @@ namespace QtSharedPointer {
         template <class X>
         inline void internalCopy(const ExternalRefCount<X> &other)
         {
-            internalSet(other.d, other.data());
+            Data *o = other.d;
+            T *actual = other.value;
+            if (o)
+                other.ref();
+            qSwap(d, o);
+            qSwap(this->value, actual);
+            deref(o, actual);
         }
 
         inline void internalSwap(ExternalRefCount &other)
@@ -421,6 +425,7 @@ namespace QtSharedPointer {
         template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
         template <class X, class Y> friend QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
+        inline void ref() const { d->weakref.ref(); d->strongref.ref(); }
 
         inline void internalSet(Data *o, T *actual)
         {
@@ -478,6 +483,13 @@ public:
         BaseClass::internalCopy(other);
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedPointer<T> &operator=(QSharedPointer<T> &&other)
+    {
+        QSharedPointer<T>::internalSwap(other);
+        return *this;
+    }
+#endif
 
     template <class X>
     inline QSharedPointer(const QSharedPointer<X> &other) : BaseClass(other)
@@ -782,6 +794,16 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
     p1.swap(p2);
 }
 
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T>
+    inline void swap(QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
+
 namespace QtSharedPointer {
 // helper functions:
     template <class X, class T>
@@ -862,8 +884,12 @@ qobject_cast(const QWeakPointer<T> &src)
 {
     return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
 }
-
 #endif
+
+
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QWeakPointer<T>, Q_MOVABLE_TYPE);
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);
+
 
 QT_END_NAMESPACE
 

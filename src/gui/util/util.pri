@@ -33,12 +33,12 @@ unix:x11 {
 				util/qsystemtrayicon_x11.cpp
 }
 
-embedded {
+embedded|qpa {
 		SOURCES += \
 				util/qsystemtrayicon_qws.cpp
 }
 
-!embedded:!x11:mac {
+!embedded:!qpa:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
 
@@ -55,5 +55,11 @@ symbian {
         }
     } else {
         DEFINES += USE_SCHEMEHANDLER
+    }
+
+    contains(CONFIG, is_using_gnupoc) {
+        LIBS += -ldirectorylocalizer
+    } else {
+        LIBS += -lDirectoryLocalizer
     }
 }

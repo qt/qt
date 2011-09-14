@@ -77,6 +77,7 @@ private slots:
     void caretAnchoredOptimization();
     void isEmpty();
     void prepareEngineOptimization();
+    void swap();
     void operator_eq();
 
     /*
@@ -1288,6 +1289,14 @@ void tst_QRegExp::prepareEngineOptimization()
     rx11.setPatternSyntax(QRegExp::RegExp);
     QCOMPARE(rx11.captureCount(), 1);
     QCOMPARE(rx11.matchedLength(), -1);
+}
+
+void tst_QRegExp::swap()
+{
+    QRegExp r1(QLatin1String(".*")), r2(QLatin1String("a*"));
+    r1.swap(r2);
+    QCOMPARE(r1.pattern(),QLatin1String("a*"));
+    QCOMPARE(r2.pattern(),QLatin1String(".*"));
 }
 
 void tst_QRegExp::operator_eq()

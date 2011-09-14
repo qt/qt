@@ -56,6 +56,7 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusmessage_p.h"
 #include "qdbusutil_p.h"
+#include "qdbusvirtualobject.h"
 
 #ifndef QT_NO_DBUS
 
@@ -108,7 +109,7 @@ static QString generateSubObjectXml(QObject *object)
 
 // declared as extern in qdbusconnection_p.h
 
-QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node)
+QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node, const QString &path)
 {
     // object may be null
 
@@ -153,6 +154,11 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
 
                 xml_data += ifaceXml;
             }
+        }
+
+        // is it a virtual node that handles introspection itself?
+        if (node.flags & QDBusConnectionPrivate::VirtualObject) {
+            xml_data += node.treeNode->introspect(path);
         }
 
         xml_data += QLatin1String( propertiesInterfaceXml );
@@ -264,7 +270,7 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
         return propertyNotFoundError(msg, interface_name, property_name);
     }
 
-    return msg.createReply(qVariantFromValue(QDBusVariant(value)));
+    return msg.createReply(QVariant::fromValue(QDBusVariant(value)));
 }
 
 enum PropertyWriteResult {
@@ -334,7 +340,7 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
         // we have to demarshall before writing
         void *null = 0;
         QVariant other(id, null);
-        if (!QDBusMetaType::demarshall(qVariantValue<QDBusArgument>(value), id, other.data())) {
+        if (!QDBusMetaType::demarshall(qvariant_cast<QDBusArgument>(value), id, other.data())) {
             qWarning("QDBusConnection: type `%s' (%d) is not registered with QtDBus. "
                      "Use qDBusRegisterMetaType to register it",
                      mp.typeName(), id);
@@ -495,7 +501,7 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
         return interfaceNotFoundError(msg, interface_name);
     }
 
-    return msg.createReply(qVariantFromValue(result));
+    return msg.createReply(QVariant::fromValue(result));
 }
 
 QT_END_NAMESPACE

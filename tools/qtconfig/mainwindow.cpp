@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 #include "colorbutton.h"
 #include "previewframe.h"
 #include "paletteeditoradvanced.h"
@@ -59,10 +61,10 @@
 #include <QMessageBox>
 #include <QStyle>
 #include <QtEvents>
-#include <Q3ValueList>
 #include <QInputContext>
 #include <QInputContextFactory>
 #include <QtDebug>
+#include <QPixmap>
 
 #include <stdlib.h>
 
@@ -73,7 +75,9 @@
 #include <phonon/phononnamespace.h>
 #endif
 
+#ifdef Q_WS_X11
 #include <QtGui/private/qt_x11_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -154,35 +158,19 @@ static const char *phonon_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p>It is reccommended to leave all settings on \"Auto\" to let "
 "Phonon determine your settings automatically.");
 
-static QColorGroup::ColorRole centralFromItem( int item )
+
+QPalette::ColorGroup MainWindow::groupFromIndex(int item)
 {
-    switch( item ) {
-    case 0:  return QColorGroup::Window;
-    case 1:  return QColorGroup::WindowText;
-    case 2:  return QColorGroup::Button;
-    case 3:  return QColorGroup::Base;
-    case 4:  return QColorGroup::Text;
-    case 5:  return QColorGroup::BrightText;
-    case 6:  return QColorGroup::ButtonText;
-    case 7:  return QColorGroup::Highlight;
-    case 8:  return QColorGroup::HighlightedText;
-    default: return QColorGroup::NColorRoles;
+    switch (item) {
+    case 0:
+    default:
+        return QPalette::Active;
+    case 1:
+        return QPalette::Inactive;
+    case 2:
+        return QPalette::Disabled;
     }
 }
-
-
-static QColorGroup::ColorRole effectFromItem( int item )
-{
-    switch( item ) {
-    case 0:  return QColorGroup::Light;
-    case 1:  return QColorGroup::Midlight;
-    case 2:  return QColorGroup::Mid;
-    case 3:  return QColorGroup::Dark;
-    case 4:  return QColorGroup::Shadow;
-    default: return QColorGroup::NColorRoles;
-    }
-}
-
 
 static void setStyleHelper(QWidget *w, QStyle *s)
 {
@@ -195,99 +183,146 @@ static void setStyleHelper(QWidget *w, QStyle *s)
     w->setStyle(s);
 }
 
-
 MainWindow::MainWindow()
-    : MainWindowBase(0, "main window"),
-      editPalette(palette()), previewPalette(palette()), previewstyle(0)
+    : ui(new Ui::MainWindow),
+      editPalette(palette()),
+      previewPalette(palette()),
+      previewstyle(0)
 {
+    ui->setupUi(this);
+    statusBar();
+
+    // signals and slots connections
+    connect(ui->fontPathLineEdit, SIGNAL(returnPressed()), SLOT(addFontpath()));
+    connect(ui->addFontPathButton, SIGNAL(clicked()), SLOT(addFontpath()));
+    connect(ui->addSubstitutionButton, SIGNAL(clicked()), SLOT(addSubstitute()));
+    connect(ui->browseFontPathButton, SIGNAL(clicked()), SLOT(browseFontpath()));
+    connect(ui->fontStyleCombo, SIGNAL(activated(int)), SLOT(buildFont()));
+    connect(ui->pointSizeCombo, SIGNAL(activated(int)), SLOT(buildFont()));
+    connect(ui->downFontpathButton, SIGNAL(clicked()), SLOT(downFontpath()));
+    connect(ui->downSubstitutionButton, SIGNAL(clicked()), SLOT(downSubstitute()));
+    connect(ui->fontFamilyCombo, SIGNAL(activated(QString)), SLOT(familySelected(QString)));
+    connect(ui->fileExitAction, SIGNAL(triggered()), SLOT(fileExit()));
+    connect(ui->fileSaveAction, SIGNAL(triggered()), SLOT(fileSave()));
+    connect(ui->helpAboutAction, SIGNAL(triggered()), SLOT(helpAbout()));
+    connect(ui->helpAboutQtAction, SIGNAL(triggered()), SLOT(helpAboutQt()));
+    connect(ui->mainTabWidget, SIGNAL(currentChanged(int)), SLOT(pageChanged(int)));
+    connect(ui->paletteCombo, SIGNAL(activated(int)), SLOT(paletteSelected(int)));
+    connect(ui->removeFontpathButton, SIGNAL(clicked()), SLOT(removeFontpath()));
+    connect(ui->removeSubstitutionButton, SIGNAL(clicked()), SLOT(removeSubstitute()));
+    connect(ui->toolBoxEffectCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->doubleClickIntervalSpinBox, SIGNAL(valueChanged(int)), SLOT(somethingModified()));
+    connect(ui->cursorFlashTimeSpinBox, SIGNAL(valueChanged(int)), SLOT(somethingModified()));
+    connect(ui->wheelScrollLinesSpinBox, SIGNAL(valueChanged(int)), SLOT(somethingModified()));
+    connect(ui->menuEffectCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->comboEffectCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->audiosinkCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->videomodeCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->toolTipEffectCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->strutWidthSpinBox, SIGNAL(valueChanged(int)), SLOT(somethingModified()));
+    connect(ui->strutHeightSpinBox, SIGNAL(valueChanged(int)), SLOT(somethingModified()));
+    connect(ui->effectsCheckBox, SIGNAL(toggled(bool)), SLOT(somethingModified()));
+    connect(ui->resolveLinksCheckBox, SIGNAL(toggled(bool)), SLOT(somethingModified()));
+    connect(ui->fontEmbeddingCheckBox, SIGNAL(clicked()), SLOT(somethingModified()));
+    connect(ui->rtlExtensionsCheckBox, SIGNAL(toggled(bool)), SLOT(somethingModified()));
+    connect(ui->inputStyleCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->inputMethodCombo, SIGNAL(activated(int)), SLOT(somethingModified()));
+    connect(ui->guiStyleCombo, SIGNAL(activated(QString)), SLOT(styleSelected(QString)));
+    connect(ui->familySubstitutionCombo, SIGNAL(activated(QString)), SLOT(substituteSelected(QString)));
+    connect(ui->tunePaletteButton, SIGNAL(clicked()), SLOT(tunePalette()));
+    connect(ui->upFontpathButton, SIGNAL(clicked()), SLOT(upFontpath()));
+    connect(ui->upSubstitutionButton, SIGNAL(clicked()), SLOT(upSubstitute()));
+
     modified = true;
     desktopThemeName = tr("Desktop Settings (Default)");
+    setWindowIcon(QPixmap(":/trolltech/qtconfig/images/appicon.png"));
     QStringList gstyles = QStyleFactory::keys();
     gstyles.sort();
-    gstylecombo->addItem(desktopThemeName);
-    gstylecombo->setItemData(gstylecombo->findText(desktopThemeName),
-                                tr("Choose style and palette based on your desktop settings."), Qt::ToolTipRole);
-    gstylecombo->insertStringList(gstyles);
+    ui->guiStyleCombo->addItem(desktopThemeName);
+    ui->guiStyleCombo->setItemData(ui->guiStyleCombo->findText(desktopThemeName),
+                                   tr("Choose style and palette based on your desktop settings."),
+                                   Qt::ToolTipRole);
+    ui->guiStyleCombo->addItems(gstyles);
 
     QSettings settings(QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
 
     QString currentstyle = settings.value(QLatin1String("style")).toString();
     if (currentstyle.isEmpty()) {
-        gstylecombo->setCurrentItem(gstylecombo->findText(desktopThemeName));
-        currentstyle = QLatin1String(QApplication::style()->name());
+        ui->guiStyleCombo->setCurrentIndex(ui->guiStyleCombo->findText(desktopThemeName));
+        currentstyle = QApplication::style()->objectName();
     } else {
-        int index = gstylecombo->findText(currentstyle, Qt::MatchFixedString);
+        int index = ui->guiStyleCombo->findText(currentstyle, Qt::MatchFixedString);
         if (index != -1) {
-            gstylecombo->setCurrentItem(index);
+            ui->guiStyleCombo->setCurrentIndex(index);
         } else { // we give up
-            gstylecombo->insertItem(QLatin1String("Unknown"));
-            gstylecombo->setCurrentItem(gstylecombo->count() - 1);
+            ui->guiStyleCombo->addItem(tr("Unknown"));
+            ui->guiStyleCombo->setCurrentIndex(ui->guiStyleCombo->count() - 1);
         }
     }
-    buttonMainColor->setColor(palette().color(QPalette::Active,
-                                              QColorGroup::Button));
-    buttonMainColor2->setColor(palette().color(QPalette::Active,
-                                               QColorGroup::Window));
-    connect(buttonMainColor, SIGNAL(colorChanged(QColor)),
-                this, SLOT(buildPalette()));
-    connect(buttonMainColor2, SIGNAL(colorChanged(QColor)),
-                this, SLOT(buildPalette()));
+    ui->buttonMainColor->setColor(palette().color(QPalette::Active, QPalette::Button));
+    ui->buttonWindowColor->setColor(palette().color(QPalette::Active, QPalette::Window));
+    connect(ui->buttonMainColor, SIGNAL(colorChanged(QColor)), SLOT(buildPalette()));
+    connect(ui->buttonWindowColor, SIGNAL(colorChanged(QColor)), SLOT(buildPalette()));
 
+#ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_KDE)
-        colorConfig->hide();
+        ui->colorConfig->hide();
     else
-        labelKDENote->hide();
+        ui->kdeNoteLabel->hide();
+#else
+    ui->colorConfig->hide();
+    ui->kdeNoteLabel->hide();
+#endif
 
     QFontDatabase db;
     QStringList families = db.families();
-    familycombo->insertStringList(families);
+    ui->fontFamilyCombo->addItems(families);
 
     QStringList fs = families;
     QStringList fs2 = QFont::substitutions();
     QStringList::Iterator fsit = fs2.begin();
     while (fsit != fs2.end()) {
-        if (! fs.contains(*fsit))
+        if (!fs.contains(*fsit))
             fs += *fsit;
         fsit++;
     }
     fs.sort();
-    familysubcombo->insertStringList(fs);
+    ui->familySubstitutionCombo->addItems(fs);
 
-    choosesubcombo->insertStringList(families);
-    Q3ValueList<int> sizes = db.standardSizes();
-    Q3ValueList<int>::Iterator it = sizes.begin();
-    while (it != sizes.end())
-        psizecombo->insertItem(QString::number(*it++));
+    ui->chooseSubstitutionCombo->addItems(families);
+    QList<int> sizes = db.standardSizes();
+    foreach(int i, sizes)
+        ui->pointSizeCombo->addItem(QString::number(i));
 
-    dcispin->setValue(QApplication::doubleClickInterval());
-    cfispin->setValue(QApplication::cursorFlashTime());
-    wslspin->setValue(QApplication::wheelScrollLines());
+    ui->doubleClickIntervalSpinBox->setValue(QApplication::doubleClickInterval());
+    ui->cursorFlashTimeSpinBox->setValue(QApplication::cursorFlashTime());
+    ui->wheelScrollLinesSpinBox->setValue(QApplication::wheelScrollLines());
     // #############
-//    resolvelinks->setChecked(qt_resolve_symlinks);
+    // resolveLinksCheckBox->setChecked(qt_resolve_symlinks);
 
-    effectcheckbox->setChecked(QApplication::isEffectEnabled(Qt::UI_General));
-    effectbase->setEnabled(effectcheckbox->isChecked());
+    ui->effectsCheckBox->setChecked(QApplication::isEffectEnabled(Qt::UI_General));
+    ui->effectsFrame->setEnabled(ui->effectsCheckBox->isChecked());
 
     if (QApplication::isEffectEnabled(Qt::UI_FadeMenu))
-        menueffect->setCurrentItem(2);
+        ui->menuEffectCombo->setCurrentIndex(2);
     else if (QApplication::isEffectEnabled(Qt::UI_AnimateMenu))
-        menueffect->setCurrentItem(1);
+        ui->menuEffectCombo->setCurrentIndex(1);
 
     if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo))
-        comboeffect->setCurrentItem(1);
+        ui->comboEffectCombo->setCurrentIndex(1);
 
     if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))
-        tooltipeffect->setCurrentItem(2);
+        ui->toolTipEffectCombo->setCurrentIndex(2);
     else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))
-        tooltipeffect->setCurrentItem(1);
+        ui->toolTipEffectCombo->setCurrentIndex(1);
 
-    if ( QApplication::isEffectEnabled( Qt::UI_AnimateToolBox ) )
-        toolboxeffect->setCurrentItem( 1 );
+    if (QApplication::isEffectEnabled(Qt::UI_AnimateToolBox))
+        ui->toolBoxEffectCombo->setCurrentIndex(1);
 
     QSize globalStrut = QApplication::globalStrut();
-    strutwidth->setValue(globalStrut.width());
-    strutheight->setValue(globalStrut.height());
+    ui->strutWidthSpinBox->setValue(globalStrut.width());
+    ui->strutHeightSpinBox->setValue(globalStrut.height());
 
     // find the default family
     QStringList::Iterator sit = families.begin();
@@ -306,10 +341,10 @@ MainWindow::MainWindow()
     if (i == -1) // no clue about the current font
         i = 0;
 
-    familycombo->setCurrentItem(i);
+    ui->fontFamilyCombo->setCurrentIndex(i);
 
-    QStringList styles = db.styles(familycombo->currentText());
-    stylecombo->insertStringList(styles);
+    QStringList styles = db.styles(ui->fontFamilyCombo->currentText());
+    ui->fontStyleCombo->addItems(styles);
 
     QString stylestring = db.styleString(QApplication::font());
     sit = styles.begin();
@@ -328,91 +363,98 @@ MainWindow::MainWindow()
         i = possible;
     if (i == -1) // no clue about the current font
         i = 0;
-    stylecombo->setCurrentItem(i);
+    ui->fontStyleCombo->setCurrentIndex(i);
 
     i = 0;
-    for (int psize = QApplication::font().pointSize(); i < psizecombo->count(); ++i) {
-        const int sz = psizecombo->text(i).toInt();
+    for (int psize = QApplication::font().pointSize(); i < ui->pointSizeCombo->count(); ++i) {
+        const int sz = ui->pointSizeCombo->itemText(i).toInt();
         if (sz == psize) {
-            psizecombo->setCurrentItem(i);
+            ui->pointSizeCombo->setCurrentIndex(i);
             break;
         } else if(sz > psize) {
-            psizecombo->insertItem(i, QString::number(psize));
-            psizecombo->setCurrentItem(i);
+            ui->pointSizeCombo->insertItem(i, QString::number(psize));
+            ui->pointSizeCombo->setCurrentIndex(i);
             break;
         }
     }
 
-    QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
+    QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
 
-    rtlExtensions->setChecked(settings.value(QLatin1String("useRtlExtensions"), false).toBool());
+    ui->rtlExtensionsCheckBox->setChecked(settings.value(QLatin1String("useRtlExtensions"), false)
+                                          .toBool());
 
 #ifdef Q_WS_X11
-    inputStyle->setCurrentText(settings.value(QLatin1String("XIMInputStyle"), trUtf8("On The Spot")).toString());
+    QString settingsInputStyle = settings.value(QLatin1String("XIMInputStyle")).toString();
+    if (!settingsInputStyle.isEmpty())
+      ui->inputStyleCombo->setCurrentIndex(ui->inputStyleCombo->findText(settingsInputStyle));
 #else
-    inputStyle->hide();
-    inputStyleLabel->hide();
+    ui->inputStyleCombo->hide();
+    ui->inputStyleLabel->hide();
 #endif
 
 #if defined(Q_WS_X11) && !defined(QT_NO_XIM)
-    QStringList inputMethods = QInputContextFactory::keys();
-    int inputMethodIndex = -1;
+    QStringList inputMethodCombo = QInputContextFactory::keys();
+    int inputMethodComboIndex = -1;
     QString defaultInputMethod = settings.value(QLatin1String("DefaultInputMethod"), QLatin1String("xim")).toString();
-    for (int i = inputMethods.size()-1; i >= 0; --i) {
-        const QString &im = inputMethods.at(i);
+    for (int i = inputMethodCombo.size()-1; i >= 0; --i) {
+        const QString &im = inputMethodCombo.at(i);
         if (im.contains(QLatin1String("imsw"))) {
-            inputMethods.removeAt(i);
-            if (inputMethodIndex > i)
-                --inputMethodIndex;
+            inputMethodCombo.removeAt(i);
+            if (inputMethodComboIndex > i)
+                --inputMethodComboIndex;
         } else if (im == defaultInputMethod) {
-            inputMethodIndex = i;
+            inputMethodComboIndex = i;
         }
     }
-    if (inputMethodIndex == -1 && !inputMethods.isEmpty())
-        inputMethodIndex = 0;
-    inputMethod->addItems(inputMethods);
-    inputMethod->setCurrentIndex(inputMethodIndex);
+    if (inputMethodComboIndex == -1 && !inputMethodCombo.isEmpty())
+        inputMethodComboIndex = 0;
+    ui->inputMethodCombo->addItems(inputMethodCombo);
+    ui->inputMethodCombo->setCurrentIndex(inputMethodComboIndex);
 #else
-    inputMethod->hide();
-    inputMethodLabel->hide();
+    ui->inputMethodCombo->hide();
+    ui->inputMethodLabel->hide();
 #endif
 
-    fontembeddingcheckbox->setChecked(settings.value(QLatin1String("embedFonts"), true).toBool());
+    ui->fontEmbeddingCheckBox->setChecked(settings.value(QLatin1String("embedFonts"), true)
+                                          .toBool());
     fontpaths = settings.value(QLatin1String("fontPath")).toStringList();
-    fontpathlistbox->insertStringList(fontpaths);
+    ui->fontpathListBox->insertItems(0, fontpaths);
 
-    audiosinkCombo->addItem(tr("Auto (default)"), QLatin1String("Auto"));
-    audiosinkCombo->setItemData(audiosinkCombo->findText(tr("Auto (default)")),
-                                tr("Choose audio output automatically."), Qt::ToolTipRole);
-    audiosinkCombo->addItem(tr("aRts"), QLatin1String("artssink"));
-    audiosinkCombo->setItemData(audiosinkCombo->findText(tr("aRts")),
-                                tr("Experimental aRts support for GStreamer."), Qt::ToolTipRole);
+    ui->audiosinkCombo->addItem(tr("Auto (default)"), QLatin1String("Auto"));
+    ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(tr("Auto (default)")),
+                                    tr("Choose audio output automatically."), Qt::ToolTipRole);
+    ui->audiosinkCombo->addItem(tr("aRts"), QLatin1String("artssink"));
+    ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(tr("aRts")),
+                                    tr("Experimental aRts support for GStreamer."),
+                                    Qt::ToolTipRole);
 #ifdef HAVE_PHONON
-    phononVersionLabel->setText(QLatin1String(Phonon::phononVersion()));
+    ui->phononVersionLabel->setText(QLatin1String(Phonon::phononVersion()));
 #endif
 #ifndef QT_NO_GSTREAMER
     if (gst_init_check(0, 0, 0)) {
         gchar *versionString = gst_version_string();
-        gstversionLabel->setText(QLatin1String(versionString));
+        ui->gstVersionLabel->setText(QLatin1String(versionString));
         g_free(versionString);
-        GList* factoryList = gst_registry_get_feature_list(gst_registry_get_default (), GST_TYPE_ELEMENT_FACTORY);
+        GList *factoryList = gst_registry_get_feature_list(gst_registry_get_default(),
+                                                           GST_TYPE_ELEMENT_FACTORY);
         QString name, klass, description;
-        for (GList* iter = g_list_first(factoryList) ; iter != NULL ; iter = g_list_next(iter)) {
+        for (GList *iter = g_list_first(factoryList) ; iter != NULL ; iter = g_list_next(iter)) {
             GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
             klass = QLatin1String(gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature)));
             if (klass == QLatin1String("Sink/Audio")) {
                 name = QLatin1String(GST_PLUGIN_FEATURE_NAME(feature));
                 if (name == QLatin1String("sfsink"))
-                    continue; //useless to output audio to file when you cannot set the file path
+                    continue; // useless to output audio to file when you cannot set the file path
                 else if (name == QLatin1String("autoaudiosink"))
                     continue; //This is used implicitly from the auto setting
                 GstElement *sink = gst_element_factory_make (qPrintable(name), NULL);
                 if (sink) {
-                    description = QLatin1String(gst_element_factory_get_description (GST_ELEMENT_FACTORY(feature)));
-                    audiosinkCombo->addItem(name, name);
-                    audiosinkCombo->setItemData(audiosinkCombo->findText(name), description, Qt::ToolTipRole);
+                    description = QLatin1String(gst_element_factory_get_description(GST_ELEMENT_FACTORY(feature)));
+                    ui->audiosinkCombo->addItem(name, name);
+                    ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(name), description,
+                                                    Qt::ToolTipRole);
                     gst_object_unref (sink);
                 }
             }
@@ -420,39 +462,43 @@ MainWindow::MainWindow()
         g_list_free(factoryList);
     }
 #else
-    tab4->setEnabled(false);
-    phononLabel->setText(tr("Phonon GStreamer backend not available."));
+    ui->phononTab->setEnabled(false);
+    ui->phononLabel->setText(tr("Phonon GStreamer backend not available."));
 #endif
 
-    videomodeCombo->addItem(tr("Auto (default)"), QLatin1String("Auto"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("Auto (default)")), tr("Choose render method automatically"), Qt::ToolTipRole);
+    ui->videomodeCombo->addItem(tr("Auto (default)"), QLatin1String("Auto"));
+    ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("Auto (default)")),
+                                    tr("Choose render method automatically"), Qt::ToolTipRole);
 #ifdef Q_WS_X11
-    videomodeCombo->addItem(tr("X11"), QLatin1String("X11"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("X11")), tr("Use X11 Overlays"), Qt::ToolTipRole);
+    ui->videomodeCombo->addItem(tr("X11"), QLatin1String("X11"));
+    ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("X11")),
+                                    tr("Use X11 Overlays"), Qt::ToolTipRole);
 #endif
 #ifndef QT_NO_OPENGL
-    videomodeCombo->addItem(tr("OpenGL"), QLatin1String("OpenGL"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("OpenGL")), tr("Use OpenGL if available"), Qt::ToolTipRole);
+    ui->videomodeCombo->addItem(tr("OpenGL"), QLatin1String("OpenGL"));
+    ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("OpenGL")),
+                                    tr("Use OpenGL if available"), Qt::ToolTipRole);
 #endif
-    videomodeCombo->addItem(tr("Software"), QLatin1String("Software"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("Software")), tr("Use simple software rendering"), Qt::ToolTipRole);
+    ui->videomodeCombo->addItem(tr("Software"), QLatin1String("Software"));
+    ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("Software")),
+                                    tr("Use simple software rendering"), Qt::ToolTipRole);
 
     QString audioSink = settings.value(QLatin1String("audiosink"), QLatin1String("Auto")).toString();
     QString videoMode = settings.value(QLatin1String("videomode"), QLatin1String("Auto")).toString();
-    audiosinkCombo->setCurrentItem(audiosinkCombo->findData(audioSink));
-    videomodeCombo->setCurrentItem(videomodeCombo->findData(videoMode));
+    ui->audiosinkCombo->setCurrentIndex(ui->audiosinkCombo->findData(audioSink));
+    ui->videomodeCombo->setCurrentIndex(ui->videomodeCombo->findData(videoMode));
 
     settings.endGroup(); // Qt
 
-    helpview->setText(tr(appearance_text));
+    ui->helpView->setText(tr(appearance_text));
 
     setModified(false);
     updateStyleLayout();
 }
 
-
 MainWindow::~MainWindow()
 {
+    delete ui;
 }
 
 #ifdef Q_WS_X11
@@ -472,23 +518,23 @@ void MainWindow::fileSave()
         QSettings settings(QLatin1String("Trolltech"));
         settings.beginGroup(QLatin1String("Qt"));
         QFontDatabase db;
-        QFont font = db.font(familycombo->currentText(),
-                             stylecombo->currentText(),
-                             psizecombo->currentText().toInt());
+        QFont font = db.font(ui->fontFamilyCombo->currentText(),
+                             ui->fontStyleCombo->currentText(),
+                             ui->pointSizeCombo->currentText().toInt());
 
         QStringList actcg, inactcg, discg;
-        bool overrideDesktopSettings = (gstylecombo->currentText() != desktopThemeName);
+        bool overrideDesktopSettings = (ui->guiStyleCombo->currentText() != desktopThemeName);
         if (overrideDesktopSettings) {
             int i;
-            for (i = 0; i < QColorGroup::NColorRoles; i++)
+            for (i = 0; i < QPalette::NColorRoles; i++)
                 actcg << editPalette.color(QPalette::Active,
-                                           (QColorGroup::ColorRole) i).name();
-            for (i = 0; i < QColorGroup::NColorRoles; i++)
+                                           QPalette::ColorRole(i)).name();
+            for (i = 0; i < QPalette::NColorRoles; i++)
                 inactcg << editPalette.color(QPalette::Inactive,
-                                             (QColorGroup::ColorRole) i).name();
-            for (i = 0; i < QColorGroup::NColorRoles; i++)
+                                             QPalette::ColorRole(i)).name();
+            for (i = 0; i < QPalette::NColorRoles; i++)
                 discg << editPalette.color(QPalette::Disabled,
-                                           (QColorGroup::ColorRole) i).name();
+                                           QPalette::ColorRole(i)).name();
         }
 
         settings.setValue(QLatin1String("font"), font.toString());
@@ -497,59 +543,63 @@ void MainWindow::fileSave()
         settings.setValue(QLatin1String("Palette/disabled"), discg);
 
         settings.setValue(QLatin1String("fontPath"), fontpaths);
-        settings.setValue(QLatin1String("embedFonts"), fontembeddingcheckbox->isChecked());
-        settings.setValue(QLatin1String("style"), overrideDesktopSettings ? gstylecombo->currentText() : QString());
+        settings.setValue(QLatin1String("embedFonts"), ui->fontEmbeddingCheckBox->isChecked());
+        settings.setValue(QLatin1String("style"),
+                          overrideDesktopSettings ? ui->guiStyleCombo->currentText() : QString());
 
-        settings.setValue(QLatin1String("doubleClickInterval"), dcispin->value());
-        settings.setValue(QLatin1String("cursorFlashTime"), cfispin->value() == 9 ? 0 : cfispin->value() );
-        settings.setValue(QLatin1String("wheelScrollLines"), wslspin->value());
-        settings.setValue(QLatin1String("resolveSymlinks"), resolvelinks->isChecked());
+        settings.setValue(QLatin1String("doubleClickInterval"), ui->doubleClickIntervalSpinBox->value());
+        settings.setValue(QLatin1String("cursorFlashTime"),
+                          ui->cursorFlashTimeSpinBox->value() == 9 ? 0 : ui->cursorFlashTimeSpinBox->value());
+        settings.setValue(QLatin1String("wheelScrollLines"), ui->wheelScrollLinesSpinBox->value());
+        settings.setValue(QLatin1String("resolveSymlinks"), ui->resolveLinksCheckBox->isChecked());
 
-        QSize strut(strutwidth->value(), strutheight->value());
+        QSize strut(ui->strutWidthSpinBox->value(), ui->strutHeightSpinBox->value());
         settings.setValue(QLatin1String("globalStrut/width"), strut.width());
         settings.setValue(QLatin1String("globalStrut/height"), strut.height());
 
-        settings.setValue(QLatin1String("useRtlExtensions"), rtlExtensions->isChecked());
+        settings.setValue(QLatin1String("useRtlExtensions"), ui->rtlExtensionsCheckBox->isChecked());
 
 #ifdef Q_WS_X11
-        QString style = inputStyle->currentText();
+        QString style = ui->inputStyleCombo->currentText();
         QString str = QLatin1String("On The Spot");
-        if ( style == trUtf8( "Over The Spot" ) )
+        if (style == tr("Over The Spot"))
             str = QLatin1String("Over The Spot");
-        else if ( style == trUtf8( "Off The Spot" ) )
+        else if (style == tr("Off The Spot"))
             str = QLatin1String("Off The Spot");
-        else if ( style == trUtf8( "Root" ) )
+        else if (style == tr("Root"))
             str = QLatin1String("Root");
-        settings.setValue( QLatin1String("XIMInputStyle"), str );
+        settings.setValue(QLatin1String("XIMInputStyle"), str);
 #endif
 #if defined(Q_WS_X11) && !defined(QT_NO_XIM)
-        settings.setValue(QLatin1String("DefaultInputMethod"), inputMethod->currentText());
+        settings.setValue(QLatin1String("DefaultInputMethod"), ui->inputMethodCombo->currentText());
 #endif
 
         QString audioSink = settings.value(QLatin1String("audiosink"), QLatin1String("Auto")).toString();
         QString videoMode = settings.value(QLatin1String("videomode"), QLatin1String("Auto")).toString();
-        settings.setValue(QLatin1String("audiosink"), audiosinkCombo->itemData(audiosinkCombo->currentIndex()));
-        settings.setValue(QLatin1String("videomode"), videomodeCombo->itemData(videomodeCombo->currentIndex()));
+        settings.setValue(QLatin1String("audiosink"),
+                          ui->audiosinkCombo->itemData(ui->audiosinkCombo->currentIndex()));
+        settings.setValue(QLatin1String("videomode"),
+                          ui->videomodeCombo->itemData(ui->videomodeCombo->currentIndex()));
 
         QStringList effects;
-        if (effectcheckbox->isChecked()) {
+        if (ui->effectsCheckBox->isChecked()) {
             effects << QLatin1String("general");
 
-            switch (menueffect->currentItem()) {
+            switch (ui->menuEffectCombo->currentIndex()) {
             case 1: effects << QLatin1String("animatemenu"); break;
             case 2: effects << QLatin1String("fademenu"); break;
             }
 
-            switch (comboeffect->currentItem()) {
+            switch (ui->comboEffectCombo->currentIndex()) {
             case 1: effects << QLatin1String("animatecombo"); break;
             }
 
-            switch (tooltipeffect->currentItem()) {
+            switch (ui->toolTipEffectCombo->currentIndex()) {
             case 1: effects << QLatin1String("animatetooltip"); break;
             case 2: effects << QLatin1String("fadetooltip"); break;
             }
 
-            switch ( toolboxeffect->currentItem() ) {
+            switch (ui->toolBoxEffectCombo->currentIndex()) {
             case 1: effects << QLatin1String("animatetoolbox"); break;
             }
         } else
@@ -573,15 +623,13 @@ void MainWindow::fileSave()
 #endif // Q_WS_X11
 
     setModified(false);
-    statusBar()->showMessage(QLatin1String("Saved changes."));
+    statusBar()->showMessage(tr("Saved changes."));
 }
-
 
 void MainWindow::fileExit()
 {
     qApp->closeAllWindows();
 }
-
 
 void MainWindow::setModified(bool m)
 {
@@ -589,180 +637,55 @@ void MainWindow::setModified(bool m)
         return;
 
     modified = m;
-    fileSaveAction->setEnabled(m);
+    ui->fileSaveAction->setEnabled(m);
 }
-
 
 void MainWindow::buildPalette()
 {
-    int i;
-    QColorGroup cg;
-    QColor btn = buttonMainColor->color();
-    QColor back = buttonMainColor2->color();
-    QPalette automake( btn, back );
+    QPalette temp(ui->buttonMainColor->color(), ui->buttonWindowColor->color());
+    for (int i = 0; i < QPalette::NColorGroups; i++)
+        temp = PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup(i), temp);
 
-    for (i = 0; i<9; i++)
-        cg.setColor( centralFromItem(i), automake.active().color( centralFromItem(i) ) );
-
-    editPalette.setActive( cg );
-    buildActiveEffect();
-
-    cg = editPalette.inactive();
-
-    QPalette temp( editPalette.active().color( QColorGroup::Button ),
-                   editPalette.active().color( QColorGroup::Window ) );
-
-    for (i = 0; i<9; i++)
-        cg.setColor( centralFromItem(i), temp.inactive().color( centralFromItem(i) ) );
-
-    editPalette.setInactive( cg );
-    buildInactiveEffect();
-
-    cg = editPalette.disabled();
-
-    for (i = 0; i<9; i++)
-        cg.setColor( centralFromItem(i), temp.disabled().color( centralFromItem(i) ) );
-
-    editPalette.setDisabled( cg );
-    buildDisabledEffect();
-
+    editPalette = temp;
+    setPreviewPalette(editPalette);
     updateColorButtons();
 
     setModified(true);
 }
 
-
-void MainWindow::buildActiveEffect()
+void MainWindow::setPreviewPalette(const QPalette &pal)
 {
-    QColorGroup cg = editPalette.active();
-    QColor btn = cg.color( QColorGroup::Button );
+    QPalette::ColorGroup colorGroup = groupFromIndex(ui->paletteCombo->currentIndex());
 
-    QPalette temp( btn, btn );
-
-    for (int i = 0; i<5; i++)
-        cg.setColor( effectFromItem(i), temp.active().color( effectFromItem(i) ) );
-
-    editPalette.setActive( cg );
-    setPreviewPalette( editPalette );
-
-    updateColorButtons();
-}
-
-
-void MainWindow::buildInactive()
-{
-    editPalette.setInactive( editPalette.active() );
-    buildInactiveEffect();
-}
-
-
-void MainWindow::buildInactiveEffect()
-{
-    QColorGroup cg = editPalette.inactive();
-
-    QColor light, midlight, mid, dark, shadow;
-    QColor btn = cg.color( QColorGroup::Button );
-
-    light = btn.light(150);
-    midlight = btn.light(115);
-    mid = btn.dark(150);
-    dark = btn.dark();
-    shadow = Qt::black;
-
-    cg.setColor( QColorGroup::Light, light );
-    cg.setColor( QColorGroup::Midlight, midlight );
-    cg.setColor( QColorGroup::Mid, mid );
-    cg.setColor( QColorGroup::Dark, dark );
-    cg.setColor( QColorGroup::Shadow, shadow );
-
-    editPalette.setInactive( cg );
-    setPreviewPalette( editPalette );
-    updateColorButtons();
-}
-
-
-void MainWindow::buildDisabled()
-{
-    QColorGroup cg = editPalette.active();
-    cg.setColor( QColorGroup::ButtonText, Qt::darkGray );
-    cg.setColor( QColorGroup::WindowText, Qt::darkGray );
-    cg.setColor( QColorGroup::Text, Qt::darkGray );
-    cg.setColor( QColorGroup::HighlightedText, Qt::darkGray );
-    editPalette.setDisabled( cg );
-
-    buildDisabledEffect();
-}
-
-
-void MainWindow::buildDisabledEffect()
-{
-    QColorGroup cg = editPalette.disabled();
-
-    QColor light, midlight, mid, dark, shadow;
-    QColor btn = cg.color( QColorGroup::Button );
-
-    light = btn.light(150);
-    midlight = btn.light(115);
-    mid = btn.dark(150);
-    dark = btn.dark();
-    shadow = Qt::black;
-
-    cg.setColor( QColorGroup::Light, light );
-    cg.setColor( QColorGroup::Midlight, midlight );
-    cg.setColor( QColorGroup::Mid, mid );
-    cg.setColor( QColorGroup::Dark, dark );
-    cg.setColor( QColorGroup::Shadow, shadow );
-
-    editPalette.setDisabled( cg );
-    setPreviewPalette( editPalette );
-    updateColorButtons();
-}
-
-
-void MainWindow::setPreviewPalette( const QPalette& pal )
-{
-    QColorGroup cg;
-
-    switch (paletteCombo->currentItem()) {
-    case 0:
-    default:
-        cg = pal.active();
-        break;
-    case 1:
-        cg = pal.inactive();
-        break;
-    case 2:
-        cg = pal.disabled();
-        break;
+    for (int i = 0; i < QPalette::NColorGroups; i++) {
+        for (int j = 0; j < QPalette::NColorRoles; j++) {
+            QPalette::ColorGroup targetGroup = QPalette::ColorGroup(i);
+            QPalette::ColorRole targetRole = QPalette::ColorRole(j);
+            previewPalette.setColor(targetGroup, targetRole, pal.color(colorGroup, targetRole));
+        }
     }
-    previewPalette.setActive( cg );
-    previewPalette.setInactive( cg );
-    previewPalette.setDisabled( cg );
 
-    previewFrame->setPreviewPalette(previewPalette);
+    ui->previewFrame->setPreviewPalette(previewPalette);
 }
-
 
 void MainWindow::updateColorButtons()
 {
-    buttonMainColor->setColor( editPalette.active().color( QColorGroup::Button ));
-    buttonMainColor2->setColor( editPalette.active().color( QColorGroup::Window ));
+    ui->buttonMainColor->setColor(editPalette.color(QPalette::Active, QPalette::Button));
+    ui->buttonWindowColor->setColor(editPalette.color(QPalette::Active, QPalette::Window));
 }
-
 
 void MainWindow::tunePalette()
 {
     bool ok;
     QPalette pal = PaletteEditorAdvanced::getPalette(&ok, editPalette,
-                                                     backgroundMode(), this);
-    if (! ok)
+                                                     backgroundRole(), this);
+    if (!ok)
         return;
 
     editPalette = pal;
     setPreviewPalette(editPalette);
     setModified(true);
 }
-
 
 void MainWindow::paletteSelected(int)
 {
@@ -771,10 +694,10 @@ void MainWindow::paletteSelected(int)
 
 void MainWindow::updateStyleLayout()
 {
-    QString currentStyle = gstylecombo->currentText();
+    QString currentStyle = ui->guiStyleCombo->currentText();
     bool autoStyle = (currentStyle == desktopThemeName);
-    previewFrame->setPreviewVisible(!autoStyle);
-    groupAutoPalette->setEnabled(currentStyle.toLower() != QLatin1String("gtk") && !autoStyle);
+    ui->previewFrame->setPreviewVisible(!autoStyle);
+    ui->buildPaletteGroup->setEnabled(currentStyle.toLower() != QLatin1String("gtk") && !autoStyle);
 }
 
 void MainWindow::styleSelected(const QString &stylename)
@@ -786,7 +709,7 @@ void MainWindow::styleSelected(const QString &stylename)
         style = QStyleFactory::create(stylename);
         if (!style)
             return;
-        setStyleHelper(previewFrame, style);
+        setStyleHelper(ui->previewFrame, style);
         delete previewstyle;
         previewstyle = style;
         setModified(true);
@@ -794,209 +717,190 @@ void MainWindow::styleSelected(const QString &stylename)
     updateStyleLayout();
 }
 
-
 void MainWindow::familySelected(const QString &family)
 {
     QFontDatabase db;
     QStringList styles = db.styles(family);
-    stylecombo->clear();
-    stylecombo->insertStringList(styles);
-    familysubcombo->insertItem(family);
+    ui->fontStyleCombo->clear();
+    ui->fontStyleCombo->addItems(styles);
+    ui->familySubstitutionCombo->addItem(family);
     buildFont();
 }
-
 
 void MainWindow::buildFont()
 {
     QFontDatabase db;
-    QFont font = db.font(familycombo->currentText(),
-                         stylecombo->currentText(),
-                         psizecombo->currentText().toInt());
-    samplelineedit->setFont(font);
+    QFont font = db.font(ui->fontFamilyCombo->currentText(),
+                         ui->fontStyleCombo->currentText(),
+                         ui->pointSizeCombo->currentText().toInt());
+    ui->sampleLineEdit->setFont(font);
     setModified(true);
 }
-
 
 void MainWindow::substituteSelected(const QString &family)
 {
     QStringList subs = QFont::substitutes(family);
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
 }
-
 
 void MainWindow::removeSubstitute()
 {
-    if (sublistbox->currentItem() < 0 ||
-        uint(sublistbox->currentItem()) > sublistbox->count())
+    if (!ui->substitutionsListBox->currentItem())
         return;
 
-    int item = sublistbox->currentItem();
-    QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    subs.removeAt(sublistbox->currentItem());
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
-    if (uint(item) > sublistbox->count())
-        item = int(sublistbox->count()) - 1;
-    sublistbox->setCurrentItem(item);
-    QFont::removeSubstitution(familysubcombo->currentText());
-    QFont::insertSubstitutions(familysubcombo->currentText(), subs);
+    int row = ui->substitutionsListBox->currentRow();
+    QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+    subs.removeAt(ui->substitutionsListBox->currentRow());
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
+    if (row > ui->substitutionsListBox->count())
+        row = ui->substitutionsListBox->count() - 1;
+    ui->substitutionsListBox->setCurrentRow(row);
+    QFont::removeSubstitution(ui->familySubstitutionCombo->currentText());
+    QFont::insertSubstitutions(ui->familySubstitutionCombo->currentText(), subs);
     setModified(true);
 }
-
 
 void MainWindow::addSubstitute()
 {
-    if (sublistbox->currentItem() < 0 ||
-        uint(sublistbox->currentItem()) > sublistbox->count()) {
-        QFont::insertSubstitution(familysubcombo->currentText(), choosesubcombo->currentText());
-        QStringList subs = QFont::substitutes(familysubcombo->currentText());
-        sublistbox->clear();
-        sublistbox->insertStringList(subs);
+    if (!ui->substitutionsListBox->currentItem()) {
+        QFont::insertSubstitution(ui->familySubstitutionCombo->currentText(),
+                                  ui->chooseSubstitutionCombo->currentText());
+        QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+        ui->substitutionsListBox->clear();
+        ui->substitutionsListBox->insertItems(0, subs);
         setModified(true);
         return;
     }
 
-    int item = sublistbox->currentItem();
-    QFont::insertSubstitution(familysubcombo->currentText(), choosesubcombo->currentText());
-    QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
-    sublistbox->setCurrentItem(item);
+    int row = ui->substitutionsListBox->currentRow();
+    QFont::insertSubstitution(ui->familySubstitutionCombo->currentText(), ui->chooseSubstitutionCombo->currentText());
+    QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
+    ui->substitutionsListBox->setCurrentRow(row);
     setModified(true);
 }
-
 
 void MainWindow::downSubstitute()
 {
-    if (sublistbox->currentItem() < 0 ||
-        uint(sublistbox->currentItem()) >= sublistbox->count())
+    if (!ui->substitutionsListBox->currentItem() || ui->substitutionsListBox->currentRow() >= ui->substitutionsListBox->count())
         return;
 
-    int item = sublistbox->currentItem();
-    QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    QString fam = subs.at(item);
-    subs.removeAt(item);
-    subs.insert(item+1, fam);
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
-    sublistbox->setCurrentItem(item + 1);
-    QFont::removeSubstitution(familysubcombo->currentText());
-    QFont::insertSubstitutions(familysubcombo->currentText(), subs);
+    int row = ui->substitutionsListBox->currentRow();
+    QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+    QString fam = subs.at(row);
+    subs.removeAt(row);
+    subs.insert(row + 1, fam);
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
+    ui->substitutionsListBox->setCurrentRow(row + 1);
+    QFont::removeSubstitution(ui->familySubstitutionCombo->currentText());
+    QFont::insertSubstitutions(ui->familySubstitutionCombo->currentText(), subs);
     setModified(true);
 }
-
 
 void MainWindow::upSubstitute()
 {
-    if (sublistbox->currentItem() < 1)
+    if (!ui->substitutionsListBox->currentItem() || ui->substitutionsListBox->currentRow() < 1)
         return;
 
-    int item = sublistbox->currentItem();
-    QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    QString fam = subs.at(item);
-    subs.removeAt(item);
-    subs.insert(item-1, fam);
-    sublistbox->clear();
-    sublistbox->insertStringList(subs);
-    sublistbox->setCurrentItem(item - 1);
-    QFont::removeSubstitution(familysubcombo->currentText());
-    QFont::insertSubstitutions(familysubcombo->currentText(), subs);
+    int row = ui->substitutionsListBox->currentRow();
+    QStringList subs = QFont::substitutes(ui->familySubstitutionCombo->currentText());
+    QString fam = subs.at(row);
+    subs.removeAt(row);
+    subs.insert(row-1, fam);
+    ui->substitutionsListBox->clear();
+    ui->substitutionsListBox->insertItems(0, subs);
+    ui->substitutionsListBox->setCurrentRow(row - 1);
+    QFont::removeSubstitution(ui->familySubstitutionCombo->currentText());
+    QFont::insertSubstitutions(ui->familySubstitutionCombo->currentText(), subs);
     setModified(true);
 }
-
 
 void MainWindow::removeFontpath()
 {
-    if (fontpathlistbox->currentItem() < 0 ||
-        uint(fontpathlistbox->currentItem()) > fontpathlistbox->count())
+    if (!ui->fontpathListBox->currentItem())
         return;
 
-    int item = fontpathlistbox->currentItem();
-    fontpaths.removeAt(fontpathlistbox->currentItem());
-    fontpathlistbox->clear();
-    fontpathlistbox->insertStringList(fontpaths);
-    if (uint(item) > fontpathlistbox->count())
-        item = int(fontpathlistbox->count()) - 1;
-    fontpathlistbox->setCurrentItem(item);
+    int row = ui->fontpathListBox->currentRow();
+    fontpaths.removeAt(row);
+    ui->fontpathListBox->clear();
+    ui->fontpathListBox->insertItems(0, fontpaths);
+    if (row > ui->fontpathListBox->count())
+        row = ui->fontpathListBox->count() - 1;
+    ui->fontpathListBox->setCurrentRow(row);
     setModified(true);
 }
 
-
 void MainWindow::addFontpath()
 {
-    if (fontpathlineedit->text().isEmpty())
+    if (ui->fontPathLineEdit->text().isEmpty())
         return;
 
-    if (fontpathlistbox->currentItem() < 0 ||
-        uint(fontpathlistbox->currentItem()) > fontpathlistbox->count()) {
-        fontpaths.append(fontpathlineedit->text());
-        fontpathlistbox->clear();
-        fontpathlistbox->insertStringList(fontpaths);
+    if (!ui->fontpathListBox->currentItem()) {
+        fontpaths.append(ui->fontPathLineEdit->text());
+        ui->fontpathListBox->clear();
+        ui->fontpathListBox->insertItems(0, fontpaths);
         setModified(true);
 
         return;
     }
 
-    int item = fontpathlistbox->currentItem();
-    fontpaths.insert(fontpathlistbox->currentItem()+1,
-                     fontpathlineedit->text());
-    fontpathlistbox->clear();
-    fontpathlistbox->insertStringList(fontpaths);
-    fontpathlistbox->setCurrentItem(item);
+    int row = ui->fontpathListBox->currentRow();
+    fontpaths.insert(row + 1, ui->fontPathLineEdit->text());
+    ui->fontpathListBox->clear();
+    ui->fontpathListBox->insertItems(0, fontpaths);
+    ui->fontpathListBox->setCurrentRow(row);
     setModified(true);
 }
-
 
 void MainWindow::downFontpath()
 {
-    if (fontpathlistbox->currentItem() < 0 ||
-        uint(fontpathlistbox->currentItem()) >= fontpathlistbox->count() - 1)
+    if (!ui->fontpathListBox->currentItem()
+        || ui->fontpathListBox->currentRow() >= (ui->fontpathListBox->count() - 1)) {
         return;
+    }
 
-    int item = fontpathlistbox->currentItem();
-    QString fam = fontpaths.at(item);
-    fontpaths.removeAt(item);
-    fontpaths.insert(item+1, fam);
-    fontpathlistbox->clear();
-    fontpathlistbox->insertStringList(fontpaths);
-    fontpathlistbox->setCurrentItem(item + 1);
+    int row = ui->fontpathListBox->currentRow();
+    QString fam = fontpaths.at(row);
+    fontpaths.removeAt(row);
+    fontpaths.insert(row + 1, fam);
+    ui->fontpathListBox->clear();
+    ui->fontpathListBox->insertItems(0, fontpaths);
+    ui->fontpathListBox->setCurrentRow(row + 1);
     setModified(true);
 }
-
 
 void MainWindow::upFontpath()
 {
-    if (fontpathlistbox->currentItem() < 1)
+    if (!ui->fontpathListBox->currentItem() || ui->fontpathListBox->currentRow() < 1)
         return;
 
-    int item = fontpathlistbox->currentItem();
-    QString fam = fontpaths.at(item);
-    fontpaths.removeAt(item);
-    fontpaths.insert(item-1, fam);
-    fontpathlistbox->clear();
-    fontpathlistbox->insertStringList(fontpaths);
-    fontpathlistbox->setCurrentItem(item - 1);
+    int row = ui->fontpathListBox->currentRow();
+    QString fam = fontpaths.at(row);
+    fontpaths.removeAt(row);
+    fontpaths.insert(row - 1, fam);
+    ui->fontpathListBox->clear();
+    ui->fontpathListBox->insertItems(0, fontpaths);
+    ui->fontpathListBox->setCurrentRow(row - 1);
     setModified(true);
 }
 
-
 void MainWindow::browseFontpath()
 {
-    QString dirname = QFileDialog::getExistingDirectory(QString(), this, 0,
-                                                        tr("Select a Directory"));
+    QString dirname = QFileDialog::getExistingDirectory(this, tr("Select a Directory"));
     if (dirname.isNull())
         return;
 
-   fontpathlineedit->setText(dirname);
+   ui->fontPathLineEdit->setText(dirname);
 }
-
 
 void MainWindow::somethingModified()
 {
     setModified(true);
 }
-
 
 void MainWindow::helpAbout()
 {
@@ -1010,44 +914,43 @@ void MainWindow::helpAbout()
     box.exec();
 }
 
-
 void MainWindow::helpAboutQt()
 {
     QMessageBox::aboutQt(this, tr("Qt Configuration"));
 }
 
-
-void MainWindow::pageChanged(QWidget *page)
+void MainWindow::pageChanged(int pageNumber)
 {
-    if (page == tab)
-        helpview->setText(tr(interface_text));
-    else if (page == tab1)
-        helpview->setText(tr(appearance_text));
-    else if (page == tab2)
-        helpview->setText(tr(font_text));
-    else if (page == tab3)
-        helpview->setText(tr(printer_text));
-    else if (page == tab4)
-        helpview->setText(tr(phonon_text));
+    QWidget *page = ui->mainTabWidget->widget(pageNumber);
+    if (page == ui->interfaceTab)
+        ui->helpView->setText(tr(interface_text));
+    else if (page == ui->appearanceTab)
+        ui->helpView->setText(tr(appearance_text));
+    else if (page == ui->fontsTab)
+        ui->helpView->setText(tr(font_text));
+    else if (page == ui->printerTab)
+        ui->helpView->setText(tr(printer_text));
+    else if (page == ui->phononTab)
+        ui->helpView->setText(tr(phonon_text));
 }
-
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     if (modified) {
-        switch(QMessageBox::warning(this, tr("Save Changes"),
-                                    tr("Save changes to settings?"),
-                                    tr("&Yes"), tr("&No"), tr("&Cancel"), 0, 2)) {
-        case 0: // save
+        switch (QMessageBox::warning(this, tr("Save Changes"),
+                                     tr("Save changes to settings?"),
+                                     (QMessageBox::Yes | QMessageBox::No
+                                     | QMessageBox::Cancel))) {
+        case QMessageBox::Yes: // save
             qApp->processEvents();
             fileSave();
 
             // fall through intended
-        case 1: // don't save
+        case QMessageBox::No: // don't save
             e->accept();
             break;
 
-        case 2: // cancel
+        case QMessageBox::Cancel: // cancel
             e->ignore();
             break;
 

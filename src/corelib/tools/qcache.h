@@ -61,7 +61,7 @@ class QCache
     };
     Node *f, *l;
     QHash<Key, Node> hash;
-    void *unused;
+    void *unused; // ### Qt5: remove
     int mx, total;
 
     inline void unlink(Node &n) {
@@ -205,8 +205,7 @@ void QCache<Key,T>::trim(int m)
     while (n && total > m) {
         Node *u = n;
         n = n->p;
-        if (qIsDetached(*u->t))
-            unlink(*u);
+        unlink(*u);
     }
 }
 

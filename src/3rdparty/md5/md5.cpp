@@ -24,6 +24,7 @@
 #ifndef _WIN32_WCE
 #include <sys/types.h>		/* for stupid systems */
 #else
+#include <windef.h>
 #include <types.h>
 #endif
 

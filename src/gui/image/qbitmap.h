@@ -63,6 +63,7 @@ public:
     ~QBitmap();
 
     QBitmap &operator=(const QPixmap &);
+    inline void swap(QBitmap &other) { QPixmap::swap(other); } // prevent QBitmap<->QPixmap swaps
     operator QVariant() const;
 
     inline void clear() { fill(Qt::color0); }

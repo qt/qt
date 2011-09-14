@@ -5,9 +5,9 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_qdeclarativeview.cpp
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

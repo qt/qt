@@ -79,6 +79,7 @@
 #include <qdesktopwidget.h>
 #include <qevent.h>
 #include <qpixmapcache.h>
+#include <qvarlengtharray.h>
 #include <private/qevent_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
@@ -88,8 +89,15 @@
 #include <private/qcocoaview_mac_p.h>
 #include <private/qkeymapper_p.h>
 #include <private/qwidget_p.h>
+#include <private/qcocoawindow_mac_p.h>
 
 QT_BEGIN_NAMESPACE
+
+#ifdef QT_MAC_USE_COCOA
+// Cmd + left mousebutton should produce a right button
+//  press (mainly for mac users with one-button mice):
+static bool qt_leftButtonIsRightButton = false;
+#endif
 
 Q_GLOBAL_STATIC(QMacWindowFader, macwindowFader);
 
@@ -140,6 +148,9 @@ void QMacWindowFader::performFade()
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
 extern QWidget * mac_mouse_grabber;
 extern QWidget *qt_button_down; //qapplication_mac.cpp
+extern QPointer<QWidget> qt_last_mouse_receiver;
+extern OSViewRef qt_mac_effectiveview_for(const QWidget *w);
+extern void qt_mac_updateCursorWithWidgetUnderMouse(QWidget *widgetUnderMouse); // qcursor_mac.mm
 
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
 {
@@ -166,6 +177,70 @@ void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
         }
     }
 }
+struct dndenum_mapper
+{
+    NSDragOperation mac_code;
+    Qt::DropAction qt_code;
+    bool Qt2Mac;
+};
+
+#if defined(QT_MAC_USE_COCOA) && defined(__OBJC__)
+
+static dndenum_mapper dnd_enums[] = {
+    { NSDragOperationLink,  Qt::LinkAction, true },
+    { NSDragOperationMove,  Qt::MoveAction, true },
+    { NSDragOperationCopy,  Qt::CopyAction, true },
+    { NSDragOperationGeneric,  Qt::CopyAction, false },
+    { NSDragOperationEvery, Qt::ActionMask, false },
+    { NSDragOperationNone, Qt::IgnoreAction, false }
+};
+
+NSDragOperation qt_mac_mapDropAction(Qt::DropAction action)
+{
+    for (int i=0; dnd_enums[i].qt_code; i++) {
+        if (dnd_enums[i].Qt2Mac && (action & dnd_enums[i].qt_code)) {
+            return dnd_enums[i].mac_code;
+        }
+    }
+    return NSDragOperationNone;
+}
+
+NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions)
+{
+    NSDragOperation nsActions = NSDragOperationNone;
+    for (int i=0; dnd_enums[i].qt_code; i++) {
+        if (dnd_enums[i].Qt2Mac && (actions & dnd_enums[i].qt_code))
+            nsActions |= dnd_enums[i].mac_code;
+    }
+    return nsActions;
+}
+
+Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions)
+{
+    Qt::DropAction action = Qt::IgnoreAction;
+    for (int i=0; dnd_enums[i].mac_code; i++) {
+        if (nsActions & dnd_enums[i].mac_code)
+            return dnd_enums[i].qt_code;
+    }
+    return action;
+}
+
+Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
+{
+    Qt::DropActions actions = Qt::IgnoreAction;
+    for (int i=0; dnd_enums[i].mac_code; i++) {
+        if (nsActions & dnd_enums[i].mac_code)
+            actions |= dnd_enums[i].qt_code;
+    }
+    return actions;
+}
+
+Q_GLOBAL_STATIC(DnDParams, currentDnDParameters);
+DnDParams *macCurrentDnDParameters()
+{
+    return currentDnDParameters();
+}
+#endif
 
 bool macWindowIsTextured( void * /*OSWindowRef*/ window )
 {
@@ -300,7 +375,7 @@ bool qt_mac_checkForNativeSizeGrip(const QWidget *widget)
     HIViewFindByID(HIViewGetRoot(HIViewGetWindow(HIViewRef(widget->winId()))), kHIViewWindowGrowBoxID, &nativeSizeGrip);
     return (nativeSizeGrip != 0);
 #else
-    return [[reinterpret_cast<NSView *>(widget->winId()) window] showsResizeIndicator];
+    return [[reinterpret_cast<NSView *>(widget->effectiveWinId()) window] showsResizeIndicator];
 #endif
 }
 struct qt_mac_enum_mapper
@@ -470,7 +545,6 @@ void qt_dispatchTabletProximityEvent(const ::TabletProximityRec &proxRec)
     qt_sendSpontaneousEvent(qApp, &qtabletProximity);
 }
 
-#ifdef QT_MAC_USE_COCOA
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.
 struct KeyPair
@@ -494,69 +568,111 @@ bool operator<(QChar qchar, const KeyPair &entry)
     return qchar < entry.cocoaKey;
 }
 
+bool operator<(const Qt::Key &key, const KeyPair &entry)
+{
+    return key < entry.qtKey;
+}
+
+bool operator<(const KeyPair &entry, const Qt::Key &key)
+{
+    return entry.qtKey < key;
+}
+
+static bool qtKey2CocoaKeySortLessThan(const KeyPair &entry1, const KeyPair &entry2)
+{
+    return entry1.qtKey < entry2.qtKey;
+}
+
+static const int NumEntries = 59;
+static const KeyPair entries[NumEntries] = {
+    { NSEnterCharacter, Qt::Key_Enter },
+    { NSBackspaceCharacter, Qt::Key_Backspace },
+    { NSTabCharacter, Qt::Key_Tab },
+    { NSNewlineCharacter, Qt::Key_Return },
+    { NSCarriageReturnCharacter, Qt::Key_Return },
+    { NSBackTabCharacter, Qt::Key_Backtab },
+    { kEscapeCharCode, Qt::Key_Escape },
+    // Cocoa sends us delete when pressing backspace!
+    // (NB when we reverse this list in qtKey2CocoaKey, there
+    // will be two indices of Qt::Key_Backspace. But is seems to work
+    // ok for menu shortcuts (which uses that function):
+    { NSDeleteCharacter, Qt::Key_Backspace },
+    { NSUpArrowFunctionKey, Qt::Key_Up },
+    { NSDownArrowFunctionKey, Qt::Key_Down },
+    { NSLeftArrowFunctionKey, Qt::Key_Left },
+    { NSRightArrowFunctionKey, Qt::Key_Right },
+    { NSF1FunctionKey, Qt::Key_F1 },
+    { NSF2FunctionKey, Qt::Key_F2 },
+    { NSF3FunctionKey, Qt::Key_F3 },
+    { NSF4FunctionKey, Qt::Key_F4 },
+    { NSF5FunctionKey, Qt::Key_F5 },
+    { NSF6FunctionKey, Qt::Key_F6 },
+    { NSF7FunctionKey, Qt::Key_F7 },
+    { NSF8FunctionKey, Qt::Key_F8 },
+    { NSF9FunctionKey, Qt::Key_F8 },
+    { NSF10FunctionKey, Qt::Key_F10 },
+    { NSF11FunctionKey, Qt::Key_F11 },
+    { NSF12FunctionKey, Qt::Key_F12 },
+    { NSF13FunctionKey, Qt::Key_F13 },
+    { NSF14FunctionKey, Qt::Key_F14 },
+    { NSF15FunctionKey, Qt::Key_F15 },
+    { NSF16FunctionKey, Qt::Key_F16 },
+    { NSF17FunctionKey, Qt::Key_F17 },
+    { NSF18FunctionKey, Qt::Key_F18 },
+    { NSF19FunctionKey, Qt::Key_F19 },
+    { NSF20FunctionKey, Qt::Key_F20 },
+    { NSF21FunctionKey, Qt::Key_F21 },
+    { NSF22FunctionKey, Qt::Key_F22 },
+    { NSF23FunctionKey, Qt::Key_F23 },
+    { NSF24FunctionKey, Qt::Key_F24 },
+    { NSF25FunctionKey, Qt::Key_F25 },
+    { NSF26FunctionKey, Qt::Key_F26 },
+    { NSF27FunctionKey, Qt::Key_F27 },
+    { NSF28FunctionKey, Qt::Key_F28 },
+    { NSF29FunctionKey, Qt::Key_F29 },
+    { NSF30FunctionKey, Qt::Key_F30 },
+    { NSF31FunctionKey, Qt::Key_F31 },
+    { NSF32FunctionKey, Qt::Key_F32 },
+    { NSF33FunctionKey, Qt::Key_F33 },
+    { NSF34FunctionKey, Qt::Key_F34 },
+    { NSF35FunctionKey, Qt::Key_F35 },
+    { NSInsertFunctionKey, Qt::Key_Insert },
+    { NSDeleteFunctionKey, Qt::Key_Delete },
+    { NSHomeFunctionKey, Qt::Key_Home },
+    { NSEndFunctionKey, Qt::Key_End },
+    { NSPageUpFunctionKey, Qt::Key_PageUp },
+    { NSPageDownFunctionKey, Qt::Key_PageDown },
+    { NSPrintScreenFunctionKey, Qt::Key_Print },
+    { NSScrollLockFunctionKey, Qt::Key_ScrollLock },
+    { NSPauseFunctionKey, Qt::Key_Pause },
+    { NSSysReqFunctionKey, Qt::Key_SysReq },
+    { NSMenuFunctionKey, Qt::Key_Menu },
+    { NSHelpFunctionKey, Qt::Key_Help },
+};
+static const KeyPair * const end = entries + NumEntries;
+
+QChar qtKey2CocoaKey(Qt::Key key)
+{
+    // The first time this function is called, create a reverse
+    // looup table sorted on Qt Key rather than Cocoa key:
+    static QVector<KeyPair> rev_entries(NumEntries);
+    static bool mustInit = true;
+    if (mustInit){
+        mustInit = false;
+        for (int i=0; i<NumEntries; ++i)
+            rev_entries[i] = entries[i];
+        qSort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan);
+    }
+    const QVector<KeyPair>::iterator i
+            = qBinaryFind(rev_entries.begin(), rev_entries.end(), key);
+    if (i == rev_entries.end())
+        return QChar();
+    return i->cocoaKey;
+}
+
+#ifdef QT_MAC_USE_COCOA
 static Qt::Key cocoaKey2QtKey(QChar keyCode)
 {
-    static const int NumEntries = 57;
-    static const KeyPair entries[NumEntries] = {
-        { NSEnterCharacter, Qt::Key_Enter },
-        { NSTabCharacter, Qt::Key_Tab },
-        { NSCarriageReturnCharacter, Qt::Key_Return },
-        { NSBackTabCharacter, Qt::Key_Backtab },
-        { kEscapeCharCode, Qt::Key_Escape },
-        { NSDeleteCharacter, Qt::Key_Backspace },
-        { NSUpArrowFunctionKey, Qt::Key_Up },
-        { NSDownArrowFunctionKey, Qt::Key_Down },
-        { NSLeftArrowFunctionKey, Qt::Key_Left },
-        { NSRightArrowFunctionKey, Qt::Key_Right },
-        { NSF1FunctionKey, Qt::Key_F1 },
-        { NSF2FunctionKey, Qt::Key_F2 },
-        { NSF3FunctionKey, Qt::Key_F3 },
-        { NSF4FunctionKey, Qt::Key_F4 },
-        { NSF5FunctionKey, Qt::Key_F5 },
-        { NSF6FunctionKey, Qt::Key_F6 },
-        { NSF7FunctionKey, Qt::Key_F7 },
-        { NSF8FunctionKey, Qt::Key_F8 },
-        { NSF9FunctionKey, Qt::Key_F8 },
-        { NSF10FunctionKey, Qt::Key_F10 },
-        { NSF11FunctionKey, Qt::Key_F11 },
-        { NSF12FunctionKey, Qt::Key_F12 },
-        { NSF13FunctionKey, Qt::Key_F13 },
-        { NSF14FunctionKey, Qt::Key_F14 },
-        { NSF15FunctionKey, Qt::Key_F15 },
-        { NSF16FunctionKey, Qt::Key_F16 },
-        { NSF17FunctionKey, Qt::Key_F17 },
-        { NSF18FunctionKey, Qt::Key_F18 },
-        { NSF19FunctionKey, Qt::Key_F19 },
-        { NSF20FunctionKey, Qt::Key_F20 },
-        { NSF21FunctionKey, Qt::Key_F21 },
-        { NSF22FunctionKey, Qt::Key_F22 },
-        { NSF23FunctionKey, Qt::Key_F23 },
-        { NSF24FunctionKey, Qt::Key_F24 },
-        { NSF25FunctionKey, Qt::Key_F25 },
-        { NSF26FunctionKey, Qt::Key_F26 },
-        { NSF27FunctionKey, Qt::Key_F27 },
-        { NSF28FunctionKey, Qt::Key_F28 },
-        { NSF29FunctionKey, Qt::Key_F29 },
-        { NSF30FunctionKey, Qt::Key_F30 },
-        { NSF31FunctionKey, Qt::Key_F31 },
-        { NSF32FunctionKey, Qt::Key_F32 },
-        { NSF33FunctionKey, Qt::Key_F33 },
-        { NSF34FunctionKey, Qt::Key_F34 },
-        { NSF35FunctionKey, Qt::Key_F35 },
-        { NSInsertFunctionKey, Qt::Key_Insert },
-        { NSDeleteFunctionKey, Qt::Key_Delete },
-        { NSHomeFunctionKey, Qt::Key_Home },
-        { NSEndFunctionKey, Qt::Key_End },
-        { NSPageUpFunctionKey, Qt::Key_PageUp },
-        { NSPageDownFunctionKey, Qt::Key_PageDown },
-        { NSPrintScreenFunctionKey, Qt::Key_Print },
-        { NSScrollLockFunctionKey, Qt::Key_ScrollLock },
-        { NSPauseFunctionKey, Qt::Key_Pause },
-        { NSSysReqFunctionKey, Qt::Key_SysReq },
-        { NSMenuFunctionKey, Qt::Key_Menu },
-        { NSHelpFunctionKey, Qt::Key_Help },
-    };
-    static const KeyPair * const end = entries + NumEntries;
     const KeyPair *i = qBinaryFind(entries, end, keyCode);
     if (i == end)
         return Qt::Key(keyCode.unicode());
@@ -577,6 +693,27 @@ Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags)
     if (modifierFlags & NSNumericPadKeyMask)
         qtMods |= Qt::KeypadModifier;
     return qtMods;
+}
+
+NSString *qt_mac_removePrivateUnicode(NSString* string)
+{
+    int len = [string length];
+    if (len) {
+        QVarLengthArray <unichar, 10> characters(len);
+        bool changed = false;
+        for (int i = 0; i<len; i++) {
+            characters[i] = [string characterAtIndex:i];
+            // check if they belong to key codes in private unicode range
+            // currently we need to handle only the NSDeleteFunctionKey
+            if (characters[i] == NSDeleteFunctionKey) {
+                characters[i] = NSDeleteCharacter;
+                changed = true;
+            }
+        }
+        if (changed)
+            return [NSString stringWithCharacters:characters.data() length:len];
+    }
+    return string;
 }
 
 Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
@@ -672,7 +809,6 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
     return Qt::NoButton;
 }
 
-// Helper to share code between QCocoaWindow and QCocoaView
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent)
 {
 #ifndef QT_MAC_USE_COCOA
@@ -684,6 +820,7 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     EventRef key_event = static_cast<EventRef>(const_cast<void *>([event eventRef]));
     Q_ASSERT(key_event);
     unsigned int info = 0;
+
     if ([event type] == NSKeyDown) {
         NSString *characters = [event characters];
         if ([characters length]) {
@@ -693,19 +830,12 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
         }
     }
 
-    // Redirect keys to alien widgets.
-    if (widgetToGetEvent->testAttribute(Qt::WA_NativeWindow) == false) {
-        widgetToGetEvent = qApp->focusWidget();
-    }
-
-    if (widgetToGetEvent == 0)
-        return false;
-
     if (qt_mac_sendMacEventToWidget(widgetToGetEvent, key_event))
         return true;
 
     if (mustUseCocoaKeyEvent())
         return qt_dispatchKeyEventWithCocoa(keyEvent, widgetToGetEvent);
+
     bool consumed = qt_keymapper_private()->translateKeyEvent(widgetToGetEvent, 0, key_event, &info, true);
     return consumed && (info != 0);
 #endif
@@ -729,7 +859,6 @@ void qt_dispatchModifiersChanged(void * /*NSEvent * */flagsChangedEvent, QWidget
 #endif
 }
 
-
 QPointF flipPoint(const NSPoint &p)
 {
     return QPointF(p.x, flipYCoordinate(p.y));
@@ -745,21 +874,15 @@ NSPoint flipPoint(const QPointF &p)
     return NSMakePoint(p.x(), flipYCoordinate(p.y()));
 }
 
-void qt_mac_dispatchNCMouseMessage(void * /* NSWindow* */eventWindow, void * /* NSEvent* */mouseEvent,
-                                   QWidget *widgetToGetEvent, bool &leftButtonIsRightButton)
+#if QT_MAC_USE_COCOA && __OBJC__
+
+void qt_mac_handleNonClientAreaMouseEvent(NSWindow *window, NSEvent *event)
 {
-#ifndef QT_MAC_USE_COCOA
-    Q_UNUSED(eventWindow);
-    Q_UNUSED(mouseEvent);
-    Q_UNUSED(widgetToGetEvent);
-    Q_UNUSED(leftButtonIsRightButton);
-#else
+    QWidget *widgetToGetEvent = [window QT_MANGLE_NAMESPACE(qt_qwidget)];
     if (widgetToGetEvent == 0)
         return;
-    NSWindow *window = static_cast<NSWindow *>(eventWindow);
-    NSEvent *event = static_cast<NSEvent *>(mouseEvent);
-    NSEventType evtType = [event type];
 
+    NSEventType evtType = [event type];
     QPoint qlocalPoint;
     QPoint qglobalPoint;
     bool processThisEvent = false;
@@ -877,12 +1000,12 @@ void qt_mac_dispatchNCMouseMessage(void * /* NSWindow* */eventWindow, void * /* 
                                            : QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
-            leftButtonIsRightButton = true;
+            qt_leftButtonIsRightButton = true;
         }
     } else if (eventType == QEvent::NonClientAreaMouseButtonRelease || eventType == QEvent::MouseButtonRelease) {
-        if (button == Qt::LeftButton && leftButtonIsRightButton) {
+        if (button == Qt::LeftButton && qt_leftButtonIsRightButton) {
             button = Qt::RightButton;
-            leftButtonIsRightButton = false;
+            qt_leftButtonIsRightButton = false;
         }
     }
 
@@ -902,155 +1025,265 @@ void qt_mac_dispatchNCMouseMessage(void * /* NSWindow* */eventWindow, void * /* 
     // However we might need to unset it if the event is Release.
     if (eventType == QEvent::MouseButtonRelease)
         qt_button_down = 0;
-#endif
 }
 
-bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */event, QEvent::Type eventType, Qt::MouseButton button)
+QWidget *qt_mac_getTargetForKeyEvent(QWidget *widgetThatReceivedEvent)
 {
-#ifndef QT_MAC_USE_COCOA
-    Q_UNUSED(view);
-    Q_UNUSED(event);
-    Q_UNUSED(eventType);
-    Q_UNUSED(button);
-    return false;
-#else
-    QT_MANGLE_NAMESPACE(QCocoaView) *theView = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view);
-    NSEvent *theEvent = static_cast<NSEvent *>(event);
+    if (QWidget *popup = QApplication::activePopupWidget()) {
+        QWidget *focusInPopup = popup->focusWidget();
+        return focusInPopup ? focusInPopup : popup;
+    }
 
+    QWidget *widgetToGetKey = qApp->focusWidget();
+    if (!widgetToGetKey)
+        widgetToGetKey = widgetThatReceivedEvent;
+
+    return widgetToGetKey;
+}
+
+// This function will find the widget that should receive the
+// mouse event. Because of explicit/implicit mouse grabs, popups,
+// etc, this might not end up being the same as the widget under
+// the mouse (which is more interresting when handling enter/leave
+// events
+QWidget *qt_mac_getTargetForMouseEvent(
+    // You can call this function without providing an event.
+    NSEvent *event,
+    QEvent::Type eventType,
+    QPoint &returnLocalPoint,
+    QPoint &returnGlobalPoint,
+    QWidget *nativeWidget,
+    QWidget **returnWidgetUnderMouse)
+{
+    Q_UNUSED(event);
+    NSPoint nsglobalpoint = event ? [[event window] convertBaseToScreen:[event locationInWindow]] : [NSEvent mouseLocation];
+    returnGlobalPoint = flipPoint(nsglobalpoint).toPoint();
+    QWidget *mouseGrabber = QWidget::mouseGrabber();
+    bool buttonDownNotBlockedByModal = qt_button_down && !QApplicationPrivate::isBlockedByModal(qt_button_down);
+    QWidget *popup = QApplication::activePopupWidget();
+
+    // Resolve the widget under the mouse:
+    QWidget *widgetUnderMouse = 0;
+    if (popup || qt_button_down || !nativeWidget || !nativeWidget->isVisible()) {
+        // Using QApplication::widgetAt for finding the widget under the mouse
+        // is most safe, since it ignores cocoas own mouse down redirections (which
+        // we need to be prepared for when using nativeWidget as starting point).
+        // (the only exception is for QMacNativeWidget, where QApplication::widgetAt fails).
+        // But it is also slower (I guess), so we try to avoid it and use nativeWidget if we can:
+        widgetUnderMouse = QApplication::widgetAt(returnGlobalPoint);
+    }
+
+    if (!widgetUnderMouse && nativeWidget) {
+        // Entering here should be the common case. We
+        // also handle the QMacNativeWidget fallback case.
+        QPoint p = nativeWidget->mapFromGlobal(returnGlobalPoint);
+        widgetUnderMouse = nativeWidget->childAt(p);
+        if (!widgetUnderMouse && nativeWidget->rect().contains(p))
+            widgetUnderMouse = nativeWidget;
+    }
+
+    if (widgetUnderMouse) {
+        // Check if widgetUnderMouse is blocked by a modal
+        // window, or the mouse if over the frame strut:
+        if (widgetUnderMouse == qt_button_down) {
+            // Small optimization to avoid an extra call to isBlockedByModal:
+            if (buttonDownNotBlockedByModal == false)
+                widgetUnderMouse = 0;
+        } else if (QApplicationPrivate::isBlockedByModal(widgetUnderMouse)) {
+            widgetUnderMouse = 0;
+        }
+
+        if (widgetUnderMouse && widgetUnderMouse->isWindow()) {
+            // Exclude the titlebar (and frame strut) when finding widget under mouse:
+            QPoint p = widgetUnderMouse->mapFromGlobal(returnGlobalPoint);
+            if (!widgetUnderMouse->rect().contains(p))
+                widgetUnderMouse = 0;
+        }
+    }
+    if (returnWidgetUnderMouse)
+        *returnWidgetUnderMouse = widgetUnderMouse;
+
+    // Resolve the target for the mouse event. Default will be
+    // widgetUnderMouse, except if there is a grab (popup/mouse/button-down):
+    if (popup && !mouseGrabber) {
+        // We special case handling of popups, since they have an implicitt mouse grab.
+        QWidget *candidate = buttonDownNotBlockedByModal ? qt_button_down : widgetUnderMouse;
+        if (!popup->isAncestorOf(candidate)) {
+            // INVARIANT: we have a popup, but the candidate is not
+            // in it. But the popup will grab the mouse anyway,
+            // except if the user scrolls:
+            if (eventType == QEvent::Wheel)
+                return 0;
+            returnLocalPoint = popup->mapFromGlobal(returnGlobalPoint);
+            return popup;
+        } else if (popup == candidate) {
+            // INVARIANT: The candidate is the popup itself, and not a child:
+            returnLocalPoint = popup->mapFromGlobal(returnGlobalPoint);
+            return popup;
+        } else {
+            // INVARIANT: The candidate is a child inside the popup:
+            returnLocalPoint = candidate->mapFromGlobal(returnGlobalPoint);
+            return candidate;
+        }
+    }
+
+    QWidget *target = mouseGrabber;
+    if (!target && buttonDownNotBlockedByModal)
+        target = qt_button_down;
+    if (!target)
+        target = widgetUnderMouse;
+    if (!target)
+        return 0;
+
+    returnLocalPoint = target->mapFromGlobal(returnGlobalPoint);
+    return target;
+}
+
+QPointer<QWidget> qt_last_native_mouse_receiver = 0;
+
+static inline void qt_mac_checkEnterLeaveForNativeWidgets(QWidget *maybeEnterWidget)
+{
+    // Dispatch enter/leave for the cases where QApplicationPrivate::sendMouseEvent do
+    // not. This will in general be the cases when alien widgets are not involved:
+    // 1. from a native widget to another native widget or
+    // 2. from a native widget to no widget
+    // 3. from no widget to a native or alien widget
+
+    if (qt_button_down || QWidget::mouseGrabber())
+        return;
+
+    if ((maybeEnterWidget == qt_last_native_mouse_receiver) && qt_last_native_mouse_receiver)
+        return;
+    if (maybeEnterWidget) {
+        if (!qt_last_native_mouse_receiver) {
+            // case 3
+            QApplicationPrivate::dispatchEnterLeave(maybeEnterWidget, 0);
+            qt_last_native_mouse_receiver = maybeEnterWidget->internalWinId() ? maybeEnterWidget : maybeEnterWidget->nativeParentWidget();
+        } else if (maybeEnterWidget->internalWinId()) {
+            // case 1
+            QApplicationPrivate::dispatchEnterLeave(maybeEnterWidget, qt_last_native_mouse_receiver);
+            qt_last_native_mouse_receiver = maybeEnterWidget->internalWinId() ? maybeEnterWidget : maybeEnterWidget->nativeParentWidget();
+        } // else at lest one of the widgets are alien, so enter/leave will be handled in QApplicationPrivate
+    } else {
+        if (qt_last_native_mouse_receiver) {
+            // case 2
+            QApplicationPrivate::dispatchEnterLeave(0, qt_last_native_mouse_receiver);
+            qt_last_mouse_receiver = 0;
+            qt_last_native_mouse_receiver = 0;
+        }
+    }
+}
+
+bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget)
+{
     // Give the Input Manager a chance to process the mouse events.
-   NSInputManager *currentIManager = [NSInputManager currentInputManager];
-   if (currentIManager && [currentIManager wantsToHandleMouseEvents]) {
-        [currentIManager handleMouseEvent:theEvent];
-   }
+    NSInputManager *currentIManager = [NSInputManager currentInputManager];
+    if (currentIManager && [currentIManager wantsToHandleMouseEvents]) {
+        [currentIManager handleMouseEvent:event];
+    }
+
+    // Find the widget that should receive the event, and the widget under the mouse. Those
+    // can differ if an implicit or explicit mouse grab is active:
+    QWidget *widgetUnderMouse = 0;
+    QPoint localPoint, globalPoint;
+    QWidget *widgetToGetMouse = qt_mac_getTargetForMouseEvent(event, eventType, localPoint, globalPoint, nativeWidget, &widgetUnderMouse);
+    if (!widgetToGetMouse)
+        return false;
+
+    // From here on, we let nativeWidget actually be the native widget under widgetUnderMouse. The reason
+    // for this, is that qt_mac_getTargetForMouseEvent will set cocoa's mouse event redirection aside when
+    // determining which widget is under the mouse (in other words, it will usually ignore nativeWidget).
+    // nativeWidget will be used in QApplicationPrivate::sendMouseEvent to correctly dispatch enter/leave events.
+    if (widgetUnderMouse)
+        nativeWidget = widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget();
+    if (!nativeWidget)
+        return false;
+    NSView *view = qt_mac_effectiveview_for(nativeWidget);
 
     // Handle tablet events (if any) first.
-    if (qt_mac_handleTabletEvent(theView, theEvent)) {
+    if (qt_mac_handleTabletEvent(view, event)) {
         // Tablet event was handled. In Qt we aren't supposed to send the mouse event.
         return true;
     }
 
-    NSPoint windowPoint = [theEvent locationInWindow];
-    NSPoint globalPoint = [[theEvent window] convertBaseToScreen:windowPoint];
-
-    // Find the widget that *should* get the event (e.g., maybe it was a pop-up,
-    // they always get the mouse event).
-    QWidget *qwidget = [theView qt_qwidget];
-    QWidget *widgetToGetMouse = 0;
-    NSView *tmpView = 0;
-    QWidget *popup = qAppInstance()->activePopupWidget();
-    QPoint qglobalPoint(flipPoint(globalPoint).toPoint());
-
-    if (popup) {
-        widgetToGetMouse = popup;
-        tmpView = qt_mac_nativeview_for(popup);
-        windowPoint = [[tmpView window] convertScreenToBase:globalPoint];
-
-        QPoint qWindowPoint(windowPoint.x, windowPoint.y);
-        if (widgetToGetMouse->rect().contains(qWindowPoint)) {
-            // Keeping the mouse pressed on a combobox button will make
-            // the popup pop in front of the mouse. But all mouse events
-            // will be sendt to the button. Since we want mouse events
-            // to be sendt to widgets inside the popup, we search for the
-            // widget in front of the mouse:
-            tmpView = [tmpView hitTest:windowPoint];
-            if (!tmpView)
-                return false;
-            widgetToGetMouse =
-                [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
-        }
-    } else {
-        extern QWidget * qt_button_down; //qapplication_mac.cpp
-        QPoint pos;
-        widgetToGetMouse = QApplicationPrivate::pickMouseReceiver(qwidget, qglobalPoint,
-                                                                  pos, eventType,
-                                                                  button, qt_button_down, 0);
-        if (widgetToGetMouse)
-            tmpView = qt_mac_nativeview_for(widgetToGetMouse);
-    }
-    if (!widgetToGetMouse)
-        return false;
-
-    NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
-    QPoint qlocalPoint = QPoint(localPoint.x, localPoint.y);
-
-    // Search for alien child widgets (either on this qwidget or on the popup)
-    if (widgetToGetMouse->testAttribute(Qt::WA_NativeWindow) == false || qt_widget_private(widgetToGetMouse)->hasAlienChildren) {
-        QPoint qScreenPoint = flipPoint(globalPoint).toPoint();
-#ifdef ALIEN_DEBUG
-        qDebug() << "alien mouse event" << qScreenPoint << possibleAlien;
-#endif
-        QWidget *possibleAlien =  widgetToGetMouse->childAt(qlocalPoint);
-        if (possibleAlien) {
-            qlocalPoint = possibleAlien->mapFromGlobal(widgetToGetMouse->mapToGlobal(qlocalPoint));
-            widgetToGetMouse = possibleAlien;
-        }
-    }
-
-    EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([theEvent eventRef]));
+    EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([event eventRef]));
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
         return true;
 
-    // Yay! All the special cases are handled, it really is just a normal mouse event.
-    Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
-    NSInteger clickCount = [theEvent clickCount];
-    Qt::MouseButtons buttons = 0;
+    // Keep previousButton to make sure we don't send double click
+    // events when the user double clicks using two different buttons:
     static Qt::MouseButton previousButton = Qt::NoButton;
+
+    Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([event modifierFlags]);
+    NSInteger clickCount = [event clickCount];
+    Qt::MouseButtons buttons = 0;
     {
         UInt32 mac_buttons;
         if (GetEventParameter(carbonEvent, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons) == noErr)
             buttons = qt_mac_get_buttons(mac_buttons);
     }
+
+    // Send enter/leave events for the cases when QApplicationPrivate::sendMouseEvent do not:
+    qt_mac_checkEnterLeaveForNativeWidgets(widgetUnderMouse);
+
     switch (eventType) {
     default:
         qWarning("not handled! %d", eventType);
         break;
     case QEvent::MouseMove:
+        if (button == Qt::LeftButton && qt_leftButtonIsRightButton)
+            button = Qt::RightButton;
         break;
     case QEvent::MouseButtonPress:
-        [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->view = theView;
-        [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->theEvent = theEvent;
-#ifndef QT_NAMESPACE
-        Q_ASSERT(clickCount > 0);
-#endif
+        qt_button_down = widgetUnderMouse;
         if (clickCount % 2 == 0 && (previousButton == Qt::NoButton || previousButton == button))
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
-            [theView qt_setLeftButtonIsRightButton: true];
+            qt_leftButtonIsRightButton = true;
         }
         break;
     case QEvent::MouseButtonRelease:
-        if (button == Qt::LeftButton && [theView qt_leftButtonIsRightButton]) {
+        if (button == Qt::LeftButton && qt_leftButtonIsRightButton) {
             button = Qt::RightButton;
-            [theView qt_setLeftButtonIsRightButton: false];
+            qt_leftButtonIsRightButton = false;
         }
         qt_button_down = 0;
         break;
     }
-    [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;
-    QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, buttons, keyMods);
 
-#ifdef ALIEN_DEBUG
-    qDebug() << "sending mouse event to" << widgetToGetMouse;
-#endif
-    extern QWidget *qt_button_down;
-    extern QPointer<QWidget> qt_last_mouse_receiver;
+    qt_mac_updateCursorWithWidgetUnderMouse(widgetUnderMouse);
 
-    if (qwidget->testAttribute(Qt::WA_NativeWindow) && qt_widget_private(qwidget)->hasAlienChildren == false)
-        qt_sendSpontaneousEvent(widgetToGetMouse, &qme);
-    else
-        QApplicationPrivate::sendMouseEvent(widgetToGetMouse, &qme, widgetToGetMouse, qwidget, &qt_button_down,
-                                            qt_last_mouse_receiver);
+    DnDParams *dndParams = currentDnDParameters();
+    dndParams->view = view;
+    dndParams->theEvent = event;
+    dndParams->globalPoint = globalPoint;
+
+    // Send the mouse event:
+    QMouseEvent qme(eventType, localPoint, globalPoint, button, buttons, keyMods);
+    QApplicationPrivate::sendMouseEvent(
+                widgetToGetMouse, &qme, widgetUnderMouse, nativeWidget,
+                &qt_button_down, qt_last_mouse_receiver, true);
 
     if (eventType == QEvent::MouseButtonPress && button == Qt::RightButton) {
-        QContextMenuEvent qcme(QContextMenuEvent::Mouse, qlocalPoint, qglobalPoint, keyMods);
+        QContextMenuEvent qcme(QContextMenuEvent::Mouse, localPoint, globalPoint, keyMods);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qcme);
     }
+
+    if (eventType == QEvent::MouseButtonRelease) {
+        // A mouse button was released, which means that the implicit grab was
+        // released. We therefore need to re-check if should send (delayed) enter leave events:
+        // qt_button_down has now become NULL since the call at the top of the function. Also, since
+        // the relase might have closed a window, we dont give the nativeWidget hint
+        qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, nativeWidget, &widgetUnderMouse);
+        qt_mac_checkEnterLeaveForNativeWidgets(widgetUnderMouse);
+    }
+
     previousButton = button;
     return true;
-#endif
 }
+#endif
 
 bool qt_mac_handleTabletEvent(void * /*QCocoaView * */view, void * /*NSEvent * */tabletEvent)
 {
@@ -1207,7 +1440,7 @@ void qt_mac_replaceDrawRect(void * /*OSWindowRef */window, QWidgetPrivate *widge
         // We have the original method here. Proceed and swap the methods.
         method_exchangeImplementations(m1, m0);
         widget->originalDrawMethod = false;
-        [window display];
+        [theWindow display];
     }
 }
 
@@ -1230,21 +1463,21 @@ void qt_mac_replaceDrawRectOriginal(void * /*OSWindowRef */window, QWidgetPrivat
     }
     method_exchangeImplementations(m1, m0);
     widget->originalDrawMethod = true;
-    [window display];
+    [theWindow display];
 }
 #endif // QT_MAC_USE_COCOA
 
+#if QT_MAC_USE_COCOA
 void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show)
 {
     if(!window)
         return;
-#if QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     OSWindowRef theWindow = static_cast<OSWindowRef>(window);
     NSToolbar *macToolbar = [theWindow toolbar];
     [macToolbar setShowsBaselineSeparator:show];
-#endif // QT_MAC_USE_COCOA
 }
+#endif // QT_MAC_USE_COCOA
 
 QStringList qt_mac_NSArrayToQStringList(void *nsarray)
 {
@@ -1264,6 +1497,7 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
     return result;
 }
 
+#if QT_MAC_USE_COCOA
 void qt_syncCocoaTitleBarButtons(OSWindowRef window, QWidget *widgetForWindow)
 {
     if (!widgetForWindow)
@@ -1288,6 +1522,7 @@ void qt_syncCocoaTitleBarButtons(OSWindowRef window, QWidget *widgetForWindow)
 
     [window setShowsToolbarButton:uint(flags & Qt::MacWindowToolBarButtonHint) != 0];
 }
+#endif // QT_MAC_USE_COCOA
 
 // Carbon: Make sure you call QDEndContext on the context when done with it.
 CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
@@ -1300,7 +1535,7 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGrafPtr port = GetWindowPort(qt_mac_window_for(widget));
     QDBeginCGContext(port, &context);
 #else
-    CGContextRef context = reinterpret_cast<CGContextRef>([[qt_mac_window_for(widget) graphicsContext] graphicsPort]);
+    CGContextRef context = (CGContextRef)[[NSGraphicsContext graphicsContextWithWindow:qt_mac_window_for(widget)] graphicsPort];
 #endif
     return context;
 }
@@ -1330,11 +1565,11 @@ QString qt_mac_get_pasteboardString(OSPasteboardRef paste)
     QMacCocoaAutoReleasePool pool;
     NSPasteboard *pb = nil;
     CFStringRef pbname;
-    if (PasteboardCopyName (paste, &pbname)) {
-        pb = [NSPasteboard generalPasteboard];
+    if (PasteboardCopyName(paste, &pbname) == noErr) {
+        pb = [NSPasteboard pasteboardWithName:const_cast<NSString *>(reinterpret_cast<const NSString *>(pbname))];
+        CFRelease(pbname);
     } else {
-        pb = [NSPasteboard pasteboardWithName:reinterpret_cast<const NSString *>(pbname)];
-        CFRelease (pbname);
+        pb = [NSPasteboard generalPasteboard];
     }
     if (pb) {
         NSString *text = [pb stringForType:NSStringPboardType];
@@ -1389,6 +1624,7 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
     }
 }
 
+#ifdef QT_MAC_USE_COCOA
 void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
 {
     QMacCocoaAutoReleasePool pool;
@@ -1423,47 +1659,46 @@ void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
     }
 }
 
-#ifdef QT_MAC_USE_COCOA
-void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
+class CocoaPostMessageAfterEventLoopExitHelp : public QObject
 {
-    QMacCocoaAutoReleasePool pool;
-    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
-}
-
-//  WARNING: If Qt did not create NSApplication (e.g. in case it is
-//  used as a plugin), and at the same time, there is no window on
-//  screen (or the window that the event is sendt to becomes hidden etc
-//  before the event gets delivered), the message will not be performed.
-bool qt_cocoaPostMessage(id target, SEL selector)
-{
-    if (!target)
-        return false;
-
-    NSInteger windowNumber = 0;
-    if (![NSApp isMemberOfClass:[QNSApplication class]]) {
-        // INVARIANT: Cocoa is not using our NSApplication subclass. That means
-        // we don't control the main event handler either. So target the event
-        // for one of the windows on screen:
-        NSWindow *nswin = [NSApp mainWindow];
-        if (!nswin) {
-            nswin = [NSApp keyWindow];
-            if (!nswin)
-                return false;
-        }
-        windowNumber = [nswin windowNumber];
+    id target;
+    SEL selector;
+    int argCount;
+    id arg1;
+    id arg2;
+public:
+    CocoaPostMessageAfterEventLoopExitHelp(id target, SEL selector, int argCount, id arg1, id arg2)
+        : target(target), selector(selector), argCount(argCount), arg1(arg1), arg2(arg2){
+        deleteLater();
     }
 
-    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    ~CocoaPostMessageAfterEventLoopExitHelp()
+    {
+        qt_cocoaPostMessage(target, selector, argCount, arg1, arg2);
+    }
+};
+
+void qt_cocoaPostMessage(id target, SEL selector, int argCount, id arg1, id arg2)
+{
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
-    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector);
+    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector, argCount, arg1, arg2);
     quint32 lower = quintptr(args);
     quint32 upper = quintptr(args) >> 32;
     NSEvent *e = [NSEvent otherEventWithType:NSApplicationDefined
-        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:windowNumber
+        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0
         context:nil subtype:QtCocoaEventSubTypePostMessage data1:lower data2:upper];
     [NSApp postEvent:e atStart:NO];
-    return true;
 }
+
+void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount, id arg1, id arg2)
+{
+    if (QApplicationPrivate::instance()->threadData->eventLoops.size() <= 1)
+        qt_cocoaPostMessage(target, selector, argCount, arg1, arg2);
+    else
+        new CocoaPostMessageAfterEventLoopExitHelp(target, selector, argCount, arg1, arg2);
+}
+
 #endif
 
 QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
@@ -1487,6 +1722,12 @@ void qt_mac_post_retranslateAppMenu()
 #endif
 }
 
+QWidgetPrivate *QMacScrollOptimization::_target = 0;
+bool QMacScrollOptimization::_inWheelEvent = false;
+int QMacScrollOptimization::_dx = 0;
+int QMacScrollOptimization::_dy = 0;
+QRect QMacScrollOptimization::_scrollRect = QRect(0, 0, -1, -1);
+
 #ifdef QT_MAC_USE_COCOA
 // This method implements the magic for the drawRectSpecial method.
 // We draw a line at the upper edge of the content view in order to
@@ -1501,7 +1742,7 @@ void macDrawRectOnTop(void * /*OSWindowRef */window)
     NSRect contentRect = [contentView frame];
     // Draw a line on top of the already drawn line.
     // We need to check if we are active or not to use the proper color.
-    if([window isKeyWindow] || [window isMainWindow]) {
+    if([theWindow isKeyWindow] || [theWindow isMainWindow]) {
         [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
     } else {
         [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
@@ -1521,7 +1762,7 @@ void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window)
 {
     OSWindowRef theWindow = static_cast<OSWindowRef>(window);
     NSApplication *application = [NSApplication sharedApplication];
-    NSToolbar *toolbar = [window toolbar];
+    NSToolbar *toolbar = [theWindow toolbar];
     if([application isActive]) {
         // Launched from finder
         [toolbar setShowsBaselineSeparator:NO];
@@ -1547,6 +1788,35 @@ void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
             d->setSubWindowStacking(true);
         }
     }
+}
+
+void qt_mac_display(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView display];
+}
+
+void qt_mac_setNeedsDisplay(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView setNeedsDisplay:YES];
+}
+
+void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    if (region.isEmpty()) {
+        [theNSView setNeedsDisplay:YES];
+        return;
+    }
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.count(); ++i) {
+        const QRect &rect = rects.at(i);
+        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+        [theNSView setNeedsDisplayInRect:nsrect];
+    }
+
 }
 
 #endif // QT_MAC_USE_COCOA

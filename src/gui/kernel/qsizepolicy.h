@@ -62,12 +62,12 @@ private:
         HSize = 4,
         HMask = 0x0f,
         VMask = HMask << HSize,
-		CTShift = 9,
-		CTSize = 5,
-                WFHShift = CTShift + CTSize,
-		CTMask = ((0x1 << CTSize) - 1) << CTShift,
-		UnusedShift = CTShift + CTSize,
-		UnusedSize = 2
+        CTShift = 9,
+        CTSize = 5,
+        CTMask = ((0x1 << CTSize) - 1) << CTShift,
+        WFHShift = CTShift + CTSize,
+        UnusedShift = WFHShift + 1,
+        UnusedSize = 1
     };
 
 public:
@@ -134,6 +134,8 @@ public:
 
     void setHeightForWidth(bool b) { data = b ? (data | (1 << 2*HSize)) : (data & ~(1 << 2*HSize));  }
     bool hasHeightForWidth() const { return data & (1 << 2*HSize); }
+    void setWidthForHeight(bool b) { data = b ? (data | (1 << (WFHShift))) : (data & ~(1 << (WFHShift)));  }
+    bool hasWidthForHeight() const { return data & (1 << (WFHShift)); }
 
     bool operator==(const QSizePolicy& s) const { return data == s.data; }
     bool operator!=(const QSizePolicy& s) const { return data != s.data; }
@@ -200,15 +202,18 @@ private:
     QSizePolicy(int i) : data(i) { }
 
     quint32 data;
-/*  use bit flags instead, keep it here for improved readability for now
+/*  Qt5: Use bit flags instead, keep it here for improved readability for now.
+    We can maybe change it for Qt4, but we'd have to be careful, since the behaviour
+    is implementation defined. It usually varies between little- and big-endian compilers, but
+    it might also not vary.
     quint32 horzPolicy : 4;
     quint32 vertPolicy : 4;
     quint32 hfw : 1;
     quint32 ctype : 5;
     quint32 wfh : 1;
     quint32 padding : 1;   // we cannot use the highest bit
-    quint32 horStretch : 8;
     quint32 verStretch : 8;
+    quint32 horStretch : 8;
 */
 
 };

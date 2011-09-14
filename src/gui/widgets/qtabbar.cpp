@@ -171,7 +171,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
 
     if (tabIndex > 0 && tabIndex - 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::PreviousIsSelected;
-    else if (tabIndex < totalTabs - 1 && tabIndex + 1 == d->currentIndex)
+    else if (tabIndex + 1 < totalTabs && tabIndex + 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::NextIsSelected;
     else
         option->selectedPosition = QStyleOptionTab::NotAdjacent;
@@ -1292,6 +1292,8 @@ QSize QTabBar::sizeHint() const
 QSize QTabBar::minimumSizeHint() const
 {
     Q_D(const QTabBar);
+    if (d->layoutDirty)
+        const_cast<QTabBarPrivate*>(d)->layoutTabs();
     if (!d->useScrollButtons) {
         QRect r;
         for (int i = 0; i < d->tabList.count(); ++i)
@@ -1304,22 +1306,23 @@ QSize QTabBar::minimumSizeHint() const
         return QSize(d->rightB->sizeHint().width() * 2 + 75, sizeHint().height());
 }
 
+// Compute the most-elided possible text, for minimumSizeHint
 static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
 {
-    if (text.length() <= 7)
+    if (text.length() <= 3)
         return text;
 
     static const QLatin1String Ellipses("...");
     QString ret;
     switch (mode) {
     case Qt::ElideRight:
-        ret = text.left(4) + Ellipses;
+        ret = text.left(2) + Ellipses;
         break;
     case Qt::ElideMiddle:
-        ret = text.left(2) + Ellipses + text.right(2);
+        ret = text.left(1) + Ellipses + text.right(1);
         break;
     case Qt::ElideLeft:
-        ret = Ellipses + text.right(4);
+        ret = Ellipses + text.right(2);
         break;
     case Qt::ElideNone:
         ret = text;
@@ -1966,7 +1969,7 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
         event->ignore();
         return;
     }
-    int offset = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;    
+    int offset = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
     d->setCurrentNextEnabledIndex(offset);
 }
 

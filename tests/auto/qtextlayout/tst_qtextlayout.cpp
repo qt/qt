@@ -85,6 +85,7 @@ private slots:
     void cursorToXForSetColumns();
     void defaultWordSeparators_data();
     void defaultWordSeparators();
+    void cursorMovementFromInvalidPositions();
     void cursorMovementInsideSpaces();
     void charWordStopOnLineSeparator();
     void xToCursorAtEndOfLine();
@@ -123,9 +124,9 @@ private slots:
     void testLineBreakingAllSpaces();
     void lineWidthFromBOM();
     void textWidthVsWIdth();
+    void textWithSurrogates_qtbug15679();
     void textWidthWithStackedTextEngine();
     void textWidthWithLineSeparator();
-    void textWithSurrogates_qtbug15679();
     void cursorInLigatureWithMultipleLines();
     void xToCursorForLigatures();
 
@@ -548,6 +549,10 @@ void tst_QTextLayout::defaultWordSeparators_data()
     QTest::newRow("lineseparator")
             << QString::fromLatin1("abcd") + QString(QChar::LineSeparator) + QString::fromLatin1("efgh")
             << 0 << 5;
+
+    QTest::newRow("empty")
+            << QString()
+            << 0 << 0;
 }
 
 void tst_QTextLayout::defaultWordSeparators()
@@ -561,12 +566,31 @@ void tst_QTextLayout::defaultWordSeparators()
     QCOMPARE(layout.previousCursorPosition(endPos, QTextLayout::SkipWords), startPos);
 }
 
+void tst_QTextLayout::cursorMovementFromInvalidPositions()
+{
+    int badpos = 10000;
+
+    QTextLayout layout("ABC", testFont);
+
+    QCOMPARE(layout.previousCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
+    QCOMPARE(layout.nextCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
+
+    QCOMPARE(layout.previousCursorPosition(badpos, QTextLayout::SkipCharacters), badpos);
+    QCOMPARE(layout.nextCursorPosition(badpos, QTextLayout::SkipCharacters), badpos);
+}
+
 void tst_QTextLayout::cursorMovementInsideSpaces()
 {
     QTextLayout layout("ABC            DEF", testFont);
 
     QCOMPARE(layout.previousCursorPosition(6, QTextLayout::SkipWords), 0);
     QCOMPARE(layout.nextCursorPosition(6, QTextLayout::SkipWords), 15);
+
+
+    QTextLayout layout2("ABC\t\t\t\t\t\t\t\t\t\t\t\tDEF", testFont);
+
+    QCOMPARE(layout2.previousCursorPosition(6, QTextLayout::SkipWords), 0);
+    QCOMPARE(layout2.nextCursorPosition(6, QTextLayout::SkipWords), 15);
 }
 
 void tst_QTextLayout::charWordStopOnLineSeparator()
@@ -1392,6 +1416,25 @@ void tst_QTextLayout::textWidthVsWIdth()
     }
 }
 
+void tst_QTextLayout::textWithSurrogates_qtbug15679()
+{
+    QString str = QString::fromUtf8("🀀a🀀");
+    QTextLayout layout(str);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    qreal x[6];
+    for (int i = 0; i < 6; i++)
+        x[i] = line.cursorToX(i);
+
+    // If the first and third character are using the same
+    // font, they must have the same advance (since they
+    // are surrogate pairs, we need to add two for each
+    // character)
+    QCOMPARE(x[2] - x[0], x[5] - x[3]);
+}
+
 void tst_QTextLayout::textWidthWithStackedTextEngine()
 {
     QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
@@ -1419,29 +1462,10 @@ void tst_QTextLayout::textWidthWithLineSeparator()
     QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
 }
 
-void tst_QTextLayout::textWithSurrogates_qtbug15679()
-{
-    QString str = QString::fromUtf8("🀀a🀀");
-    QTextLayout layout(str);
-    layout.beginLayout();
-    QTextLine line = layout.createLine();
-    layout.endLayout();
-
-    qreal x[6];
-    for (int i = 0; i < 6; i++)
-        x[i] = line.cursorToX(i);
-
-    // If the first and third character are using the same
-    // font, they must have the same advance (since they
-    // are surrogate pairs, we need to add two for each
-    // character)
-    QCOMPARE(x[2] - x[0], x[5] - x[3]);
-}
-
 void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 {
 #if !defined(Q_WS_MAC)
-    QSKIP("This test can only be run on Mac", SkipAll);
+    QSKIP("This test can not be run on Mac", SkipAll);
 #endif
     QTextLayout layout("first line finish", QFont("Times", 20));
     layout.beginLayout();

@@ -9,6 +9,7 @@ contains(CONFIG, no_icon) {
     }
 }
 
+
 !contains(CONFIG, no_icon) {
     baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
     contains(baseTarget, "^.*\\..*$") {
@@ -30,9 +31,9 @@ contains(CONFIG, no_icon) {
             regZDir = $$resourceZDir
         }
 
-        default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.rsc
+        default_resource_deployment.files += $$resourceZDir/$${baseTarget}.rsc
         default_resource_deployment.path = $$APP_RESOURCE_DIR
-        default_reg_deployment.sources += $$regZDir/$${baseTarget}_reg.rsc
+        default_reg_deployment.files += $$regZDir/$${baseTarget}_reg.rsc
         default_reg_deployment.path = $$REG_RESOURCE_IMPORT_DIR
 
         !isEmpty(ICON) {
@@ -44,9 +45,7 @@ contains(CONFIG, no_icon) {
             # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
             !symbian-sbsv2 {
                 # Absolute path required for shadow builds.
-                # However, in older Symbian environments abld toolchain can't handle even moderately long
-                # paths, so don't force absolute there.
-                !symbian-abld:!contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON
+                !contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON
 
                 #Makefile: requires paths with backslash
                 ICON_backslashed = $$ICON
@@ -75,9 +74,10 @@ contains(CONFIG, no_icon) {
             }
             # Rules to use generated MIF file from symbian resources
             RSS_RULES.number_of_icons = $$size(ICON_backslashed)
-            RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif
 
-            default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.mif
+            RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif                
+
+            default_resource_deployment.files += $$resourceZDir/$${baseTarget}.mif
         }
     }
 }

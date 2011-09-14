@@ -51,24 +51,24 @@ using namespace QPatternist;
 
 DynamicContextStore::DynamicContextStore(const Expression::Ptr &operand,
                                          const DynamicContext::Ptr &context) : SingleContainer(operand),
-                                                                               m_context(context)
+                                                                               m_context(context.data())
 {
     Q_ASSERT(context);
 }
 
 bool DynamicContextStore::evaluateEBV(const DynamicContext::Ptr &) const
 {
-    return m_operand->evaluateEBV(m_context);
+    return m_operand->evaluateEBV(DynamicContext::Ptr(m_context));
 }
 
 Item::Iterator::Ptr DynamicContextStore::evaluateSequence(const DynamicContext::Ptr &) const
 {
-    return m_operand->evaluateSequence(m_context);
+    return m_operand->evaluateSequence(DynamicContext::Ptr(m_context));
 }
 
 Item DynamicContextStore::evaluateSingleton(const DynamicContext::Ptr &) const
 {
-    return m_operand->evaluateSingleton(m_context);
+    return m_operand->evaluateSingleton(DynamicContext::Ptr(m_context));
 }
 
 SequenceType::Ptr DynamicContextStore::staticType() const

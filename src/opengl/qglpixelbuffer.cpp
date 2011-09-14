@@ -76,6 +76,14 @@
 
     \endlist
 
+
+    \section1 Threading
+
+    As of Qt 4.8, it's possible to render into a QGLPixelBuffer using
+    a QPainter in a separate thread. Note that OpenGL 2.0 or OpenGL ES
+    2.0 is required for this to work. Also, under X11, it's necessary
+    to set the Qt::AA_X11InitThreads application attribute.
+
     Pbuffers are provided by the OpenGL \c pbuffer extension; call
     hasOpenGLPbuffer() to find out if the system provides pbuffers.
 
@@ -90,6 +98,7 @@
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
+#include <private/qfont_p.h>
 #include <qimage.h>
 
 #ifndef QT_OPENGL_ES_2
@@ -394,30 +403,27 @@ bool QGLPixelBuffer::isValid() const
 }
 
 #if !defined(QT_OPENGL_ES_1)
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_buffer_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_buffer_engine)
 #endif
 
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
 #if defined(QT_OPENGL_ES_1)
-    return qt_buffer_engine();
+    return qt_buffer_engine()->engine();
 #elif defined(QT_OPENGL_ES_2)
-    return qt_buffer_2_engine();
+    return qt_buffer_2_engine()->engine();
 #else
     if (qt_gl_preferGL2Engine())
-        return qt_buffer_2_engine();
+        return qt_buffer_2_engine()->engine();
     else
-        return qt_buffer_engine();
+        return qt_buffer_engine()->engine();
 #endif
 }
-
-Q_GUI_EXPORT int qt_defaultDpiX();
-Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLPixelBuffer::metric(PaintDeviceMetric metric) const

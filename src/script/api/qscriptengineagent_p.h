@@ -57,22 +57,22 @@ public:
     static QScriptEngineAgentPrivate* get(QScriptEngineAgent* p) {return p->d_func();}
 
     QScriptEngineAgentPrivate(){}
-    virtual ~QScriptEngineAgentPrivate(){};
+    virtual ~QScriptEngineAgentPrivate(){}
 
     void attach();
     void detach();
 
     //scripts
-    virtual void sourceParsed(JSC::ExecState*, const JSC::SourceCode&, int /*errorLine*/, const JSC::UString& /*errorMsg*/) {};
+    virtual void sourceParsed(JSC::ExecState*, const JSC::SourceCode&, int /*errorLine*/, const JSC::UString& /*errorMsg*/) {}
     virtual void scriptUnload(qint64 id)
     {
         q_ptr->scriptUnload(id);
-    };
+    }
     virtual void scriptLoad(qint64 id, const JSC::UString &program,
                          const JSC::UString &fileName, int baseLineNumber)
     {
         q_ptr->scriptLoad(id,program, fileName, baseLineNumber);
-    };
+    }
 
     //exceptions
     virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, bool hasHandler)
@@ -81,7 +81,7 @@ public:
         Q_UNUSED(sourceID);
         Q_UNUSED(lineno);
         Q_UNUSED(hasHandler);
-    };
+    }
     virtual void exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler);
     virtual void exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID);
 
@@ -92,20 +92,20 @@ public:
         Q_UNUSED(lineno);
         q_ptr->contextPush();
         q_ptr->functionEntry(sourceID);
-    };
+    }
     virtual void returnEvent(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno);
     virtual void willExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
     {
         Q_UNUSED(frame);
         Q_UNUSED(sourceID);
         Q_UNUSED(lineno);
-    };
+    }
     virtual void didExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
     {
         Q_UNUSED(frame);
-        Q_UNUSED(sourceID);   
+        Q_UNUSED(sourceID);
         Q_UNUSED(lineno);
-    };
+    }
     virtual void functionExit(const JSC::JSValue& returnValue, intptr_t sourceID);
     //others
     virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno/*, int column*/);

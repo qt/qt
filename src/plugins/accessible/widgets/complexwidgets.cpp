@@ -971,7 +971,11 @@ QString QAccessibleItemView::text(Text t, int child) const
             return QAccessibleAbstractScrollArea::text(t, child);
 
         QAccessibleItemRow item(itemView(), childIndex(child));
-        return item.text(t, 1);
+        if (item.isValid()) {
+            return item.text(t, 1);
+        } else {
+            return QString();
+        }
     } else {
         return QAccessibleAbstractScrollArea::text(t, child);
     }
@@ -1772,16 +1776,12 @@ QString QAccessibleComboBox::text(Text t, int child) const
 
     switch (t) {
     case Name:
+#ifndef Q_WS_X11 // on Linux we use relations for this, name is text (fall through to Value)
         if (child == OpenList)
             str = QComboBox::tr("Open");
         else
             str = QAccessibleWidgetEx::text(t, 0);
         break;
-#ifndef QT_NO_SHORTCUT
-    case Accelerator:
-        if (child == OpenList)
-            str = (QString)QKeySequence(Qt::Key_Down);
-        // missing break?
 #endif
     case Value:
         if (comboBox()->isEditable())
@@ -1789,6 +1789,12 @@ QString QAccessibleComboBox::text(Text t, int child) const
         else
             str = comboBox()->currentText();
         break;
+#ifndef QT_NO_SHORTCUT
+    case Accelerator:
+        if (child == OpenList)
+            str = (QString)QKeySequence(Qt::Key_Down);
+        break;
+#endif
     default:
         break;
     }

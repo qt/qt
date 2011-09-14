@@ -156,10 +156,8 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 
 #ifndef Q_OS_WINCE
     QSystemLibrary user32Lib(QLatin1String("user32"));
-    if (user32Lib.load()) {
-        enumDisplayMonitors = (EnumFunc)user32Lib.resolve("EnumDisplayMonitors");
-        getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoW");
-    }
+    enumDisplayMonitors = (EnumFunc)user32Lib.resolve("EnumDisplayMonitors");
+    getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoW");
 
     if (!enumDisplayMonitors || !getMonitorInfo) {
         screenCount = GetSystemMetrics(80);  // SM_CMONITORS
@@ -174,11 +172,9 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     getMonitorInfo = 0;
 #else
     QSystemLibrary coreLib(QLatin1String("coredll"));
-    if (coreLib.load()) {
-        // CE >= 4.0 case
-        enumDisplayMonitors = (EnumFunc)coreLib.resolve("EnumDisplayMonitors");
-        getMonitorInfo = (InfoFunc)coreLib.resolve("GetMonitorInfo");
-    }
+    // CE >= 4.0 case
+    enumDisplayMonitors = (EnumFunc)coreLib.resolve("EnumDisplayMonitors");
+    getMonitorInfo = (InfoFunc)coreLib.resolve("GetMonitorInfo");
 
     if ((!enumDisplayMonitors || !getMonitorInfo)) {
         screenCount = GetSystemMetrics(SM_CMONITORS);

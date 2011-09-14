@@ -191,6 +191,13 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
     QString result;
 
     const int style = format().style();
+    QString numberPrefix;
+    QString numberSuffix = QLatin1String(".");
+
+    if (format().hasProperty(QTextFormat::ListNumberPrefix))
+        numberPrefix = format().numberPrefix();
+    if (format().hasProperty(QTextFormat::ListNumberSuffix))
+        numberSuffix = format().numberSuffix();
 
     switch (style) {
         case QTextListFormat::ListDecimal:
@@ -232,7 +239,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                         if (q > 0) {
                             int startDigit = i + (i+3)/4;
                             int numDigits;
-                            if (i % 4) { 
+                            if (i % 4) {
                                 // c[i] == 4|5|9|40|50|90|400|500|900
                                 if ((i-2) % 4) {
                                     // c[i] == 4|9|40|90|400|900 => with subtraction (IV, IX, XL, XC, ...)
@@ -263,8 +270,9 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
             Q_ASSERT(false);
     }
     if (blockIt.textDirection() == Qt::RightToLeft)
-        return result.prepend(QLatin1Char('.'));
-    return result + QLatin1Char('.');
+        return numberSuffix + result + numberPrefix;
+    else
+        return numberPrefix + result + numberSuffix;
 }
 
 /*!

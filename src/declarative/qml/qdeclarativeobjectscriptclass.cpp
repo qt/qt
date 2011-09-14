@@ -54,7 +54,15 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtScript/qscriptcontextinfo.h>
 
-Q_DECLARE_METATYPE(QScriptValue);
+Q_DECLARE_METATYPE(QScriptValue)
+
+#if defined(__GNUC__)
+# if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+// The code in this file does not violate strict aliasing, but GCC thinks it does
+// so turn off the warnings for us to have a clean build
+#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
+# endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -395,6 +403,33 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     } else if (value.isFunction() && !value.isRegExp()) {
         // this is handled by the binding creation above
     } else {
+        //### expand optimization for other known types
+        if (lastData->propType == QMetaType::Int && value.isNumber()) {
+            int rawValue = qRound(value.toNumber());
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        } else if (lastData->propType == QMetaType::QReal && value.isNumber()) {
+            qreal rawValue = qreal(value.toNumber());
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        } else if (lastData->propType == QMetaType::QString && value.isString()) {
+            const QString &rawValue = value.toString();
+            int status = -1;
+            int flags = 0;
+            void *a[] = { (void *)&rawValue, 0, &status, &flags };
+            QMetaObject::metacall(obj, QMetaObject::WriteProperty,
+                                  lastData->coreIndex, a);
+            return;
+        }
+
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
             v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());
@@ -645,14 +680,30 @@ private:
 
     inline void cleanup();
 
-    char data[4 * sizeof(void *)];
+    union {
+        float floatValue;
+        double doubleValue;
+        quint32 intValue;
+        bool boolValue;
+        QObject *qobjectPtr;
+
+        char allocData[sizeof(QVariant)];
+    };
+
+    // Pointers to allocData
+    union {
+        QString *qstringPtr;
+        QVariant *qvariantPtr;
+        QList<QObject *> *qlistPtr;
+        QScriptValue *qscriptValuePtr;
+    };
+
     int type;
-    bool isObjectType;
 };
 }
 
 MetaCallArgument::MetaCallArgument()
-: type(QVariant::Invalid), isObjectType(false)
+: type(QVariant::Invalid)
 {
 }
 
@@ -664,22 +715,22 @@ MetaCallArgument::~MetaCallArgument()
 void MetaCallArgument::cleanup()
 {
     if (type == QMetaType::QString) {
-        ((QString *)&data)->~QString();
-    } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        ((QVariant *)&data)->~QVariant();
+        qstringPtr->~QString();
+    } else if (type == -1 || type == QMetaType::QVariant) {
+        qvariantPtr->~QVariant();
     } else if (type == qMetaTypeId<QScriptValue>()) {
-        ((QScriptValue *)&data)->~QScriptValue();
+        qscriptValuePtr->~QScriptValue();
     } else if (type == qMetaTypeId<QList<QObject *> >()) {
-        ((QList<QObject *> *)&data)->~QList<QObject *>();
+        qlistPtr->~QList<QObject *>();
     }
 }
 
 void *MetaCallArgument::dataPtr()
 {
     if (type == -1)
-        return ((QVariant *)data)->data();
-    else
-        return (void *)&data;
+        return qvariantPtr->data();
+    else 
+        return (void *)&allocData;
 }
 
 void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
@@ -690,7 +741,7 @@ void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
 
     if (callType == qMetaTypeId<QScriptValue>()) {
-        new (&data) QScriptValue(engine->undefinedValue());
+        qscriptValuePtr = new (&allocData) QScriptValue(engine->undefinedValue());
         type = callType;
     } else if (callType == QMetaType::Int ||
                callType == QMetaType::UInt ||
@@ -699,20 +750,20 @@ void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
                callType == QMetaType::Float) {
         type = callType;
     } else if (callType == QMetaType::QObjectStar) {
-        *((QObject **)&data) = 0;
+        qobjectPtr = 0;
         type = callType;
     } else if (callType == QMetaType::QString) {
-        new (&data) QString();
+        qstringPtr = new (&allocData) QString();
         type = callType;
     } else if (callType == qMetaTypeId<QVariant>()) {
         type = callType;
-        new (&data) QVariant();
+        qvariantPtr = new (&allocData) QVariant();
     } else if (callType == qMetaTypeId<QList<QObject *> >()) {
         type = callType;
-        new (&data) QList<QObject *>();
+        qlistPtr = new (&allocData) QList<QObject *>();
     } else {
         type = -1;
-        new (&data) QVariant(callType, (void *)0);
+        qvariantPtr = new (&allocData) QVariant(callType, (void *)0);
     }
 }
 
@@ -721,59 +772,60 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
     if (type != 0) { cleanup(); type = 0; }
 
     if (callType == qMetaTypeId<QScriptValue>()) {
-        new (&data) QScriptValue(value);
+        qscriptValuePtr = new (&allocData) QScriptValue(value);
         type = qMetaTypeId<QScriptValue>();
     } else if (callType == QMetaType::Int) {
-        *((int *)&data) = int(value.toInt32());
+        intValue = quint32(value.toInt32());
         type = callType;
     } else if (callType == QMetaType::UInt) {
-        *((uint *)&data) = uint(value.toUInt32());
+        intValue = quint32(value.toUInt32());
         type = callType;
     } else if (callType == QMetaType::Bool) {
-        *((bool *)&data) = value.toBool();
+        boolValue = value.toBool();
         type = callType;
     } else if (callType == QMetaType::Double) {
-        *((double *)&data) = double(value.toNumber());
+        doubleValue = double(value.toNumber());
         type = callType;
     } else if (callType == QMetaType::Float) {
-        *((float *)&data) = float(value.toNumber());
+        floatValue = float(value.toNumber());
         type = callType;
     } else if (callType == QMetaType::QString) {
         if (value.isNull() || value.isUndefined())
-            new (&data) QString();
+            qstringPtr = new (&allocData) QString();
         else
-            new (&data) QString(value.toString());
+            qstringPtr = new (&allocData) QString(value.toString());
         type = callType;
     } else if (callType == QMetaType::QObjectStar) {
-        *((QObject **)&data) = value.toQObject();
+        qobjectPtr = value.toQObject();
         type = callType;
     } else if (callType == qMetaTypeId<QVariant>()) {
-        new (&data) QVariant(QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value));
+        QVariant other = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
+        qvariantPtr = new (&allocData) QVariant(other);
         type = callType;
     } else if (callType == qMetaTypeId<QList<QObject*> >()) {
-        QList<QObject *> *list = new (&data) QList<QObject *>(); 
+        qlistPtr = new (&allocData) QList<QObject *>(); 
         if (value.isArray()) {
             int length = value.property(QLatin1String("length")).toInt32();
             for (int ii = 0; ii < length; ++ii) {
                 QScriptValue arrayItem = value.property(ii);
                 QObject *d = arrayItem.toQObject();
-                list->append(d);
+                qlistPtr->append(d);
             }
         } else if (QObject *d = value.toQObject()) {
-            list->append(d);
+            qlistPtr->append(d);
         }
         type = callType;
     } else {
-        new (&data) QVariant();
+        qvariantPtr = new (&allocData) QVariant();
         type = -1;
 
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
         QVariant v = priv->scriptValueToVariant(value);
         if (v.userType() == callType) {
-            *((QVariant *)&data) = v;
+            *qvariantPtr = v;
         } else if (v.canConvert((QVariant::Type)callType)) {
-            *((QVariant *)&data) = v;
-            ((QVariant *)&data)->convert((QVariant::Type)callType);
+            *qvariantPtr = v;
+            qvariantPtr->convert((QVariant::Type)callType);
         } else if (const QMetaObject *mo = priv->rawMetaObjectForType(callType)) {
             QObject *obj = priv->toQObject(v);
             
@@ -783,9 +835,9 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
                 if (!objMo) obj = 0;
             }
 
-            *((QVariant *)&data) = QVariant(callType, &obj);
+            *qvariantPtr = QVariant(callType, &obj);
         } else {
-            *((QVariant *)&data) = QVariant(callType, (void *)0);
+            *qvariantPtr = QVariant(callType, (void *)0);
         }
     }
 }
@@ -795,27 +847,26 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
 
     if (type == qMetaTypeId<QScriptValue>()) {
-        return QScriptDeclarativeClass::Value(engine, *((QScriptValue *)&data));
+        return QScriptDeclarativeClass::Value(engine, *qscriptValuePtr);
     } else if (type == QMetaType::Int) {
-        return QScriptDeclarativeClass::Value(engine, *((int *)&data));
+        return QScriptDeclarativeClass::Value(engine, int(intValue));
     } else if (type == QMetaType::UInt) {
-        return QScriptDeclarativeClass::Value(engine, *((uint *)&data));
+        return QScriptDeclarativeClass::Value(engine, uint(intValue));
     } else if (type == QMetaType::Bool) {
-        return QScriptDeclarativeClass::Value(engine, *((bool *)&data));
+        return QScriptDeclarativeClass::Value(engine, boolValue);
     } else if (type == QMetaType::Double) {
-        return QScriptDeclarativeClass::Value(engine, *((double *)&data));
+        return QScriptDeclarativeClass::Value(engine, doubleValue);
     } else if (type == QMetaType::Float) {
-        return QScriptDeclarativeClass::Value(engine, *((float *)&data));
+        return QScriptDeclarativeClass::Value(engine, floatValue);
     } else if (type == QMetaType::QString) {
-        return QScriptDeclarativeClass::Value(engine, *((QString *)&data));
+        return QScriptDeclarativeClass::Value(engine, *qstringPtr);
     } else if (type == QMetaType::QObjectStar) {
-        QObject *object = *((QObject **)&data);
-        if (object)
-            QDeclarativeData::get(object, true)->setImplicitDestructible();
+        if (qobjectPtr)
+            QDeclarativeData::get(qobjectPtr, true)->setImplicitDestructible();
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
-        return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
+        return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(qobjectPtr));
     } else if (type == qMetaTypeId<QList<QObject *> >()) {
-        QList<QObject *> &list = *(QList<QObject *>*)&data;
+        QList<QObject *> &list = *qlistPtr;
         QScriptValue rv = engine->newArray(list.count());
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
         for (int ii = 0; ii < list.count(); ++ii) {
@@ -826,7 +877,7 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         return QScriptDeclarativeClass::Value(engine, rv);
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(e);
-        QScriptValue rv = ep->scriptValueFromVariant(*((QVariant *)&data));
+        QScriptValue rv = ep->scriptValueFromVariant(*qvariantPtr);
         if (rv.isQObject()) {
             QObject *object = rv.toQObject();
             if (object)

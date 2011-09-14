@@ -84,7 +84,7 @@ static QScriptValue Image(QScriptContext *context, QScriptEngine *env)
 {
     QScriptValue val = context->thisObject();
     DomImage *image = new DomImage();
-    QScriptValue klass = env->newVariant(qVariantFromValue(image));
+    QScriptValue klass = env->newVariant(QVariant::fromValue(image));
     klass.setPrototype(DomImage::s_self);
     return klass;
 }

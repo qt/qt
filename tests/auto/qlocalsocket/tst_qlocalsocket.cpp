@@ -391,6 +391,8 @@ void tst_QLocalSocket::listenAndConnect()
         QVERIFY(socket->fullServerName().contains(name));
         sockets.append(socket);
         if (canListen) {
+            QVERIFY(socket->waitForConnected());
+            QVERIFY(socket->isValid());
             QCOMPARE(socket->errorString(), QString("Unknown error"));
             QCOMPARE(socket->error(), QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::ConnectedState);
@@ -891,8 +893,8 @@ void tst_QLocalSocket::removeServer()
     QLocalServer server, server2;
     QVERIFY(QLocalServer::removeServer("cleanuptest"));
     QVERIFY(server.listen("cleanuptest"));
-#ifndef Q_OS_WIN
-    // on Windows, there can be several sockets listening on the same pipe
+#if !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
+    // on Windows and QNX, there can be several sockets listening on the same pipe
     // on Unix, there can only be one socket instance
     QVERIFY(! server2.listen("cleanuptest"));
 #endif

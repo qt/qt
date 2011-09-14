@@ -48,6 +48,10 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry_p.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_p.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemmetadata_p.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qiodevice.h \
@@ -61,6 +65,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
+           $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror_p.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h \
            $$QT_SOURCE_TREE/tools/shared/symbian/epocroot_p.h \
@@ -74,6 +79,8 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlocale.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlocale_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlocale_tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvector.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.cpp \
@@ -86,9 +93,13 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator.cpp \
-           $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qiodevice.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtextstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtemporaryfile.cpp \
@@ -103,6 +114,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
+           $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qurl.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qline.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qsize.cpp \
@@ -114,8 +126,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils.cpp \
            $$QT_SOURCE_TREE/tools/shared/symbian/epocroot.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
-
-win32:SOURCES += $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp
 
 DEFINES += COMMERCIAL_VERSION
 

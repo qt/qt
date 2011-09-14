@@ -15,7 +15,7 @@ wince*{
 }
 
 symbian:{
-   addFiles.sources = media/test.sdp
+   addFiles.files = media/test.sdp
    addFiles.path = media
    DEPLOYMENT += addFiles
    LIBS += -lCommDb -lconnmon

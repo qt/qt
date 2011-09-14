@@ -408,6 +408,10 @@ namespace QPatternist
 
         inline void reset()
         {
+            /* Delete the atomicValue if necessary*/
+            if(isAtomicValue() && !atomicValue->ref.deref())
+                delete atomicValue;
+
             /* Note that this function should be equal to the default
              * constructor. */
             node.model = 0;

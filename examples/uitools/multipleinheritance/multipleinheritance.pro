@@ -14,3 +14,5 @@ symbian {
     TARGET.UID3 = 0xA000D7C1
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

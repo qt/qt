@@ -83,7 +83,7 @@ struct ArgumentDef
 
 struct FunctionDef
 {
-    FunctionDef(): returnTypeIsVolatile(false), access(Private), isConst(false), isVirtual(false),
+    FunctionDef(): returnTypeIsVolatile(false), access(Private), isConst(false), isVirtual(false), isStatic(false),
                    inlineCode(false), wasCloned(false), isCompat(false), isInvokable(false),
                    isScriptable(false), isSlot(false), isSignal(false),
                    isConstructor(false), isDestructor(false), isAbstract(false), revision(0) {}
@@ -99,6 +99,7 @@ struct FunctionDef
     Access access;
     bool isConst;
     bool isVirtual;
+    bool isStatic;
     bool inlineCode;
     bool wasCloned;
 

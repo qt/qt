@@ -411,6 +411,9 @@ void QTextFormatPrivate::recalcFont() const
             case QTextFormat::FontStyleHint:
                 f.setStyleHint(static_cast<QFont::StyleHint>(props.at(i).value.toInt()), f.styleStrategy());
                 break;
+            case QTextFormat::FontHintingPreference:
+                f.setHintingPreference(static_cast<QFont::HintingPreference>(props.at(i).value.toInt()));
+                break;
             case QTextFormat::FontStyleStrategy:
                 f.setStyleStrategy(static_cast<QFont::StyleStrategy>(props.at(i).value.toInt()));
                 break;
@@ -541,6 +544,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value TabPositions     Specifies the tab positions.  The tab positions are structs of QTextOption::Tab which are stored in
                             a QList (internally, in a QList<QVariant>).
     \value BlockIndent
+    \value LineHeight
+    \value LineHeightType
     \value BlockNonBreakableLines
     \value BlockTrailingHorizontalRulerWidth The width of a horizontal ruler element.
 
@@ -566,6 +571,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value FontStyleHint        Corresponds to the QFont::StyleHint property
     \value FontStyleStrategy    Corresponds to the QFont::StyleStrategy property
     \value FontKerning          Specifies whether the font has kerning turned on.
+    \value FontHintingPreference Controls the use of hinting according to values
+                                 of the QFont::HintingPreference enum.
 
     \omitvalue FirstFontProperty
     \omitvalue LastFontProperty
@@ -583,8 +590,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     List properties
 
-    \value ListStyle
-    \value ListIndent
+    \value ListStyle        Specifies the style used for the items in a list,
+                            described by values of the QTextListFormat::Style enum.
+    \value ListIndent       Specifies the amount of indentation used for a list.
+    \value ListNumberPrefix Defines the text which is prepended to item numbers in
+                            numeric lists.
+    \value ListNumberSuffix Defines the text which is appended to item numbers in
+                            numeric lists.
 
     Table and frame properties
 
@@ -933,7 +945,7 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     const QVariant prop = d->property(propertyId);
     if (prop.userType() != QVariant::Double && prop.userType() != QMetaType::Float)
         return 0.;
-    return qVariantValue<qreal>(prop);
+    return qvariant_cast<qreal>(prop);
 }
 
 /*!
@@ -1258,16 +1270,18 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
 
     \value AlignNormal  Adjacent characters are positioned in the standard
                         way for text in the writing system in use.
-    \value AlignSuperScript Characters are placed above the baseline for
+    \value AlignSuperScript Characters are placed above the base line for
                             normal text.
-    \value AlignSubScript   Characters are placed below the baseline for
+    \value AlignSubScript   Characters are placed below the base line for
                             normal text.
-    \value AlignMiddle The center of the object is vertically aligned with the base line.
-                       Currently, this is only implemented for inline objects.
+    \value AlignMiddle The center of the object is vertically aligned with the
+                       base line. Currently, this is only implemented for
+                       inline objects.
     \value AlignBottom The bottom edge of the object is vertically aligned with
                        the base line.
     \value AlignTop    The top edge of the object is vertically aligned with
                        the base line.
+    \value AlignBaseline The base lines of the characters are aligned.
 */
 
 /*!
@@ -1563,6 +1577,25 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \sa font()
 */
 
+/*!
+    \since 4.8
+
+    \fn void QTextCharFormat::setFontHintingPreference(QFont::HintingPreference hintingPreference)
+
+    Sets the hinting preference of the text format's font to be \a hintingPreference.
+
+    \sa setFont(), QFont::setHintingPreference()
+*/
+
+/*!
+    \since 4.8
+
+    \fn QFont::HintingPreference QTextCharFormat::fontHintingPreference() const
+
+    Returns the hinting preference set for this text format.
+
+    \sa font(), QFont::hintingPreference()
+*/
 
 /*!
     \fn QPen QTextCharFormat::textOutline() const
@@ -1856,6 +1889,10 @@ QFont QTextCharFormat::font() const
     indentation is set with setIndent(), the indentation of the first
     line with setTextIndent().
 
+    Line spacing is set with setLineHeight() and retrieved via lineHeight()
+    and lineHeightType(). The types of line spacing available are in the
+    LineHeightTypes enum.
+
     Line breaking can be enabled and disabled with setNonBreakableLines().
 
     The brush used to paint the paragraph's background
@@ -1869,6 +1906,22 @@ QFont QTextCharFormat::font() const
     is accessible with the listFormat() function.
 
     \sa QTextBlock, QTextCharFormat
+*/
+
+/*!
+    \since 4.8
+    \enum QTextBlockFormat::LineHeightTypes
+
+    This enum describes the various types of line spacing support paragraphs can have.
+
+    \value SingleHeight This is the default line height: single spacing.
+    \value ProportionalHeight This sets the spacing proportional to the line (in percentage).
+                              For example, set to 200 for double spacing.
+    \value FixedHeight This sets the line height to a fixed line height (in pixels).
+    \value MinimumHeight This sets the minimum line height (in pixels).
+    \value LineDistanceHeight This adds the specified height between lines (in pixels).
+
+    \sa lineHeight(), lineHeightType(), setLineHeight()
 */
 
 /*!
@@ -1903,7 +1956,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
     QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
-        qVariantSetValue<QTextOption::Tab>(v, *iter);
+        v.setValue<QTextOption::Tab>(*iter);
         list.append(v);
         ++iter;
     }
@@ -1925,7 +1978,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
     QList<QVariant>::Iterator iter = variantsList.begin();
     while(iter != variantsList.end()) {
-        answer.append( qVariantValue<QTextOption::Tab>(*iter));
+        answer.append( qvariant_cast<QTextOption::Tab>(*iter));
         ++iter;
     }
     return answer;
@@ -2089,6 +2142,57 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
 
 /*!
+    \fn void QTextBlockFormat::setLineHeight(qreal height, int heightType)
+    \since 4.8
+
+    Sets the line height for the paragraph to the value given by \a height
+    which is dependent on \a heightType in the way described by the
+    LineHeightTypes enum.
+
+    \sa LineHeightTypes, lineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling) const
+    \since 4.8
+
+    Returns the height of the lines in the paragraph based on the height of the
+    script line given by \a scriptLineHeight and the specified \a scaling
+    factor.
+
+    The value that is returned is also dependent on the given LineHeightType of
+    the paragraph as well as the LineHeight setting that has been set for the
+    paragraph.
+
+    The scaling is needed for heights that include a fixed number of pixels, to
+    scale them appropriately for printing.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeight() const
+    \since 4.8
+
+    This returns the LineHeight property for the paragraph.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeightType()
+*/
+
+
+/*!
+    \fn qreal QTextBlockFormat::lineHeightType() const
+    \since 4.8
+
+    This returns the LineHeightType property of the paragraph.
+
+    \sa LineHeightTypes, setLineHeight(), lineHeight()
+*/
+
+
+/*!
     \fn void QTextBlockFormat::setNonBreakableLines(bool b)
 
     If \a b is true, the lines in the paragraph are treated as
@@ -2147,6 +2251,13 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     with the style() function. The style controls the type of bullet points and
     numbering scheme used for items in the list. Note that lists that use the
     decimal numbering scheme begin counting at 1 rather than 0.
+
+    Style properties can be set to further configure the appearance of list
+    items; for example, the ListNumberPrefix and ListNumberSuffix properties
+    can be used to customize the numbers used in an ordered list so that they
+    appear as (1), (2), (3), etc.:
+
+    \snippet doc/src/snippets/textdocument-listitemstyles/mainwindow.cpp add a styled, ordered list
 
     \sa QTextList
 */
@@ -2235,6 +2346,49 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \sa setIndent()
 */
 
+/*!
+    \fn void QTextListFormat::setNumberPrefix(const QString &numberPrefix)
+    \since 4.8
+
+    Sets the list format's number prefix to the string specified by
+    \a numberPrefix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
+    The default prefix is an empty string.
+
+    \sa numberPrefix()
+*/
+
+/*!
+    \fn int QTextListFormat::numberPrefix() const
+    \since 4.8
+
+    Returns the list format's number prefix.
+
+    \sa setNumberPrefix()
+*/
+
+/*!
+    \fn void QTextListFormat::setNumberSuffix(const QString &numberSuffix)
+    \since 4.8
+
+    Sets the list format's number suffix to the string specified by
+    \a numberSuffix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
+    The default suffix is ".".
+
+    \sa numberSuffix()
+*/
+
+/*!
+    \fn int QTextListFormat::numberSuffix() const
+    \since 4.8
+
+    Returns the list format's number suffix.
+
+    \sa setNumberSuffix()
+*/
 
 /*!
     \class QTextFrameFormat

@@ -40,12 +40,13 @@
 
 #include "animateditem.h"
 
-#include <QtGui/qbitmap.h>
-#include <QtGui/qpainter.h>
+#include <QtGui/QBitmap>
+#include <QtGui/QPainter>
+#include <QGraphicsScene>
 
 AnimatedPixmapItem::AnimatedPixmapItem(const QList<QPixmap> &animation,
                                        QGraphicsScene *scene)
-    : QGraphicsItem(0, scene), currentFrame(0), vx(0), vy(0)
+    : QGraphicsItem(0), currentFrame(0), vx(0), vy(0)
 {
     for (int i = 0; i < animation.size(); ++i) {
         QPixmap pixmap = animation.at(i);
@@ -55,6 +56,8 @@ AnimatedPixmapItem::AnimatedPixmapItem(const QList<QPixmap> &animation,
         frame.boundingRect = pixmap.rect();
         frames << frame;
     }
+
+    scene->addItem(this);
 }
 
 void AnimatedPixmapItem::setFrame(int frame)
@@ -63,6 +66,8 @@ void AnimatedPixmapItem::setFrame(int frame)
         prepareGeometryChange();
         currentFrame = frame % frames.size();
     }
+
+    //scene->addItem(this);
 }
 
 void AnimatedPixmapItem::advance(int phase)

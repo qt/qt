@@ -116,6 +116,9 @@ public:
     bool withCredentials() const;
     void setWithCredentials(bool b);
 
+    bool isSsl() const;
+    void setSsl(bool);
+
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
@@ -146,6 +149,7 @@ public:
     bool autoDecompress;
     bool pipeliningAllowed;
     bool withCredentials;
+    bool ssl;
 };
 
 

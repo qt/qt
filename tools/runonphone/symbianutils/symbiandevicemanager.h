@@ -44,7 +44,7 @@
 
 #include "symbianutils_global.h"
 
-#include <QtCore/QObject>
+#include <QtCore/QIODevice>
 #include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/QSharedPointer>
 
@@ -56,16 +56,22 @@ QT_END_NAMESPACE
 namespace trk {
     class TrkDevice;
 }
+namespace Coda {
+    class CodaDevice;
+}
 
 namespace SymbianUtils {
 
 struct SymbianDeviceManagerPrivate;
 class SymbianDeviceData;
+class OstChannel;
 
 enum DeviceCommunicationType {
     SerialPortCommunication = 0,
     BlueToothCommunication = 1
 };
+
+typedef QSharedPointer<Coda::CodaDevice> CodaDevicePtr;
 
 // SymbianDevice: Explicitly shared device data and a TrkDevice
 // instance that can be acquired (exclusively) for use.
@@ -90,13 +96,6 @@ public:
     QString additionalInformation() const;
     void setAdditionalInformation(const QString &);
 
-    // Acquire: Mark the device as 'out' and return a shared pointer
-    // unless it is already in use by another owner. The result should not
-    // be passed on further.
-    TrkDevicePtr acquireDevice();
-    // Give back a device and mark it as 'free'.
-    void releaseDevice(TrkDevicePtr *ptr = 0);
-
     bool isOpen() const;
 
     // Windows only.
@@ -107,6 +106,14 @@ public:
     QString toString() const;
 
 private:
+    // Acquire: Mark the device as 'out' and return a shared pointer
+    // unless it is already in use by another owner. The result should not
+    // be passed on further.
+    // TRK only
+    TrkDevicePtr acquireDevice();
+    // Give back a device and mark it as 'free'. TRK only.
+    void releaseDevice(TrkDevicePtr *ptr = 0);
+
     void forcedClose();
 
     QExplicitlySharedDataPointer<SymbianDeviceData> m_data;
@@ -145,8 +152,24 @@ public:
     SymbianDeviceList devices() const;
     QString toString() const;
 
-    // Acquire a device for use. See releaseDevice().
+    // Acquire a TRK device for use. Assuming the port is found, equivalent to devices()[findByPortName(port)].acquireDevice(). See also releaseDevice().
     TrkDevicePtr acquireDevice(const QString &port);
+
+    //// The TCF code prefers to set up the CodaDevice object itself, so we let it and just handle opening the underlying QIODevice and keeping track of the CodaDevice
+    //// Returns true if port was opened successfully.
+
+    // Gets the CodaDevice, which may or may not be open depending on what other clients have already acquired it.
+    // Therefore once clients have set up any signals and slots they required, they should check CodaDevice::device()->isOpen()
+    // and if false, the open failed and they should check device()->errorString() if required.
+    // Caller should call releaseCodaDevice if they want the port to auto-close itself
+    CodaDevicePtr getCodaDevice(const QString &port);
+
+    // Note this function makes no guarantee that someone else isn't already listening on this channel id, or that there is anything on the other end
+    // Returns NULL if the port couldn't be opened
+    OstChannel *getOstChannel(const QString &port, uchar channelId);
+
+    // Caller is responsible for disconnecting any signals from aPort - do not assume the CodaDevice will be deleted as a result of this call. On return aPort will be clear()ed.
+    void releaseCodaDevice(CodaDevicePtr &aPort);
 
     int findByPortName(const QString &p) const;
     QString friendlyNameForPort(const QString &port) const;
@@ -162,16 +185,53 @@ signals:
     void deviceAdded(const SymbianUtils::SymbianDevice &d);
     void updated();
 
+private slots:
+    void delayedClosePort();
+
 private:
     void ensureInitialized() const;
     void update(bool emitSignals);
     SymbianDeviceList serialPorts() const;
     SymbianDeviceList blueToothDevices() const;
+    void customEvent(QEvent *event);
+    void constructCodaPort(CodaDevicePtr& device, const QString& portName);
 
     SymbianDeviceManagerPrivate *d;
 };
 
 SYMBIANUTILS_EXPORT QDebug operator<<(QDebug d, const SymbianDeviceManager &);
+
+struct OstChannelPrivate;
+
+class SYMBIANUTILS_EXPORT OstChannel : public QIODevice
+{
+    Q_OBJECT
+
+public:
+    void close();
+    ~OstChannel();
+    void flush();
+
+    qint64 bytesAvailable() const;
+    bool isSequential() const;
+    bool hasReceivedData() const;
+
+    Coda::CodaDevice &codaDevice() const;
+
+private slots:
+    void ostDataReceived(uchar channelId, const QByteArray &aData);
+    void deviceAboutToClose();
+
+private:
+    OstChannel(const CodaDevicePtr &codaPtr, uchar channelId);
+    Q_DISABLE_COPY(OstChannel)
+    qint64 readData(char *data, qint64 maxSize);
+    qint64 writeData(const char *data, qint64 maxSize);
+
+private:
+    OstChannelPrivate *d;
+    friend class SymbianDeviceManager;
+};
 
 } // namespace SymbianUtils
 

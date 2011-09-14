@@ -404,6 +404,20 @@ void QMapData::dump()
     Assigns \a other to this map and returns a reference to this map.
 */
 
+/*! \fn void QMap::swap(QMap<Key, T> &other)
+    \since 4.8
+
+    Swaps map \a other with this map. This operation is very
+    fast and never fails.
+*/
+
+/*! \fn void QMultiMap::swap(QMultiMap<Key, T> &other)
+    \since 4.8
+
+    Swaps map \a other with this map. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn bool QMap::operator==(const QMap<Key, T> &other) const
 
     Returns true if \a other is equal to this map; otherwise returns

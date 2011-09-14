@@ -76,7 +76,7 @@ class QEventLoop;
 
 #if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
-class QInternalMimeData : public QMimeData
+class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
     Q_OBJECT
 public:
@@ -261,11 +261,11 @@ public:
 #endif
 
 private:
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     Qt::DropAction currentActionForOverrideCursor;
 #endif
 #ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_CURSOR 
+#ifndef QT_NO_CURSOR
     QCursor overrideCursor;
 #endif
 #endif

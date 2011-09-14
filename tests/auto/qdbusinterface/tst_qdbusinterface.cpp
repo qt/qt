@@ -40,6 +40,7 @@
 ****************************************************************************/
 /* -*- C++ -*-
  */
+
 #include <qcoreapplication.h>
 #include <qmetatype.h>
 #include <QtTest/QtTest>
@@ -47,125 +48,15 @@
 #include <QtDBus/QtDBus>
 
 #include "../qdbusmarshall/common.h"
-
-Q_DECLARE_METATYPE(QVariantList)
+#include "myobject.h"
 
 #define TEST_INTERFACE_NAME "com.trolltech.QtDBus.MyObject"
 #define TEST_SIGNAL_NAME "somethingHappened"
 
-class MyObject: public QObject
-{
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.QtDBus.MyObject")
-    Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"com.trolltech.QtDBus.MyObject\" >\n"
-"    <property access=\"readwrite\" type=\"i\" name=\"prop1\" />\n"
-"    <property name=\"complexProp\" type=\"ai\" access=\"readwrite\">\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"QList&lt;int&gt;\"/>\n"
-"    </property>\n"
-"    <signal name=\"somethingHappened\" >\n"
-"      <arg direction=\"out\" type=\"s\" />\n"
-"    </signal>\n"
-"    <method name=\"ping\" >\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"ping\" />\n"
-"    </method>\n"
-"    <method name=\"ping_invokable\" >\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping_invokable\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"ping_invokable\" />\n"
-"    </method>\n"
-"    <method name=\"ping\" >\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping1\" />\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping2\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"pong1\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"pong2\" />\n"
-"    </method>\n"
-"    <method name=\"ping_invokable\" >\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping1_invokable\" />\n"
-"      <arg direction=\"in\" type=\"v\" name=\"ping2_invokable\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"pong1_invokable\" />\n"
-"      <arg direction=\"out\" type=\"v\" name=\"pong2_invokable\" />\n"
-"    </method>\n"
-"    <method name=\"ping\" >\n"
-"      <arg direction=\"in\" type=\"ai\" name=\"ping\" />\n"
-"      <arg direction=\"out\" type=\"ai\" name=\"ping\" />\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName.In0\" value=\"QList&lt;int&gt;\"/>\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QList&lt;int&gt;\"/>\n"
-"    </method>\n"
-"    <method name=\"ping_invokable\" >\n"
-"      <arg direction=\"in\" type=\"ai\" name=\"ping_invokable\" />\n"
-"      <arg direction=\"out\" type=\"ai\" name=\"ping_invokable\" />\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName.In0\" value=\"QList&lt;int&gt;\"/>\n"
-"      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QList&lt;int&gt;\"/>\n"
-"    </method>\n"
-"  </interface>\n"
-        "")
-    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1)
-    Q_PROPERTY(QList<int> complexProp READ complexProp WRITE setComplexProp)
+static const char serviceName[] = "com.trolltech.autotests.qmyserver";
+static const char objectPath[] = "/com/trolltech/qmyserver";
+static const char *interfaceName = serviceName;
 
-public:
-    static int callCount;
-    static QVariantList callArgs;
-    MyObject()
-    {
-        QObject *subObject = new QObject(this);
-        subObject->setObjectName("subObject");
-    }
-
-    int m_prop1;
-    int prop1() const
-    {
-        ++callCount;
-        return m_prop1;
-    }
-    void setProp1(int value)
-    {
-        ++callCount;
-        m_prop1 = value;
-    }
-
-    QList<int> m_complexProp;
-    QList<int> complexProp() const
-    {
-        ++callCount;
-        return m_complexProp;
-    }
-    void setComplexProp(const QList<int> &value)
-    {
-        ++callCount;
-        m_complexProp = value;
-    }
-
-    Q_INVOKABLE void ping_invokable(QDBusMessage msg)
-    {
-        QDBusConnection sender = QDBusConnection::sender();
-        if (!sender.isConnected())
-            exit(1);
-
-        ++callCount;
-        callArgs = msg.arguments();
-
-        msg.setDelayedReply(true);
-        if (!sender.send(msg.createReply(callArgs)))
-            exit(1);
-    }
-
-public slots:
-
-    void ping(QDBusMessage msg)
-    {
-        QDBusConnection sender = QDBusConnection::sender();
-        if (!sender.isConnected())
-            exit(1);
-
-        ++callCount;
-        callArgs = msg.arguments();
-
-        msg.setDelayedReply(true);
-        if (!sender.send(msg.createReply(callArgs)))
-            exit(1);
-    }
-};
 int MyObject::callCount = 0;
 QVariantList MyObject::callArgs;
 
@@ -228,10 +119,70 @@ void emitSignal(const QString &interface, const QString &name, const QString &ar
     QTest::qWait(1000);
 }
 
+void emitSignalPeer(const QString &interface, const QString &name, const QString &arg)
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "emitSignal");
+    req << interface;
+    req << name;
+    req << arg;
+    QDBusConnection::sessionBus().send(req);
+
+    QTest::qWait(1000);
+}
+
+int callCountPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "callCount");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return reply.arguments().at(0).toInt();
+}
+
+QVariantList callArgsPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "callArgs");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return qdbus_cast<QVariantList>(reply.arguments().at(0));
+}
+
+void setProp1Peer(int val)
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "setProp1");
+    req << val;
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+}
+
+int prop1Peer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "prop1");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return reply.arguments().at(0).toInt();
+}
+
+void setComplexPropPeer(QList<int> val)
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "setComplexProp");
+    req << qVariantFromValue(val);
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+}
+
+QList<int> complexPropPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "complexProp");
+    QDBusMessage reply = QDBusConnection::sessionBus().call(req);
+    return qdbus_cast<QList<int> >(reply.arguments().at(0));
+}
+
+void resetPeer()
+{
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "reset");
+    QDBusConnection::sessionBus().call(req);
+}
+
 class tst_QDBusInterface: public QObject
 {
     Q_OBJECT
     MyObject obj;
+
 public slots:
     void testServiceOwnerChanged(const QString &service)
     {
@@ -241,6 +192,7 @@ public slots:
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     void notConnected();
     void notValid();
@@ -248,19 +200,69 @@ private slots:
     void invalidAfterServiceOwnerChanged();
     void introspect();
     void introspectUnknownTypes();
+    void introspectVirtualObject();
     void callMethod();
     void invokeMethod();
     void invokeMethodWithReturn();
     void invokeMethodWithMultiReturn();
     void invokeMethodWithComplexReturn();
 
+    void introspectPeer();
+    void callMethodPeer();
+    void invokeMethodPeer();
+    void invokeMethodWithReturnPeer();
+    void invokeMethodWithMultiReturnPeer();
+    void invokeMethodWithComplexReturnPeer();
+
     void signal();
+    void signalPeer();
 
     void propertyRead();
     void propertyWrite();
     void complexPropertyRead();
     void complexPropertyWrite();
+
+    void propertyReadPeer();
+    void propertyWritePeer();
+    void complexPropertyReadPeer();
+    void complexPropertyWritePeer();
+private:
+    QProcess proc;
 };
+
+class WaitForQMyServer: public QObject
+{
+    Q_OBJECT
+public:
+    WaitForQMyServer();
+    bool ok();
+public Q_SLOTS:
+    void ownerChange(const QString &name)
+    {
+        if (name == serviceName)
+            loop.quit();
+    }
+
+private:
+    QEventLoop loop;
+};
+
+WaitForQMyServer::WaitForQMyServer()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    if (!ok()) {
+        connect(con.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                SLOT(ownerChange(QString)));
+        QTimer::singleShot(2000, &loop, SLOT(quit()));
+        loop.exec();
+    }
+}
+
+bool WaitForQMyServer::ok()
+{
+    return QDBusConnection::sessionBus().isConnected() &&
+        QDBusConnection::sessionBus().interface()->isServiceRegistered(serviceName);
+}
 
 void tst_QDBusInterface::initTestCase()
 {
@@ -271,6 +273,39 @@ void tst_QDBusInterface::initTestCase()
     con.registerObject("/", &obj, QDBusConnection::ExportAllProperties
                        | QDBusConnection::ExportAllSlots
                        | QDBusConnection::ExportAllInvokables);
+
+    // start peer server
+    #ifdef Q_OS_WIN
+    proc.start("qmyserver");
+    #else
+    proc.start("./qmyserver/qmyserver");
+    #endif
+    QVERIFY(proc.waitForStarted());
+
+    WaitForQMyServer w;
+    QVERIFY(w.ok());
+    //QTest::qWait(2000);
+
+    // get peer server address
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "address");
+    QDBusMessage rpl = con.call(req);
+    QVERIFY(rpl.type() == QDBusMessage::ReplyMessage);
+    QString address = rpl.arguments().at(0).toString();
+
+    // connect to peer server
+    QDBusConnection peercon = QDBusConnection::connectToPeer(address, "peer");
+    QVERIFY(peercon.isConnected());
+
+    QDBusMessage req2 = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "isConnected");
+    QDBusMessage rpl2 = con.call(req2);
+    QVERIFY(rpl2.type() == QDBusMessage::ReplyMessage);
+    QVERIFY(rpl2.arguments().at(0).toBool());
+}
+
+void tst_QDBusInterface::cleanupTestCase()
+{
+    proc.close();
+    proc.kill();
 }
 
 void tst_QDBusInterface::notConnected()
@@ -327,7 +362,6 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
 
 void tst_QDBusInterface::introspect()
 {
-    QDBusConnection con = QDBusConnection::sessionBus();
     QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
                          TEST_INTERFACE_NAME);
 
@@ -360,6 +394,75 @@ void tst_QDBusInterface::introspectUnknownTypes()
     QVERIFY(mo->indexOfProperty("prop1") != -1);
     int pidx = mo->indexOfProperty("prop1");
     QCOMPARE(mo->property(pidx).typeName(), "QDBusRawType<0x7e>*");
+
+
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), "/unknownTypes", "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    qDebug() << "REPL: " << reply.arguments();
+
+}
+
+
+class VirtualObject: public QDBusVirtualObject
+{
+    Q_OBJECT
+public:
+    VirtualObject() :success(true) {}
+
+    QString introspect(const QString &path) const {
+        if (path == "/some/path/superNode")
+            return "zitroneneis";
+        if (path == "/some/path/superNode/foo")
+            return  "  <interface name=\"com.trolltech.QtDBus.VirtualObject\">\n"
+                    "    <method name=\"klingeling\" />\n"
+                    "  </interface>\n" ;
+        return QString();
+    }
+
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+        ++callCount;
+        lastMessage = message;
+
+        if (success) {
+            QDBusMessage reply = message.createReply(replyArguments);
+            connection.send(reply);
+        }
+        emit messageReceived(message);
+        return success;
+    }
+signals:
+    void messageReceived(const QDBusMessage &message) const;
+
+public:
+    mutable QDBusMessage lastMessage;
+    QVariantList replyArguments;
+    mutable int callCount;
+    bool success;
+};
+
+void tst_QDBusInterface::introspectVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+    VirtualObject obj;
+
+    obj.success = false;
+
+    QString path = "/some/path/superNode";
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    QVERIFY(reply.arguments().at(0).toString().contains(
+        QRegExp("<node>.*zitroneneis.*<interface name=") ));
+
+    QDBusMessage message2 = QDBusMessage::createMethodCall(con.baseService(), path + "/foo", "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply2 = con.call(message2, QDBus::Block, 5000);
+    QVERIFY(reply2.arguments().at(0).toString().contains(
+        QRegExp("<node>.*<interface name=\"com.trolltech.QtDBus.VirtualObject\">"
+                ".*<method name=\"klingeling\" />\n"
+                ".*</interface>.*<interface name=") ));
 }
 
 void tst_QDBusInterface::callMethod()
@@ -369,7 +472,7 @@ void tst_QDBusInterface::callMethod()
                          TEST_INTERFACE_NAME);
 
     MyObject::callCount = 0;
-   
+
     // call a SLOT method
     QDBusMessage reply = iface.call("ping", qVariantFromValue(QDBusVariant("foo")));
     QCOMPARE(MyObject::callCount, 1);
@@ -388,7 +491,7 @@ void tst_QDBusInterface::callMethod()
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().type(), QVariant::String);
     QCOMPARE(dv.variant().toString(), QString("foo"));
-    
+
     // call an INVOKABLE method
     reply = iface.call("ping_invokable", qVariantFromValue(QDBusVariant("bar")));
     QCOMPARE(MyObject::callCount, 2);
@@ -416,7 +519,7 @@ void tst_QDBusInterface::invokeMethod()
                          TEST_INTERFACE_NAME);
 
     MyObject::callCount = 0;
-    
+
     // make the SLOT call without a return type
     QDBusVariant arg("foo");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_ARG(QDBusVariant, arg)));
@@ -428,7 +531,7 @@ void tst_QDBusInterface::invokeMethod()
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().type(), QVariant::String);
     QCOMPARE(dv.variant().toString(), QString("foo"));
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_ARG(QDBusVariant, arg2)));
@@ -465,7 +568,7 @@ void tst_QDBusInterface::invokeMethodWithReturn()
 
     // verify that we got the reply as expected
     QCOMPARE(retArg.variant(), arg.variant());
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_RETURN_ARG(QDBusVariant, retArg), Q_ARG(QDBusVariant, arg2)));
@@ -490,7 +593,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
 
     MyObject::callCount = 0;
     QDBusVariant retArg, retArg2;
-    
+
     // make the SLOT call without a return type
     QDBusVariant arg("foo"), arg2("bar");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping",
@@ -515,7 +618,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
     // verify that we got the replies as expected
     QCOMPARE(retArg.variant(), arg.variant());
     QCOMPARE(retArg2.variant(), arg2.variant());
-    
+
     // make the INVOKABLE call without a return type
     QDBusVariant arg3("hello"), arg4("world");
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable",
@@ -550,7 +653,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
 
     MyObject::callCount = 0;
     QList<int> retArg;
-    
+
     // make the SLOT call without a return type
     QList<int> arg = QList<int>() << 42 << -47;
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QList<int>, retArg), Q_ARG(QList<int>, arg)));
@@ -564,7 +667,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
 
     // verify that we got the reply as expected
     QCOMPARE(retArg, arg);
-    
+
     // make the INVOKABLE call without a return type
     QList<int> arg2 = QList<int>() << 24 << -74;
     QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QList<int>, retArg), Q_ARG(QList<int>, arg2)));
@@ -573,6 +676,250 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
     // verify what the callee received
     QCOMPARE(MyObject::callArgs.count(), 1);
     v = MyObject::callArgs.at(0);
+    QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
+    QCOMPARE(qdbus_cast<QList<int> >(v), arg2);
+
+    // verify that we got the reply as expected
+    QCOMPARE(retArg, arg2);
+}
+
+void tst_QDBusInterface::introspectPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    const QMetaObject *mo = iface.metaObject();
+
+    QCOMPARE(mo->methodCount() - mo->methodOffset(), 7);
+    QVERIFY(mo->indexOfSignal(TEST_SIGNAL_NAME "(QString)") != -1);
+
+    QCOMPARE(mo->propertyCount() - mo->propertyOffset(), 2);
+    QVERIFY(mo->indexOfProperty("prop1") != -1);
+    QVERIFY(mo->indexOfProperty("complexProp") != -1);
+}
+
+void tst_QDBusInterface::callMethodPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+
+    // call a SLOT method
+    QDBusMessage reply = iface.call("ping", qVariantFromValue(QDBusVariant("foo")));
+    QCOMPARE(callCountPeer(), 1);
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
+
+    // verify what the callee received
+    QVariantList callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    QVariant v = callArgs.at(0);
+    QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("foo"));
+
+    // verify reply
+    QCOMPARE(reply.arguments().count(), 1);
+    v = reply.arguments().at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("foo"));
+
+    // call an INVOKABLE method
+    reply = iface.call("ping_invokable", qVariantFromValue(QDBusVariant("bar")));
+    QCOMPARE(callCountPeer(), 2);
+    QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
+
+    // verify what the callee received
+    callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    v = callArgs.at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("bar"));
+
+    // verify reply
+    QCOMPARE(reply.arguments().count(), 1);
+    v = reply.arguments().at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("bar"));
+}
+
+void tst_QDBusInterface::invokeMethodPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+
+    // make the SLOT call without a return type
+    QDBusVariant arg("foo");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_ARG(QDBusVariant, arg)));
+    QCOMPARE(callCountPeer(), 1);
+
+    // verify what the callee received
+    QVariantList callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    QVariant v = callArgs.at(0);
+    QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("foo"));
+
+    // make the INVOKABLE call without a return type
+    QDBusVariant arg2("bar");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_ARG(QDBusVariant, arg2)));
+    QCOMPARE(callCountPeer(), 2);
+
+    // verify what the callee received
+    callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    v = callArgs.at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), QString("bar"));
+}
+
+void tst_QDBusInterface::invokeMethodWithReturnPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    QDBusVariant retArg;
+
+    // make the SLOT call without a return type
+    QDBusVariant arg("foo");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QDBusVariant, retArg), Q_ARG(QDBusVariant, arg)));
+    QCOMPARE(callCountPeer(), 1);
+
+    // verify what the callee received
+    QVariantList callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    QVariant v = callArgs.at(0);
+    QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg.variant().toString());
+
+    // verify that we got the reply as expected
+    QCOMPARE(retArg.variant(), arg.variant());
+
+    // make the INVOKABLE call without a return type
+    QDBusVariant arg2("bar");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable", Q_RETURN_ARG(QDBusVariant, retArg), Q_ARG(QDBusVariant, arg2)));
+    QCOMPARE(callCountPeer(), 2);
+
+    // verify what the callee received
+    callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    v = callArgs.at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg2.variant().toString());
+
+    // verify that we got the reply as expected
+    QCOMPARE(retArg.variant(), arg2.variant());
+}
+
+void tst_QDBusInterface::invokeMethodWithMultiReturnPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    QDBusVariant retArg, retArg2;
+
+    // make the SLOT call without a return type
+    QDBusVariant arg("foo"), arg2("bar");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping",
+                                      Q_RETURN_ARG(QDBusVariant, retArg),
+                                      Q_ARG(QDBusVariant, arg),
+                                      Q_ARG(QDBusVariant, arg2),
+                                      Q_ARG(QDBusVariant&, retArg2)));
+    QCOMPARE(callCountPeer(), 1);
+
+    // verify what the callee received
+    QVariantList callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 2);
+    QVariant v = callArgs.at(0);
+    QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg.variant().toString());
+
+    v = callArgs.at(1);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg2.variant().toString());
+
+    // verify that we got the replies as expected
+    QCOMPARE(retArg.variant(), arg.variant());
+    QCOMPARE(retArg2.variant(), arg2.variant());
+
+    // make the INVOKABLE call without a return type
+    QDBusVariant arg3("hello"), arg4("world");
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping_invokable",
+                                      Q_RETURN_ARG(QDBusVariant, retArg),
+                                      Q_ARG(QDBusVariant, arg3),
+                                      Q_ARG(QDBusVariant, arg4),
+                                      Q_ARG(QDBusVariant&, retArg2)));
+    QCOMPARE(callCountPeer(), 2);
+
+    // verify what the callee received
+    callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 2);
+    v = callArgs.at(0);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg3.variant().toString());
+
+    v = callArgs.at(1);
+    dv = qdbus_cast<QDBusVariant>(v);
+    QCOMPARE(dv.variant().type(), QVariant::String);
+    QCOMPARE(dv.variant().toString(), arg4.variant().toString());
+
+    // verify that we got the replies as expected
+    QCOMPARE(retArg.variant(), arg3.variant());
+    QCOMPARE(retArg2.variant(), arg4.variant());
+}
+
+void tst_QDBusInterface::invokeMethodWithComplexReturnPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    QList<int> retArg;
+
+    // make the SLOT call without a return type
+    QList<int> arg = QList<int>() << 42 << -47;
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QList<int>, retArg), Q_ARG(QList<int>, arg)));
+    QCOMPARE(callCountPeer(), 1);
+
+    // verify what the callee received
+    QVariantList callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    QVariant v = callArgs.at(0);
+    QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
+    QCOMPARE(qdbus_cast<QList<int> >(v), arg);
+
+    // verify that we got the reply as expected
+    QCOMPARE(retArg, arg);
+
+    // make the INVOKABLE call without a return type
+    QList<int> arg2 = QList<int>() << 24 << -74;
+    QVERIFY(QMetaObject::invokeMethod(&iface, "ping", Q_RETURN_ARG(QList<int>, retArg), Q_ARG(QList<int>, arg2)));
+    QCOMPARE(callCountPeer(), 2);
+
+    // verify what the callee received
+    callArgs = callArgsPeer();
+    QCOMPARE(callArgs.count(), 1);
+    v = callArgs.at(0);
     QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(v), arg2);
 
@@ -614,6 +961,47 @@ void tst_QDBusInterface::signal()
         spy2.connect(&iface2, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
 
         emitSignal(TEST_INTERFACE_NAME, TEST_SIGNAL_NAME, arg);
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.received, arg);
+        QCOMPARE(spy2.count, 1);
+        QCOMPARE(spy2.received, arg);
+    }
+}
+
+void tst_QDBusInterface::signalPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    QString arg = "So long and thanks for all the fish";
+    {
+        Spy spy;
+        spy.connect(&iface, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
+
+        emitSignalPeer(TEST_INTERFACE_NAME, TEST_SIGNAL_NAME, arg);
+        QCOMPARE(spy.count, 1);
+        QCOMPARE(spy.received, arg);
+    }
+
+    QDBusInterface iface2(QString(), QLatin1String("/"),
+                          TEST_INTERFACE_NAME, con);
+    {
+        Spy spy;
+        spy.connect(&iface, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
+        spy.connect(&iface2, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
+
+        emitSignalPeer(TEST_INTERFACE_NAME, TEST_SIGNAL_NAME, arg);
+        QCOMPARE(spy.count, 2);
+        QCOMPARE(spy.received, arg);
+    }
+
+    {
+        Spy spy, spy2;
+        spy.connect(&iface, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
+        spy2.connect(&iface2, SIGNAL(somethingHappened(QString)), SLOT(spySlot(QString)));
+
+        emitSignalPeer(TEST_INTERFACE_NAME, TEST_SIGNAL_NAME, arg);
         QCOMPARE(spy.count, 1);
         QCOMPARE(spy.received, arg);
         QCOMPARE(spy2.count, 1);
@@ -683,7 +1071,69 @@ void tst_QDBusInterface::complexPropertyWrite()
     QCOMPARE(obj.m_complexProp, arg);
 }
 
+void tst_QDBusInterface::propertyReadPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    int arg = 42;
+    setProp1Peer(42);
+
+    QVariant v = iface.property("prop1");
+    QVERIFY(v.isValid());
+    QCOMPARE(v.userType(), int(QVariant::Int));
+    QCOMPARE(v.toInt(), arg);
+    QCOMPARE(callCountPeer(), 1);
+}
+
+void tst_QDBusInterface::propertyWritePeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    int arg = 42;
+    setProp1Peer(0);
+
+    QVERIFY(iface.setProperty("prop1", arg));
+    QCOMPARE(callCountPeer(), 1);
+    QCOMPARE(prop1Peer(), arg);
+}
+
+void tst_QDBusInterface::complexPropertyReadPeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    QList<int> arg = QList<int>() << 42 << -47;
+    setComplexPropPeer(arg);
+
+    QVariant v = iface.property("complexProp");
+    QVERIFY(v.isValid());
+    QCOMPARE(v.userType(), qMetaTypeId<QList<int> >());
+    QCOMPARE(v.value<QList<int> >(), arg);
+    QCOMPARE(callCountPeer(), 1);
+}
+
+void tst_QDBusInterface::complexPropertyWritePeer()
+{
+    QDBusConnection con("peer");
+    QDBusInterface iface(QString(), QLatin1String("/"),
+                         TEST_INTERFACE_NAME, con);
+
+    resetPeer();
+    QList<int> arg = QList<int>() << -47 << 42;
+
+    QVERIFY(iface.setProperty("complexProp", qVariantFromValue(arg)));
+    QCOMPARE(callCountPeer(), 1);
+    QCOMPARE(complexPropPeer(), arg);
+}
+
 QTEST_MAIN(tst_QDBusInterface)
 
 #include "tst_qdbusinterface.moc"
-

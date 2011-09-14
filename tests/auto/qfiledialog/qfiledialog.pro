@@ -7,9 +7,9 @@ load(qttest_p4)
 SOURCES += tst_qfiledialog.cpp
 
 wince*|symbian {
-    addFiles.sources = *.cpp
+    addFiles.files = *.cpp
     addFiles.path = .
-    filesInDir.sources = *.pro
+    filesInDir.files = *.pro
     filesInDir.path = someDir
     DEPLOYMENT += addFiles filesInDir
 }

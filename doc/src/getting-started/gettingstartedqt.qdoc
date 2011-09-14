@@ -38,6 +38,12 @@
     documentation, and find the information you need for the
     application you are developing.
 
+    The code for this tutorial is available in \c
+    {examples/tutorials/gettingStarted/gsQt} under your Qt
+    installation. If you are using the Qt SDK, you will find it in
+    \c{Examples/4.7/tutorials/gettingStarted/gsQt} (change \c{4.7} if
+    you are using a later Qt version).
+
     \section1 Hello Notepad
 
     In this first example, we simply create and show a text edit in a
@@ -139,28 +145,28 @@
     Let us take a look at the code.
 
     \code
- 1        #include <QtGui>
- 2
- 3        int main(int argv, char **args)
- 4        {
- 5            QApplication app(argv, args);
- 6
- 7            QTextEdit textEdit;
- 8            QPushButton quitButton("Quit");
- 9
-10            QObject::connect(&quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
-11
-12            QVBoxLayout layout;
-13            layout.addWidget(&textEdit);
-14            layout.addWidget(&quitButton);
-15
-16            QWidget window;
-17            window.setLayout(&layout);
-18
-19            window.show();
-20
-21            return app.exec();
-22        }
+ 1      #include <QtGui>
+ 2 
+ 3      int main(int argv, char **args)
+ 4      {
+ 5          QApplication app(argv, args);
+ 6 
+ 7          QTextEdit *textEdit = new QTextEdit;
+ 8          QPushButton *quitButton = new QPushButton("&Quit");
+ 9 
+10          QObject::connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
+11 
+12          QVBoxLayout *layout = new QVBoxLayout;
+13          layout->addWidget(textEdit);
+14          layout->addWidget(quitButton);
+15 
+16          QWidget window;
+17          window.setLayout(layout);
+18 
+19          window.show();
+20 
+21          return app.exec();
+22      }
     \endcode
 
     Line 1 includes QtGui, which contains all of Qt's GUI classes.
@@ -278,9 +284,25 @@
     visible strings. This function is necessary when you want to
     provide your application in more than one language (e.g.  English
     and Chinese). We will not go into details here, but you can follow
-    the \c {Qt Linguist} link from the learn more table. We will not
-    look at the implementation of \c quit() slot and the \c main()
-    function, but you can check out the source code if you want to.
+    the \c {Qt Linguist} link from the learn more table.
+
+    Here is the \c quit() slot:
+
+    \code
+75      void Notepad::quit()
+76      {
+77          QMessageBox messageBox;
+78          messageBox.setWindowTitle(tr("Notepad"));
+79          messageBox.setText(tr("Do you really want to quit?"));
+80          messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+81          messageBox.setDefaultButton(QMessageBox::No);
+82          if (messageBox.exec() == QMessageBox::Yes)
+83              qApp->quit();
+84      }
+    \endcode
+
+    We use the QMessageBox class to display a dialog that asks the
+    user whether he/she really wants to quit.
 
     \section2 Learn More
 
@@ -374,7 +396,7 @@
     \code
 25        Notepad::Notepad()
 26        {
-27            saveAction = new QAction(tr("&Open"), this);
+27            openAction = new QAction(tr("&Open"), this);
 28            saveAction = new QAction(tr("&Save"), this);
 29            exitAction = new QAction(tr("E&xit"), this);
 30

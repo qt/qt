@@ -44,11 +44,13 @@
 #include <QTime>
 #include <QVariant>
 #include <QThread>
+#include <QStringList>
 
 #include <e32std.h>
 #include <e32const.h>
 #include <e32base.h>
 #include <e32property.h>
+#include <numberconversion.h>
 #include <bacntf.h>
 #include "private/qcore_symbian_p.h"
 #include "private/qcoreapplication_p.h"
@@ -57,31 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Located in qlocale.cpp
-extern void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
-
 static TExtendedLocale _s60Locale;
-
-// Type definitions for runtime resolved function pointers
-typedef void (*FormatFunc)(TTime&, TDes&, const TDesC&, const TLocale&);
-typedef TPtrC (*FormatSpecFunc)(TExtendedLocale&);
-
-// Runtime resolved functions
-static FormatFunc ptrTimeFormatL = NULL;
-static FormatSpecFunc ptrGetTimeFormatSpec = NULL;
-static FormatSpecFunc ptrGetLongDateFormatSpec = NULL;
-static FormatSpecFunc ptrGetShortDateFormatSpec = NULL;
-
-// Default functions if functions cannot be resolved
-static void defaultTimeFormatL(TTime&, TDes& des, const TDesC&, const TLocale&)
-{
-    des.Zero();
-}
-
-static TPtrC defaultFormatSpec(TExtendedLocale&)
-{
-    return TPtrC(KNullDesC);
-}
 
 /*
   Definition of struct for mapping Symbian to ISO locale
@@ -89,6 +67,7 @@ static TPtrC defaultFormatSpec(TExtendedLocale&)
 struct symbianToISO {
     int symbian_language;
     char iso_name[8];
+    char uilanguage[8];
 };
 
 
@@ -97,77 +76,80 @@ struct symbianToISO {
   NOTE: This array should be sorted by the first column!
 */
 static const symbianToISO symbian_to_iso_list[] = {
-    { ELangEnglish,             "en_GB" },  // 1
-    { ELangFrench,              "fr_FR" },  // 2
-    { ELangGerman,              "de_DE" },  // 3
-    { ELangSpanish,             "es_ES" },  // 4
-    { ELangItalian,             "it_IT" },  // 5
-    { ELangSwedish,             "sv_SE" },  // 6
-    { ELangDanish,              "da_DK" },  // 7
-    { ELangNorwegian,           "no_NO" },  // 8
-    { ELangFinnish,             "fi_FI" },  // 9
-    { ELangAmerican,            "en_US" },  // 10
-    { ELangPortuguese,          "pt_PT" },  // 13
-    { ELangTurkish,             "tr_TR" },  // 14
-    { ELangIcelandic,           "is_IS" },  // 15
-    { ELangRussian,             "ru_RU" },  // 16
-    { ELangHungarian,           "hu_HU" },  // 17
-    { ELangDutch,               "nl_NL" },  // 18
-    { ELangBelgianFlemish,      "nl_BE" },  // 19
-    { ELangCzech,               "cs_CZ" },  // 25
-    { ELangSlovak,              "sk_SK" },  // 26
-    { ELangPolish,              "pl_PL" },  // 27
-    { ELangSlovenian,           "sl_SI" },  // 28
-    { ELangTaiwanChinese,       "zh_TW" },  // 29
-    { ELangHongKongChinese,     "zh_HK" },  // 30
-    { ELangPrcChinese,          "zh_CN" },  // 31
-    { ELangJapanese,            "ja_JP" },  // 32
-    { ELangThai,                "th_TH" },  // 33
-    { ELangArabic,              "ar_AE" },  // 37
-    { ELangTagalog,             "tl_PH" },  // 39
-    { ELangBulgarian,           "bg_BG" },  // 42
-    { ELangCatalan,             "ca_ES" },  // 44
-    { ELangCroatian,            "hr_HR" },  // 45
-    { ELangEstonian,            "et_EE" },  // 49
-    { ELangFarsi,               "fa_IR" },  // 50
-    { ELangCanadianFrench,      "fr_CA" },  // 51
-    { ELangGreek,               "el_GR" },  // 54
-    { ELangHebrew,              "he_IL" },  // 57
-    { ELangHindi,               "hi_IN" },  // 58
-    { ELangIndonesian,          "id_ID" },  // 59
-    { ELangKorean,              "ko_KO" },  // 65
-    { ELangLatvian,             "lv_LV" },  // 67
-    { ELangLithuanian,          "lt_LT" },  // 68
-    { ELangMalay,               "ms_MY" },  // 70
-    { ELangNorwegianNynorsk,    "nn_NO" },  // 75
-    { ELangBrazilianPortuguese, "pt_BR" },  // 76
-    { ELangRomanian,            "ro_RO" },  // 78
-    { ELangSerbian,             "sr_RS" },  // 79
-    { ELangLatinAmericanSpanish,"es_419" }, // 83
-    { ELangUkrainian,           "uk_UA" },  // 93
-    { ELangUrdu,                "ur_PK" },  // 94 - India/Pakistan
-    { ELangVietnamese,          "vi_VN" },  // 96
+    { ELangEnglish,             "en_GB", "en" },    // 1
+    { ELangFrench,              "fr_FR", "fr" },    // 2
+    { ELangGerman,              "de_DE", "de" },    // 3
+    { ELangSpanish,             "es_ES", "es" },    // 4
+    { ELangItalian,             "it_IT", "it" },    // 5
+    { ELangSwedish,             "sv_SE", "sv" },    // 6
+    { ELangDanish,              "da_DK", "da" },    // 7
+    { ELangNorwegian,           "nb_NO", "nb" },    // 8
+    { ELangFinnish,             "fi_FI", "fi" },    // 9
+    { ELangAmerican,            "en_US", "en-US" }, // 10
+    { ELangPortuguese,          "pt_PT", "pt" },    // 13
+    { ELangTurkish,             "tr_TR", "tr" },    // 14
+    { ELangIcelandic,           "is_IS", "is" },    // 15
+    { ELangRussian,             "ru_RU", "ru" },    // 16
+    { ELangHungarian,           "hu_HU", "hu" },    // 17
+    { ELangDutch,               "nl_NL", "nl" },    // 18
+    { ELangCzech,               "cs_CZ", "cs" },    // 25
+    { ELangSlovak,              "sk_SK", "sk" },    // 26
+    { ELangPolish,              "pl_PL", "pl" },    // 27
+    { ELangSlovenian,           "sl_SI", "sl" },    // 28
+    { ELangTaiwanChinese,       "zh_TW", "zh-TW" }, // 29
+    { ELangHongKongChinese,     "zh_HK", "zh-HK" }, // 30
+    { ELangPrcChinese,          "zh_CN", "zh" },    // 31
+    { ELangJapanese,            "ja_JP", "ja" },    // 32
+    { ELangThai,                "th_TH", "th" },    // 33
+    { ELangArabic,              "ar_AE", "ar" },    // 37
+    { ELangTagalog,             "tl_PH", "tl" },    // 39
+    { ELangBulgarian,           "bg_BG", "bg" },    // 42
+    { ELangCatalan,             "ca_ES", "ca" },    // 44
+    { ELangCroatian,            "hr_HR", "hr" },    // 45
+    { ELangEstonian,            "et_EE", "et" },    // 49
+    { ELangFarsi,               "fa_IR", "fa" },    // 50
+    { ELangCanadianFrench,      "fr_CA", "fr-CA" }, // 51
+    { ELangGreek,               "el_GR", "el" },    // 54
+    { ELangHebrew,              "he_IL", "he" },    // 57
+    { ELangHindi,               "hi_IN", "hi" },    // 58
+    { ELangIndonesian,          "id_ID", "id" },    // 59
+    { 63/*ELangKazakh*/,        "kk_KZ", "kk" },    // 63
+    { ELangKorean,              "ko_KO", "ko" },    // 65
+    { ELangLatvian,             "lv_LV", "lv" },    // 67
+    { ELangLithuanian,          "lt_LT", "lt" },    // 68
+    { ELangMalay,               "ms_MY", "ms" },    // 70
+    { ELangNorwegianNynorsk,    "nn_NO", "nn" },    // 75
+    { ELangBrazilianPortuguese, "pt_BR", "pt-BR" }, // 76
+    { ELangRomanian,            "ro_RO", "ro" },    // 78
+    { ELangSerbian,             "sr_RS", "sr" },    // 79
+    { ELangLatinAmericanSpanish,"es_419", "es-419" },// 83
+    { ELangUkrainian,           "uk_UA", "uk" },    // 93
+    { ELangUrdu,                "ur_PK", "ur" },    // 94 - India/Pakistan
+    { ELangVietnamese,          "vi_VN", "vi" },    // 96
 #ifdef __E32LANG_H__
 // 5.0
-    { ELangBasque,              "eu_ES" },  // 102
-    { ELangGalician,            "gl_ES" },  // 103
+    { ELangBasque,              "eu_ES", "eu" },    // 102
+    { ELangGalician,            "gl_ES", "gl" },    // 103
 #endif
 #if !defined(__SERIES60_31__)
-    { ELangEnglish_Apac,        "en" },     // 129
-    { ELangEnglish_Taiwan,      "en_TW" },  // 157 ### Not supported by CLDR
-    { ELangEnglish_HongKong,    "en_HK" },  // 158
-    { ELangEnglish_Prc,         "en_CN" },  // 159 ### Not supported by CLDR
-    { ELangEnglish_Japan,       "en_JP"},   // 160 ### Not supported by CLDR
-    { ELangEnglish_Thailand,    "en_TH" },  // 161 ### Not supported by CLDR
-    { ELangMalay_Apac,          "ms" },     // 326
+    { ELangEnglish_Apac,        "en_GB", "en" },     // 129
+    { ELangEnglish_Taiwan,      "en_TW", "en-TW" },  // 157 ### Not supported by CLDR
+    { ELangEnglish_HongKong,    "en_HK", "en-HK" },  // 158
+    { ELangEnglish_Prc,         "en_CN", "en-CN" },  // 159 ### Not supported by CLDR
+    { ELangEnglish_Japan,       "en_JP", "en" },     // 160 ### Not supported by CLDR
+    { ELangEnglish_Thailand,    "en_TH", "en" },     // 161 ### Not supported by CLDR
+    { 230/*ELangEnglish_India*/,"en_IN", "en" },     // 230
+    { ELangMalay_Apac,          "ms_MY", "ms" },     // 326
 #endif
-    { 327/*ELangIndonesian_Apac*/,"id_ID" } // 327 - appeared in Symbian^3
+    { 327/*ELangIndonesian_Apac*/, "id_ID", "id" }   // 327 - appeared in Symbian^3
 };
 
-/*!
-    Returns ISO name corresponding to the Symbian locale code \a sys_fmt.
-*/
-QByteArray qt_symbianLocaleName(int code)
+enum LocaleNameType {
+    ISO,
+    UILanguage
+};
+
+QByteArray qt_resolveSymbianLocaleName(int code, LocaleNameType type)
 {
     //Number of Symbian to ISO locale mappings
     static const int symbian_to_iso_count
@@ -177,8 +159,11 @@ QByteArray qt_symbianLocaleName(int code)
     if (cmp < 0)
         return 0;
 
-    if (cmp == 0)
-        return symbian_to_iso_list[0].iso_name;
+    if (cmp == 0) {
+        if (type == ISO)
+            return symbian_to_iso_list[0].iso_name;
+        return symbian_to_iso_list[0].uilanguage;
+    }
 
     int begin = 0;
     int end = symbian_to_iso_count;
@@ -188,19 +173,31 @@ QByteArray qt_symbianLocaleName(int code)
 
         const symbianToISO *elt = symbian_to_iso_list + mid;
         int cmp = code - elt->symbian_language;
-        if (cmp < 0)
+        if (cmp < 0) {
             end = mid;
-        else if (cmp > 0)
+        } else if (cmp > 0) {
             begin = mid;
-        else
-            return elt->iso_name;
+        } else {
+            if (type == ISO)
+                return elt->iso_name;
+            return elt->uilanguage;
+        }
     }
 
     return 0;
 }
 
+/*!
+    Returns ISO name corresponding to the Symbian locale code \a sys_fmt.
+*/
+QByteArray qt_symbianLocaleName(int code)
+{
+    return qt_resolveSymbianLocaleName(code, ISO);
+}
 
-// order is: normal, abbr, nmode, nmode+abbr
+// Rows are: normal, abbr, nmode, nmode+abbr
+// First three values on a row are used for three component date,
+// while the last two are used for two component date (i.e. no year).
 static const char *us_locale_dep[] = {
     "MM", "dd", "yyyy", "MM", "dd",
     "M", "d", "yy", "M", "d",
@@ -219,6 +216,13 @@ static const char *jp_locale_dep[] = {
     "yyyy", "MMMM", "dd", "MMMM", "dd",
     "yy", "MMM", "d", "MMM", "d" };
 
+// 0 = day, 1 = month, 2 = year
+static const int digit_map[] = {
+    1, 0, 2, 1, 0, // American
+    0, 1, 2, 0, 1, // European
+    2, 1, 0, 1, 0  // Japanese
+};
+
 /*!
     Returns a Qt version of the given \a sys_fmt Symbian locale format string.
 */
@@ -234,6 +238,9 @@ static QString s60ToQtFormat(const QString &sys_fmt)
     int i = 0;
     bool open_escape = false;
     bool abbrev_next = false;
+    bool abbrev_day = false;
+    bool abbrev_month = false;
+    bool abbrev_year = false;
     bool locale_indep_ordering = false;
     bool minus_mode = false;
     bool plus_mode = false;
@@ -310,8 +317,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'D':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_day = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("dd");
@@ -323,8 +333,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'M':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_month = true;
                         break;
+                    }
 
                     if (!n_mode) {
                         if (!abbrev_next)
@@ -345,8 +358,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                 {
                     n_mode = true;
 
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_month = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("MMMM");
@@ -358,8 +374,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'Y':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_year = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("yyyy");
@@ -527,7 +546,9 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                     const char **locale_dep;
                     switch (df) {
-                        default: // fallthru to american
+                        default:
+                            df = EDateAmerican;
+                            // fallthru to american
                         case EDateAmerican:
                             locale_dep = us_locale_dep;
                             break;
@@ -539,12 +560,33 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                             break;
                     }
                     int offset = 0;
-                    if (abbrev_next)
+                    int adjustedDigit = c.digitValue() - 1;
+
+                    bool abbrev_this = abbrev_next;
+                    // If abbreviation specified for this digit, use that.
+                    // Otherwise abbreviate according to %D, %M, and %Y specified previously.
+                    if (!abbrev_this) {
+                        switch (digit_map[adjustedDigit + (static_cast<int>(df) * 5)]) {
+                            case 0:
+                                abbrev_this = abbrev_day;
+                                break;
+                            case 1:
+                                abbrev_this = abbrev_month;
+                                break;
+                            case 2:
+                                abbrev_this = abbrev_year;
+                                break;
+                            default:
+                                break; // never happens
+                        }
+                    }
+
+                    if (abbrev_this)
                         offset += 5;
                     if (n_mode)
                         offset += 10;
 
-                    result += QLatin1String(locale_dep[offset + (c.digitValue()-1)]);
+                    result += QLatin1String(locale_dep[offset + (adjustedDigit)]);
                     break;
                 }
 
@@ -684,9 +726,9 @@ static QString symbianDateFormat(bool short_format)
     TPtrC dateFormat;
 
     if (short_format) {
-        dateFormat.Set(ptrGetShortDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetShortDateFormatSpec());
     } else {
-        dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetLongDateFormatSpec());
     }
 
     return s60ToQtFormat(qt_TDesC2QString(dateFormat));
@@ -698,7 +740,7 @@ static QString symbianDateFormat(bool short_format)
 */
 static QString symbianTimeFormat()
 {
-    return s60ToQtFormat(qt_TDesC2QString(ptrGetTimeFormatSpec(_s60Locale)));
+    return s60ToQtFormat(qt_TDesC2QString(_s60Locale.GetTimeFormatSpec()));
 }
 
 /*!
@@ -722,17 +764,20 @@ static QString symbianDateToString(const QDate &date, bool short_format)
 
     TPtrC dateFormat;
     if (short_format) {
-        dateFormat.Set(ptrGetShortDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetShortDateFormatSpec());
     } else {
-        dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
+        dateFormat.Set(_s60Locale.GetLongDateFormatSpec());
     }
 
-    TRAPD(err, ptrTimeFormatL(timeStr, buffer, dateFormat, *_s60Locale.GetLocale());)
+    TLocale *formatLocale = _s60Locale.GetLocale();
+    TRAPD(err, timeStr.FormatL(buffer, dateFormat, *formatLocale);)
 
-    if (err == KErrNone)
+    if (err == KErrNone) {
+        NumberConversion::ConvertDigits(buffer, formatLocale->DigitType());
         return qt_TDes2QString(buffer);
-    else
+    } else {
         return QString();
+    }
 }
 
 /*!
@@ -752,17 +797,15 @@ static QString symbianTimeToString(const QTime &time)
     TTime timeStr(dateTime);
     TBuf<KMaxTimeFormatSpec*2> buffer;
 
-    TRAPD(err, ptrTimeFormatL(
-        timeStr,
-        buffer,
-        ptrGetTimeFormatSpec(_s60Locale),
-        *_s60Locale.GetLocale());
-    )
+    TLocale *formatLocale = _s60Locale.GetLocale();
+    TRAPD(err, timeStr.FormatL(buffer, _s60Locale.GetTimeFormatSpec(), *formatLocale);)
 
-    if (err == KErrNone)
+    if (err == KErrNone) {
+        NumberConversion::ConvertDigits(buffer, formatLocale->DigitType());
         return qt_TDes2QString(buffer);
-    else
+    } else {
         return QString();
+    }
 }
 
 /*!
@@ -787,37 +830,6 @@ void qt_symbianUpdateSystemPrivate()
     _s60Locale.LoadSystemSettings();
 }
 
-void qt_symbianInitSystemLocale()
-{
-    static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (initDone == 2)
-        return;
-    if (initDone.testAndSetRelaxed(0, 1)) {
-        // Initialize platform version dependent function pointers
-        ptrTimeFormatL = reinterpret_cast<FormatFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_TimeFormatL));
-        ptrGetTimeFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetTimeFormatSpec));
-        ptrGetLongDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetLongDateFormatSpec));
-        ptrGetShortDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetShortDateFormatSpec));
-        if (!ptrTimeFormatL)
-            ptrTimeFormatL = &defaultTimeFormatL;
-        if (!ptrGetTimeFormatSpec)
-            ptrGetTimeFormatSpec = &defaultFormatSpec;
-        if (!ptrGetLongDateFormatSpec)
-            ptrGetLongDateFormatSpec = &defaultFormatSpec;
-        if (!ptrGetShortDateFormatSpec)
-            ptrGetShortDateFormatSpec = &defaultFormatSpec;
-        bool ret = initDone.testAndSetRelease(1, 2);
-        Q_ASSERT(ret);
-        Q_UNUSED(ret);
-    }
-    while(initDone != 2)
-        QThread::yieldCurrentThread();
-}
-
 QLocale QSystemLocale::fallbackLocale() const
 {
     TLanguage lang = User::Language();
@@ -825,13 +837,13 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(locale);
 }
 
-/*!
-    Generic query method for locale data. Provides indirection.
-    Denotes the \a type of the query
-    with \a in as input data depending on the query.
+static QStringList symbianUILanguages()
+{
+    TLanguage lang = User::Language();
+    QString s = QLatin1String(qt_resolveSymbianLocaleName(lang, UILanguage));
+    return QStringList(s);
+}
 
-    \sa QSystemLocale::QueryType
-*/
 QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 {
     switch(type) {
@@ -879,8 +891,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
                 TLanguage language = User::Language();
                 QString locale = QLatin1String(qt_symbianLocaleName(language));
                 QLocale::Language lang;
+                QLocale::Script script;
                 QLocale::Country cntry;
-                getLangAndCountry(locale, lang, cntry);
+                QLocalePrivate::getLangAndCountry(locale, lang, script, cntry);
                 if (type == LanguageId)
                     return lang;
                 // few iso codes have no country and will use this
@@ -889,6 +902,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
                 return cntry;
             }
+        case ScriptId:
+            return QVariant(QLocale::AnyScript);
         case NegativeSign:
         case PositiveSign:
             break;
@@ -896,6 +911,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             return qt_TDes2QString(TAmPmName(TAmPm(EAm)));
         case PMText:
             return qt_TDes2QString(TAmPmName(TAmPm(EPm)));
+        case UILanguages:
+            return QVariant(symbianUILanguages());
         default:
             break;
     }

@@ -1514,15 +1514,28 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
 
-    // ### Disable the unified toolbar when using anything but the native graphics system.
-    // ### Disable when using alien widgets as well
-    if (windowSurface() || testAttribute(Qt::WA_NativeWindow) == false)
-        return;
-
     d->useHIToolBar = set;
     createWinId(); // We need the hiview for down below.
 
+#ifdef QT_MAC_USE_COCOA
+    // Activate the unified toolbar with the raster engine.
+    if (windowSurface() && set) {
+        d->layout->unifiedSurface = new QUnifiedToolbarSurface(this);
+    }
+#endif // QT_MAC_USE_COCOA
+
     d->layout->updateHIToolBarStatus();
+
+#ifdef QT_MAC_USE_COCOA
+    // Deactivate the unified toolbar with the raster engine.
+    if (windowSurface() && !set) {
+        if (d->layout->unifiedSurface) {
+            delete d->layout->unifiedSurface;
+            d->layout->unifiedSurface = 0;
+        }
+    }
+#endif // QT_MAC_USE_COCOA
+
     // Enabling the unified toolbar clears the opaque size grip setting, update it.
     d->macUpdateOpaqueSizeGrip();
 #else
@@ -1632,7 +1645,7 @@ QMenu *QMainWindow::createPopupMenu()
     Q_D(QMainWindow);
     QMenu *menu = 0;
 #ifndef QT_NO_DOCKWIDGET
-    QList<QDockWidget *> dockwidgets = qFindChildren<QDockWidget *>(this);
+    QList<QDockWidget *> dockwidgets = findChildren<QDockWidget *>();
     if (dockwidgets.size()) {
         menu = new QMenu(this);
         for (int i = 0; i < dockwidgets.size(); ++i) {
@@ -1646,7 +1659,7 @@ QMenu *QMainWindow::createPopupMenu()
     }
 #endif // QT_NO_DOCKWIDGET
 #ifndef QT_NO_TOOLBAR
-    QList<QToolBar *> toolbars = qFindChildren<QToolBar *>(this);
+    QList<QToolBar *> toolbars = findChildren<QToolBar *>();
     if (toolbars.size()) {
         if (!menu)
             menu = new QMenu(this);

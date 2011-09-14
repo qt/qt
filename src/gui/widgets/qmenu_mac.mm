@@ -1254,15 +1254,11 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
     quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
-    extern QChar qt_macSymbolForQtKey(int key); // qkeysequence.cpp
-    QChar keyEquiv = qt_macSymbolForQtKey(accel_key);
-    if (keyEquiv.isNull()) {
-        if (accel_key >= Qt::Key_F1 && accel_key <= Qt::Key_F15)
-            keyEquiv = (accel_key - Qt::Key_F1) + NSF1FunctionKey;
-        else
-            keyEquiv = unichar(QChar(accel_key).toLower().unicode());
-    }
-    return [NSString stringWithCharacters:&keyEquiv.unicode() length:1];
+    extern QChar qtKey2CocoaKey(Qt::Key key);
+    QChar cocoa_key = qtKey2CocoaKey(Qt::Key(accel_key));
+    if (cocoa_key.isNull())
+        cocoa_key = QChar(accel_key).toLower().unicode();
+    return [NSString stringWithCharacters:&cocoa_key.unicode() length:1];
 }
 
 // return the cocoa modifier mask for the QKeySequence (currently only looks at the first one).
@@ -1643,7 +1639,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::~QMacMenuBarPrivate()
 }
 
 void
-QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QMacMenuAction *before)
+QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QAction *before)
 {
     if (a->isSeparator() || !menu)
         return;
@@ -1653,7 +1649,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QMacMenuAction *befor
 #ifndef QT_MAC_USE_COCOA
     action->command = qt_mac_menu_static_cmd_id++;
 #endif
-    addAction(action, before);
+    addAction(action, findAction(before));
 }
 
 void
@@ -2052,8 +2048,7 @@ bool QMenuBar::macUpdateMenuBar()
 {
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
-    if (!qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar)))
-        return QMenuBarPrivate::macUpdateMenuBarImmediatly();
+    qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar));
     return true;
 #else
     return QMenuBarPrivate::macUpdateMenuBarImmediatly();

@@ -70,21 +70,17 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QEditorInfo
-{
-    QEditorInfo() : isStatic(false)
-    {
-    }
+struct QEditorInfo {
+    QEditorInfo(QWidget *e, bool s): widget(QWeakPointer<QWidget>(e)), isStatic(s) {}
+    QEditorInfo(): isStatic(false) {}
 
-    QEditorInfo(const QPersistentModelIndex &i, QWidget *e, bool b) : index(i), editor(e), isStatic(b)
-    {
-    }
-
-    QPersistentModelIndex index;
-    QPointer<QWidget> editor;
-    bool isStatic; //true when called from setIndexWidget
-
+    QWeakPointer<QWidget> widget;
+    bool isStatic;
 };
+
+//  Fast associativity between Persistent editors and indices.
+typedef QHash<QWidget *, QPersistentModelIndex> QEditorIndexHash;
+typedef QHash<QPersistentModelIndex, QEditorInfo> QIndexEditorHash;
 
 typedef QPair<QRect, QModelIndex> QItemViewPaintPair;
 typedef QList<QItemViewPaintPair> QItemViewPaintPairs;
@@ -112,6 +108,7 @@ public:
     void init();
 
     virtual void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void _q_rowsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsRemoved(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
@@ -135,8 +132,9 @@ public:
     }
     void stopAutoScroll() { autoScrollTimer.stop(); autoScrollCount = 0;}
 
-
-    bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
+#ifndef QT_NO_DRAGANDDROP
+    virtual bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
+#endif
     bool droppingOnItself(QDropEvent *event, const QModelIndex &index);
 
     QWidget *editor(const QModelIndex &index, const QStyleOptionViewItem &options);
@@ -247,9 +245,9 @@ public:
                       : q->horizontalOffset(), q->verticalOffset());
     }
 
-    QEditorInfo editorForIndex(const QModelIndex &index) const;
+    const QEditorInfo &editorForIndex(const QModelIndex &index) const;
     inline bool hasEditor(const QModelIndex &index) const {
-        return editorForIndex(index).editor != 0;
+        return indexEditorHash.find(index) != indexEditorHash.constEnd();
     }
 
     QModelIndex indexForEditor(QWidget *editor) const;
@@ -352,7 +350,8 @@ public:
     QAbstractItemView::SelectionMode selectionMode;
     QAbstractItemView::SelectionBehavior selectionBehavior;
 
-    QList<QEditorInfo> editors;
+    QEditorIndexHash editorIndexHash;
+    QIndexEditorHash indexEditorHash;
     QSet<QWidget*> persistent;
     QWidget *currentlyCommittingEditor;
 
@@ -367,6 +366,7 @@ public:
     bool viewportEnteredNeeded;
 
     QAbstractItemView::State state;
+    QAbstractItemView::State stateBeforeAnimation;
     QAbstractItemView::EditTriggers editTriggers;
     QAbstractItemView::EditTrigger lastTrigger;
 

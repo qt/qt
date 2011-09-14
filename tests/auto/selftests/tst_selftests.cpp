@@ -245,6 +245,8 @@ void tst_Selftests::runSubTest_data()
         << "xunit"
         << "longstring"
         << "badxml"
+        << "printdatatags"
+        << "printdatatagswithglobaltags"
     ;
 
     foreach (Logger const& logger, allLoggers()) {
@@ -273,6 +275,12 @@ void tst_Selftests::runSubTest_data()
             else if (subtest == "badxml") {
                 arguments << "-eventcounter";
             }
+            else if (subtest == "printdatatags") {
+                arguments << "-datatags";
+            }
+            else if (subtest == "printdatatagswithglobaltags") {
+                arguments << "-datatags";
+            }
 
             // These tests don't work right with loggers other than plain, usually because
             // they internally supply arguments to themselves.
@@ -287,6 +295,12 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
                 if (subtest == "waitwithoutgui") {
+                    continue;
+                }
+                if (subtest == "printdatatags") {
+                    continue;
+                }
+                if (subtest == "printdatatagswithglobaltags") {
                     continue;
                 }
                 // `crashes' will not output valid XML on platforms without a crash handler
@@ -515,8 +529,6 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         }
 
         bool ok;
-#if QT_VERSION >= 0x040700
-        // Qt 4.7 uses floating point
         double total = sTotal.toDouble(&ok);
         if (!ok) {
             if (error) *error = sTotal + " is not a valid number";
@@ -527,18 +539,6 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
             if (error) *error = sIterations + " is not a valid number";
             return out;
         }
-#else
-        qlonglong total = sTotal.toLongLong(&ok);
-        if (!ok) {
-            if (error) *error = sTotal + " is not a valid integer";
-            return out;
-        }
-        qlonglong iterations = sIterations.toLongLong(&ok);
-        if (!ok) {
-            if (error) *error = sIterations + " is not a valid integer";
-            return out;
-        }
-#endif
 
         out.unit = unit;
         out.total = total;

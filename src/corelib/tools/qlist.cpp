@@ -237,7 +237,7 @@ void **QListData::append(int n)
         if (b - n >= 2 * d->alloc / 3) {
             // we have enough space. Just not at the end -> move it.
             e -= b;
-            ::memcpy(d->array, d->array + b, e * sizeof(void *));
+            ::memmove(d->array, d->array + b, e * sizeof(void *));
             d->begin = 0;
         } else {
             realloc(grow(d->alloc + n));
@@ -460,8 +460,8 @@ void **QListData::erase(void **xi)
 
     Note that the internal array only ever gets bigger over the life
     of the list. It never shrinks. The internal array is deallocated
-    by the destructor and by the assignment operator, when one list
-    is assigned to another.
+    by the destructor, by clear(), and by the assignment operator,
+    when one list is assigned to another.
 
     Here's an example of a QList that stores integers and
     a QList that stores QDate values:
@@ -590,6 +590,14 @@ void **QListData::erase(void **xi)
     \sa operator=()
 */
 
+/*! \fn inline QList::QList(std::initializer_list<T> args)
+    \since 4.8
+
+    Construct a list from the std::initializer_list specified by \a args.
+
+    This constructor is only enabled if the compiler supports C++0x
+*/
+
 /*! \fn QList::~QList()
 
     Destroys the list. References to the values in the list and all
@@ -600,6 +608,13 @@ void **QListData::erase(void **xi)
 
     Assigns \a other to this list and returns a reference to this
     list.
+*/
+
+/*! \fn void QList::swap(QList<T> &other)
+    \since 4.8
+
+    Swaps list \a other with this list. This operation is very
+    fast and never fails.
 */
 
 /*! \fn bool QList::operator==(const QList<T> &other) const

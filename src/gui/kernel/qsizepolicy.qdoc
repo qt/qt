@@ -249,7 +249,7 @@
     Sets the flag determining whether the widget's preferred height
     depends on its width, to \a dependent.
 
-    \sa hasHeightForWidth()
+    \sa hasHeightForWidth(), setWidthForHeight()
 */
 
 /*!
@@ -259,6 +259,30 @@
     width; otherwise returns false.
 
     \sa setHeightForWidth()
+*/
+
+/*!
+    \fn void QSizePolicy::setWidthForHeight(bool dependent)
+    \since 4.8
+
+    Sets the flag determining whether the widget's width
+    depends on its height, to \a dependent.
+
+    This is only supported for QGraphicsLayout's subclasses.
+    It is not possible to have a layout with both height-for-width
+    and width-for-height constraints at the same time.
+
+    \sa hasWidthForHeight(), setHeightForWidth()
+*/
+
+/*!
+    \fn bool QSizePolicy::hasWidthForHeight() const
+    \since 4.8
+
+    Returns true if the widget's width depends on its
+    height; otherwise returns false.
+
+    \sa setWidthForHeight()
 */
 
 /*!

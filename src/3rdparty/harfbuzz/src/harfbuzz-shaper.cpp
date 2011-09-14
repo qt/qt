@@ -538,8 +538,20 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
 #ifndef NO_OPENTYPE
 static const HB_OpenTypeFeature basic_features[] = {
     { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
-    { HB_MAKE_TAG('l', 'i', 'g', 'a'), CcmpProperty },
-    { HB_MAKE_TAG('c', 'l', 'i', 'g'), CcmpProperty },
+    { HB_MAKE_TAG('l', 'i', 'g', 'a'), LigaProperty },
+    { HB_MAKE_TAG('c', 'l', 'i', 'g'), CligProperty },
+    {0, 0}
+};
+
+static const HB_OpenTypeFeature disabled_features[] = {
+    { HB_MAKE_TAG('c', 'p', 'c', 't'), PositioningProperties },
+    { HB_MAKE_TAG('h', 'a', 'l', 't'), PositioningProperties },
+    // TODO: we need to add certain HB_ShaperFlag for vertical
+    // writing mode to enable these vertical writing features:
+    { HB_MAKE_TAG('v', 'a', 'l', 't'), PositioningProperties },
+    { HB_MAKE_TAG('v', 'h', 'a', 'l'), PositioningProperties },
+    { HB_MAKE_TAG('v', 'k', 'r', 'n'), PositioningProperties },
+    { HB_MAKE_TAG('v', 'p', 'a', 'l'), PositioningProperties },
     {0, 0}
 };
 #endif
@@ -1041,15 +1053,15 @@ HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *fe
 {
     HB_Script script = shaper_item->item.script;
 
-    if (!shaper_item->face->supported_scripts[script])
-        return false;
-
     HB_Face face = shaper_item->face;
     if (face->current_script == script && face->current_flags == shaper_item->shaperFlags)
-        return true;
+        return shaper_item->face->supported_scripts[script] ? true : false;
 
     face->current_script = script;
     face->current_flags = shaper_item->shaperFlags;
+
+    if (!shaper_item->face->supported_scripts[script])
+        return false;
 
     assert(script < HB_ScriptCount);
     // find script in our list of supported scripts.
@@ -1111,12 +1123,29 @@ HB_Bool HB_SelectScript(HB_ShaperItem *shaper_item, const HB_OpenTypeFeature *fe
                 HB_UInt *feature_tag_list = feature_tag_list_buffer;
                 while (*feature_tag_list) {
                     HB_UShort feature_index;
+                    bool skip = false;
                     if (*feature_tag_list == HB_MAKE_TAG('k', 'e', 'r', 'n')) {
-                        if (face->current_flags & HB_ShaperFlag_NoKerning) {
-                            ++feature_tag_list;
-                            continue;
+                        if (face->current_flags & HB_ShaperFlag_NoKerning)
+                            skip = true;
+                        else
+                            face->has_opentype_kerning = true;
+                    }
+                    features = disabled_features;
+                    while (features->tag) {
+                        if (*feature_tag_list == features->tag) {
+                            skip = true;
+                            break;
                         }
-                        face->has_opentype_kerning = true;
+                        ++features;
+                    }
+                    // 'palt' should be turned off by default unless 'kern' is on
+                    if (!face->has_opentype_kerning &&
+                        *feature_tag_list == HB_MAKE_TAG('p', 'a', 'l', 't'))
+                        skip = true;
+
+                    if (skip) {
+                        ++feature_tag_list;
+                        continue;
                     }
                     error = HB_GPOS_Select_Feature(face->gpos, *feature_tag_list, script_index, 0xffff, &feature_index);
                     if (!error)
@@ -1204,7 +1233,7 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
     }
 
     if (!face->glyphs_substituted && !glyphs_positioned) {
-        HB_GetGlyphAdvances(item);
+        HB_HeuristicPosition(item);
         return true; // nothing to do for us
     }
 

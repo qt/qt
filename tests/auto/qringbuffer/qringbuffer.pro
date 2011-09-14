@@ -4,3 +4,4 @@ SOURCES  += tst_qringbuffer.cpp
 QT = core
 
 
+CONFIG += parallel_test

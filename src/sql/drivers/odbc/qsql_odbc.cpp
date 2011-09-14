@@ -62,15 +62,6 @@ QT_BEGIN_NAMESPACE
 // undefine this to prevent initial check of the ODBC driver
 #define ODBC_CHECK_DRIVER
 
-// newer platform SDKs use SQLLEN instead of SQLINTEGER
-#if defined(WIN32) && (_MSC_VER < 1300) && !defined(__MINGW64_VERSION_MAJOR)
-# define QSQLLEN SQLINTEGER
-# define QSQLULEN SQLUINTEGER
-#else
-# define QSQLLEN SQLLEN
-# define QSQLULEN SQLULEN
-#endif
-
 static const int COLNAMESIZE = 256;
 //Map Qt parameter types to ODBC types
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
@@ -360,7 +351,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
 {
     QString fieldVal;
     SQLRETURN r = SQL_ERROR;
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
 
     // NB! colSize must be a multiple of 2 for unicode enabled DBs
     if (colSize <= 0) {
@@ -400,7 +391,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator/sizeof(SQLTCHAR);
                     fieldVal += fromSQLTCHAR(buf, rSize);
-                if ((unsigned)lengthIndicator < colSize*sizeof(SQLTCHAR)) {
+                if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
                     break;
                 }
@@ -441,7 +432,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // colSize-1: remove 0 termination when there is more data to fetch
                 int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
                     fieldVal += QString::fromUtf8((const char *)buf.constData(), rSize);
-                if (lengthIndicator < (unsigned int)colSize) {
+                if (lengthIndicator < SQLLEN(colSize)) {
                     // workaround for Drivermanagers that don't return SQL_NO_DATA
                     break;
                 }
@@ -462,10 +453,10 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
     QByteArray fieldVal;
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
-    QSQLULEN colSize;
+    SQLULEN colSize;
     SQLSMALLINT colScale;
     SQLSMALLINT nullable;
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQL_ERROR;
 
     QVarLengthArray<SQLTCHAR> colName(COLNAMESIZE);
@@ -499,7 +490,7 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
             break;
         if (lengthIndicator == SQL_NULL_DATA)
             return QVariant(QVariant::ByteArray);
-        if (lengthIndicator > QSQLLEN(colSize) || lengthIndicator == SQL_NO_TOTAL) {
+        if (lengthIndicator > SQLLEN(colSize) || lengthIndicator == SQL_NO_TOTAL) {
             read += colSize;
             colSize = 65536;
         } else {
@@ -517,7 +508,7 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
 static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 {
     SQLINTEGER intbuf = 0;
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               isSigned ? SQL_C_SLONG : SQL_C_ULONG,
@@ -537,7 +528,7 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
 {
     SQLDOUBLE dblbuf;
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               SQL_C_DOUBLE,
@@ -557,7 +548,7 @@ static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
 static QVariant qGetBigIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 {
     SQLBIGINT lngbuf = 0;
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               isSigned ? SQL_C_SBIGINT : SQL_C_UBIGINT,
@@ -601,7 +592,7 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
 {
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
-    QSQLULEN colSize;
+    SQLULEN colSize;
     SQLSMALLINT colScale;
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
@@ -621,7 +612,7 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
         return QSqlField();
     }
 
-    QSQLLEN unsignedFlag = SQL_FALSE;
+    SQLLEN unsignedFlag = SQL_FALSE;
     r = SQLColAttribute (p->hStmt,
                          i + 1,
                          SQL_DESC_UNSIGNED,
@@ -1146,7 +1137,7 @@ QVariant QODBCResult::data(int field)
         return d->fieldCache.at(field);
 
     SQLRETURN r(0);
-    QSQLLEN lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
 
     for (int i = d->fieldCacheIdx; i <= field; ++i) {
         // some servers do not support fetching column n after we already
@@ -1256,7 +1247,7 @@ int QODBCResult::size()
 
 int QODBCResult::numRowsAffected()
 {
-    QSQLLEN affectedRowCount = 0;
+    SQLLEN affectedRowCount = 0;
     SQLRETURN r = SQLRowCount(d->hStmt, &affectedRowCount);
     if (r == SQL_SUCCESS)
         return affectedRowCount;
@@ -1343,8 +1334,8 @@ bool QODBCResult::exec()
         SQLCloseCursor(d->hStmt);
 
     QList<QByteArray> tmpStorage; // holds temporary buffers
-    QVarLengthArray<QSQLLEN, 32> indicators(boundValues().count());
-    memset(indicators.data(), 0, indicators.size() * sizeof(QSQLLEN));
+    QVarLengthArray<SQLLEN, 32> indicators(boundValues().count());
+    memset(indicators.data(), 0, indicators.size() * sizeof(SQLLEN));
 
     // bind parameters - only positional binding allowed
     QVector<QVariant>& values = boundValues();
@@ -1354,7 +1345,7 @@ bool QODBCResult::exec()
         if (bindValueType(i) & QSql::Out)
             values[i].detach();
         const QVariant &val = values.at(i);
-        QSQLLEN *ind = &indicators[i];
+        SQLLEN *ind = &indicators[i];
         if (val.isNull())
             *ind = SQL_NULL_DATA;
         switch (val.type()) {

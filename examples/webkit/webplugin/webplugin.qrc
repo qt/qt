@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>pages/index.html</file>
+        <file>data/accounts.csv</file>
+    </qresource>
+</RCC>

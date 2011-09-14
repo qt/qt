@@ -248,8 +248,7 @@ class QDeclarativeScriptActionPrivate : public QDeclarativeAbstractAnimationPriv
 {
     Q_DECLARE_PUBLIC(QDeclarativeScriptAction)
 public:
-    QDeclarativeScriptActionPrivate()
-        : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), reversing(false), proxy(this), rsa(0) {}
+    QDeclarativeScriptActionPrivate();
 
     void init();
 

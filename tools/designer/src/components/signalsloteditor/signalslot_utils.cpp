@@ -248,7 +248,7 @@ namespace qdesigner_internal {
         if (obj_name == form->mainContainer()->objectName()) {
             object = form->mainContainer();
         } else {
-            object = qFindChild<QObject*>(form->mainContainer(), obj_name);
+            object = form->mainContainer()->findChild<QObject*>(obj_name);
         }
         if (!object)
             return ClassesMemberFunctions();

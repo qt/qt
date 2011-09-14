@@ -86,6 +86,7 @@
     \value HostNameMismatch
     \value UnspecifiedError
     \value NoSslSupport
+    \value CertificateBlacklisted
 
     \sa QSslError::errorString()
 */
@@ -280,6 +281,9 @@ QString QSslError::errorString() const
                              " for this certificate");
         break;
     case NoSslSupport:
+        break;
+    case CertificateBlacklisted:
+        errStr = QSslSocket::tr("The peer certificate is blacklisted");
         break;
     default:
         errStr = QSslSocket::tr("Unknown error");

@@ -47,17 +47,17 @@
 #ifndef __LEDMETER_H__
 #define __LEDMETER_H__
 
-#include <q3frame.h>
-#include <q3ptrlist.h>
-//Added by qt3to4:
+#include <QFrame>
+#include <QList>
 #include <QResizeEvent>
 
 
-class KALedMeter : public Q3Frame
+class KALedMeter : public QFrame
 {
     Q_OBJECT
 public:
     KALedMeter( QWidget *parent );
+    ~KALedMeter();
 
     int range() const { return mRange; }
     void setRange( int r );
@@ -74,7 +74,7 @@ public slots:
 
 protected:
     virtual void resizeEvent( QResizeEvent * );
-    virtual void drawContents( QPainter * );
+    virtual void paintEvent(QPaintEvent *event);
     void calcColorRanges();
 
 protected:
@@ -89,7 +89,7 @@ protected:
     int mCount;
     int mCurrentCount;
     int mValue;
-    Q3PtrList<ColorRange> mCRanges;
+    QList<ColorRange*> mCRanges;
 };
 
 #endif

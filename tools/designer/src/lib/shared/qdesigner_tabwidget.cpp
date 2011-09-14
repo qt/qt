@@ -134,7 +134,7 @@ QTabBar *QTabWidgetEventFilter::tabBar() const
 {
     // QTabWidget::tabBar() accessor is protected, grmbl...
     if (!m_cachedTabBar) {
-        const QList<QTabBar *> tabBars = qFindChildren<QTabBar *>(m_tabWidget);
+        const QList<QTabBar *> tabBars = m_tabWidget->findChildren<QTabBar *>();
         Q_ASSERT(tabBars.size() == 1);
         m_cachedTabBar = tabBars.front();
     }
@@ -405,13 +405,13 @@ QTabWidgetPropertySheet::QTabWidgetPropertySheet(QTabWidget *object, QObject *pa
     QDesignerPropertySheet(object, parent),
     m_tabWidget(object)
 {
-    createFakeProperty(QLatin1String(currentTabTextKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
+    createFakeProperty(QLatin1String(currentTabTextKey), QVariant::fromValue(qdesigner_internal::PropertySheetStringValue()));
     createFakeProperty(QLatin1String(currentTabNameKey), QString());
-    createFakeProperty(QLatin1String(currentTabIconKey), qVariantFromValue(qdesigner_internal::PropertySheetIconValue()));
+    createFakeProperty(QLatin1String(currentTabIconKey), QVariant::fromValue(qdesigner_internal::PropertySheetIconValue()));
     if (formWindowBase())
         formWindowBase()->addReloadableProperty(this, indexOf(QLatin1String(currentTabIconKey)));
-    createFakeProperty(QLatin1String(currentTabToolTipKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
-    createFakeProperty(QLatin1String(currentTabWhatsThisKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
+    createFakeProperty(QLatin1String(currentTabToolTipKey), QVariant::fromValue(qdesigner_internal::PropertySheetStringValue()));
+    createFakeProperty(QLatin1String(currentTabWhatsThisKey), QVariant::fromValue(qdesigner_internal::PropertySheetStringValue()));
     // Prevent the tab widget's drag and drop handling from interfering with Designer's
     createFakeProperty(QLatin1String(tabMovableKey), QVariant(false));
 }
@@ -447,22 +447,22 @@ void QTabWidgetPropertySheet::setProperty(int index, const QVariant &value)
     switch (tabWidgetProperty) {
     case PropertyCurrentTabText:
         m_tabWidget->setTabText(currentIndex, qvariant_cast<QString>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].text = qVariantValue<qdesigner_internal::PropertySheetStringValue>(value);
+        m_pageToData[currentWidget].text = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
         break;
     case PropertyCurrentTabName:
         currentWidget->setObjectName(value.toString());
         break;
     case PropertyCurrentTabIcon:
         m_tabWidget->setTabIcon(currentIndex, qvariant_cast<QIcon>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].icon = qVariantValue<qdesigner_internal::PropertySheetIconValue>(value);
+        m_pageToData[currentWidget].icon = qvariant_cast<qdesigner_internal::PropertySheetIconValue>(value);
         break;
     case PropertyCurrentTabToolTip:
         m_tabWidget->setTabToolTip(currentIndex, qvariant_cast<QString>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].tooltip = qVariantValue<qdesigner_internal::PropertySheetStringValue>(value);
+        m_pageToData[currentWidget].tooltip = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
         break;
     case PropertyCurrentTabWhatsThis:
         m_tabWidget->setTabWhatsThis(currentIndex, qvariant_cast<QString>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].whatsthis = qVariantValue<qdesigner_internal::PropertySheetStringValue>(value);
+        m_pageToData[currentWidget].whatsthis = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
         break;
     case PropertyTabWidgetNone:
         break;
@@ -486,28 +486,28 @@ QVariant QTabWidgetPropertySheet::property(int index) const
     QWidget *currentWidget = m_tabWidget->currentWidget();
     if (!currentWidget) {
         if (tabWidgetProperty == PropertyCurrentTabIcon)
-            return qVariantFromValue(qdesigner_internal::PropertySheetIconValue());
+            return QVariant::fromValue(qdesigner_internal::PropertySheetIconValue());
         if (tabWidgetProperty == PropertyCurrentTabText)
-            return qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
+            return QVariant::fromValue(qdesigner_internal::PropertySheetStringValue());
         if (tabWidgetProperty == PropertyCurrentTabToolTip)
-            return qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
+            return QVariant::fromValue(qdesigner_internal::PropertySheetStringValue());
         if (tabWidgetProperty == PropertyCurrentTabWhatsThis)
-            return qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
+            return QVariant::fromValue(qdesigner_internal::PropertySheetStringValue());
         return QVariant(QString());
     }
 
     // index-dependent
     switch (tabWidgetProperty) {
     case PropertyCurrentTabText:
-        return qVariantFromValue(m_pageToData.value(currentWidget).text);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).text);
     case PropertyCurrentTabName:
         return currentWidget->objectName();
     case PropertyCurrentTabIcon:
-        return qVariantFromValue(m_pageToData.value(currentWidget).icon);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).icon);
     case PropertyCurrentTabToolTip:
-        return qVariantFromValue(m_pageToData.value(currentWidget).tooltip);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).tooltip);
     case PropertyCurrentTabWhatsThis:
-        return qVariantFromValue(m_pageToData.value(currentWidget).whatsthis);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).whatsthis);
     case PropertyTabWidgetNone:
         break;
     }

@@ -135,7 +135,7 @@ void GLWidget::initializeGeometry()
     CubeBuilder cBuilder(geom, 0.5);
     cBuilder.setColor(QColor(255, 255, 255, 212));
     // build the 3 bouncing, spinning cubes
-    for (int i = 0; i < 3; ++i)
+    for (int i = 3; i > 0; --i)
         cubes.append(cBuilder.newCube(QVector3D((float)(i-1), -1.5f, 5 - i)));
 
     // build the spinning cube which goes in the dynamic texture

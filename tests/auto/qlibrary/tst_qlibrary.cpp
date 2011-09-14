@@ -53,6 +53,7 @@
 #define a_VALID         false
 #define so_VALID        false
 #define dll_VALID       false
+#define DLL_VALID       false
 
 #if defined(Q_OS_DARWIN)
 # undef bundle_VALID
@@ -88,6 +89,8 @@
 #elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 # undef dll_VALID
 # define dll_VALID      true
+# undef DLL_VALID
+# define DLL_VALID      true
 # define SUFFIX         ".dll"
 # define PREFIX         ""
 
@@ -200,6 +203,7 @@ void tst_QLibrary::version()
     VersionFunction fnVersion = (VersionFunction)library.resolve("mylibversion");
     QVERIFY(fnVersion);
     QCOMPARE(fnVersion(), resultversion);
+	QVERIFY(library.unload());
 #else
     Q_UNUSED(lib);
     Q_UNUSED(loadversion);
@@ -246,6 +250,7 @@ void tst_QLibrary::load()
     bool ok = library.load();
     if ( result ) {
 	QVERIFY( ok );
+	QVERIFY(library.unload());
     } else {
 	QVERIFY( !ok );
     }
@@ -335,6 +340,7 @@ void tst_QLibrary::resolve()
     } else {
 	QVERIFY( func == 0 );
     }
+	library.unload();
 }
 
 void tst_QLibrary::library_data()
@@ -352,6 +358,7 @@ void tst_QLibrary::isLibrary_data()
     QTest::newRow(".a") << QString("mylib.a") << a_VALID;
     QTest::newRow(".bundle") << QString("mylib.bundle") << bundle_VALID;
     QTest::newRow(".dll") << QString("mylib.dll") << dll_VALID;
+    QTest::newRow(".DLL") << QString("MYLIB.DLL") << DLL_VALID;
     QTest::newRow(".dl2" ) << QString("mylib.dl2") << false;
     QTest::newRow(".dylib") << QString("mylib.dylib") << dylib_VALID;
     QTest::newRow(".sl") << QString("mylib.sl") << sl_VALID;
@@ -461,11 +468,13 @@ void tst_QLibrary::errorString()
             }
             break;}
         default:
-            Q_ASSERT(0);
+            QFAIL(qPrintable(QString("Unknown operation: %1").arg(operation)));
             break;
     }
     QRegExp re(errorString);
-    QVERIFY2(re.exactMatch(lib.errorString()), qPrintable(lib.errorString()));
+	QString libErrorString = lib.errorString();
+    QVERIFY(!lib.isLoaded() || lib.unload());
+    QVERIFY2(re.exactMatch(libErrorString), qPrintable(libErrorString));
     QCOMPARE(ok, success);
 }
 
@@ -521,6 +530,7 @@ void tst_QLibrary::loadHints()
     bool ok = library.load();
     if ( result ) {
         QVERIFY( ok );
+		QVERIFY(library.unload());
     } else {
         QVERIFY( !ok );
     }
@@ -556,7 +566,12 @@ void tst_QLibrary::fileName()
     }
 
     QVERIFY(ok);
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(lib.fileName().toLower(), expectedFilename.toLower());
+#else
     QCOMPARE(lib.fileName(), expectedFilename);
+#endif
+    QVERIFY(lib.unload());
 
 }
 
@@ -568,29 +583,42 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
     QString lib = QDir::currentPath() + "/mylib";
 #endif
 
-    QLibrary lib1(lib);
-    QLibrary lib2(lib);
-    QCOMPARE(lib1.isLoaded(), false);
-    QCOMPARE(lib2.isLoaded(), false);
-    lib1.load();
-    QCOMPARE(lib1.isLoaded(), true);
-    QCOMPARE(lib2.isLoaded(), true);
-    QCOMPARE(lib1.unload(), true);
-    QCOMPARE(lib1.isLoaded(), false);
-    QCOMPARE(lib2.isLoaded(), false);
-    lib1.load();
-    lib2.load();
-    QCOMPARE(lib1.isLoaded(), true);
-    QCOMPARE(lib2.isLoaded(), true);
-    QCOMPARE(lib1.unload(), false);
-    QCOMPARE(lib1.isLoaded(), true);
-    QCOMPARE(lib2.isLoaded(), true);
-    QCOMPARE(lib2.unload(), true);
-    QCOMPARE(lib1.isLoaded(), false);
-    QCOMPARE(lib2.isLoaded(), false);
+    {
+		QLibrary lib1(lib);
+		QLibrary lib2(lib);
+		QCOMPARE(lib1.isLoaded(), false);
+		QCOMPARE(lib2.isLoaded(), false);
+		lib1.load();
+		QCOMPARE(lib1.isLoaded(), true);
+		QCOMPARE(lib2.isLoaded(), true);
+		QCOMPARE(lib1.unload(), true);
+		QCOMPARE(lib1.isLoaded(), false);
+		QCOMPARE(lib2.isLoaded(), false);
+		lib1.load();
+		lib2.load();
+		QCOMPARE(lib1.isLoaded(), true);
+		QCOMPARE(lib2.isLoaded(), true);
+		QCOMPARE(lib1.unload(), false);
+		QCOMPARE(lib1.isLoaded(), true);
+		QCOMPARE(lib2.isLoaded(), true);
+		QCOMPARE(lib2.unload(), true);
+		QCOMPARE(lib1.isLoaded(), false);
+		QCOMPARE(lib2.isLoaded(), false);
 
-    // Finally; unload on that is already unloaded
-    QCOMPARE(lib1.unload(), false);
+		// Finally; unload on that is already unloaded
+		QCOMPARE(lib1.unload(), false);
+    }
+
+    //now let's try with a 3rd one that will go out of scope
+    {
+        QLibrary lib1(lib);
+        QCOMPARE(lib1.isLoaded(), false);
+        lib1.load();
+        QCOMPARE(lib1.isLoaded(), true);
+	}
+	QLibrary lib2(lib);
+	//lib2 should be loaded because lib1 was loaded and never unloaded
+    QCOMPARE(lib2.isLoaded(), true);
 
 /*
     lib1.setLoadHints(QLibrary::ResolveAllSymbolsHint);

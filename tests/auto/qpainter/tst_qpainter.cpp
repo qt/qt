@@ -72,11 +72,13 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsproxywidget.h>
 #include <qlayout.h>
+#include <qfontdatabase.h>
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
 #endif
 
+Q_DECLARE_METATYPE(QGradientStops)
 Q_DECLARE_METATYPE(QLine)
 Q_DECLARE_METATYPE(QRect)
 Q_DECLARE_METATYPE(QSize)
@@ -169,6 +171,8 @@ private slots:
 
     void clippedText();
 
+    void clipBoundingRect();
+
     void setOpacity_data();
     void setOpacity();
 
@@ -187,6 +191,7 @@ private slots:
     void fillRect_stretchToDeviceMode();
     void monoImages();
 
+    void linearGradientSymmetry_data();
     void linearGradientSymmetry();
     void gradientInterpolation();
 
@@ -219,6 +224,8 @@ private slots:
     void drawImage_task258776();
     void drawRect_task215378();
     void drawRect_task247505();
+
+    void drawText_subPixelPositionsInRaster_qtbug5053();
 
     void drawImage_data();
     void drawImage();
@@ -259,6 +266,8 @@ private slots:
     void drawTextOpacity();
 
     void QTBUG17053_zeroDashPattern();
+
+    void drawTextOutsideGuiThread();
 
 private:
     void fillData();
@@ -3513,6 +3522,9 @@ bool verifyOutlineFillConsistency(const QImage &img, QRgb outside, QRgb inside, 
 
 void tst_QPainter::outlineFillConsistency()
 {
+    QSKIP("currently broken...", SkipAll);
+    return;
+
     QImage dst(256, 256, QImage::Format_ARGB32_Premultiplied);
 
     QPolygonF poly;
@@ -3976,8 +3988,42 @@ static QLinearGradient inverseGradient(QLinearGradient g)
     return g2;
 }
 
+void tst_QPainter::linearGradientSymmetry_data()
+{
+    QTest::addColumn<QGradientStops>("stops");
+
+    if (sizeof(qreal) != sizeof(float)) {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
+        stops << qMakePair(qreal(0.2), QColor(220, 220, 220, 0));
+        stops << qMakePair(qreal(0.6), QColor(Qt::red));
+        stops << qMakePair(qreal(0.9), QColor(220, 220, 220, 255));
+        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QTest::newRow("multiple stops") << stops;
+    }
+
+    {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
+        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QTest::newRow("two stops") << stops;
+    }
+
+    if (sizeof(qreal) != sizeof(float)) {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.3), QColor(Qt::blue));
+        stops << qMakePair(qreal(0.6), QColor(Qt::black));
+        QTest::newRow("two stops 2") << stops;
+    }
+}
+
 void tst_QPainter::linearGradientSymmetry()
 {
+#ifdef Q_WS_QWS
+    QSKIP("QWS has limited resolution in the gradient color table", SkipAll);
+#else
+    QFETCH(QGradientStops, stops);
+
     QImage a(64, 8, QImage::Format_ARGB32_Premultiplied);
     QImage b(64, 8, QImage::Format_ARGB32_Premultiplied);
 
@@ -3985,11 +4031,7 @@ void tst_QPainter::linearGradientSymmetry()
     b.fill(0);
 
     QLinearGradient gradient(QRectF(b.rect()).topLeft(), QRectF(b.rect()).topRight());
-    gradient.setColorAt(0.0, Qt::blue);
-    gradient.setColorAt(0.2, QColor(220, 220, 220, 0));
-    gradient.setColorAt(0.6, Qt::red);
-    gradient.setColorAt(0.9, QColor(220, 220, 220, 255));
-    gradient.setColorAt(1.0, Qt::black);
+    gradient.setStops(stops);
 
     QPainter pa(&a);
     pa.fillRect(a.rect(), gradient);
@@ -4001,6 +4043,7 @@ void tst_QPainter::linearGradientSymmetry()
 
     b = b.mirrored(true);
     QCOMPARE(a, b);
+#endif
 }
 
 void tst_QPainter::gradientInterpolation()
@@ -4529,6 +4572,82 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
 }
 
+void tst_QPainter::clipBoundingRect()
+{
+    QPixmap pix(500, 500);
+
+    QPainter p(&pix);
+
+    // Test a basic rectangle
+    p.setClipRect(100, 100, 200, 100);
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRect(120, 120, 20, 20, Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
+    // Test a basic float rectangle
+    p.setClipRect(QRectF(100, 100, 200, 100));
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRect(QRectF(120, 120, 20, 20), Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
+    // Test a basic path + region
+    QPainterPath path;
+    path.addRect(100, 100, 200, 100);
+    p.setClipPath(path);
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRegion(QRegion(120, 120, 20, 20), Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
+    p.setClipRect(0, 0, 500, 500);
+    p.translate(250, 250);
+    for (int i=0; i<360; ++i) {
+        p.rotate(1);
+        p.setClipRect(-100, -100, 200, 200, Qt::IntersectClip);
+    }
+    QVERIFY(p.clipBoundingRect().contains(QRectF(-100, -100, 200, 200)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(-250, -250, 500, 500)));
+
+}
+
+void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
+{
+#if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
+    QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
+#endif
+    QFontMetricsF fm(qApp->font());
+
+    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    baseLine.fill(Qt::white);
+    {
+        QPainter p(&baseLine);
+        p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
+    }
+
+    bool foundDifferentRasterization = false;
+    for (int i=1; i<12; ++i) {
+        QImage comparison(baseLine.size(), QImage::Format_RGB32);
+        comparison.fill(Qt::white);
+
+        {
+            QPainter p(&comparison);
+            p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
+        }
+
+        if (comparison != baseLine) {
+            foundDifferentRasterization = true;
+            break;
+        }
+    }
+
+    QVERIFY(foundDifferentRasterization);
+}
+
 void tst_QPainter::drawPointScaled()
 {
     QImage image(32, 32, QImage::Format_RGB32);
@@ -4621,6 +4740,44 @@ void tst_QPainter::QTBUG17053_zeroDashPattern()
     p.drawLine(0, 0, image.width(), image.height());
 
     QCOMPARE(image, original);
+}
+
+class TextDrawerThread : public QThread
+{
+public:
+    void run();
+    QImage rendering;
+};
+
+void TextDrawerThread::run()
+{
+    rendering = QImage(100, 100, QImage::Format_ARGB32_Premultiplied);
+    rendering.fill(0);
+    QPainter p(&rendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+}
+
+void tst_QPainter::drawTextOutsideGuiThread()
+{
+    if (!QFontDatabase::supportsThreadedFontRendering())
+        QSKIP("No threaded font rendering", SkipAll);
+
+    QImage referenceRendering(100, 100, QImage::Format_ARGB32_Premultiplied);
+    referenceRendering.fill(0);
+    QPainter p(&referenceRendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+
+    TextDrawerThread t;
+    t.start();
+    t.wait();
+
+    QCOMPARE(referenceRendering, t.rendering);
 }
 
 QTEST_MAIN(tst_QPainter)

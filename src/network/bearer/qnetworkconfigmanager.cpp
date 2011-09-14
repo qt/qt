@@ -52,7 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 #define Q_GLOBAL_STATIC_QAPP_DESTRUCTION(TYPE, NAME)                    \
-    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
+    static QGlobalStatic<TYPE > this_##NAME                             \
+                = { Q_BASIC_ATOMIC_INITIALIZER(0), false };             \
     static void NAME##_cleanup()                                        \
     {                                                                   \
         this_##NAME.pointer->cleanup();                                 \
@@ -117,17 +118,18 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 */
 
 /*! 
-    \fn void QNetworkConfigurationManager::configurationAdded(const QNetworkConfiguration& config)
+    \fn void QNetworkConfigurationManager::configurationAdded(const QNetworkConfiguration &config)
 
     This signal is emitted whenever a new network configuration is added to the system. The new
     configuration is specified by \a config.
 */
 
 /*!
-    \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration& configuration)
+    \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration &config)
+    \since 4.8
 
     This signal is emitted when a configuration is about to be removed from the system. The removed
-    \a configuration is invalid but retains name and identifier.
+    configuration, specified by \a config, is invalid but retains name and identifier.
 */
 
 /*!
@@ -137,7 +139,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     be initiated via \l updateConfigurations().
 */
 
-/*! \fn void QNetworkConfigurationManager::configurationChanged(const QNetworkConfiguration& config)
+/*! \fn void QNetworkConfigurationManager::configurationChanged(const QNetworkConfiguration &config)
 
     This signal is emitted when the \l {QNetworkConfiguration::state()}{state} of \a config changes.
 */
@@ -200,7 +202,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     Note that to ensure a valid list of current configurations immediately available, updating
     is done during construction which causes some delay.
 */
-QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
+QNetworkConfigurationManager::QNetworkConfigurationManager(QObject *parent)
     : QObject(parent)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
@@ -209,12 +211,12 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));
     connect(priv, SIGNAL(configurationRemoved(QNetworkConfiguration)),
             this, SIGNAL(configurationRemoved(QNetworkConfiguration)));
-    connect(priv, SIGNAL(configurationUpdateComplete()),
-            this, SIGNAL(updateCompleted()));
-    connect(priv, SIGNAL(onlineStateChanged(bool)), 
-            this, SIGNAL(onlineStateChanged(bool)));
     connect(priv, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SIGNAL(configurationChanged(QNetworkConfiguration)));
+    connect(priv, SIGNAL(onlineStateChanged(bool)),
+            this, SIGNAL(onlineStateChanged(bool)));
+    connect(priv, SIGNAL(configurationUpdateComplete()),
+            this, SIGNAL(updateCompleted()));
 
     priv->enablePolling();
 }

@@ -243,7 +243,7 @@ static bool readDomEnumerationValue(const DomProperty *p,
         if (index == -1)
             return false;
         const QVariant sheetValue = sheet->property(index);
-        if (qVariantCanConvert<PropertySheetFlagValue>(sheetValue)) {
+        if (sheetValue.canConvert<PropertySheetFlagValue>()) {
             const PropertySheetFlagValue f = qvariant_cast<PropertySheetFlagValue>(sheetValue);
             bool ok = false;
             v = f.metaFlags.parseFlags(p->elementSet(), &ok);
@@ -258,7 +258,7 @@ static bool readDomEnumerationValue(const DomProperty *p,
         if (index == -1)
             return false;
         const QVariant sheetValue = sheet->property(index);
-        if (qVariantCanConvert<PropertySheetEnumValue>(sheetValue)) {
+        if (sheetValue.canConvert<PropertySheetEnumValue>()) {
             const PropertySheetEnumValue e = qvariant_cast<PropertySheetEnumValue>(sheetValue);
             bool ok = false;
             v = e.metaEnum.parseEnum(p->elementEnum(), &ok);

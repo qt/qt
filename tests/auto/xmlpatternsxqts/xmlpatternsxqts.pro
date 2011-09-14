@@ -19,3 +19,5 @@ INCLUDEPATH += $$(QTDIR)/include/QtXmlPatterns/private      \
 CONFIG += testlib
 QT += xml
 TARGET = tst_xmlpatternsxqts
+
+requires(contains(QT_CONFIG,private_tests))

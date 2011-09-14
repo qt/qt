@@ -47,6 +47,7 @@
 #include <qfuturewatcher.h>
 #include <qtconcurrentrun.h>
 #include <qtconcurrentmap.h>
+#include "../../shared/util.h"
 
 #ifndef QT_NO_CONCURRENT_TEST
 #include <private/qfutureinterface_p.h>
@@ -81,6 +82,7 @@ private slots:
     void incrementalMapResults();
     void incrementalFilterResults();
     void qfutureSynchornizer();
+    void warnRace();
 };
 
 QTEST_MAIN(tst_QFutureWatcher)
@@ -466,12 +468,12 @@ void tst_QFutureWatcher::toMuchProgress()
     ProgressObject o;
 
     QFutureWatcher<void> f;
-    f.setFuture((new ProgressEmitterTask())->start());
     QObject::connect(&f, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 #ifdef PRINT
     QObject::connect(&f, SIGNAL(progressValueChanged(int)), &o, SLOT(printProgress(int)));
 #endif
     QObject::connect(&f, SIGNAL(progressValueChanged(int)), &o, SLOT(registerProgress(int)));
+    f.setFuture((new ProgressEmitterTask())->start());
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -888,6 +890,37 @@ void tst_QFutureWatcher::qfutureSynchornizer()
 
     // Test that we're not running each task.
     QVERIFY(t.elapsed() < taskCount * 10);
+}
+
+class DummyObject : public QObject {
+    Q_OBJECT
+public slots:
+    void dummySlot() {}
+public:
+    static void function(QMutex *m)
+    {
+        QMutexLocker lock(m);
+    }
+};
+
+void tst_QFutureWatcher::warnRace()
+{
+#ifndef Q_OS_MAC //I don't know why it is not working on mac
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtWarningMsg, "QFutureWatcher::connect: connecting after calling setFuture() is likely to produce race");
+#endif
+#endif
+    QFutureWatcher<void> watcher;
+    DummyObject object;
+    QMutex mutex;
+    mutex.lock();
+
+    QFuture<void> future = QtConcurrent::run(DummyObject::function, &mutex);
+    watcher.setFuture(future);
+    QTRY_VERIFY(future.isStarted());
+    connect(&watcher, SIGNAL(finished()), &object, SLOT(dummySlot()));
+    mutex.unlock();
+    future.waitForFinished();
 }
 
 #include "tst_qfuturewatcher.moc"

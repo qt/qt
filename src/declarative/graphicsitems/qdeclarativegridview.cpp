@@ -824,7 +824,9 @@ void QDeclarativeGridViewPrivate::createHighlight()
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
-        delete highlight->item;
+        if (highlight->item->scene())
+            highlight->item->scene()->removeItem(highlight->item);
+        highlight->item->deleteLater();
         delete highlight;
         highlight = 0;
         delete highlightXAnimator;
@@ -1830,7 +1832,7 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \o Qt.LeftToRight (default) - Items will be laid out starting in the top, left corner. The flow is
   dependent on the \l GridView::flow property.
   \o Qt.RightToLeft - Items will be laid out starting in the top, right corner. The flow is dependent
-  on the \l GridView:flow property.
+  on the \l GridView::flow property.
   \endlist
 
   When using the attached property \l {LayoutMirroring::enabled} for locale layouts,
@@ -2284,6 +2286,7 @@ qreal QDeclarativeGridView::maxXExtent() const
     } else {
         highlightStart = d->highlightRangeStart;
         highlightEnd = d->highlightRangeEnd;
+        lastItemPosition = 0;
         if (d->model && d->model->count())
             lastItemPosition = d->rowPosAt(d->model->count()-1);
     }

@@ -12,7 +12,7 @@ contains(QT_CONFIG, dbus-linked) {
 }
 
 # INCLUDEPATH += .
-unix { 
+unix|win32-g++* {
     QMAKE_PKGCONFIG_DESCRIPTION = Qt \
         DBus \
         module
@@ -44,7 +44,8 @@ PUB_HEADERS = qdbusargument.h \
     qdbusmetatype.h \
     qdbuspendingcall.h \
     qdbuspendingreply.h \
-    qdbuscontext.h
+    qdbuscontext.h \
+    qdbusvirtualobject.h
 HEADERS += $$PUB_HEADERS \
     qdbusconnection_p.h \
     qdbusmessage_p.h \
@@ -59,7 +60,8 @@ HEADERS += $$PUB_HEADERS \
     qdbusintegrator_p.h \
     qdbuspendingcall_p.h \
     qdbus_symbols_p.h \
-    qdbusservicewatcher.h
+    qdbusservicewatcher.h \
+    qdbusunixfiledescriptor.h
 SOURCES += qdbusconnection.cpp \
     qdbusconnectioninterface.cpp \
     qdbuserror.cpp \
@@ -85,4 +87,6 @@ SOURCES += qdbusconnection.cpp \
     qdbuspendingcall.cpp \
     qdbuspendingreply.cpp \
     qdbus_symbols.cpp \
-    qdbusservicewatcher.cpp
+    qdbusservicewatcher.cpp \
+    qdbusunixfiledescriptor.cpp \
+    qdbusvirtualobject.cpp

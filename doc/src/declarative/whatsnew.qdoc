@@ -26,12 +26,13 @@
 ****************************************************************************/
 
 /*!
-\title What's new in Qt Quick
+\title What's New in Qt Quick
 \page qtquick-whatsnew.html
 
 \section1 Qt 4.7.4 includes QtQuick 1.1
 
-QtQuick 1.1 is a minor feature update.  \e {import QtQuick 1.1} to use the new features.
+QtQuick 1.1 is a minor feature update.  \e {import QtQuick 1.1} to use the new
+features.
 
 \section2 PinchArea
 
@@ -39,7 +40,9 @@ PinchArea provides support for the common two finger pinch gesture.
 
 \section2 LayoutMirroring attached property
 
-\l {LayoutMirroring}{Layout mirroring} is useful when you need to support both left-to-right and right-to-left layout versions of your application that target different language areas.
+\l {LayoutMirroring}{Layout mirroring} is useful when you need to support both
+left-to-right and right-to-left layout versions of your application that target
+different language areas.
 
 \section2 Text
 
@@ -138,21 +141,21 @@ Added the following methods and signal handlers:
 \section2 Component
 
 \list
-\o The \l{Component::}{createObject()} method now accepts a map of initial property values for
-the created object.
+\o The \l{Component::}{createObject()} method now accepts a map of initial
+property values for the created object.
 \endlist
 
 \section2 Qt
 
 \list
-\o Added the \l {QML:Qt::application}{Qt.application} object to hold generic global application
-properties.
+\o Added the \l {QML:Qt::application}{Qt.application} object to hold generic
+global application properties.
 \endlist
 
 \section2 Other changes
 
 \list
-\o Functions can be \l{Binding Properties from JavaScript}{assigned to properties from JavaScript}
+\o Functions can be \l{Property Binding#Property Binding}{assigned to properties from JavaScript}
 to create property bindings.
 \o QtQuick now supports Right to Left layout in positioners, views, anchors and text elements.
 \endlist
@@ -162,13 +165,14 @@ to create property bindings.
 
 \section2 QtQuick namespace
 
-In prior Qt releases, all the Qt Quick elements were available in the \e Qt namespace.  
-Starting with Qt 4.7.1, the elements are also available in the \e QtQuick namespace, 
-which improves naming consistency, and allows the development of Qt Quick to occur at 
-a faster rate than Qt's usual minor release schedule.
+In prior Qt releases, all the Qt Quick elements were available in the \e Qt
+namespace. Starting with Qt 4.7.1, the elements are also available in the
+\e QtQuick namespace, which improves naming consistency, and allows the
+development of Qt Quick to occur at a faster rate than Qt's usual minor release
+schedule.
 
-The change for developers is very simple - where you previously wrote \e {import Qt 4.7},
-just replace it with \e {import QtQuick 1.0}, like this:
+The change for developers is very simple - where you previously wrote
+\e {import Qt 4.7}, just replace it with \e {import QtQuick 1.0}, like this:
 
 \code
 import QtQuick 1.0 
@@ -178,7 +182,7 @@ Text {
 }
 \endcode
 
-\e {import Qt 4.7} continues to work so existing applications wont break even if they 
-aren't updated, but it is recommended that all import statements be modified to the new 
-form.
+\e {import Qt 4.7} continues to work so existing applications won't break even
+if they aren't updated, but it is recommended that all import statements be
+modified to the new form.
 */

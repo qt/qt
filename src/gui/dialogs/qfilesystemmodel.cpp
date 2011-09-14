@@ -1313,6 +1313,10 @@ QString QFileSystemModelPrivate::filePath(const QModelIndex &index) const
     if ((fullPath.length() > 2) && fullPath[0] == QLatin1Char('/') && fullPath[1] == QLatin1Char('/'))
         fullPath = fullPath.mid(1);
 #endif
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    if (fullPath.length() == 2 && fullPath.endsWith(QLatin1Char(':')))
+        fullPath.append(QLatin1Char('/'));
+#endif
     return fullPath;
 }
 
@@ -1454,7 +1458,6 @@ void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setIconProvider(provider);
-    QApplication::processEvents();
     d->root.updateIcon(provider, QString());
 }
 
@@ -1629,6 +1632,14 @@ bool QFileSystemModel::event(QEvent *event)
         return true;
     }
     return QAbstractItemModel::event(event);
+}
+
+bool QFileSystemModel::rmdir(const QModelIndex &aindex) const
+{
+    QString path = filePath(aindex);
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+    d->fileInfoGatherer.removePath(path);
+    return QDir().rmdir(path);
 }
 
 /*!
@@ -1966,13 +1977,14 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
     const bool hideHidden        = !(filters & QDir::Hidden);
     const bool hideSystem        = !(filters & QDir::System);
     const bool hideSymlinks      = (filters & QDir::NoSymLinks);
-    const bool hideDotAndDotDot  = (filters & QDir::NoDotAndDotDot);
+    const bool hideDot           = (filters & QDir::NoDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
+    const bool hideDotDot        = (filters & QDir::NoDotDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
 
     // Note that we match the behavior of entryList and not QFileInfo on this and this
     // incompatibility won't be fixed until Qt 5 at least
-    bool isDotOrDot = (  (node->fileName == QLatin1String(".")
-                       || node->fileName == QLatin1String("..")));
-    if (   (hideHidden && (!isDotOrDot && node->isHidden()))
+    bool isDot    = (node->fileName == QLatin1String("."));
+    bool isDotDot = (node->fileName == QLatin1String(".."));
+    if (   (hideHidden && !(isDot || isDotDot) && node->isHidden())
         || (hideSystem && node->isSystem())
         || (hideDirs && node->isDir())
         || (hideFiles && node->isFile())
@@ -1980,7 +1992,8 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
         || (hideReadable && node->isReadable())
         || (hideWritable && node->isWritable())
         || (hideExecutable && node->isExecutable())
-        || (hideDotAndDotDot && isDotOrDot))
+        || (hideDot && isDot)
+        || (hideDotDot && isDotDot))
         return false;
 
     return nameFilterDisables || passNameFilters(node);

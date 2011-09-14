@@ -123,7 +123,7 @@ void tst_Q3Dns::destructor()
     Q3Socket *s = new Q3Socket(&a);
     s->connectToHost("ftp.qt.nokia.com", 21);
 
-    // dummy verify since this test only makes shure that it does not crash
+    // dummy verify since this test only makes sure that it does not crash
     QVERIFY( TRUE );
 }
 
@@ -144,7 +144,7 @@ void tst_Q3Dns::literals()
     QCOMPARE((int) ip6literal1.addresses().count(), 0);
 
     Q3Dns ip6literal2("::1", Q3Dns::Aaaa);
-    QCOMPARE(ip6literal2.addresses().first().toString(), QString("0:0:0:0:0:0:0:1"));
+    QCOMPARE(ip6literal2.addresses().first().toString(), QString("::1"));
     QCOMPARE((int) ip6literal2.addresses().count(), 1);
 }
 

@@ -2109,7 +2109,7 @@ void QHeaderView::paintEvent(QPaintEvent *e)
 
         QVariant variant = d->model->headerData(logical, d->orientation,
                                                 Qt::FontRole);
-        if (variant.isValid() && qVariantCanConvert<QFont>(variant)) {
+        if (variant.isValid() && variant.canConvert<QFont>()) {
             QFont sectionFont = qvariant_cast<QFont>(variant);
             painter.setFont(sectionFont);
         }
@@ -2489,13 +2489,13 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
         opt.icon = qvariant_cast<QPixmap>(variant);
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(foregroundBrush))
+    if (foregroundBrush.canConvert<QBrush>())
         opt.palette.setBrush(QPalette::ButtonText, qvariant_cast<QBrush>(foregroundBrush));
 
     QPointF oldBO = painter->brushOrigin();
     QVariant backgroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::BackgroundRole);
-    if (qVariantCanConvert<QBrush>(backgroundBrush)) {
+    if (backgroundBrush.canConvert<QBrush>()) {
         opt.palette.setBrush(QPalette::Button, qvariant_cast<QBrush>(backgroundBrush));
         opt.palette.setBrush(QPalette::Window, qvariant_cast<QBrush>(backgroundBrush));
         painter->setBrushOrigin(opt.rect.topLeft());
@@ -2556,7 +2556,7 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
     QVariant var = d->model->headerData(logicalIndex, d->orientation,
                                             Qt::FontRole);
     QFont fnt;
-    if (var.isValid() && qVariantCanConvert<QFont>(var))
+    if (var.isValid() && var.canConvert<QFont>())
         fnt = qvariant_cast<QFont>(var);
     else
         fnt = font();
@@ -3278,9 +3278,17 @@ void QHeaderViewPrivate::clear()
 void QHeaderViewPrivate::flipSortIndicator(int section)
 {
     Q_Q(QHeaderView);
-    bool ascending = (sortIndicatorSection != section
-                      || sortIndicatorOrder == Qt::DescendingOrder);
-    q->setSortIndicator(section, ascending ? Qt::AscendingOrder : Qt::DescendingOrder);
+    Qt::SortOrder sortOrder;
+    if (sortIndicatorSection == section) {
+        sortOrder = (sortIndicatorOrder == Qt::DescendingOrder) ? Qt::AscendingOrder : Qt::DescendingOrder;
+    } else {
+        const QVariant value = model->headerData(section, orientation, Qt::InitialSortOrderRole);
+        if (value.canConvert(QVariant::Int))
+            sortOrder = static_cast<Qt::SortOrder>(value.toInt());
+        else
+            sortOrder = Qt::AscendingOrder;
+    }
+    q->setSortIndicator(section, sortOrder);
 }
 
 void QHeaderViewPrivate::cascadingResize(int visual, int newSize)

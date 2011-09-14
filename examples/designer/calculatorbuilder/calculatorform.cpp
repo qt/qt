@@ -58,9 +58,9 @@ CalculatorForm::CalculatorForm(QWidget *parent)
 //! [1]
 
 //! [2]
-    ui_inputSpinBox1 = qFindChild<QSpinBox*>(this, "inputSpinBox1");
-    ui_inputSpinBox2 = qFindChild<QSpinBox*>(this, "inputSpinBox2");
-    ui_outputWidget = qFindChild<QLabel*>(this, "outputWidget");
+    ui_inputSpinBox1 = findChild<QSpinBox*>("inputSpinBox1");
+    ui_inputSpinBox2 = findChild<QSpinBox*>("inputSpinBox2");
+    ui_outputWidget = findChild<QLabel*>("outputWidget");
 //! [2]
 
 //! [3]

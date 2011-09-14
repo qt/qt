@@ -145,11 +145,11 @@
 
     \value PropertySetter The property is defined by a function which will be called to set the property value.
 
-    \value QObjectMember This flag is used to indicate that an existing property is a QObject member (a property or method).
+    \omitvalue QObjectMember This flag is used to indicate that an existing property is a QObject member (a property or method).
 
     \value KeepExistingFlags This value is used to indicate to setProperty() that the property's flags should be left unchanged. If the property doesn't exist, the default flags (0) will be used.
 
-    \value UserRange Flags in this range are not used by Qt Script, and can be used for custom purposes.
+    \omitvalue UserRange Flags in this range are not used by Qt Script, and can be used for custom purposes.
 */
 
 /*!
@@ -536,7 +536,12 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (prototype.isValid() && QScriptValuePrivate::getEngine(prototype)
+
+    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
+    if (!other || !(other.isObject() || other.isNull()))
+        return;
+
+    if (QScriptValuePrivate::getEngine(prototype)
         && (QScriptValuePrivate::getEngine(prototype) != d->engine)) {
         qWarning("QScriptValue::setPrototype() failed: "
                  "cannot set a prototype created in "
@@ -544,7 +549,6 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
         return;
     }
     JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
-    JSC::JSValue other = d->engine->scriptValueToJSCValue(prototype);
 
     // check for cycle
     JSC::JSValue nextPrototypeValue = other;
@@ -693,10 +697,6 @@ static bool LessThan(QScriptValue lhs, QScriptValue rhs)
             return false;
 
         case Number:
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-            if (qIsNaN(lhs.toNumber()) || qIsNaN(rhs.toNumber()))
-                return false;
-#endif
             return lhs.toNumber() < rhs.toNumber();
 
         case Boolean:
@@ -719,13 +719,7 @@ static bool LessThan(QScriptValue lhs, QScriptValue rhs)
     if (lhs.isString() && rhs.isString())
         return lhs.toString() < rhs.toString();
 
-    qsreal n1 = lhs.toNumber();
-    qsreal n2 = rhs.toNumber();
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-    if (qIsNaN(n1) || qIsNaN(n2))
-        return false;
-#endif
-    return n1 < n2;
+    return lhs.toNumber() < rhs.toNumber();
 }
 
 static bool Equals(QScriptValue lhs, QScriptValue rhs)
@@ -1731,7 +1725,14 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 
     QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
-        if (!args.at(i).isValid())
+        QScriptValue arg = args.at(i);
+        if (QScriptValuePrivate::getEngine(arg) != d->engine && QScriptValuePrivate::getEngine(arg)) {
+            qWarning("QScriptValue::construct() failed: "
+                     "cannot construct function with argument created in "
+                     "a different engine");
+            return QScriptValue();
+        }
+        if (!arg.isValid())
             argsVector[i] = JSC::jsUndefined();
         else
             argsVector[i] = d->engine->scriptValueToJSCValue(args.at(i));
@@ -1781,6 +1782,12 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
+    if (QScriptValuePrivate::getEngine(arguments) != d->engine && QScriptValuePrivate::getEngine(arguments)) {
+        qWarning("QScriptValue::construct() failed: "
+                 "cannot construct function with argument created in "
+                 "a different engine");
+        return QScriptValue();
+    }
     JSC::JSValue array = d->engine->scriptValueToJSCValue(arguments);
     // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()
     JSC::MarkedArgumentBuffer applyArgs;

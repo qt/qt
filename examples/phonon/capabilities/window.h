@@ -78,7 +78,6 @@ private slots:
 
 private:
     void setupUi();
-    void setupBackendBox();
 
     QGroupBox *backendBox;
 

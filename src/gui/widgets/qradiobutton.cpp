@@ -206,6 +206,15 @@ QSize QRadioButton::sizeHint() const
 
 /*!
     \reimp
+    \since 4.8
+*/
+QSize QRadioButton::minimumSizeHint() const
+{
+    return sizeHint();
+}
+
+/*!
+    \reimp
 */
 bool QRadioButton::hitButton(const QPoint &pos) const
 {

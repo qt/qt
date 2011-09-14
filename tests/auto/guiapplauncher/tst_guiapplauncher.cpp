@@ -270,7 +270,7 @@ private:
     const QSharedPointer<WindowManager> m_wm;
 };
 
-// Test mask from enviroment as test lib does not allow options.
+// Test mask from environment as test lib does not allow options.
 static inline unsigned testMask()
 {
     unsigned testMask = tst_GuiAppLauncher::TestAll;

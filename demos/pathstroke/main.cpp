@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     PathStrokeWidget pathStrokeWidget(smallScreen);
     QStyle *arthurStyle = new ArthurStyle();
     pathStrokeWidget.setStyle(arthurStyle);
-    QList<QWidget *> widgets = qFindChildren<QWidget *>(&pathStrokeWidget);
+    QList<QWidget *> widgets = pathStrokeWidget.findChildren<QWidget *>();
     foreach (QWidget *w, widgets) {
         w->setStyle(arthurStyle);
         w->setAttribute(Qt::WA_AcceptTouchEvents);

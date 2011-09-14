@@ -12,13 +12,13 @@ QT += svg
 
 
 wince*: {
-   addFiles.sources = datastream.q42 tests2.svg
+   addFiles.files = datastream.q42 tests2.svg
    addFiles.path = .
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
    # SRCDIR and SVGFILE defined in code in symbian
-   addFiles.sources = datastream.q42 tests2.svg
+   addFiles.files = datastream.q42 tests2.svg
    addFiles.path = .
    DEPLOYMENT += addFiles
    TARGET.EPOCHEAPSIZE = 1000000 10000000

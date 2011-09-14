@@ -93,7 +93,7 @@ void TreeWidgetTaskMenu::editItems()
 
     Q_ASSERT(m_treeWidget != 0);
 
-    TreeWidgetEditor dlg(m_formWindow, m_treeWidget->window());
+    TreeWidgetEditorDialog dlg(m_formWindow, m_treeWidget->window());
     TreeWidgetContents oldCont = dlg.fillContentsFromTreeWidget(m_treeWidget);
     if (dlg.exec() == QDialog::Accepted) {
         TreeWidgetContents newCont = dlg.contents();

@@ -61,9 +61,14 @@ private slots:
     void implicitConvertibleTypes();
     void runWaitLoop();
     void recursive();
+#ifndef QT_NO_EXCEPTIONS
+    void exceptions();
+#endif
 #if 0
     void createFunctor();
 #endif
+    void functor();
+    void lambda();
 };
 
 #if 0
@@ -374,6 +379,41 @@ int fn2(double, int *)
     return 1;
 }
 
+
+#ifndef QT_NO_EXCEPTIONS
+void throwFunction()
+{
+    throw QtConcurrent::Exception();
+}
+
+int throwFunctionReturn()
+{
+    throw QtConcurrent::Exception();
+    return 0;
+}
+
+void tst_QtConcurrentRun::exceptions()
+{
+    bool caught = false;
+    try  {
+        QtConcurrent::run(throwFunction).waitForFinished();
+    } catch (Exception &e) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+
+    caught = false;
+    try  {
+        QtConcurrent::run(throwFunctionReturn).waitForFinished();
+    } catch (Exception &e) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+}
+#endif
+
 #if 0
 void tst_QtConcurrentRun::createFunctor()
 {
@@ -405,6 +445,71 @@ void tst_QtConcurrentRun::createFunctor()
     qDebug() << e;
 }
 #endif
+
+struct Functor {
+    int operator()() { return 42; }
+    double operator()(double a, double b) { return a/b; }
+    int operator()(int a, int b) { return a/b; }
+    void operator()(int) { }
+    void operator()(int, int, int) { }
+    void operator()(int, int, int, int) { }
+    void operator()(int, int, int, int, int) { }
+    void operator()(int, int, int, int, int, int) { }
+};
+
+void tst_QtConcurrentRun::functor()
+{
+    //this test functor without result_type,  decltype need to be supported by the compiler
+#ifndef Q_COMPILER_DECLTYPE
+    QSKIP("Compiler do not suport decltype", SkipAll);
+#else
+    Functor f;
+    {
+        QFuture<int> fut = QtConcurrent::run(f);
+        QCOMPARE(fut.result(), 42);
+    }
+    {
+        QFuture<double> fut = QtConcurrent::run(f, 8.5, 1.8);
+        QCOMPARE(fut.result(), (8.5/1.8));
+    }
+    {
+        QFuture<int> fut = QtConcurrent::run(f, 19, 3);
+        QCOMPARE(fut.result(), int(19/3));
+    }
+    {
+        QtConcurrent::run(f, 1).waitForFinished();
+        QtConcurrent::run(f, 1,2).waitForFinished();
+        QtConcurrent::run(f, 1,2,3).waitForFinished();
+        QtConcurrent::run(f, 1,2,3,4).waitForFinished();
+        QtConcurrent::run(f, 1,2,3,4,5).waitForFinished();
+    }
+#endif
+}
+
+
+void tst_QtConcurrentRun::lambda()
+{
+#ifndef Q_COMPILER_LAMBDA
+    QSKIP("Compiler do not suport lambda", SkipAll);
+#else
+
+    QCOMPARE(QtConcurrent::run([](){ return 45; }).result(), 45);
+    QCOMPARE(QtConcurrent::run([](int a){ return a+15; }, 12).result(), 12+15);
+    QCOMPARE(QtConcurrent::run([](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
+    QCOMPARE(QtConcurrent::run([](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    {
+        QString str { "Hello World Foo" };
+        QFuture<QStringList> f1 = QtConcurrent::run([&](){ return str.split(' '); });
+        auto r = f1.result();
+        QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
+    }
+#endif
+
+#endif
+}
+
 
 #include "tst_qtconcurrentrun.moc"
 

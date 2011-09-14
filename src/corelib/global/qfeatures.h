@@ -79,6 +79,9 @@
 // Effects
 //#define QT_NO_EFFECTS
 
+// QFileSystemIterator
+//#define QT_NO_FILESYSTEMITERATOR
+
 // QFileSystemWatcher
 //#define QT_NO_FILESYSTEMWATCHER
 
@@ -523,11 +526,6 @@
 #define QT_NO_FTP
 #endif
 
-// Hyper Text Transfer Protocol
-#if !defined(QT_NO_HTTP) && (defined(QT_NO_HOSTINFO))
-#define QT_NO_HTTP
-#endif
-
 // QInputContext
 #if !defined(QT_NO_IM) && (defined(QT_NO_LIBRARY))
 #define QT_NO_IM
@@ -581,6 +579,11 @@
 // QGraphicsView
 #if !defined(QT_NO_GRAPHICSVIEW) && (defined(QT_NO_SCROLLAREA))
 #define QT_NO_GRAPHICSVIEW
+#endif
+
+// Hyper Text Transfer Protocol
+#if !defined(QT_NO_HTTP) && defined(QT_NO_HOSTINFO)
+#define QT_NO_HTTP
 #endif
 
 // QMdiArea

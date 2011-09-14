@@ -75,6 +75,10 @@
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
 #endif
+#ifdef Q_WS_QPA
+#include <QtGui/qplatformscreen_qpa.h>
+#include <QtGui/private/qapplication_p.h>
+#endif
 
 #include <QMutexLocker>
 
@@ -135,11 +139,15 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     QFontDatabase::parseFontName(family, this_foundry, this_family);
     QFontDatabase::parseFontName(other.family, other_foundry, other_family);
 
+    this_family = QFontDatabase::resolveFontFamilyAlias(this_family);
+    other_family = QFontDatabase::resolveFontFamilyAlias(other_family);
+
     return (styleHint     == other.styleHint
             && styleStrategy == other.styleStrategy
             && weight        == other.weight
             && style        == other.style
             && this_family   == other_family
+            && (styleName.isEmpty() || other.styleName.isEmpty() || styleName == other.styleName)
             && (this_foundry.isEmpty()
                 || other_foundry.isEmpty()
                 || this_foundry == other_foundry)
@@ -172,6 +180,17 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
+#elif defined(Q_WS_QPA)
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    if (pi) {
+        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+        const QSize screenSize = screen->geometry().size();
+        const QSize physicalSize = screen->physicalSize();
+        dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
+    } else {
+        //PI has not been initialised, or it is being initialised. Give a default dpi
+        dpi = 100;
+    }
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiX;
 #endif // Q_WS_X11
@@ -200,6 +219,17 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
+#elif defined(Q_WS_QPA)
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    if (pi) {
+        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+        const QSize screenSize = screen->geometry().size();
+        const QSize physicalSize = screen->physicalSize();
+        dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
+    } else {
+        //PI has not been initialised, or it is being initialised. Give a default dpi
+        dpi = 100;
+    }
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiY;
 #endif // Q_WS_X11
@@ -253,8 +283,13 @@ QFontPrivate::~QFontPrivate()
     scFont = 0;
 }
 
-#if !defined(Q_WS_MAC)
 extern QMutex *qt_fontdatabase_mutex();
+
+#if !defined(Q_WS_MAC)
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engines[script]
+#else
+#define QT_FONT_ENGINE_FROM_DATA(data, script) data->engine
+#endif
 
 QFontEngine *QFontPrivate::engineForScript(int script) const
 {
@@ -266,27 +301,10 @@ QFontEngine *QFontPrivate::engineForScript(int script) const
         engineData->ref.deref();
         engineData = 0;
     }
-    if (!engineData || !engineData->engines[script])
+    if (!engineData || !QT_FONT_ENGINE_FROM_DATA(engineData, script))
         QFontDatabase::load(this, script);
-    return engineData->engines[script];
+    return QT_FONT_ENGINE_FROM_DATA(engineData, script);
 }
-#else
-QFontEngine *QFontPrivate::engineForScript(int script) const
-{
-    extern QMutex *qt_fontdatabase_mutex();
-    QMutexLocker locker(qt_fontdatabase_mutex());
-    if (script >= QUnicodeTables::Inherited)
-        script = QUnicodeTables::Common;
-    if (engineData && engineData->fontCache != QFontCache::instance()) {
-        // throw out engineData that came from a different thread
-        engineData->ref.deref();
-        engineData = 0;
-    }
-    if (!engineData || !engineData->engine)
-        QFontDatabase::load(this, script);
-    return engineData->engine;
-}
-#endif
 
 void QFontPrivate::alterCharForCapitalization(QChar &c) const {
     switch (capital) {
@@ -331,6 +349,9 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
     if (! (mask & QFont::FamilyResolved))
         request.family = other->request.family;
 
+    if (! (mask & QFont::StyleNameResolved))
+        request.styleName = other->request.styleName;
+
     if (! (mask & QFont::SizeResolved)) {
         request.pointSize = other->request.pointSize;
         request.pixelSize = other->request.pixelSize;
@@ -353,6 +374,9 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
 
     if (! (mask & QFont::StretchResolved))
         request.stretch = other->request.stretch;
+
+    if (! (mask & QFont::HintingPreferenceResolved))
+        request.hintingPreference = other->request.hintingPreference;
 
     if (! (mask & QFont::UnderlineResolved))
         underline = other->underline;
@@ -877,6 +901,39 @@ void QFont::setFamily(const QString &family)
 }
 
 /*!
+    \since 4.8
+
+    Returns the requested font style name, it will be used to match the
+    font with irregular styles (that can't be normalized in other style
+    properties). It depends on system font support, thus only works for
+    Mac OS X and X11 so far. On Windows irregular styles will be added
+    as separate font families so there is no need for this.
+
+    \sa setFamily() setStyle()
+*/
+QString QFont::styleName() const
+{
+    return d->request.styleName;
+}
+
+/*!
+    \since 4.8
+
+    Sets the style name of the font to the given \a styleName.
+    When set, other style properties like style() and weight() will be ignored
+    for font matching.
+
+    \sa styleName()
+*/
+void QFont::setStyleName(const QString &styleName)
+{
+    detach();
+
+    d->request.styleName = styleName;
+    resolve_mask |= QFont::StyleNameResolved;
+}
+
+/*!
     Returns the point size of the font. Returns -1 if the font size
     was specified in pixels.
 
@@ -885,6 +942,105 @@ void QFont::setFamily(const QString &family)
 int QFont::pointSize() const
 {
     return qRound(d->request.pointSize);
+}
+
+/*!
+    \since 4.8
+
+    \enum QFont::HintingPreference
+
+    This enum describes the different levels of hinting that can be applied
+    to glyphs to improve legibility on displays where it might be warranted
+    by the density of pixels.
+
+    \value PreferDefaultHinting Use the default hinting level for the target platform.
+    \value PreferNoHinting If possible, render text without hinting the outlines
+           of the glyphs. The text layout will be typographically accurate and
+           scalable, using the same metrics as are used e.g. when printing.
+    \value PreferVerticalHinting If possible, render text with no horizontal hinting,
+           but align glyphs to the pixel grid in the vertical direction. The text will appear
+           crisper on displays where the density is too low to give an accurate rendering
+           of the glyphs. But since the horizontal metrics of the glyphs are unhinted, the text's
+           layout will be scalable to higher density devices (such as printers) without impacting
+           details such as line breaks.
+    \value PreferFullHinting If possible, render text with hinting in both horizontal and
+           vertical directions. The text will be altered to optimize legibility on the target
+           device, but since the metrics will depend on the target size of the text, the positions
+           of glyphs, line breaks, and other typographical detail will not scale, meaning that a
+           text layout may look different on devices with different pixel densities.
+
+    Please note that this enum only describes a preference, as the full range of hinting levels
+    are not supported on all of Qt's supported platforms. The following table details the effect
+    of a given hinting preference on a selected set of target platforms.
+
+    \table
+    \header
+    \o
+    \o PreferDefaultHinting
+    \o PreferNoHinting
+    \o PreferVerticalHinting
+    \o PreferFullHinting
+    \row
+    \o Windows Vista (w/o Platform Update) and earlier
+    \o Full hinting
+    \o Full hinting
+    \o Full hinting
+    \o Full hinting
+    \row
+    \o Windows 7 and Windows Vista (w/Platform Update) and DirectWrite enabled in Qt
+    \o Full hinting
+    \o Vertical hinting
+    \o Vertical hinting
+    \o Full hinting
+    \row
+    \o FreeType
+    \o Operating System setting
+    \o No hinting
+    \o Vertical hinting (light)
+    \o Full hinting
+    \row
+    \o Cocoa on Mac OS X
+    \o No hinting
+    \o No hinting
+    \o No hinting
+    \o No hinting
+    \endtable
+
+    \note Please be aware that altering the hinting preference on Windows is available through
+    the DirectWrite font engine. This is available on Windows Vista after installing the platform
+    update, and on Windows 7. In order to use this extension, configure Qt using -directwrite.
+    The target application will then depend on the availability of DirectWrite on the target
+    system.
+
+*/
+
+/*!
+    \since 4.8
+
+    Set the preference for the hinting level of the glyphs to \a hintingPreference. This is a hint
+    to the underlying font rendering system to use a certain level of hinting, and has varying
+    support across platforms. See the table in the documentation for QFont::HintingPreference for
+    more details.
+
+    The default hinting preference is QFont::PreferDefaultHinting.
+*/
+void QFont::setHintingPreference(HintingPreference hintingPreference)
+{
+    detach();
+
+    d->request.hintingPreference = hintingPreference;
+
+    resolve_mask |= QFont::HintingPreferenceResolved;
+}
+
+/*!
+    \since 4.8
+
+    Returns the currently preferred hinting level for glyphs rendered with this font.
+*/
+QFont::HintingPreference QFont::hintingPreference() const
+{
+    return QFont::HintingPreference(d->request.hintingPreference);
 }
 
 /*!
@@ -2387,6 +2543,21 @@ QString QFontInfo::family() const
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.family;
+}
+
+/*!
+    \since 4.8
+
+    Returns the style name of the matched window system font on
+    system that supports it.
+
+    \sa QFont::styleName()
+*/
+QString QFontInfo::styleName() const
+{
+    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    Q_ASSERT(engine != 0);
+    return engine->fontDef.styleName;
 }
 
 /*!

@@ -190,7 +190,7 @@ LayoutInfo::Type LayoutInfo::laidoutWidgetType(const QDesignerFormEditorInterfac
     }
 
     // 3) Some child layout (see below comment about Q3GroupBox)
-    const QList<QLayout*> childLayouts = qFindChildren<QLayout*>(parentLayout);
+    const QList<QLayout*> childLayouts = parentLayout->findChildren<QLayout*>();
     if (childLayouts.empty())
         return NoLayout;
     const QList<QLayout*>::const_iterator lcend = childLayouts.constEnd();
@@ -244,7 +244,7 @@ QLayout *LayoutInfo::managedLayout(const QDesignerFormEditorInterface *core, QLa
      * widget->layout() returns an internal VBoxLayout. */
     const QDesignerMetaDataBaseItemInterface *item = metaDataBase->item(layout);
     if (item == 0) {
-        layout = qFindChild<QLayout*>(layout);
+        layout = layout->findChild<QLayout*>();
         item = metaDataBase->item(layout);
     }
     if (!item)

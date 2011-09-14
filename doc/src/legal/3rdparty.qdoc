@@ -45,6 +45,10 @@
     Run \c{configure -help} to see any options that may be available for
     controlling the use of these libraries.
 
+    Modifications, if any, done to the third-party libraries can
+    normally be found by reviewing the change history of the
+    corresponding files in the public Qt repository.
+
     \tableofcontents
 
     \section1 DES (\c des.cpp)
@@ -126,7 +130,7 @@
 
     See \c src/3rdparty/harfbuzz/COPYING for license details.
 
-    \section1 The Independent JPEG Group's JPEG Software (\c libjpeg) version 8
+    \section1 The Independent JPEG Group's JPEG Software (\c libjpeg) version 8c
 
     \e{This package contains C software to implement JPEG image compression and
     decompression.  JPEG (pronounced "jay-peg") is a standardized compression
@@ -139,6 +143,49 @@
     \hr
 
     This software is based in part on the work of the Independent JPEG Group.
+
+    \hr
+
+    The authors make NO WARRANTY or representation, either express or implied,
+    with respect to this software, its quality, accuracy, merchantability, or
+    fitness for a particular purpose.  This software is provided "AS IS", and you,
+    its user, assume the entire risk as to its quality and accuracy.
+    
+    This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
+    All Rights Reserved except as specified below.
+    
+    Permission is hereby granted to use, copy, modify, and distribute this
+    software (or portions thereof) for any purpose, without fee, subject to these
+    conditions:\br
+    (1) If any part of the source code for this software is distributed, then this
+    README file must be included, with this copyright and no-warranty notice
+    unaltered; and any additions, deletions, or changes to the original files
+    must be clearly indicated in accompanying documentation.\br
+    (2) If only executable code is distributed, then the accompanying
+    documentation must state that "this software is based in part on the work of
+    the Independent JPEG Group".\br
+    (3) Permission for use of this software is granted only if the user accepts
+    full responsibility for any undesirable consequences; the authors accept
+    NO LIABILITY for damages of any kind.
+    
+    These conditions apply to any software derived from or based on the IJG code,
+    not just to the unmodified library.  If you use our work, you ought to
+    acknowledge us.
+    
+    Permission is NOT granted for the use of any IJG author's name or company name
+    in advertising or publicity relating to this software or products derived from
+    it.  This software may be referred to only as "the Independent JPEG Group's
+    software".
+    
+    We specifically permit and encourage the use of this software as the basis of
+    commercial products, provided that all warranty or liability claims are
+    assumed by the product vendor.
+    
+    \hr
+
+    The Graphics Interchange Format(c) is the Copyright property of
+    CompuServe Incorporated.  GIF(sm) is a Service Mark property of
+    CompuServe Incorporated.
 
     \hr
 
@@ -178,51 +225,99 @@
 
     See \c src/3rdparty/libmng/LICENSE for license details.
 
-    \section1 PNG Reference Library (\c libpng) version 1.4.0
+    \section1 PNG Reference Library (\c libpng) version 1.5.1
 
     \e{Libpng was written as a companion to the PNG specification, as a way
     of reducing the amount of time and effort it takes to support the PNG
     file format in application programs.} -- quoted from \c
-    src/3rdparty/libpng/libpng.txt.
+    src/3rdparty/libpng/libpng-manual.txt.
 
     \hr
 
-    copyright (C) 1999 by Willem van Schaik <willem@schaik.com>
-
-    version 1.0 - 1999.10.15 - First version.
-
-    Permission to use, copy, modify, and distribute this software and
-    its documentation for any purpose and without fee is hereby granted,
-    provided that the above copyright notice appear in all copies and
-    that both that copyright notice and this permission notice appear in
-    supporting documentation. This software is provided "as is" without
-    express or implied warranty.
-
-    \hr
-
-    Copyright (c) 1998-2001 Greg Roelofs.  All rights reserved.
-
-    This software is provided "as is," without warranty of any kind,
-    express or implied.  In no event shall the author or contributors
-    be held liable for any damages arising in any way from the use of
-    this software.
-
-    Permission is granted to anyone to use this software for any purpose,
-    including commercial applications, and to alter it and redistribute
-    it freely, subject to the following restrictions:
-
-    1. Redistributions of source code must retain the above copyright
-       notice, disclaimer, and this list of conditions.
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, disclaimer, and this list of conditions in the documenta-
-       tion and/or other materials provided with the distribution.
-    3. All advertising materials mentioning features or use of this
-       software must display the following acknowledgment:
-
-          This product includes software developed by Greg Roelofs
-          and contributors for the book, "PNG: The Definitive Guide,"
-          published by O'Reilly and Associates.
-
+    libpng versions 1.2.6, August 15, 2004, through 1.5.1, February 3, 2011, are
+    Copyright (c) 2004, 2006-2011 Glenn Randers-Pehrson, and are
+    distributed according to the same disclaimer and license as libpng-1.2.5
+    with the following individual added to the list of Contributing Authors
+    
+       Cosmin Truta
+    
+    libpng versions 1.0.7, July 1, 2000, through 1.2.5 - October 3, 2002, are
+    Copyright (c) 2000-2002 Glenn Randers-Pehrson, and are
+    distributed according to the same disclaimer and license as libpng-1.0.6
+    with the following individuals added to the list of Contributing Authors
+    
+       Simon-Pierre Cadieux\br
+       Eric S. Raymond\br
+       Gilles Vollant
+    
+    and with the following additions to the disclaimer:
+    
+       There is no warranty against interference with your enjoyment of the
+       library or against infringement.  There is no warranty that our
+       efforts or the library will fulfill any of your particular purposes
+       or needs.  This library is provided with all faults, and the entire
+       risk of satisfactory quality, performance, accuracy, and effort is with
+       the user.
+    
+    libpng versions 0.97, January 1998, through 1.0.6, March 20, 2000, are
+    Copyright (c) 1998, 1999 Glenn Randers-Pehrson, and are
+    distributed according to the same disclaimer and license as libpng-0.96,
+    with the following individuals added to the list of Contributing Authors:
+    
+       Tom Lane\br
+       Glenn Randers-Pehrson\br
+       Willem van Schaik
+    
+    libpng versions 0.89, June 1996, through 0.96, May 1997, are
+    Copyright (c) 1996, 1997 Andreas Dilger
+    Distributed according to the same disclaimer and license as libpng-0.88,
+    with the following individuals added to the list of Contributing Authors:
+    
+       John Bowler\br
+       Kevin Bracey\br
+       Sam Bushell\br
+       Magnus Holmgren\br
+       Greg Roelofs\br
+       Tom Tanner
+    
+    libpng versions 0.5, May 1995, through 0.88, January 1996, are
+    Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.
+    
+    For the purposes of this copyright and license, "Contributing Authors"
+    is defined as the following set of individuals:
+    
+       Andreas Dilger\br
+       Dave Martindale\br
+       Guy Eric Schalnat\br
+       Paul Schmidt\br
+       Tim Wegner
+    
+    The PNG Reference Library is supplied "AS IS".  The Contributing Authors
+    and Group 42, Inc. disclaim all warranties, expressed or implied,
+    including, without limitation, the warranties of merchantability and of
+    fitness for any purpose.  The Contributing Authors and Group 42, Inc.
+    assume no liability for direct, indirect, incidental, special, exemplary,
+    or consequential damages, which may result from the use of the PNG
+    Reference Library, even if advised of the possibility of such damage.
+    
+    Permission is hereby granted to use, copy, modify, and distribute this
+    source code, or portions hereof, for any purpose, without fee, subject
+    to the following restrictions:
+    
+    1. The origin of this source code must not be misrepresented.
+    
+    2. Altered versions must be plainly marked as such and must not
+       be misrepresented as being the original source.
+    
+    3. This Copyright notice may not be removed or altered from any
+       source or altered source distribution.
+    
+    The Contributing Authors and Group 42, Inc. specifically permit, without
+    fee, and encourage the use of this source code as a component to
+    supporting the PNG file format in commercial products.  If you use this
+    source code in a product, acknowledgment is not required but would be
+    appreciated.
+    
     \hr
 
     See \c src/3rdparty/libpng/LICENSE for license details.
@@ -277,7 +372,7 @@
     \l{http://www.sqlite.org/copyright.html}{SQLite Copyright} page on the
     SQLite web site for further information.
 
-    \section1 TIFF Software Distribution (\c libtiff) version 3.8.2
+    \section1 TIFF Software Distribution (\c libtiff) version 3.9.2
 
     \e {libtiff is a set of C functions (a library) that support the
     manipulation of TIFF image files.} -- quoted from \c
@@ -406,12 +501,34 @@
 
     See \c src/3rdparty/wintab/wintab.h for license details.
 
-    \section1 Data Compression Library (\c zlib) version 1.2.3
+    \section1 Data Compression Library (\c zlib) version 1.2.5
 
     \e{zlib is a general purpose data compression library.  All the code
     is thread safe.  The data format used by the zlib library is described
     by RFCs (Request for Comments) 1950 to 1952} -- quoted from \c
     src/3rdparty/zlib/README.
+
+    \hr
+    
+    Copyright (C) 1995-2010 Jean-loup Gailly and Mark Adler
+  
+    This software is provided 'as-is', without any express or implied
+    warranty.  In no event will the authors be held liable for any damages
+    arising from the use of this software.
+  
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
+  
+    1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.\br
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.\br
+    3. This notice may not be removed or altered from any source distribution.
+
+    \hr
 
     See \c src/3rdparty/zlib/README for license details.
 

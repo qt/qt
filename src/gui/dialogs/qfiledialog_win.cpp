@@ -60,7 +60,6 @@
 #endif
 
 #ifdef Q_WS_WINCE
-#include <shlobj.h>
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
 #else
@@ -603,7 +602,7 @@ QString qt_win_CID_get_existing_directory(const QFileDialogArgs &args)
         // Set the FOS_PICKFOLDERS flag
         DWORD newOptions;
         hr = pfd->GetOptions(&newOptions);
-        newOptions |= FOS_PICKFOLDERS;
+        newOptions |= (FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
         if (SUCCEEDED(hr) && SUCCEEDED((hr = pfd->SetOptions(newOptions)))) {
             QWidget *parentWindow = args.parent;
             if (parentWindow)

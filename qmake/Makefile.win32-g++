@@ -15,7 +15,7 @@ CXX	    =	g++
 CFLAGS	    =	-c -o$@ -O \
 		-I. -Igenerators -Igenerators/unix \
 		-Igenerators/win32 -Igenerators/mac \
-		-Igenerators/symbian \
+		-Igenerators/symbian -Igenerators/integrity \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
@@ -39,7 +39,7 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
               msvc_objectmodel.o msbuild_objectmodel.o symmake.o initprojectdeploy_symbian.o \
-              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o
+              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o gbuild.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION
@@ -61,10 +61,13 @@ QTOBJS= \
 	qtemporaryfile.o \
 	qfileinfo.o \
 	qabstractfileengine.o \
+	qfilesystementry.o \
+	qfilesystemengine.o \
+	qfilesystemengine_win.o \
+	qfilesystemiterator_win.o \
 	qfsfileengine.o \
 	qfsfileengine_iterator.o \
 	qfsfileengine_win.o \
-	qfsfileengine_iterator_win.o \
 	qglobal.o \
 	qhash.o \
 	qiodevice.o \
@@ -72,6 +75,8 @@ QTOBJS= \
 	qlist.o \
 	qlinkedlist.o \
 	qlocale.o \
+	qlocale_tools.o \
+	qlocale_win.o \
 	qmalloc.o \
 	qmap.o \
 	qregexp.o \
@@ -79,6 +84,7 @@ QTOBJS= \
 	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
+	qsystemerror.o \
 	qsystemlibrary.o \
 	qtextstream.o \
 	quuid.o \
@@ -172,6 +178,12 @@ qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 qlocale.o: $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 
+qlocale_tools.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+
+qlocale_win.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+
 quuid.o: $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
 
@@ -193,11 +205,20 @@ qtemporaryfile.o: $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
 qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 
+qfilesystementry.o: $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
+
+qfilesystemengine.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
+
+qfilesystemengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+
+qfilesystemiterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
+
 qfsfileengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
-
-qfsfileengine_iterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_win.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_win.cpp
 
 qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
@@ -234,6 +255,9 @@ qdatetime.o: $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp
 
 qstringlist.o: $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
+
+qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
 qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
@@ -294,6 +318,9 @@ registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+
+gbuild.o: $(SOURCE_PATH)/qmake/generators/integrity/gbuild.cpp
+	$(CXX) $(CXXFLAGS) generators/integrity/gbuild.cpp
 
 project.o: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp

@@ -77,7 +77,7 @@ class QBitmap;
 class QPixmap;
 
 #if defined(Q_WS_MAC)
-void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+void qt_mac_set_cursor(const QCursor *c);
 #endif
 #if defined(Q_OS_SYMBIAN)
 extern void qt_symbian_show_pointer_sprite();
@@ -96,6 +96,10 @@ public:
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QCursor &operator=(QCursor &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     operator QVariant() const;
 
     Qt::CursorShape shape() const;
@@ -126,7 +130,7 @@ public:
     static int x11Screen();
 #elif defined(Q_WS_MAC)
     Qt::HANDLE handle() const;
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     int handle() const;
 #elif defined(Q_OS_SYMBIAN)
     Qt::HANDLE handle() const;
@@ -137,7 +141,8 @@ private:
     QCursorData *d;
 #if defined(Q_WS_MAC)
     friend void *qt_mac_nsCursorForQCursor(const QCursor &c);
-    friend void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+    friend void qt_mac_set_cursor(const QCursor *c);
+    friend void qt_mac_updateCursorWithWidgetUnderMouse(QWidget *widgetUnderMouse);
 #endif
 #if defined(Q_OS_SYMBIAN)
     friend void qt_symbian_show_pointer_sprite();

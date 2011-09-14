@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,6 @@
 #ifndef QTCPSERVERCONNECTION_H
 #define QTCPSERVERCONNECTION_H
 
-#include <QtGui/QStylePlugin>
 #include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -67,6 +66,7 @@ public:
     bool isConnected() const;
     void send(const QByteArray &message);
     void disconnect();
+    bool waitForMessage();
 
     void listen();
     void waitForConnection();

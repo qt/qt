@@ -864,7 +864,7 @@ quint64 QCoreWlanEngine::bytesReceived(const QString &id)
     return getBytes(interfaceStr,true);
 }
 
-quint64 QCoreWlanEngine::startTime(const QString &id)
+quint64 QCoreWlanEngine::startTime(const QString &identifier)
 {
     QMutexLocker locker(&mutex);
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
@@ -899,7 +899,7 @@ quint64 QCoreWlanEngine::startTime(const QString &id)
                 for(int i = 0; i < dictSize; i++) {
                     if([ssidStr isEqualToString:keys[i]]) {
                         const QString ident = QString::number(qHash(QLatin1String("corewlan:") + qt_NSStringToQString(objects[i])));
-                        if(ident == id) {
+                        if(ident == identifier) {
                             ok = true;
                         }
                     }

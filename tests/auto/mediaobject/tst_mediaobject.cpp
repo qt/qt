@@ -498,7 +498,7 @@ void tst_MediaObject::initTestCase()
         if (Phonon::ErrorState == s) {
 #ifdef Q_WS_WIN
             if (m_media->errorString().contains(QLatin1String("no audio hardware is available")))
-                QSKIP("On Windows we need an audio devide to perform the MediaObject tests", SkipAll); 
+                QSKIP("On Windows we need an audio device to perform the MediaObject tests", SkipAll);
             else
 #endif
             QFAIL("Loading the URL put the MediaObject into the ErrorState. Check that PHONON_TESTURL is set to a valid URL.");
@@ -748,7 +748,7 @@ void tst_MediaObject::playUrl()
     QVERIFY(media.state() != Phonon::ErrorState);
 
     //we use a long 30s timeout here as it can take a long time for the streaming source to
-    //be sucessfully prepared depending on the network.
+    //be successfully prepared depending on the network.
     if (media.state() != Phonon::StoppedState)
         QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 30000);
     QCOMPARE(media.state(), Phonon::StoppedState);
@@ -1192,7 +1192,7 @@ void tst_MediaObject::_testOneSeek(qint64 seekTo)
 void tst_MediaObject::volumeSliderMuteVisibility()
 {
     //this test doesn't really belong to mediaobject
-    // ### see if we should create a realy Phonon::VolumeSlider autotest
+    // ### see if we should create a really Phonon::VolumeSlider autotest
     Phonon::VolumeSlider slider;
     QVERIFY(slider.isMuteVisible()); // that is the default value
     slider.setMuteVisible(true);

@@ -79,6 +79,8 @@ public:
 
     void setGeometry(const QRect &rect);
 
+    WindowSurfaceFeatures features() const;
+
     CFbsBitmap *symbianBitmap() const;
 
 private:

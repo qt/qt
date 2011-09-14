@@ -179,10 +179,15 @@ void tst_QProgressBar::format()
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
+
 #ifndef Q_WS_MAC
-    // The Mac scroll bar is animated, which means we get paint events all the time.
+    // Animated scroll bars get paint events all the time
+#ifdef Q_OS_WIN
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)
+#endif
     QVERIFY(!bar.repainted);
 #endif
+
     QCOMPARE(bar.text(), QString("1 of 10 (10%)"));
     bar.setRange(5, 5);
     bar.setValue(5);

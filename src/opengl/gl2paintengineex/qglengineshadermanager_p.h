@@ -259,9 +259,9 @@ static const GLuint QT_PMV_MATRIX_3_ATTR = 5;
 
 class QGLEngineShaderProg;
 
-class QGLEngineSharedShaders : public QObject
+class Q_OPENGL_EXPORT QGLEngineSharedShaders
 {
-    Q_OBJECT
+    Q_GADGET
 public:
 
     enum SnippetName {
@@ -364,14 +364,12 @@ public:
     // full.
     void cleanupCustomStage(QGLCustomShaderStage* stage);
 
-signals:
-    void shaderProgNeedsChanging();
-
 private:
     QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;
     QGLShaderProgram *simpleShaderProg;
     QList<QGLEngineShaderProg*> cachedPrograms;
+    QList<QGLShader *> shaders;
 
     static const char* qShaderSnippets[TotalSnippetCount];
 };
@@ -444,6 +442,8 @@ public:
         Fmp,
         Fmp2MRadius2,
         Inverse2Fmp2MRadius2,
+        SqrFr,
+        BRadius,
         InvertedTextureSize,
         BrushTransform,
         BrushTexture,
@@ -491,9 +491,6 @@ public:
     QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
 
     QGLEngineSharedShaders* sharedShaders;
-
-private slots:
-    void shaderProgNeedsChangingSlot() { shaderProgNeedsChanging = true; }
 
 private:
     QGLContext*     ctx;

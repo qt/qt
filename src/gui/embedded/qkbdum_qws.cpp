@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qkbdum_qws.h"
-#include "qvfbhdr.h"
 
 #if !defined(QT_NO_QWS_KEYBOARD) && !defined(QT_NO_QWS_KBD_UM)
 
@@ -55,6 +54,7 @@
 #include <qwindowsystem_qws.h>
 #include <qsocketnotifier.h>
 #include "qplatformdefs.h"
+#include "qvfbhdr.h"
 
 QT_BEGIN_NAMESPACE
 

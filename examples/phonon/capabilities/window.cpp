@@ -121,19 +121,43 @@ void Window::updateWidgets()
 
 void Window::setupUi()
 {
-    setupBackendBox();
 
-    QLayout *layout = new QVBoxLayout;
-    layout->addWidget(backendBox);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    devicesListView = new QListView;
+    mimeListWidget = new QListWidget;
 
-    setLayout(layout);
-    setWindowTitle(tr("Backend Capabilities Example"));
-}
+    QStringList headerLabels;
+    headerLabels << tr("Type") << tr("Name") << tr("Description") <<
+                    tr("Value Type") << tr("Default/Min/Max Values");
 
-void Window::setupBackendBox()
-{
-    backendBox = new QGroupBox(tr("Backend Capabilities"));
+    effectsTreeWidget = new QTreeWidget;
+    effectsTreeWidget->setHeaderLabels(headerLabels);
+    effectsTreeWidget->setColumnCount(5);
 
+    QTabWidget *tabWidget = new QTabWidget;
+
+    QWidget *widgetDevices = new QWidget;
+    QVBoxLayout *devicesLayout = new QVBoxLayout;
+    devicesLayout->addWidget(devicesListView);
+    widgetDevices->setLayout(devicesLayout);
+
+    QWidget *widgetMimes = new QWidget;
+    QVBoxLayout *mimesLayout = new QVBoxLayout;
+    mimesLayout->addWidget(mimeListWidget);
+    widgetMimes->setLayout(mimesLayout);
+
+    QWidget *widgetEffects = new QWidget;
+    QVBoxLayout *effectsLayout = new QVBoxLayout;
+    effectsLayout->addWidget(effectsTreeWidget);
+    widgetEffects->setLayout(effectsLayout);
+
+    tabWidget->addTab(widgetDevices, tr("Audio Devices"));
+    tabWidget->addTab(widgetMimes, tr("MIME Types"));
+    tabWidget->addTab(widgetEffects, tr("Audio Effects"));
+
+    QLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(tabWidget);
+#else
     devicesLabel = new QLabel(tr("Available Audio Devices:"));
     devicesListView = new QListView;
 
@@ -151,6 +175,7 @@ void Window::setupBackendBox()
     effectsTreeWidget->setColumnCount(5);
 
     QGridLayout *layout = new QGridLayout;
+
     layout->addWidget(devicesLabel, 0, 0);
     layout->addWidget(devicesListView, 1, 0);
     layout->addWidget(mimeTypesLabel, 0, 1);
@@ -161,5 +186,12 @@ void Window::setupBackendBox()
 
     backendBox = new QGroupBox(tr("Backend Capabilities"));
     backendBox->setLayout(layout);
-}
 
+    QLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(backendBox);
+#endif
+
+    setLayout(mainLayout);
+    setWindowTitle(tr("Backend Capabilities Example"));
+
+}

@@ -86,7 +86,8 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     while (it.hasNext()) {
         QString path = it.next();
         QString normalPath = path;
-        if ((normalPath.endsWith(QLatin1Char('/')) || normalPath.endsWith(QLatin1Char('\\')))
+        if ((normalPath.endsWith(QLatin1Char('/')) && !normalPath.endsWith(QLatin1String(":/")))
+            || (normalPath.endsWith(QLatin1Char('\\')) && !normalPath.endsWith(QLatin1String(":\\")))
 #ifdef Q_OS_WINCE
             && normalPath.size() > 1)
 #else

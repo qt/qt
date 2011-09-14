@@ -14,11 +14,16 @@ symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince* {
 	CONFIG(debug, release|debug) {
-		addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
+		addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
 	}
 	CONFIG(release, release|debug) {
-		addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
+		addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
 	}
 	addPlugins.path = imageformats
 	DEPLOYMENT += addPlugins
 }
+
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+symbian: warning(This example does not work on Symbian platform)
+maemo5: warning(This example does not work on Maemo platform)
+simulator: warning(This example does not work on Simulator platform)

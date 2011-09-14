@@ -117,7 +117,7 @@
 
     \snippet examples/tools/customtype/main.cpp storing a custom value
 
-    Alternatively, the qVariantFromValue() and qVariantSetValue() functions
+    Alternatively, the QVariant::fromValue() and qVariantSetValue() functions
     can be used if you are using a compiler without support for member template
     functions.
 

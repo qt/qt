@@ -38,12 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
 
 #include "contentwindow.h"
+
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "openpagesmanager.h"
+#include "tracer.h"
 
 #include <QtGui/QLayout>
 #include <QtGui/QFocusEvent>
@@ -146,8 +148,8 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
                     qobject_cast<QHelpContentModel*>(m_contentWidget->model());
                 if (contentModel) {
                     QHelpContentItem *itm = contentModel->contentItemAt(index);
-                    if (itm && AbstractHelpViewer::canOpenPage(itm->url().path()))
-                        CentralWidget::instance()->setSourceInNewTab(itm->url());
+                    if (itm && HelpViewer::canOpenPage(itm->url().path()))
+                        OpenPagesManager::instance()->createPage(itm->url());
                 }
             } else if (button == Qt::LeftButton) {
                 itemClicked(index);
@@ -172,7 +174,7 @@ void ContentWindow::showContextMenu(const QPoint &pos)
     QMenu menu;
     QAction *curTab = menu.addAction(tr("Open Link"));
     QAction *newTab = menu.addAction(tr("Open Link in New Tab"));
-    if (!AbstractHelpViewer::canOpenPage(itm->url().path()))
+    if (!HelpViewer::canOpenPage(itm->url().path()))
         newTab->setEnabled(false);
     
     menu.move(m_contentWidget->mapToGlobal(pos));
@@ -181,7 +183,7 @@ void ContentWindow::showContextMenu(const QPoint &pos)
     if (curTab == action)
         emit linkActivated(itm->url());
     else if (newTab == action)
-        CentralWidget::instance()->setSourceInNewTab(itm->url());
+        OpenPagesManager::instance()->createPage(itm->url());
 }
 
 void ContentWindow::itemClicked(const QModelIndex &index)

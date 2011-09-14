@@ -55,6 +55,10 @@
 #include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
+#ifndef QT_NO_ACCESSIBILITY
+#include <qaccessible.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -87,6 +91,13 @@ QT_BEGIN_NAMESPACE
          \o The same as an empty plain text. This is the default. Set
             by clear().
     \endtable
+
+    \warning When passing a QString to the constructor or calling setText(),
+    make sure to sanitize your input, as QLabel tries to guess whether it
+    displays the text as plain text or as rich text. You may want to call
+    setTextFormat() explicitly, e.g. in case you expect the text to be in
+    plain format but cannot control the text source (for instance when
+    displaying data loaded from the Web).
 
     When the content is changed using any of these functions, any
     previous content is cleared.
@@ -370,6 +381,11 @@ void QLabel::setText(const QString &text)
 #endif
 
     d->updateLabel();
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (accessibleName().isEmpty())
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 QString QLabel::text() const
@@ -1072,7 +1088,7 @@ void QLabel::paintEvent(QPaintEvent *)
     else
 #endif
     if (d->isTextLabel) {
-        QRectF lr = d->layoutRect();
+        QRectF lr = d->layoutRect().toAlignedRect();
         QStyleOption opt;
         opt.initFrom(this);
 #ifndef QT_NO_STYLE_STYLESHEET

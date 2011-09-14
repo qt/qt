@@ -202,7 +202,7 @@ namespace QPatternist
 
         private:
             SchemaType::Ptr           m_superType;
-            NamedSchemaComponent::Ptr m_context;
+            NamedSchemaComponent*     m_context;
             AnySimpleType::Ptr        m_primitiveType;
             AnySimpleType::Ptr        m_itemType;
             AnySimpleType::List       m_memberTypes;

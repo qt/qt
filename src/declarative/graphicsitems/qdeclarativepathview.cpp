@@ -203,7 +203,9 @@ void QDeclarativePathViewPrivate::createHighlight()
 
     bool changed = false;
     if (highlightItem) {
-        delete highlightItem;
+        if (highlightItem->scene())
+            highlightItem->scene()->removeItem(highlightItem);
+        highlightItem->deleteLater();
         highlightItem = 0;
         changed = true;
     }

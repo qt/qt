@@ -83,8 +83,8 @@ breakpad {
     win32:PROJECTPATH ~= s,/,\\,
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += $$quote($${QT_BREAKPAD_ROOT_PATH}$${DIR_SEPARATOR}qtbreakpadsymbols \"$$DEBUGFILENAME\" \"$$PROJECTPATH\")
-    !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$quote($$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$QMAKE_STRIP \"$$DEBUGFILENAME\")
+    QMAKE_POST_LINK = $$QMAKE_POST_LINK$$quote($${QT_BREAKPAD_ROOT_PATH}$${QMAKE_DIR_SEP}qtbreakpadsymbols \"$$DEBUGFILENAME\" \"$$PROJECTPATH\")
+    !isEmpty(QMAKE_STRIP):QMAKE_POST_LINK = $$QMAKE_POST_LINK$$escape_expand(\\n\\t)$$quote($$QMAKE_STRIP \"$$DEBUGFILENAME\")
 
     unset(TARGET_BASEPATH)
     unset(SYMBOLFILENAME)

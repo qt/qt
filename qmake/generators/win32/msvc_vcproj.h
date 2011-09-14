@@ -57,6 +57,7 @@ struct QUuid;
 class VcprojGenerator : public Win32MakefileGenerator
 {
     bool init_flag;
+    bool is64Bit;
     bool writeVcprojParts(QTextStream &);
 
     bool writeMakefile(QTextStream &);
@@ -78,8 +79,10 @@ public:
     QMap<QString, QStringList> extraCompilerSources;
     QMap<QString, QStringList> extraCompilerOutputs;
     bool usePCH;
+    VCProjectWriter *projectWriter;
 
 protected:
+    virtual VCProjectWriter *createProjectWriter();
     virtual bool doDepends() const { return false; } //never necesary
     virtual void processSources() { filterIncludedFiles("SOURCES"); filterIncludedFiles("GENERATED_SOURCES"); }
     virtual QString replaceExtraCompilerVariables(const QString &, const QStringList &, const QStringList &);
@@ -90,7 +93,6 @@ protected:
     virtual bool mergeBuildProject(MakefileGenerator *other);
 
     virtual bool openOutput(QFile &file, const QString &build) const;
-    virtual void processPrlVariable(const QString &, const QStringList &);
     virtual bool findLibraries();
     virtual void outputVariables();
     QString fixFilename(QString ofile) const;
@@ -134,9 +136,6 @@ private:
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };
-
-inline VcprojGenerator::~VcprojGenerator()
-{ }
 
 inline QString VcprojGenerator::defaultMakefile() const
 {

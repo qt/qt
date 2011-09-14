@@ -332,6 +332,8 @@ struct QGLExtensionFuncs
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
 
+        qt_bufferFuncsResolved = false;
+
         qt_glProgramParameteriEXT = 0;
         qt_glFramebufferTextureEXT = 0;
         qt_glFramebufferTextureLayerEXT = 0;
@@ -457,6 +459,8 @@ struct QGLExtensionFuncs
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
 
+    bool qt_bufferFuncsResolved;
+
     // Geometry shaders...
     _glProgramParameteriEXT qt_glProgramParameteriEXT;
     _glFramebufferTextureEXT qt_glFramebufferTextureEXT;
@@ -476,6 +480,14 @@ struct QGLExtensionFuncs
 
 
 // OpenGL constants
+
+#ifndef FRAMEBUFFER_SRGB_CAPABLE_EXT
+#define FRAMEBUFFER_SRGB_CAPABLE_EXT 0x8DBA
+#endif
+
+#ifndef FRAMEBUFFER_SRGB_EXT
+#define FRAMEBUFFER_SRGB_EXT 0x8DB9
+#endif
 
 #ifndef GL_ARRAY_BUFFER
 #define GL_ARRAY_BUFFER                   0x8892
@@ -879,10 +891,10 @@ struct QGLExtensionFuncs
 #endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);
-bool qt_resolve_buffer_extensions(QGLContext *ctx);
+bool Q_OPENGL_EXPORT qt_resolve_buffer_extensions(QGLContext *ctx);
 
 bool qt_resolve_version_1_3_functions(QGLContext *ctx);
-bool qt_resolve_version_2_0_functions(QGLContext *ctx);
+bool Q_OPENGL_EXPORT qt_resolve_version_2_0_functions(QGLContext *ctx);
 bool qt_resolve_stencil_face_extension(QGLContext *ctx);
 bool qt_resolve_frag_program_extensions(QGLContext *ctx);
 

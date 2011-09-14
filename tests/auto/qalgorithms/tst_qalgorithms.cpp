@@ -81,6 +81,7 @@ private slots:
     void test_qBinaryFind();
     void qBinaryFindOneEntry();
     void swap();
+    void swap2();
     void sortEmptyList();
     void sortedList();
     void sortAPItest();
@@ -240,7 +241,8 @@ QList<ResultSet> testAlgorithm(Algorithm &algorithm,  QStringList dataSetTypes, 
     foreach(QString dataSetType, dataSetTypes) {
         QVector<DataType> container = generateData<DataType>(dataSetType, size);
         results.append(testRun(container, algorithm, time));
-        Q_ASSERT(isSorted(container));
+        if (!isSorted(container))
+            qWarning("%s: container is not sorted after test", Q_FUNC_INFO);
     }
     return results;
 }
@@ -518,6 +520,28 @@ void tst_QAlgorithms::swap()
     {
         const QString * const *a = 0, * const *b = 0;
         qSwap(a, b);
+    }
+}
+
+namespace SwapTest {
+    struct ST { int i; int j; };
+    void swap(ST &a, ST &b) {
+        a.i = b.j;
+        b.i = a.j;
+    }
+}
+
+void tst_QAlgorithms::swap2()
+{
+    {
+#ifndef QT_NO_SQL
+        //check the namespace lookup works correctly
+        SwapTest::ST a = { 45, 65 };
+        SwapTest::ST b = { 48, 68 };
+        qSwap(a, b);
+        QCOMPARE(a.i, 68);
+        QCOMPARE(b.i, 65);
+#endif
     }
 }
 

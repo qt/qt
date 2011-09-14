@@ -48,6 +48,7 @@
 #include "qfileinfo.h"
 #include "private/qiodevice_p.h"
 #include "private/qfile_p.h"
+#include "private/qsystemerror_p.h"
 #if defined(QT_BUILD_CORE_LIB)
 # include "qcoreapplication.h"
 #endif
@@ -102,7 +103,7 @@ QFilePrivate::~QFilePrivate()
 }
 
 bool
-QFilePrivate::openExternalFile(int flags, int fd)
+QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleFlags)
 {
 #ifdef QT_NO_FSFILEENGINE
     Q_UNUSED(flags);
@@ -112,14 +113,13 @@ QFilePrivate::openExternalFile(int flags, int fd)
     delete fileEngine;
     fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
-    fe->setFileName(fileName);
     fileEngine = fe;
-    return fe->open(QIODevice::OpenMode(flags), fd);
+    return fe->open(QIODevice::OpenMode(flags), fd, handleFlags);
 #endif
 }
 
 bool
-QFilePrivate::openExternalFile(int flags, FILE *fh)
+QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
 #ifdef QT_NO_FSFILEENGINE
     Q_UNUSED(flags);
@@ -129,11 +129,27 @@ QFilePrivate::openExternalFile(int flags, FILE *fh)
     delete fileEngine;
     fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
-    fe->setFileName(fileName);
     fileEngine = fe;
-    return fe->open(QIODevice::OpenMode(flags), fh);
+    return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
 #endif
 }
+
+#ifdef Q_OS_SYMBIAN
+bool QFilePrivate::openExternalFile(int flags, const RFile &f, QFile::FileHandleFlags handleFlags)
+{
+#ifdef QT_NO_FSFILEENGINE
+    Q_UNUSED(flags);
+    Q_UNUSED(fh);
+    return false;
+#else
+    delete fileEngine;
+    fileEngine = 0;
+    QFSFileEngine *fe = new QFSFileEngine;
+    fileEngine = fe;
+    return fe->open(QIODevice::OpenMode(flags), f, handleFlags);
+#endif
+}
+#endif
 
 inline bool QFilePrivate::ensureFlushed() const
 {
@@ -339,6 +355,23 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
 
     \snippet doc/src/snippets/ntfsp.cpp 1
 */
+
+/*!
+    \enum QFile::FileHandleFlag
+    \since 4.8
+
+    This enum is used when opening a file to specify additional
+    options which only apply to files and not to a generic
+    QIODevice.
+
+    \value AutoCloseHandle The file handle passed into open() should be
+    closed by close(), the default behaviour is that close just flushes
+    the file and the application is responsible for closing the file handle.
+    When opening a file by name, this flag is ignored as Qt always "owns" the
+    file handle and must close it.
+    \value DontCloseHandle The file handle passed into open() will not be
+    closed by Qt. The application must ensure that close() is called.
+ */
 
 #ifdef QT3_SUPPORT
 /*!
@@ -992,8 +1025,14 @@ bool QFile::open(OpenMode mode)
         return false;
     }
 
+#ifdef Q_OS_SYMBIAN
+    // For symbian, the unbuffered flag is used to control write-behind cache behaviour
+    if (fileEngine()->open(mode))
+#else
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
+    if (fileEngine()->open(mode | QIODevice::Unbuffered))
+#endif
+    {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
@@ -1051,7 +1090,56 @@ bool QFile::open(OpenMode mode)
 
     \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 4
 */
+// ### Qt5: merge this into new overload with a default parameter
 bool QFile::open(FILE *fh, OpenMode mode)
+{
+    return open(fh, mode, DontCloseHandle);
+}
+
+/*!
+    \overload
+
+    Opens the existing file handle \a fh in the given \a mode.
+    Returns true if successful; otherwise returns false.
+
+    Example:
+    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 3
+
+    When a QFile is opened using this function, behaviour of close() is
+    controlled by the AutoCloseHandle flag.
+    If AutoCloseHandle is specified, and this function succeeds,
+    then calling close() closes the adopted handle.
+    Otherwise, close() does not actually close the file, but only flushes it.
+
+    \bold{Warning:}
+    \list 1
+        \o If \a fh does not refer to a regular file, e.g., it is \c stdin,
+           \c stdout, or \c stderr, you may not be able to seek(). size()
+           returns \c 0 in those cases. See QIODevice::isSequential() for
+           more information.
+        \o Since this function opens the file without specifying the file name,
+           you cannot use this QFile with a QFileInfo.
+    \endlist
+
+    \note For Windows CE you may not be able to call resize().
+
+    \sa close(), {qmake Variable Reference#CONFIG}{qmake Variable Reference}
+
+    \bold{Note for the Windows Platform}
+
+    \a fh must be opened in binary mode (i.e., the mode string must contain
+    'b', as in "rb" or "wb") when accessing files and other random-access
+    devices. Qt will translate the end-of-line characters if you pass
+    QIODevice::Text to \a mode. Sequential devices, such as stdin and stdout,
+    are unaffected by this limitation.
+
+    You need to enable support for console applications in order to use the
+    stdin, stdout and stderr streams at the console. To do this, add the
+    following declaration to your application's project file:
+
+    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 4
+*/
+bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
 {
     Q_D(QFile);
     if (isOpen()) {
@@ -1065,7 +1153,7 @@ bool QFile::open(FILE *fh, OpenMode mode)
         qWarning("QFile::open: File access not specified");
         return false;
     }
-    if(d->openExternalFile(mode, fh)) {
+    if (d->openExternalFile(mode, fh, handleFlags)) {
         QIODevice::open(mode);
         if (mode & Append) {
             seek(size());
@@ -1111,7 +1199,43 @@ bool QFile::open(FILE *fh, OpenMode mode)
 
     \sa close()
 */
+// ### Qt5: merge this into new overload with a default parameter
 bool QFile::open(int fd, OpenMode mode)
+{
+    return open(fd, mode, DontCloseHandle);
+}
+
+/*!
+    \overload
+
+    Opens the existing file descriptor \a fd in the given \a mode.
+    Returns true if successful; otherwise returns false.
+
+    When a QFile is opened using this function, behaviour of close() is
+    controlled by the \a handleFlags argument.
+    If AutoCloseHandle is specified, and this function succeeds,
+    then calling close() closes the adopted handle.
+    Otherwise, close() does not actually close the file, but only flushes it.
+
+    The QFile that is opened using this function is automatically set
+    to be in raw mode; this means that the file input/output functions
+    are slow. If you run into performance issues, you should try to
+    use one of the other open functions.
+
+    \warning If \a fd is not a regular file, e.g, it is 0 (\c stdin),
+    1 (\c stdout), or 2 (\c stderr), you may not be able to seek(). In
+    those cases, size() returns \c 0.  See QIODevice::isSequential()
+    for more information.
+
+    \warning For Windows CE you may not be able to call seek(), setSize(),
+    fileTime(). size() returns \c 0.
+
+    \warning Since this function opens the file without specifying the file name,
+             you cannot use this QFile with a QFileInfo.
+
+    \sa close()
+*/
+bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
 {
     Q_D(QFile);
     if (isOpen()) {
@@ -1125,7 +1249,7 @@ bool QFile::open(int fd, OpenMode mode)
         qWarning("QFile::open: File access not specified");
         return false;
     }
-    if(d->openExternalFile(mode, fd)) {
+    if (d->openExternalFile(mode, fd, handleFlags)) {
         QIODevice::open(mode);
         if (mode & Append) {
             seek(size());
@@ -1138,6 +1262,63 @@ bool QFile::open(int fd, OpenMode mode)
     }
     return false;
 }
+
+#ifdef Q_OS_SYMBIAN
+/*!
+    \overload
+
+    Opens the existing file object \a f in the given \a mode.
+    Returns true if successful; otherwise returns false.
+
+    When a QFile is opened using this function, behaviour of close() is
+    controlled by the \a handleFlags argument.
+    If AutoCloseHandle is specified, and this function succeeds,
+    then calling close() closes the adopted handle.
+    Otherwise, close() does not actually close the file, but only flushes it.
+
+    \warning If the file handle is adopted from another process,
+             you may not be able to use this QFile with a QFileInfo.
+
+    \sa close()
+*/
+bool QFile::open(const RFile &f, OpenMode mode, FileHandleFlags handleFlags)
+{
+    Q_D(QFile);
+    if (isOpen()) {
+        qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
+        return false;
+    }
+    if (mode & Append)
+        mode |= WriteOnly;
+    unsetError();
+    if ((mode & (ReadOnly | WriteOnly)) == 0) {
+        qWarning("QFile::open: File access not specified");
+        return false;
+    }
+    if (d->openExternalFile(mode, f, handleFlags)) {
+        bool ok = QIODevice::open(mode);
+        if (ok) {
+            if (mode & Append) {
+                ok = seek(size());
+            } else {
+                qint64 pos = 0;
+                TInt err;
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+                err = static_cast<const RFile64&>(f).Seek(ESeekCurrent, pos);
+#else
+                TInt pos32 = 0;
+                err = f.Seek(ESeekCurrent, pos32);
+                pos = pos32;
+#endif
+                ok = ok && (err == KErrNone);
+                ok = ok && seek(pos);
+            }
+        }
+        return ok;
+    }
+    return false;
+}
+#endif
 
 /*!
   Returns the file handle of the file.
@@ -1223,6 +1404,7 @@ bool QFile::unmap(uchar *address)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;
     }
+    d->setError(PermissionsError, tr("No file engine available or engine does not support UnMapExtension"));
     return false;
 }
 
@@ -1477,7 +1659,20 @@ bool QFile::atEnd() const
 }
 
 /*!
-  \reimp
+    \fn bool QFile::seek(qint64 pos)
+    \since 4.8
+
+    For random-access devices, this function sets the current position
+    to \a pos, returning true on success, or false if an error occurred.
+    For sequential devices, the default behavior is to do nothing and
+    return false.
+
+    Seeking beyond the end of a file:
+    If the position is beyond the end of a file, then seek() shall not
+    immediately extend the file. If a write is performed at this position,
+    then the file shall be extended. The content of the file between the
+    previous end of file and the newly written data is UNDEFINED and
+    varies between platforms and file systems.
 */
 
 bool QFile::seek(qint64 off)

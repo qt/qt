@@ -4,3 +4,4 @@ QT = core
 
 SOURCES += tst_qnumeric.cpp
 QT = core
+CONFIG += parallel_test

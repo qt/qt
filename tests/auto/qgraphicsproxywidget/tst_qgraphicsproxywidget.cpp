@@ -183,6 +183,7 @@ private slots:
     void inputMethod();
     void clickFocus();
     void windowFrameMargins();
+    void QTBUG_6986_sendMouseEventToAlienWidget();
 };
 
 // Subclass that exposes the protected functions.
@@ -1497,6 +1498,10 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
+#if defined(QT_MAC_USE_COCOA)
+    if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+        QEXPECT_FAIL(0, "Cocoa will send us one aggregated update", Abort);
+#endif
     QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
@@ -3581,6 +3586,70 @@ void tst_QGraphicsProxyWidget::windowFrameMargins()
     proxy->unsetWindowFrameMargins();
     proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
     QVERIFY(top > 0);
+}
+
+class HoverButton : public QPushButton
+{
+public:
+    HoverButton(QWidget *parent = 0) : QPushButton(parent), hoverLeaveReceived(false)
+    {}
+
+    bool hoverLeaveReceived;
+
+    bool event(QEvent* e)
+    {
+        if(QEvent::HoverLeave == e->type())
+            hoverLeaveReceived = true;
+        return QPushButton::event(e);
+    }
+};
+
+class Scene : public QGraphicsScene
+{
+Q_OBJECT
+public:
+    Scene() {
+        QWidget *background = new QWidget;
+        background->setGeometry(0, 0, 500, 500);
+        hoverButton = new HoverButton;
+        hoverButton->setParent(background);
+        hoverButton->setText("Second button");
+        hoverButton->setGeometry(10, 10, 200, 50);
+        addWidget(background);
+
+        QPushButton *hideButton = new QPushButton("I'm a button with a very very long text");
+        hideButton->setGeometry(10, 10, 400, 50);
+        topButton = addWidget(hideButton);
+        connect(hideButton, SIGNAL(clicked()), this, SLOT(hideButton()));
+        topButton->setFocus();
+    }
+
+    QGraphicsProxyWidget *topButton;
+    HoverButton *hoverButton;
+
+public slots:
+    void hideButton() {
+       QCursor::setPos(600,600);
+       topButton->hide();
+    }
+};
+
+void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
+{
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(QT_NO_CURSOR)
+    QSKIP("Test case unstable on this platform", SkipAll);
+#endif
+    QGraphicsView view;
+    Scene scene;
+    view.setScene(&scene);
+    view.resize(600, 600);
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QCursor::setPos(view.mapToGlobal(view.mapFromScene(scene.topButton->boundingRect().center())));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(scene.topButton->scenePos()));
+    QTRY_COMPARE(scene.hoverButton->hoverLeaveReceived, true);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

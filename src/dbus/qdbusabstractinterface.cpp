@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 static QDBusError checkIfValid(const QString &service, const QString &path,
-                               const QString &interface, bool isDynamic)
+                               const QString &interface, bool isDynamic, bool isPeer)
 {
     // We should be throwing exceptions here... oh well
     QDBusError error;
@@ -69,7 +69,7 @@ static QDBusError checkIfValid(const QString &service, const QString &path,
         // use assertion here because this should never happen, at all
         Q_ASSERT_X(!interface.isEmpty(), "QDBusAbstractInterface", "Interface name cannot be empty");
     }
-    if (!QDBusUtil::checkBusName(service, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
+    if (!QDBusUtil::checkBusName(service, (isDynamic && !isPeer) ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
         return error;
     if (!QDBusUtil::checkObjectPath(path, isDynamic ? QDBusUtil::EmptyNotAllowed : QDBusUtil::EmptyAllowed, &error))
         return error;
@@ -86,7 +86,9 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
                                                              const QDBusConnection& con,
                                                              bool isDynamic)
     : connection(con), service(serv), path(p), interface(iface),
-      lastError(checkIfValid(serv, p, iface, isDynamic)),
+      lastError(checkIfValid(serv, p, iface, isDynamic, (connectionPrivate() &&
+                                                         connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode))),
+      timeout(-1),
       isValid(!lastError.isValid())
 {
     if (!isValid)
@@ -107,7 +109,7 @@ bool QDBusAbstractInterfacePrivate::canMakeCalls() const
 {
     // recheck only if we have a wildcard (i.e. empty) service or path
     // if any are empty, set the error message according to QDBusUtil
-    if (service.isEmpty())
+    if (service.isEmpty() && connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
         return QDBusUtil::checkBusName(service, QDBusUtil::EmptyNotAllowed, &lastError);
     if (path.isEmpty())
         return QDBusUtil::checkObjectPath(path, QDBusUtil::EmptyNotAllowed, &lastError);
@@ -143,7 +145,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
                                                       QLatin1String("Get"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << interface << QString::fromUtf8(mp.name());
-    QDBusMessage reply = connection.call(msg, QDBus::Block);
+    QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
@@ -208,8 +210,8 @@ bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
                                                 QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                 QLatin1String("Set"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
-    msg << interface << QString::fromUtf8(mp.name()) << qVariantFromValue(QDBusVariant(value));
-    QDBusMessage reply = connection.call(msg, QDBus::Block);
+    msg << interface << QString::fromUtf8(mp.name()) << QVariant::fromValue(QDBusVariant(value));
+    QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
         lastError = reply;
@@ -383,6 +385,28 @@ QDBusError QDBusAbstractInterface::lastError() const
 }
 
 /*!
+    Sets the timeout in seconds for all future DBus calls to \a timeout.
+    -1 means the default DBus timeout (usually 25 seconds).
+
+    \since 4.8
+*/
+void QDBusAbstractInterface::setTimeout(int timeout)
+{
+    d_func()->timeout = timeout;
+}
+
+/*!
+    Returns the current value of the timeout in seconds.
+    -1 means the default DBus timeout (usually 25 seconds).
+
+    \since 4.8
+*/
+int QDBusAbstractInterface::timeout() const
+{
+    return d_func()->timeout;
+}
+
+/*!
     Places a call to the remote method specified by \a method on this interface, using \a args as
     arguments. This function returns the message that was received as a reply, which can be a normal
     QDBusMessage::ReplyMessage (indicating success) or QDBusMessage::ErrorMessage (if the call
@@ -441,7 +465,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
-    QDBusMessage reply = d->connection.call(msg, mode);
+    QDBusMessage reply = d->connection.call(msg, mode, d->timeout);
     if (thread() == QThread::currentThread())
         d->lastError = reply;       // will clear if reply isn't an error
 
@@ -474,7 +498,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(), interface(), method);
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
-    return d->connection.asyncCall(msg);
+    return d->connection.asyncCall(msg, d->timeout);
 }
 
 /*!

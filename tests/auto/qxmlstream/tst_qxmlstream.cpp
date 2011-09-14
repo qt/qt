@@ -55,6 +55,10 @@
 //TESTED_CLASS=QXmlStreamReader QXmlStreamWriter
 //TESTED_FILES=corelib/xml/stream/qxmlutils.cpp corelib/xml/stream/qxmlstream.cpp corelib/xml/stream/qxmlstream_p.h
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
 static const char *const catalogFile = SRCDIR "XML-Test-Suite/xmlconf/finalCatalog.xml";
@@ -217,8 +221,7 @@ static QString documentElement(const QByteArray &document)
         reader.readNext();
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO,
-               qPrintable(QString::fromLatin1("The input %1 didn't contain an element.").arg(QString::fromUtf8(document.constData()))));
+    qFatal("The input %s didn't contain an element", document.constData());
     return QString();
 }
 
@@ -261,7 +264,8 @@ public:
                                                     expected(aExpected),
                                                     output(aOutput)
         {
-            Q_ASSERT(!aId.isEmpty());
+            if (aId.isEmpty())
+                qFatal("%s: aId must not be an empty string", Q_FUNC_INFO);
         }
 
         QString     id;
@@ -285,7 +289,8 @@ public:
     TestSuiteHandler(const QUrl &baseURI) : runCount(0),
                                             skipCount(0)
     {
-        Q_ASSERT(baseURI.isValid());
+        if (!baseURI.isValid())
+            qFatal("%s: baseURI must be valid", Q_FUNC_INFO);
         m_baseURI.push(baseURI);
     }
 
@@ -457,7 +462,7 @@ public:
             }
             else
             {
-                Q_ASSERT_X(false, Q_FUNC_INFO, "The input catalog is invalid.");
+                qFatal("The input catalog is invalid.");
                 return false;
             }
         }
@@ -477,9 +482,12 @@ public:
 
     static bool isWellformed(QIODevice *const inputFile, const ParseMode mode)
     {
-        Q_ASSERT(inputFile);
-        Q_ASSERT_X(inputFile->isOpen(), Q_FUNC_INFO, "The caller is responsible for opening the device.");
-        Q_ASSERT(mode == ParseIncrementally || mode == ParseSinglePass);
+        if (!inputFile)
+            qFatal("%s: inputFile must be a valid QIODevice pointer", Q_FUNC_INFO);
+        if (!inputFile->isOpen())
+            qFatal("%s: inputFile must be opened by the caller", Q_FUNC_INFO);
+        if (mode != ParseIncrementally && mode != ParseSinglePass)
+            qFatal("%s: mode must be either ParseIncrementally or ParseSinglePass", Q_FUNC_INFO);
 
         if(mode == ParseIncrementally)
         {
@@ -570,6 +578,7 @@ private slots:
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void qtbug9196_crash() const;
+    void hasError() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1554,6 +1563,87 @@ void tst_QXmlStream::qtbug9196_crash() const
     while (!xml.atEnd()) {
          xml.readNext();
     }
+}
+
+class FakeBuffer : public QBuffer
+{
+protected:
+    qint64 writeData(const char *c, qint64 i)
+    {
+        qint64 ai = qMin(m_capacity, i);
+        m_capacity -= ai;
+        return ai ? QBuffer::writeData(c, ai) : 0;
+    }
+public:
+    void setCapacity(int capacity) { m_capacity = capacity; }
+private:
+    qint64 m_capacity;
+};
+
+void tst_QXmlStream::hasError() const
+{
+    {
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(1000);
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        writer.writeEndDocument();
+        QVERIFY(!writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"));
+    }
+
+    {
+        // Failure caused by write(QString)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\""));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\""));
+    }
+
+    {
+        // Failure caused by write(char *)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\"1.0"));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0"));
+    }
+
+    {
+        // Failure caused by write(QStringRef)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        writer.writeStartElement("test");
+        writer.writeNamespace("http://foo.bar", "foo");
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+    }
+
+    {
+        // Refusal to write after 1st failure
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(10);
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml vers"));
+        fb.setCapacity(1000);
+        writer.writeStartElement("test"); // literal & qstring
+        writer.writeNamespace("http://foo.bar", "foo"); // literal & qstringref
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml vers"));
+    }
+
 }
 
 #include "tst_qxmlstream.moc"

@@ -73,12 +73,12 @@ class QNetworkConfigurationExport QNetworkConfiguration
 public:
     QNetworkConfiguration();
     QNetworkConfiguration(const QNetworkConfiguration& other);
-    QNetworkConfiguration &operator=(const QNetworkConfiguration& other);
+    QNetworkConfiguration &operator=(const QNetworkConfiguration &other);
     ~QNetworkConfiguration();
 
-    bool operator==(const QNetworkConfiguration& cp) const;
-    inline bool operator!=(const QNetworkConfiguration& cp) const
-    { return !operator==(cp); }
+    bool operator==(const QNetworkConfiguration &other) const;
+    inline bool operator!=(const QNetworkConfiguration &other) const
+    { return !operator==(other); }
 
     enum Type {
         InternetAccessPoint = 0,
@@ -100,7 +100,6 @@ public:
         Discovered       = 0x0000006,
         Active           = 0x000000e
     };
-
     Q_DECLARE_FLAGS(StateFlags, StateFlag)
 
 #ifndef QT_MOBILITY_BEARER
@@ -155,4 +154,4 @@ QTM_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif //QNETWORKCONFIGURATION_H
+#endif // QNETWORKCONFIGURATION_H

@@ -182,6 +182,14 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setValue("\"\\\"a, b; c\\\"\"");
     QTest::newRow("with-value-with-special5") << "a = \"\\\"a, b; c\\\"\"" << cookie;
 
+    cookie.setValue("b c");
+    QTest::newRow("with-value-with-whitespace") << "a = b c" << cookie;
+
+    cookie.setValue("\"b\"");
+    QTest::newRow("quoted-value") << "a = \"b\"" << cookie;
+    cookie.setValue("\"b c\"");
+    QTest::newRow("quoted-value-with-whitespace") << "a = \"b c\"" << cookie;
+
     cookie.setValue("b");
     cookie.setSecure(true);
     QTest::newRow("secure") << "a=b;secure" << cookie;
@@ -707,6 +715,7 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     cookie.setDomain("!@#$%^&*();:."); // the ';' is actually problematic, because it is a separator
     list = QList<QNetworkCookie>();
     QTest::newRow("domain-non-alpha-numeric") << "NonAlphNumDomName=NonAlphNumDomValue; domain=!@#$%^&*()" << list;
+    QTest::newRow("expiration-3digit1") << "a=b; expires=123" << list; // used to ASSERT
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()

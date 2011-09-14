@@ -41,9 +41,8 @@
 #ifndef EXAMPLE_H
 #define EXAMPLE_H
 
-#include <q3popupmenu.h>
-#include <q3mainwindow.h>
-#include <q3intdict.h>
+#include <QMenu>
+#include <QMainWindow>
 #include <QMouseEvent>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -76,11 +75,11 @@ signals:
     void status(const QString&);
 };
 
-class Main : public Q3MainWindow {
+class Main : public QMainWindow {
     Q_OBJECT
 
 public:
-    Main(QGraphicsScene&, QWidget* parent=0, const char* name=0, Qt::WindowFlags f=0);
+    Main(QGraphicsScene&, QWidget* parent=0, Qt::WindowFlags f=0);
     ~Main();
 
 public slots:
@@ -122,9 +121,10 @@ private:
     QGraphicsScene& canvas;
     FigureEditor *editor;
 
-    Q3PopupMenu* options;
+    QMenu* options;
+#if !defined(Q_OS_SYMBIAN)
     QPrinter* printer;
-    int dbf_id;
+#endif
 };
 
 #endif

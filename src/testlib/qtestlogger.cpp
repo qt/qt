@@ -62,7 +62,8 @@ QTestLogger::QTestLogger(int fm)
     warningCounter(0), skipCounter(0),
     systemCounter(0), qdebugCounter(0),
     qwarnCounter(0), qfatalCounter(0),
-    infoCounter(0)
+    infoCounter(0), randomSeed_(0),
+    hasRandomSeed_(false)
 {
 }
 
@@ -132,6 +133,14 @@ void QTestLogger::stopLogging()
         property->addAttribute(QTest::AI_Name, "QtVersion");
         property->addAttribute(QTest::AI_PropertyValue, qVersion());
         properties->addLogElement(property);
+
+        if (hasRandomSeed()) {
+            property = new QTestElement(QTest::LET_Property);
+            property->addAttribute(QTest::AI_Name, "RandomSeed");
+            QTest::qt_snprintf(buf, sizeof(buf), "%i", randomSeed());
+            property->addAttribute(QTest::AI_PropertyValue, buf);
+            properties->addLogElement(property);
+        }
 
         currentLogElement->addLogElement(properties);
 
@@ -418,6 +427,22 @@ int QTestLogger::qfatalCount() const
 int QTestLogger::infoCount() const
 {
     return infoCounter;
+}
+
+void QTestLogger::registerRandomSeed(unsigned int seed)
+{
+    randomSeed_ = seed;
+    hasRandomSeed_ = true;
+}
+
+unsigned int QTestLogger::randomSeed() const
+{
+    return randomSeed_;
+}
+
+bool QTestLogger::hasRandomSeed() const
+{
+    return hasRandomSeed_;
 }
 
 QT_END_NAMESPACE

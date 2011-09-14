@@ -424,11 +424,7 @@ static HB_Bool myanmar_shape_syllable(HB_Bool openType, HB_ShaperItem *item, HB_
 
 #ifndef NO_OPENTYPE
     if (openType) {
-	unsigned short logClusters[32];
  	hb_uint32 where[32];
-
-	for (i = 0; i < len; ++i)
-	    logClusters[i] = i;
 
         for (i = 0; i < len; ++i) {
             where[i] = ~(PreSubstProperty

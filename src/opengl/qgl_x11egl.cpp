@@ -105,10 +105,18 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
         return;
     }
 
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    attr.background_pixel = 0;
+    attr.border_pixel = 0;
+    attr.colormap = XCreateColormap(X11->display, DefaultRootWindow(X11->display), vi->visual, AllocNone);
+    attr.event_mask = StructureNotifyMask | ExposureMask;
+    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
     d->window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
                               0, 0, 1, 1, 0,
                               vi->depth, InputOutput, vi->visual,
-                              0, 0);
+                              mask, &attr);
 
     d->surface = eglCreateWindowSurface(d->display, config, (EGLNativeWindowType) d->window, NULL);
 
@@ -232,7 +240,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     if (devType == QInternal::Widget) {
         if (d->eglSurface != EGL_NO_SURFACE)
             eglDestroySurface(d->eglContext->display(), d->eglSurface);
-        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
+        // extraWindowSurfaceCreationProps default to NULL unless were specifically set before
+        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config(), d->extraWindowSurfaceCreationProps);
         XFlush(X11->display);
         setWindowCreated(true);
     }
@@ -246,6 +255,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }
 
     return true;
+}
+
+void *QGLContext::chooseVisual()
+{
+    qFatal("QGLContext::chooseVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
+}
+
+void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
+{
+    Q_UNUSED(f);
+    Q_UNUSED(bufDepth);
+    qFatal("QGLContext::tryVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
 }
 
 void QGLWidget::resizeEvent(QResizeEvent *)
@@ -345,7 +368,7 @@ void QGLWidgetPrivate::recreateEglSurface()
     // old surface before re-creating a new one. Note: This should not be the case as the
     // surface should be deleted before the old window id.
     if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
-        qWarning("EGL surface for deleted window %x was not destroyed", uint(eglSurfaceWindowId));
+        qWarning("EGL surface for deleted window %lx was not destroyed", uint(eglSurfaceWindowId));
         glcx->d_func()->destroyEglSurfaceForDevice();
     }
 

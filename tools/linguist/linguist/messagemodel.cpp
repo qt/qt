@@ -375,7 +375,7 @@ bool DataModel::release(const QString &fileName, bool verbose, bool ignoreUnfini
     cd.m_verbose = verbose;
     cd.m_ignoreUnfinished = ignoreUnfinished;
     cd.m_saveMode = mode;
-    bool ok = tor.release(&file, cd);
+    bool ok = saveQM(tor, file, cd);
     if (!ok)
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), cd.error());
     return ok;
@@ -1238,17 +1238,17 @@ int MessageModel::columnCount(const QModelIndex &) const
 QVariant MessageModel::data(const QModelIndex &index, int role) const
 {
     static QVariant pxOn  =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_on.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_on.png")));
     static QVariant pxOff =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_off.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_off.png")));
     static QVariant pxObsolete =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_obsolete.png")));
     static QVariant pxDanger =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_danger.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_danger.png")));
     static QVariant pxWarning =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_warning.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_warning.png")));
     static QVariant pxEmpty =
-        qVariantFromValue(QPixmap(QLatin1String(":/images/s_check_empty.png")));
+        QVariant::fromValue(QPixmap(QLatin1String(":/images/s_check_empty.png")));
 
     int row = index.row();
     int column = index.column() - 1;

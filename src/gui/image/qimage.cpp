@@ -69,6 +69,7 @@
 #endif
 
 #include <private/qimage_p.h>
+#include <private/qfont_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -123,9 +124,6 @@ const QVector<QRgb> *qt_image_colortable(const QImage &image)
     return &image.d->colortable;
 }
 
-Q_GUI_EXPORT extern int qt_defaultDpiX();
-Q_GUI_EXPORT extern int qt_defaultDpiY();
-
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
 QImageData::QImageData()
@@ -141,42 +139,6 @@ QImageData::QImageData()
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
       is_cached(false), paintEngine(0)
 {
-}
-
-static int depthForFormat(QImage::Format format)
-{
-    int depth = 0;
-    switch(format) {
-    case QImage::Format_Invalid:
-    case QImage::NImageFormats:
-        Q_ASSERT(false);
-    case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
-        depth = 1;
-        break;
-    case QImage::Format_Indexed8:
-        depth = 8;
-        break;
-    case QImage::Format_RGB32:
-    case QImage::Format_ARGB32:
-    case QImage::Format_ARGB32_Premultiplied:
-        depth = 32;
-        break;
-    case QImage::Format_RGB555:
-    case QImage::Format_RGB16:
-    case QImage::Format_RGB444:
-    case QImage::Format_ARGB4444_Premultiplied:
-        depth = 16;
-        break;
-    case QImage::Format_RGB666:
-    case QImage::Format_ARGB6666_Premultiplied:
-    case QImage::Format_ARGB8565_Premultiplied:
-    case QImage::Format_ARGB8555_Premultiplied:
-    case QImage::Format_RGB888:
-        depth = 24;
-        break;
-    }
-    return depth;
 }
 
 /*! \fn QImageData * QImageData::create(const QSize &size, QImage::Format format, int numColors)
@@ -199,7 +161,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
 
     uint width = size.width();
     uint height = size.height();
-    uint depth = depthForFormat(format);
+    uint depth = qt_depthForFormat(format);
 
     switch (format) {
     case QImage::Format_Mono:
@@ -879,7 +841,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
         return 0;
     }
 
-    const int depth = depthForFormat(format);
+    const int depth = qt_depthForFormat(format);
     const int calc_bytes_per_line = ((width * depth + 31)/32) * 4;
     const int min_bytes_per_line = (width * depth + 7)/8;
 
@@ -1344,6 +1306,14 @@ QImage &QImage::operator=(const QImage &image)
     }
     return *this;
 }
+
+/*!
+    \fn void QImage::swap(QImage &other)
+    \since 4.8
+
+    Swaps image \a other with this image. This operation is very
+    fast and never fails.
+*/
 
 /*!
   \internal
@@ -2038,6 +2008,89 @@ void QImage::fill(uint pixel)
     qt_rectfill<uint>(reinterpret_cast<uint*>(d->data), pixel,
                       0, 0, d->width, d->height, d->bytes_per_line);
 }
+
+
+/*!
+    \fn void QImage::fill(Qt::GlobalColor color)
+    \overload
+    \since 4.8
+
+    Fills the image with the given \a color, described as a standard global
+    color.
+ */
+
+void QImage::fill(Qt::GlobalColor color)
+{
+    fill(QColor(color));
+}
+
+
+
+/*!
+    \fn void QImage::fill(const QColor &color)
+
+    \overload
+
+    Fills the entire image with the given \a color.
+
+    If the depth of the image is 1, the image will be filled with 1 if
+    \a color equals Qt::color1; it will otherwise be filled with 0.
+
+    If the depth of the image is 8, the image will be filled with the
+    index corresponding the \a color in the color table if present; it
+    will otherwise be filled with 0.
+
+    \since 4.8
+*/
+
+void QImage::fill(const QColor &color)
+{
+    if (!d)
+        return;
+    detach();
+
+    // In case we run out of memory
+    if (!d)
+        return;
+
+    if (d->depth == 32) {
+        uint pixel = color.rgba();
+        if (d->format == QImage::Format_ARGB32_Premultiplied)
+            pixel = PREMUL(pixel);
+        fill((uint) pixel);
+
+    } else if (d->depth == 16 && d->format == QImage::Format_RGB16) {
+        qrgb565 p(color.rgba());
+        fill((uint) p.rawValue());
+
+    } else if (d->depth == 1) {
+        if (color == Qt::color1)
+            fill((uint) 1);
+        else
+            fill((uint) 0);
+
+    } else if (d->depth == 8) {
+        uint pixel = 0;
+        for (int i=0; i<d->colortable.size(); ++i) {
+            if (color.rgba() == d->colortable.at(i)) {
+                pixel = i;
+                break;
+            }
+        }
+        fill(pixel);
+
+    } else {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(rect(), color);
+    }
+
+}
+
+
+
+
+
 
 /*!
     Inverts all pixel values in the image.
@@ -3794,6 +3847,26 @@ void qInitImageConversions()
         converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_neon;
     }
 #endif
+}
+
+void qGamma_correct_back_to_linear_cs(QImage *image)
+{
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    int h = image->height();
+    int w = image->width();
+
+    for (int y=0; y<h; ++y) {
+        uint *pixels = (uint *) image->scanLine(y);
+        for (int x=0; x<w; ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
 }
 
 /*!
@@ -6254,7 +6327,7 @@ int QImage::bitPlaneCount() const
         bpc = 12;
         break;
     default:
-        bpc = depthForFormat(d->format);
+        bpc = qt_depthForFormat(d->format);
         break;
     }
     return bpc;

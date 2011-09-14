@@ -48,6 +48,7 @@
 #include "qnativeevents.h"
 #include "nativeeventlist.h"
 #include "expectedeventlist.h"
+#include <Carbon/Carbon.h>
 
 #ifdef Q_OS_MAC
 
@@ -73,6 +74,10 @@ private slots:
     void testChildWindowInFrontOfStaysOnTopParentWindow();
 #endif
     void testKeyPressOnToplevel();
+    void testModifierShift();
+    void testModifierAlt();
+    void testModifierCtrl();
+    void testModifierCtrlWithDontSwapCtrlAndMeta();
 };
 
 void tst_MacNativeEvents::testMouseMoveLocation()
@@ -415,6 +420,108 @@ void tst_MacNativeEvents::testKeyPressOnToplevel()
 
     native.play();
     QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testModifierShift()
+{
+    QWidget w;
+    w.show();
+
+    NativeEventList native;
+    native.append(new QNativeModifierEvent(Qt::ShiftModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, true, Qt::ShiftModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, false, Qt::ShiftModifier));
+    native.append(new QNativeModifierEvent(Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Shift, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::ShiftModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::ShiftModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Shift, Qt::ShiftModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testModifierAlt()
+{
+    QWidget w;
+    w.show();
+
+    NativeEventList native;
+    native.append(new QNativeModifierEvent(Qt::AltModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, true, Qt::AltModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, false, Qt::AltModifier));
+    native.append(new QNativeModifierEvent(Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Alt, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::AltModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::AltModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Alt, Qt::AltModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testModifierCtrl()
+{
+    // On Mac, we switch the Command and Control modifier by default, so that Command
+    // means Meta, and Control means Command. Lets check that this works:
+    QWidget w;
+    w.show();
+
+    QVERIFY(kControlUnicode == QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText)[0]);
+    QVERIFY(kCommandUnicode == QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText)[0]);
+
+    NativeEventList native;
+    native.append(new QNativeModifierEvent(Qt::ControlModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, true, Qt::ControlModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, false, Qt::ControlModifier));
+    native.append(new QNativeModifierEvent(Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Meta, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::MetaModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::MetaModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Meta, Qt::MetaModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+}
+
+void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
+{
+    // On Mac, we switch the Command and Control modifier by default, so that Command
+    // means Meta, and Control means Command. Lets check that the flag to swith off
+    // this behaviour works. While working on this test I realized that we actually
+    // don't (and never have) respected this flag for raw key events. Only for
+    // menus, through QKeySequence. I don't want to change this behaviour now, at
+    // least not until someone complains. So I choose to let the test just stop
+    // any unintended regressions instead. If we decide to resepect the the flag at one
+    // point, fix the test.
+    QCoreApplication::setAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
+    QWidget w;
+    w.show();
+
+    QVERIFY(kCommandUnicode == QKeySequence(Qt::Key_Meta).toString(QKeySequence::NativeText)[0]);
+    QVERIFY(kControlUnicode == QKeySequence(Qt::Key_Control).toString(QKeySequence::NativeText)[0]);
+
+    NativeEventList native;
+    native.append(new QNativeModifierEvent(Qt::ControlModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, true, Qt::ControlModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, false, Qt::ControlModifier));
+    native.append(new QNativeModifierEvent(Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_Meta, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::ControlModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_Meta, Qt::ControlModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+    QCoreApplication::setAttribute(Qt::AA_MacDontSwapCtrlAndMeta, false);
 }
 
 #include "tst_macnativeevents.moc"

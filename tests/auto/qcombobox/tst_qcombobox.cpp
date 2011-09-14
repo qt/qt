@@ -157,6 +157,7 @@ private slots:
     void keyBoardNavigationWithMouse();
     void task_QTBUG_1071_changingFocusEmitsActivated();
     void maxVisibleItems();
+    void task_QTBUG_10491_currentIndexAndModelColumn();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -474,6 +475,18 @@ void tst_QComboBox::setPalette()
             QVERIFY(((QWidget*)o)->palette() == pal);
         }
     }
+
+    testWidget->setEditable(true);
+    pal.setColor(QPalette::Base, Qt::red);
+    //Setting it on the lineedit should be separate form the combo
+    testWidget->lineEdit()->setPalette(pal);
+    QVERIFY(testWidget->palette() != pal);
+    QVERIFY(testWidget->lineEdit()->palette() == pal);
+    pal.setColor(QPalette::Base, Qt::green);
+    //Setting it on the combo directly should override lineedit
+    testWidget->setPalette(pal);
+    QVERIFY(testWidget->palette() == pal);
+    QVERIFY(testWidget->lineEdit()->palette() == pal);
 }
 
 void tst_QComboBox::sizeAdjustPolicy()
@@ -2555,11 +2568,33 @@ void tst_QComboBox::maxVisibleItems()
 
     QAbstractItemView *v = comboBox.view();
     int itemHeight = v->visualRect(v->model()->index(0,0)).height();
-    if (v->style()->styleHint(QStyle::SH_ComboBox_Popup))
+    QListView *lv = qobject_cast<QListView*>(v);
+    if (lv)
+        itemHeight += lv->spacing();
+    QStyleOptionComboBox opt;
+    opt.initFrom(&comboBox);
+    if (!comboBox.style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
         QCOMPARE(v->viewport()->height(), itemHeight * comboBox.maxVisibleItems());
-    // QCombobox without a popup does not work, see QTBUG-760
 }
 
+void tst_QComboBox::task_QTBUG_10491_currentIndexAndModelColumn()
+{
+    QComboBox comboBox;
+
+    QStandardItemModel model(4, 4, &comboBox);
+    for (int i = 0; i < 4; i++){
+        model.setItem(i, 0, new QStandardItem(QString("Employee Nr %1").arg(i)));
+        model.setItem(i, 1, new QStandardItem(QString("Street Nr %1").arg(i)));
+        model.setItem(i, 2, new QStandardItem(QString("Town Nr %1").arg(i)));
+        model.setItem(i, 3, new QStandardItem(QString("Phone Nr %1").arg(i)));
+    }
+    comboBox.setModel(&model);
+    comboBox.setModelColumn(0);
+
+    QComboBoxPrivate *d = static_cast<QComboBoxPrivate *>(QComboBoxPrivate::get(&comboBox));
+    d->setCurrentIndex(model.index(2, 2));
+    QCOMPARE(QModelIndex(d->currentIndex), model.index(2, comboBox.modelColumn()));
+}
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

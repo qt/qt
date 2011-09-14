@@ -143,55 +143,13 @@ QT_BEGIN_NAMESPACE
 
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
-#ifdef Q_OS_WIN
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toUpper(); }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return QString::fromLocal8Bit(name).toUpper(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value.toLocal8Bit(); }
-#else
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toLocal8Bit(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value.toLocal8Bit(); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-#endif
-
-template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
-{
-    if (d && d->ref == 1)
-        return;
-    QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
-                                     : new QProcessEnvironmentPrivate);
-    x->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = x;
-}
 
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it) {
         QString data = nameToString(it.key());
         QString value = valueToString(it.value());
@@ -219,6 +177,32 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
         env.insert(name, value);
     }
     return env;
+}
+
+QStringList QProcessEnvironmentPrivate::keys() const
+{
+    QStringList result;
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
+    for ( ; it != end; ++it)
+        result << nameToString(it.key());
+    return result;
+}
+
+void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
+{
+    Hash::ConstIterator it = other.hash.constBegin(),
+                       end = other.hash.constEnd();
+    for ( ; it != end; ++it)
+        hash.insert(it.key(), it.value());
+
+#ifdef Q_OS_UNIX
+    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
+                                      nend = other.nameMap.constEnd();
+    for ( ; nit != nend; ++nit)
+        nameMap.insert(nit.key(), nit.value());
+#endif
 }
 
 /*!
@@ -299,6 +283,8 @@ void QProcessEnvironment::clear()
 {
     if (d)
         d->hash.clear();
+    // Unix: Don't clear d->nameMap, as the environment is likely to be
+    // re-populated with the same keys again.
 }
 
 /*!
@@ -313,7 +299,7 @@ void QProcessEnvironment::clear()
 */
 bool QProcessEnvironment::contains(const QString &name) const
 {
-    return d ? d->hash.contains(prepareName(name)) : false;
+    return d ? d->hash.contains(d->prepareName(name)) : false;
 }
 
 /*!
@@ -335,7 +321,7 @@ bool QProcessEnvironment::contains(const QString &name) const
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     // d detaches from null
-    d->hash.insert(prepareName(name), prepareValue(value));
+    d->hash.insert(d->prepareName(name), d->prepareValue(value));
 }
 
 /*!
@@ -352,7 +338,7 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 void QProcessEnvironment::remove(const QString &name)
 {
     if (d)
-        d->hash.remove(prepareName(name));
+        d->hash.remove(d->prepareName(name));
 }
 
 /*!
@@ -371,11 +357,11 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     if (!d)
         return defaultValue;
 
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(prepareName(name));
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
     if (it == d->hash.constEnd())
         return defaultValue;
 
-    return valueToString(it.value());
+    return d->valueToString(it.value());
 }
 
 /*!
@@ -394,6 +380,33 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
 QStringList QProcessEnvironment::toStringList() const
 {
     return d ? d->toList() : QStringList();
+}
+
+/*!
+    \since 4.8
+
+    Returns a list containing all the variable names in this QProcessEnvironment
+    object.
+*/
+QStringList QProcessEnvironment::keys() const
+{
+    return d ? d->keys() : QStringList();
+}
+
+/*!
+    \overload
+    \since 4.8
+
+    Inserts the contents of \a e in this QProcessEnvironment object. Variables in
+    this object that also exist in \a e will be overwritten.
+*/
+void QProcessEnvironment::insert(const QProcessEnvironment &e)
+{
+    if (!e.d)
+        return;
+
+    // d detaches from null
+    d->insert(*e.d);
 }
 
 void QProcessPrivate::Channel::clear()
@@ -738,12 +751,16 @@ QProcessPrivate::QProcessPrivate()
     sequenceNumber = 0;
     exitCode = 0;
     exitStatus = QProcess::NormalExit;
+#ifndef Q_OS_QNX
     startupSocketNotifier = 0;
+#endif
     deathNotifier = 0;
     notifier = 0;
     pipeWriter = 0;
+#ifndef Q_OS_QNX
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
+#endif
     deathPipe[0] = INVALID_Q_PIPE;
     deathPipe[1] = INVALID_Q_PIPE;
     exitCode = 0;
@@ -812,11 +829,13 @@ void QProcessPrivate::cleanup()
         qDeleteInEventHandler(stdinChannel.notifier);
         stdinChannel.notifier = 0;
     }
+#ifndef Q_OS_QNX
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
         qDeleteInEventHandler(startupSocketNotifier);
         startupSocketNotifier = 0;
     }
+#endif
     if (deathNotifier) {
         deathNotifier->setEnabled(false);
         qDeleteInEventHandler(deathNotifier);
@@ -829,7 +848,9 @@ void QProcessPrivate::cleanup()
     destroyPipe(stdoutChannel.pipe);
     destroyPipe(stderrChannel.pipe);
     destroyPipe(stdinChannel.pipe);
+#ifndef Q_OS_QNX
     destroyPipe(childStartedPipe);
+#endif
     destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
     serial = 0;
@@ -963,9 +984,6 @@ bool QProcessPrivate::_q_canWrite()
         destroyPipe(stdinChannel.pipe);
         processError = QProcess::WriteError;
         q->setErrorString(QProcess::tr("Error writing to process"));
-#if defined(QPROCESS_DEBUG) && !defined(Q_OS_WINCE)
-        qDebug("QProcessPrivate::canWrite(), failed to write (%s)", strerror(errno));
-#endif
         emit q->error(processError);
         return false;
     }
@@ -974,11 +992,13 @@ bool QProcessPrivate::_q_canWrite()
     qDebug("QProcessPrivate::canWrite(), wrote %d bytes to the process input", int(written));
 #endif
 
-    writeBuffer.free(written);
-    if (!emittedBytesWritten) {
-        emittedBytesWritten = true;
-        emit q->bytesWritten(written);
-        emittedBytesWritten = false;
+    if (written != 0) {
+        writeBuffer.free(written);
+        if (!emittedBytesWritten) {
+            emittedBytesWritten = true;
+            emit q->bytesWritten(written);
+            emittedBytesWritten = false;
+        }
     }
     if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);
@@ -1065,8 +1085,10 @@ bool QProcessPrivate::_q_startupNotification()
     qDebug("QProcessPrivate::startupNotification()");
 #endif
 
+#ifndef Q_OS_QNX
     if (startupSocketNotifier)
         startupSocketNotifier->setEnabled(false);
+#endif
     if (processStarted()) {
         q->setProcessState(QProcess::Running);
         emit q->started();
@@ -1661,13 +1683,10 @@ QProcessEnvironment QProcess::processEnvironment() const
 bool QProcess::waitForStarted(int msecs)
 {
     Q_D(QProcess);
-    if (d->processState == QProcess::Starting) {
-        if (!d->waitForStarted(msecs))
-            return false;
-        setProcessState(QProcess::Running);
-        emit started();
-    }
-    return d->processState == QProcess::Running;
+    if (d->processState == QProcess::Running)
+        return true;
+
+    return d->waitForStarted(msecs);
 }
 
 /*! \reimp
@@ -2083,6 +2102,9 @@ void QProcess::terminate()
     On Symbian, this function requires platform security capability
     \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
 
+    \note Killing running processes from other processes will typically
+    cause a panic in Symbian due to platform security.
+
     \sa {Symbian Platform Security Requirements}
     \sa terminate()
 */
@@ -2233,10 +2255,10 @@ bool QProcess::startDetached(const QString &program)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
   static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)
@@ -2274,6 +2296,8 @@ QStringList QProcess::systemEnvironment()
 }
 
 /*!
+    \fn QProcessEnvironment QProcessEnvironment::systemEnvironment()
+
     \since 4.6
 
     \brief The systemEnvironment function returns the environment of
@@ -2289,21 +2313,6 @@ QStringList QProcess::systemEnvironment()
 
     \sa QProcess::systemEnvironment()
 */
-QProcessEnvironment QProcessEnvironment::systemEnvironment()
-{
-    QProcessEnvironment env;
-    const char *entry;
-    for (int count = 0; (entry = environ[count]); ++count) {
-        const char *equal = strchr(entry, '=');
-        if (!equal)
-            continue;
-
-        QByteArray name(entry, equal - entry);
-        QByteArray value(equal + 1);
-        env.insert(QString::fromLocal8Bit(name), QString::fromLocal8Bit(value));
-    }
-    return env;
-}
 
 /*!
     \typedef Q_PID

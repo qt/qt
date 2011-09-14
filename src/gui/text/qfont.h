@@ -93,6 +93,13 @@ public:
         NoFontMerging       = 0x8000
     };
 
+    enum HintingPreference {
+        PreferDefaultHinting        = 0,
+        PreferNoHinting             = 1,
+        PreferVerticalHinting       = 2,
+        PreferFullHinting           = 3
+    };
+
     enum Weight {
         Light    = 25,
         Normal   = 50,
@@ -133,22 +140,24 @@ public:
     };
 
     enum ResolveProperties {
-        FamilyResolved         = 0x0001,
-        SizeResolved           = 0x0002,
-        StyleHintResolved      = 0x0004,
-        StyleStrategyResolved  = 0x0008,
-        WeightResolved         = 0x0010,
-        StyleResolved          = 0x0020,
-        UnderlineResolved      = 0x0040,
-        OverlineResolved       = 0x0080,
-        StrikeOutResolved      = 0x0100,
-        FixedPitchResolved     = 0x0200,
-        StretchResolved        = 0x0400,
-        KerningResolved        = 0x0800,
-        CapitalizationResolved = 0x1000,
-        LetterSpacingResolved  = 0x2000,
-        WordSpacingResolved    = 0x4000,
-        AllPropertiesResolved  = 0x7fff
+        FamilyResolved              = 0x0001,
+        SizeResolved                = 0x0002,
+        StyleHintResolved           = 0x0004,
+        StyleStrategyResolved       = 0x0008,
+        WeightResolved              = 0x0010,
+        StyleResolved               = 0x0020,
+        UnderlineResolved           = 0x0040,
+        OverlineResolved            = 0x0080,
+        StrikeOutResolved           = 0x0100,
+        FixedPitchResolved          = 0x0200,
+        StretchResolved             = 0x0400,
+        KerningResolved             = 0x0800,
+        CapitalizationResolved      = 0x1000,
+        LetterSpacingResolved       = 0x2000,
+        WordSpacingResolved         = 0x4000,
+        HintingPreferenceResolved   = 0x8000,
+        StyleNameResolved           = 0x10000,
+        AllPropertiesResolved       = 0x1ffff
     };
 
     QFont();
@@ -159,6 +168,9 @@ public:
 
     QString family() const;
     void setFamily(const QString &);
+
+    QString styleName() const;
+    void setStyleName(const QString &);
 
     int pointSize() const;
     void setPointSize(int);
@@ -213,6 +225,9 @@ public:
     void setCapitalization(Capitalization);
     Capitalization capitalization() const;
 
+    void setHintingPreference(HintingPreference hintingPreference);
+    HintingPreference hintingPreference() const;
+
     // is raw mode still needed?
     bool rawMode() const;
     void setRawMode(bool);
@@ -226,7 +241,10 @@ public:
     bool operator<(const QFont &) const;
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QFont &operator=(QFont &&other)
+    { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
+#endif
 
 #ifdef Q_WS_WIN
     HFONT handle() const;
@@ -315,6 +333,7 @@ private:
     friend class QPainterReplayer;
     friend class QPaintBufferEngine;
     friend class QCommandLinkButtonPrivate;
+    friend class QFontEngine;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QFont &);

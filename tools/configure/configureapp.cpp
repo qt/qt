@@ -281,6 +281,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+    dictionary[ "DIRECTWRITE" ]     = "no";
 
     QString version;
     QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
@@ -437,6 +438,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "mng" << "jpeg" << "tiff";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -590,8 +592,6 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
-        else if (configCmdLine.at(i) == "-qt-gif")
-            dictionary[ "GIF" ] = "plugin";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";
@@ -831,6 +831,17 @@ void Configure::parseCmdLine()
             dictionary[ "SQL_IBASE" ] = "plugin";
         else if (configCmdLine.at(i) == "-no-sql-ibase")
             dictionary[ "SQL_IBASE" ] = "no";
+
+        // Image formats --------------------------------------------
+        else if (configCmdLine.at(i).startsWith("-qt-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "yes";
+        else if (configCmdLine.at(i).startsWith("-plugin-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "plugin";
+        else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
+                 imageFormats.contains(configCmdLine.at(i).section('-', 3)))
+            dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 #endif
         // IDE project generation -----------------------------------
         else if (configCmdLine.at(i) == "-no-dsp")
@@ -1219,6 +1230,12 @@ void Configure::parseCmdLine()
             }
         }
 
+        else if (configCmdLine.at(i) == "-directwrite") {
+            dictionary["DIRECTWRITE"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-directwrite") {
+            dictionary["DIRECTWRITE"] = "no";
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1545,10 +1562,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
-        // We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
-        // Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
-        // symbian socket engine.
-        dictionary[ "IPV6" ]                = "no";
+        // On Symbian we now always will have IPv6 with no chance to disable it
+        dictionary[ "IPV6" ]                = "yes";
         dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "yes";
         dictionary[ "RTTI" ]                = "yes";
@@ -1663,7 +1678,7 @@ bool Configure::displayHelp()
                     "[-no-qmake] [-qmake] [-dont-process] [-process]\n"
                     "[-no-style-<style>] [-qt-style-<style>] [-redo]\n"
                     "[-saveconfig <config>] [-loadconfig <config>]\n"
-                    "[-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libpng]\n"
+                    "[-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng]\n"
                     "[-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
                     "[-no-libmng] [-qt-libmng] [-system-libmng] [-no-qt3support] [-mmx]\n"
@@ -1674,7 +1689,9 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-webkit-debug] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-webkit-debug]\n"
+                    "[-graphicssystem raster|opengl|openvg]\n"
+                    "[-no-directwrite] [-directwrite]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1796,7 +1813,6 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler_p.h\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
@@ -1872,6 +1888,8 @@ bool Configure::displayHelp()
         desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
         desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
         desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
+        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
+        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
 
         desc(                   "-arch <arch>",         "Specify an architecture.\n"
                                                         "Available values for <arch>:");
@@ -1961,6 +1979,22 @@ QString Configure::findFileInPaths(const QString &fileName, const QString &paths
     return QString();
 }
 
+static QString mingwPaths(const QString &mingwPath, const QString &pathName)
+{
+    QString ret;
+    QDir mingwDir = QFileInfo(mingwPath).dir();
+    const QFileInfoList subdirs = mingwDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (int i = 0 ;i < subdirs.length(); ++i) {
+        const QFileInfo &fi = subdirs.at(i);
+        const QString name = fi.fileName();
+        if (name == pathName)
+            ret += fi.absoluteFilePath() + ';';
+        else if (name.contains("mingw"))
+            ret += fi.absoluteFilePath() + QDir::separator() + pathName + ';';
+    }
+    return ret;
+}
+
 bool Configure::findFile(const QString &fileName)
 {
     const QString file = fileName.toLower();
@@ -1971,18 +2005,22 @@ bool Configure::findFile(const QString &fileName)
     QString paths;
     if (file.endsWith(".h")) {
         if (!mingwPath.isNull()) {
-            if (!findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+            if (!findFileInPaths(file, mingwPaths(mingwPath, "include")).isNull())
                 return true;
             //now let's try the additional compiler path
-            QDir mingwLibDir = mingwPath + QLatin1String("/../lib/gcc/mingw32");
-            foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-                if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
-                    return true;
+
+            const QFileInfoList mingwConfigs = QDir(mingwPath + QLatin1String("/../lib/gcc")).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+            for (int i = 0; i < mingwConfigs.length(); ++i) {
+                const QDir mingwLibDir = mingwConfigs.at(i).absoluteFilePath();
+                foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+                    if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
+                        return true;
+                }
             }
         }
         paths = QString::fromLocal8Bit(getenv("INCLUDE"));
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
-        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPaths(mingwPath, "lib")).isNull())
             return true;
         paths = QString::fromLocal8Bit(getenv("LIB"));
     } else {
@@ -2135,13 +2173,8 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
     else if (part == "XMLPATTERNS")
-    {
-        /* MSVC 6.0 and MSVC 2002/7.0 has too poor C++ support for QtXmlPatterns. */
-        return dictionary.value("QMAKESPEC") != "win32-msvc"
-               && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
-               && dictionary.value("QMAKESPEC") != "win32-msvc2002"
-               && dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "PHONON") {
+        available = dictionary.value("EXCEPTIONS") == "yes";
+    else if (part == "PHONON") {
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             available = true;
         } else {
@@ -2220,6 +2253,8 @@ bool Configure::checkAvailability(const QString &part)
                 available = false;
             }
         }
+    } else if (part == "DIRECTWRITE") {
+        available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     }
 
     return available;
@@ -2373,6 +2408,15 @@ bool Configure::verifyConfiguration()
             exit(0);      // Exit cleanly for Ctrl+C
 
         dictionary["SCRIPT"] = "yes";
+    }
+
+    if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
+        cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
+             << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
+             << "files such as headers and libraries." << endl
+             << "(Press any key to continue..)";
+        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+            exit(0);      // Exit cleanly for Ctrl+C
     }
 
     return true;
@@ -2716,7 +2760,7 @@ void Configure::generateOutputVars()
     QFile::remove(dst);
     if (dictionary["WEBKIT"] != "no") {
         // This include takes care of adding "webkit" to QT_CONFIG.
-        QString src = sourcePath + "/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri";
+        QString src = sourcePath + "/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri";
         QFile::copy(src, dst);
         if (dictionary["WEBKIT"] == "debug")
             qtConfig += "webkit-debug";
@@ -2730,6 +2774,9 @@ void Configure::generateOutputVars()
         }
         qtConfig += "declarative";
     }
+
+    if (dictionary["DIRECTWRITE"] == "yes")
+        qtConfig += "directwrite";
 
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
@@ -2962,6 +3009,10 @@ void Configure::generateCachefile()
                 configStream << " def_files_disabled";
             }
         }
+
+        if (dictionary["DIRECTWRITE"] == "yes")
+            configStream << "directwrite";
+
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
@@ -3087,10 +3138,7 @@ void Configure::generateConfigfiles()
         tmpStream << "/* Machine byte-order */" << endl;
         tmpStream << "#define Q_BIG_ENDIAN 4321" << endl;
         tmpStream << "#define Q_LITTLE_ENDIAN 1234" << endl;
-        if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-            tmpStream << "#define Q_BYTE_ORDER Q_BIG_ENDIAN" << endl;
-        else
-            tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
+        tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
@@ -3168,8 +3216,6 @@ void Configure::generateConfigfiles()
 
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             // These features are not ported to Symbian (yet)
-            qconfigList += "QT_NO_CONCURRENT";
-            qconfigList += "QT_NO_QFUTURE";
             qconfigList += "QT_NO_CRASHHANDLER";
             qconfigList += "QT_NO_PRINTER";
             qconfigList += "QT_NO_SYSTEMTRAYICON";
@@ -3433,7 +3479,8 @@ void Configure::displayConfig()
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
-    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl << endl;
+    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
+    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
@@ -3552,17 +3599,21 @@ void Configure::displayConfig()
 #if !defined(EVAL)
 void Configure::generateHeaders()
 {
-    if (dictionary["SYNCQT"] == "yes"
-        && findFile("perl.exe")) {
-        cout << "Running syncqt..." << endl;
-        QStringList args;
-        args += buildPath + "/bin/syncqt.bat";
-        QStringList env;
-        env += QString("QTDIR=" + sourcePath);
-        env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        int retc = Environment::execute(args, env, QStringList());
-        if (retc) {
-            cout << "syncqt failed, return code " << retc << endl << endl;
+    if (dictionary["SYNCQT"] == "yes") {
+        if (findFile("perl.exe")) {
+            cout << "Running syncqt..." << endl;
+            QStringList args;
+            args += buildPath + "/bin/syncqt.bat";
+            QStringList env;
+            env += QString("QTDIR=" + sourcePath);
+            env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
+            int retc = Environment::execute(args, env, QStringList());
+            if (retc) {
+                cout << "syncqt failed, return code " << retc << endl << endl;
+                dictionary["DONE"] = "error";
+            }
+        } else {
+            cout << "Perl not found in environment - cannot run syncqt." << endl;
             dictionary["DONE"] = "error";
         }
     }

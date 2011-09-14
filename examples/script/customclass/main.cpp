@@ -38,6 +38,8 @@
 **
 ****************************************************************************/
 
+#include <QCoreApplication>
+#include <QtDebug>
 #include <QtScript>
 #include "bytearrayclass.h"
 

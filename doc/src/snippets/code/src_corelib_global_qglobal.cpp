@@ -531,3 +531,27 @@ class MyClass : public QObject
 //! [47]
 CApaApplication *myApplicationFactory();
 //! [47]
+
+//! [qlikely]
+    // the condition inside the "if" will be successful most of the times
+    for (int i = 1; i <= 365; i++) {
+        if (Q_LIKELY(isWorkingDay(i))) {
+            ...
+        }
+        ...
+    }
+//! [qlikely]
+
+//! [qunlikely]
+bool readConfiguration(const QFile &file)
+{
+    // We expect to be asked to read an existing file
+    if (Q_UNLIKELY(!file.exists())) {
+        qWarning() << "File not found";
+        return false;
+    }
+
+    ...
+    return true;
+}
+//! [qunlikely]

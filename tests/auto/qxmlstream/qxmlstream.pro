@@ -5,10 +5,10 @@ QT = core xml network
 
 
 wince*|symbian: {
-   addFiles.sources = data XML-Test-Suite
+   addFiles.files = data XML-Test-Suite
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\"\\\"
+   wince*:DEFINES += SRCDIR=\\\"\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

@@ -465,4 +465,17 @@ EXPORTS
 	_Zls6QDebugRK12QSqlDatabase @ 464 NONAME
 	_Zls6QDebugRK9QSqlError @ 465 NONAME
 	_Zls6QDebugRK9QSqlField @ 466 NONAME
+	_ZN10QSqlDriver18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 467 NONAME
+	_ZN10QSqlDriver25staticMetaObjectExtraDataE @ 468 NONAME DATA 8
+	_ZN13QSQLiteDriver18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 469 NONAME
+	_ZN13QSQLiteDriver25staticMetaObjectExtraDataE @ 470 NONAME DATA 8
+	_ZN14QSqlQueryModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 471 NONAME
+	_ZN14QSqlQueryModel25staticMetaObjectExtraDataE @ 472 NONAME DATA 8
+	_ZN14QSqlTableModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 473 NONAME
+	_ZN14QSqlTableModel25staticMetaObjectExtraDataE @ 474 NONAME DATA 8
+	_ZN16QSqlDriverPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 475 NONAME
+	_ZN16QSqlDriverPlugin25staticMetaObjectExtraDataE @ 476 NONAME DATA 8
+	_ZN24QSqlRelationalTableModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 477 NONAME
+	_ZN24QSqlRelationalTableModel25staticMetaObjectExtraDataE @ 478 NONAME DATA 8
+	_ZN24QSqlRelationalTableModel11setJoinModeENS_8JoinModeE @ 479 NONAME
 

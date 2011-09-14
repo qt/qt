@@ -47,13 +47,12 @@
 #ifndef __AST_VIEW_H__
 #define __AST_VIEW_H__
 
-#include <qwidget.h>
-#include <q3ptrlist.h>
-#include <q3intdict.h>
-#include <qtimer.h>
+#include <QWidget>
+#include <QList>
+#include <QMultiHash>
+#include <QTimer>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-//Added by qt3to4:
 #include <QTimerEvent>
 #include <QShowEvent>
 #include <QResizeEvent>
@@ -65,7 +64,7 @@ class KAsteroidsView : public QWidget
 {
     Q_OBJECT
 public:
-    KAsteroidsView( QWidget *parent = 0, const char *name = 0 );
+    KAsteroidsView( QWidget *parent = 0);
     virtual ~KAsteroidsView();
 
     int refreshRate;
@@ -129,11 +128,11 @@ private:
     QGraphicsScene field;
     QGraphicsView view;
     QMap<int, QList<QPixmap> > animation;
-    Q3PtrList<AnimatedPixmapItem> rocks;
-    Q3PtrList<KMissile> missiles;
-    Q3PtrList<KBit> bits;
-    Q3PtrList<KExhaust> exhaust;
-    Q3PtrList<KPowerup> powerups;
+    QList<AnimatedPixmapItem*> rocks;
+    QList<KMissile*> missiles;
+    QList<KBit*> bits;
+    QList<KExhaust*> exhaust;
+    QList<KPowerup*> powerups;
     KShield *shield;
     AnimatedPixmapItem *ship;
     QGraphicsTextItem *textSprite;

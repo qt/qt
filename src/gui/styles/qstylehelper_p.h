@@ -110,6 +110,7 @@ template <typename T>
     enum { ExactSize = true };
     static int size(const HexString<T> &) { return sizeof(T) * 2; }
     static inline void appendTo(const HexString<T> &str, QChar *&out) { str.write(out); }
+    typedef QString ConvertTo;
 };
 
 QT_END_NAMESPACE

@@ -48,6 +48,18 @@
 #include <QDir>
 #include <QFile>
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#include <windows.h>
+#include <winioctl.h>
+#ifndef IO_REPARSE_TAG_MOUNT_POINT
+#define IO_REPARSE_TAG_MOUNT_POINT       (0xA0000003L)
+#endif
+#define REPARSE_MOUNTPOINT_HEADER_SIZE   8
+#ifndef FSCTL_SET_REPARSE_POINT
+#define FSCTL_SET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 41, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
+#endif
+#endif
+
 struct FileSystem
 {
     ~FileSystem()
@@ -78,6 +90,16 @@ struct FileSystem
         return false;
     }
 
+    qint64 createFileWithContent(const QString &fileName)
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            createdFiles << fileName;
+            return file.write(fileName.toUtf8());
+        }
+        return -1;
+    }
+
     bool createLink(const QString &destination, const QString &linkName)
     {
         if (QFile::link(destination, linkName)) {
@@ -86,6 +108,59 @@ struct FileSystem
         }
         return false;
     }
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    static void createNtfsJunction(QString target, QString linkName)
+    {
+        typedef struct {
+            DWORD   ReparseTag;
+            DWORD   ReparseDataLength;
+            WORD    Reserved;
+            WORD    ReparseTargetLength;
+            WORD    ReparseTargetMaximumLength;
+            WORD    Reserved1;
+            WCHAR   ReparseTarget[1];
+        } REPARSE_MOUNTPOINT_DATA_BUFFER, *PREPARSE_MOUNTPOINT_DATA_BUFFER;
+
+        char    reparseBuffer[MAX_PATH*3];
+        HANDLE  hFile;
+        DWORD   returnedLength;
+        wchar_t fileSystem[MAX_PATH] = L"";
+        PREPARSE_MOUNTPOINT_DATA_BUFFER reparseInfo = (PREPARSE_MOUNTPOINT_DATA_BUFFER) reparseBuffer;
+
+        QFileInfo junctionInfo(linkName);
+        linkName = QDir::toNativeSeparators(junctionInfo.absoluteFilePath());
+
+        GetVolumeInformationW( (wchar_t*)linkName.left(3).utf16(), NULL, 0, NULL, NULL, NULL,
+                               fileSystem, sizeof(fileSystem)/sizeof(WCHAR));
+        if(QString().fromWCharArray(fileSystem) != "NTFS")
+            QSKIP("This seems not to be an NTFS volume. Junctions are not allowed.",SkipSingle);
+
+        if (!target.startsWith("\\??\\") && !target.startsWith("\\\\?\\")) {
+            QFileInfo targetInfo(target);
+            target = QDir::toNativeSeparators(targetInfo.absoluteFilePath());
+            target.prepend("\\??\\");
+            if(target.endsWith('\\') && target.at(target.length()-2) != ':')
+                target.chop(1);
+        }
+        QDir().mkdir(linkName);
+        hFile = CreateFileW( (wchar_t*)linkName.utf16(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+                             FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL );
+        QVERIFY(hFile != INVALID_HANDLE_VALUE );
+
+        memset( reparseInfo, 0, sizeof( *reparseInfo ));
+        reparseInfo->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
+        reparseInfo->ReparseTargetLength = target.size() * sizeof(wchar_t);
+        reparseInfo->ReparseTargetMaximumLength = reparseInfo->ReparseTargetLength + sizeof(wchar_t);
+        target.toWCharArray(reparseInfo->ReparseTarget);
+        reparseInfo->ReparseDataLength = reparseInfo->ReparseTargetLength + 12;
+
+        bool ioc = DeviceIoControl(hFile, FSCTL_SET_REPARSE_POINT, reparseInfo,
+                                 reparseInfo->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE,
+                                 NULL, 0, &returnedLength, NULL);
+        CloseHandle( hFile );
+        QVERIFY(ioc);
+    }
+#endif
 
 private:
     QDir currentDir;

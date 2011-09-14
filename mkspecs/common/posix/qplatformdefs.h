@@ -45,7 +45,9 @@
 #include <signal.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
+#ifndef QT_NO_SOCKET_H
+#  include <sys/socket.h>
+#endif
 #include <sys/stat.h>
 
 #if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT)

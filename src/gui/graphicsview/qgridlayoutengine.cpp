@@ -825,6 +825,15 @@ QGridLayoutItem *QGridLayoutEngine::itemAt(int index) const
     return q_items.at(index);
 }
 
+int QGridLayoutEngine::indexOf(QGraphicsLayoutItem *item) const
+{
+    for (int i = 0; i < q_items.size(); ++i) {
+        if (item == q_items.at(i)->layoutItem())
+            return i;
+    }
+    return -1;
+}
+
 int QGridLayoutEngine::effectiveFirstRow(Qt::Orientation orientation) const
 {
     ensureEffectiveFirstAndLastRows();
@@ -1166,7 +1175,7 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
                 //constraints to find the column widths
                 q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
                         0, sizehint_totalBoxes[Ver], q_infos[Ver]);
-                ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Vertical);
+                ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Horizontal);
                 sizeHintCalculated = true;
             }
         }

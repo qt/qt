@@ -144,7 +144,7 @@ void QLineControl::updateDisplayText(bool forceUpdate)
 
     Copies the currently selected text into the clipboard using the given
     \a mode.
-  
+
     \note If the echo mode is set to a mode other than Normal then copy
     will not work.  This is to prevent using copy as a method of bypassing
     password features of the line control.
@@ -198,12 +198,10 @@ void QLineControl::backspace()
             --m_cursor;
             if (m_maskData)
                 m_cursor = prevMaskBlank(m_cursor);
-            QChar uc = m_text.at(m_cursor);
-            if (m_cursor > 0 && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+            if (m_cursor > 0 && m_text.at(m_cursor).isLowSurrogate()) {
                 // second half of a surrogate, check if we have the first half as well,
                 // if yes delete both at once
-                uc = m_text.at(m_cursor - 1);
-                if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00) {
+                if (m_text.at(m_cursor - 1).isHighSurrogate()) {
                     internalDelete(true);
                     --m_cursor;
                 }
@@ -536,7 +534,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 /*!
     \internal
 
-    Draws the display text for the line control using the given 
+    Draws the display text for the line control using the given
     \a painter, \a clip, and \a offset.  Which aspects of the display text
     are drawn is specified by the given \a flags.
 
@@ -687,7 +685,12 @@ void QLineControl::internalSetText(const QString &txt, int pos, bool edited)
     m_modifiedState =  m_undoState = 0;
     m_cursor = (pos < 0 || pos > m_text.length()) ? m_text.length() : pos;
     m_textDirty = (oldText != m_text);
-    finishChange(-1, true, edited);
+    bool changed = finishChange(-1, true, edited);
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (changed)
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextUpdated);
+#endif
 }
 
 
@@ -1284,6 +1287,9 @@ void QLineControl::emitCursorPositionChanged()
         const int oldLast = m_lastCursorPos;
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextCaretMoved);
+#endif
     }
 }
 
@@ -1434,9 +1440,9 @@ bool QLineControl::processEvent(QEvent* ev)
         case QEvent::GraphicsSceneMouseRelease:
         case QEvent::GraphicsSceneMousePress:{
                QGraphicsSceneMouseEvent *gvEv = static_cast<QGraphicsSceneMouseEvent*>(ev);
-               QMouseEvent* mouse = new QMouseEvent(ev->type(),
+               QMouseEvent mouse(ev->type(),
                     gvEv->pos().toPoint(), gvEv->button(), gvEv->buttons(), gvEv->modifiers());
-               processMouseEvent(mouse); break;
+               processMouseEvent(&mouse); break;
         }
 #endif
         case QEvent::MouseButtonPress:
@@ -1637,6 +1643,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 
     bool unknown = false;
+    bool visual = cursorMoveStyle() == Qt::VisualMoveStyle;
 
     if (false) {
     }
@@ -1701,11 +1708,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionEnd(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+            cursorForward(0, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
         }
     }
     else if (event == QKeySequence::SelectNextChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? 1 : -1);
+        cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
 #if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
@@ -1716,11 +1723,11 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
             moveCursor(selectionStart(), false);
         } else {
-            cursorForward(0, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+            cursorForward(0, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
         }
     }
     else if (event == QKeySequence::SelectPreviousChar) {
-        cursorForward(1, layoutDirection() == Qt::LeftToRight ? -1 : 1);
+        cursorForward(1, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
     }
     else if (event == QKeySequence::MoveToNextWord) {
         if (echoMode() == QLineEdit::Normal)

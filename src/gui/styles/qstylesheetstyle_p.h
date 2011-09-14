@@ -145,10 +145,6 @@ protected Q_SLOTS:
 protected:
     bool event(QEvent *e);
 
-private Q_SLOTS:
-    void widgetDestroyed(QObject *);
-    void styleDestroyed(QObject *);
-
 private:
     int refcount;
 
@@ -184,6 +180,22 @@ public:
 private:
     Q_DISABLE_COPY(QStyleSheetStyle)
     Q_DECLARE_PRIVATE(QStyleSheetStyle)
+};
+
+class QStyleSheetStyleCaches : public QObject
+{
+    Q_OBJECT
+public Q_SLOTS:
+    void widgetDestroyed(QObject *);
+    void styleDestroyed(QObject *);
+public:
+    QHash<const QWidget *, QVector<QCss::StyleRule> > styleRulesCache;
+    QHash<const QWidget *, QHash<int, bool> > hasStyleRuleCache;
+    typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
+    QHash<const QWidget *, QRenderRules> renderRulesCache;
+    QHash<const QWidget *, QPalette> customPaletteWidgets; // widgets whose palette we tampered
+    QHash<const void *, QCss::StyleSheet> styleSheetCache; // parsed style sheets
+    QSet<const QWidget *> autoFillDisabledWidgets;
 };
 
 

@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-#if defined Q_CC_MSVC && _MSC_VER <=1300
-//VC.net 2002 support for templates doesn't match some PSDK requirements
-#define _WSPIAPI_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
-#endif
-
 #include <winsock2.h>
 
 #include "qhostinfo_p.h"
@@ -115,9 +110,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     // Load res_init on demand.
     static volatile bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_getaddrinfo));
-#endif
         if (!triedResolve) {
             resolveLibrary();
             triedResolve = true;

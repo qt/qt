@@ -78,4 +78,10 @@ void Parser::warning(const char *msg) {
                 currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), msg);
 }
 
+void Parser::note(const char *msg) {
+    if (displayNotes && msg)
+        fprintf(stderr, ErrorFormatString "Note: %s\n",
+                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), msg);
+}
+
 QT_END_NAMESPACE

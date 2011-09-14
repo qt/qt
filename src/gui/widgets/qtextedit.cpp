@@ -2616,7 +2616,6 @@ Qt::TextFormat QTextEdit::textFormat() const
 void QTextEdit::append(const QString &text)
 {
     Q_D(QTextEdit);
-    QTextBlock lastBlock = d->control->document()->lastBlock();
     const bool atBottom = isReadOnly() ?  d->verticalOffset() >= d->vbar->maximum() :
             d->control->textCursor().atEnd();
     d->control->append(text);

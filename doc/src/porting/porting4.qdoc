@@ -2374,8 +2374,8 @@
     pointer to a QObjectList. See also the comments on QObjectList
     below.
 
-    Use QObject::findChildren() (or qFindChildren() if you need MSVC 6
-    compatibility) instead of QObject::queryList(). For example:
+    Use QObject::findChildren() instead of QObject::queryList().
+    For example:
 
     \snippet doc/src/snippets/code/doc_src_porting4.cpp 18
 

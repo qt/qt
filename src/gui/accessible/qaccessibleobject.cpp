@@ -276,7 +276,7 @@ QAccessible::Relation QAccessibleApplication::relationTo(int child, const
 
     for (int i = 0; i < tlw.count(); ++i) {
         QWidget *w = tlw.at(i);
-        QObjectList cl = qFindChildren<QObject *>(w, QString());
+        QObjectList cl = w->findChildren<QObject *>(QString());
         if (cl.contains(o))
             return Ancestor;
     }
@@ -322,9 +322,7 @@ QString QAccessibleApplication::text(Text t, int) const
 {
     switch (t) {
     case Name:
-        if (QApplication::activeWindow())
-            return QApplication::activeWindow()->windowTitle();
-        break;
+        return QApplication::applicationName();
     case Description:
         return QApplication::applicationFilePath();
     default:

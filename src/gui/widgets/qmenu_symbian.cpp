@@ -264,7 +264,8 @@ void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
         // However if we don't have any items, we still need the item array. Otherwise
         // menupane will crash. That's why we create item array here manually, and
         // AddMenuItemL will then use the existing array.
-        CEikMenuPane::CItemArray* itemArray = q_check_ptr(new CEikMenuPane::CItemArray);
+        CEikMenuPane::CItemArray* itemArray = new CEikMenuPane::CItemArray;
+        Q_CHECK_PTR(itemArray);
         menuPane->SetItemArray(itemArray);
         menuPane->SetItemArrayOwnedExternally(EFalse);
 
@@ -356,7 +357,7 @@ QMenuPrivate::QSymbianMenuPrivate::QSymbianMenuPrivate()
 
 QMenuPrivate::QSymbianMenuPrivate::~QSymbianMenuPrivate()
 {
-
+    qDeleteAll(actionItems);
 }
 
 void QMenuPrivate::QSymbianMenuPrivate::addAction(QAction *a, QSymbianMenuAction *before)
@@ -397,12 +398,12 @@ void QMenuPrivate::QSymbianMenuPrivate::rebuild(bool)
 {
 }
 
-void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QSymbianMenuAction *before)
+void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QAction *before)
 {
     QSymbianMenuAction *action = new QSymbianMenuAction;
     action->action = a;
     action->command = qt_symbian_menu_static_cmd_id++;
-    addAction(action, before);
+    addAction(action, findAction(before));
 }
 
 void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QSymbianMenuAction *action, QSymbianMenuAction *before)

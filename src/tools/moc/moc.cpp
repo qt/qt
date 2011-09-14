@@ -216,8 +216,8 @@ Type Moc::parseType()
             QByteArray templ = lexemUntil(RANGLE);
             for (int i = 0; i < templ.size(); ++i) {
                 type.name += templ.at(i);
-                if ((templ.at(i) == '<' && i < templ.size()-1 && templ.at(i+1) == ':')
-                    || (templ.at(i) == '>' && i < templ.size()-1 && templ.at(i+1) == '>')) {
+                if ((templ.at(i) == '<' && i+1 < templ.size() && templ.at(i+1) == ':')
+                    || (templ.at(i) == '>' && i+1 < templ.size() && templ.at(i+1) == '>')) {
                     type.name += ' ';
                 }
             }
@@ -292,8 +292,8 @@ void Moc::parseFunctionArguments(FunctionDef *def)
             arg.rightType += ' ';
             arg.rightType += lexem();
         }
-        arg.normalizedType = normalizeType(arg.type.name + ' ' + arg.rightType);
-        arg.typeNameForCast = normalizeType(noRef(arg.type.name) + "(*)" + arg.rightType);
+        arg.normalizedType = normalizeType(QByteArray(arg.type.name + ' ' + arg.rightType));
+        arg.typeNameForCast = normalizeType(QByteArray(noRef(arg.type.name) + "(*)" + arg.rightType));
         if (test(EQ))
             arg.isDefault = true;
         def->arguments += arg;
@@ -356,8 +356,9 @@ bool Moc::testFunctionRevision(FunctionDef *def)
 bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 {
     def->isVirtual = false;
+    def->isStatic = false;
     //skip modifiers and attributes
-    while (test(INLINE) || test(STATIC) ||
+    while (test(INLINE) || (test(STATIC) && (def->isStatic = true)) ||
         (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
         || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
@@ -447,8 +448,9 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 {
     def->isVirtual = false;
+    def->isStatic = false;
     //skip modifiers and attributes
-    while (test(EXPLICIT) || test(INLINE) || test(STATIC) ||
+    while (test(EXPLICIT) || test(INLINE) || (test(STATIC) && (def->isStatic = true)) ||
         (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
         || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool tilde = test(TILDE);
@@ -685,10 +687,13 @@ void Moc::parse()
                     if (parseEnum(&enumDef))
                         def.enumList += enumDef;
                 } break;
+                case SEMIC:
+                case COLON:
+                    break;
                 default:
                     FunctionDef funcDef;
                     funcDef.access = access;
-                    int rewind = index;
+                    int rewind = index--;
                     if (parseMaybeFunction(&def, &funcDef)) {
                         if (funcDef.isConstructor) {
                             if ((access == FunctionDef::Public) && funcDef.isInvokable) {

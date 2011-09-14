@@ -70,9 +70,12 @@
 #elif defined(Q_OS_WINCE)
 # include <qplatformdefs.h>
 # include <private/qfsfileengine_p.h>
+#elif defined(Q_OS_SYMBIAN)
+# include <f32file.h>
 #endif
 
 #include <stdio.h>
+#include <errno.h>
 #include "../network-settings.h"
 
 #if defined(Q_OS_SYMBIAN)
@@ -170,6 +173,7 @@ private slots:
     void encodeName();
     void truncate();
     void seekToPos();
+    void seekAfterEndOfFile();
     void FILEReadWrite();
     void i18nFileName_data();
     void i18nFileName();
@@ -210,6 +214,18 @@ private slots:
 
     void openStandardStreams();
 
+    void resize_data();
+    void resize();
+
+    void objectConstructors();
+#ifdef Q_OS_SYMBIAN
+    void platformSecurity_data();
+    void platformSecurity();
+#endif
+    void caseSensitivity();
+
+    void autocloseHandle();
+
     // --- Task related tests below this line
     void task167217();
 
@@ -222,12 +238,20 @@ public:
     void invalidFile();
 
 private:
-    enum FileType { OpenQFile, OpenFd, OpenStream };
+    enum FileType {
+        OpenQFile,
+        OpenFd,
+        OpenStream,
+#ifdef Q_OS_SYMBIAN
+        OpenRFile,
+#endif
+        NumberOfFileTypes
+    };
 
     void openStandardStreamsFileDescriptors();
     void openStandardStreamsBufferedStreams();
 
-    bool openFd(QFile &file, QIODevice::OpenMode mode)
+    bool openFd(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
         int fdMode = QT_OPEN_LARGEFILE | QT_OPEN_BINARY;
 
@@ -239,10 +263,10 @@ private:
 
         fd_ = QT_OPEN(qPrintable(file.fileName()), fdMode);
 
-        return (-1 != fd_) && file.open(fd_, mode);
+        return (-1 != fd_) && file.open(fd_, mode, handleFlags);
     }
 
-    bool openStream(QFile &file, QIODevice::OpenMode mode)
+    bool openStream(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
         char const *streamMode = "";
 
@@ -254,10 +278,37 @@ private:
 
         stream_ = QT_FOPEN(qPrintable(file.fileName()), streamMode);
 
-        return stream_ && file.open(stream_, mode);
+        return stream_ && file.open(stream_, mode, handleFlags);
     }
 
-    bool openFile(QFile &file, QIODevice::OpenMode mode, FileType type = OpenQFile)
+#ifdef Q_OS_SYMBIAN
+    bool openRFile(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
+    {
+        //connect file server first time
+        if (!rfs_.Handle() && rfs_.Connect() != KErrNone)
+                return false;
+        //symbian does not like ./ in filenames, so open by absolute path
+        QString fileName(QDir::toNativeSeparators(QFileInfo(file).absoluteFilePath()));
+        TPtrC fn(fileName.utf16(), fileName.length());
+        TInt smode = 0;
+        if (mode & QIODevice::WriteOnly)
+            smode |= EFileWrite;
+        if (mode & QIODevice::ReadOnly)
+            smode |= EFileRead;
+        TInt r;
+        if ((mode & QIODevice::Truncate) || (!(mode & QIODevice::ReadOnly) && !(mode & QIODevice::Append))) {
+            r = rfile_.Replace(rfs_, fn, smode);
+        } else {
+            r = rfile_.Open(rfs_, fn, smode);
+            if (r == KErrNotFound && (mode & QIODevice::WriteOnly)) {
+                r = rfile_.Create(rfs_, fn, smode);
+            }
+        }
+        return (r == KErrNone) && file.open(rfile_, mode, handleFlags);
+    }
+#endif
+
+    bool openFile(QFile &file, QIODevice::OpenMode mode, FileType type = OpenQFile, QFile::FileHandleFlags handleFlags = QFile::DontCloseHandle)
     {
         if (mode & QIODevice::WriteOnly && !file.exists())
         {
@@ -274,10 +325,14 @@ private:
                 return file.open(mode);
 
             case OpenFd:
-                return openFd(file, mode);
+                return openFd(file, mode, handleFlags);
 
             case OpenStream:
-                return openStream(file, mode);
+                return openStream(file, mode, handleFlags);
+#ifdef Q_OS_SYMBIAN
+            case OpenRFile:
+                return openRFile(file, mode, handleFlags);
+#endif
         }
 
         return false;
@@ -291,6 +346,10 @@ private:
             QT_CLOSE(fd_);
         if (stream_)
             ::fclose(stream_);
+#ifdef Q_OS_SYMBIAN
+        if (rfile_.SubSessionHandle())
+            rfile_.Close();
+#endif
 
         fd_ = -1;
         stream_ = 0;
@@ -298,6 +357,10 @@ private:
 
     int fd_;
     FILE *stream_;
+#ifdef Q_OS_SYMBIAN
+    RFs rfs_;
+    RFile rfile_;
+#endif
 };
 
 tst_QFile::tst_QFile()
@@ -394,6 +457,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("qfile_map_testfile");
     QFile::remove("readAllBuffer.txt");
     QFile::remove("qt_file.tmp");
+    QFile::remove("File.txt");
 }
 
 //------------------------------------------
@@ -402,7 +466,7 @@ void tst_QFile::cleanupTestCase()
 // attributes and the contents itself
 // will be changed as far as we have a
 // proper way to handle files in the
-// testing enviroment.
+// testing environment.
 //------------------------------------------
 
 void tst_QFile::exists()
@@ -1108,6 +1172,7 @@ void tst_QFile::permissions()
     QFETCH(bool, expected);
     QFile f(file);
     QCOMPARE(((f.permissions() & perms) == QFile::Permissions(perms)), expected);
+    QCOMPARE(((QFile::permissions(file) & perms) == QFile::Permissions(perms)), expected);
 }
 
 void tst_QFile::setPermissions()
@@ -1285,17 +1350,32 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 
 void tst_QFile::link()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myLink.lnk");
-    QFileInfo info1("tst_qfile.cpp");
-    QVERIFY(QFile::link("tst_qfile.cpp", "myLink.lnk"));
+
+    QFileInfo info1(SRCDIR "tst_qfile.cpp");
+    QString referenceTarget = QDir::cleanPath(info1.absoluteFilePath());
+
+    QVERIFY(QFile::link(SRCDIR "tst_qfile.cpp", "myLink.lnk"));
+
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
+    QCOMPARE(info2.symLinkTarget(), referenceTarget);
+
+    QFile link("myLink.lnk");
+    QVERIFY(link.open(QIODevice::ReadOnly));
+    QCOMPARE(link.symLinkTarget(), referenceTarget);
+    link.close();
+
+    QCOMPARE(QFile::symLinkTarget("myLink.lnk"), referenceTarget);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
-    QCOMPARE(QDir::fromNativeSeparators(wd), info1.absolutePath());
+    QCOMPARE(QDir::fromNativeSeparators(wd), QDir::cleanPath(info1.absolutePath()));
 #endif
+
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
 }
 
@@ -1324,6 +1404,9 @@ void tst_QFile::linkToDir()
 
 void tst_QFile::absolutePathLinkToRelativePath()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myDir/test.txt");
     QFile::remove("myDir/myLink.lnk");
     QDir dir;
@@ -1346,6 +1429,9 @@ void tst_QFile::absolutePathLinkToRelativePath()
 
 void tst_QFile::readBrokenLink()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myLink2.lnk");
     QFileInfo info1("file12");
 #if defined(Q_OS_SYMBIAN)
@@ -1635,10 +1721,40 @@ void tst_QFile::seekToPos()
 
 }
 
+void tst_QFile::seekAfterEndOfFile()
+{
+    QLatin1String filename("seekAfterEof.dat");
+    QFile::remove(filename);
+    {
+        QFile file(filename);
+        QVERIFY(file.open(QFile::WriteOnly));
+        file.write("abcd");
+        QCOMPARE(file.size(), qint64(4));
+        file.seek(8);
+        file.write("ijkl");
+        QCOMPARE(file.size(), qint64(12));
+        file.seek(4);
+        file.write("efgh");
+        QCOMPARE(file.size(), qint64(12));
+        file.seek(16);
+        file.write("----");
+        QCOMPARE(file.size(), qint64(20));
+        file.flush();
+    }
+
+    QFile file(filename);
+    QVERIFY(file.open(QFile::ReadOnly));
+    QByteArray contents = file.readAll();
+    QCOMPARE(contents.left(12), QByteArray("abcdefghijkl", 12));
+    //bytes 12-15 are uninitialised so we don't care what they read as.
+    QCOMPARE(contents.mid(16), QByteArray("----", 4));
+    file.close();
+    QFile::remove(filename);
+}
 
 void tst_QFile::FILEReadWrite()
 {
-    // Tests modifing a file. First creates it then reads in 4 bytes and then overwrites these
+    // Tests modifying a file. First creates it then reads in 4 bytes and then overwrites these
     // 4 bytes with new values. At the end check to see the file contains the new values.
 
     QFile::remove("FILEReadWrite.txt");
@@ -2150,6 +2266,9 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-QFile")  << "./largeblockfile.txt" << (int)OpenQFile;
     QTest::newRow("localfile-Fd")     << "./largeblockfile.txt" << (int)OpenFd;
     QTest::newRow("localfile-Stream") << "./largeblockfile.txt" << (int)OpenStream;
+#ifdef Q_OS_SYMBIAN
+    QTest::newRow("localfile-RFile")  << "./largeblockfile.txt" << (int)OpenRFile;
+#endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Some semi-randomness to avoid collisions.
@@ -2494,10 +2613,11 @@ void tst_QFile::standarderror()
 
 void tst_QFile::handle()
 {
-#ifndef Q_OS_WINCE
+    int fd;
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QFile file(SRCDIR "tst_qfile.cpp");
     QVERIFY(file.open(QIODevice::ReadOnly));
-    int fd = int(file.handle());
+    fd = int(file.handle());
     QVERIFY(fd > 2);
     QCOMPARE(int(file.handle()), fd);
     char c = '\0';
@@ -2524,6 +2644,7 @@ void tst_QFile::handle()
     QCOMPARE(c, '*');
 #endif
 
+    //test round trip of adopted stdio file handle
     QFile file2;
     FILE *fp = fopen(SRCDIR "tst_qfile.cpp", "r");
     file2.open(fp, QIODevice::ReadOnly);
@@ -2531,6 +2652,7 @@ void tst_QFile::handle()
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
     fclose(fp);
 
+    //test round trip of adopted posix file handle
 #ifdef Q_OS_UNIX
     QFile file3;
     fd = QT_OPEN(SRCDIR "tst_qfile.cpp", QT_OPEN_RDONLY);
@@ -2542,6 +2664,9 @@ void tst_QFile::handle()
 
 void tst_QFile::nativeHandleLeaks()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("test assumptions invalid for symbian", SkipAll);
+#else
     int fd1, fd2;
 
 #ifdef Q_OS_WIN
@@ -2582,6 +2707,7 @@ void tst_QFile::nativeHandleLeaks()
 
 #ifdef Q_OS_WIN
     QCOMPARE( handle2, handle1 );
+#endif
 #endif
 }
 
@@ -2898,6 +3024,7 @@ void tst_QFile::mapOpenMode()
 {
     QFETCH(int, openMode);
     static const qint64 fileSize = 4096;
+
     QByteArray pattern(fileSize, 'A');
 
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
@@ -3028,12 +3155,248 @@ void tst_QFile::openStandardStreams()
 
 void tst_QFile::writeNothing()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < NumberOfFileTypes; ++i) {
         QFile file("file.txt");
         QVERIFY( openFile(file, QIODevice::WriteOnly | QIODevice::Unbuffered, FileType(i)) );
         QVERIFY( 0 == file.write((char *)0, 0) );
         QCOMPARE( file.error(), QFile::NoError );
         closeFile(file);
+    }
+}
+
+void tst_QFile::resize_data()
+{
+    QTest::addColumn<int>("filetype");
+
+    QTest::newRow("native") << int(OpenQFile);
+    QTest::newRow("fileno") << int(OpenFd);
+    QTest::newRow("stream") << int(OpenStream);
+#ifdef Q_OS_SYMBIAN
+    QTest::newRow("rfile")  << int(OpenRFile);
+#endif
+}
+
+void tst_QFile::resize()
+{
+    QFETCH(int, filetype);
+    QString filename(QLatin1String("file.txt"));
+    QFile file(filename);
+    QVERIFY(openFile(file, QIODevice::ReadWrite, FileType(filetype)));
+    QVERIFY(file.resize(8));
+    QCOMPARE(file.size(), qint64(8));
+    closeFile(file);
+    QFile::resize(filename, 4);
+    QCOMPARE(QFileInfo(filename).size(), qint64(4));
+    QVERIFY(QFile::remove(filename));
+}
+
+void tst_QFile::objectConstructors()
+{
+    QObject ob;
+    QFile* file1 = new QFile(SRCDIR "testfile.txt", &ob);
+    QFile* file2 = new QFile(&ob);
+    QVERIFY(file1->exists());
+    QVERIFY(!file2->exists());
+}
+
+#ifdef Q_OS_SYMBIAN
+void tst_QFile::platformSecurity_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<bool>("readable");
+    QTest::addColumn<bool>("writable");
+
+    QString selfname = QCoreApplication::applicationFilePath();
+    QString ownprivate = QCoreApplication::applicationDirPath();
+    QString owndrive = selfname.left(2);
+    bool amiprivileged = RProcess().HasCapability(ECapabilityAllFiles);
+    QTest::newRow("resource") << owndrive + "/resource/apps/tst_qfile.rsc" << true << amiprivileged;
+    QTest::newRow("sys") << selfname << amiprivileged << false;
+    QTest::newRow("own private") << ownprivate + "/testfile.txt" << true << true;
+    QTest::newRow("other private") << owndrive + "/private/10003a3f/import/apps/tst_qfile_reg.rsc" << amiprivileged << amiprivileged;
+}
+
+void tst_QFile::platformSecurity()
+{
+    QFETCH(QString,file);
+    QFETCH(bool,readable);
+    QFETCH(bool,writable);
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadOnly), readable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadOnly | QIODevice::Unbuffered), readable);
+    }
+
+    //append mode used to avoid truncating the files.
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Append), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Unbuffered), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadWrite), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered), writable);
+    }
+}
+#endif
+
+void tst_QFile::caseSensitivity()
+{
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
+    const bool caseSensitive = false;
+#else
+    const bool caseSensitive = true;
+#endif
+    QByteArray testData("a little test");
+    QString filename("File.txt");
+    {
+        QFile f(filename);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        QVERIFY(f.write(testData));
+        f.close();
+    }
+    QStringList alternates;
+    QFileInfo fi(filename);
+    QVERIFY(fi.exists());
+    alternates << "file.txt" << "File.TXT" << "fIlE.TxT" << fi.absoluteFilePath().toUpper() << fi.absoluteFilePath().toLower();
+    foreach (QString alt, alternates) {
+        QFileInfo fi2(alt);
+        QCOMPARE(fi2.exists(), !caseSensitive);
+        QCOMPARE(fi.size() == fi2.size(), !caseSensitive);
+        QFile f2(alt);
+        QCOMPARE(f2.open(QIODevice::ReadOnly), !caseSensitive);
+        if (!caseSensitive)
+            QCOMPARE(f2.readAll(), testData);
+    }
+}
+
+//MSVCRT asserts when any function is called with a closed file handle.
+//This replaces the default crashing error handler with one that ignores the error (allowing EBADF to be returned)
+class AutoIgnoreInvalidParameter
+{
+public:
+#if defined(Q_OS_WIN) && defined (Q_CC_MSVC)
+    static void ignore_invalid_parameter(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) {}
+    AutoIgnoreInvalidParameter()
+    {
+        oldHandler = _set_invalid_parameter_handler(ignore_invalid_parameter);
+        //also disable the abort/retry/ignore popup
+        oldReportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+    }
+    ~AutoIgnoreInvalidParameter()
+    {
+        //restore previous settings
+        _set_invalid_parameter_handler(oldHandler);
+        _CrtSetReportMode(_CRT_ASSERT, oldReportMode);
+    }
+    _invalid_parameter_handler oldHandler;
+    int oldReportMode;
+#endif
+};
+
+void tst_QFile::autocloseHandle()
+{
+#ifdef Q_OS_SYMBIAN
+    // these tests are a bit different, because using a closed file handle results in a panic rather than error
+    {
+        QFile file("readonlyfile");
+        QFile file2("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenRFile, QFile::AutoCloseHandle));
+        // file is opened with mandatory lock, so opening again should fail
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        file.close();
+        // opening again should now succeed (because handle is closed)
+        QVERIFY(file2.open(QIODevice::ReadOnly));
+    }
+
+    {
+        QFile file("readonlyfile");
+        QFile file2("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenRFile, QFile::DontCloseHandle));
+        // file is opened with mandatory lock, so opening again should fail
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        file.close();
+        // opening again should still fail (because handle is not auto closed)
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        rfile_.Close();
+        // now it should succeed
+        QVERIFY(file2.open(QIODevice::ReadOnly));
+    }
+#endif
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::AutoCloseHandle));
+        int fd = fd_;
+        QCOMPARE(file.handle(), fd);
+        file.close();
+        fd_ = -1;
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
+        //file is closed, read should fail
+        char buf;
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1);
+        QVERIFY(errno = EBADF);
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fd_);
+        file.close();
+        QCOMPARE(file.handle(), -1);
+        //file is not closed, read should succeed
+        char buf;
+        QCOMPARE((int)QT_READ(fd_, &buf, 1), 1);
+        ::close(fd_);
+        fd_ = -1;
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::AutoCloseHandle));
+        int fd = fileno(stream_);
+        QCOMPARE(file.handle(), fd);
+        file.close();
+        stream_ = 0;
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
+        //file is closed, read should fail
+        char buf;
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1); //not using fread because the FILE* was freed by fclose
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fileno(stream_));
+        file.close();
+        QCOMPARE(file.handle(), -1);
+        //file is not closed, read should succeed
+        char buf;
+        QCOMPARE(int(::fread(&buf, 1, 1, stream_)), 1);
+        ::fclose(stream_);
+        stream_ = 0;
     }
 }
 

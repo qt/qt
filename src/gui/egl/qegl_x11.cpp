@@ -330,10 +330,8 @@ void qt_set_winid_on_widget(QWidget* w, Qt::HANDLE id)
 
 // NOTE: The X11 version of createSurface will re-create the native drawable if it's visual doesn't
 // match the one for the passed in EGLConfig
-EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEglProperties *unusedProperties)
+EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEglProperties *properties)
 {
-    Q_UNUSED(unusedProperties);
-
     int devType = device->devType();
 
     if (devType == QInternal::Pbuffer) {
@@ -417,7 +415,12 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
 
         // At this point, the widget's window should be created and have the correct visual. Now we
         // just need to create the EGL surface for it:
-        EGLSurface surf = eglCreateWindowSurface(QEgl::display(), config, (EGLNativeWindowType)widget->winId(), 0);
+        const int *props;
+        if (properties)
+            props = properties->properties();
+        else
+            props = 0;
+        EGLSurface surf = eglCreateWindowSurface(QEgl::display(), config, (EGLNativeWindowType)widget->winId(), props);
         if (surf == EGL_NO_SURFACE)
             qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
         return surf;

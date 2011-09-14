@@ -3,7 +3,7 @@ SOURCES  += tst_qfontdatabase.cpp
 !symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 wince*|symbian {
-    additionalFiles.sources = FreeMono.ttf
+    additionalFiles.files = FreeMono.ttf
     additionalFiles.path = .
     DEPLOYMENT += additionalFiles
 }

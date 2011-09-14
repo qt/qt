@@ -59,7 +59,7 @@
 #include "QtCore/qtimer.h"
 #include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
-#include "private/qnativesocketengine_p.h"
+#include "private/qabstractsocketengine_p.h"
 #include "qnetworkproxy.h"
 
 QT_BEGIN_NAMESPACE
@@ -138,9 +138,6 @@ public:
     void setupSocketNotifiers();
     bool readFromSocket();
 
-#ifdef Q_OS_LINUX
-    qint64 addToBytesAvailable;
-#endif
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     QRingBuffer writeBuffer;

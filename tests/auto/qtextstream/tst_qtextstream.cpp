@@ -208,6 +208,7 @@ private slots:
     void seek();
     void pos();
     void pos2();
+    void pos3LargeFile();
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
@@ -228,6 +229,7 @@ private slots:
     void status_real_read();
     void status_integer_read();
     void status_word_read();
+    void status_write_error();
 
     // use case tests
     void useCase1();
@@ -1498,6 +1500,41 @@ void tst_QTextStream::pos2()
     stream >> str;
     QCOMPARE(str, QString("ghijkl"));
     QCOMPARE(stream.pos(), qint64(14));
+}
+
+// ------------------------------------------------------------------------------
+void tst_QTextStream::pos3LargeFile()
+{
+    {
+        QFile file(TestFileName);
+        file.open(QIODevice::WriteOnly | QIODevice::Text);
+        QTextStream out( &file );
+        // NOTE: The unusual spacing is to ensure non-1-character whitespace.
+        QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
+        // Approximate 50kb text file
+        const int NbLines = (50*1024) / lineString.length() + 1;
+        for (int line = 0; line < NbLines; ++line)
+            out << lineString;
+        // File is automatically flushed and closed on destruction.
+    }
+    QFile file(TestFileName);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream in( &file );
+    const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int value;
+    while (true) {
+        in.pos();
+        for ( int i = 0; i < 10; ++i ) {
+            in >> value;
+            if (in.status() != QTextStream::Ok) {
+                // End case, i == 0 && eof reached.
+                QCOMPARE(i, 0);
+                QCOMPARE(in.status(), QTextStream::ReadPastEnd);
+                return;
+            }
+            QCOMPARE(value, testValues[i]);
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------
@@ -4174,6 +4211,42 @@ void tst_QTextStream::status_word_read()
     QCOMPARE(s.status(), QTextStream::Ok);
     s >> w;
     QCOMPARE(s.status(), QTextStream::ReadPastEnd);
+}
+
+class FakeBuffer : public QBuffer
+{
+protected:
+    qint64 writeData(const char *c, qint64 i) { return m_lock ? 0 : QBuffer::writeData(c, i); }
+public:
+    FakeBuffer(bool locked = false) : m_lock(locked) {}
+    void setLocked(bool locked) { m_lock = locked; }
+private:
+    bool m_lock;
+};
+
+void tst_QTextStream::status_write_error()
+{
+    FakeBuffer fb(false);
+    QVERIFY(fb.open(QBuffer::ReadWrite));
+    QTextStream fs(&fb);
+    fs.setCodec(QTextCodec::codecForName("latin1"));
+    /* first write some initial content */
+    fs << "hello";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::Ok);
+    QCOMPARE(fb.data(), QByteArray("hello"));
+    /* then test that writing can cause an error */
+    fb.setLocked(true);
+    fs << "error";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::WriteFailed);
+    QCOMPARE(fb.data(), QByteArray("hello"));
+    /* finally test that writing after an error doesn't change the stream any more */
+    fb.setLocked(false);
+    fs << "can't do that";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::WriteFailed);
+    QCOMPARE(fb.data(), QByteArray("hello"));
 }
 
 void tst_QTextStream::task180679_alignAccountingStyle()

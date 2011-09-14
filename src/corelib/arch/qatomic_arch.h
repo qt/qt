@@ -46,7 +46,9 @@ QT_BEGIN_HEADER
 
 #include "QtCore/qglobal.h"
 
-#if defined(QT_ARCH_VXWORKS)
+#if defined(QT_ARCH_INTEGRITY)
+#  include "QtCore/qatomic_integrity.h"
+#elif defined(QT_ARCH_VXWORKS)
 #  include "QtCore/qatomic_vxworks.h"
 #elif defined(QT_ARCH_ALPHA)
 #  include "QtCore/qatomic_alpha.h"
@@ -88,6 +90,8 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)
 #  include "QtCore/qatomic_sh4a.h"
+#elif defined(QT_ARCH_NACL)
+#  include "QtCore/qatomic_generic.h"
 #else
 #  error "Qt has not been ported to this architecture"
 #endif

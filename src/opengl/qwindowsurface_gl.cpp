@@ -184,7 +184,9 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0), initializing(false) {}
+    QGLGlobalShareWidget() : widget(0), initializing(false) {
+        created = true;
+    }
 
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
@@ -223,6 +225,7 @@ public:
     }
 
     static bool cleanedUp;
+    static bool created;
 
 private:
     QGLWidget *widget;
@@ -230,6 +233,7 @@ private:
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
+bool QGLGlobalShareWidget::created = false;
 
 static void qt_cleanup_gl_share_widget();
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
@@ -239,7 +243,8 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
 
 static void qt_cleanup_gl_share_widget()
 {
-    _qt_gl_share_widget()->cleanup();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->cleanup();
 }
 
 QGLWidget* qt_gl_share_widget()
@@ -251,7 +256,16 @@ QGLWidget* qt_gl_share_widget()
 
 void qt_destroy_gl_share_widget()
 {
-    _qt_gl_share_widget()->destroy();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->destroy();
+}
+
+const QGLContext *qt_gl_share_context()
+{
+    QGLWidget *widget = qt_gl_share_widget();
+    if (widget)
+        return widget->context();
+    return 0;
 }
 
 struct QGLWindowSurfacePrivate
@@ -279,6 +293,8 @@ struct QGLWindowSurfacePrivate
     QList<QImage> buffers;
     QGLWindowSurfaceGLPaintDevice glDevice;
     QGLWindowSurface* q_ptr;
+
+    bool swap_region_support;
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
@@ -314,7 +330,7 @@ QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
 {
-    Q_ASSERT(window->isTopLevel());
+//    Q_ASSERT(window->isTopLevel());
     d_ptr->pb = 0;
     d_ptr->fbo = 0;
     d_ptr->ctx = 0;
@@ -331,21 +347,19 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
     d_ptr->did_paint = false;
-
-#ifdef QGL_NO_PRESERVED_SWAP
-    setPartialUpdateSupport(false);
-#endif
+    d_ptr->swap_region_support = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
 {
     if (d_ptr->ctx)
         glDeleteTextures(1, &d_ptr->tex_id);
+#ifndef Q_WS_QPA // Dont delete the contexts. Destroying the window does that for us
     foreach(QGLContext **ctx, d_ptr->contexts) {
         delete *ctx;
         *ctx = 0;
     }
-
+#endif
     delete d_ptr->pb;
     delete d_ptr->fbo;
     delete d_ptr;
@@ -354,9 +368,9 @@ QGLWindowSurface::~QGLWindowSurface()
         return;
 
 #ifdef Q_OS_SYMBIAN
-        // Destroy the context if necessary.
-        if (!qt_gl_share_widget()->context()->isSharing())
-            qt_destroy_gl_share_widget();
+    // Destroy the context if necessary.
+    if (!qt_gl_share_widget()->context()->isSharing())
+        qt_destroy_gl_share_widget();
 #endif
 }
 
@@ -370,17 +384,19 @@ void QGLWindowSurface::deleted(QObject *object)
             d_ptr->fbo = 0;
         }
 
+#ifndef Q_WS_QPA //no need to specifically delete the QGLContext as it will be deleted by QWidget
         QWidgetPrivate *widgetPrivate = widget->d_func();
         if (widgetPrivate->extraData()) {
-            union { QGLContext **ctxPtr; void **voidPtr; };
-            voidPtr = &widgetPrivate->extraData()->glContext;
-            int index = d_ptr->contexts.indexOf(ctxPtr);
+            union { QGLContext **ctxPtrPtr; void **voidPtrPtr; };
+            voidPtrPtr = &widgetPrivate->extraData()->glContext;
+            int index = d_ptr->contexts.indexOf(ctxPtrPtr);
             if (index != -1) {
-                delete *ctxPtr;
-                *ctxPtr = 0;
+                delete *ctxPtrPtr;
+                *ctxPtrPtr = 0;
                 d_ptr->contexts.removeAt(index);
             }
         }
+#endif
     }
 }
 
@@ -403,7 +419,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     } else
         ctx = new QGLContext(surfaceFormat, widget);
 
-    ctx->create(qt_gl_share_widget()->context());
+    ctx->create(qt_gl_share_context());
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
@@ -417,29 +433,26 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
             qDebug() << "Found EGL_NOK_swap_region2 extension. Using partial updates.";
     }
 
-    bool swapBehaviourPreserved = ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR);
+    d_ptr->destructive_swap_buffers = true;
     if (ctx->d_func()->eglContext->configAttrib(EGL_SURFACE_TYPE)&EGL_SWAP_BEHAVIOR_PRESERVED_BIT) {
         EGLint swapBehavior;
         if (eglQuerySurface(ctx->d_func()->eglContext->display(), ctx->d_func()->eglSurface
                             , EGL_SWAP_BEHAVIOR, &swapBehavior)) {
-            swapBehaviourPreserved = (swapBehavior == EGL_BUFFER_PRESERVED);
+            d_ptr->destructive_swap_buffers = (swapBehavior != EGL_BUFFER_PRESERVED);
         }
     }
 
-    if (!swapBehaviourPreserved && !haveNOKSwapRegion)
-        setPartialUpdateSupport(false); // Force full-screen updates
-    else
-        setPartialUpdateSupport(true);
+    d_ptr->swap_region_support = haveNOKSwapRegion;
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
 
-    union { QGLContext **ctxPtr; void **voidPtr; };
+    union { QGLContext **ctxPtrPtr; void **voidPtrPtr; };
 
     connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(deleted(QObject*)));
 
-    voidPtr = &widgetPrivate->extraData()->glContext;
-    d_ptr->contexts << ctxPtr;
+    voidPtrPtr = &widgetPrivate->extraData()->glContext;
+    d_ptr->contexts << ctxPtrPtr;
 
 #ifndef Q_OS_SYMBIAN
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
@@ -472,24 +485,31 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    d_ptr->did_paint = true;
     updateGeometry();
-
-    if (!context())
-        return;
 
     int clearFlags = 0;
 
-    if (context()->d_func()->workaround_needsFullClearOnEveryFrame)
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+
+    if (!ctx)
+        return;
+
+    if (ctx->d_func()->workaround_needsFullClearOnEveryFrame)
         clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-    else if (context()->format().alpha())
+    else if (ctx->format().alpha())
         clearFlags = GL_COLOR_BUFFER_BIT;
 
     if (clearFlags) {
+        if (d_ptr->fbo)
+            d_ptr->fbo->bind();
+
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
-    }
 
-    d_ptr->did_paint = true;
+        if (d_ptr->fbo)
+            d_ptr->fbo->release();
+    }
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -547,7 +567,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     // mistake to call swapBuffers if nothing was painted unless
     // EGL_BUFFER_PRESERVED is set. This check protects the flush func from
     // being executed if it's for nothing.
-    if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
+    if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
 
 #ifdef Q_OS_SYMBIAN
@@ -564,8 +584,13 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
+#if !defined(Q_WS_QPA)
     if (!geometry().isValid())
         return;
+#else
+    if (!size().isValid())
+        return;
+#endif
 
     // Needed to support native child-widgets...
     hijackWindow(parent);
@@ -629,12 +654,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 #endif
             bool doingPartialUpdate = false;
-            if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
-                doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
-            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysFullSwap)
-                doingPartialUpdate = false;
-            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
-                doingPartialUpdate = hasPartialUpdateSupport();
+            if (d_ptr->swap_region_support) {
+                if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
+                    doingPartialUpdate = br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+                else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
+                    doingPartialUpdate = true;
+            }
 
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
             if (widget != window()) {
@@ -800,12 +825,19 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 }
 
 
+#if !defined(Q_WS_QPA)
 void QGLWindowSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
     d_ptr->geometry_updated = true;
 }
-
+#else
+void QGLWindowSurface::resize(const QSize &size)
+{
+    QWindowSurface::resize(size);
+    d_ptr->geometry_updated = true;
+}
+#endif
 
 void QGLWindowSurface::updateGeometry() {
     if (!d_ptr->geometry_updated)
@@ -836,20 +868,20 @@ void QGLWindowSurface::updateGeometry() {
 
             ctx->d_func()->eglSurface = ctx->d_func()->eglContext->createSurface(window());
 
-            // Partial update supported has been decided already in previous hijackWindow call.
+            // Swap behaviour has been checked already in previous hijackWindow call.
             // Reset swap behaviour based on that flag.
-            if (hasPartialUpdateSupport()) {
-                eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurfaceForDevice(),
-                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-
-                if (eglGetError() != EGL_SUCCESS)
-                    qWarning("QGLWindowSurface::updateGeometry() - could not re-enable preserved swap behaviour");
-            } else {
+            if (d_ptr->destructive_swap_buffers) {
                 eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurfaceForDevice(),
                                     EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
 
                 if (eglGetError() != EGL_SUCCESS)
                     qWarning("QGLWindowSurface::updateGeometry() - could not re-enable destroyed swap behaviour");
+            } else {
+                eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurfaceForDevice(),
+                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
+                if (eglGetError() != EGL_SUCCESS)
+                    qWarning("QGLWindowSurface::updateGeometry() - could not re-enable preserved swap behaviour");                
             }
         }
 #endif
@@ -915,7 +947,7 @@ void QGLWindowSurface::updateGeometry() {
         }
     }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !defined(QT_OPENGL_ES_2) && !defined(Q_WS_QPA) //QPA doesn't support pixelbuffers
     if (d_ptr->destructive_swap_buffers && (d_ptr->pb || !d_ptr->tried_pb)) {
         d_ptr->tried_pb = true;
 
@@ -954,7 +986,7 @@ void QGLWindowSurface::updateGeometry() {
             d_ptr->pb = 0;
         }
     }
-#endif // !defined(QT_OPENGL_ES_2)
+#endif // !defined(QT_OPENGL_ES_2) !defined(Q_WS_QPA)
 
     ctx->makeCurrent();
 
@@ -1101,7 +1133,15 @@ QImage *QGLWindowSurface::buffer(const QWidget *widget)
     return &d_ptr->buffers.last();
 }
 
-
+QWindowSurface::WindowSurfaceFeatures QGLWindowSurface::features() const
+{
+    WindowSurfaceFeatures features = 0;
+    if (!d_ptr->destructive_swap_buffers || d_ptr->swap_region_support)
+        features |= PartialUpdates;
+    if (!d_ptr->destructive_swap_buffers)
+        features |= PreservedContents;
+    return features;
+}
 
 QT_END_NAMESPACE
 

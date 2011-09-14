@@ -5,9 +5,9 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_parserstress.cpp
 
 symbian: {
-    importFiles.sources = ..\\..\\qscriptjstestsuite\\tests
+    importFiles.files = ..\\..\\qscriptjstestsuite\\tests
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

@@ -91,6 +91,14 @@
 */
 
 /*!
+    \fn void QQueue::swap(QQueue<T> &other)
+    \since 4.8
+
+    Swaps queue \a other with this queue. This operation is very
+    fast and never fails.
+*/
+
+/*!
     \fn void QQueue::enqueue(const T& t)
 
     Adds value \a t to the tail of the queue.

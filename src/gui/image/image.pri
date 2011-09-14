@@ -23,6 +23,7 @@ HEADERS += \
         image/qpictureformatplugin.h \
         image/qpixmap.h \
         image/qpixmap_raster_p.h \
+        image/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
@@ -53,6 +54,7 @@ SOURCES += \
         image/qiconengineplugin.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
+        image/qpixmap_blitter.cpp \
         image/qnativeimage.cpp \
         image/qimagepixmapcleanuphooks.cpp \
         image/qvolatileimage.cpp
@@ -62,6 +64,9 @@ win32 {
 }
 else:embedded {
     SOURCES += image/qpixmap_qws.cpp
+}
+else:qpa {
+    SOURCES += image/qpixmap_qpa.cpp
 }
 else:x11 {
     HEADERS += image/qpixmap_x11_p.h

@@ -11,9 +11,9 @@ SUBDIRS=\
            qdbusmetatype \
            qdbuspendingcall \
            qdbuspendingreply \
-           qdbusperformance \
            qdbusreply \
            qdbusservicewatcher \
+           qdbustype \
            qdbusthreading \
            qdbusxmlparser \
 

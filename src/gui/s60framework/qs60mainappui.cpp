@@ -49,6 +49,7 @@
 #include <avkon.rsg>
 #endif
 #include <barsread.h>
+#include <coeutils.h>
 #include <qconfig.h>
 
 #include "qs60mainappui.h"
@@ -58,12 +59,27 @@
 #include <private/qmenu_p.h>
 #include <private/qt_s60_p.h>
 #include <qdebug.h>
+#include "qs60keycapture_p.h"
 
 //Animated wallpapers in Qt applications are not supported.
 const TInt KAknDisableAnimationBackground = 0x02000000;
 const TInt KAknSingleClickCompatible = 0x01000000;
 
 QT_BEGIN_NAMESPACE
+
+static QS60KeyCapture *qt_S60KeyCapture = 0;
+
+static void installS60KeyCapture(CCoeEnv *env)
+{
+    if (QApplication::testAttribute(Qt::AA_CaptureMultimediaKeys))
+        qt_S60KeyCapture = new QS60KeyCapture(env);
+}
+
+static void removeS60KeyCapture()
+{
+    delete qt_S60KeyCapture;
+    qt_S60KeyCapture = 0;
+}
 
 /*!
   \class QS60MainAppUi
@@ -126,6 +142,7 @@ void QS60MainAppUi::ConstructL()
     }
 #endif
     BaseConstructL(flags);
+    installS60KeyCapture(iCoeEnv);
 }
 
 /*!
@@ -141,6 +158,7 @@ QS60MainAppUi::QS60MainAppUi()
  */
 QS60MainAppUi::~QS60MainAppUi()
 {
+    removeS60KeyCapture();
 }
 
 /*!
@@ -418,6 +436,16 @@ void QS60MainAppUi::Reserved_MtsmObject()
 void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
 {
     QS60MainAppUiBase::HandleForegroundEventL(aForeground);
+}
+
+/*!
+  \internal
+*/
+TBool QS60MainAppUi::ProcessCommandParametersL(TApaCommand /*aCommand*/, TFileName &/*aDocumentName*/, const TDesC8 &/*aTail*/)
+{
+    // bypass CEikAppUi::ProcessCommandParametersL(..) which modifies aDocumentName, preventing apparc document opening from working.
+    // The return value is effectively unused in Qt apps (see QS60MainDocument::OpenFileL)
+    return EFalse;
 }
 
 #ifndef Q_WS_S60

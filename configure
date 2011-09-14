@@ -186,8 +186,11 @@ fi
 
 PLATFORM_X11=no
 PLATFORM_QWS=maybe
+PLATFORM_QPA=maybe
+BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     PLATFORM_MAC=maybe
+    BUILD_ON_MAC=yes
 else
     PLATFORM_MAC=no
 fi
@@ -267,6 +270,22 @@ earlyArgParse()
                 VAL=$1
             fi
             ;;
+        -embedded-lite|-qpa)
+            VAR=qpa
+            # this option may or may not be followed by an argument
+            if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+                VAL=auto
+            else
+                shift;
+                VAL=$1
+            fi
+            ;;
+        -nacl)
+            shift;
+            VAR=nacl
+            VAL=$1
+            ;;
+
         -h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
@@ -301,7 +320,31 @@ earlyArgParse()
             PLATFORM_X11=no
             PLATFORM_MAC=no
             PLATFORM_QWS=yes
+            PLATFORM_QPA=no
             ;;
+        qpa)
+            CFG_EMBEDDED="no"
+            if [ "$PLATFORM_QPA" != "no" ]; then
+                if [ "$PLATFORM_QPA" = "maybe" ]; then
+                    PLATFORM_X11=no
+                    PLATFORM_MAC=no
+                    PLATFORM_QWS=no
+                    PLATFORM_QPA=yes
+                fi
+            else
+                echo "No license exists to enable Qt QPA. Disabling."
+                CFG_EMBEDDED=no
+            fi
+            ;;
+        nacl)
+            echo "Using NaCl at $VAL."
+            PLATFORM_X11=no
+            PLATFORM_MAC=no
+            PLATFORM_QWS=no
+            CFG_NACL_PATH=$VAL
+            CFG_EMBEDDED=nacl
+            ;;
+
         developer-build)
             CFG_DEV="yes"
             ;;
@@ -360,6 +403,7 @@ elif [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" 
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
+    [ "$PLATFORM_QPA" = "maybe" ] && PLATFORM_QPA=no
     [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=no
 
     # read in the license file
@@ -452,6 +496,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
 	    ;;
     esac
+    ### EMBEDDED_QPA logic missing ###
     case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
         X9,* | XC,* | XU,* | XW,* | XM,*)
             # Qt All-OS
@@ -566,12 +611,14 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="CC CXX CFLAGS CXXFLAGS LDFLAGS"
+SYSTEM_VARIABLES="RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
 for varname in $SYSTEM_VARIABLES; do
     qmakevarname="${varname}"
     # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
     if [ "${varname}" = "LDFLAGS" ]; then
         qmakevarname="LFLAGS"
+    elif [ "${varname}" = "LD" ]; then
+        qmakevarname="LINK"
     fi
     cmd=`echo \
 'if [ -n "\$'${varname}'" ]; then
@@ -681,6 +728,11 @@ if [ -f "$relpath/src/gui/embedded/qscreenqnx_qws.cpp" ]; then
     CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} qnx"
     CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} qnx"
 fi
+if [ -f "$relpath/src/gui/embedded/qscreenintegrityfb_qws.cpp" ]; then
+    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} integrity"
+    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} integrity"
+    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} integrityfb"
+fi
 
 CFG_ARCH=
 CFG_HOST_ARCH=
@@ -752,6 +804,7 @@ CFG_MAC_XARCH=auto
 CFG_MAC_CARBON=no
 CFG_MAC_COCOA=yes
 COMMANDLINE_MAC_CARBON=no
+CFG_MAC_HARFBUZZ=no
 CFG_SXE=no
 CFG_PREFIX_INSTALL=yes
 CFG_SDK=
@@ -780,6 +833,7 @@ CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
 CFG_ICD=auto
 CFG_NOPROCESS=no
+CFG_ICU=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -887,6 +941,53 @@ if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
   CFG_GFX_OFF="$CFG_GFX_AVAILABLE" # assume all off
 fi
 
+CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
+if [ -d "$relpath/src/plugins/imageformats" ]; then
+    for a in "$relpath/src/plugins/imageformats/"*; do
+        if [ -d "$a" ]; then
+            base_a=`basename "$a"`
+            CFG_IMAGEFORMAT_PLUGIN_AVAILABLE="${CFG_IMAGEFORMAT_PLUGIN_AVAILABLE} ${base_a}"
+        fi
+    done
+fi
+
+#-------------------------------------------------------------------------------
+# Set Default NaCl options
+#-------------------------------------------------------------------------------
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    echo "Setting NaCl options:"
+    echo "-static"
+    CFG_SHARED=no
+    echo "-qpa nacl"
+    PLATFORM_QPA=yes
+    echo "-fast"
+    OPT_FAST=yes
+    echo "-qconfig nacl"
+    CFG_QCONFIG=nacl
+
+    if [ `uname` = "Linux" ]; then
+        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/include"
+        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/lib"
+    else
+        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/include"
+        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
+    fi
+
+    echo "-no-multimedia -no-webkit -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
+    CFG_MULTIMEDIA=no
+    CFG_WEBKIT=no
+    CFG_PHONON=no
+    CFG_MULTIMEDIA=no
+    CFG_MEDIASERVICES=no
+    CFG_XMLPATTERNS=no
+    CFG_SCRIPT=no
+    CFG_SQLITE=no
+    CFG_SQL_sqlite=no
+    CFG_LIBTIFF=no
+    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS tests"
+    QT_CONFIG="$QT_CONFIG nacl"
+fi
+
 #-------------------------------------------------------------------------------
 # parse command line arguments
 #-------------------------------------------------------------------------------
@@ -941,13 +1042,13 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QWS" != "yes" ]; then
+        if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
             echo
             echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
             echo
@@ -987,6 +1088,20 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
 	;;
+    -embedded-lite|-qpa)
+        VAR=qpa
+        # this option may or may not be followed by an argument
+        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+            VAL=auto
+        else
+            shift;
+            VAL=$1
+        fi
+	;;
+    -nacl)
+        VAR=nacl
+        shift;
+    ;;
     -opengl)
         VAR=opengl
         # this option may or may not be followed by an argument
@@ -1203,6 +1318,9 @@ while [ "$#" -gt 0 ]; do
     qconfig)
         CFG_QCONFIG="$VAL"
         ;;
+    sysroot)
+        CFG_SYSROOT="$VAL"
+        ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
         ;;
@@ -1217,6 +1335,16 @@ while [ "$#" -gt 0 ]; do
         PLATFORM_X11=no
         PLATFORM_MAC=no
         PLATFORM_QWS=yes
+        PLATFORM_QPA=no
+        ;;
+    embedded-lite|qpa)
+        CFG_EMBEDDED="no"
+        PLATFORM_X11=no
+        PLATFORM_MAC=no
+        PLATFORM_QWS=no
+        PLATFORM_QPA=yes
+        ;;
+    nacl)
         ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1323,6 +1451,7 @@ while [ "$#" -gt 0 ]; do
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         ;;
     x11)
+        PLATFORM_QPA=no
         PLATFORM_MAC=no
         PLATFORM_QWS=no
         PLATFORM_X11=yes
@@ -1371,9 +1500,16 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    harfbuzz)
+        if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_CARBON" != "yes" ] && [ "$VAL" = "yes" ]; then
+            CFG_MAC_HARFBUZZ="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
 
     framework)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$PLATFORM_MAC" = "yes" ] || [ "$PLATFORM_QPA" = "yes" ]; then
             CFG_FRAMEWORK="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -1540,8 +1676,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     gif)
-        [ "$VAL" = "qt" ] && VAL=auto
-        if [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
+        if [ "$VAL" = "no" ]; then
             CFG_GIF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2031,7 +2166,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|gfx-*|decoration-*|kbd-*|mouse-*)
+    sql-*|gfx-*|decoration-*|kbd-*|mouse-*|imageformat-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -2073,6 +2208,13 @@ while [ "$#" -gt 0 ]; do
 		avail="$CFG_MOUSE_PLUGIN_AVAILABLE"
 	    fi
             ;;
+        imageformat)
+            avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
+            if [ "$OPT" != "plugin" ]; then
+                # png is always built in
+                avail="$avail png"
+            fi
+            ;;
         *)
             avail=""
             echo "BUG: Unhandled type $VAR used in $CURRENT_OPT"
@@ -2092,6 +2234,11 @@ while [ "$#" -gt 0 ]; do
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
             eval "CFG_SQL_$VAL=\$OPT"
+            continue
+        elif [ "$VAR" = "imageformat" ]; then
+            [ "$OPT" = "qt" ] && OPT=yes
+            VAL="`echo $VAL |tr a-z A-Z`"
+            eval "CFG_$VAL=$OPT"
             continue
         fi
 
@@ -2238,6 +2385,13 @@ while [ "$#" -gt 0 ]; do
           QT_CFLAGS_FPU=$VAL
        fi
        ;;
+    icu)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_ICU="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2255,6 +2409,11 @@ if [ "$CFG_QCONFIG" != "full" ] && [ "$CFG_QT3SUPPORT" = "yes" ]; then
 fi
 if [ "$CFG_GUI" = "no" ]; then
     echo "Warning: -no-gui will disable the qt3support library."
+    CFG_QT3SUPPORT="no"
+fi
+
+#disable Qt3Support for Lighthouse
+if [ "$PLATFORM_QPA" = "yes" ]; then
     CFG_QT3SUPPORT="no"
 fi
 
@@ -2328,7 +2487,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
     echo "WARNING: -debug-and-release is not supported anymore on Qt/X11 and Qt for Embedded Linux"
     echo "Qt can be built in release mode with separate debug information, so"
@@ -2447,7 +2606,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QWS" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
@@ -2561,6 +2720,7 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
         echo "Qt for Embedded Linux is not supported on this platform. Disabling."
         CFG_EMBEDDED=no
         PLATFORM_QWS=no
+        PLATFORM_QPA=no
         ;;
     esac
 fi
@@ -2568,7 +2728,7 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$PLATFORM_MAC" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
           PLATFORM=macx-g++
         # PLATFORM=macx-xcode
         else
@@ -2802,7 +2962,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
 fi
 
 # now look at the configs and figure out what platform we are config'd for
-[ "$CFG_EMBEDDED" = "no" ] \
+[ "$CFG_EMBEDDED" = "no" ] && [ "$PLATFORM_QPA" != "yes" ] \
   && [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ] \
   && PLATFORM_X11=yes
 ### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
@@ -3010,6 +3170,9 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     sh4al)
         CFG_ARCH=sh4a
         ;;
+    arm*)
+        CFG_ARCH=arm
+        ;;
     *)
         CFG_ARCH="$CFG_EMBEDDED"
         ;;
@@ -3021,6 +3184,16 @@ elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
 fi
+
+# for compatibility
+COMPAT_ARCH=
+case "$CFG_ARCH" in
+arm*)
+    # previously, armv6 was a different arch
+    CFG_ARCH=arm
+    COMPAT_ARCH=armv6
+    ;;
+esac
 
 if [ -d "$relpath/src/corelib/arch/$CFG_ARCH" ]; then
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -3047,7 +3220,7 @@ fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "System architecture: '$CFG_ARCH'"
-    if [ "$PLATFORM_QWS" = "yes" ]; then
+    if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 	echo "Host architecture: '$CFG_HOST_ARCH'"
     fi
 fi
@@ -3096,17 +3269,21 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
     fi
 fi
 
+if [ ! -n "$PKG_CONFIG" ]; then
+    QT_CONFIG="$QT_CONFIG no-pkg-config"
+fi
+
 # process CFG_MAC_ARCHS
 if [ "$PLATFORM_MAC" = "yes" ]; then
 #   check -arch arguments for validity.
-    ALLOWED="x86 ppc x86_64 ppc64 i386"
+    ALLOWED="x86 ppc x86_64 ppc64 i386 arm armv6 armv7"
     # Save the list so we can re-write it using only valid values
     CFG_MAC_ARCHS_IN="$CFG_MAC_ARCHS"
     CFG_MAC_ARCHS=
     for i in $CFG_MAC_ARCHS_IN
     do 
         if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
+            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64 arm armv6 armv7";
             exit 2;
         fi
         if [ "$i" = "i386" -o "$i" = "x86" ]; then
@@ -3152,6 +3329,21 @@ if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     fi
 fi
 
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    TEST_COMPILER="nacl-gcc"
+fi
+
+SYSROOT_FLAG=
+if [ -n "$CFG_SYSROOT" ]; then
+    if compilerSupportsFlag --sysroot="$CFG_SYSROOT"; then
+	[ "$OPT_VERBOSE" = "yes" ] && echo "Setting sysroot to: $CFG_SYSROOT"
+	SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
+    else
+	echo >&2 "The compiler doesn't support the --sysroot flag, I can't set the sysroot"
+	exit 1
+    fi
+fi
+export SYSROOT_FLAG    # used by config.tests/unix/compile.test
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
@@ -3306,12 +3498,16 @@ fi
 if [ -z "$QT_INSTALL_PREFIX" ]; then
     if [ "$CFG_DEV" = "yes" ]; then
         QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
-    elif [ "$PLATFORM_QWS" = "yes" ]; then
-        QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
+    elif [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+        if [ "$PLATFORM_QPA" = "yes" ]; then
+	QT_INSTALL_PREFIX="/usr/local/Trolltech/QtLighthouse-${QT_VERSION}"
+        else
+	QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
+        fi
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
             QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
         fi
-    elif [ -d "$EPOCROOT" ]; then
+    elif [ -d "$EPOCROOT" ] && [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
             QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
             QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
@@ -3518,7 +3714,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
+        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
@@ -3540,12 +3736,15 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
 
 Installation options:
 
+    -qpa ................ This will enable the QPA build.
+                          QPA is a window system agnostic implementation of Qt.
+
  These are optional, but you may specify install directories.
 
     -prefix <dir> ...... This will install everything relative to <dir>
                          (default $QT_INSTALL_PREFIX)
 EOF
-if [ "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 cat <<EOF
 
     -hostprefix [dir] .. Tools and libraries needed when developing
@@ -3624,7 +3823,7 @@ Configure options:
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
 EOF
-if [ "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
     EXCN="*"
     EXCY=" "
 else
@@ -3709,7 +3908,8 @@ fi
                          See the README file for a list of supported
                          operating systems and compilers.
 EOF
-if [ "${PLATFORM_QWS}" != "yes" ]; then
+
+if [ "${PLATFORM_QWS}" != "yes" -a "${PLATFORM_QPA}" != "yes" ]; then
 cat << EOF
     -graphicssystem <sys> Sets an alternate graphics system. Available options are:
                            raster - Software rasterizer
@@ -3718,6 +3918,7 @@ cat << EOF
 
 EOF
 fi
+
 cat << EOF
 
     -no-mmx ............ Do not compile with use of MMX instructions.
@@ -3747,8 +3948,6 @@ Third Party Libraries:
                          See http://www.gzip.org/zlib
 
     -no-gif ............ Do not compile GIF reading support.
- *  -qt-gif ............ Compile GIF reading support.
-                         See also src/gui/image/qgifhandler_p.h
 
     -no-libtiff ........ Do not compile TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.
@@ -3844,7 +4043,7 @@ else
     SBN="*"
 fi
 
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
     cat << EOF
 
@@ -4071,23 +4270,38 @@ Qt/Mac only:
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
                          To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
 
+    -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
+                         It is only available to Cocoa builds.
+ *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
+                         QT_ENABLE_HARFBUZZ environment variable.
+
 EOF
 fi
 
 if [ "$PLATFORM_QWS" = "yes" ]; then
     cat << EOF
+Qt for Embedded Linux:
 
-Qt for Embedded Linux only:
+    -embedded <arch> .... This will enable the embedded build, you must have a
+                          proper license for this switch to work.
+                          Example values for <arch>: arm mips x86 generic
+EOF
+fi
+
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    cat << EOF
+Qt for QPA only:
+EOF
+fi
+
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+    cat << EOF
 
     -xplatform target ... The target platform when cross-compiling.
 
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
-
-    -embedded <arch> .... This will enable the embedded build, you must have a
-                          proper license for this switch to work.
-                          Example values for <arch>: arm mips x86 generic
 
     -armfpa ............. Target platform uses the ARM-FPA floating point format.
     -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
@@ -4113,6 +4327,17 @@ Qt for Embedded Linux only:
     -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
                           default ($CFG_QCONFIG).
 
+    -no-opengl .......... Do not support OpenGL.
+    -opengl <api> ....... Enable OpenGL ES support
+                          With no parameter, this will attempt to auto-detect OpenGL ES 1.x
+                          or 2.x, or regular desktop OpenGL.
+                          Use es1 or es2 for <api> to override auto-detection.
+EOF
+fi
+
+if [ "$PLATFORM_QWS" = "yes" ]; then
+    cat << EOF
+
     -depths <list> ...... Comma-separated list of supported bit-per-pixel
                           depths, from: 1, 4, 8, 12, 15, 16, 18, 24, 32 and 'all'.
 
@@ -4124,14 +4349,6 @@ Qt for Embedded Linux only:
 			       Possible values for <style>: [ $CFG_DECORATION_PLUGIN_AVAILABLE ]
     -no-decoration-<style> ....Disable decoration <style> entirely.
                                Possible values for <style>: [ $CFG_DECORATION_AVAILABLE ]
-
-    -no-opengl .......... Do not support OpenGL.
-    -opengl <api> ....... Enable OpenGL ES support
-                          With no parameter, this will attempt to auto-detect OpenGL ES 1.x
-                          or 2.x. Use es1 or es2 for <api> to override auto-detection.
-
-                          NOTE: A QGLScreen driver for the hardware is required to support
-                                OpenGL ES on Qt for Embedded Linux.
 
     -qt-gfx-<driver> ... Enable a graphics <driver> in the QtGui library.
                          Possible values for <driver>: [ $CFG_GFX_AVAILABLE ]
@@ -4164,8 +4381,7 @@ Qt for Embedded Linux only:
 EOF
 fi
 
-
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_GLIB" = "no" ]; then
         GBY=" "
         GBN="+"
@@ -4204,6 +4420,8 @@ fi # Help
 
 if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
+elif [ "$PLATFORM_QPA" = "yes" ]; then
+    Platform="Qt Lighthouse"
 elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     Platform="Qt for Symbian"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
@@ -4542,27 +4760,37 @@ fi
 # $2: optional transformation
 # relies on $QMAKESPEC, $COMPILER_CONF and $mkfile being set correctly, as the latter
 # is where the resulting variable is written to
+# Assumes that the optional transformation produces the same variable name for each hit
 setBootstrapVariable()
 {
     getQMakeConf | $AWK '/^('"$1"')[^_A-Z0-9]/ { print $0; }' | ( [ -n "$2" ] && sed "$2" ; [ -z "$2" ] && cat ) | $AWK '
+BEGIN {
+    variable = ""
+    combinedValue = ""
+}
 {
-    varLength = index($0, "=") - 1
-    valStart = varLength + 2
-    if (substr($0, varLength, 1) == "+") {
-        varLength = varLength - 1
-        valStart = valStart + 1
+    valStart = index($0, "=") + 1
+
+    append = 0
+    if (substr($0, valStart - 2, 1) == "+") {
+        append = 1
     }
-    var = substr($0, 0, varLength)
-    gsub("[ \t]+", "", var)
-    val = substr($0, valStart)
-    printf "%s_%s = %s\n", var, NR, val
+
+    variable = substr($0, 0, valStart - 2 - append)
+    value = substr($0, valStart)
+    gsub("[ \t]+", "", variable)
+    gsub("^[ \t]+", "", value)
+    gsub("[ \t]+$", "", value)
+
+    if (append == 1 && length(combinedValue) > 0) {
+        combinedValue = combinedValue " " value
+    } else {
+        combinedValue = value
+    }
 }
 END {
-    if (length(var) > 0) {
-        printf "%s =", var
-        for (i = 1; i <= NR; ++i)
-            printf " $(%s_%s)", var, i
-        printf "\n"
+    if (length(combinedValue) > 0) {
+        printf "%s = %s\n", variable, combinedValue
     }
 }' >> "$mkfile"
 }
@@ -4660,8 +4888,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
-        if [ "$PLATFORM_MAC" = "yes" ]; then
-            echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            echo "export MACOSX_DEPLOYMENT_TARGET = 10.5" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
@@ -4831,7 +5059,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
+if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -4888,6 +5116,19 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     fi
 fi
 
+# check IPC support
+if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_sysv "ipc_sysv" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+    # SYSV IPC is not supported - check POSIX IPC
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_posix "ipc_posix" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
+    else
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
+        if [ "$PLATFORM_QWS" = "yes" ]; then
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SEMAPHORE QT_NO_QWS_MULTIPROCESS QT_NO_QWS_SHARE_FONTS"
+        fi
+    fi
+fi
+
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
     # Note: Qt no longer support builds without zlib
@@ -4933,7 +5174,8 @@ if [ "$CFG_QS60STYLE" = "auto" ]; then
 fi
 
 if [ "$CFG_SYMBIAN_DEFFILES" = "auto" ]; then
-    if [ "$XPLATFORM_SYMBIAN" = "yes" ] && [ "$CFG_DEV" = "no" ]; then
+    # elf2e32 crashes when using def files together with gcce.
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ] && [ "$CFG_DEV" = "no" ] && [ "$XPLATFORM" != "symbian-gcce" ]; then
         CFG_SYMBIAN_DEFFILES=yes
     else
         CFG_SYMBIAN_DEFFILES=no
@@ -5315,7 +5557,7 @@ fi
 
 # auto-detect iconv(3) support
 if [ "$CFG_ICONV" != "no" ]; then
-    if [ "$PLATFORM_QWS" = "yes" ]; then
+    if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 	CFG_ICONV=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
@@ -5377,8 +5619,8 @@ if [ "$PLATFORM_MAC" = "yes" -a ! -z "$QT_NAMESPACE" ]; then
     QT_NAMESPACE_MAC_CRC=`"$mactests/crc.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/crc $QT_NAMESPACE $L_FLAGS $I_FLAGS $l_FLAGS`
 fi
 
-# X11/QWS
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
+# X11/QWS/Lighthouse
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
     # auto-detect Glib support
     if [ "$CFG_GLIB" != "no" ]; then
@@ -5490,6 +5732,25 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_ICD=no
     fi
 
+    # auto-detect libicu support
+    if [ "$CFG_ICU" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icu "ICU" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            [ "$CFG_ICU" = "auto" ] && CFG_ICU=yes
+        else
+            if [ "$CFG_ICU" = "auto" ]; then
+                CFG_ICU=no
+            elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                # CFG_ICU is "yes"
+
+                echo "The ICU library support cannot be enabled."
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            fi
+        fi
+    fi
+
     # Auto-detect PulseAudio support
     if [ "$CFG_PULSEAUDIO" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
@@ -5512,7 +5773,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
             fi
         fi
     fi
-fi # X11/QWS
+fi # X11/QWS/Lighthouse
 
 # X11
 if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
@@ -5710,6 +5971,12 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		CFG_XRENDER=no
 	    fi
 	fi
+    fi
+
+    # Additional check to decide if WebKit support will be included
+    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
+        echo "Warning: -no-xrender will disable the QtWebkit module."
+        CFG_WEBKIT="no"
     fi
 
     # auto-detect MIT-SHM support
@@ -5920,6 +6187,122 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 fi
 
+
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
+    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+            CFG_OPENGL=desktop
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_OPENGL=es2
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_OPENGL=es1
+        else
+            if [ "$CFG_OPENGL" = "yes" ]; then
+                echo "All the OpenGL functionality tests failed!"
+                echo " You might need to modify the include and library search paths by editing"
+                echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+                echo " ${XQMAKESPEC}."
+                exit 1
+            fi
+            CFG_OPENGL=no
+        fi
+    elif [ "$CFG_OPENGL" = "es1" ]; then
+        # OpenGL ES 1.x
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
+            echo "The OpenGL ES 1.x functionality test failed!"
+            echo " You might need to modify the include and library search paths by editing"
+            echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
+            echo " ${XQMAKESPEC}."
+            exit 1
+        fi
+    elif [ "$CFG_OPENGL" = "es2" ]; then
+        #OpenGL ES 2.x
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists glesv2 2>/dev/null; then
+            QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --variable=includedir glesv2 2>/dev/null`
+            QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --variable=libdir glesv2 2>/dev/null`
+            QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
+            QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
+            QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "$QMAKE_INCDIR_OPENGL_ES2"
+            QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "$QMAKE_LIBDIR_OPENGL_ES2"
+            QMakeVar set QMAKE_LIBS_OPENGL_ES2 "$QMAKE_LIBS_OPENGL_ES2"
+        fi
+
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2
+        if [ $? != "0" ]; then
+            echo "The OpenGL ES 2.0 functionality test failed!"
+            echo " You might need to modify the include and library search paths by editing"
+            echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
+            echo " ${XQMAKESPEC}."
+            exit 1
+        fi
+    elif [ "$CFG_OPENGL" = "desktop" ]; then
+        # Desktop OpenGL support
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+        if [ $? != "0" ]; then
+            echo "The OpenGL functionality test failed!"
+            echo " You might need to modify the include and library search paths by editing"
+            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " ${XQMAKESPEC}."
+            exit 1
+        fi
+    fi
+
+    # auto-detect FontConfig support
+    if [ "$CFG_FONTCONFIG" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+            QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+            QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
+        else
+            QT_CFLAGS_FONTCONFIG=
+            QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+                QT_CONFIG="$QT_CONFIG fontconfig"
+                QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
+                QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
+                CFG_LIBFREETYPE=system
+        fi
+
+    fi
+
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
+        QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
+        QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
+        QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
+        QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
+
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
+            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
+        else
+            QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
+        fi
+    fi
+
+    # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
+    if [ -n "$QMAKE_CFLAGS_WAYLAND" ] || [ -n "$QMAKE_LIBS_WAYLAND" ]; then
+        QMakeVar set QMAKE_CFLAGS_WAYLAND "$QMAKE_CFLAGS_WAYLAND"
+        QMakeVar set QMAKE_INCDIR_WAYLAND "$QMAKE_INCDIR_WAYLAND"
+        QMakeVar set QMAKE_LIBS_WAYLAND "$QMAKE_LIBS_WAYLAND"
+        QMakeVar set QMAKE_LIBDIR_WAYLAND "$QMAKE_LIBDIR_WAYLAND"
+        QMakeVar set QMAKE_DEFINES_WAYLAND " $QMAKE_DEFINES_WAYLAND"
+    fi
+
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
+        QT_CONFIG="$QT_CONFIG wayland"
+    fi
+
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+        QT_CONFIG="$QT_CONFIG coreservices"
+    else
+        QMakeVar add DEFINES QT_NO_CORESERVICES
+    fi
+
+fi
+
+
 # QWS
 if [ "$PLATFORM_QWS" = "yes" ]; then
 
@@ -5938,7 +6321,7 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=auto
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
         else
             echo "All the OpenGL ES functionality tests failed!"
@@ -5974,6 +6357,9 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         echo "Desktop OpenGL support is not avaliable on Qt for Embedded Linux"
         exit 1
     fi
+fi
+
+if [ "$PLATFORM_QWS" = "yes" ]; then
 
     # screen drivers
     for screen in ${CFG_GFX_ON} ${CFG_GFX_PLUGIN}; do
@@ -6166,7 +6552,7 @@ fi
 
 
 if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
-    if [ "$PLATFORM_QWS" != "yes" ]; then
+    if [ "$PLATFORM_QWS" != "yes" -o "$PLATFORM_QPA" = "yes" ]; then
         CFG_DOUBLEFORMAT=normal
     else
         "$unixtests/doubleformat.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
@@ -6220,13 +6606,9 @@ fi
 
 # find if the platform supports IPv6
 if [ "$CFG_IPV6" != "no" ]; then
-    #
-    # We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
-    # Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
-    # symbian socket engine.
-    #
     if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-        CFG_IPV6=no
+        #IPV6 should always be enabled for Symbian release
+        CFG_IPV6=yes
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
     else
@@ -6433,13 +6815,20 @@ elif [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
 fi
 
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
-    if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
+    if [ "$CFG_ARCH" = "arm" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
         fi
-    elif [ "$XPLATFORM" = "symbian-gcce" ]; then
-        CFG_JAVASCRIPTCORE_JIT=no
+    else
+	case "$XPLATFORM" in
+	    symbian-gcce)
+		CFG_JAVASCRIPTCORE_JIT=no
+		;;
+	    linux-icc*)
+		CFG_JAVASCRIPTCORE_JIT=no
+		;;
+	esac
     fi
 fi
 
@@ -6472,7 +6861,12 @@ fi
 #-------------------------------------------------------------------------------
 
 ### fix this: user input should be validated in a loop
-if [ "$CFG_QWS_DEPTHS" = "prompted" -a "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" ]; then
+    PROMPT_FOR_DEPTHS="yes"
+else
+    PROMPT_FOR_DEPTHS="no"
+fi
+if [ "$CFG_QWS_DEPTHS" = "prompted" -a "$PROMPT_FOR_DEPTHS" = "yes" ]; then
     echo
     echo "Choose pixel-depths to support:"
     echo
@@ -6615,6 +7009,11 @@ else
     QT_CONFIG="$QT_CONFIG accessibility"
 fi
 
+# egl stuff does not belong in lighthouse, but rather in plugins
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    CFG_EGL="no"
+fi
+
 # enable egl
 if [ "$CFG_EGL" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
@@ -6664,8 +7063,7 @@ fi
 
 if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ]; then
     if [ "$PLATFORM_QWS" = "yes" ]; then
-	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_BACKINGSTORE_SUBSURFACES"
-	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_USE_EGLWINDOWSURFACE"
+        QCONFIG_FLAGS="$QCONFIG_FLAGS Q_BACKINGSTORE_SUBSURFACES"
     fi
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES"
 fi
@@ -6706,6 +7104,19 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG embedded"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG qpa"
+    QT_CONFIG="$QT_CONFIG qpa"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
+    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
+fi
+
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG nacl pepper"
+    QT_CONFIG="$QT_CONFIG nacl pepper"
+    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
+fi
+
 if [ "$XPLATFORM_MINGW" != "yes" ]; then
     # Do not set this here for Windows. Let qmake do it so
     # debug and release precompiled headers are kept separate.
@@ -6870,6 +7281,7 @@ fi
 [ "$CFG_NAS" = "system" ] && QT_CONFIG="$QT_CONFIG nas"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
+[ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 
 if [ "$PLATFORM_X11" = "yes" ]; then
     [ "$CFG_SM" = "yes" ] && QT_CONFIG="$QT_CONFIG x11sm"
@@ -6964,7 +7376,7 @@ if [ '!' -z "$I_FLAGS" ]; then
 fi
 
 # turn off exceptions for the compilers that support it
-if [ "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 3- -d-`
 elif [ "$XPLATFORM" != "$PLATFORM" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
@@ -6999,6 +7411,10 @@ fi
 
 if [ "$CFG_ICD" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG icd"
+fi
+
+if [ "$CFG_ICU" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG icu"
 fi
 
 #
@@ -7120,10 +7536,8 @@ EOF
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
-        canBuildQtConcurrent="no"
         ;;
     symbian-armcc)
-        canBuildQtConcurrent="no"
         ;;
 esac
 
@@ -7185,13 +7599,13 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-if [ "$CFG_WEBKIT" = "auto" ]; then
+if [ "$CFG_WEBKIT" != "no" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
 
 if [ "$CFG_WEBKIT" != "no" ]; then
     # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
+    cp -f "$relpath/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     if [ "$CFG_WEBKIT" = "debug" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
@@ -7402,7 +7816,7 @@ esac
 #     ipv6
 #
 #     X11     : x11sm xinerama xcursor xfixes xrandr xrender mitshm fontconfig xkb
-#     Embedded: embedded freetype
+#     Embedded: embedded qpa freetype
 #
 ALL_OPTIONS=
 BUILD_CONFIG=
@@ -7516,10 +7930,20 @@ if [ ! -z "$COMPAT_COMPILER" ]; then
     fi
 fi
 
+# is this arch compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_ARCH=
+if [ ! -z "$COMPAT_ARCH" ]; then
+    QT_BUILD_KEY_COMPAT_ARCH="$CFG_USER_BUILD_KEY $COMPAT_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_ARCH $QT_NAMESPACE"
+    fi
+fi
+
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_ARCH=`echo $QT_BUILD_KEY_COMPAT_ARCH | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7572,6 +7996,11 @@ if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
     echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
+if [ -n "$QT_BUILD_KEY_COMPAT_ARCH" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT3 \"$QT_BUILD_KEY_COMPAT_ARCH\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
@@ -7723,6 +8152,11 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     done
 fi # QWS
 
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    # Add QPA to config.h
+    QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_QPA QT_NO_QWS_QPF QT_NO_QWS_QPF2"
+fi
+
 if [ "${CFG_USE_FLOATMATH}" = "yes" ]; then
     QCONFIG_FLAGS="${QCONFIG_FLAGS} QT_USE_MATH_H_FLOATS"
 fi
@@ -7759,7 +8193,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 
-if [ "$PLATFORM_QWS" != "yes" ]; then
+if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
     [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
@@ -7816,7 +8250,7 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # We cannot use Linux's default export rules since they export everything.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
     # Disable non-working features.
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_SYSTEMTRAYICON"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_SYSTEMTRAYICON"
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
@@ -7961,6 +8395,16 @@ QT_NAMESPACE = $QT_NAMESPACE
 QT_NAMESPACE_MAC_CRC = $QT_NAMESPACE_MAC_CRC
 
 EOF
+if [ -n "$CFG_SYSROOT" ]; then
+    echo "# sysroot" >>"$QTCONFIG.tmp"
+    echo `basename "$XQMAKESPEC"` \{ >>"$QTCONFIG.tmp"
+    echo "  QT_SYSROOT      += \$\$quote($CFG_SYSROOT)" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_CFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_CXXFLAGS  += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "  QMAKE_LFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "}" >> "$QTCONFIG.tmp"
+    echo >> "$QTCONFIG.tmp"
+fi
 if [ "$CFG_RPATH" = "yes" ]; then
     echo "QMAKE_RPATHDIR += \"$QT_INSTALL_LIBS\"" >> "$QTCONFIG.tmp"
 fi
@@ -7972,6 +8416,11 @@ fi
 if [ -n "$QT_CFLAGS_FPU" ]; then
     echo "#Qt for symbian FPU settings" >> "$QTCONFIG.tmp"
     echo "MMP_RULES += \"ARMFPU $QT_CFLAGS_FPU\"" >> "$QTCONFIG.tmp"
+fi
+
+if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
+    echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
+    echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
 fi
 
 # replace qconfig.pri if it differs from the newly created temp file
@@ -8007,10 +8456,9 @@ QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 EOF
 
 # Ensure we can link to uninistalled libraries
-if [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
+if [ "$XPLATFORM_MINGW" != "yes" ] && [ "$CFG_EMBEDDED" != "nacl" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
     echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$CACHEFILE.tmp"
 fi
-
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
 fi
@@ -8157,7 +8605,7 @@ else
     echo "Architecture:  $CFG_ARCH"
 fi
 
-if [ "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
     echo "Host architecture: $CFG_HOST_ARCH"
 fi
 
@@ -8216,7 +8664,7 @@ case "$CFG_WEBKIT" in
     debug) echo "WebKit module .......... yes (debug)" ;;
     no)    echo "WebKit module .......... no" ;;
 esac
-if [ "$CFG_WEBKIT" != "no" ]; then
+if [ "$CFG_WEBKIT" != "no" ] || [ "$CFG_SCRIPT" != "no" ]; then
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
         echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else
@@ -8238,7 +8686,7 @@ if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
 fi
-[ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
+[ "${PLATFORM_QWS}" != "yes" -a "${PLATFORM_QPA}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
 echo "IPv6 support ........... $CFG_IPV6"
 echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
 echo "getaddrinfo support .... $CFG_GETADDRINFO"
@@ -8361,6 +8809,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
 echo "ICD support ............ $CFG_ICD"
+echo "libICU support ......... $CFG_ICU"
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
@@ -8566,6 +9015,10 @@ for file in .projects .projects.3; do
             SPEC=$XQMAKESPEC ;;
         *s60main/s60main.pro)
             if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_SYMBIAN" != "yes" ]; then
+                continue
+            fi;;
+        *activeqt/*)
+            if [ "$PLATFORM" = "win32-g++" ] || [ "$XPLATFORM" = "win32-g++" ]; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;

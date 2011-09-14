@@ -105,6 +105,11 @@ protected:
     virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
 
+    QString pkgConfigPrefix() const;
+    QString pkgConfigFileName(bool fixify=true);
+    QString pkgConfigFixPath(QString) const;
+    void writePkgConfigFile();   // for pkg-config
+
     //generating subtarget makefiles
     struct SubTarget
     {
@@ -122,6 +127,8 @@ protected:
         SubTargetsNoFlags=0x00
     };
     QList<MakefileGenerator::SubTarget*> findSubDirsSubTargets() const;
+    virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
+                                  const QString &makeFileIn, const QString &outDirectory_cdout);
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface

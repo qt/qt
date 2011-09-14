@@ -27,6 +27,7 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 
+#include "SamplingTool.h"
 #include "Executable.h"
 
 QT_BEGIN_NAMESPACE

@@ -42,6 +42,14 @@
 *********************************************************************</comment>
  <class>qdesigner_internal::NewActionDialog</class>
  <widget class="QDialog" name="qdesigner_internal::NewActionDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>366</width>
+    <height>270</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>New Action...</string>
   </property>
@@ -81,61 +89,13 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="editObjectName"/>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="iconLabel">
-       <property name="text">
-        <string>&amp;Icon:</string>
-       </property>
-       <property name="buddy">
-        <cstring>iconSelector</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="qdesigner_internal::IconSelector" name="iconSelector" native="true"/>
-       </item>
-       <item>
-        <spacer>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="shortcutLabel">
-       <property name="text">
-        <string>Shortcut:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QCheckBox" name="checkableCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="checkableLabel">
-       <property name="text">
-        <string>Checkable:</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="toolTipLabel">
        <property name="text">
-        <string>ToolTip:</string>
+        <string>T&amp;oolTip:</string>
+       </property>
+       <property name="buddy">
+        <cstring>tooltipEditor</cstring>
        </property>
       </widget>
      </item>
@@ -160,7 +120,77 @@
        </item>
       </layout>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="iconThemeLabel">
+       <property name="text">
+        <string>Icon th&amp;eme:</string>
+       </property>
+       <property name="buddy">
+        <cstring>iconThemeEditor</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="qdesigner_internal::IconThemeEditor" name="iconThemeEditor" native="true"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="iconLabel">
+       <property name="text">
+        <string>&amp;Icon:</string>
+       </property>
+       <property name="buddy">
+        <cstring>iconSelector</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="qdesigner_internal::IconSelector" name="iconSelector" native="true"/>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
      <item row="5" column="1">
+      <widget class="QCheckBox" name="checkableCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="checkableLabel">
+       <property name="text">
+        <string>&amp;Checkable:</string>
+       </property>
+       <property name="buddy">
+        <cstring>checkableCheckBox</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="shortcutLabel">
+       <property name="text">
+        <string>&amp;Shortcut:</string>
+       </property>
+       <property name="buddy">
+        <cstring>keySequenceEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
       <layout class="QHBoxLayout" name="keysequenceLayout">
        <item>
         <widget class="QtKeySequenceEdit" name="keySequenceEdit" native="true">
@@ -232,6 +262,12 @@
    <class>TextPropertyEditor</class>
    <extends>QWidget</extends>
    <header>textpropertyeditor_p.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qdesigner_internal::IconThemeEditor</class>
+   <extends>QWidget</extends>
+   <header>iconselector_p.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

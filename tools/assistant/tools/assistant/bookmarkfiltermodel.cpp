@@ -50,10 +50,28 @@ BookmarkFilterModel::BookmarkFilterModel(QObject *parent)
 {
 }
 
-void
-BookmarkFilterModel::setSourceModel(QAbstractItemModel *_sourceModel)
+void BookmarkFilterModel::setSourceModel(QAbstractItemModel *_sourceModel)
 {
     beginResetModel();
+
+    if (sourceModel) {
+        disconnect(sourceModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
+            this, SLOT(changed(QModelIndex, QModelIndex)));
+        disconnect(sourceModel, SIGNAL(rowsInserted(QModelIndex, int, int)),
+            this, SLOT(rowsInserted(QModelIndex, int, int)));
+        disconnect(sourceModel,
+            SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)), this,
+            SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
+        disconnect(sourceModel, SIGNAL(rowsRemoved(QModelIndex, int, int)),
+            this, SLOT(rowsRemoved(QModelIndex, int, int)));
+        disconnect(sourceModel, SIGNAL(layoutAboutToBeChanged()), this,
+            SLOT(layoutAboutToBeChanged()));
+        disconnect(sourceModel, SIGNAL(layoutChanged()), this,
+            SLOT(layoutChanged()));
+        disconnect(sourceModel, SIGNAL(modelAboutToBeReset()), this,
+            SLOT(modelAboutToBeReset()));
+        disconnect(sourceModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
+    }
 
     QAbstractProxyModel::setSourceModel(sourceModel);
     sourceModel = qobject_cast<BookmarkModel*> (_sourceModel);
@@ -79,20 +97,18 @@ BookmarkFilterModel::setSourceModel(QAbstractItemModel *_sourceModel)
     connect(sourceModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
 
     if (sourceModel)
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
 
     endResetModel();
 }
 
-int
-BookmarkFilterModel::rowCount(const QModelIndex &index) const
+int BookmarkFilterModel::rowCount(const QModelIndex &index) const
 {
     Q_UNUSED(index)
     return cache.count();
 }
 
-int
-BookmarkFilterModel::columnCount(const QModelIndex &index) const
+int BookmarkFilterModel::columnCount(const QModelIndex &index) const
 {
     Q_UNUSED(index)
     if (sourceModel)
@@ -100,8 +116,7 @@ BookmarkFilterModel::columnCount(const QModelIndex &index) const
     return 0;
 }
 
-QModelIndex
-BookmarkFilterModel::mapToSource(const QModelIndex &proxyIndex) const
+QModelIndex BookmarkFilterModel::mapToSource(const QModelIndex &proxyIndex) const
 {
     const int row = proxyIndex.row();
     if (proxyIndex.isValid() && row >= 0 && row < cache.count())
@@ -109,21 +124,19 @@ BookmarkFilterModel::mapToSource(const QModelIndex &proxyIndex) const
     return QModelIndex();
 }
 
-QModelIndex
-BookmarkFilterModel::mapFromSource(const QModelIndex &sourceIndex) const
+QModelIndex BookmarkFilterModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
     return index(cache.indexOf(sourceIndex), 0, QModelIndex());
 }
 
-QModelIndex
-BookmarkFilterModel::parent(const QModelIndex &child) const
+QModelIndex BookmarkFilterModel::parent(const QModelIndex &child) const
 {
     Q_UNUSED(child)
     return QModelIndex();
 }
 
-QModelIndex
-BookmarkFilterModel::index(int row, int column, const QModelIndex &index) const
+QModelIndex BookmarkFilterModel::index(int row, int column,
+    const QModelIndex &index) const
 {
     Q_UNUSED(index)
     if (row < 0 || column < 0 || cache.count() <= row
@@ -133,32 +146,28 @@ BookmarkFilterModel::index(int row, int column, const QModelIndex &index) const
     return createIndex(row, 0);
 }
 
-Qt::DropActions
-BookmarkFilterModel::supportedDropActions () const
+Qt::DropActions BookmarkFilterModel::supportedDropActions () const
 {
     if (sourceModel)
         return sourceModel->supportedDropActions();
     return Qt::IgnoreAction;
 }
 
-Qt::ItemFlags
-BookmarkFilterModel::flags(const QModelIndex &index) const
+Qt::ItemFlags BookmarkFilterModel::flags(const QModelIndex &index) const
 {
     if (sourceModel)
         return sourceModel->flags(index);
     return Qt::NoItemFlags;
 }
 
-QVariant
-BookmarkFilterModel::data(const QModelIndex &index, int role) const
+QVariant BookmarkFilterModel::data(const QModelIndex &index, int role) const
 {
     if (sourceModel)
         return sourceModel->data(mapToSource(index), role);
     return QVariant();
 }
 
-bool
-BookmarkFilterModel::setData(const QModelIndex &index, const QVariant &value,
+bool BookmarkFilterModel::setData(const QModelIndex &index, const QVariant &value,
     int role)
 {
     if (sourceModel)
@@ -166,37 +175,34 @@ BookmarkFilterModel::setData(const QModelIndex &index, const QVariant &value,
     return false;
 }
 
-void
-BookmarkFilterModel::filterBookmarks()
+void BookmarkFilterModel::filterBookmarks()
 {
     if (sourceModel) {
         beginResetModel();
         hideBookmarks = true;
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
         endResetModel();
     }
 }
 
-void
-BookmarkFilterModel::filterBookmarkFolders()
+void BookmarkFilterModel::filterBookmarkFolders()
 {
     if (sourceModel) {
         beginResetModel();
         hideBookmarks = false;
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
         endResetModel();
     }
 }
 
-void
-BookmarkFilterModel::changed(const QModelIndex &topLeft,
+void BookmarkFilterModel::changed(const QModelIndex &topLeft,
     const QModelIndex &bottomRight)
 {
     emit dataChanged(mapFromSource(topLeft), mapFromSource(bottomRight));
 }
 
-void
-BookmarkFilterModel::rowsInserted(const QModelIndex &parent, int start, int end)
+void BookmarkFilterModel::rowsInserted(const QModelIndex &parent, int start,
+    int end)
 {
     if (!sourceModel)
         return;
@@ -218,15 +224,16 @@ BookmarkFilterModel::rowsInserted(const QModelIndex &parent, int start, int end)
         const bool isFolder = newIndex.data(UserRoleFolder).toBool();
         if ((isFolder && hideBookmarks) || (!isFolder && !hideBookmarks)) {
             beginInsertRows(mapFromSource(parent), start, end);
-            cache.insert(cache.indexOf(cachePrevious) + 1, newIndex);
+            const int index = cache.indexOf(cachePrevious) + 1;
+            if (cache.value(index, QPersistentModelIndex()) != newIndex)
+                cache.insert(index, newIndex);
             endInsertRows();
         }
     }
 }
 
-void
-BookmarkFilterModel::rowsAboutToBeRemoved(const QModelIndex &parent, int start,
-    int end)
+void BookmarkFilterModel::rowsAboutToBeRemoved(const QModelIndex &parent,
+    int start, int end)
 {
     if (!sourceModel)
         return;
@@ -240,8 +247,7 @@ BookmarkFilterModel::rowsAboutToBeRemoved(const QModelIndex &parent, int start,
     }
 }
 
-void
-BookmarkFilterModel::rowsRemoved(const QModelIndex &/*parent*/, int, int)
+void BookmarkFilterModel::rowsRemoved(const QModelIndex &/*parent*/, int, int)
 {
     if (cache.contains(indexToRemove)) {
         cache.removeAll(indexToRemove);
@@ -249,41 +255,36 @@ BookmarkFilterModel::rowsRemoved(const QModelIndex &/*parent*/, int, int)
     }
 }
 
-void
-BookmarkFilterModel::layoutAboutToBeChanged()
+void BookmarkFilterModel::layoutAboutToBeChanged()
 {
     // TODO: ???
 }
 
-void
-BookmarkFilterModel::layoutChanged()
+void BookmarkFilterModel::layoutChanged()
 {
     // TODO: ???
 }
 
-void
-BookmarkFilterModel::modelAboutToBeReset()
+void BookmarkFilterModel::modelAboutToBeReset()
 {
     beginResetModel();
 }
 
-void
-BookmarkFilterModel::modelReset()
+void BookmarkFilterModel::modelReset()
 {
     if (sourceModel)
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
     endResetModel();
 }
 
-void
-BookmarkFilterModel::setupCache(const QModelIndex &parent)
+void BookmarkFilterModel::setupCache(const QModelIndex &parent)
 {
     cache.clear();
-    collectItems(parent);
+    for (int i = 0; i < sourceModel->rowCount(parent); ++i)
+        collectItems(sourceModel->index(i, 0, parent));
 }
 
-void
-BookmarkFilterModel::collectItems(const QModelIndex &parent)
+void BookmarkFilterModel::collectItems(const QModelIndex &parent)
 {
     if (parent.isValid()) {
         bool isFolder = sourceModel->data(parent, UserRoleFolder).toBool();
@@ -304,14 +305,12 @@ BookmarkTreeModel::BookmarkTreeModel(QObject *parent)
 {
 }
 
-int
-BookmarkTreeModel::columnCount(const QModelIndex &parent) const
+int BookmarkTreeModel::columnCount(const QModelIndex &parent) const
 {
     return qMin(1, QSortFilterProxyModel::columnCount(parent));
 }
 
-bool
-BookmarkTreeModel::filterAcceptsRow(int row, const QModelIndex &parent) const
+bool BookmarkTreeModel::filterAcceptsRow(int row, const QModelIndex &parent) const
 {
     Q_UNUSED(row)
     BookmarkModel *model = qobject_cast<BookmarkModel*> (sourceModel());

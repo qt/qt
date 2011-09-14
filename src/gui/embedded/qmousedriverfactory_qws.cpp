@@ -48,6 +48,7 @@
 #include "qmousevfb_qws.h"
 #include "qmousetslib_qws.h"
 #include "qmouseqnx_qws.h"
+#include "qmouseintegrity_qws.h"
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qmousedriverplugin_qws.h"
@@ -107,6 +108,10 @@ QWSMouseHandler *QMouseDriverFactory::create(const QString& key, const QString &
     if (driver == QLatin1String("qnx") || driver.isEmpty())
         return new QQnxMouseHandler(key, device);
 #endif
+#if defined(Q_OS_INTEGRITY) && !defined(QT_NO_MOUSE_INTEGRITY)
+    if (driver == QLatin1String("integrity") || driver.isEmpty())
+        return new QIntMouseHandler(key, device);
+#endif
 #ifndef QT_NO_QWS_MOUSE_LINUXTP
     if (driver == QLatin1String("linuxtp") || driver.isEmpty())
         return new QWSLinuxTPMouseHandler(key, device);
@@ -156,6 +161,9 @@ QStringList QMouseDriverFactory::keys()
 
 #if defined(Q_OS_QNX) && !defined(QT_NO_QWS_MOUSE_QNX)
     list << QLatin1String("QNX");
+#endif
+#if defined(Q_OS_INTEGRITY) && !defined(QT_NO_QWS_MOUSE_INTEGRITY)
+    list << QLatin1String("INTEGRITY");
 #endif
 #ifndef QT_NO_QWS_MOUSE_LINUXTP
     list << QLatin1String("LinuxTP");

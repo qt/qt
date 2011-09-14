@@ -129,6 +129,7 @@ public:
 
     QSize sizeHint() const;
     QSize minimumSizeHint() const;
+    int heightForWidth(int width) const;
 
     void setCornerWidget(QWidget * w, Qt::Corner corner = Qt::TopRightCorner);
     QWidget * cornerWidget(Qt::Corner corner = Qt::TopRightCorner) const;

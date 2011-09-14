@@ -54,6 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
+
+// ### Qt 5: see tests/benchmarks/corelib/tools/qhash/qhash_string.cpp
+// Hashing of the whole string is a waste of cycles.
+
 /*
     These functions are based on Peter J. Weinberger's hash function
     (from the Dragon Book). The constant 24 in the original function
@@ -728,6 +732,20 @@ void QHashData::checkSanity()
 /*! \fn QHash<Key, T> &QHash::operator=(const QHash<Key, T> &other)
 
     Assigns \a other to this hash and returns a reference to this hash.
+*/
+
+/*! \fn void QHash::swap(QHash<Key, T> &other)
+    \since 4.8
+
+    Swaps hash \a other with this hash. This operation is very
+    fast and never fails.
+*/
+
+/*! \fn void QMultiHash::swap(QMultiHash<Key, T> &other)
+    \since 4.8
+
+    Swaps hash \a other with this hash. This operation is very
+    fast and never fails.
 */
 
 /*! \fn bool QHash::operator==(const QHash<Key, T> &other) const

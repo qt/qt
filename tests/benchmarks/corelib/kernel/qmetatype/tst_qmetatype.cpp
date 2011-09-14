@@ -71,6 +71,11 @@ private slots:
     void isRegisteredBuiltin();
     void isRegisteredCustom();
     void isRegisteredNotRegistered();
+
+    void constructCoreType_data();
+    void constructCoreType();
+    void constructCoreTypeCopy_data();
+    void constructCoreTypeCopy();
 };
 
 tst_QMetaType::tst_QMetaType()
@@ -226,6 +231,53 @@ void tst_QMetaType::isRegisteredNotRegistered()
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
             QMetaType::isRegistered(-1);
+    }
+}
+
+void tst_QMetaType::constructCoreType_data()
+{
+    QTest::addColumn<int>("typeId");
+    for (int i = 0; i <= QMetaType::LastCoreType; ++i)
+        QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstCoreExtType; i <= QMetaType::LastCoreExtType; ++i)
+        QTest::newRow(QMetaType::typeName(i)) << i;
+    // GUI types are tested in tst_QGuiMetaType.
+}
+
+// Tests how fast QMetaType can default-construct and destroy a Qt
+// core type. The purpose of this benchmark is to measure the overhead
+// of using type id-based creation compared to creating the type
+// directly (i.e. "T *t = new T(); delete t;").
+void tst_QMetaType::constructCoreType()
+{
+    QFETCH(int, typeId);
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i) {
+            void *data = QMetaType::construct(typeId, (void *)0);
+            QMetaType::destroy(typeId, data);
+        }
+    }
+}
+
+void tst_QMetaType::constructCoreTypeCopy_data()
+{
+    constructCoreType_data();
+}
+
+// Tests how fast QMetaType can copy-construct and destroy a Qt core
+// type. The purpose of this benchmark is to measure the overhead of
+// using type id-based creation compared to creating the type directly
+// (i.e. "T *t = new T(other); delete t;").
+void tst_QMetaType::constructCoreTypeCopy()
+{
+    QFETCH(int, typeId);
+    QVariant other(typeId, (void *)0);
+    const void *copy = other.constData();
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i) {
+            void *data = QMetaType::construct(typeId, copy);
+            QMetaType::destroy(typeId, data);
+        }
     }
 }
 

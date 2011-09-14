@@ -69,6 +69,7 @@ public:
     Status status() const;
 
     void sendMessage(const QByteArray &);
+    bool waitForMessage();
 
     static int idForObject(QObject *);
     static QObject *objectForId(int);
@@ -84,6 +85,7 @@ protected:
 
 private:
     friend class QDeclarativeDebugServer;
+    friend class QDeclarativeDebugServerPrivate;
 };
 
 QT_END_NAMESPACE

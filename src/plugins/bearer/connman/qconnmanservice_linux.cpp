@@ -870,7 +870,6 @@ quint64 QConnmanCounterInterface::getTimeOnline()
     return 0;
 }
 
-
 /////////////////////////////////////////
 QConnmanDBusHelper::QConnmanDBusHelper(QObject * parent)
         : QObject(parent)

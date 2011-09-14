@@ -48,7 +48,7 @@
 QSizeF SvgTextObject::intrinsicSize(QTextDocument * /*doc*/, int /*posInDocument*/,
                                     const QTextFormat &format)
 {
-    QImage bufferedImage = qVariantValue<QImage>(format.property(Window::SvgData));
+    QImage bufferedImage = qvariant_cast<QImage>(format.property(Window::SvgData));
     QSize size = bufferedImage.size();
     
     if (size.height() > 25)
@@ -63,7 +63,7 @@ void SvgTextObject::drawObject(QPainter *painter, const QRectF &rect,
                                QTextDocument * /*doc*/, int /*posInDocument*/,
                                const QTextFormat &format)
 {
-    QImage bufferedImage = qVariantValue<QImage>(format.property(Window::SvgData));
+    QImage bufferedImage = qvariant_cast<QImage>(format.property(Window::SvgData));
 
     painter->drawImage(rect, bufferedImage);
 }

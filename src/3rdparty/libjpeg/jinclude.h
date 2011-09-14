@@ -20,6 +20,10 @@
 #include "jconfig.h"		/* auto configuration options */
 #define JCONFIG_INCLUDED	/* so that jpeglib.h doesn't do it again */
 
+#ifdef _MSC_VER
+#  define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 /*
  * We need the NULL macro and size_t typedef.
  * On an ANSI-conforming system it is sufficient to include <stddef.h>.

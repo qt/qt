@@ -123,6 +123,9 @@ private slots:
     void loadHints();
     void deleteinstanceOnUnload();
     void checkingStubsFromDifferentDrives();
+    void loadDebugObj();
+    void loadCorruptElf();
+    void loadGarbage();
 };
 
 tst_QPluginLoader::tst_QPluginLoader()
@@ -216,7 +219,7 @@ void tst_QPluginLoader::errorString()
     QVERIFY(loader.errorString() != unknown);
     }
 
-#if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX && !defined Q_OS_SYMBIAN
+#if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX && !defined Q_OS_SYMBIAN && !defined Q_OS_QNX
     {
     QPluginLoader loader( sys_qualifiedLibraryName("almostplugin"));     //a plugin with unresolved symbols
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
@@ -287,12 +290,14 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 
         QSignalSpy spy1(loader1.instance(), SIGNAL(destroyed()));
         QSignalSpy spy2(loader2.instance(), SIGNAL(destroyed()));
-        QCOMPARE(loader1.unload(), false);  // refcount not reached 0, not really unloaded
-        QCOMPARE(spy1.count(), 0);
-        QCOMPARE(spy2.count(), 0);
+        if (pass == 0) {
+            QCOMPARE(loader2.unload(), false);  // refcount not reached 0, not really unloaded
+            QCOMPARE(spy1.count(), 0);
+            QCOMPARE(spy2.count(), 0);
+        }
         QCOMPARE(instance1->pluginName(), QLatin1String("Plugin ok"));
         QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
-        QCOMPARE(loader2.unload(), true);   // refcount reached 0, did really unload
+        QVERIFY(loader1.unload());   // refcount reached 0, did really unload
         QCOMPARE(spy1.count(), 1);
         QCOMPARE(spy2.count(), 1);
     }
@@ -346,6 +351,55 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
     QVERIFY(test2);
 
 #endif//Q_OS_SYMBIAN
+}
+
+void tst_QPluginLoader::loadDebugObj()
+{
+#if defined (__ELF__)
+    QVERIFY(QFile::exists(SRCDIR "elftest/debugobj.so"));
+    QPluginLoader lib1(SRCDIR "elftest/debugobj.so");
+    QCOMPARE(lib1.load(), false);
+#endif
+}
+
+void tst_QPluginLoader::loadCorruptElf()
+{
+#if defined (__ELF__)
+if (sizeof(void*) == 8) {
+    QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
+
+    QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
+    QCOMPARE(lib1.load(), false);
+    QVERIFY(lib1.errorString().contains("not a valid Qt plugin"));
+
+    QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
+    QCOMPARE(lib2.load(), false);
+    QVERIFY(lib2.errorString().contains("not a valid Qt plugin"));
+
+    QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
+    QCOMPARE(lib3.load(), false);
+    QVERIFY(lib3.errorString().contains("not a valid Qt plugin"));
+} else if (sizeof(void*) == 4) {
+    QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
+    QCOMPARE(libW.load(), false);
+    QVERIFY(libW.errorString().contains("architecture"));
+} else {
+    QFAIL("Please port QElfParser to this platform or blacklist this test.");
+}
+#endif
+}
+
+void tst_QPluginLoader::loadGarbage()
+{
+#if defined (Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    for (int i=0; i<5; i++) {
+        QPluginLoader lib(QString(SRCDIR "elftest/garbage%1.so").arg(i));
+        QCOMPARE(lib.load(), false);
+#ifdef SHOW_ERRORS
+        qDebug() << lib.errorString();
+#endif
+    }
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QPluginLoader)

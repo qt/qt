@@ -192,6 +192,7 @@ bool usage(const char *a0)
             "  -norecursive   Don't do a recursive search\n"
             "  -recursive     Do a recursive search\n"
             "  -set <prop> <value> Set persistent property\n"
+            "  -unset <prop>  Unset persistent property\n"
             "  -query <prop>  Query persistent property. Show all if <prop> is empty.\n"
             "  -cache file    Use file as cache           [makefile mode only]\n"
             "  -spec spec     Use spec as QMAKESPEC       [makefile mode only]\n"
@@ -226,6 +227,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     Option::qmake_mode = Option::QMAKE_GENERATE_PRL;
                 } else if(opt == "set") {
                     Option::qmake_mode = Option::QMAKE_SET_PROPERTY;
+                } else if(opt == "unset") {
+                    Option::qmake_mode = Option::QMAKE_UNSET_PROPERTY;
                 } else if(opt == "query") {
                     Option::qmake_mode = Option::QMAKE_QUERY_PROPERTY;
                 } else if(opt == "makefile") {
@@ -260,6 +263,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                 Option::host_mode = HOST_WIN_MODE;
                 Option::target_mode = TARG_WIN_MODE;
                 Option::target_mode_overridden = true;
+            } else if(opt == "integrity") {
+                Option::target_mode = TARG_INTEGRITY_MODE;
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
@@ -334,7 +339,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else {
                 bool handled = true;
                 if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY ||
-                    Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {
+                    Option::qmake_mode == Option::QMAKE_SET_PROPERTY ||
+                    Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY) {
                     Option::prop::properties.append(arg);
                 } else {
                     QFileInfo fi(arg);
@@ -621,19 +627,21 @@ Option::fixString(QString string, uchar flags)
     static QHash<FixStringCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFixStringCacheKeyQString, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FixStringCacheKey, QString> >, (void**)&cache);
     }
     FixStringCacheKey cacheKey(string, flags);
-    if(cache->contains(cacheKey)) {
-	const QString ret = cache->value(cacheKey);
-	//qDebug() << "Fix (cached) " << orig_string << "->" << ret;
-        return ret;
+
+    QHash<FixStringCacheKey, QString>::const_iterator it = cache->constFind(cacheKey);
+
+    if (it != cache->constEnd()) {
+        //qDebug() << "Fix (cached) " << orig_string << "->" << it.value();
+        return it.value();
     }
 
     //fix the environment variables
     if(flags & Option::FixEnvVars) {
         int rep;
-        QRegExp reg_var("\\$\\(.*\\)");
+        static QRegExp reg_var("\\$\\(.*\\)");
         reg_var.setMinimal(true);
         while((rep = reg_var.indexIn(string)) != -1)
             string.replace(rep, reg_var.matchedLength(),
@@ -742,64 +750,11 @@ qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
     cache_items.append(new QMakeCacheClearItem(func, data));
 }
 
-#ifdef Q_OS_WIN
-# include <windows.h>
-
-QT_USE_NAMESPACE
-#endif
-
 QString qmake_libraryInfoFile()
 {
-    QString ret;
-#if defined( Q_OS_WIN )
-    wchar_t module_name[MAX_PATH];
-    GetModuleFileName(0, module_name, MAX_PATH);
-    QFileInfo filePath = QString::fromWCharArray(module_name);
-    ret = filePath.filePath();
-#else
-    QString argv0 = QFile::decodeName(QByteArray(Option::application_argv0));
-    QString absPath;
-
-    if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
-        /*
-          If argv0 starts with a slash, it is already an absolute
-          file path.
-        */
-        absPath = argv0;
-    } else if (argv0.contains(QLatin1Char('/'))) {
-        /*
-          If argv0 contains one or more slashes, it is a file path
-          relative to the current directory.
-        */
-        absPath = QDir::current().absoluteFilePath(argv0);
-    } else {
-        /*
-          Otherwise, the file path has to be determined using the
-          PATH environment variable.
-        */
-        QByteArray pEnv = qgetenv("PATH");
-        QDir currentDir = QDir::current();
-        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1String(":"));
-        for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
-            if ((*p).isEmpty())
-                continue;
-            QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
-            QFileInfo candidate_fi(candidate);
-            if (candidate_fi.exists() && !candidate_fi.isDir()) {
-                absPath = candidate;
-                break;
-            }
-        }
-    }
-
-    absPath = QDir::cleanPath(absPath);
-
-    QFileInfo fi(absPath);
-    ret = fi.exists() ? fi.canonicalFilePath() : QString();
-#endif
-    if(!ret.isEmpty())
-        ret = QDir(QFileInfo(ret).absolutePath()).filePath("qt.conf");
-    return ret;
+    if(!Option::qmake_abslocation.isEmpty())
+        return QDir(QFileInfo(Option::qmake_abslocation).absolutePath()).filePath("qt.conf");
+    return QString();
 }
 
 QT_END_NAMESPACE

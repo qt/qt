@@ -138,12 +138,12 @@ BuildsMetaMakefileGenerator::init()
         Build *build = new Build;
         build->name = name;
         build->makefile = createMakefileGenerator(project, false);
-	if (build->makefile){
+        if (build->makefile){
             makefiles += build;
-	}else {
-	    delete build;
-	    return false;
-	}
+        }else {
+            delete build;
+            return false;
+        }
     }
     return true;
 }
@@ -179,7 +179,7 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
                     using_stdout = true;
                 } else {
                     if(Option::output.fileName().isEmpty() &&
-		       Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
+                       Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
                         Option::output.setFileName(project->first("QMAKE_MAKEFILE"));
                     Option::output_dir = oldpwd;
                     QString build_name = build->name;
@@ -217,6 +217,7 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
 
         // debugging
         if(Option::debug_level) {
+            debug_msg(1, "Dumping all variables:");
             QMap<QString, QStringList> &vars = project->variables();
             for(QMap<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
                 if(!it.key().startsWith(".") && !it.value().isEmpty())
@@ -305,7 +306,7 @@ SubdirsMetaMakefileGenerator::init()
                        && project->isRecursive());
     if(recurse) {
         QString old_output_dir = Option::output_dir;
-	QString old_output = Option::output.fileName();
+        QString old_output = Option::output.fileName();
         QString oldpwd = qmake_getpwd();
         QString thispwd = oldpwd;
         if(!thispwd.endsWith('/'))
@@ -386,7 +387,7 @@ SubdirsMetaMakefileGenerator::init()
     self->input_dir = qmake_getpwd();
     self->output_dir = Option::output_dir;
     if(!recurse || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
-	self->output_file = Option::output.fileName();
+        self->output_file = Option::output.fileName();
     self->makefile = new BuildsMetaMakefileGenerator(project, name, false);
     self->makefile->init();
     subs.append(self);
@@ -419,10 +420,10 @@ SubdirsMetaMakefileGenerator::write(const QString &oldpwd)
             writepwd = oldpwd;
         if(!(ret = subs.at(i)->makefile->write(writepwd)))
             break;
-	//restore because I'm paranoid
+        //restore because I'm paranoid
         qmake_setpwd(pwd);
-	Option::output.setFileName(output_name);
-	Option::output_dir = output_dir;
+        Option::output.setFileName(output_name);
+        Option::output_dir = output_dir;
     }
     return ret;
 }
@@ -447,6 +448,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
 #include "symbian_makefile.h"
+#include "gbuild.h"
 QT_END_INCLUDE_NAMESPACE
 
 MakefileGenerator *
@@ -490,6 +492,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
     } else if(gen == "SYMBIAN_MINGW") {
         mkfile = new SymbianMakefileTemplate<MingwMakefileGenerator>;
+    } else if(gen == "GBUILD") {
+        mkfile = new GBuildMakefileGenerator;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }
@@ -555,6 +559,9 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
         *host_mode = Option::HOST_WIN_MODE;
 #endif
         *target_mode = Option::TARG_SYMBIAN_MODE;
+    } else if (gen == "GBUILD") {
+        *host_mode = Option::HOST_UNIX_MODE;
+        *target_mode = Option::TARG_INTEGRITY_MODE;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
         return false;

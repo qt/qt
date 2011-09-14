@@ -37,6 +37,9 @@
             \enddiv
             \list
             \o \l{Qt Features Overview}
+            \o \l{How to Learn Qt}
+            \o \l{Introduction to Qt Quick}{Qt Quick}
+            \o \l{Qt Whitepaper}{Qt C++ Framework}
             \o \l{Introduction to Qt Quick}{Qt Quick}
             \o \l{external: Qt Mobility Manual}{Qt Mobility}
             \o \l{Qt WebKit}
@@ -49,8 +52,8 @@
             \o \l{external: Qt Simulator Manual}{Qt Simulator}
             \endlist
             \list
+            \o \l{What's New in Qt 4.8} - latest release
             \o \l{Supported Platforms}{Platform Support}
-            \o \l{What's New in Qt 4.7} - latest release
             \endlist
         \enddiv
         \div {class="sectionlist normallist"}

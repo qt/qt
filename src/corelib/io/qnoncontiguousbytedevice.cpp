@@ -153,6 +153,7 @@ void QNonContiguousByteDevice::disableReset()
     resetDisabled = true;
 }
 
+// FIXME we should scrap this whole implementation and instead change the ByteArrayImpl to be able to cope with sub-arrays?
 QNonContiguousByteDeviceBufferImpl::QNonContiguousByteDeviceBufferImpl(QBuffer *b) : QNonContiguousByteDevice()
 {
     buffer = b;
@@ -244,7 +245,7 @@ qint64 QNonContiguousByteDeviceByteArrayImpl::size()
     return byteArray->size();
 }
 
-QNonContiguousByteDeviceRingBufferImpl::QNonContiguousByteDeviceRingBufferImpl(QRingBuffer *rb)
+QNonContiguousByteDeviceRingBufferImpl::QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb)
     : QNonContiguousByteDevice(), currentPosition(0)
 {
     ringBuffer = rb;
@@ -355,6 +356,11 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
     // normal advancement
     currentReadBufferPosition += amount;
 
+    if (size() == -1)
+        emit readProgress(totalAdvancements, totalAdvancements);
+    else
+        emit readProgress(totalAdvancements, size());
+
     // advancing over that what has actually been read before
     if (currentReadBufferPosition > currentReadBufferAmount) {
         qint64 i = currentReadBufferPosition - currentReadBufferAmount;
@@ -370,10 +376,6 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
         currentReadBufferAmount = 0;
     }
 
-    if (size() == -1)
-        emit readProgress(totalAdvancements, totalAdvancements);
-    else
-        emit readProgress(totalAdvancements, size());
 
     return true;
 }
@@ -499,13 +501,11 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 }
 
 /*!
-    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer);
-
     Create a QNonContiguousByteDevice out of a QRingBuffer.
 
     \internal
 */
-QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer)
+QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer<QRingBuffer> ringBuffer)
 {
     return new QNonContiguousByteDeviceRingBufferImpl(ringBuffer);
 }

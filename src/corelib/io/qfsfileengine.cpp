@@ -41,6 +41,7 @@
 
 #include "qfsfileengine_p.h"
 #include "qfsfileengine_iterator_p.h"
+#include "qfilesystemengine_p.h"
 #include "qdatetime.h"
 #include "qdiriterator.h"
 #include "qset.h"
@@ -119,6 +120,9 @@ void QFSFileEnginePrivate::init()
     openMode = QIODevice::NotOpen;
     fd = -1;
     fh = 0;
+#if defined (Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
+    fileHandleForMaps = -1;
+#endif
     lastIOCommand = IOFlushCommand;
     lastFlushFailed = false;
     closeFileHandle = false;
@@ -133,109 +137,13 @@ void QFSFileEnginePrivate::init()
 }
 
 /*!
-    \internal
-
-    Returns the canonicalized form of \a path (i.e., with all symlinks
-    resolved, and all redundant path elements removed.
-*/
-QString QFSFileEnginePrivate::canonicalized(const QString &path)
-{
-    if (path.isEmpty())
-        return path;
-
-    // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
-        return path;
-#endif
-#if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN) || defined(Q_OS_MAC)
-    // ... but Linux with uClibc does not have it
-#if !defined(__UCLIBC__)
-    char *ret = 0;
-#if defined(Q_OS_MAC)
-    // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
-        ret = realpath(path.toLocal8Bit().constData(), (char*)0);
-    } else {
-        // on 10.5 we can use FSRef to resolve the file path.
-        FSRef fsref;
-        if (FSPathMakeRef((const UInt8 *)QDir::cleanPath(path).toUtf8().data(), &fsref, 0) == noErr) {
-            CFURLRef urlref = CFURLCreateFromFSRef(NULL, &fsref);
-            CFStringRef canonicalPath = CFURLCopyFileSystemPath(urlref, kCFURLPOSIXPathStyle);
-            QString ret = QCFString::toQString(canonicalPath);
-            CFRelease(canonicalPath);
-            CFRelease(urlref);
-            return ret;
-        }
-    }
-#else
-    ret = realpath(path.toLocal8Bit().constData(), (char*)0);
-#endif
-    if (ret) {
-        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
-        free(ret);
-        return canonicalPath;
-    }
-#endif
-#endif
-
-    QFileInfo fi;
-    const QChar slash(QLatin1Char('/'));
-    QString tmpPath = path;
-    int separatorPos = 0;
-    QSet<QString> nonSymlinks;
-    QSet<QString> known;
-
-    known.insert(path);
-    do {
-#ifdef Q_OS_WIN
-        // UNC, skip past the first two elements
-        if (separatorPos == 0 && tmpPath.startsWith(QLatin1String("//")))
-            separatorPos = tmpPath.indexOf(slash, 2);
-        if (separatorPos != -1)
-#endif
-        separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
-        QString prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
-        if (
-#ifdef Q_OS_SYMBIAN
-            // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance,
-            // but also saves us from lot of unnecessary platform security check failures
-            // when dealing with files under *:/private directories.
-            separatorPos == -1 &&
-#endif
-            !nonSymlinks.contains(prefix)) {
-            fi.setFile(prefix);
-            if (fi.isSymLink()) {
-                QString target = fi.symLinkTarget();
-                if (separatorPos != -1) {
-                    if (fi.isDir() && !target.endsWith(slash))
-                        target.append(slash);
-                    target.append(tmpPath.mid(separatorPos));
-                }
-                tmpPath = QDir::cleanPath(target);
-                separatorPos = 0;
-
-                if (known.contains(tmpPath))
-                    return QString();
-                known.insert(tmpPath);
-            } else {
-                nonSymlinks.insert(prefix);
-            }
-        }
-    } while (separatorPos != -1);
-
-    return QDir::cleanPath(tmpPath);
-}
-
-/*!
     Constructs a QFSFileEngine for the file name \a file.
 */
-QFSFileEngine::QFSFileEngine(const QString &file) : QAbstractFileEngine(*new QFSFileEnginePrivate)
+QFSFileEngine::QFSFileEngine(const QString &file)
+    : QAbstractFileEngine(*new QFSFileEnginePrivate)
 {
     Q_D(QFSFileEngine);
-    d->filePath = QDir::fromNativeSeparators(file);
-    d->nativeInitFileName();
+    d->fileEntry = QFileSystemEntry(file);
 }
 
 /*!
@@ -284,8 +192,7 @@ void QFSFileEngine::setFileName(const QString &file)
 {
     Q_D(QFSFileEngine);
     d->init();
-    d->filePath = QDir::fromNativeSeparators(file);
-    d->nativeInitFileName();
+    d->fileEntry = QFileSystemEntry(file);
 }
 
 /*!
@@ -294,7 +201,7 @@ void QFSFileEngine::setFileName(const QString &file)
 bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
-    if (d->filePath.isEmpty()) {
+    if (d->fileEntry.isEmpty()) {
         qWarning("QFSFileEngine::open: No file name specified");
         setError(QFile::OpenError, QLatin1String("No file name specified"));
         return false;
@@ -323,6 +230,19 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 {
+    return open(openMode, fh, QFile::DontCloseHandle);
+}
+
+/*!
+    Opens the file handle \a fh in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
+{
     Q_D(QFSFileEngine);
 
     // Append implies WriteOnly.
@@ -335,9 +255,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = false;
-    d->nativeFilePath.clear();
-    d->filePath.clear();
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->fileEntry.clear();
     d->tried_stat = 0;
     d->fd = -1;
 
@@ -380,6 +299,19 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
 {
+    return open(openMode, fd, QFile::DontCloseHandle);
+}
+
+/*!
+    Opens the file descriptor \a fd in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandleFlags handleFlags)
+{
     Q_D(QFSFileEngine);
 
     // Append implies WriteOnly.
@@ -392,9 +324,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = false;
-    d->nativeFilePath.clear();
-    d->filePath.clear();
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->fileEntry.clear();
     d->fh = 0;
     d->fd = -1;
     d->tried_stat = 0;
@@ -450,7 +381,14 @@ bool QFSFileEngine::close()
 bool QFSFileEnginePrivate::closeFdFh()
 {
     Q_Q(QFSFileEngine);
-    if (fd == -1 && !fh)
+    if (fd == -1 && !fh
+#ifdef Q_OS_SYMBIAN
+        && !symbianFile.SubSessionHandle()
+#ifndef QT_SYMBIAN_USE_NATIVE_FILEMAP
+        && fileHandleForMaps == -1
+#endif
+#endif
+        )
         return false;
 
     // Flush the file if it's buffered, and if the last flush didn't fail.
@@ -458,10 +396,24 @@ bool QFSFileEnginePrivate::closeFdFh()
     bool closed = true;
     tried_stat = 0;
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
+    // Map handle is always owned by us so always close it
+    if (fileHandleForMaps >= 0) {
+        QT_CLOSE(fileHandleForMaps);
+        fileHandleForMaps = -1;
+    }
+#endif
+
     // Close the file if we created the handle.
     if (closeFileHandle) {
         int ret;
         do {
+#ifdef Q_OS_SYMBIAN
+            if (symbianFile.SubSessionHandle()) {
+                symbianFile.Close();
+                ret = 0;
+            } else
+#endif
             if (fh) {
                 // Close buffered file.
                 ret = fclose(fh) != 0 ? -1 : 0;
@@ -538,31 +490,22 @@ qint64 QFSFileEngine::size() const
     return d->nativeSize();
 }
 
+#ifndef Q_OS_WIN
 /*!
     \internal
 */
 qint64 QFSFileEnginePrivate::sizeFdFh() const
 {
     Q_Q(const QFSFileEngine);
-    // ### Fix this function, it should not stat unless the file is closed.
-    QT_STATBUF st;
-    int ret = 0;
     const_cast<QFSFileEngine *>(q)->flush();
-    if (fh && nativeFilePath.isEmpty()) {
-        // Buffered stdlib mode.
-        // ### This should really be an ftell
-        ret = QT_FSTAT(QT_FILENO(fh), &st);
-    } else if (fd == -1) {
-        // Stateless stat.
-        ret = QT_STAT(nativeFilePath.constData(), &st);
-    } else {
-        // Unbuffered stdio mode.
-        ret = QT_FSTAT(fd, &st);
-    }
-    if (ret == -1)
+
+    tried_stat = 0;
+    metaData.clearFlags(QFileSystemMetaData::SizeAttribute);
+    if (!doStat(QFileSystemMetaData::SizeAttribute))
         return 0;
-    return st.st_size;
+    return metaData.size();
 }
+#endif
 
 /*!
     \reimp
@@ -869,18 +812,14 @@ bool QFSFileEngine::isSequential() const
 /*!
     \internal
 */
+#ifdef Q_OS_UNIX
 bool QFSFileEnginePrivate::isSequentialFdFh() const
 {
-    if (!tried_stat)
-        doStat();
-    if (could_stat) {
-#ifdef Q_OS_UNIX
-        return (st.st_mode & S_IFMT) != S_IFREG;
-        // ### WINDOWS!
-#endif
-    }
+    if (doStat(QFileSystemMetaData::SequentialType))
+        return metaData.isSequential();
     return true;
 }
+#endif
 
 /*!
     \reimp

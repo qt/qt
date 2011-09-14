@@ -210,7 +210,7 @@ void TrackerClient::httpRequestDone(bool error)
             QList<QVariant> peerTmp = peerEntry.toList();
             for (int i = 0; i < peerTmp.size(); ++i) {
                 TorrentPeer tmp;
-                QMap<QByteArray, QVariant> peer = qVariantValue<QMap<QByteArray, QVariant> >(peerTmp.at(i));
+                QMap<QByteArray, QVariant> peer = qvariant_cast<QMap<QByteArray, QVariant> >(peerTmp.at(i));
                 tmp.id = QString::fromUtf8(peer.value("peer id").toByteArray());
                 tmp.address.setAddress(QString::fromUtf8(peer.value("ip").toByteArray()));
                 tmp.port = peer.value("port").toInt();

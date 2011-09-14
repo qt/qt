@@ -49,7 +49,9 @@ ExpectedEventList::ExpectedEventList(QObject *target)
     : QObject(target), eventCount(0)
 {
     target->installEventFilter(this);
-    debug = !qgetenv("NATIVEDEBUG").isEmpty();
+    debug = qgetenv("NATIVEDEBUG").toInt();
+    if (debug > 0)
+        qDebug() << "Debug level sat to:" << debug;
 }
 
 ExpectedEventList::~ExpectedEventList()
@@ -104,14 +106,17 @@ void ExpectedEventList::compareMouseEvents(QEvent *received, QEvent *expected)
             && (e1->globalPos() == e2->globalPos())
             && (e1->button() == e2->button())
             && (e1->buttons() == e2->buttons())
-            && (e1->modifiers() == e2->modifiers()))
+            && (e1->modifiers() == e2->modifiers())) {
+        if (debug > 0)
+            qDebug() << "  Received (OK):" << e1 << e1->globalPos();
         return; // equal
+    }
 
     // INVARIANT: The two events are not equal. So we fail. Depending
     // on whether debug mode is no or not, we let QTest fail. Otherwise
     // we let the test continue for debugging puposes.
     int eventListNr = eventCount - eventList.size();
-    if (!debug) {
+    if (debug == 0) {
         qWarning() << "Expected event" << eventListNr << "differs from received event:";
         QCOMPARE(e1->pos(), e2->pos());
         QCOMPARE(e1->globalPos(), e2->globalPos());
@@ -135,14 +140,17 @@ void ExpectedEventList::compareKeyEvents(QEvent *received, QEvent *expected)
     if (e1->key() == e2->key()
             && (e1->modifiers() == e2->modifiers())
             && (e1->count() == e2->count())
-            && (e1->isAutoRepeat() == e2->isAutoRepeat()))
+            && (e1->isAutoRepeat() == e2->isAutoRepeat())) {
+        if (debug > 0)
+            qDebug() << "  Received (OK):" << e1 << QKeySequence(e1->key()).toString(QKeySequence::NativeText);
         return; // equal
+    }
 
     // INVARIANT: The two events are not equal. So we fail. Depending
     // on whether debug mode is no or not, we let QTest fail. Otherwise
     // we let the test continue for debugging puposes.
     int eventListNr = eventCount - eventList.size();
-    if (!debug) {
+    if (debug == 0) {
         qWarning() << "Expected event" << eventListNr << "differs from received event:";
         QCOMPARE(e1->key(), e2->key());
         QCOMPARE(e1->modifiers(), e2->modifiers());
@@ -150,18 +158,19 @@ void ExpectedEventList::compareKeyEvents(QEvent *received, QEvent *expected)
         QCOMPARE(e1->isAutoRepeat(), e2->isAutoRepeat());
     } else {
         qWarning() << "*** FAIL *** : Expected event" << eventListNr << "differs from received event:";
-        qWarning() << "Received:" << e1 << e1->key();
-        qWarning() << "Expected:" << e2 << e2->key();
+        qWarning() << "Received:" << e1 << QKeySequence(e1->key()).toString(QKeySequence::NativeText);
+        qWarning() << "Expected:" << e2 << QKeySequence(e2->key()).toString(QKeySequence::NativeText);
     }
 }
 
 bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
 {
-    if (debug)
+    if (debug > 1)
         qDebug() << received;
     if (eventList.isEmpty())
         return false;
 
+    bool eat = false;
     QEvent *expected = eventList.first();
     if (expected->type() == received->type()) {
         eventList.removeFirst();
@@ -175,11 +184,13 @@ bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
             case QEvent::NonClientAreaMouseButtonDblClick:
             case QEvent::NonClientAreaMouseMove: {
                 compareMouseEvents(received, expected);
+                eat = true;
                 break;
             }
             case QEvent::KeyPress:
             case QEvent::KeyRelease: {
                 compareKeyEvents(received, expected);
+                eat = true;
                 break;
             }
             case QEvent::Resize: {
@@ -198,6 +209,6 @@ bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
             QAbstractEventDispatcher::instance()->interrupt();
     }
 
-    return false;
+    return eat;
 }
 

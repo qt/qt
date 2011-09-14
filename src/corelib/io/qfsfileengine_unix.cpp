@@ -43,6 +43,8 @@
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qcore_unix_p.h"
+#include "qfilesystementry_p.h"
+#include "qfilesystemengine_p.h"
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -67,7 +69,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 #if defined(Q_OS_SYMBIAN)
 /*!
     \internal
@@ -82,56 +83,25 @@ static bool isRelativePathSymbian(const QString& fileName)
              || (fileName.at(0) == QLatin1Char('/') && fileName.at(1) == QLatin1Char('/')))));
 }
 
-/*!
- \internal
- convert symbian error code to the one suitable for setError.
- example usage: setSymbianError(err, QFile::CopyError, QLatin1String("copy error"))
-*/
-void QFSFileEnginePrivate::setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString)
-{
-    Q_Q(QFSFileEngine);
-    switch (symbianError) {
-    case KErrNone:
-        q->setError(QFile::NoError, QLatin1String(""));
-        break;
-    case KErrAccessDenied:
-        q->setError(QFile::PermissionsError, QLatin1String("access denied"));
-        break;
-    case KErrPermissionDenied:
-        q->setError(QFile::PermissionsError, QLatin1String("permission denied"));
-        break;
-    case KErrAbort:
-        q->setError(QFile::AbortError, QLatin1String("aborted"));
-        break;
-    case KErrCancel:
-        q->setError(QFile::AbortError, QLatin1String("cancelled"));
-        break;
-    case KErrTimedOut:
-        q->setError(QFile::TimeOutError, QLatin1String("timed out"));
-        break;
-    default:
-        q->setError(defaultError, defaultString);
-        break;
-    }
-}
-
 #endif
 
+#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
     Returns the stdlib open string corresponding to a QIODevice::OpenMode.
 */
-static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QByteArray &fileName)
+static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QFileSystemEntry &fileEntry,
+        QFileSystemMetaData &metaData)
 {
     QByteArray mode;
     if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
         mode = "rb";
         if (flags & QIODevice::WriteOnly) {
-            QT_STATBUF statBuf;
-            if (!fileName.isEmpty()
-                && QT_STAT(fileName, &statBuf) == 0
-                && (statBuf.st_mode & S_IFMT) == S_IFREG) {
+            metaData.clearFlags(QFileSystemMetaData::FileType);
+            if (!fileEntry.isEmpty()
+                    && QFileSystemEngine::fillMetaData(fileEntry, metaData, QFileSystemMetaData::FileType)
+                    && metaData.isFile()) {
                 mode += '+';
             } else {
                 mode = "wb+";
@@ -155,6 +125,7 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QB
 
     return mode;
 }
+#endif
 
 /*!
     \internal
@@ -184,6 +155,7 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
+#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
@@ -194,15 +166,159 @@ static inline bool setCloseOnExec(int fd)
 {
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
+#endif
 
+#ifdef Q_OS_SYMBIAN
 /*!
     \internal
 */
-void QFSFileEnginePrivate::nativeInitFileName()
+bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 {
-    nativeFilePath = QFile::encodeName(filePath);
+    Q_Q(QFSFileEngine);
+	
+	fh = 0;
+	fd = -1;
+
+    QString fn(QFileSystemEngine::absoluteName(fileEntry).nativeFilePath());
+    RFs& fs = qt_s60GetRFs();
+
+    TUint symbianMode = 0;
+
+    if(openMode & QIODevice::ReadOnly)
+        symbianMode |= EFileRead;
+    if(openMode & QIODevice::WriteOnly)
+        symbianMode |= EFileWrite;
+    if(openMode & QIODevice::Text)
+        symbianMode |= EFileStreamText;
+
+    // pre Symbian 9.4, file I/O is always unbuffered, and the enum values don't exist
+    if(QSysInfo::symbianVersion() >= QSysInfo::SV_9_4) {
+        if (openMode & QFile::Unbuffered) {
+            if (openMode & QIODevice::WriteOnly)
+                symbianMode |= 0x00001000; //EFileWriteDirectIO;
+            // ### Unbuffered read is not used, because it prevents file open in /resource
+            // ### and has no obvious benefits
+        } else {
+            if (openMode & QIODevice::WriteOnly)
+                symbianMode |= 0x00000800; //EFileWriteBuffered;
+            // use implementation defaults for read buffering
+        }
+    }
+
+    // Until Qt supports file sharing, we can't support EFileShareReadersOrWriters safely,
+    // but Qt does this on other platforms and autotests rely on it.
+    // The reason is that Unix locks are only advisory - the application needs to test the
+    // lock after opening the file. Symbian and Windows locks are mandatory - opening a
+    // locked file will fail.
+    symbianMode |= EFileShareReadersOrWriters;
+
+    TInt r;
+    //note QIODevice::Truncate only has meaning for read/write access
+    //write-only files are always truncated unless append is specified
+    //reference openModeToOpenFlags in qfsfileengine_unix.cpp
+    if ((openMode & QIODevice::Truncate) || (!(openMode & QIODevice::ReadOnly) && !(openMode & QIODevice::Append))) {
+        r = symbianFile.Replace(fs, qt_QString2TPtrC(fn), symbianMode);
+    } else {
+        r = symbianFile.Open(fs, qt_QString2TPtrC(fn), symbianMode);
+        if (r == KErrNotFound && (openMode & QIODevice::WriteOnly)) {
+            r = symbianFile.Create(fs, qt_QString2TPtrC(fn), symbianMode);
+        }
+    }
+
+    if (r == KErrNone) {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        TInt64 size;
+#else
+        TInt size;
+#endif
+        r = symbianFile.Size(size);
+        if (r==KErrNone) {
+            if (openMode & QIODevice::Append)
+                symbianFilePos = size;
+            else
+                symbianFilePos = 0;
+            //TODO: port this (QFileSystemMetaData in open?)
+            //cachedSize = size;
+        }
+    }
+
+    if (r != KErrNone) {
+        q->setError(QFile::OpenError, QSystemError(r, QSystemError::NativeError).toString());
+        symbianFile.Close();
+        return false;
+    }
+
+    closeFileHandle = true;
+    return true;
 }
 
+/*!
+    Opens the file descriptor specified by \a file in the mode given by
+    \a openMode. Returns true on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, const RFile &file, QFile::FileHandleFlags handleFlags)
+{
+    Q_D(QFSFileEngine);
+
+    // Append implies WriteOnly.
+    if (openMode & QFile::Append)
+        openMode |= QFile::WriteOnly;
+
+    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
+    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
+        openMode |= QFile::Truncate;
+
+    d->openMode = openMode;
+    d->lastFlushFailed = false;
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->fileEntry.clear();
+    d->fh = 0;
+    d->fd = -1;
+    d->tried_stat = 0;
+
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+    //RFile64 adds only functions to RFile, no data members
+    d->symbianFile = static_cast<const RFile64&>(file);
+#else
+    d->symbianFile = file;
+#endif
+    TInt ret;
+    d->symbianFilePos = 0;
+    if (openMode & QFile::Append) {
+        // Seek to the end when in Append mode.
+        ret = d->symbianFile.Size(d->symbianFilePos);
+    } else {
+        // Seek to current otherwise
+        ret = d->symbianFile.Seek(ESeekCurrent, d->symbianFilePos);
+    }
+
+    if (ret != KErrNone) {
+        setError(QFile::OpenError, QSystemError(ret, QSystemError::NativeError).toString());
+
+        d->openMode = QIODevice::NotOpen;
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        d->symbianFile = RFile64();
+#else
+        d->symbianFile = RFile();
+#endif
+        return false;
+    }
+
+    // Extract filename (best effort)
+    TFileName fn;
+    TInt err = d->symbianFile.FullName(fn);
+    if (err == KErrNone)
+        d->fileEntry = QFileSystemEntry(qt_TDesC2QString(fn), QFileSystemEntry::FromNativePath());
+    else
+        d->fileEntry.clear();
+
+    return true;
+}
+#else
 /*!
     \internal
 */
@@ -215,7 +331,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 
         // Try to open the file in unbuffered mode.
         do {
-            fd = QT_OPEN(nativeFilePath.constData(), flags, 0666);
+            fd = QT_OPEN(fileEntry.nativeFilePath().constData(), flags, 0666);
         } while (fd == -1 && errno == EINTR);
 
         // On failure, return and report the error.
@@ -228,13 +344,11 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
         if (!(openMode & QIODevice::WriteOnly)) {
             // we don't need this check if we tried to open for writing because then
             // we had received EISDIR anyway.
-            QT_STATBUF statBuf;
-            if (QT_FSTAT(fd, &statBuf) != -1) {
-                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                    QT_CLOSE(fd);
-                    return false;
-                }
+            if (QFileSystemEngine::fillMetaData(fd, metaData)
+                    && metaData.isDirectory()) {
+                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                QT_CLOSE(fd);
+                return false;
             }
         }
 
@@ -254,11 +368,11 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 
         fh = 0;
     } else {
-        QByteArray fopenMode = openModeToFopenMode(openMode, nativeFilePath.constData());
+        QByteArray fopenMode = openModeToFopenMode(openMode, fileEntry, metaData);
 
         // Try to open the file in buffered mode.
         do {
-            fh = QT_FOPEN(nativeFilePath.constData(), fopenMode.constData());
+            fh = QT_FOPEN(fileEntry.nativeFilePath().constData(), fopenMode.constData());
         } while (!fh && errno == EINTR);
 
         // On failure, return and report the error.
@@ -271,13 +385,11 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
         if (!(openMode & QIODevice::WriteOnly)) {
             // we don't need this check if we tried to open for writing because then
             // we had received EISDIR anyway.
-            QT_STATBUF statBuf;
-            if (QT_FSTAT(fileno(fh), &statBuf) != -1) {
-                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                    fclose(fh);
-                    return false;
-                }
+            if (QFileSystemEngine::fillMetaData(QT_FILENO(fh), metaData)
+                    && metaData.isDirectory()) {
+                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                fclose(fh);
+                return false;
             }
         }
 
@@ -303,6 +415,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     closeFileHandle = true;
     return true;
 }
+#endif
 
 /*!
     \internal
@@ -318,6 +431,10 @@ bool QFSFileEnginePrivate::nativeClose()
 */
 bool QFSFileEnginePrivate::nativeFlush()
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle())
+        return (KErrNone == symbianFile.Flush());
+#endif
     return fh ? flushFh() : fd != -1;
 }
 
@@ -328,6 +445,24 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 {
     Q_Q(QFSFileEngine);
 
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle()) {
+        if(len > KMaxTInt) {
+            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
+            q->setError(QFile::ReadError, QLatin1String("Maximum 2GB in single read on this platform"));
+            return -1;
+        }
+        TPtr8 ptr(reinterpret_cast<TUint8*>(data), static_cast<TInt>(len));
+        TInt r = symbianFile.Read(symbianFilePos, ptr);
+        if (r != KErrNone)
+        {
+            q->setError(QFile::ReadError, QSystemError(r, QSystemError::NativeError).toString());
+            return -1;
+        }
+        symbianFilePos += ptr.Length();
+        return qint64(ptr.Length());
+    }
+#endif
     if (fh && nativeIsSequential()) {
         size_t readBytes = 0;
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
@@ -395,6 +530,40 @@ qint64 QFSFileEnginePrivate::nativeReadLine(char *data, qint64 maxlen)
 */
 qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 {
+#ifdef Q_OS_SYMBIAN
+    Q_Q(QFSFileEngine);
+    if (symbianFile.SubSessionHandle()) {
+        if(len > KMaxTInt) {
+            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
+            q->setError(QFile::WriteError, QLatin1String("Maximum 2GB in single write on this platform"));
+            return -1;
+        }
+        const TPtrC8 ptr(reinterpret_cast<const TUint8*>(data), static_cast<TInt>(len));
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        TInt64 eofpos = 0;
+#else
+        TInt eofpos = 0;
+#endif
+        //The end of file position is not cached because QFile is read/write sharable, therefore another
+        //process may have altered the file size.
+        TInt r = symbianFile.Seek(ESeekEnd, eofpos);
+        if (r == KErrNone && symbianFilePos > eofpos) {
+            //seek position is beyond end of file so file needs to be extended before write.
+            //note that SetSize does not zero-initialise (c.f. posix lseek)
+            r = symbianFile.SetSize(symbianFilePos);
+        }
+        if (r == KErrNone) {
+            //write to specific position in the file (i.e. use our own cursor rather than calling seek)
+            r = symbianFile.Write(symbianFilePos, ptr);
+        }
+        if (r != KErrNone) {
+            q->setError(QFile::WriteError, QSystemError(r, QSystemError::NativeError).toString());
+            return -1;
+        }
+        symbianFilePos += len;
+        return len;
+    }
+#endif
     return writeFdFh(data, len);
 }
 
@@ -403,6 +572,12 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 */
 qint64 QFSFileEnginePrivate::nativePos() const
 {
+#ifdef Q_OS_SYMBIAN
+    const Q_Q(QFSFileEngine);
+    if (symbianFile.SubSessionHandle()) {
+        return symbianFilePos;
+    }
+#endif
     return posFdFh();
 }
 
@@ -411,6 +586,19 @@ qint64 QFSFileEnginePrivate::nativePos() const
 */
 bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 {
+#ifdef Q_OS_SYMBIAN
+    Q_Q(QFSFileEngine);
+    if (symbianFile.SubSessionHandle()) {
+#ifndef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        if(pos > KMaxTInt) {
+            q->setError(QFile::PositionError, QLatin1String("Maximum 2GB file position on this platform"));
+            return false;
+        }
+#endif
+        symbianFilePos = pos;
+        return true;
+    }
+#endif
     return seekFdFh(pos);
 }
 
@@ -422,139 +610,110 @@ int QFSFileEnginePrivate::nativeHandle() const
     return fh ? fileno(fh) : fd;
 }
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
+int QFSFileEnginePrivate::getMapHandle()
+{
+    if (symbianFile.SubSessionHandle()) {
+        // Symbian file handle can't be used for open C mmap() so open the file with open C as well.
+        if (fileHandleForMaps < 0) {
+            int flags = openModeToOpenFlags(openMode);
+            flags &= ~(O_CREAT | O_TRUNC);
+            fileHandleForMaps = ::wopen((wchar_t*)(fileEntry.nativeFilePath().utf16()), flags, 0666);
+        }
+        return fileHandleForMaps;
+    }
+    return nativeHandle();
+}
+#endif
+
 /*!
     \internal
 */
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle())
+        return false;
+#endif
     return isSequentialFdFh();
 }
 
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    bool ret = unlink(d->nativeFilePath.constData()) == 0;
-    if (!ret)
-        setError(QFile::RemoveError, qt_error_string(errno));
+    QSystemError error;
+    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
+    d->metaData.clear();
+    if (!ret) {
+        setError(QFile::RemoveError, error.toString());
+    }
     return ret;
 }
 
 bool QFSFileEngine::copy(const QString &newName)
 {
-#if defined(Q_OS_SYMBIAN)
     Q_D(QFSFileEngine);
-    RFs rfs = qt_s60GetRFs();
-    CFileMan* fm = NULL;
-    QString oldNative(QDir::toNativeSeparators(d->filePath));
-    TPtrC oldPtr(qt_QString2TPtrC(oldNative));
-    QFileInfo fi(newName);
-    QString absoluteNewName = fi.absoluteFilePath();
-    QString newNative(QDir::toNativeSeparators(absoluteNewName));
-    TPtrC newPtr(qt_QString2TPtrC(newNative));
-    TRAPD (err,
-        fm = CFileMan::NewL(rfs);
-        RFile rfile;
-        err = rfile.Open(rfs, oldPtr, EFileShareReadersOrWriters);
-        if (err == KErrNone) {
-            err = fm->Copy(rfile, newPtr);
-            rfile.Close();
-        }
-    ) // End TRAP
-    delete fm;
-    if (err == KErrNone)
-        return true;
-    d->setSymbianError(err, QFile::CopyError, QLatin1String("copy error"));
-    return false;
-#else
-    Q_UNUSED(newName);
-    // ### Add copy code for Unix here
-    setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
-    return false;
-#endif
+    QSystemError error;
+    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName), error);
+    if (!ret) {
+        setError(QFile::CopyError, error.toString());
+    }
+    return ret;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = ::rename(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
-    if (!ret)
-        setError(QFile::RenameError, qt_error_string(errno));
+    QSystemError error;
+    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
+
+    if (!ret) {
+        setError(QFile::RenameError, error.toString());
+    }
+
     return ret;
 }
 
 bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = ::symlink(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
-    if (!ret)
-        setError(QFile::RenameError, qt_error_string(errno));
+    QSystemError error;
+    bool ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName), error);
+    if (!ret) {
+        setError(QFile::RenameError, error.toString());
+    }
     return ret;
 }
 
 qint64 QFSFileEnginePrivate::nativeSize() const
 {
+#ifdef Q_OS_SYMBIAN
+    const Q_Q(QFSFileEngine);
+    if (symbianFile.SubSessionHandle()) {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        qint64 size;
+#else
+        TInt size;
+#endif
+        TInt err = symbianFile.Size(size);
+        if(err != KErrNone) {
+            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QSystemError(err, QSystemError::NativeError).toString());
+            return 0;
+        }
+        return size;
+    }
+#endif
     return sizeFdFh();
 }
 
 bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
 {
-    QString dirName = name;
-    if (createParentDirectories) {
-        dirName = QDir::cleanPath(dirName);
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
-        for(int oldslash = -1, slash=0; slash != -1; oldslash = slash) {
-            slash = dirName.indexOf(QDir::separator(), oldslash+1);
-            if (slash == -1) {
-                if (oldslash == dirName.length())
-                    break;
-                slash = dirName.length();
-            }
-            if (slash) {
-                QByteArray chunk = QFile::encodeName(dirName.left(slash));
-                QT_STATBUF st;
-                if (QT_STAT(chunk, &st) != -1) {
-                    if ((st.st_mode & S_IFMT) != S_IFDIR)
-                        return false;
-                } else if (QT_MKDIR(chunk, 0777) != 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-#if defined(Q_OS_DARWIN)  // Mac X doesn't support trailing /'s
-    if (dirName.endsWith(QLatin1Char('/')))
-        dirName.chop(1);
-#endif
-    return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
+    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories);
 }
 
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
 {
-    QString dirName = name;
-    if (recurseParentDirectories) {
-        dirName = QDir::cleanPath(dirName);
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
-        for(int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            QByteArray chunk = QFile::encodeName(dirName.left(slash));
-            QT_STATBUF st;
-            if (QT_STAT(chunk, &st) != -1) {
-                if ((st.st_mode & S_IFMT) != S_IFDIR)
-                    return false;
-                if (::rmdir(chunk) != 0)
-                    return oldslash != 0;
-            } else {
-                return false;
-            }
-            slash = dirName.lastIndexOf(QDir::separator(), oldslash-1);
-        }
-        return true;
-    }
-    return ::rmdir(QFile::encodeName(dirName)) == 0;
+    return QFileSystemEngine::removeDirectory(QFileSystemEntry(name), recurseParentDirectories);
 }
 
 bool QFSFileEngine::caseSensitive() const
@@ -568,94 +727,27 @@ bool QFSFileEngine::caseSensitive() const
 
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
-    int r;
-    r = QT_CHDIR(QFile::encodeName(path));
-    return r >= 0;
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
 }
 
 QString QFSFileEngine::currentPath(const QString &)
 {
-    QString result;
-    QT_STATBUF st;
-#if defined(Q_OS_SYMBIAN)
-    char nativeCurrentName[PATH_MAX+1];
-    if (::getcwd(nativeCurrentName, PATH_MAX))
-        result = QDir::fromNativeSeparators(QFile::decodeName(QByteArray(nativeCurrentName)));
-    if (result.isEmpty()) {
-# if defined(QT_DEBUG)
-        qWarning("QFSFileEngine::currentPath: getcwd() failed");
-# endif
-    } else
-#endif
-    if (QT_STAT(".", &st) == 0) {
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-        char *currentName = ::get_current_dir_name();
-        if (currentName) {
-            result = QFile::decodeName(QByteArray(currentName));
-            ::free(currentName);
-        }
-#elif !defined(Q_OS_SYMBIAN)
-        char currentName[PATH_MAX+1];
-        if (::getcwd(currentName, PATH_MAX))
-            result = QFile::decodeName(QByteArray(currentName));
-# if defined(QT_DEBUG)
-        if (result.isNull())
-            qWarning("QFSFileEngine::currentPath: getcwd() failed");
-# endif
-#endif
-    } else {
-#if defined(Q_OS_SYMBIAN)
-        // If current dir returned by Open C doesn't exist,
-        // try to create it (can happen with application private dirs)
-        // Ignore mkdir failures; we want to be consistent with Open C
-        // current path regardless.
-        QT_MKDIR(QFile::encodeName(QLatin1String(nativeCurrentName)), 0777);
-#else
-# if defined(QT_DEBUG)
-        qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
-# endif
-#endif
-    }
-    return result;
+    return QFileSystemEngine::currentPath().filePath();
 }
 
 QString QFSFileEngine::homePath()
 {
-#if defined(Q_OS_SYMBIAN)
-    QString home = rootPath();
-#else
-    QString home = QFile::decodeName(qgetenv("HOME"));
-    if (home.isNull())
-        home = rootPath();
-#endif
-    return home;
+    return QFileSystemEngine::homePath();
 }
 
 QString QFSFileEngine::rootPath()
 {
-#if defined(Q_OS_SYMBIAN)
-    TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
-    return QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath)));
-#else
-    return QLatin1String("/");
-#endif
+    return QFileSystemEngine::rootPath();
 }
 
 QString QFSFileEngine::tempPath()
 {
-#if defined(Q_OS_SYMBIAN)
-    TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
-    QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
-    temp += QLatin1String( "temp/");
-
-    // Just to verify that folder really exist on hardware
-    QT_MKDIR(QFile::encodeName(temp), 0777);
-#else
-    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
-    if (temp.isEmpty())
-        temp = QLatin1String("/tmp/");
-#endif
-    return temp;
+    return QFileSystemEngine::tempPath();
 }
 
 QFileInfoList QFSFileEngine::drives()
@@ -683,123 +775,30 @@ QFileInfoList QFSFileEngine::drives()
     return ret;
 }
 
-bool QFSFileEnginePrivate::doStat() const
+bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) const
 {
-    if (!tried_stat) {
-        tried_stat = true;
-        could_stat = false;
+    if (!tried_stat || !metaData.hasFlags(flags)) {
+        tried_stat = 1;
 
-        if (fh && nativeFilePath.isEmpty()) {
-            // ### actually covers two cases: d->fh and when the file is not open
-            could_stat = (QT_FSTAT(QT_FILENO(fh), &st) == 0);
-        } else if (fd == -1) {
-            // ### actually covers two cases: d->fh and when the file is not open
-#if defined(Q_OS_SYMBIAN)
-            // Optimization for Symbian where fileFlags() calls both doStat() and isSymlink(), but rarely on real links.
-            // When the filename is not a link, lstat will return the same info as stat, but this also removes
-            // any need for a further call to lstat to check if the file is a link.
-            need_lstat = false;
-            could_stat = (QT_LSTAT(nativeFilePath.constData(), &st) == 0);
-            is_link = could_stat ? S_ISLNK(st.st_mode) : false;
-            // if it turns out this was a link, we can call stat too.
-            if (is_link)
-#endif
-            could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
-        } else {
-            could_stat = (QT_FSTAT(fd, &st) == 0);
-        }
+        int localFd = fd;
+        if (fh && fileEntry.isEmpty())
+            localFd = QT_FILENO(fh);
+        if (localFd != -1)
+            QFileSystemEngine::fillMetaData(localFd, metaData);
+
+        if (metaData.missingFlags(flags) && !fileEntry.isEmpty())
+            QFileSystemEngine::fillMetaData(fileEntry, metaData, metaData.missingFlags(flags));
     }
-    return could_stat;
+
+    return metaData.exists();
 }
 
 bool QFSFileEnginePrivate::isSymlink() const
 {
-    if (need_lstat) {
-        need_lstat = false;
+    if (!metaData.hasFlags(QFileSystemMetaData::LinkType))
+        QFileSystemEngine::fillMetaData(fileEntry, metaData, QFileSystemMetaData::LinkType);
 
-        QT_STATBUF st;          // don't clobber our main one
-        is_link = (QT_LSTAT(nativeFilePath.constData(), &st) == 0) ? S_ISLNK(st.st_mode) : false;
-    }
-    return is_link;
-}
-
-#if defined(Q_OS_SYMBIAN)
-static bool _q_isSymbianHidden(const QString &path, bool isDir)
-{
-    RFs rfs = qt_s60GetRFs();
-    QFileInfo fi(path);
-    QString absPath = fi.absoluteFilePath();
-    if (isDir && !absPath.endsWith(QLatin1Char('/')))
-        absPath.append(QLatin1Char('/'));
-    QString native(QDir::toNativeSeparators(absPath));
-    TPtrC ptr(qt_QString2TPtrC(native));
-    TUint attributes;
-    TInt err = rfs.Att(ptr, attributes);
-    return (err == KErrNone && (attributes & KEntryAttHidden));
-}
-#endif
-
-#if !defined(QWS) && defined(Q_OS_MAC)
-static bool _q_isMacHidden(const QString &path)
-{
-    OSErr err = noErr;
-
-    FSRef fsRef;
-
-    err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(QFile::encodeName(QDir::cleanPath(path)).constData()),
-                                    kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
-    if (err != noErr)
-        return false;
-
-    FSCatalogInfo catInfo;
-    err = FSGetCatalogInfo(&fsRef, kFSCatInfoFinderInfo, &catInfo, NULL, NULL, NULL);
-    if (err != noErr)
-        return false;
-
-    FileInfo * const fileInfo = reinterpret_cast<FileInfo*>(&catInfo.finderInfo);
-    bool result = (fileInfo->finderFlags & kIsInvisible);
-    return result;
-}
-#endif
-
-QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
-{
-    QAbstractFileEngine::FileFlags ret = 0;
-
-    if (st.st_mode & S_IRUSR)
-        ret |= QAbstractFileEngine::ReadOwnerPerm;
-    if (st.st_mode & S_IWUSR)
-        ret |= QAbstractFileEngine::WriteOwnerPerm;
-    if (st.st_mode & S_IXUSR)
-        ret |= QAbstractFileEngine::ExeOwnerPerm;
-    if (st.st_mode & S_IRGRP)
-        ret |= QAbstractFileEngine::ReadGroupPerm;
-    if (st.st_mode & S_IWGRP)
-        ret |= QAbstractFileEngine::WriteGroupPerm;
-    if (st.st_mode & S_IXGRP)
-        ret |= QAbstractFileEngine::ExeGroupPerm;
-    if (st.st_mode & S_IROTH)
-        ret |= QAbstractFileEngine::ReadOtherPerm;
-    if (st.st_mode & S_IWOTH)
-        ret |= QAbstractFileEngine::WriteOtherPerm;
-    if (st.st_mode & S_IXOTH)
-        ret |= QAbstractFileEngine::ExeOtherPerm;
-
-    // calculate user permissions
-    if (type & QAbstractFileEngine::ReadUserPerm) {
-        if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
-            ret |= QAbstractFileEngine::ReadUserPerm;
-    }
-    if (type & QAbstractFileEngine::WriteUserPerm) {
-        if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
-            ret |= QAbstractFileEngine::WriteUserPerm;
-    }
-    if (type & QAbstractFileEngine::ExeUserPerm) {
-        if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
-            ret |= QAbstractFileEngine::ExeUserPerm;
-    }
-
-    return ret;
+    return metaData.isLink();
 }
 
 /*!
@@ -808,360 +807,111 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
 QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
 {
     Q_D(const QFSFileEngine);
-    // Force a stat, so that we're guaranteed to get up-to-date results
-    if (type & Refresh) {
-        d->tried_stat = 0;
-        d->need_lstat = 1;
-    }
+
+    if (type & Refresh)
+        d->metaData.clear();
 
     QAbstractFileEngine::FileFlags ret = 0;
+
     if (type & FlagsMask)
         ret |= LocalDiskFlag;
-    bool exists = d->doStat();
-    if (!exists && !d->isSymlink())
+
+    bool exists;
+    {
+        QFileSystemMetaData::MetaDataFlags queryFlags = 0;
+
+        queryFlags |= QFileSystemMetaData::MetaDataFlags(uint(type))
+                & QFileSystemMetaData::Permissions;
+
+        if (type & TypesMask)
+            queryFlags |= QFileSystemMetaData::AliasType
+                    | QFileSystemMetaData::LinkType
+                    | QFileSystemMetaData::FileType
+                    | QFileSystemMetaData::DirectoryType
+                    | QFileSystemMetaData::BundleType;
+
+        if (type & FlagsMask)
+            queryFlags |= QFileSystemMetaData::HiddenAttribute
+                    | QFileSystemMetaData::ExistsAttribute;
+
+        queryFlags |= QFileSystemMetaData::LinkType;
+
+        exists = d->doStat(queryFlags);
+    }
+
+    if (!exists && !d->metaData.isLink())
         return ret;
 
     if (exists && (type & PermsMask))
-        ret |= d->getPermissions(type);
+        ret |= FileFlags(uint(d->metaData.permissions()));
+
     if (type & TypesMask) {
-#if !defined(QWS) && defined(Q_OS_MAC)
-        bool foundAlias = false;
-        {
-            FSRef fref;
-            if (FSPathMakeRef((const UInt8 *)QFile::encodeName(QDir::cleanPath(d->filePath)).data(),
-                             &fref, NULL) == noErr) {
-                Boolean isAlias, isFolder;
-                if (FSIsAliasFile(&fref, &isAlias, &isFolder) == noErr && isAlias) {
-                    foundAlias = true;
-                    ret |= LinkType;
+        if (d->metaData.isAlias()) {
+            ret |= LinkType;
+        } else {
+            if ((type & LinkType) && d->metaData.isLink())
+                ret |= LinkType;
+            if (exists) {
+                if (d->metaData.isFile()) {
+                    ret |= FileType;
+                } else if (d->metaData.isDirectory()) {
+                    ret |= DirectoryType;
+                    if ((type & BundleType) && d->metaData.isBundle())
+                        ret |= BundleType;
                 }
             }
         }
-        if (!foundAlias)
-#endif
-        {
-            if ((type & LinkType) && d->isSymlink())
-                ret |= LinkType;
-            if (exists && (d->st.st_mode & S_IFMT) == S_IFREG)
-                ret |= FileType;
-            else if (exists && (d->st.st_mode & S_IFMT) == S_IFDIR)
-                ret |= DirectoryType;
-#if !defined(QWS) && defined(Q_OS_MAC)
-            if ((ret & DirectoryType) && (type & BundleType)) {
-                QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
-                                                                      kCFURLPOSIXPathStyle, true);
-                UInt32 type, creator;
-                if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
-                    ret |= BundleType;
-            }
-#endif
-        }
     }
+
     if (type & FlagsMask) {
         if (exists)
             ret |= ExistsFlag;
-#if defined(Q_OS_SYMBIAN)
-        if (d->filePath == QLatin1String("/")
-            || (d->filePath.length() == 3 && d->filePath.at(0).isLetter()
-                && d->filePath.at(1) == QLatin1Char(':') && d->filePath.at(2) == QLatin1Char('/'))) {
+        if (d->fileEntry.isRoot())
             ret |= RootFlag;
-        } else {
-            // In Symbian, all symlinks have hidden attribute for some reason;
-            // lets make them visible for better compatibility with other platforms.
-            // If somebody actually wants a hidden link, then they are out of luck.
-            if (!d->isSymlink() && _q_isSymbianHidden(d->filePath, ret & DirectoryType))
-                ret |= HiddenFlag;
-        }
-#else
-        if (d->filePath == QLatin1String("/")) {
-            ret |= RootFlag;
-        } else {
-            QString baseName = fileName(BaseName);
-            if ((baseName.size() > 0 && baseName.at(0) == QLatin1Char('.'))
-#  if !defined(QWS) && defined(Q_OS_MAC)
-                || _q_isMacHidden(d->filePath)
-#  endif
-            ) {
-                ret |= HiddenFlag;
-            }
-        }
-#endif
+        else if (d->metaData.isHidden())
+            ret |= HiddenFlag;
     }
+
     return ret;
 }
-
-#if defined(Q_OS_SYMBIAN)
-QString QFSFileEngine::fileName(FileName file) const
-{
-    Q_D(const QFSFileEngine);
-    const QLatin1Char slashChar('/');
-    if(file == BaseName) {
-        int slash = d->filePath.lastIndexOf(slashChar);
-        if(slash == -1) {
-            int colon = d->filePath.lastIndexOf(QLatin1Char(':'));
-            if(colon != -1)
-                return d->filePath.mid(colon + 1);
-            return d->filePath;
-        }
-        return d->filePath.mid(slash + 1);
-    } else if(file == PathName) {
-        if(!d->filePath.size())
-            return d->filePath;
-
-        int slash = d->filePath.lastIndexOf(slashChar);
-        if(slash == -1) {
-            if(d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
-                return d->filePath.left(2);
-            return QLatin1String(".");
-        } else {
-            if(!slash)
-                return QLatin1String("/");
-            if(slash == 2 && d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
-                slash++;
-            return d->filePath.left(slash);
-        }
-    } else if(file == AbsoluteName || file == AbsolutePathName) {
-        QString ret;
-        if (!isRelativePathSymbian(d->filePath)) {
-            if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != slashChar){
-                // It's a drive-relative path, so C:a.txt -> C:/currentpath/a.txt,
-                // or if it's different drive than current, Z:a.txt -> Z:/a.txt
-                QString currentPath = QDir::currentPath();
-                if (0 == currentPath.left(1).compare(d->filePath.left(1), Qt::CaseInsensitive))
-                    ret = currentPath + slashChar + d->filePath.mid(2);
-                else
-                    ret = d->filePath.left(2) + slashChar + d->filePath.mid(2);
-            } else if (d->filePath.startsWith(slashChar)) {
-                // It's a absolute path to the current drive, so /a.txt -> C:/a.txt
-                ret = QDir::currentPath().left(2) + d->filePath;
-            } else {
-                ret = d->filePath;
-            }
-        } else {
-            ret = QDir::currentPath() + slashChar + d->filePath;
-        }
-
-        // The path should be absolute at this point.
-        // From the docs :
-        // Absolute paths begin with the directory separator "/"
-        // (optionally preceded by a drive specification under Windows).
-        if (ret.at(0) != slashChar) {
-            Q_ASSERT(ret.length() >= 2);
-            Q_ASSERT(ret.at(0).isLetter());
-            Q_ASSERT(ret.at(1) == QLatin1Char(':'));
-
-            // Force uppercase drive letters.
-            ret[0] = ret.at(0).toUpper();
-        }
-
-        // Clean up the path
-        bool isDir = ret.endsWith(slashChar);
-        ret = QDir::cleanPath(ret);
-        if (isDir && !ret.endsWith(slashChar))
-            ret += slashChar;
-
-        if (file == AbsolutePathName) {
-            int slash = ret.lastIndexOf(slashChar);
-            if (slash < 0)
-                return ret;
-            else if (ret.at(0) != slashChar && slash == 2)
-                return ret.left(3);      // include the slash
-            else
-                return ret.left(slash > 0 ? slash : 1);
-        }
-        return ret;
-    } else if(file == CanonicalName || file == CanonicalPathName) {
-        if (!(fileFlags(ExistsFlag) & ExistsFlag))
-            return QString();
-
-        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (file == CanonicalPathName && !ret.isEmpty()) {
-            int slash = ret.lastIndexOf(slashChar);
-            if (slash == -1)
-                ret = QDir::fromNativeSeparators(QDir::currentPath());
-            else if (slash == 0)
-                ret = QLatin1String("/");
-            ret = ret.left(slash);
-        }
-        return ret;
-    } else if(file == LinkName) {
-        if (d->isSymlink()) {
-            char s[PATH_MAX+1];
-            int len = readlink(d->nativeFilePath.constData(), s, PATH_MAX);
-            if (len > 0) {
-                s[len] = '\0';
-                QString ret = QFile::decodeName(QByteArray(s));
-
-                if (isRelativePathSymbian(ret)) {
-                    if (!isRelativePathSymbian(d->filePath)) {
-                        ret.prepend(d->filePath.left(d->filePath.lastIndexOf(slashChar))
-                                    + slashChar);
-                    } else {
-                        ret.prepend(QDir::currentPath() + slashChar);
-                    }
-                }
-                ret = QDir::cleanPath(ret);
-                if (ret.size() > 1 && ret.endsWith(slashChar))
-                    ret.chop(1);
-                return ret;
-            }
-        }
-        return QString();
-    } else if(file == BundleName) {
-        return QString();
-    }
-    return d->filePath;
-}
-
-#else
 
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
     if (file == BundleName) {
-#if !defined(QWS) && defined(Q_OS_MAC)
-        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
-                                                              kCFURLPOSIXPathStyle, true);
-        if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
-            if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
-                if (CFGetTypeID(name) == CFStringGetTypeID())
-                    return QCFString::toQString((CFStringRef)name);
-            }
-        }
-#endif
-        return QString();
+        return QFileSystemEngine::bundleName(d->fileEntry);
     } else if (file == BaseName) {
-        int slash = d->filePath.lastIndexOf(QLatin1Char('/'));
-        if (slash != -1)
-            return d->filePath.mid(slash + 1);
+        return d->fileEntry.fileName();
     } else if (file == PathName) {
-        int slash = d->filePath.lastIndexOf(QLatin1Char('/'));
-        if (slash == -1)
-            return QLatin1String(".");
-        else if (!slash)
-            return QLatin1String("/");
-        return d->filePath.left(slash);
+        return d->fileEntry.path();
     } else if (file == AbsoluteName || file == AbsolutePathName) {
-        QString ret;
-        if (d->filePath.isEmpty() || !d->filePath.startsWith(QLatin1Char('/')))
-            ret = QDir::currentPath();
-        if (!d->filePath.isEmpty() && d->filePath != QLatin1String(".")) {
-            if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
-                ret += QLatin1Char('/');
-            ret += d->filePath;
-        }
-        if (ret == QLatin1String("/"))
-            return ret;
-        bool isDir = ret.endsWith(QLatin1Char('/'));
-        ret = QDir::cleanPath(ret);
-        if (isDir)
-            ret += QLatin1Char('/');
+        QFileSystemEntry entry(QFileSystemEngine::absoluteName(d->fileEntry));
         if (file == AbsolutePathName) {
-            int slash = ret.lastIndexOf(QLatin1Char('/'));
-            if (slash == -1)
-                return QDir::currentPath();
-            else if (!slash)
-                return QLatin1String("/");
-            return ret.left(slash);
+            return entry.path();
         }
-        return ret;
+        return entry.filePath();
     } else if (file == CanonicalName || file == CanonicalPathName) {
-        if (!(fileFlags(ExistsFlag) & ExistsFlag))
-            return QString();
-
-        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (file == CanonicalPathName && !ret.isEmpty()) {
-            int slash = ret.lastIndexOf(QLatin1Char('/'));
-            if (slash == -1)
-                ret = QDir::currentPath();
-            else if (slash == 0)
-                ret = QLatin1String("/");
-            ret = ret.left(slash);
-        }
-        return ret;
+        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry, d->metaData));
+        if (file == CanonicalPathName)
+            return entry.path();
+        return entry.filePath();
     } else if (file == LinkName) {
         if (d->isSymlink()) {
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-#define PATH_CHUNK_SIZE 256
-            char *s = 0;
-            int len = -1;
-            int size = PATH_CHUNK_SIZE;
-
-            while (1) {
-                s = q_check_ptr((char *) ::realloc(s, size));
-                len = ::readlink(d->nativeFilePath.constData(), s, size);
-                if (len < 0) {
-                    ::free(s);
-                    break;
-                }
-                if (len < size) {
-                    break;
-                }
-                size *= 2;
-            }
-#else
-            char s[PATH_MAX+1];
-            int len = readlink(d->nativeFilePath.constData(), s, PATH_MAX);
-#endif
-            if (len > 0) {
-                QString ret;
-                if (d->doStat() && S_ISDIR(d->st.st_mode) && s[0] != '/') {
-                    QDir parent(d->filePath);
-                    parent.cdUp();
-                    ret = parent.path();
-                    if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
-                        ret += QLatin1Char('/');
-                }
-                s[len] = '\0';
-                ret += QFile::decodeName(QByteArray(s));
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-                ::free(s);
-#endif
-
-                if (!ret.startsWith(QLatin1Char('/'))) {
-                    if (d->filePath.startsWith(QLatin1Char('/'))) {
-                        ret.prepend(d->filePath.left(d->filePath.lastIndexOf(QLatin1Char('/')))
-                                    + QLatin1Char('/'));
-                    } else {
-                        ret.prepend(QDir::currentPath() + QLatin1Char('/'));
-                    }
-                }
-                ret = QDir::cleanPath(ret);
-                if (ret.size() > 1 && ret.endsWith(QLatin1Char('/')))
-                    ret.chop(1);
-                return ret;
-            }
+            QFileSystemEntry entry = QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData);
+            return entry.filePath();
         }
-#if !defined(QWS) && defined(Q_OS_MAC)
-        {
-            FSRef fref;
-            if (FSPathMakeRef((const UInt8 *)QFile::encodeName(QDir::cleanPath(d->filePath)).data(), &fref, 0) == noErr) {
-                Boolean isAlias, isFolder;
-                if (FSResolveAliasFile(&fref, true, &isFolder, &isAlias) == noErr && isAlias) {
-                    AliasHandle alias;
-                    if (FSNewAlias(0, &fref, &alias) == noErr && alias) {
-                        QCFString cfstr;
-                        if (FSCopyAliasInfo(alias, 0, 0, &cfstr, 0, 0) == noErr)
-                            return QCFString::toQString(cfstr);
-                    }
-                }
-            }
-        }
-#endif
         return QString();
     }
-    return d->filePath;
+    return d->fileEntry.filePath();
 }
-#endif // Q_OS_SYMBIAN
 
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
 #if defined(Q_OS_SYMBIAN)
-    return isRelativePathSymbian(d->filePath);
+    return isRelativePathSymbian(d->fileEntry.filePath());
 #else
-    return d->filePath.length() ? d->filePath[0] != QLatin1Char('/') : true;
+    return d->fileEntry.filePath().length() ? d->fileEntry.filePath()[0] != QLatin1Char('/') : true;
 #endif
 }
 
@@ -1169,101 +919,74 @@ uint QFSFileEngine::ownerId(FileOwner own) const
 {
     Q_D(const QFSFileEngine);
     static const uint nobodyID = (uint) -2;
-    if (d->doStat()) {
-        if (own == OwnerUser)
-            return d->st.st_uid;
-        else
-            return d->st.st_gid;
-    }
+
+    if (d->doStat(QFileSystemMetaData::OwnerIds))
+        return d->metaData.ownerId(own);
+
     return nobodyID;
 }
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (size_max == -1)
-        size_max = 1024;
-    QVarLengthArray<char, 1024> buf(size_max);
-#endif
-
-    if (own == OwnerUser) {
-        struct passwd *pw = 0;
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-        struct passwd entry;
-        getpwuid_r(ownerId(own), &entry, buf.data(), buf.size(), &pw);
+#ifndef Q_OS_SYMBIAN
+    if (own == OwnerUser)
+        return QFileSystemEngine::resolveUserName(ownerId(own));
+    return QFileSystemEngine::resolveGroupName(ownerId(own));
 #else
-        pw = getpwuid(ownerId(own));
-#endif
-        if (pw)
-            return QFile::decodeName(QByteArray(pw->pw_name));
-    } else if (own == OwnerGroup) {
-#if !defined(Q_OS_SYMBIAN)
-        struct group *gr = 0;
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-        size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
-        if (size_max == -1)
-            size_max = 1024;
-        buf.resize(size_max);
-        struct group entry;
-        // Some large systems have more members than the POSIX max size
-        // Loop over by doubling the buffer size (upper limit 250k)
-        for (unsigned size = size_max; size < 256000; size += size)
-        {
-            buf.resize(size);
-            // ERANGE indicates that the buffer was too small
-            if (!getgrgid_r(ownerId(own), &entry, buf.data(), buf.size(), &gr)
-                || errno != ERANGE)
-                break;
-        }
-#else
-        gr = getgrgid(ownerId(own));
-#endif
-        if (gr)
-            return QFile::decodeName(QByteArray(gr->gr_name));
-#endif
-    }
+    Q_UNUSED(own)
     return QString();
+#endif
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
-    bool ret = false;
-    mode_t mode = 0;
-    if (perms & ReadOwnerPerm)
-        mode |= S_IRUSR;
-    if (perms & WriteOwnerPerm)
-        mode |= S_IWUSR;
-    if (perms & ExeOwnerPerm)
-        mode |= S_IXUSR;
-    if (perms & ReadUserPerm)
-        mode |= S_IRUSR;
-    if (perms & WriteUserPerm)
-        mode |= S_IWUSR;
-    if (perms & ExeUserPerm)
-        mode |= S_IXUSR;
-    if (perms & ReadGroupPerm)
-        mode |= S_IRGRP;
-    if (perms & WriteGroupPerm)
-        mode |= S_IWGRP;
-    if (perms & ExeGroupPerm)
-        mode |= S_IXGRP;
-    if (perms & ReadOtherPerm)
-        mode |= S_IROTH;
-    if (perms & WriteOtherPerm)
-        mode |= S_IWOTH;
-    if (perms & ExeOtherPerm)
-        mode |= S_IXOTH;
-    if (d->fd != -1)
-        ret = fchmod(d->fd, mode) == 0;
-    else
-        ret = ::chmod(d->nativeFilePath.constData(), mode) == 0;
-    if (!ret)
-        setError(QFile::PermissionsError, qt_error_string(errno));
-    return ret;
+    QSystemError error;
+    if (!QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), error, 0)) {
+        setError(QFile::PermissionsError, error.toString());
+        return false;
+    }
+    return true;
 }
 
+#ifdef Q_OS_SYMBIAN
+bool QFSFileEngine::setSize(qint64 size)
+{
+    Q_D(QFSFileEngine);
+    bool ret = false;
+    TInt err = KErrNone;
+    if (d->symbianFile.SubSessionHandle()) {
+        TInt err = d->symbianFile.SetSize(size);
+        ret = (err == KErrNone);
+        if (ret && d->symbianFilePos > size)
+            d->symbianFilePos = size;
+    }
+    else if (d->fd != -1)
+        ret = QT_FTRUNCATE(d->fd, size) == 0;
+    else if (d->fh)
+        ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
+    else {
+        RFile tmp;
+        QString symbianFilename(d->fileEntry.nativeFilePath());
+        err = tmp.Open(qt_s60GetRFs(), qt_QString2TPtrC(symbianFilename), EFileWrite);
+        if (err == KErrNone)
+        {
+            err = tmp.SetSize(size);
+            tmp.Close();
+        }
+        ret = (err == KErrNone);
+    }
+    if (!ret) {
+        QSystemError error;
+        if (err)
+            error = QSystemError(err, QSystemError::NativeError);
+        else
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
+        setError(QFile::ResizeError, error.toString());
+    }
+    return ret;
+}
+#else
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
@@ -1273,25 +996,21 @@ bool QFSFileEngine::setSize(qint64 size)
     else if (d->fh)
         ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
     else
-        ret = QT_TRUNCATE(d->nativeFilePath.constData(), size) == 0;
+        ret = QT_TRUNCATE(d->fileEntry.nativeFilePath().constData(), size) == 0;
     if (!ret)
         setError(QFile::ResizeError, qt_error_string(errno));
     return ret;
 }
+#endif
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const
 {
     Q_D(const QFSFileEngine);
-    QDateTime ret;
-    if (d->doStat()) {
-        if (time == CreationTime)
-            ret.setTime_t(d->st.st_ctime ? d->st.st_ctime : d->st.st_mtime);
-        else if (time == ModificationTime)
-            ret.setTime_t(d->st.st_mtime);
-        else if (time == AccessTime)
-            ret.setTime_t(d->st.st_atime);
-    }
-    return ret;
+
+    if (d->doStat(QFileSystemMetaData::Times))
+        return d->metaData.fileTime(time);
+
+    return QDateTime();
 }
 
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
@@ -1311,15 +1030,19 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 
     // If we know the mapping will extend beyond EOF, fail early to avoid
     // undefined behavior. Otherwise, let mmap have its say.
-    if (doStat()
-            && (QT_OFF_T(size) > st.st_size - QT_OFF_T(offset)))
+    if (doStat(QFileSystemMetaData::SizeAttribute)
+            && (QT_OFF_T(size) > metaData.size() - QT_OFF_T(offset)))
         qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
 
     int access = 0;
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
     if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
 
+#if defined(Q_OS_INTEGRITY)
+    int pageSize = sysconf(_SC_PAGESIZE);
+#else
     int pageSize = getpagesize();
+#endif
     int extra = offset % pageSize;
 
     if (quint64(size + extra) > quint64((size_t)-1)) {
@@ -1331,10 +1054,48 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     QT_OFF_T realOffset = QT_OFF_T(offset);
     realOffset &= ~(QT_OFF_T(pageSize - 1));
 
+#ifdef QT_SYMBIAN_USE_NATIVE_FILEMAP
+    TInt nativeMapError = KErrNone;
+    RFileMap mapping;
+    TUint mode(EFileMapRemovableMedia);
+    //If the file was opened for write or read/write, then open the map for read/write
+    if (openMode & QIODevice::WriteOnly)
+        mode |= EFileMapWrite;
+    if (symbianFile.SubSessionHandle()) {
+        nativeMapError = mapping.Open(symbianFile, offset, size, mode);
+    } else {
+        //map file by name if we don't have a native handle
+        QString fn = QFileSystemEngine::absoluteName(fileEntry).nativeFilePath();
+        TUint filemode = EFileShareReadersOrWriters | EFileRead;
+        if (openMode & QIODevice::WriteOnly)
+            filemode |= EFileWrite;
+        nativeMapError = mapping.Open(qt_s60GetRFs(), qt_QString2TPtrC(fn), filemode, offset, size, mode);
+    }
+    if (nativeMapError == KErrNone) {
+        QScopedResource<RFileMap> ptr(mapping); //will call Close if adding to mapping throws an exception
+        uchar *address = mapping.Base();
+        maps[address] = mapping;
+        ptr.take();
+        return address;
+    }
+    QFile::FileError reportedError = QFile::UnspecifiedError;
+    switch (nativeMapError) {
+    case KErrAccessDenied:
+    case KErrPermissionDenied:
+        reportedError = QFile::PermissionsError;
+        break;
+    case KErrNoMemory:
+        reportedError = QFile::ResourceError;
+        break;
+    }
+    q->setError(reportedError, QSystemError(nativeMapError, QSystemError::NativeError).toString());
+    return 0;
+#else
 #ifdef Q_OS_SYMBIAN
+    //older phones & emulator don't support native mapping, so need to keep the open C way around for those.
     void *mapAddress;
-    TRAPD(err,     mapAddress = QT_MMAP((void*)0, realSize,
-                   access, MAP_SHARED, nativeHandle(), realOffset));
+    TRAPD(err, mapAddress = QT_MMAP((void*)0, realSize,
+                   access, MAP_SHARED, getMapHandle(), realOffset));
     if (err != KErrNone) {
         qWarning("OpenC bug: leave from mmap %d", err);
         mapAddress = MAP_FAILED;
@@ -1365,16 +1126,29 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         break;
     }
     return 0;
+#endif
 }
 
 bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
+#if !defined(Q_OS_INTEGRITY)
     Q_Q(QFSFileEngine);
     if (!maps.contains(ptr)) {
         q->setError(QFile::PermissionsError, qt_error_string(EACCES));
         return false;
     }
 
+#ifdef QT_SYMBIAN_USE_NATIVE_FILEMAP
+    RFileMap mapping = maps.value(ptr);
+    TInt err = mapping.Flush();
+    mapping.Close();
+    maps.remove(ptr);
+    if (err) {
+        q->setError(QFile::WriteError, QSystemError(err, QSystemError::NativeError).toString());
+        return false;
+    }
+    return true;
+#else
     uchar *start = ptr - maps[ptr].first;
     size_t len = maps[ptr].second;
     if (-1 == munmap(start, len)) {
@@ -1383,6 +1157,10 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     }
     maps.remove(ptr);
     return true;
+#endif
+#else
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

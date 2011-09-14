@@ -296,6 +296,14 @@ DEFINEFUNC(dbus_bool_t   , dbus_message_set_sender, (DBusMessage   *message,
 DEFINEFUNC(void          , dbus_message_unref, (DBusMessage   *message),
            (message), )
 
+/* dbus-misc.h */
+DEFINEFUNC(void          , dbus_get_version ,     (int *major_version_p,
+                                                   int *minor_version_p,
+                                                   int *micro_version_p),
+           (major_version_p, minor_version_p, micro_version_p), )
+DEFINEFUNC(char*         , dbus_get_local_machine_id ,  (void), (), return)
+
+
 /* dbus-pending-call.h */
 DEFINEFUNC(dbus_bool_t  , dbus_pending_call_set_notify, (DBusPendingCall               *pending,
                                                          DBusPendingCallNotifyFunction  function,
@@ -352,20 +360,16 @@ DEFINEFUNC(dbus_bool_t , dbus_server_set_watch_functions, (DBusServer           
 DEFINEFUNC(void        , dbus_server_unref, (DBusServer     *server),
            (server), )
 
-/* dbus-signature.h */
-DEFINEFUNC(dbus_bool_t     , dbus_signature_validate, (const char       *signature,
-                                                       DBusError        *error),
-           (signature, error), return)
-DEFINEFUNC(dbus_bool_t     , dbus_signature_validate_single, (const char       *signature,
-                                                              DBusError        *error),
-           (signature, error), return)
-DEFINEFUNC(dbus_bool_t     , dbus_type_is_basic, (int            typecode),
-           (typecode), return)
-DEFINEFUNC(dbus_bool_t     , dbus_type_is_fixed, (int            typecode),
-           (typecode), return)
-
 /* dbus-thread.h */
 DEFINEFUNC(dbus_bool_t     , dbus_threads_init_default, (), (), return)
+
+
+/* D-Bus 1.4 symbols */
+#if !defined(QT_LINKED_LIBDBUS) || (DBUS_VERSION >= 0x010400)
+DEFINEFUNC(dbus_bool_t    ,  dbus_connection_can_send_type ,               (DBusConnection             *connection,
+                                                                            int                         type),
+           (connection, type), return)
+#endif
 
 QT_END_NAMESPACE
 

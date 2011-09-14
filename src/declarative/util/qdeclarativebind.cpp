@@ -42,6 +42,7 @@
 #include "private/qdeclarativebind_p.h"
 
 #include "private/qdeclarativenullablevalue_p_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
@@ -64,7 +65,7 @@ public:
 
     bool when : 1;
     bool componentComplete : 1;
-    QObject *obj;
+    QDeclarativeGuard<QObject> obj;
     QString prop;
     QDeclarativeNullableValue<QVariant> value;
 };

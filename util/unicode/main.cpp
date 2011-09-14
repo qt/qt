@@ -85,6 +85,41 @@ static void initAgeMap()
 }
 
 
+enum Joining {
+    Joining_None,
+    Joining_Left,
+    Joining_Causing,
+    Joining_Dual,
+    Joining_Right,
+    Joining_Transparent
+
+    , Joining_Unassigned
+};
+
+static QHash<QByteArray, Joining> joining_map;
+
+static void initJoiningMap()
+{
+    struct JoiningList {
+        Joining joining;
+        const char *name;
+    } joinings[] = {
+        { Joining_None,        "U" },
+        { Joining_Left,        "L" },
+        { Joining_Causing,     "C" },
+        { Joining_Dual,        "D" },
+        { Joining_Right,       "R" },
+        { Joining_Transparent, "T" },
+        { Joining_Unassigned, 0 }
+    };
+    JoiningList *d = joinings;
+    while (d->name) {
+        joining_map.insert(d->name, d->joining);
+        ++d;
+    }
+}
+
+
 static const char *grapheme_break_string =
     "    enum GraphemeBreak {\n"
     "        GraphemeBreakOther,\n"
@@ -370,6 +405,7 @@ static const char *methods =
     "    inline int script(const QChar &ch)\n"
     "    { return script(ch.unicode()); }\n\n";
 
+static const int SizeOfPropertiesStruct = 20;
 
 struct PropertyFlags {
     bool operator ==(const PropertyFlags &o) {
@@ -460,18 +496,22 @@ struct UnicodeData {
         p.combiningClass = 0;
 
         p.direction = QChar::DirL;
+        // DerivedBidiClass.txt
         // DirR for:  U+0590..U+05FF, U+07C0..U+08FF, U+FB1D..U+FB4F, U+10800..U+10FFF
         if ((codepoint >= 0x590 && codepoint <= 0x5ff)
             || (codepoint >= 0x7c0 && codepoint <= 0x8ff)
             || (codepoint >= 0xfb1d && codepoint <= 0xfb4f)
-            || (codepoint >= 0x10800 && codepoint <= 0x10fff))
+            || (codepoint >= 0x10800 && codepoint <= 0x10fff)) {
             p.direction = QChar::DirR;
-        // DirAL for: U+0600..U+07BF, U+FB50..U+FDCF, U+FDF0..U+FDFF, U+FE70..U+FEFE
+        }
+        // DirAL for:  U+0600..U+07BF, U+FB50..U+FDFF, U+FE70..U+FEFF
+        //             minus noncharacter code points (intersects with U+FDD0..U+FDEF)
         if ((codepoint >= 0x600 && codepoint <= 0x7bf)
             || (codepoint >= 0xfb50 && codepoint <= 0xfdcf)
             || (codepoint >= 0xfdf0 && codepoint <= 0xfdff)
-            || (codepoint >= 0xfe70 && codepoint <= 0xfefe))
+            || (codepoint >= 0xfe70 && codepoint <= 0xfeff)) {
             p.direction = QChar::DirAL;
+        }
 
         mirroredChar = 0;
         decompositionType = QChar::NoDecomposition;
@@ -876,24 +916,31 @@ static void readArabicShaping()
         if (line.isEmpty())
             continue;
 
-        QList<QByteArray> shaping = line.split(';');
-        Q_ASSERT(shaping.size() == 4);
+        QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 4);
 
         bool ok;
-        int codepoint = shaping[0].toInt(&ok, 16);
+        int codepoint = l[0].toInt(&ok, 16);
         Q_ASSERT(ok);
 
-        QChar::Joining j = QChar::OtherJoining;
-        QByteArray shape = shaping[2].trimmed();
-        if (shape == "R")
-            j = QChar::Right;
-        else if (shape == "D")
-            j = QChar::Dual;
-        else if (shape == "C")
-            j = QChar::Center;
+        Joining joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
+        if (joining == Joining_Unassigned)
+            qFatal("unassigned or unhandled joining value: %s", l[2].constData());
+
+        if (joining == Joining_Left) {
+            // There are currently no characters of joining type Left_Joining defined in Unicode.
+            qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!", codepoint, l[2].constData());
+        }
 
         UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
-        d.p.joining = j;
+        if (joining == Joining_Right)
+            d.p.joining = QChar::Right;
+        else if (joining == Joining_Dual)
+            d.p.joining = QChar::Dual;
+        else if (joining == Joining_Causing)
+            d.p.joining = QChar::Center;
+        else
+            d.p.joining = QChar::OtherJoining;
         unicodeData.insert(codepoint, d);
     }
 }
@@ -2031,8 +2078,8 @@ static QByteArray createPropertyInfo()
     qDebug("        block data uses: %d bytes", smp_block_data);
     qDebug("        trie data uses : %d bytes", smp_trie);
 
-    qDebug("\n        properties use : %d bytes", uniqueProperties.size()*20);
-    qDebug("    memory usage: %d bytes", bmp_mem+smp_mem + uniqueProperties.size()*20);
+    qDebug("\n        properties uses : %d bytes", uniqueProperties.size() * SizeOfPropertiesStruct);
+    qDebug("    memory usage: %d bytes", bmp_mem + smp_mem + uniqueProperties.size() * SizeOfPropertiesStruct);
 
     QByteArray out;
     out += "static const unsigned short uc_property_trie[] = {\n";
@@ -2566,8 +2613,9 @@ int main(int, char **)
 {
     initAgeMap();
     initCategoryMap();
-    initDirectionMap();
     initDecompositionMap();
+    initDirectionMap();
+    initJoiningMap();
     initGraphemeBreak();
     initWordBreak();
     initSentenceBreak();

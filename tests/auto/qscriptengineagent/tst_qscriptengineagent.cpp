@@ -73,6 +73,7 @@ signals:
     void testSignal(double arg);
 
 private slots:
+    void unloadRecursion();
     void scriptLoadAndUnload_statement();
     void scriptLoadAndUnload();
     void scriptLoadAndUnload_eval();
@@ -345,6 +346,46 @@ QVariant ScriptEngineSpy::extension(Extension ext, const QVariant &arg)
     return QVariant();
 }
 
+static void collectScriptObjects(QScriptEngine *engine)
+{
+    // We call garbage collection few times to collect objects that
+    // are unreferenced after first gc. We try to force full gc.
+    engine->collectGarbage();
+    engine->collectGarbage();
+    engine->collectGarbage();
+}
+
+class EvaluatingAgent : public QScriptEngineAgent {
+public:
+    EvaluatingAgent(QScriptEngine *engine)
+        : QScriptEngineAgent(engine)
+        , count(0)
+    {}
+
+    virtual void scriptUnload(qint64)
+    {
+        if (++count > 10) // recursion breaker.
+            return;
+        // check if recursive evaluation works
+        engine()->evaluate(";");
+        collectScriptObjects(engine());
+    }
+
+    bool isOk() const { return count > 10; }
+private:
+    int count;
+};
+
+void tst_QScriptEngineAgent::unloadRecursion()
+{
+    QScriptEngine engine;
+    EvaluatingAgent *agent = new EvaluatingAgent(&engine);
+    engine.setAgent(agent);
+    engine.evaluate(";");
+    collectScriptObjects(&engine);
+    QVERIFY(agent->isOk());
+}
+
 void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
 {
     QScriptEngine eng;
@@ -358,6 +399,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
         int lineNumber = 123;
         eng.evaluate(code, fileName, lineNumber);
 
+        // Script object have to be garbage collected first.
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 2);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -377,6 +420,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload_statement()
         int lineNumber = 456;
         eng.evaluate(code, fileName, lineNumber);
 
+        // Script object have to be garbage collected first.
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 2);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -414,7 +459,8 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
 
         code = "foo = null";
         eng.evaluate(code);
-        QCOMPARE(spy->count(), 3);
+        collectScriptObjects(&eng); // foo() is GC'ed
+        QCOMPARE(spy->count(), 4);
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ScriptLoad);
         QVERIFY(spy->at(1).scriptId != -1);
@@ -425,8 +471,6 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(2).scriptId, spy->at(1).scriptId);
 
-        eng.collectGarbage(); // foo() is GC'ed
-        QCOMPARE(spy->count(), 4);
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
     }
@@ -448,6 +492,7 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
 
         code = "bar = foo(); foo = null";
         eng.evaluate(code);
+        collectScriptObjects(&eng);
         QCOMPARE(spy->count(), 3);
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ScriptLoad);
@@ -458,14 +503,12 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::ScriptUnload);
         QCOMPARE(spy->at(2).scriptId, spy->at(1).scriptId);
 
-        eng.collectGarbage(); // foo() is not GC'ed
+        collectScriptObjects(&eng); // foo() is not GC'ed
         QCOMPARE(spy->count(), 3);
 
         code = "bar = null";
         eng.evaluate(code);
-        QCOMPARE(spy->count(), 5);
-
-        eng.collectGarbage(); // foo() is GC'ed
+        collectScriptObjects(&eng); // foo() is GC'ed
         QCOMPARE(spy->count(), 6);
     }
     delete spy;
@@ -772,7 +815,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_native2()
 /** check behaiviour of native function throwing error*/
 void tst_QScriptEngineAgent::functionEntryAndExit_nativeThrowing()
 {
-    /* This function was changed from old backend. JSC return more Entrys / Exits, (exactly +1)
+    /* This function was changed from old backend. JSC return more Entries / Exits, (exactly +1)
        in exception creation time */
 
     QScriptEngine eng;
@@ -1248,7 +1291,7 @@ void tst_QScriptEngineAgent::positionChange_1()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, lineNumber);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 8);
 
         // 5 + 6
@@ -1283,7 +1326,7 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QVERIFY(spy->at(1).scriptId != spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, lineNumber);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 18);
     }
 
@@ -1302,7 +1345,7 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 11);
     }
 
@@ -1333,14 +1376,14 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 31);
 
         // void(i)
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 31);
     }
 
@@ -1359,21 +1402,21 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 12);
 
         // ++i
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 28);
 
         // ++i
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(3).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(3).columnNumber, 28);
     }
 
@@ -1392,28 +1435,28 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 12);
 
         // ++i
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 17);
 
         // do
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(3).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(3).columnNumber, 12);
 
         // ++i
         QCOMPARE(spy->at(4).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(4).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(4).columnNumber, 17);
     }
 
@@ -1444,7 +1487,7 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 15);
     }
 
@@ -1463,14 +1506,14 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 32);
 
         // continue
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 32);
     }
 
@@ -1513,7 +1556,7 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 31);
     }
 
@@ -1532,14 +1575,14 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 38);
 
         // break
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 45);
     }
 
@@ -1564,21 +1607,21 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
         QVERIFY(spy->at(0).scriptId != -1);
         QCOMPARE(spy->at(0).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(0).columnNumber, 7);
 
         // i = e
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 29);
 
         // i = 2
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(2).columnNumber, 48);
     }
 
@@ -1591,14 +1634,14 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
         QVERIFY(spy->at(0).scriptId != -1);
         QCOMPARE(spy->at(0).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(0).columnNumber, 7);
 
         // i = 3
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 46);
     }
 
@@ -1620,7 +1663,7 @@ void tst_QScriptEngineAgent::positionChange_2()
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(1).lineNumber, 1);
-        QEXPECT_FAIL("", "With JSC-based back-end, column number is always reported as 1", Continue);
+        QEXPECT_FAIL("", "QTBUG-17609: With JSC-based back-end, column number is always reported as 1", Continue);
         QCOMPARE(spy->at(1).columnNumber, 20);
     }
     delete spy;
@@ -2204,8 +2247,7 @@ void tst_QScriptEngineAgent::syntaxError()
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         QVERIFY(!spy->at(i).hasExceptionHandler);
         QVERIFY(spy->at(i).value.isError());
-        QEXPECT_FAIL("","QTBUG-6137 There are other messages in JSC",Continue);
-        QCOMPARE(spy->at(i).value.toString(), QString("SyntaxError: Expected `}'"));
+        QVERIFY(spy->at(i).value.toString().contains(QLatin1String("SyntaxError")));
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         i = 7;
         //exit script
@@ -2314,7 +2356,7 @@ void tst_QScriptEngineAgent::hasUncaughtException()
   QVERIFY2(spy->isPass(), "At least one of a functionExit event should set hasUncaughtException flag.");
   spy->reset();
 
-  // Check catched exception.
+  // Check caught exception.
   eng.evaluate("function innerFoo() { throw new Error('ciao') }");
   eng.evaluate("function foo() {try { innerFoo() } catch (e) {} }");
   scriptValue = QScriptValue(eng.globalObject().property("foo")).call();

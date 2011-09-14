@@ -48,6 +48,9 @@
 #include <qlayout.h>
 #include <qcoreapplication.h>
 #include <qmenubar.h>
+#include <QMainWindow>
+#include <QToolBar>
+#include <private/qmainwindowlayout_p.h>
 
 QT_BEGIN_NAMESPACE
 extern QWidgetData *qt_qwidget_data(QWidget *); // qwidget.cpp
@@ -138,7 +141,7 @@ static void cleanupCocoaWindowDelegate()
     }
 }
 
-- (void)dumpMaximizedStateforWidget:(QWidget*)qwidget window:(NSWindow *)window;
+- (void)dumpMaximizedStateforWidget:(QWidget*)qwidget window:(NSWindow *)window
 {
     if (!window)
         return; // Nothing to do.
@@ -214,6 +217,24 @@ static void cleanupCocoaWindowDelegate()
     if (newSize != oldSize) {
         QWidgetPrivate::qt_mac_update_sizer(qwidget);
         [self syncSizeForWidget:qwidget toSize:newSize fromSize:oldSize];
+    }
+
+    // We force the repaint to be synchronized with the resize of the window.
+    // Otherwise, the resize looks sluggish because we paint one event loop later.
+    if ([[window contentView] inLiveResize]) {
+        qwidget->repaint();
+
+        // We need to repaint the toolbar as well.
+        QMainWindow* mWindow = qobject_cast<QMainWindow*>(qwidget->window());
+        if (mWindow) {
+            QMainWindowLayout *mLayout = qobject_cast<QMainWindowLayout*>(mWindow->layout());
+            QList<QToolBar *> toolbarList = mLayout->qtoolbarsInUnifiedToolbarList;
+
+            for (int i = 0; i < toolbarList.size(); ++i) {
+                QToolBar* toolbar = toolbarList.at(i);
+                toolbar->repaint();
+            }
+        }
     }
 }
 

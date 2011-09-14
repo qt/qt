@@ -113,8 +113,6 @@ static void resolveAygLibs()
     if (!aygResolved) {
         aygResolved = true;
         QLibrary aygLib(QLatin1String("aygshell"));
-        if (!aygLib.load())
-            return;
         ptrCreateMenuBar = (AygCreateMenuBar) aygLib.resolve("SHCreateMenuBar");
         ptrEnableSoftKey = (AygEnableSoftKey) aygLib.resolve("SHEnableSoftkey");
     }
@@ -506,12 +504,12 @@ void QMenuPrivate::QWceMenuPrivate::removeAction(QWceMenuAction *action)
     rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QWceMenuAction *before)
+void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QAction *before)
 {
     QWceMenuAction *action = new QWceMenuAction;
     action->action = a;
     action->command = qt_wce_menu_static_cmd_id++;
-    addAction(action, before);
+    addAction(action, findAction(before));
 }
 
 void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before)

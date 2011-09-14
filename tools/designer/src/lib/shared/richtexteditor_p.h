@@ -93,6 +93,7 @@ private:
     QTabWidget     *m_tab_widget;
     State m_state;
     QDesignerFormEditorInterface *m_core;
+    int m_initialTab;
 };
 
 } // namespace qdesigner_internal

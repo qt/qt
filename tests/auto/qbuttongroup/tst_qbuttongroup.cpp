@@ -98,10 +98,7 @@ private slots:
 
     void task106609();
 
-    // fixed for Qt 4.6.0
-#if QT_VERSION >= 0x040600
     void autoIncrementId();
-#endif
 
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
@@ -338,10 +335,7 @@ void tst_QButtonGroup::testSignals()
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(clickedIdSpy.count(), 1);
 
-    int expectedId = -1;
-#if QT_VERSION >= 0x040600
-    expectedId = -2;
-#endif
+    int expectedId = -2;
 
     QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(pressedSpy.count(), 1);
@@ -500,7 +494,6 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
     QCOMPARE(spy1.count() + spy2.count(), signalCount);
 }
 
-#if QT_VERSION >= 0x040600
 void tst_QButtonGroup::autoIncrementId()
 {
     QDialog dlg(0);
@@ -529,7 +522,6 @@ void tst_QButtonGroup::autoIncrementId()
 
     dlg.show();
 }
-#endif
 
 QTEST_MAIN(tst_QButtonGroup)
 #include "tst_qbuttongroup.moc"

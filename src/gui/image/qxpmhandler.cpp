@@ -54,12 +54,6 @@
 #include "qplatformdefs.h"
 #endif
 
-#include <stdlib.h>
-
-#if defined(Q_OS_WINCE)
-#include "qguifunctions_wince.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static quint64 xpmHash(const QString &str)
@@ -751,27 +745,15 @@ static const struct XPMRGBData {
   { QRGB(139,139,  0),  "yellow4" },
   { QRGB(154,205, 50),  "yellowgreen" } };
 
-#if defined(Q_C_CALLBACKS)
-extern "C" {
-#endif
-static int rgb_cmp(const void *d1, const void *d2)
-{
-    return qstricmp(((XPMRGBData *)d1)->name, ((XPMRGBData *)d2)->name);
-}
-#if defined(Q_C_CALLBACKS)
-}
-#endif
+inline bool operator<(const char *name, const XPMRGBData &data)
+{ return qstrcmp(name, data.name) < 0; }
+inline bool operator<(const XPMRGBData &data, const char *name)
+{ return qstrcmp(data.name, name) < 0; }
 
-static bool qt_get_named_xpm_rgb(const char *name_no_space, QRgb *rgb)
+static inline bool qt_get_named_xpm_rgb(const char *name_no_space, QRgb *rgb)
 {
-    XPMRGBData x;
-    x.name = name_no_space;
-    // Function bsearch() is supposed to be
-    // void *bsearch(const void *key, const void *base, ...
-    // So why (char*)? Are there broken bsearch() declarations out there?
-    XPMRGBData *r = (XPMRGBData *)bsearch((char *)&x, (char *)xpmRgbTbl, xpmRgbTblSize,
-                                          sizeof(XPMRGBData), rgb_cmp);
-    if (r) {
+    const XPMRGBData *r = qBinaryFind(xpmRgbTbl, xpmRgbTbl + xpmRgbTblSize, name_no_space);
+    if (r != xpmRgbTbl + xpmRgbTblSize) {
         *rgb = r->value;
         return true;
     } else {

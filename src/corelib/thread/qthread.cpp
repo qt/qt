@@ -77,8 +77,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), thread(0),
-      quitNow(false), loopLevel(0), eventDispatcher(0), canWait(true)
+    : _ref(initialRefCount), thread(0), threadId(0),
+      quitNow(false), loopLevel(0), eventDispatcher(0), canWait(true), isAdopted(false)
 {
     // fprintf(stderr, "QThreadData %p created\n", this);
 }
@@ -149,9 +149,6 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
 
 QAdoptedThread::~QAdoptedThread()
 {
-#ifndef QT_NO_THREAD
-    QThreadPrivate::finish(this);
-#endif
     // fprintf(stderr, "~QAdoptedThread = %p\n", this);
 }
 
@@ -173,7 +170,8 @@ void QAdoptedThread::run()
 */
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
-    : QObjectPrivate(), running(false), finished(false), terminated(false), exited(false), returnCode(-1),
+    : QObjectPrivate(), running(false), finished(false), terminated(false),
+      isInFinish(false), exited(false), returnCode(-1),
       stackSize(0), priority(QThread::InheritPriority), data(d)
 {
 #if defined (Q_OS_UNIX)
@@ -403,7 +401,12 @@ QThread::~QThread()
     Q_D(QThread);
     {
         QMutexLocker locker(&d->mutex);
-        if (d->running && !d->finished)
+        if (d->isInFinish) {
+            locker.unlock();
+            wait();
+            locker.relock();
+        }
+        if (d->running && !d->finished && !d->data->isAdopted)
             qWarning("QThread: Destroyed while thread is still running");
 
         d->data->thread = 0;

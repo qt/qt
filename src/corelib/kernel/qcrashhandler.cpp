@@ -339,6 +339,9 @@ static void print_backtrace(FILE *outb)
                          "EOF\n",
                          globalProgName, (int)getpid()))
         return;
+#elif defined(Q_OS_INTEGRITY)
+    /* abort */
+    CheckSuccess(Failure);
 #else /* All other platforms */
     /*
      * TODO: SCO/UnixWare 7 must be something like (not tested)

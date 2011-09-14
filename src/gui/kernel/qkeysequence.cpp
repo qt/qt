@@ -76,7 +76,7 @@ static const MacSpecialKey entries[NumEntries] = {
     { Qt::Key_Backtab, 0x21E4 },
     { Qt::Key_Backspace, 0x232B },
     { Qt::Key_Return, 0x21B5 },
-    { Qt::Key_Enter, 0x21B5 },
+    { Qt::Key_Enter, 0x2324 },
     { Qt::Key_Delete, 0x2326 },
     { Qt::Key_Home, 0x2196 },
     { Qt::Key_End, 0x2198 },
@@ -240,7 +240,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \i Paste            \i Ctrl+V, Shift+Ins                    \i Ctrl+V                   \i Ctrl+V, F18, Shift+Ins \i Ctrl+V, F18, Shift+Ins      \i Ctrl+V
     \row    \i Preferences      \i                                      \i Ctrl+,                   \i              \i                                       \i (none)
     \row    \i Undo             \i Ctrl+Z, Alt+Backspace                \i Ctrl+Z                   \i Ctrl+Z, F14  \i Ctrl+Z, F14                           \i Ctrl+Z
-    \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z, Ctrl+Y     \i Ctrl+Shift+Z \i Ctrl+Shift+Z                     \i (none)
+    \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z        \i Ctrl+Shift+Z \i Ctrl+Shift+Z                     \i (none)
     \row    \i Back             \i Alt+Left, Backspace                  \i Ctrl+[                   \i Alt+Left     \i Alt+Left                              \i (none)
     \row    \i Forward          \i Alt+Right, Shift+Backspace           \i Ctrl+]                   \i Alt+Right    \i Alt+Right                             \i (none)
     \row    \i Refresh          \i F5                                   \i F5                       \i F5           \i Ctrl+R, F5                            \i (none)
@@ -718,7 +718,6 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_Mac},
     {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   QApplicationPrivate::KB_All},
     {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_S60},
-    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::Key_Y,                   QApplicationPrivate::KB_Mac},//different priority from above
     {QKeySequence::Undo,                    1,          Qt::CTRL | Qt::Key_Z,                   QApplicationPrivate::KB_All},
     {QKeySequence::Back,                    1,          Qt::CTRL | Qt::Key_BracketLeft,         QApplicationPrivate::KB_Mac},
     {QKeySequence::Forward,                 1,          Qt::CTRL | Qt::Key_BracketRight,        QApplicationPrivate::KB_Mac},
@@ -747,7 +746,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       QApplicationPrivate::KB_KDE},
     {QKeySequence::SaveAs,                  0,          Qt::CTRL | Qt::SHIFT | Qt::Key_S,       QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
     {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QApplicationPrivate::KB_Mac}, //different priority from above
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QApplicationPrivate::KB_Mac},
     {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QApplicationPrivate::KB_Mac },//different priority from above 
     {QKeySequence::Paste,                   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Insert,  QApplicationPrivate::KB_X11},
@@ -1382,11 +1381,11 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     QString p;
 
     if (key && key < Qt::Key_Escape && key != Qt::Key_Space) {
-        if (key < 0x10000) {
-            p = QChar(key & 0xffff).toUpper();
+        if (!QChar::requiresSurrogates(key)) {
+            p = QChar(ushort(key)).toUpper();
         } else {
-            p = QChar((key-0x10000)/0x400+0xd800);
-            p += QChar((key-0x10000)%400+0xdc00);
+            p += QChar(QChar::highSurrogate(key));
+            p += QChar(QChar::lowSurrogate(key));
         }
     } else if (key >= Qt::Key_F1 && key <= Qt::Key_F35) {
             p = nativeText ? QShortcut::tr("F%1").arg(key - Qt::Key_F1 + 1)
@@ -1419,11 +1418,11 @@ NonSymbol:
             // Or else characters like Qt::Key_aring may not get displayed
             // (Really depends on you locale)
             if (!keyname[i].name) {
-                if (key < 0x10000) {
-                    p = QChar(key & 0xffff).toUpper();
+                if (!QChar::requiresSurrogates(key)) {
+                    p = QChar(ushort(key)).toUpper();
                 } else {
-                    p = QChar((key-0x10000)/0x400+0xd800);
-                    p += QChar((key-0x10000)%400+0xdc00);
+                    p += QChar(QChar::highSurrogate(key));
+                    p += QChar(QChar::lowSurrogate(key));
                 }
             }
         }
@@ -1520,6 +1519,14 @@ QKeySequence &QKeySequence::operator=(const QKeySequence &other)
     qAtomicAssign(d, other.d);
     return *this;
 }
+
+/*!
+    \fn void QKeySequence::swap(QKeySequence &other)
+    \since 4.8
+
+    Swaps key sequence \a other with this key sequence. This operation is very
+    fast and never fails.
+*/
 
 /*!
     \fn bool QKeySequence::operator!=(const QKeySequence &other) const

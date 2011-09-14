@@ -48,6 +48,7 @@
 #include <qstringlist.h>
 #include <qpixmap.h>
 #include <qbrush.h>
+#include <qhash.h>
 
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QRegExp)
@@ -89,6 +90,7 @@ public:
         , m_verboseMode(false)
         , m_type(WidgetType)
         , m_checkers_background(true)
+        , m_shouldDrawText(true)
     { staticInit(); }
 
 public:
@@ -114,6 +116,7 @@ public:
     void setControlPoints(const QVector<QPointF> &points) { staticInit(); m_controlPoints = points; }
     void setVerboseMode(bool v) { staticInit(); m_verboseMode = v; }
     void insertAt(int commandIndex, const QStringList &newCommands);
+    void setShouldDrawText(bool drawText) { m_shouldDrawText = drawText; }
 
     // run
     void runCommands();
@@ -176,6 +179,7 @@ private:
     void command_gradient_setConical(QRegExp re);
     void command_gradient_setLinear(QRegExp re);
     void command_gradient_setRadial(QRegExp re);
+    void command_gradient_setRadialExtended(QRegExp re);
     void command_gradient_setLinearPen(QRegExp re);
     void command_gradient_setSpread(QRegExp re);
     void command_gradient_setCoordinateMode(QRegExp re);
@@ -205,6 +209,7 @@ private:
     void command_drawRoundedRect(QRegExp re);
     void command_drawRoundRect(QRegExp re);
     void command_drawText(QRegExp re);
+    void command_drawStaticText(QRegExp re);
     void command_drawTiledPixmap(QRegExp re);
     void command_path_addEllipse(QRegExp re);
     void command_path_addPolygon(QRegExp re);
@@ -279,6 +284,7 @@ private:
     bool m_verboseMode;
     DeviceType m_type;
     bool m_checkers_background;
+    bool m_shouldDrawText;
 
     QVector<QPointF> m_controlPoints;
 
@@ -286,6 +292,7 @@ private:
     static const char *brushStyleTable[];
     static const char *penStyleTable[];
     static const char *fontWeightTable[];
+    static const char *fontHintingTable[];
     static const char *clipOperationTable[];
     static const char *spreadMethodTable[];
     static const char *coordinateMethodTable[];
@@ -329,6 +336,7 @@ public:
 
     static QList<PaintCommandInfos> s_commandInfoTable;
     static QList<QPair<QString,QStringList> > s_enumsTable;
+    static QMultiHash<QString, int> s_commandHash;
 };
 
 #endif // PAINTCOMMANDS_H

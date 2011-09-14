@@ -15,3 +15,4 @@ HEADERS += tokenizers/basic/basic.h                     \
            tokenizers/withNamespace/withNamespace.h
 
 QT -= gui
+CONFIG += parallel_test

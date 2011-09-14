@@ -576,6 +576,14 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 }
 
 /*!
+    \fn void QPainterPath::swap(QPainterPath &other)
+    \since 4.8
+
+    Swaps painter path \a other with this painter path. This operation is very
+    fast and never fails.
+*/
+
+/*!
     Destroys this QPainterPath object.
 */
 QPainterPath::~QPainterPath()
@@ -866,7 +874,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
            rect.x(), rect.y(), rect.width(), rect.height(), startAngle, sweepLength);
 #endif
 
-    if (!qt_is_finite(rect.x()) && !qt_is_finite(rect.y()) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
+    if ((!qt_is_finite(rect.x()) && !qt_is_finite(rect.y())) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
         || !qt_is_finite(startAngle) || !qt_is_finite(sweepLength)) {
 #ifndef QT_NO_DEBUG
         qWarning("QPainterPath::arcTo: Adding arc where a parameter is NaN or Inf, ignoring call");
@@ -1118,6 +1126,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
     QTextEngine *eng = layout.engine();
     layout.beginLayout();
     QTextLine line = layout.createLine();
+    Q_UNUSED(line);
     layout.endLayout();
     const QScriptLine &sl = eng->lines[0];
     if (!sl.length || !eng->layoutData)
@@ -1896,7 +1905,7 @@ static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, 
     if (y >= bounds.top() && y < bounds.bottom()
         && bounds.right() >= x1 && bounds.left() < x2) {
         const qreal lower_bound = qreal(.01);
-        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;
@@ -1915,7 +1924,7 @@ static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qr
     if (x >= bounds.left() && x < bounds.right()
         && bounds.bottom() >= y1 && bounds.top() < y2) {
         const qreal lower_bound = qreal(.01);
-        if (depth == 32 || bounds.width() < lower_bound && bounds.height() < lower_bound)
+        if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
         QBezier first_half, second_half;
@@ -2915,8 +2924,11 @@ QPointF QPainterPath::pointAtPercent(qreal t) const
         return QPointF();
     }
 
-    if (isEmpty())
+    if (!d_ptr || d_ptr->elements.size() == 0)
         return QPointF();
+
+    if (d_ptr->elements.size() == 1)
+        return d_ptr->elements.at(0);
 
     qreal totalLength = length();
     qreal curLen = 0;

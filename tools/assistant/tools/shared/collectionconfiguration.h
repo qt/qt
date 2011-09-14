@@ -136,6 +136,10 @@ public:
     static const QDateTime lastRegisterTime(const QHelpEngineCore &helpEngine);
     static void updateLastRegisterTime(QHelpEngineCore &helpEngine);
 
+    static bool fullTextSearchFallbackEnabled(const QHelpEngineCore &helpEngine);
+    static void setFullTextSearchFallbackEnabled(QHelpEngineCore &helpEngine,
+        bool on);
+
     static const QString DefaultZoomFactor;
     static const QString ListSeparator;
 };

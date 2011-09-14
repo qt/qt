@@ -38,13 +38,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
 
 #include "indexwindow.h"
+
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "openpagesmanager.h"
 #include "topicchooser.h"
+#include "tracer.h"
 
 #include <QtGui/QLayout>
 #include <QtGui/QLabel>
@@ -219,10 +221,10 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
             return;
         }
 
-        if (!AbstractHelpViewer::canOpenPage(url.path()))
+        if (!HelpViewer::canOpenPage(url.path()))
             CentralWidget::instance()->setSource(url);
         else
-            CentralWidget::instance()->setSourceInNewTab(url);
+            OpenPagesManager::instance()->createPage(url);
     }
 }
 

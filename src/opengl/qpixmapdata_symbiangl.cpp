@@ -50,6 +50,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qimage_p.h>
 #include <private/qnativeimagehandleprovider_p.h>
+#include <private/qfont_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 
@@ -69,7 +70,7 @@ Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
 class QGLSgImageTextureCleanup
 {
 public:
-    QGLSgImageTextureCleanup() {}
+    QGLSgImageTextureCleanup(const QGLContext *context = 0) {}
 
     ~QGLSgImageTextureCleanup()
     {
@@ -98,20 +99,25 @@ private:
     QCache<qint64, QGLPixmapData> m_cache;
 };
 
+#if QT_VERSION >= 0x040800
+Q_GLOBAL_STATIC(QGLContextGroupResource<QGLSgImageTextureCleanup>, qt_sgimage_texture_cleanup)
+#else
 static void qt_sgimage_texture_cleanup_free(void *data)
 {
     delete reinterpret_cast<QGLSgImageTextureCleanup *>(data);
 }
-
 Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_sgimage_texture_cleanup, (qt_sgimage_texture_cleanup_free))
+#endif
 
 QGLSgImageTextureCleanup *QGLSgImageTextureCleanup::cleanupForContext(const QGLContext *context)
 {
     QGLSgImageTextureCleanup *p = reinterpret_cast<QGLSgImageTextureCleanup *>(qt_sgimage_texture_cleanup()->value(context));
+#if QT_VERSION < 0x040800
     if (!p) {
         QGLShareContextScope scope(context);
         qt_sgimage_texture_cleanup()->insert(context, p = new QGLSgImageTextureCleanup);
     }
+#endif
     return p;
 }
 

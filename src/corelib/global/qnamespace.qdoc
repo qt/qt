@@ -167,6 +167,19 @@
            attribute is true. This attribute must be set after QApplication is
            constructed. This is only supported in Symbian^3 and later Symbian releases.
 
+    \value AA_X11InitThreads Calls XInitThreads() as part of the QApplication
+           construction in order to make Xlib calls thread-safe. This
+           attribute must be set before QApplication is constructed.
+
+    \value AA_CaptureMultimediaKeys Enables application to receive multimedia key events
+            (play, next, previous etc). This includes also external sources such as headsets.
+            Application can not use Remote Control framework on Symbian if this attribute is 
+            set. On Symbian, multimedia key event routing may vary between different devices. 
+            For example, application on background may receive multimedia key events only if 
+            it has active audio stream i.e. it is playing music or video. This attribute must 
+            be set before QApplication is constructed. This attribute is only supported in Symbian 
+            platform.
+
     \omitvalue AA_AttributeCount
 */
 
@@ -526,7 +539,7 @@
     string, "ddd MMM d yyyy". See QDate::toString() for more information.
 
     \value ISODate \l{ISO 8601} extended format: either \c{YYYY-MM-DD} for dates or
-    \c{YYYY-MM-DDTHH:MM:SS}, \c{YYYY-MM-DDTHH:MM:SSTZD} (e.g., 1997-07-16T19:20:30+01:00)
+    \c{YYYY-MM-DDTHH:mm:ss}, \c{YYYY-MM-DDTHH:mm:ssTZD} (e.g., 1997-07-16T19:20:30+01:00)
     for combined dates and times.
 
     \value SystemLocaleShortDate The \l{QLocale::ShortFormat}{short format} used
@@ -1217,6 +1230,9 @@
     ignoring changes to the display's orientation with respect to the user.
     \value WA_AutoOrientation Causes the widget to change orientation whenever the
     display changes orientation with respect to the user.
+    
+    \value WA_MacNoShadow Since Qt 4.8, this attribute disables drop shadows
+    for this top level window. Only affects Cocoa builds of Qt for Mac OS X.
 
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
@@ -2641,19 +2657,22 @@
 
     Roles describing appearance and meta data (with associated types):
 
-    \value FontRole            The font used for items rendered with the default
-                               delegate. (QFont)
-    \value TextAlignmentRole   The alignment of the text for items rendered with the
-                               default delegate. (Qt::AlignmentFlag)
-    \value BackgroundRole      The background brush used for items rendered with
-                               the default delegate. (QBrush)
-    \value BackgroundColorRole This role is obsolete. Use BackgroundRole instead.
-    \value ForegroundRole      The foreground brush (text color, typically)
-                               used for items rendered with the default delegate.
-                               (QBrush)
-    \value TextColorRole       This role is obsolete. Use ForegroundRole instead.
-    \value CheckStateRole      This role is used to obtain the checked state of
-                               an item. (Qt::CheckState)
+    \value FontRole             The font used for items rendered with the default
+                                delegate. (QFont)
+    \value TextAlignmentRole    The alignment of the text for items rendered with the
+                                default delegate. (Qt::AlignmentFlag)
+    \value BackgroundRole       The background brush used for items rendered with
+                                the default delegate. (QBrush)
+    \value BackgroundColorRole  This role is obsolete. Use BackgroundRole instead.
+    \value ForegroundRole       The foreground brush (text color, typically)
+                                used for items rendered with the default delegate.
+                                (QBrush)
+    \value TextColorRole        This role is obsolete. Use ForegroundRole instead.
+    \value CheckStateRole       This role is used to obtain the checked state of
+                                an item. (Qt::CheckState)
+    \value InitialSortOrderRole This role is used to obtain the initial sort order
+                                of a header view section. (Qt::SortOrder). This
+                                role was introduced in Qt 4.8.
 
     Accessibility roles (with associated types):
 

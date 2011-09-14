@@ -145,6 +145,17 @@
     depends on the result of QWidget::frameGeometry() and the
     capability of the window manager to do proper window placement,
     neither of which can be guaranteed.
+
+    \section2 Symbian Peculiarities
+
+    On Symbian, the status pane and softkeys are not created until
+    after QWidget::show() is called for the main window of the application.
+    This means that at the time when the application main window gets the
+    show event, the application main window width() and height() methods
+    still return full screen width and height instead of the client area
+    width and height as expected. The correct place to get the main window
+    size is the resize event handler of the main window, as the resize event
+    will be sent each time the client area of the window changes.
 */
 
 /*!

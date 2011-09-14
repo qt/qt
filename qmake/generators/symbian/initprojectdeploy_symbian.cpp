@@ -169,9 +169,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                               QStringList& generatedDirs,
                               QStringList& generatedFiles)
 {
-    QString targetPath = project->values("deploy.path").join(" ");
-    if (targetPath.isEmpty())
-        targetPath = testPath;
+    QString targetPath = testPath;
     if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
         targetPath = targetPath.mid(0, targetPath.size() - 1);
 
@@ -225,7 +223,10 @@ void initProjectDeploySymbian(QMakeProject* project,
         } else {
             if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
-                    devicePath = qt_epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
+                    if (devicePath.startsWith("!"))
+                        devicePath = qt_epocRoot() + "epoc32/winscw/c" + devicePath.remove(0, 2);
+                    else
+                        devicePath = qt_epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
                     devicePath = qt_epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
@@ -255,7 +256,8 @@ void initProjectDeploySymbian(QMakeProject* project,
 
         QStringList flags = project->values(item + ".flags");
 
-        foreach(QString source, project->values(item + ".sources")) {
+        // ### Qt 5: remove .sources, inconsistent with INSTALLS
+        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
             QFileInfo info(source);

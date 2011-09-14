@@ -102,27 +102,27 @@ QVariant TranslatingTextBuilder::loadText(const DomProperty *text) const
     if (str->hasAttributeNotr()) {
         const QString notr = str->attributeNotr();
         if (notr == QLatin1String("true") || notr == QLatin1String("yes"))
-            return qVariantFromValue(str->text());
+            return QVariant::fromValue(str->text());
     }
     QUiTranslatableStringValue strVal;
     strVal.setValue(str->text().toUtf8());
     if (str->hasAttributeComment())
         strVal.setComment(str->attributeComment().toUtf8());
-    return qVariantFromValue(strVal);
+    return QVariant::fromValue(strVal);
 }
 
 QVariant TranslatingTextBuilder::toNativeValue(const QVariant &value) const
 {
-    if (qVariantCanConvert<QUiTranslatableStringValue>(value)) {
-        QUiTranslatableStringValue tsv = qVariantValue<QUiTranslatableStringValue>(value);
+    if (value.canConvert<QUiTranslatableStringValue>()) {
+        QUiTranslatableStringValue tsv = qvariant_cast<QUiTranslatableStringValue>(value);
         if (!m_trEnabled)
             return QString::fromUtf8(tsv.value().data());
-        return qVariantFromValue(
+        return QVariant::fromValue(
             QApplication::translate(m_className, tsv.value(), tsv.comment(),
                                     QCoreApplication::UnicodeUTF8));
     }
-    if (qVariantCanConvert<QString>(value))
-        return qVariantFromValue(qVariantValue<QString>(value));
+    if (value.canConvert<QString>())
+        return QVariant::fromValue(qvariant_cast<QString>(value));
     return value;
 }
 
@@ -150,7 +150,7 @@ static void recursiveReTranslate(QTreeWidgetItem *item, const QByteArray &class_
         for (unsigned j = 0; irs[j].shadowRole >= 0; j++) {
             QVariant v = item->data(i, irs[j].shadowRole);
             if (v.isValid()) {
-                QUiTranslatableStringValue tsv = qVariantValue<QUiTranslatableStringValue>(v);
+                QUiTranslatableStringValue tsv = qvariant_cast<QUiTranslatableStringValue>(v);
                 const QString text = QApplication::translate(class_name,
                                                              tsv.value(), tsv.comment(),
                                                              QCoreApplication::UnicodeUTF8);
@@ -172,7 +172,7 @@ static void reTranslateWidgetItem(T *item, const QByteArray &class_name)
     for (unsigned j = 0; irs[j].shadowRole >= 0; j++) {
         QVariant v = item->data(irs[j].shadowRole);
         if (v.isValid()) {
-            QUiTranslatableStringValue tsv = qVariantValue<QUiTranslatableStringValue>(v);
+            QUiTranslatableStringValue tsv = qvariant_cast<QUiTranslatableStringValue>(v);
             const QString text = QApplication::translate(class_name,
                                                          tsv.value(), tsv.comment(),
                                                          QCoreApplication::UnicodeUTF8);
@@ -191,7 +191,7 @@ static void reTranslateTableItem(QTableWidgetItem *item, const QByteArray &class
     do { \
         QVariant v = mainWidget->widget(i)->property(propName); \
         if (v.isValid()) { \
-            QUiTranslatableStringValue tsv = qVariantValue<QUiTranslatableStringValue>(v); \
+            QUiTranslatableStringValue tsv = qvariant_cast<QUiTranslatableStringValue>(v); \
             const QString text = QApplication::translate(m_className, \
                                                          tsv.value(), tsv.comment(), \
                                                          QCoreApplication::UnicodeUTF8); \
@@ -217,7 +217,7 @@ public:
                 if (prop.startsWith(PROP_GENERIC_PREFIX)) {
                     const QByteArray propName = prop.mid(sizeof(PROP_GENERIC_PREFIX) - 1);
                     const QUiTranslatableStringValue tsv =
-                                qVariantValue<QUiTranslatableStringValue>(o->property(prop));
+                                qvariant_cast<QUiTranslatableStringValue>(o->property(prop));
                     const QString text = QApplication::translate(m_className,
                                                                  tsv.value(), tsv.comment(),
                                                                  QCoreApplication::UnicodeUTF8);
@@ -273,7 +273,7 @@ public:
                     for (int i = 0; i < cnt; ++i) {
                         const QVariant v = combow->itemData(i, Qt::DisplayPropertyRole);
                         if (v.isValid()) {
-                            QUiTranslatableStringValue tsv = qVariantValue<QUiTranslatableStringValue>(v);
+                            QUiTranslatableStringValue tsv = qvariant_cast<QUiTranslatableStringValue>(v);
                             const QString text = QApplication::translate(m_className,
                                                                          tsv.value(), tsv.comment(),
                                                                          QCoreApplication::UnicodeUTF8);
@@ -430,7 +430,7 @@ void FormBuilderPrivate::applyProperties(QObject *o, const QList<DomProperty*> &
             continue;
         const QByteArray name = p->attributeName().toUtf8();
         if (dynamicTr) {
-            o->setProperty(PROP_GENERIC_PREFIX + name, qVariantFromValue(strVal));
+            o->setProperty(PROP_GENERIC_PREFIX + name, QVariant::fromValue(strVal));
             anyTrs = trEnabled;
         }
         o->setProperty(name, text);
@@ -489,7 +489,7 @@ QWidget *FormBuilderPrivate::create(DomWidget *ui_widget, QWidget *parentWidget)
             const QString text = convertTranslatable(p##attribute, m_class, &strVal); \
             if (!text.isEmpty()) { \
                 if (dynamicTr) \
-                    mainWidget->widget(i)->setProperty(propName, qVariantFromValue(strVal)); \
+                    mainWidget->widget(i)->setProperty(propName, QVariant::fromValue(strVal)); \
                 mainWidget->setter(i, text); \
             } \
         } \

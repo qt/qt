@@ -45,6 +45,12 @@
 #include "../../shared/util.h"
 #include "../network-settings.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
+
 #define TESTFILE QString("http://%1/qtest/cgi-bin/").arg(QtNetworkSettings::serverName())
 
 class tst_QAbstractNetworkCache : public QObject
@@ -56,6 +62,7 @@ public:
     virtual ~tst_QAbstractNetworkCache();
 
 private slots:
+    void initTestCase();
     void expires_data();
     void expires();
     void expiresSynchronous_data();
@@ -81,6 +88,12 @@ private slots:
 private:
     void check();
     void checkSynchronous();
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
+#endif
 };
 
 class NetworkDiskCache : public QNetworkDiskCache
@@ -123,6 +136,26 @@ static bool AlwaysTrue = true;
 static bool AlwaysFalse = false;
 
 Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
+
+void tst_QAbstractNetworkCache::initTestCase()
+{
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    netConfMan->updateConfigurations();
+    connect(netConfMan, SIGNAL(updateCompleted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    if (networkConfiguration.isValid()) {
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
+    } else {
+        QVERIFY(!(netConfMan->capabilities() & QNetworkConfigurationManager::NetworkSessionRequired));
+    }
+#endif
+}
 
 void tst_QAbstractNetworkCache::expires_data()
 {
@@ -235,14 +268,14 @@ void tst_QAbstractNetworkCache::cacheControl_data()
 
     QTest::newRow("200-2") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << AlwaysFalse;
     QTest::newRow("200-3") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << false;
-    QTest::newRow("200-4") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;//AlwaysTrue;
+    QTest::newRow("200-4") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
     QTest::newRow("200-5") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
 
     QTest::newRow("304-0") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000" << true;
 
     QTest::newRow("304-1") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << AlwaysFalse;
     QTest::newRow("304-2") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
-    QTest::newRow("304-3") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << AlwaysTrue;
+    QTest::newRow("304-3") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << false;
     QTest::newRow("304-4") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
 
     // see QTBUG-7060
@@ -331,7 +364,7 @@ void tst_QAbstractNetworkCache::checkSynchronous()
     QNetworkRequest request(realUrl);
 
     request.setAttribute(
-            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::DownloadBufferAttribute + 1),
+            QNetworkRequest::SynchronousRequestAttribute,
             true);
 
     // prime the cache

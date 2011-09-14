@@ -70,6 +70,7 @@ public:
     virtual QNetworkReply *createRequest(Operation op,
                                          const QNetworkRequest &req,
                                          QIODevice *outgoingData);
+    bool isValid() const;
 
 private:
     const QUrl m_rewriteFrom;
@@ -77,11 +78,10 @@ private:
 };
 
 NetworkOverrider::NetworkOverrider(const QUrl &rewriteFrom,
-                                   const QUrl &rewriteTo) : m_rewriteFrom(rewriteFrom)
-                                                          , m_rewriteTo(rewriteTo)
+                                   const QUrl &rewriteTo)
+    : m_rewriteFrom(rewriteFrom)
+    , m_rewriteTo(rewriteTo)
 {
-    Q_ASSERT(m_rewriteFrom.isValid());
-    Q_ASSERT(m_rewriteTo.isValid());
 }
 
 QNetworkReply *NetworkOverrider::createRequest(Operation op,
@@ -94,5 +94,10 @@ QNetworkReply *NetworkOverrider::createRequest(Operation op,
         newReq.setUrl(m_rewriteTo);
 
     return QNetworkAccessManager::createRequest(op, newReq, outgoingData);
+}
+
+bool NetworkOverrider::isValid() const
+{
+    return m_rewriteFrom.isValid() && m_rewriteTo.isValid();
 }
 #endif

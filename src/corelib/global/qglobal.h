@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.7.4"
+#define QT_VERSION_STR   "4.8.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040704
+#define QT_VERSION 0x040800
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -63,6 +63,10 @@
 #endif
 
 #ifdef __cplusplus
+
+#ifndef QT_NO_STL
+#include <algorithm>
+#endif
 
 #ifndef QT_NAMESPACE /* user namespace */
 
@@ -169,7 +173,6 @@ namespace QT_NAMESPACE {}
      RELIANT  - Reliant UNIX
      DYNIX    - DYNIX/ptx
      QNX      - QNX
-     QNX6     - QNX RTP 6.1
      LYNX     - LynxOS
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
@@ -216,6 +219,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_ULTRIX
 #elif defined(sinix)
 #  define Q_OS_RELIANT
+#elif defined(__native_client__)
+#  define Q_OS_NACL
 #elif defined(__linux__) || defined(__linux)
 #  define Q_OS_LINUX
 #elif defined(__FreeBSD__) || defined(__DragonFly__)
@@ -284,7 +289,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_WS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -316,7 +321,10 @@ namespace QT_NAMESPACE {}
 #  if !defined(MAC_OS_X_VERSION_10_6)
 #       define MAC_OS_X_VERSION_10_6 MAC_OS_X_VERSION_10_5 + 1
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6)
+#  if !defined(MAC_OS_X_VERSION_10_7)
+#       define MAC_OS_X_VERSION_10_7 MAC_OS_X_VERSION_10_6 + 1
+#  endif
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_7)
 #    warning "This version of Mac OS X is unsupported"
 #  endif
 #endif
@@ -356,13 +364,27 @@ namespace QT_NAMESPACE {}
      GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
      NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
+     CLANG    - C++ front-end for the LLVM compiler
 
 
    Should be sorted most to least authoritative.
 */
 
 #if defined(__ghs)
-#  define Q_OUTOFLINE_TEMPLATE inline
+# define Q_OUTOFLINE_TEMPLATE inline
+
+/* the following are necessary because the GHS C++ name mangling relies on __*/
+# define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
+   static const int AFUNC ## _init_variable_ = AFUNC();
+# define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
+# define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
+    class AFUNC ## _dest_class_ { \
+    public: \
+       inline AFUNC ## _dest_class_() { } \
+       inline ~ AFUNC ## _dest_class_() { AFUNC(); } \
+    } AFUNC ## _dest_instance_;
+# define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
+
 #endif
 
 /* Symantec C++ is now Digital Mars */
@@ -383,31 +405,12 @@ namespace QT_NAMESPACE {}
 
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC
-/* proper support of bool for _MSC_VER >= 1100 */
+#  define Q_CC_MSVC_NET
 #  define Q_CANNOT_DELETE_CONSTANT
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
-#  define QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
-#    define Q_ALIGNOF(type)   __alignof(type)
-#    define Q_DECL_ALIGN(n)   __declspec(align(n))
-
-/* Visual C++.Net issues for _MSC_VER >= 1300 */
-#  if _MSC_VER >= 1300
-#    define Q_CC_MSVC_NET
-#    if _MSC_VER < 1310 || (defined(Q_OS_WIN64) && defined(_M_IA64))
-#      define Q_TYPENAME
-#    else
-#      undef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
-#    endif
-#  else
-#    define Q_NO_USING_KEYWORD
-#    define QT_NO_MEMBER_TEMPLATES
-#  endif
-#  if _MSC_VER < 1310
-#     define QT_NO_QOBJECT_CHECK
-#     define Q_TYPENAME
-#     define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-#  endif
+#  define Q_ALIGNOF(type) __alignof(type)
+#  define Q_DECL_ALIGN(n) __declspec(align(n))
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_CC_INTEL
@@ -418,6 +421,16 @@ namespace QT_NAMESPACE {}
 #    undef QT_HAVE_MMX
 #    undef QT_HAVE_3DNOW
 #  endif
+
+#if defined(Q_CC_MSVC) && _MSC_VER >= 1600
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_DECLTYPE
+//  MSCV has std::initilizer_list, but do not support the braces initialization
+//#      define Q_COMPILER_INITIALIZER_LISTS
+#  endif
+
 
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
@@ -447,6 +460,9 @@ namespace QT_NAMESPACE {}
 #  if __TARGET_ARCH_ARM >= 6
 #    define QT_HAVE_ARMV6
 #  endif
+/* work-around for missing compiler intrinsics */
+#  define __is_empty(X) false
+#  define __is_pod(X) false
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -456,7 +472,10 @@ namespace QT_NAMESPACE {}
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
-#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__clang__)
+/* Clang also masquerades as GCC 4.2.1 */
+#    define Q_CC_CLANG
 #  endif
 #  ifdef __APPLE__
 #    define Q_NO_DEPRECATED_CONSTRUCTORS
@@ -473,6 +492,10 @@ namespace QT_NAMESPACE {}
 #    define Q_ALIGNOF(type)   __alignof__(type)
 #    define Q_TYPEOF(expr)    __typeof__(expr)
 #    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  endif
+#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+#    define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
+#    define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
 #  endif
 /* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
 #  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
@@ -492,6 +515,32 @@ namespace QT_NAMESPACE {}
 #    ifndef __ARM_EABI__
 #      define QT_NO_ARM_EABI
 #    endif
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__)
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+       /* C++0x features supported in GCC 4.3: */
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_DECLTYPE
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
+       /* C++0x features supported in GCC 4.4: */
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+       /* C++0x features supported in GCC 4.5: */
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_UNICODE_STRINGS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+       /* C++0x features supported in GCC 4.6: */
+#      define Q_COMPILER_CONSTEXPR
+#    endif
+
 #  endif
 
 /* IBM compiler versions are a bit messy. There are actually two products:
@@ -712,10 +761,11 @@ namespace QT_NAMESPACE {}
 #      define Q_DECL_IMPORT     __declspec(dllimport)
 #    endif
 #    if __HP_aCC-0 >= 061200
-#      define Q_DECL_ALIGNED(n) __attribute__((aligned(n)))
+#      define Q_DECL_ALIGN(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#      define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
@@ -730,14 +780,40 @@ namespace QT_NAMESPACE {}
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
 
-
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
+#endif
+
+
+#ifdef Q_CC_INTEL
+#  if __INTEL_COMPILER < 1200
+#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
+#    if __INTEL_COMPILER >= 1100
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
+#    elif __INTEL_COMPILER >= 1200
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_LAMBDA
+#    endif
+#  endif
 #endif
 
 #ifndef Q_PACKED
 #  define Q_PACKED
 #  undef Q_NO_PACKED_REFERENCE
+#endif
+
+#ifndef Q_LIKELY
+#  define Q_LIKELY(x) (x)
+#endif
+#ifndef Q_UNLIKELY
+#  define Q_UNLIKELY(x) (x)
 #endif
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -803,7 +879,7 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
 #elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS)
+#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_MAC
 #    define Q_WS_MACX
 #    if defined(Q_OS_MAC64)
@@ -815,7 +891,7 @@ namespace QT_NAMESPACE {}
 #    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
-#  elif !defined(Q_WS_QWS)
+#  elif !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_X11
 #  endif
 #endif
@@ -924,10 +1000,10 @@ redefine to built-in booleans to make autotests work properly */
 #endif
 
 /*
-   Proper for-scoping in VC++6 and MIPSpro CC
+   Proper for-scoping in MIPSpro CC
 */
 #ifndef QT_NO_KEYWORDS
-#  if (defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET) && !defined(Q_CC_INTEL)) || defined(Q_CC_MIPS) || (defined(Q_CC_HPACC) && defined(__ia64))
+#  if defined(Q_CC_MIPS) || (defined(Q_CC_HPACC) && defined(__ia64))
 #    define for if(0){}else for
 #  endif
 #endif
@@ -951,7 +1027,7 @@ redefine to built-in booleans to make autotests work properly */
 #  define Q_DECL_DEPRECATED Q_DECL_DEPRECATED
 #elif (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2))) || defined(Q_CC_RVCT)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
-#elif defined(Q_CC_MSVC) && (_MSC_VER >= 1300)
+#elif defined(Q_CC_MSVC)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
 #  if defined (Q_CC_INTEL)
 #    define Q_DECL_VARIABLE_DEPRECATED
@@ -1050,18 +1126,24 @@ redefine to built-in booleans to make autotests work properly */
 
 #if defined(__i386__) || defined(_WIN32) || defined(_WIN32_WCE)
 #  if defined(Q_CC_GNU)
-#if ((100*(__GNUC__ - 0) + 10*(__GNUC_MINOR__ - 0) + __GNUC_PATCHLEVEL__) >= 332)
+#if !defined(Q_CC_INTEL) && ((100*(__GNUC__ - 0) + 10*(__GNUC_MINOR__ - 0) + __GNUC_PATCHLEVEL__) >= 332)
 #    define QT_FASTCALL __attribute__((regparm(3)))
 #else
 #    define QT_FASTCALL
 #endif
-#  elif defined(Q_CC_MSVC) && (_MSC_VER > 1300 || defined(Q_CC_INTEL))
+#  elif defined(Q_CC_MSVC)
 #    define QT_FASTCALL __fastcall
 #  else
 #     define QT_FASTCALL
 #  endif
 #else
 #  define QT_FASTCALL
+#endif
+
+#ifdef Q_COMPILER_CONSTEXPR
+# define Q_DECL_CONSTEXPR constexpr
+#else
+# define Q_DECL_CONSTEXPR
 #endif
 
 //defines the type for the WNDPROC on windows
@@ -1077,7 +1159,7 @@ redefine to built-in booleans to make autotests work properly */
 
 typedef int QNoImplicitBoolCast;
 
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
 #define QT_NO_FPU
 #endif
 
@@ -1095,25 +1177,25 @@ typedef double qreal;
 */
 
 template <typename T>
-inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
+Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
-inline int qRound(qreal d)
-{ return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1); }
+Q_DECL_CONSTEXPR inline int qRound(qreal d)
+{ return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1); }
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
-inline qint64 qRound64(double d)
+Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
-inline qint64 qRound64(qreal d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
+Q_DECL_CONSTEXPR inline qint64 qRound64(qreal d)
+{ return d >= qreal(0.0) ? qint64(d + qreal(0.5)) : qint64(d - qreal(qint64(d-1)) + qreal(0.5)) + qint64(d-1); }
 #endif
 
 template <typename T>
-inline const T &qMin(const T &a, const T &b) { if (a < b) return a; return b; }
+Q_DECL_CONSTEXPR inline const T &qMin(const T &a, const T &b) { return (a < b) ? a : b; }
 template <typename T>
-inline const T &qMax(const T &a, const T &b) { if (a < b) return b; return a; }
+Q_DECL_CONSTEXPR inline const T &qMax(const T &a, const T &b) { return (a < b) ? b : a; }
 template <typename T>
-inline const T &qBound(const T &min, const T &val, const T &max)
+Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
 
 #ifdef QT3_SUPPORT
@@ -1174,11 +1256,18 @@ class QDataStream;
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 
+#if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
+#  define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#  define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#  define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
+#endif
+
 #ifndef Q_DECL_EXPORT
 #  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN __attribute__((visibility("hidden")))
 #  endif
 #  ifndef Q_DECL_EXPORT
 #    define Q_DECL_EXPORT
@@ -1191,6 +1280,10 @@ class QDataStream;
 #    define Q_DECL_IMPORT
 #  endif
 #endif
+#ifndef Q_DECL_HIDDEN
+#  define Q_DECL_HIDDEN
+#endif
+
 
 /*
    Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
@@ -1340,6 +1433,7 @@ class QDataStream;
 #    define Q_DECLARATIVE_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
+#    define Q_OPENVG_EXPORT
 #    define Q_XML_EXPORT
 #    define Q_XMLPATTERNS_EXPORT
 #    define Q_SCRIPT_EXPORT
@@ -1362,15 +1456,22 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#    if defined(QT_BUILD_COMPAT_LIB)
+#      define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
+#    else
+#      define Q_COMPAT_EXPORT_INLINE inline
+#    endif
 #elif defined(Q_CC_RVCT)
 // we force RVCT not to export inlines by passing --visibility_inlines_hidden
 // so we need to just inline it, rather than exporting and inlining
 // note: this affects the contents of the DEF files (ie. these functions do not appear)
 #    define Q_CORE_EXPORT_INLINE inline
 #    define Q_GUI_EXPORT_INLINE inline
+#    define Q_COMPAT_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
+#    define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #endif
 
 /*
@@ -1388,7 +1489,7 @@ class QDataStream;
 #    define Q_AUTOTEST_EXPORT
 #endif
 
-inline void qt_noop() {}
+inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.
 
@@ -1501,6 +1602,7 @@ public:
         MV_10_4 = 0x0006,
         MV_10_5 = 0x0007,
         MV_10_6 = 0x0008,
+        MV_10_7 = 0x0009,
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -1509,7 +1611,8 @@ public:
         MV_PANTHER = MV_10_3,
         MV_TIGER = MV_10_4,
         MV_LEOPARD = MV_10_5,
-        MV_SNOWLEOPARD = MV_10_6
+        MV_SNOWLEOPARD = MV_10_6,
+        MV_LION = MV_10_7
     };
     static const MacVersion MacintoshVersion;
 #endif
@@ -1613,7 +1716,7 @@ inline void qUnused(T &x) { (void)x; }
 #endif
 
 #ifndef qPrintable
-#  define qPrintable(string) (string).toLocal8Bit().constData()
+#  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
 Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
@@ -1705,7 +1808,7 @@ Q_CORE_EXPORT void qBadAlloc();
 
 #ifdef QT_NO_EXCEPTIONS
 #  if defined(QT_NO_DEBUG)
-#    define Q_CHECK_PTR(p) qt_noop();
+#    define Q_CHECK_PTR(p) qt_noop()
 #  else
 #    define Q_CHECK_PTR(p) do {if(!(p))qt_check_pointer(__FILE__,__LINE__);} while (0)
 #  endif
@@ -1719,12 +1822,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-    /* MSVC 2002 doesn't have __FUNCSIG__ nor can it handle QT_STRINGIFY. */
-#  if _MSC_VER <= 1300
-#      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
-#  else
-#      define Q_FUNC_INFO __FUNCSIG__
-#  endif
+#  define Q_FUNC_INFO __FUNCSIG__
 #else
 #   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
@@ -1766,32 +1864,32 @@ public:
     inline ~QGlobalStatic() { pointer = 0; }
 };
 
-#define Q_GLOBAL_STATIC(TYPE, NAME)                              \
-    static TYPE *NAME()                                          \
-    {                                                            \
-        static TYPE this_##NAME;                                 \
-        static QGlobalStatic<TYPE > global_##NAME(&this_##NAME); \
-        return global_##NAME.pointer;                            \
+#define Q_GLOBAL_STATIC(TYPE, NAME)                                  \
+    static TYPE *NAME()                                              \
+    {                                                                \
+        static TYPE thisVariable;                                    \
+        static QGlobalStatic<TYPE > thisGlobalStatic(&thisVariable); \
+        return thisGlobalStatic.pointer;                             \
     }
 
-#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)              \
-    static TYPE *NAME()                                          \
-    {                                                            \
-        static TYPE this_##NAME ARGS;                            \
-        static QGlobalStatic<TYPE > global_##NAME(&this_##NAME); \
-        return global_##NAME.pointer;                            \
+#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                  \
+    static TYPE *NAME()                                              \
+    {                                                                \
+        static TYPE thisVariable ARGS;                               \
+        static QGlobalStatic<TYPE > thisGlobalStatic(&thisVariable); \
+        return thisGlobalStatic.pointer;                             \
     }
 
-#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER) \
-    static TYPE *NAME()                                           \
-    {                                                             \
-        static TYPE this_##NAME;                                  \
-        static QGlobalStatic<TYPE > global_##NAME(0);             \
-        if (!global_##NAME.pointer) {                             \
-            TYPE *x = global_##NAME.pointer = &this_##NAME;       \
-            INITIALIZER;                                          \
-        }                                                         \
-        return global_##NAME.pointer;                             \
+#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)    \
+    static TYPE *NAME()                                              \
+    {                                                                \
+        static TYPE thisVariable;                                    \
+        static QGlobalStatic<TYPE > thisGlobalStatic(0);             \
+        if (!thisGlobalStatic.pointer) {                             \
+            TYPE *x = thisGlobalStatic.pointer = &thisVariable;      \
+            INITIALIZER;                                             \
+        }                                                            \
+        return thisGlobalStatic.pointer;                             \
     }
 
 #else
@@ -1826,50 +1924,51 @@ public:
     }
 };
 
-#define Q_GLOBAL_STATIC_INIT(TYPE, NAME)                              \
-    static QGlobalStatic<TYPE > this_##NAME = { Q_BASIC_ATOMIC_INITIALIZER(0), false }
+#define Q_GLOBAL_STATIC_INIT(TYPE, NAME)                                      \
+        static QGlobalStatic<TYPE > this_ ## NAME                             \
+                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false }
 
-#define Q_GLOBAL_STATIC(TYPE, NAME)                                     \
-    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
-    static TYPE *NAME()                                                 \
-    {                                                                   \
-        if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
-            TYPE *x = new TYPE;                                         \
-            if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
-                delete x;                                               \
-            else                                                        \
-                static QGlobalStaticDeleter<TYPE > cleanup(this_##NAME); \
-        }                                                               \
-        return this_##NAME.pointer;                                     \
+#define Q_GLOBAL_STATIC(TYPE, NAME)                                           \
+    static TYPE *NAME()                                                       \
+    {                                                                         \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
+            TYPE *x = new TYPE;                                               \
+            if (!this__StaticVar_.pointer.testAndSetOrdered(0, x))            \
+                delete x;                                                     \
+            else                                                              \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
+        }                                                                     \
+        return this__StaticVar_.pointer;                                      \
     }
 
-#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                     \
-    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
-    static TYPE *NAME()                                                 \
-    {                                                                   \
-        if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
-            TYPE *x = new TYPE ARGS;                                    \
-            if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
-                delete x;                                               \
-            else                                                        \
-                static QGlobalStaticDeleter<TYPE > cleanup(this_##NAME); \
-        }                                                               \
-        return this_##NAME.pointer;                                     \
+#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                           \
+    static TYPE *NAME()                                                       \
+    {                                                                         \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
+            TYPE *x = new TYPE ARGS;                                          \
+            if (!this__StaticVar_.pointer.testAndSetOrdered(0, x))            \
+                delete x;                                                     \
+            else                                                              \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
+        }                                                                     \
+        return this__StaticVar_.pointer;                                      \
     }
 
-#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)       \
-    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
-    static TYPE *NAME()                                                 \
-    {                                                                   \
-        if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
-            QScopedPointer<TYPE > x(new TYPE);                          \
-            INITIALIZER;                                                \
-            if (this_##NAME.pointer.testAndSetOrdered(0, x.data())) {   \
-                static QGlobalStaticDeleter<TYPE > cleanup(this_##NAME); \
-                x.take();                                               \
-            }                                                           \
-        }                                                               \
-        return this_##NAME.pointer;                                     \
+#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)             \
+    static TYPE *NAME()                                                       \
+    {                                                                         \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
+            QScopedPointer<TYPE > x(new TYPE);                                \
+            INITIALIZER;                                                      \
+            if (this__StaticVar_.pointer.testAndSetOrdered(0, x.data())) {    \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
+                x.take();                                                     \
+            }                                                                 \
+        }                                                                     \
+        return this__StaticVar_.pointer;                                      \
     }
 
 #endif
@@ -1891,12 +1990,12 @@ inline bool operator!=(QBool b1, bool b2) { return !b1 != !b2; }
 inline bool operator!=(bool b1, QBool b2) { return !b1 != !b2; }
 inline bool operator!=(QBool b1, QBool b2) { return !b1 != !b2; }
 
-static inline bool qFuzzyCompare(double p1, double p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) <= 0.000000000001 * qMin(qAbs(p1), qAbs(p2)));
 }
 
-static inline bool qFuzzyCompare(float p1, float p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
@@ -1904,7 +2003,7 @@ static inline bool qFuzzyCompare(float p1, float p2)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(double d)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
@@ -1912,7 +2011,7 @@ static inline bool qFuzzyIsNull(double d)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(float f)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
@@ -1974,8 +2073,6 @@ static inline bool qIsNull(float f)
    qIsDetached   - data sharing functionality
 */
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
-
 /*
   The catch-all template.
 */
@@ -2008,28 +2105,6 @@ public:
     };
 };
 
-#else
-
-template <typename T> char QTypeInfoHelper(T*(*)());
-void* QTypeInfoHelper(...);
-
-template <typename T> inline bool qIsDetached(T &) { return true; }
-
-template <typename T>
-class QTypeInfo
-{
-public:
-    enum {
-        isPointer = (1 == sizeof(QTypeInfoHelper((T(*)())0))),
-        isComplex = !isPointer,
-        isStatic = !isPointer,
-        isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false
-    };
-};
-
-#endif /* QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION */
-
 /*
    Specialize a specific type with:
 
@@ -2046,8 +2121,7 @@ enum { /* TYPEINFO flags */
     Q_DUMMY_TYPE = 0x4
 };
 
-#define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
-template <> \
+#define Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS) \
 class QTypeInfo<TYPE > \
 { \
 public: \
@@ -2061,12 +2135,22 @@ public: \
     static inline const char *name() { return #TYPE; } \
 }
 
+#define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
+template<> \
+Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
+
+
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
+#ifdef QT_NO_STL
     const T t = value1;
     value1 = value2;
     value2 = t;
+#else
+    using std::swap;
+    swap(value1, value2);
+#endif
 }
 
 /*
@@ -2078,12 +2162,23 @@ inline void qSwap(T &value1, T &value2)
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
+#ifdef QT_NO_STL
+#define Q_DECLARE_SHARED_STL(TYPE)
+#else
+#define Q_DECLARE_SHARED_STL(TYPE) \
+QT_END_NAMESPACE \
+namespace std { \
+    template<> inline void swap<QT_PREPEND_NAMESPACE(TYPE)>(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
+    { swap(value1.data_ptr(), value2.data_ptr()); } \
+} \
+QT_BEGIN_NAMESPACE
+#endif
+
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
-{ \
-    qSwap(value1.data_ptr(), value2.data_ptr()); \
-}
+{ qSwap(value1.data_ptr(), value2.data_ptr()); } \
+Q_DECLARE_SHARED_STL(TYPE)
 
 /*
    QTypeInfo primitive specializations
@@ -2143,10 +2238,6 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 #    pragma warning(disable: 4231) /* nonstandard extension used : 'extern' before template explicit instantiation */
 #    pragma warning(disable: 4710) /* function not inlined */
 #    pragma warning(disable: 4530) /* C++ exception handler used, but unwind semantics are not enabled. Specify -GX */
-#    if _MSC_VER < 1300
-#      pragma warning(disable: 4284) /* return type for 'type1::operator ->' is 'type2 *' */
-                                     /* (ie; not a UDT or reference to a UDT.  Will produce errors if applied using infix notation) */
-#    endif
 #  elif defined(Q_CC_BOR)
 #    pragma option -w-inl
 #    pragma option -w-aus
@@ -2188,9 +2279,9 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    inline QFlags(const QFlags &f) : i(f.i) {}
-    inline QFlags(Enum f) : i(f) {}
-    inline QFlags(Zero = 0) : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
@@ -2201,18 +2292,18 @@ public:
     inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
     inline QFlags &operator^=(Enum f) { i ^= f; return *this; }
 
-    inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR  inline operator int() const { return i; }
 
-    inline QFlags operator|(QFlags f) const { QFlags g; g.i = i | f.i; return g; }
-    inline QFlags operator|(Enum f) const { QFlags g; g.i = i | f; return g; }
-    inline QFlags operator^(QFlags f) const { QFlags g; g.i = i ^ f.i; return g; }
-    inline QFlags operator^(Enum f) const { QFlags g; g.i = i ^ f; return g; }
-    inline QFlags operator&(int mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(uint mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(Enum f) const { QFlags g; g.i = i & f; return g; }
-    inline QFlags operator~() const { QFlags g; g.i = ~i; return g; }
+    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(Enum(i ^ f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(Enum(~i)); }
 
-    inline bool operator!() const { return !i; }
+    Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
     inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
@@ -2220,18 +2311,14 @@ public:
 #define Q_DECLARE_FLAGS(Flags, Enum)\
 typedef QFlags<Enum> Flags;
 
-#if defined Q_CC_MSVC && _MSC_VER < 1300
-# define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
-#else
-# define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
+#define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
 inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) \
 { return QIncompatibleFlag(int(f1) | f2); }
-#endif
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
 { return f2 | f1; } Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
 
 
@@ -2283,9 +2370,9 @@ template <typename T>
 inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase *base, const T *)
 { return static_cast<const QForeachContainer<T> *>(base); }
 
-#if (defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET) && !defined(Q_CC_INTEL)) || defined(Q_CC_MIPS)
+#if defined(Q_CC_MIPS)
 /*
-   Proper for-scoping in VC++6 and MIPSpro CC
+   Proper for-scoping in MIPSpro CC
 */
 #  define Q_FOREACH(variable,container)                                                             \
     if(0){}else                                                                                     \
@@ -2468,6 +2555,16 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
+
+// Winscw compiler is unable to compile QtConcurrent.
+#ifdef Q_CC_NOKIAX86
+#ifndef QT_NO_CONCURRENT
+#define QT_NO_CONCURRENT
+#endif
+#ifndef QT_NO_QFUTURE
+#define QT_NO_QFUTURE
+#endif
+#endif
 
 QT_END_NAMESPACE
 // forward declare std::exception
@@ -2653,12 +2750,6 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_QFUTURE
 #endif
 
-// MSVC 6.0 and MSVC .NET 2002,  can`t handle the map(), etc templates,
-// but the QFuture class compiles.
-#if (defined(Q_CC_MSVC) && _MSC_VER <= 1300)
-#  define QT_NO_CONCURRENT
-#endif
-
 // gcc 3 version has problems with some of the
 // map/filter overloads.
 #if defined(Q_CC_GNU) && (__GNUC__ < 4)
@@ -2666,16 +2757,24 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_CONCURRENT_FILTER
 #endif
 
-#ifdef Q_OS_QNX
-// QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
-// shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_MULTIPROCESS
-#  define QT_NO_QWS_SHARE_FONTS
-#  define QT_NO_SYSTEMSEMAPHORE
-#  define QT_NO_SHAREDMEMORY
-// QNX currently doesn't support forking in a thread, so disable QProcess
-#  define QT_NO_PROCESS
+#if defined (__ELF__)
+#  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
+#    define Q_OF_ELF
+#  endif
 #endif
+
+#if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
+    && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
+    && !(defined(Q_WS_QPA))
+#  define QT_NO_RAWFONT
+#endif
+
+namespace QtPrivate {
+//like std::enable_if
+template <bool B, typename T = void> struct QEnableIf;
+template <typename T> struct QEnableIf<true, T> { typedef T Type; };
+}
 
 QT_END_NAMESPACE
 QT_END_HEADER

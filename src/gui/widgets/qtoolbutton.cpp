@@ -394,9 +394,6 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
             option->toolButtonStyle = Qt::ToolButtonTextOnly;
         else if (option->toolButtonStyle != Qt::ToolButtonTextOnly)
             option->toolButtonStyle = Qt::ToolButtonIconOnly;
-    } else {
-        if (d->text.isEmpty() && option->toolButtonStyle != Qt::ToolButtonIconOnly)
-            option->toolButtonStyle = Qt::ToolButtonIconOnly;
     }
 
     option->pos = pos();

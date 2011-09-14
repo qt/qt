@@ -45,6 +45,9 @@
 
 #include "qitemselectionmodel.h"
 #include <private/qabstractproxymodel_p.h>
+#include <QtCore/QSize>
+#include <QtCore/QStringList>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -270,6 +273,15 @@ bool QAbstractProxyModel::setData(const QModelIndex &index, const QVariant &valu
 /*!
     \reimp
  */
+bool QAbstractProxyModel::setItemData(const QModelIndex &index, const QMap< int, QVariant >& roles)
+{
+    Q_D(QAbstractProxyModel);
+    return d->model->setItemData(mapToSource(index), roles);
+}
+
+/*!
+    \reimp
+ */
 bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
 {
     Q_D(QAbstractProxyModel);
@@ -282,6 +294,99 @@ bool QAbstractProxyModel::setHeaderData(int section, Qt::Orientation orientation
         sourceSection = mapToSource(proxyIndex).row();
     }
     return d->model->setHeaderData(sourceSection, orientation, value, role);
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+QModelIndex QAbstractProxyModel::buddy(const QModelIndex &index) const
+{
+    Q_D(const QAbstractProxyModel);
+    return mapFromSource(d->model->buddy(mapToSource(index)));
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+bool QAbstractProxyModel::canFetchMore(const QModelIndex &parent) const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->canFetchMore(mapToSource(parent));
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+void QAbstractProxyModel::fetchMore(const QModelIndex &parent)
+{
+    Q_D(QAbstractProxyModel);
+    d->model->fetchMore(mapToSource(parent));
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+void QAbstractProxyModel::sort(int column, Qt::SortOrder order)
+{
+    Q_D(QAbstractProxyModel);
+    d->model->sort(column, order);
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+QSize QAbstractProxyModel::span(const QModelIndex &index) const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->span(mapToSource(index));
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+bool QAbstractProxyModel::hasChildren(const QModelIndex &parent) const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->hasChildren(mapToSource(parent));
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
+{
+    Q_D(const QAbstractProxyModel);
+    QModelIndexList list;
+    foreach(const QModelIndex &index, indexes)
+        list << mapToSource(index);
+    return d->model->mimeData(list);
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+QStringList QAbstractProxyModel::mimeTypes() const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->mimeTypes();
+}
+
+/*!
+    \reimp
+    \since 4.8
+ */
+Qt::DropActions QAbstractProxyModel::supportedDropActions() const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->supportedDropActions();
 }
 
 QT_END_NAMESPACE

@@ -42,6 +42,7 @@
 #include "private/qpacketprotocol_p.h"
 
 #include <QBuffer>
+#include <QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,7 +115,7 @@ Q_OBJECT
 public:
     QPacketProtocolPrivate(QPacketProtocol * parent, QIODevice * _dev)
     : QObject(parent), inProgressSize(-1), maxPacketSize(MAX_PACKET_SIZE),
-      dev(_dev)
+      waitingForPacket(false), dev(_dev)
     {
         Q_ASSERT(4 == sizeof(qint32));
 
@@ -125,7 +126,7 @@ public:
         QObject::connect(this, SIGNAL(invalidPacket()),
                          parent, SIGNAL(invalidPacket()));
         QObject::connect(dev, SIGNAL(readyRead()),
-                         this, SLOT(readyToRead()), Qt::QueuedConnection);
+                         this, SLOT(readyToRead()));
         QObject::connect(dev, SIGNAL(aboutToClose()),
                          this, SLOT(aboutToClose()));
         QObject::connect(dev, SIGNAL(bytesWritten(qint64)),
@@ -163,46 +164,52 @@ public Q_SLOTS:
 
     void readyToRead()
     {
-        if(-1 == inProgressSize) {
-            // We need a size header of sizeof(qint32)
-            if(sizeof(qint32) > (uint)dev->bytesAvailable())
-                return;
+        bool gotPackets = false;
+        while (true) {
+            // Get size header (if not in progress)
+            if (-1 == inProgressSize) {
+                // We need a size header of sizeof(qint32)
+                if (sizeof(qint32) > (uint)dev->bytesAvailable()) {
+                    if (gotPackets)
+                        emit readyRead();
+                    return; // no more data available
+                }
 
-            // Read size header
-            int read = dev->read((char *)&inProgressSize, sizeof(qint32));
-            Q_ASSERT(read == sizeof(qint32));
-            Q_UNUSED(read);
+                // Read size header
+                int read = dev->read((char *)&inProgressSize, sizeof(qint32));
+                Q_ASSERT(read == sizeof(qint32));
+                Q_UNUSED(read);
 
-            // Check sizing constraints
-            if(inProgressSize > maxPacketSize) {
-                QObject::disconnect(dev, SIGNAL(readyRead()),
-                                    this, SLOT(readyToRead()));
-                QObject::disconnect(dev, SIGNAL(aboutToClose()),
-                                    this, SLOT(aboutToClose()));
-                QObject::disconnect(dev, SIGNAL(bytesWritten(qint64)),
-                                    this, SLOT(bytesWritten(qint64)));
-                dev = 0;
-                emit invalidPacket();
-                return;
-            }
+                // Check sizing constraints
+                if (inProgressSize > maxPacketSize) {
+                    QObject::disconnect(dev, SIGNAL(readyRead()),
+                                        this, SLOT(readyToRead()));
+                    QObject::disconnect(dev, SIGNAL(aboutToClose()),
+                                        this, SLOT(aboutToClose()));
+                    QObject::disconnect(dev, SIGNAL(bytesWritten(qint64)),
+                                        this, SLOT(bytesWritten(qint64)));
+                    dev = 0;
+                    emit invalidPacket();
+                    return;
+                }
 
-            inProgressSize -= sizeof(qint32);
+                inProgressSize -= sizeof(qint32);
+            } else {
+                inProgress.append(dev->read(inProgressSize - inProgress.size()));
 
-            // Need to get trailing data
-            readyToRead();
-        } else {
-            inProgress.append(dev->read(inProgressSize - inProgress.size()));
+                if (inProgressSize == inProgress.size()) {
+                    // Packet has arrived!
+                    packets.append(inProgress);
+                    inProgressSize = -1;
+                    inProgress.clear();
 
-            if(inProgressSize == inProgress.size()) {
-                // Packet has arrived!
-                packets.append(inProgress);
-                inProgressSize = -1;
-                inProgress.clear();
-
-                emit readyRead();
-
-                // Need to get trailing data
-                readyToRead();
+                    waitingForPacket = false;
+                    gotPackets = true;
+                } else {
+                    if (gotPackets)
+                        emit readyRead();
+                    return; // packet in progress is not yet complete
+                }
             }
         }
     }
@@ -213,6 +220,7 @@ public:
     QByteArray inProgress;
     qint32 inProgressSize;
     qint32 maxPacketSize;
+    bool waitingForPacket;
     QIODevice * dev;
 };
 
@@ -322,6 +330,48 @@ QPacket QPacketProtocol::read()
     QPacket rv(d->packets.at(0));
     d->packets.removeFirst();
     return rv;
+}
+
+/*
+   Returns the difference between msecs and elapsed. If msecs is -1,
+   however, -1 is returned.
+*/
+static int qt_timeout_value(int msecs, int elapsed)
+{
+    if (msecs == -1)
+        return -1;
+
+    int timeout = msecs - elapsed;
+    return timeout < 0 ? 0 : timeout;
+}
+
+/*!
+  This function locks until a new packet is available for reading and the
+  \l{QIODevice::}{readyRead()} signal has been emitted. The function
+  will timeout after \a msecs milliseconds; the default timeout is
+  30000 milliseconds.
+
+  The function returns true if the readyRead() signal is emitted and
+  there is new data available for reading; otherwise it returns false
+  (if an error occurred or the operation timed out).
+  */
+
+bool QPacketProtocol::waitForReadyRead(int msecs)
+{
+    if (!d->packets.isEmpty())
+        return true;
+
+    QElapsedTimer stopWatch;
+    stopWatch.start();
+
+    d->waitingForPacket = true;
+    do {
+        if (!d->dev->waitForReadyRead(msecs))
+            return false;
+        if (!d->waitingForPacket)
+            return true;
+        msecs = qt_timeout_value(msecs, stopWatch.elapsed());
+    } while (true);
 }
 
 /*!

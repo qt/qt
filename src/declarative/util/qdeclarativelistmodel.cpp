@@ -802,7 +802,7 @@ void QDeclarativeListModelParser::setCustomData(QObject *obj, const QByteArray &
             {
                 ModelNode *n = nodes.top();
                 ModelNode *n2 = new ModelNode(rv->m_nested);
-                n->values << qVariantFromValue(n2);
+                n->values << QVariant::fromValue(n2);
                 nodes.push(n2);
                 if (processingSet)
                     n->isArray = true;
@@ -1326,7 +1326,7 @@ bool NestedListModel::insert(int index, const QScriptValue& valuemap)
     ModelNode *mn = new ModelNode(this);
     mn->listIndex = index;
     mn->setObjectValue(valuemap);
-    _root->values.insert(index,qVariantFromValue(mn));
+    _root->values.insert(index,QVariant::fromValue(mn));
     return true;
 }
 
@@ -1506,7 +1506,7 @@ void ModelNode::setListValue(const QScriptValue& valuelist) {
             value->listIndex = i;
             value->values << v.toVariant();
         }
-        values.append(qVariantFromValue(value));
+        values.append(QVariant::fromValue(value));
     }
 }
 

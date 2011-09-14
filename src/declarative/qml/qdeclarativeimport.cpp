@@ -722,6 +722,7 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 
     // Search order is applicationDirPath(), $QML_IMPORT_PATH, QLibraryInfo::ImportsPath
 
+#ifndef QT_NO_SETTINGS
     QString installImportsPath =  QLibraryInfo::location(QLibraryInfo::ImportsPath);
 
 #if defined(Q_OS_SYMBIAN)
@@ -748,6 +749,9 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 #else
     addImportPath(installImportsPath);
 #endif
+
+#endif // QT_NO_SETTINGS
+
     // env import paths
     QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
     if (!envImportPath.isEmpty()) {
@@ -1014,6 +1018,7 @@ bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QSt
     if (qmlImportTrace())
         qDebug().nospace() << "QDeclarativeImportDatabase::importPlugin: " << uri << " from " << filePath;
 
+#ifndef QT_NO_LIBRARY
     QFileInfo fileInfo(filePath);
     const QString absoluteFilePath = fileInfo.absoluteFilePath();
 
@@ -1065,6 +1070,9 @@ bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QSt
     }
 
     return true;
+#else
+    return false;
+#endif
 }
 
 

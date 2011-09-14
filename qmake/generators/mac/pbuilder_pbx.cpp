@@ -167,6 +167,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                 }
                 if(tmp_proj.read(fn)) {
                     if(Option::debug_level) {
+                        debug_msg(1, "Dumping all variables:");
                         QMap<QString, QStringList> &vars = tmp_proj.variables();
                         for(QMap<QString, QStringList>::Iterator it = vars.begin();
                             it != vars.end(); ++it) {
@@ -1271,6 +1272,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     plist_in_text = plist_in_text.replace("@EXECUTABLE@", project->first("QMAKE_ORIG_TARGET"));
                 } else {
                     plist_in_text = plist_in_text.replace("@LIBRARY@", project->first("QMAKE_ORIG_TARGET"));
+                }
+                if (!project->values("VERSION").isEmpty()) {
                     plist_in_text = plist_in_text.replace("@SHORT_VERSION@", project->first("VER_MAJ") + "." +
                                                           project->first("VER_MIN"));
                 }
@@ -1321,6 +1324,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("DYLIB_COMPATIBILITY_VERSION", project->first("COMPAT_VERSION")) << ";" << "\n";
     if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
         t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";" << "\n";
+    if(!project->isEmpty("QMAKE_IPHONEOS_DEPLOYMENT_TARGET"))
+        t << "\t\t\t\t" << writeSettings("IPHONEOS_DEPLOYMENT_TARGET", project->first("QMAKE_IPHONEOS_DEPLOYMENT_TARGET")) << ";" << "\n";
     if(pbVersion >= 38) {
         if(!project->isEmpty("OBJECTS_DIR"))
             t << "\t\t\t\t" << writeSettings("OBJROOT", fixForOutput(project->first("OBJECTS_DIR"))) << ";" << "\n";

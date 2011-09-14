@@ -148,6 +148,8 @@ private slots:
     void specConstructor_data();
     void specConstructor();
 
+    void achromaticHslHue();
+
 #ifdef Q_WS_X11
     void allowX11ColorNames();
     void setallowX11ColorNames();
@@ -1459,6 +1461,14 @@ void tst_QColor::specConstructor()
     QCOMPARE(color.spec(), spec);
 }
 
+void tst_QColor::achromaticHslHue()
+{
+    QColor color = Qt::black;
+
+    QColor hsl = color.toHsl();
+    QCOMPARE(hsl.hslHue(), -1);
+}
+
 #ifdef Q_WS_X11
 void tst_QColor::allowX11ColorNames()
 {
@@ -1496,7 +1506,6 @@ void tst_QColor::setallowX11ColorNames()
     for (int i = 0; i < x11RgbTblSize; ++i) {
         QString colorName = QLatin1String(x11RgbTbl[i].name);
         QColor color;
-        QTest::ignoreMessage(QtWarningMsg, QString("QColor::setNamedColor: Unknown color name '%1'").arg(colorName).toLatin1());
         color.setNamedColor(colorName);
         QVERIFY(!color.isValid());
     }
@@ -1518,7 +1527,6 @@ void tst_QColor::setallowX11ColorNames()
     for (int i = 0; i < x11RgbTblSize; ++i) {
         QString colorName = QLatin1String(x11RgbTbl[i].name);
         QColor color;
-        QTest::ignoreMessage(QtWarningMsg, QString("QColor::setNamedColor: Unknown color name '%1'").arg(colorName).toLatin1());
         color.setNamedColor(colorName);
         QVERIFY(!color.isValid());
     }

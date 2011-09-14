@@ -61,9 +61,13 @@
 #include <qlineedit.h>
 #include <qlayout.h>
 #include "../../shared/util.h"
+#if defined QT_BUILD_INTERNAL
 #include "../../../src/gui/dialogs/qsidebar_p.h"
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
 #include "../../../src/gui/dialogs/qfiledialog_p.h"
+#endif
+#include <QFileDialog>
+#include <QFileSystemModel>
 
 #include "../network-settings.h"
 
@@ -74,6 +78,12 @@
 # define STRINGIFY(x) #x
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#elif defined(Q_OS_UNIX)
+#ifdef QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
+extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
+QT_END_NAMESPACE
+#endif
 #endif
 
 class QNonNativeFileDialog : public QFileDialog
@@ -140,6 +150,10 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void hooks();
+#ifdef Q_OS_UNIX
+    void tildeExpansion_data();
+    void tildeExpansion();
+#endif
 
 private:
     QByteArray userSettings;
@@ -183,7 +197,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(); }
 };
 
-// emited any time the selection model emits current changed
+// emitted any time the selection model emits current changed
 void tst_QFiledialog::currentChangedSignal()
 {
     QNonNativeFileDialog fd;
@@ -208,7 +222,7 @@ void tst_QFiledialog::currentChangedSignal()
     QCOMPARE(spyCurrentChanged.count(), 1);
 }
 
-// only emited from the views, sidebar, or lookin combo
+// only emitted from the views, sidebar, or lookin combo
 void tst_QFiledialog::directoryEnteredSignal()
 {
 #if defined QT_BUILD_INTERNAL
@@ -269,13 +283,13 @@ void tst_QFiledialog::filesSelectedSignal_data()
     QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
 }
 
-// emited when the dialog closes with the selected files
+// emitted when the dialog closes with the selected files
 void tst_QFiledialog::filesSelectedSignal()
 {
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    QDir testDir(SRCDIR"/../../..");
+    QDir testDir(SRCDIR);
     fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
@@ -313,7 +327,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QCOMPARE(spyFilesSelected.count(), 1);
 }
 
-// only emited when the combo box is activated
+// only emitted when the combo box is activated
 void tst_QFiledialog::filterSelectedSignal()
 {
     QNonNativeFileDialog fd;
@@ -1304,6 +1318,10 @@ QString saveName(QWidget *, const QString &, const QString &, const QString &, Q
 
 void tst_QFiledialog::hooks()
 {
+#ifdef Q_OS_SYMBIAN
+    if(QSysInfo::symbianVersion() < QSysInfo::SV_SF_3)
+        QSKIP("writing to data exports in paged dll not supported and crashes on symbian versions prior to ^3", SkipAll);
+#endif
     qt_filedialog_existing_directory_hook = &existing;
     qt_filedialog_save_filename_hook = &saveName;
     qt_filedialog_open_filename_hook = &openName;
@@ -1314,6 +1332,37 @@ void tst_QFiledialog::hooks()
     QCOMPARE(QFileDialog::getOpenFileNames(), QStringList("openNames"));
     QCOMPARE(QFileDialog::getSaveFileName(), QString("saveName"));
 }
+
+#ifdef Q_OS_UNIX
+void tst_QFiledialog::tildeExpansion_data()
+{
+    QTest::addColumn<QString>("tildePath");
+    QTest::addColumn<QString>("expandedPath");
+
+    QTest::newRow("empty path") << QString() << QString();
+    QTest::newRow("~") << QString::fromLatin1("~") << QDir::homePath();
+    QTest::newRow("~/some/sub/dir/") << QString::fromLatin1("~/some/sub/dir") << QDir::homePath()
+                                        + QString::fromLatin1("/some/sub/dir");
+    QString userHome = QString(qgetenv("USER"));
+    userHome.prepend('~');
+    QTest::newRow("current user (~<user> syntax)") << userHome << QDir::homePath();
+    QString invalid = QString::fromLatin1("~thisIsNotAValidUserName");
+    QTest::newRow("invalid user name") << invalid << invalid;
+}
+
+
+void tst_QFiledialog::tildeExpansion()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
+#else
+    QFETCH(QString, tildePath);
+    QFETCH(QString, expandedPath);
+
+    QCOMPARE(qt_tildeExpansion(tildePath), expandedPath);
+#endif
+}
+#endif
 
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"

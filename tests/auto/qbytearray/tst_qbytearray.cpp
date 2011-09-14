@@ -71,6 +71,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void swap();
     void qCompress_data();
 #ifndef QT_NO_COMPRESS
     void qCompress();
@@ -142,6 +143,8 @@ private slots:
     void repeated_data() const;
 
     void byteRefDetaching() const;
+
+    void reserve();
 };
 
 tst_QByteArray::tst_QByteArray()
@@ -221,18 +224,18 @@ void tst_QByteArray::qUncompress_data()
     QTest::addColumn<QByteArray>("in");
     QTest::addColumn<QByteArray>("out");
 
-    QTest::newRow("0x00000000") << QByteArray("\x00\x00\x00\x00") << QByteArray();
-    QTest::newRow("0x000000ff") << QByteArray("\x00\x00\x00\xff") << QByteArray();
-    QTest::newRow("0x3f000000") << QByteArray("\x3f\x00\x00\x00") << QByteArray();
-    QTest::newRow("0x3fffffff") << QByteArray("\x3f\xff\xff\xff") << QByteArray();
-    QTest::newRow("0x7fffff00") << QByteArray("\x7f\xff\xff\x00") << QByteArray();
-    QTest::newRow("0x7fffffff") << QByteArray("\x7f\xff\xff\xff") << QByteArray();
-    QTest::newRow("0x80000000") << QByteArray("\x80\x00\x00\x00") << QByteArray();
-    QTest::newRow("0x800000ff") << QByteArray("\x80\x00\x00\xff") << QByteArray();
-    QTest::newRow("0xcf000000") << QByteArray("\xcf\x00\x00\x00") << QByteArray();
-    QTest::newRow("0xcfffffff") << QByteArray("\xcf\xff\xff\xff") << QByteArray();
-    QTest::newRow("0xffffff00") << QByteArray("\xff\xff\xff\x00") << QByteArray();
-    QTest::newRow("0xffffffff") << QByteArray("\xff\xff\xff\xff") << QByteArray();
+    QTest::newRow("0x00000000") << QByteArray("\x00\x00\x00\x00", 4) << QByteArray();
+    QTest::newRow("0x000000ff") << QByteArray("\x00\x00\x00\xff", 4) << QByteArray();
+    QTest::newRow("0x3f000000") << QByteArray("\x3f\x00\x00\x00", 4) << QByteArray();
+    QTest::newRow("0x3fffffff") << QByteArray("\x3f\xff\xff\xff", 4) << QByteArray();
+    QTest::newRow("0x7fffff00") << QByteArray("\x7f\xff\xff\x00", 4) << QByteArray();
+    QTest::newRow("0x7fffffff") << QByteArray("\x7f\xff\xff\xff", 4) << QByteArray();
+    QTest::newRow("0x80000000") << QByteArray("\x80\x00\x00\x00", 4) << QByteArray();
+    QTest::newRow("0x800000ff") << QByteArray("\x80\x00\x00\xff", 4) << QByteArray();
+    QTest::newRow("0xcf000000") << QByteArray("\xcf\x00\x00\x00", 4) << QByteArray();
+    QTest::newRow("0xcfffffff") << QByteArray("\xcf\xff\xff\xff", 4) << QByteArray();
+    QTest::newRow("0xffffff00") << QByteArray("\xff\xff\xff\x00", 4) << QByteArray();
+    QTest::newRow("0xffffffff") << QByteArray("\xff\xff\xff\xff", 4) << QByteArray();
 }
 
 void tst_QByteArray::qUncompress()
@@ -249,18 +252,10 @@ void tst_QByteArray::qUncompress()
 #endif
 
     QByteArray res;
-    QT_TRY {
-        res = ::qUncompress(in);
-    } QT_CATCH(const std::bad_alloc &) {
-        res = QByteArray();
-    }
+    res = ::qUncompress(in);
     QCOMPARE(res, out);
 
-    QT_TRY {
-        res = ::qUncompress(in + "blah");
-    } QT_CATCH(const std::bad_alloc &) {
-        res = QByteArray();
-    }
+    res = ::qUncompress(in + "blah");
     QCOMPARE(res, out);
 }
 
@@ -459,6 +454,14 @@ void tst_QByteArray::split()
     QCOMPARE(list.count(), size);
 }
 
+void tst_QByteArray::swap()
+{
+    QByteArray b1 = "b1", b2 = "b2";
+    b1.swap(b2);
+    QCOMPARE(b1, QByteArray("b2"));
+    QCOMPARE(b2, QByteArray("b1"));
+}
+
 void tst_QByteArray::base64_data()
 {
     QTest::addColumn<QByteArray>("rawdata");
@@ -641,7 +644,7 @@ void tst_QByteArray::qstrncpy()
     QCOMPARE(QByteArray(::qstrncpy(dst.data(), src.data(), src.size())),
             QByteArray("Tumdelidu"));
 
-    // normal copy with length is longer than neccessary
+    // normal copy with length is longer than necessary
     src = QByteArray( "Tumdelidum\0foo" );
     dst.resize(128*1024);
     QCOMPARE(QByteArray(::qstrncpy(dst.data(), src.data(), dst.size())),
@@ -895,12 +898,12 @@ void tst_QByteArray::indexOf_data()
     QByteArray veryBigHaystack(500, 'a');
     veryBigHaystack += 'B';
     QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << 0;
-    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << 0;
-    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest2") << QByteArray(veryBigHaystack + 'c') <<  QByteArray(veryBigHaystack) << 0 << 0;
+    QTest::newRow("BoyerMooreStressTest3") << QByteArray('c' + veryBigHaystack) <<  QByteArray(veryBigHaystack) << 0 << 1;
+    QTest::newRow("BoyerMooreStressTest4") << QByteArray(veryBigHaystack) <<  QByteArray(veryBigHaystack + 'c') << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest5") << QByteArray(veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QByteArray('d' + veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QByteArray(veryBigHaystack + 'c') <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
 }
 
 void tst_QByteArray::indexOf()
@@ -1513,6 +1516,22 @@ void tst_QByteArray::byteRefDetaching() const
         str[0] = 'S';
 
         QCOMPARE(buf[0], char('s'));
+    }
+}
+
+void tst_QByteArray::reserve()
+{
+    int capacity = 100;
+    QByteArray qba;
+    qba.reserve(capacity);
+    QVERIFY(qba.capacity() == capacity);
+    char *data = qba.data();
+
+    // FIXME count from 0 to make it fail
+    for (int i = 1; i < capacity; i++) {
+        qba.resize(i);
+        QVERIFY(capacity == qba.capacity());
+        QVERIFY(data == qba.data());
     }
 }
 

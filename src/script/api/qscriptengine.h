@@ -65,13 +65,11 @@ inline QScriptValue qscriptQMetaObjectConstructor(QScriptContext *, QScriptEngin
 class QRegExp;
 #endif
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template <typename T>
 inline QScriptValue qScriptValueFromValue(QScriptEngine *, const T &);
 
 template <typename T>
-inline T qScriptValueToValue(const QScriptValue &);
-#endif
+inline T qscriptvalue_cast(const QScriptValue &);
 
 class QScriptSyntaxCheckResultPrivate;
 class Q_SCRIPT_EXPORT QScriptSyntaxCheckResult
@@ -196,9 +194,7 @@ public:
 
     QScriptValue newQMetaObject(const QMetaObject *metaObject, const QScriptValue &ctor = QScriptValue());
 
-#  ifndef QT_NO_MEMBER_TEMPLATES
     template <class T> QScriptValue scriptValueFromQMetaObject();
-#  endif // QT_NO_MEMBER_TEMPLATES
 
 #endif // QT_NO_QOBJECT
 
@@ -213,7 +209,6 @@ public:
 
 
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template <typename T>
     inline QScriptValue toScriptValue(const T &value)
     {
@@ -222,9 +217,8 @@ public:
     template <typename T>
     inline T fromScriptValue(const QScriptValue &value)
     {
-        return qScriptValueToValue<T>(value);
+        return qscriptvalue_cast<T>(value);
     }
-#endif // QT_NO_MEMBER_TEMPLATES
 
     void installTranslatorFunctions(const QScriptValue &object = QScriptValue());
 
@@ -285,19 +279,6 @@ private:
 };
 
 #ifndef QT_NO_QOBJECT
-template <class T>
-inline QScriptValue qScriptValueFromQMetaObject(
-    QScriptEngine *engine
-#ifndef qdoc
-    , T * /* dummy */ = 0
-#endif
-    )
-{
-    typedef QScriptValue(*ConstructPtr)(QScriptContext *, QScriptEngine *, T *);
-    ConstructPtr cptr = qscriptQMetaObjectConstructor<T>;
-    return engine->newQMetaObject(&T::staticMetaObject,
-                                  engine->newFunction(reinterpret_cast<QScriptEngine::FunctionWithArgSignature>(cptr), 0));
-}
 
 #define Q_SCRIPT_DECLARE_QMETAOBJECT(T, _Arg1) \
 template<> inline QScriptValue qscriptQMetaObjectConstructor<T>(QScriptContext *ctx, QScriptEngine *eng, T *) \
@@ -311,12 +292,26 @@ template<> inline QScriptValue qscriptQMetaObjectConstructor<T>(QScriptContext *
     return o; \
 }
 
-#  ifndef QT_NO_MEMBER_TEMPLATES
-    template <class T> QScriptValue QScriptEngine::scriptValueFromQMetaObject()
-    {
-        return qScriptValueFromQMetaObject<T>(this);
-    }
-#  endif // QT_NO_MEMBER_TEMPLATES
+template <class T> QScriptValue QScriptEngine::scriptValueFromQMetaObject()
+{
+    typedef QScriptValue(*ConstructPtr)(QScriptContext *, QScriptEngine *, T *);
+    ConstructPtr cptr = qscriptQMetaObjectConstructor<T>;
+    return newQMetaObject(&T::staticMetaObject,
+                            newFunction(reinterpret_cast<FunctionWithArgSignature>(cptr), 0));
+}
+
+#ifdef QT_DEPRECATED
+template <class T>
+inline QT_DEPRECATED QScriptValue qScriptValueFromQMetaObject(
+    QScriptEngine *engine
+#ifndef qdoc
+    , T * /* dummy */ = 0
+#endif
+    )
+{
+    return engine->scriptValueFromQMetaObject<T>();
+}
+#endif
 
 #endif // QT_NO_QOBJECT
 
@@ -337,10 +332,7 @@ inline QScriptValue qScriptValueFromValue(QScriptEngine *engine, const T &t)
 template <>
 inline QScriptValue qScriptValueFromValue<QVariant>(QScriptEngine *engine, const QVariant &v)
 {
-    QScriptValue result = qScriptValueFromValue_helper(engine, v.userType(), v.data());
-    if (!result.isValid())
-        result = engine->newVariant(v);
-    return result;
+    return qScriptValueFromValue_helper(engine, v.userType(), v.data());
 }
 
 inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *ptr)
@@ -349,11 +341,7 @@ inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *
 }
 
 template<typename T>
-T qscriptvalue_cast(const QScriptValue &value
-#if !defined qdoc && defined Q_CC_MSVC && _MSC_VER < 1300
-, T * = 0
-#endif
-    )
+T qscriptvalue_cast(const QScriptValue &value)
 {
     T t;
     const int id = qMetaTypeId<T>();
@@ -366,19 +354,19 @@ T qscriptvalue_cast(const QScriptValue &value
     return T();
 }
 
-#if !defined Q_CC_MSVC || _MSC_VER >= 1300
 template <>
 inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value)
 {
     return value.toVariant();
 }
-#endif
 
+#ifdef QT_DEPRECATED
 template <typename T>
-inline T qScriptValueToValue(const QScriptValue &value)
+inline QT_DEPRECATED T qScriptValueToValue(const QScriptValue &value)
 {
     return qscriptvalue_cast<T>(value);
 }
+#endif
 
 inline void qScriptRegisterMetaType_helper(QScriptEngine *eng, int type,
                                            QScriptEngine::MarshalFunction mf,
@@ -418,7 +406,7 @@ QScriptValue qScriptValueFromSequence(QScriptEngine *eng, const Container &cont)
     typename Container::const_iterator it;
     quint32 i;
     for (it = begin, i = 0; it != end; ++it, ++i)
-        a.setProperty(i, qScriptValueFromValue(eng, *it));
+        a.setProperty(i, eng->toScriptValue(*it));
     return a;
 }
 
@@ -428,11 +416,7 @@ void qScriptValueToSequence(const QScriptValue &value, Container &cont)
     quint32 len = value.property(QLatin1String("length")).toUInt32();
     for (quint32 i = 0; i < len; ++i) {
         QScriptValue item = value.property(i);
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-        cont.push_back(qscriptvalue_cast<Container::value_type>(item));
-#else
         cont.push_back(qscriptvalue_cast<typename Container::value_type>(item));
-#endif
     }
 }
 

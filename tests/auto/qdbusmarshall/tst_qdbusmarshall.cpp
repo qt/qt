@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
 #include <QtDBus/private/qdbusutil_p.h>
+#include <QtDBus/private/qdbusconnection_p.h>
 
 #include "common.h"
 #include <limits>
@@ -93,7 +94,11 @@ private slots:
     void receiveUnknownType();
 
 private:
+    int fileDescriptorForTest();
+
     QProcess proc;
+    QTemporaryFile tempFile;
+    bool fileDescriptorPassing;
 };
 
 class QDBusMessageSpy: public QObject
@@ -116,6 +121,7 @@ void tst_QDBusMarshall::initTestCase()
 {
     commonInit();
     QDBusConnection con = QDBusConnection::sessionBus();
+    fileDescriptorPassing = con.connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing;
 #ifdef Q_OS_WIN
     proc.start("qpong");
 #else
@@ -144,6 +150,15 @@ void tst_QDBusMarshall::cleanupTestCase()
     proc.waitForFinished(200);
 }
 
+int tst_QDBusMarshall::fileDescriptorForTest()
+{
+    if (!tempFile.isOpen()) {
+        tempFile.setFileTemplate(QDir::tempPath() + "/qdbusmarshalltestXXXXXX.tmp");
+        tempFile.open();
+    }
+    return tempFile.handle();
+}
+
 void tst_QDBusMarshall::sendBasic_data()
 {
     QTest::addColumn<QVariant>("value");
@@ -167,6 +182,9 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("signature") << qVariantFromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
+
+    if (fileDescriptorPassing)
+        QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
 #endif
 }
 
@@ -254,6 +272,18 @@ void tst_QDBusMarshall::sendArrays_data()
             << std::numeric_limits<double>::infinity()
             << std::numeric_limits<double>::quiet_NaN();
     QTest::newRow("doublelist") << qVariantFromValue(doubles) << "ad" << "[Argument: ad {1.2, 2.2, 4.4, -inf, inf, nan}]";
+
+    QList<QDBusObjectPath> objectPaths;
+    QTest::newRow("emptyobjectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {}]";
+    objectPaths << QDBusObjectPath("/") << QDBusObjectPath("/foo");
+    QTest::newRow("objectpathlist") << qVariantFromValue(objectPaths) << "ao" << "[Argument: ao {[ObjectPath: /], [ObjectPath: /foo]}]";
+
+    if (fileDescriptorPassing) {
+        QList<QDBusUnixFileDescriptor> fileDescriptors;
+        QTest::newRow("emptyfiledescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {}]";
+        fileDescriptors << QDBusUnixFileDescriptor(fileDescriptorForTest()) << QDBusUnixFileDescriptor(1);
+        QTest::newRow("filedescriptorlist") << qVariantFromValue(fileDescriptors) << "ah" << "[Argument: ah {[Unix FD: valid], [Unix FD: valid]}]";
+    }
 
     QVariantList variants;
     QTest::newRow("emptyvariantlist") << QVariant(variants) << "av" << "[Argument: av {}]";
@@ -456,6 +486,12 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::newRow("gs-map") << qVariantFromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
 
+    if (fileDescriptorPassing) {
+        svmap["zzfiledescriptor"] = qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
+        QTest::newRow("sv-map1-fd") << qVariantFromValue(svmap) << "a{sv}"
+                                    << "[Argument: a{sv} {\"a\" = [Variant(int): 1], \"b\" = [Variant(QByteArray): {99}], \"c\" = [Variant(QString): \"b\"], \"d\" = [Variant(uint): 42], \"e\" = [Variant(short): -47], \"f\" = [Variant: [Variant(int): 0]], \"zzfiledescriptor\" = [Variant(QDBusUnixFileDescriptor): [Unix FD: valid]]}]";
+    }
+
     svmap.clear();
     svmap["ismap"] = qVariantFromValue(ismap);
     svmap["ssmap"] = qVariantFromValue(ssmap);
@@ -509,6 +545,18 @@ void tst_QDBusMarshall::sendStructs_data()
     QTest::newRow("empty-list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {}]";
     list << mvms;
     QTest::newRow("list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]}]";
+
+    if (fileDescriptorPassing) {
+        MyFileDescriptorStruct fds;
+        fds.fd = QDBusUnixFileDescriptor(fileDescriptorForTest());
+        QTest::newRow("fdstruct") << qVariantFromValue(fds) << "(h)" << "[Argument: (h) [Unix FD: valid]]";
+
+        QList<MyFileDescriptorStruct> fdlist;
+        QTest::newRow("empty-list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {}]";
+
+        fdlist << fds;
+        QTest::newRow("list-of-fdstruct") << qVariantFromValue(fdlist) << "a(h)" << "[Argument: a(h) {[Argument: (h) [Unix FD: valid]]}]";
+    }
 }
 
 void tst_QDBusMarshall::sendComplex_data()
@@ -641,6 +689,12 @@ void tst_QDBusMarshall::sendArgument_data()
     arg = QDBusArgument();
     arg << QString();
     QTest::newRow("nullstring") << qVariantFromValue(arg) << "s" << int(QDBusArgument::BasicType);
+
+    if (fileDescriptorPassing) {
+        arg = QDBusArgument();
+        arg << QDBusUnixFileDescriptor(fileDescriptorForTest());
+        QTest::newRow("filedescriptor") << qVariantFromValue(arg) << "h" << int(QDBusArgument::BasicType);
+    }
 
     arg = QDBusArgument();
     arg << QDBusVariant(1);
@@ -902,6 +956,27 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "Marshalling failed: Unregistered type UnregisteredType passed in arguments"
             << QString("QDBusMarshaller: type `UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
             .arg(qMetaTypeId<UnregisteredType>());
+
+    QTest::newRow("invalid-object-path-arg") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(QDBusObjectPath()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Invalid object path passed in arguments"
+            << "";
+
+    QTest::newRow("invalid-signature-arg") << serviceName << objectPath << interfaceName << "ping"
+            << (QVariantList() << qVariantFromValue(QDBusSignature()))
+            << "org.freedesktop.DBus.Error.Failed"
+            << "Marshalling failed: Invalid signature passed in arguments"
+            << "";
+
+    // invalid file descriptor
+    if (fileDescriptorPassing) {
+        QTest::newRow("invalid-file-descriptor") << serviceName << objectPath << interfaceName << "ping"
+                << (QVariantList() << qVariantFromValue(QDBusUnixFileDescriptor(-1)))
+                << "org.freedesktop.DBus.Error.Failed"
+                << "Marshalling failed: Invalid file descriptor passed in arguments"
+                << "";
+    }
 }
 
 void tst_QDBusMarshall::sendCallErrors()
@@ -967,6 +1042,21 @@ typedef QScopedPointer<DBusConnection, DisconnectRawDBus> ScopedDBusConnection;
 typedef QScopedPointer<DBusMessage, GenericUnref<DBusMessage, dbus_message_unref> > ScopedDBusMessage;
 typedef QScopedPointer<DBusPendingCall, GenericUnref<DBusPendingCall, dbus_pending_call_unref> > ScopedDBusPendingCall;
 
+template <typename T> struct SetResetValue
+{
+    const T oldValue;
+    T &value;
+public:
+    SetResetValue(T &v, T newValue) : oldValue(v), value(v)
+    {
+        value = newValue;
+    }
+    ~SetResetValue()
+    {
+        value = oldValue;
+    }
+};
+
 void tst_QDBusMarshall::receiveUnknownType()
 {
 #ifndef DBUS_TYPE_UNIX_FD
@@ -985,6 +1075,10 @@ void tst_QDBusMarshall::receiveUnknownType()
     // check if this bus supports passing file descriptors
     if (!dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
         QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
+
+    // make sure this QDBusConnection won't handle Unix file descriptors
+    QDBusConnection::ConnectionCapabilities &capabRef = QDBusConnectionPrivate::d(con)->capabilities;
+    SetResetValue<QDBusConnection::ConnectionCapabilities> resetter(capabRef, capabRef & ~QDBusConnection::UnixFileDescriptorPassing);
 
     if (qstrcmp(QTest::currentDataTag(), "in-call") == 0) {
         // create a call back to us containing a file descriptor

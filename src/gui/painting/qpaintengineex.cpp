@@ -44,6 +44,8 @@
 #include "qstroker_p.h"
 #include "qbezier_p.h"
 #include <private/qpainterpath_p.h>
+#include <private/qfontengine_p.h>
+#include <private/qstatictext_p.h>
 
 #include <qvarlengtharray.h>
 #include <qdebug.h>
@@ -831,7 +833,7 @@ void QPaintEngineEx::drawEllipse(const QRectF &r)
 
     int point_count = 0;
     x.points[0] = qt_curves_for_arc(r, 0, -360, x.points + 1, &point_count);
-    QVectorPath vp((qreal *) pts, point_count, qpaintengineex_ellipse_types, QVectorPath::EllipseHint);
+    QVectorPath vp((qreal *) pts, point_count + 1, qpaintengineex_ellipse_types, QVectorPath::EllipseHint);
     draw(vp);
 }
 
@@ -1001,6 +1003,22 @@ void QPaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragmen
     transformChanged();
 }
 
+void QPaintEngineEx::drawPixmapFragments(const QRectF *targetRects, const QRectF *sourceRects, int fragmentCount,
+                                         const QPixmap &pixmap, QPainter::PixmapFragmentHints /*hints*/)
+{
+    if (pixmap.isNull())
+        return;
+
+    if (sourceRects) {
+        for (int i = 0; i < fragmentCount; ++i)
+            drawPixmap(targetRects[i], pixmap, sourceRects[i]);
+    } else {
+        QRectF sourceRect = pixmap.rect();
+        for (int i = 0; i < fragmentCount; ++i)
+            drawPixmap(targetRects[i], pixmap, sourceRect);
+    }
+}
+
 void QPaintEngineEx::setState(QPainterState *s)
 {
     QPaintEngine::state = s;
@@ -1010,6 +1028,95 @@ void QPaintEngineEx::setState(QPainterState *s)
 void QPaintEngineEx::updateState(const QPaintEngineState &)
 {
     // do nothing...
+}
+
+Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path)
+{
+    const qreal *points = path.points();
+    const QPainterPath::ElementType *types = path.elements();
+
+    QPainterPath p;
+    if (types) {
+        int id = 0;
+        for (int i=0; i<path.elementCount(); ++i) {
+            switch(types[i]) {
+            case QPainterPath::MoveToElement:
+                p.moveTo(QPointF(points[id], points[id+1]));
+                id+=2;
+                break;
+            case QPainterPath::LineToElement:
+                p.lineTo(QPointF(points[id], points[id+1]));
+                id+=2;
+                break;
+            case QPainterPath::CurveToElement: {
+                QPointF p1(points[id], points[id+1]);
+                QPointF p2(points[id+2], points[id+3]);
+                QPointF p3(points[id+4], points[id+5]);
+                p.cubicTo(p1, p2, p3);
+                id+=6;
+                break;
+            }
+            case QPainterPath::CurveToDataElement:
+                ;
+                break;
+            }
+        }
+    } else {
+        p.moveTo(QPointF(points[0], points[1]));
+        int id = 2;
+        for (int i=1; i<path.elementCount(); ++i) {
+            p.lineTo(QPointF(points[id], points[id+1]));
+            id+=2;
+        }
+    }
+    if (path.hints() & QVectorPath::WindingFill)
+        p.setFillRule(Qt::WindingFill);
+
+    return p;
+}
+
+void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
+{
+    QPainterPath path;
+#ifndef Q_WS_MAC
+    path.setFillRule(Qt::WindingFill);
+#endif
+
+    if (staticTextItem->numGlyphs == 0)
+        return;
+
+    QFontEngine *fontEngine = staticTextItem->fontEngine();
+    fontEngine->addGlyphsToPath(staticTextItem->glyphs, staticTextItem->glyphPositions,
+                                staticTextItem->numGlyphs, &path, 0);
+    if (!path.isEmpty()) {
+        QPainterState *s = state();
+        QPainter::RenderHints oldHints = s->renderHints;
+        bool changedHints = false;
+        if (bool(oldHints & QPainter::TextAntialiasing)
+            && !bool(fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+            && !bool(oldHints & QPainter::Antialiasing)) {
+            s->renderHints |= QPainter::Antialiasing;
+            renderHintsChanged();
+            changedHints = true;
+        }
+
+        fill(qtVectorPathForPath(path), s->pen.color());
+
+        if (changedHints) {
+            s->renderHints = oldHints;
+            renderHintsChanged();
+        }
+    }
+}
+
+bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &m) const
+{
+    Q_UNUSED(pixelSize);
+
+    if (!m.isAffine())
+        return true;
+
+    return false;
 }
 
 QT_END_NAMESPACE

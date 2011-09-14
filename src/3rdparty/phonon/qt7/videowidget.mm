@@ -278,7 +278,7 @@ public:
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glViewport(0, 0, GLsizei(w), GLsizei(h));
-        gluOrtho2D(0, GLsizei(w), 0, GLsizei(h));
+        glOrtho(0, GLsizei(w), 0, GLsizei(h), -1, 1);
         updateGL();
     }
 
@@ -446,10 +446,12 @@ public:
 
     void setDrawFrameRect(const QRect &rect)
     {
-        m_movieLayer.frame.origin.x = rect.x();
-        m_movieLayer.frame.origin.y = rect.y();
-        m_movieLayer.frame.size.width = rect.width();
-        m_movieLayer.frame.size.height = rect.height();
+        CGRect frame = m_movieLayer.frame;
+        frame.origin.x = rect.x();
+        frame.origin.y = rect.y();
+        frame.size.width = rect.width();
+        frame.size.height = rect.height();
+        m_movieLayer.frame = frame;
     }
 
 #else // QT_MAC_USE_COCOA == false

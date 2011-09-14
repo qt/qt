@@ -165,6 +165,8 @@ public:
     QMdiArea::ViewMode viewMode;
 #ifndef QT_NO_TABBAR
     bool documentMode;
+    bool tabsClosable;
+    bool tabsMovable;
 #endif
 #ifndef QT_NO_TABWIDGET
     QTabWidget::TabShape tabShape;
@@ -189,6 +191,8 @@ public:
     void _q_deactivateAllWindows(QMdiSubWindow *aboutToActivate = 0);
     void _q_processWindowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
     void _q_currentTabChanged(int index);
+    void _q_closeTab(int index);
+    void _q_moveTab(int from, int to);
 
     // Functions.
     void appendChild(QMdiSubWindow *child);

@@ -38,12 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
-
 #include "remotecontrol.h"
-#include "mainwindow.h"
+
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "mainwindow.h"
+#include "openpagesmanager.h"
+#include "tracer.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -57,6 +58,7 @@
 
 #include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpIndexWidget>
+#include <QtHelp/QHelpSearchQueryWidget>
 
 #ifdef Q_OS_WIN
 #   include "remotecontrol_win.h"
@@ -259,8 +261,25 @@ void RemoteControl::handleActivateKeywordCommand(const QString &arg)
         m_activateKeyword = arg;
     } else {
         m_mainWindow->setIndexString(arg);
-        if (!arg.isEmpty())
-            helpEngine.indexWidget()->activateCurrentItem();
+        if (!arg.isEmpty()) {
+            if (!helpEngine.indexWidget()->currentIndex().isValid()
+                && helpEngine.fullTextSearchFallbackEnabled()) {
+                if (QHelpSearchEngine *se = helpEngine.searchEngine()) {
+                    m_mainWindow->setSearchVisible(true);
+                    if (QHelpSearchQueryWidget *w = se->queryWidget()) {
+                        w->collapseExtendedSearch();
+                        QList<QHelpSearchQuery> queryList;
+                        queryList << QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
+                            QStringList(arg));
+                        w->setQuery(queryList);
+                        se->search(queryList);
+                    }
+                }
+            } else {
+                m_mainWindow->setIndexVisible(true);
+                helpEngine.indexWidget()->activateCurrentItem();
+            }
+        }
     }
 }
 
@@ -323,8 +342,7 @@ void RemoteControl::handleUnregisterCommand(const QString &arg)
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
     if (helpEngine.registeredDocumentations().contains(ns)) {
-        CentralWidget* widget = CentralWidget::instance();
-        widget->closeOrReloadTabs(widget->currentSourceFileList().keys(ns), false);
+        OpenPagesManager::instance()->closePages(ns);
         if (helpEngine.unregisterDocumentation(ns))
             helpEngine.setupData();
     }

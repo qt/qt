@@ -192,7 +192,7 @@ private:
     bool isPhraseBookOpen(const QString &name);
     bool savePhraseBook(QString *name, PhraseBook &pb);
     bool maybeSavePhraseBook(PhraseBook *phraseBook);
-    bool closePhraseBooks();
+    bool maybeSavePhraseBooks();
     QStringList pickTranslationFiles();
     void showTranslationSettings(int model);
     void updateLatestModel(int model);

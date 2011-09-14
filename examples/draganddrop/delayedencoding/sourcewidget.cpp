@@ -60,6 +60,7 @@ SourceWidget::SourceWidget(QWidget *parent)
     QLabel *instructTopLabel = new QLabel(tr("This is an SVG drawing:"));
     QLabel *instructBottomLabel = new QLabel(
         tr("Drag the icon to copy the drawing as a PNG file:"));
+    instructBottomLabel->setWordWrap(true);
     QPushButton *dragIcon = new QPushButton(tr("Export"));
     dragIcon->setIcon(QIcon(":/images/drag.png"));
 

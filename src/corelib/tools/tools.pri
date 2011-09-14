@@ -19,6 +19,7 @@ HEADERS +=  \
         tools/qlist.h \
         tools/qlocale.h \
         tools/qlocale_p.h \
+        tools/qlocale_tools_p.h \
         tools/qlocale_data_p.h \
         tools/qmap.h \
         tools/qmargins.h \
@@ -29,6 +30,9 @@ HEADERS +=  \
         tools/qrect.h \
         tools/qregexp.h \
         tools/qringbuffer_p.h \
+        tools/qscopedpointer.h \
+        tools/qscopedpointer_p.h \
+        tools/qscopedvaluerollback.h \
         tools/qshareddata.h \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
@@ -45,9 +49,7 @@ HEADERS +=  \
         tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
-        tools/qvector.h \
-        tools/qscopedpointer.h \
-        tools/qscopedpointer_p.h
+        tools/qvector.h
 
 
 SOURCES += \
@@ -63,6 +65,7 @@ SOURCES += \
         tools/qlinkedlist.cpp \
         tools/qlist.cpp \
         tools/qlocale.cpp \
+        tools/qlocale_tools.cpp \
         tools/qpoint.cpp \
         tools/qmap.cpp \
         tools/qmargins.cpp \
@@ -81,16 +84,23 @@ SOURCES += \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
-symbian:SOURCES+=tools/qlocale_symbian.cpp
-
-mac:SOURCES += tools/qelapsedtimer_mac.cpp
-else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
-else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
-else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+!nacl:mac: {
+    SOURCES += tools/qelapsedtimer_mac.cpp
+    OBJECTIVE_SOURCES += tools/qlocale_mac.mm
+}
+else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp tools/qlocale_symbian.cpp
+else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
+else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
+else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)
 else:include($$PWD/../../3rdparty/zlib_dependency.pri)
+
+contains(QT_CONFIG,icu) {
+    SOURCES += tools/qlocale_icu.cpp
+    DEFINES += QT_USE_ICU
+}
 
 DEFINES += HB_EXPORT=Q_CORE_EXPORT
 INCLUDEPATH += ../3rdparty/harfbuzz/src
@@ -111,4 +121,9 @@ INCLUDEPATH += ../3rdparty/md5 \
 
 # Note: libm should be present by default becaue this is C++
 !macx-icc:!vxworks:!symbian:unix:LIBS_PRIVATE += -lm
+
+symbian {
+    # QLocale Symbian implementation needs this
+    LIBS += -lnumberconversion
+}
 

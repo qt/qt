@@ -111,6 +111,7 @@ void error(const char *msg = "Invalid argument")
             "  -i                 do not generate an #include statement\n"
             "  -p<path>           path prefix for included file\n"
             "  -f[<file>]         force #include, optional file name\n"
+            "  -nn                do not display notes\n"
             "  -nw                do not display warnings\n"
             "  @<file>            read additional options from file\n"
             "  -v                 display version of moc\n");
@@ -333,9 +334,12 @@ int runMoc(int _argc, char **_argv)
         case 'n': // don't display warnings
             if (ignoreConflictingOptions)
                 break;
-            if (opt != "nw")
+            if (opt == "nw")
+                moc.displayWarnings = moc.displayNotes = false;
+            else if (opt == "nn")
+                moc.displayNotes = false;
+            else
                 error();
-            moc.displayWarnings = false;
             break;
         case 'h': // help
             if (more && opt != "help")
@@ -425,7 +429,7 @@ int runMoc(int _argc, char **_argv)
         fprintf(out, "%s\n", composePreprocessorOutput(moc.symbols).constData());
     } else {
         if (moc.classList.isEmpty())
-            moc.warning("No relevant classes found. No output generated.");
+            moc.note("No relevant classes found. No output generated.");
         else
             moc.generate(out);
     }

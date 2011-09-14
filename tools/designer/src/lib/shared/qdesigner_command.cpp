@@ -107,23 +107,23 @@ static const char *zOrderPropertyC = "_q_zOrder";
 
 static void addToWidgetListDynamicProperty(QWidget *parentWidget, QWidget *widget, const char *name, int index = -1)
 {
-    QWidgetList list = qVariantValue<QWidgetList>(parentWidget->property(name));
+    QWidgetList list = qvariant_cast<QWidgetList>(parentWidget->property(name));
     list.removeAll(widget);
     if (index >= 0 && index < list.size()) {
         list.insert(index, widget);
     } else {
         list.append(widget);
     }
-    parentWidget->setProperty(name, qVariantFromValue(list));
+    parentWidget->setProperty(name, QVariant::fromValue(list));
 }
 
 static int removeFromWidgetListDynamicProperty(QWidget *parentWidget, QWidget *widget, const char *name)
 {
-    QWidgetList list = qVariantValue<QWidgetList>(parentWidget->property(name));
+    QWidgetList list = qvariant_cast<QWidgetList>(parentWidget->property(name));
     const int firstIndex = list.indexOf(widget);
     if (firstIndex != -1) {
         list.removeAll(widget);
-        parentWidget->setProperty(name, qVariantFromValue(list));
+        parentWidget->setProperty(name, QVariant::fromValue(list));
     }
     return firstIndex;
 }
@@ -247,7 +247,7 @@ void InsertWidgetCommand::refreshBuddyLabels()
 {
     typedef QList<QLabel*> LabelList;
 
-    const LabelList label_list = qFindChildren<QLabel*>(formWindow());
+    const LabelList label_list = formWindow()->findChildren<QLabel*>();
     if (label_list.empty())
         return;
 
@@ -281,7 +281,7 @@ void ChangeZOrderCommand::init(QWidget *widget)
 
     setText(QApplication::translate("Command", "Change Z-order of '%1'").arg(widget->objectName()));
 
-    m_oldParentZOrder = qVariantValue<QWidgetList>(widget->parentWidget()->property("_q_zOrder"));
+    m_oldParentZOrder = qvariant_cast<QWidgetList>(widget->parentWidget()->property("_q_zOrder"));
     const int index = m_oldParentZOrder.indexOf(m_widget);
     if (index != -1 && index + 1 < m_oldParentZOrder.count())
         m_oldPreceding = m_oldParentZOrder.at(index + 1);
@@ -289,14 +289,14 @@ void ChangeZOrderCommand::init(QWidget *widget)
 
 void ChangeZOrderCommand::redo()
 {
-    m_widget->parentWidget()->setProperty("_q_zOrder", qVariantFromValue(reorderWidget(m_oldParentZOrder, m_widget)));
+    m_widget->parentWidget()->setProperty("_q_zOrder", QVariant::fromValue(reorderWidget(m_oldParentZOrder, m_widget)));
 
     reorder(m_widget);
 }
 
 void ChangeZOrderCommand::undo()
 {
-    m_widget->parentWidget()->setProperty("_q_zOrder", qVariantFromValue(m_oldParentZOrder));
+    m_widget->parentWidget()->setProperty("_q_zOrder", QVariant::fromValue(m_oldParentZOrder));
 
     if (m_oldPreceding)
         m_widget->stackUnder(m_oldPreceding);
@@ -365,7 +365,7 @@ void ManageWidgetCommandHelper::init(const QDesignerFormWindowInterface *fw, QWi
     m_widget = widget;
     m_managedChildren.clear();
 
-    const QWidgetList children = qFindChildren<QWidget *>(m_widget);
+    const QWidgetList children = m_widget->findChildren<QWidget *>();
     if (children.empty())
         return;
 
@@ -580,8 +580,8 @@ void ReparentWidgetCommand::init(QWidget *widget, QWidget *parentWidget)
 
     setText(QApplication::translate("Command", "Reparent '%1'").arg(widget->objectName()));
 
-    m_oldParentList = qVariantValue<QWidgetList>(m_oldParentWidget->property("_q_widgetOrder"));
-    m_oldParentZOrder = qVariantValue<QWidgetList>(m_oldParentWidget->property("_q_zOrder"));
+    m_oldParentList = qvariant_cast<QWidgetList>(m_oldParentWidget->property("_q_widgetOrder"));
+    m_oldParentZOrder = qvariant_cast<QWidgetList>(m_oldParentWidget->property("_q_zOrder"));
 }
 
 void ReparentWidgetCommand::redo()
@@ -591,19 +591,19 @@ void ReparentWidgetCommand::redo()
 
     QWidgetList oldList = m_oldParentList;
     oldList.removeAll(m_widget);
-    m_oldParentWidget->setProperty("_q_widgetOrder", qVariantFromValue(oldList));
+    m_oldParentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(oldList));
 
-    QWidgetList newList = qVariantValue<QWidgetList>(m_newParentWidget->property("_q_widgetOrder"));
+    QWidgetList newList = qvariant_cast<QWidgetList>(m_newParentWidget->property("_q_widgetOrder"));
     newList.append(m_widget);
-    m_newParentWidget->setProperty("_q_widgetOrder", qVariantFromValue(newList));
+    m_newParentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(newList));
 
     QWidgetList oldZOrder = m_oldParentZOrder;
     oldZOrder.removeAll(m_widget);
-    m_oldParentWidget->setProperty("_q_zOrder", qVariantFromValue(oldZOrder));
+    m_oldParentWidget->setProperty("_q_zOrder", QVariant::fromValue(oldZOrder));
 
-    QWidgetList newZOrder = qVariantValue<QWidgetList>(m_newParentWidget->property("_q_zOrder"));
+    QWidgetList newZOrder = qvariant_cast<QWidgetList>(m_newParentWidget->property("_q_zOrder"));
     newZOrder.append(m_widget);
-    m_newParentWidget->setProperty("_q_zOrder", qVariantFromValue(newZOrder));
+    m_newParentWidget->setProperty("_q_zOrder", QVariant::fromValue(newZOrder));
 
     m_widget->show();
     core()->objectInspector()->setFormWindow(formWindow());
@@ -614,16 +614,16 @@ void ReparentWidgetCommand::undo()
     m_widget->setParent(m_oldParentWidget);
     m_widget->move(m_oldPos);
 
-    m_oldParentWidget->setProperty("_q_widgetOrder", qVariantFromValue(m_oldParentList));
+    m_oldParentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(m_oldParentList));
 
-    QWidgetList newList = qVariantValue<QWidgetList>(m_newParentWidget->property("_q_widgetOrder"));
+    QWidgetList newList = qvariant_cast<QWidgetList>(m_newParentWidget->property("_q_widgetOrder"));
     newList.removeAll(m_widget);
-    m_newParentWidget->setProperty("_q_widgetOrder", qVariantFromValue(newList));
+    m_newParentWidget->setProperty("_q_widgetOrder", QVariant::fromValue(newList));
 
-    m_oldParentWidget->setProperty("_q_zOrder", qVariantFromValue(m_oldParentZOrder));
+    m_oldParentWidget->setProperty("_q_zOrder", QVariant::fromValue(m_oldParentZOrder));
 
-    QWidgetList newZOrder = qVariantValue<QWidgetList>(m_newParentWidget->property("_q_zOrder"));
-    m_newParentWidget->setProperty("_q_zOrder", qVariantFromValue(newZOrder));
+    QWidgetList newZOrder = qvariant_cast<QWidgetList>(m_newParentWidget->property("_q_zOrder"));
+    m_newParentWidget->setProperty("_q_zOrder", QVariant::fromValue(newZOrder));
 
     m_widget->show();
     core()->objectInspector()->setFormWindow(formWindow());
@@ -1016,7 +1016,7 @@ void ToolBoxCommand::addPage()
     QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(formWindow()->core()->extensionManager(), m_toolBox);
     if (sheet) {
         qdesigner_internal::PropertySheetStringValue itemText(m_itemText);
-        sheet->setProperty(sheet->indexOf(QLatin1String("currentItemText")), qVariantFromValue(itemText));
+        sheet->setProperty(sheet->indexOf(QLatin1String("currentItemText")), QVariant::fromValue(itemText));
     }
 
     m_widget->show();
@@ -1176,7 +1176,7 @@ void TabWidgetCommand::addPage()
     QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(formWindow()->core()->extensionManager(), m_tabWidget);
     if (sheet) {
         qdesigner_internal::PropertySheetStringValue itemText(m_itemText);
-        sheet->setProperty(sheet->indexOf(QLatin1String("currentTabText")), qVariantFromValue(itemText));
+        sheet->setProperty(sheet->indexOf(QLatin1String("currentTabText")), QVariant::fromValue(itemText));
     }
 
     formWindow()->clearSelection();
@@ -2094,12 +2094,12 @@ void AddContainerWidgetPageCommand::init(QWidget *containerWidget, ContainerType
         case PageContainer:
             setText(QApplication::translate("Command", "Insert Page"));
             m_widget = new QDesignerWidget(formWindow(), m_containerWidget);
-            m_widget->setObjectName(QApplication::translate("Command", "page"));
+            m_widget->setObjectName(QLatin1String("page"));
             break;
         case MdiContainer:
             setText(QApplication::translate("Command", "Insert Subwindow"));
             m_widget = new QDesignerWidget(formWindow(), m_containerWidget);
-            m_widget->setObjectName(QApplication::translate("Command", "subwindow"));
+            m_widget->setObjectName(QLatin1String("subwindow"));
             setPropertySheetWindowTitle(core, m_widget, QApplication::translate("Command", "Subwindow"));
             break;
         case WizardContainer: // Apply style, don't manage
@@ -2193,7 +2193,7 @@ static void copyRolesFromItem(ItemData *id, const T *item, bool editor)
     if (editor)
         copyRoleFromItem<T>(id, ItemFlagsShadowRole, item);
     else if (item->flags() != defaultFlags)
-        id->m_properties.insert(ItemFlagsShadowRole, qVariantFromValue((int)item->flags()));
+        id->m_properties.insert(ItemFlagsShadowRole, QVariant::fromValue((int)item->flags()));
 }
 
 template<class T>
@@ -2210,19 +2210,19 @@ static void copyRolesToItem(const ItemData *id, T *item, DesignerIconCache *icon
                 switch (it.key()) {
                 case Qt::DecorationPropertyRole:
                     if (iconCache)
-                        item->setIcon(iconCache->icon(qVariantValue<PropertySheetIconValue>(it.value())));
+                        item->setIcon(iconCache->icon(qvariant_cast<PropertySheetIconValue>(it.value())));
                     break;
                 case Qt::DisplayPropertyRole:
-                    item->setText(qVariantValue<PropertySheetStringValue>(it.value()).value());
+                    item->setText(qvariant_cast<PropertySheetStringValue>(it.value()).value());
                     break;
                 case Qt::ToolTipPropertyRole:
-                    item->setToolTip(qVariantValue<PropertySheetStringValue>(it.value()).value());
+                    item->setToolTip(qvariant_cast<PropertySheetStringValue>(it.value()).value());
                     break;
                 case Qt::StatusTipPropertyRole:
-                    item->setStatusTip(qVariantValue<PropertySheetStringValue>(it.value()).value());
+                    item->setStatusTip(qvariant_cast<PropertySheetStringValue>(it.value()).value());
                     break;
                 case Qt::WhatsThisPropertyRole:
-                    item->setWhatsThis(qVariantValue<PropertySheetStringValue>(it.value()).value());
+                    item->setWhatsThis(qvariant_cast<PropertySheetStringValue>(it.value()).value());
                     break;
                 }
             }
@@ -2267,7 +2267,7 @@ ItemData::ItemData(const QTreeWidgetItem *item, int column)
 {
     copyRoleFromItem(this, Qt::EditRole, item, column);
     PropertySheetStringValue str(item->text(column));
-    m_properties.insert(Qt::DisplayPropertyRole, qVariantFromValue(str));
+    m_properties.insert(Qt::DisplayPropertyRole, QVariant::fromValue(str));
 
     for (int i = 0; itemRoles[i] != -1; i++)
         copyRoleFromItem(this, itemRoles[i], item, column);
@@ -2282,19 +2282,19 @@ void ItemData::fillTreeItemColumn(QTreeWidgetItem *item, int column, DesignerIco
             switch (it.key()) {
             case Qt::DecorationPropertyRole:
                 if (iconCache)
-                    item->setIcon(column, iconCache->icon(qVariantValue<PropertySheetIconValue>(it.value())));
+                    item->setIcon(column, iconCache->icon(qvariant_cast<PropertySheetIconValue>(it.value())));
                 break;
             case Qt::DisplayPropertyRole:
-                item->setText(column, qVariantValue<PropertySheetStringValue>(it.value()).value());
+                item->setText(column, qvariant_cast<PropertySheetStringValue>(it.value()).value());
                 break;
             case Qt::ToolTipPropertyRole:
-                item->setToolTip(column, qVariantValue<PropertySheetStringValue>(it.value()).value());
+                item->setToolTip(column, qvariant_cast<PropertySheetStringValue>(it.value()).value());
                 break;
             case Qt::StatusTipPropertyRole:
-                item->setStatusTip(column, qVariantValue<PropertySheetStringValue>(it.value()).value());
+                item->setStatusTip(column, qvariant_cast<PropertySheetStringValue>(it.value()).value());
                 break;
             case Qt::WhatsThisPropertyRole:
-                item->setWhatsThis(column, qVariantValue<PropertySheetStringValue>(it.value()).value());
+                item->setWhatsThis(column, qvariant_cast<PropertySheetStringValue>(it.value()).value());
                 break;
             }
         }
@@ -2364,10 +2364,10 @@ void ListContents::applyToComboBox(QComboBox *comboBox, DesignerIconCache *iconC
     foreach (const ItemData &hash, m_items) {
         QIcon icon;
         if (iconCache)
-            icon = iconCache->icon(qVariantValue<PropertySheetIconValue>(
+            icon = iconCache->icon(qvariant_cast<PropertySheetIconValue>(
                     hash.m_properties[Qt::DecorationPropertyRole]));
         QVariant var = hash.m_properties[Qt::DisplayPropertyRole];
-        PropertySheetStringValue str = qVariantValue<PropertySheetStringValue>(var);
+        PropertySheetStringValue str = qvariant_cast<PropertySheetStringValue>(var);
         comboBox->addItem(icon, str.value());
         comboBox->setItemData(comboBox->count() - 1,
                               var,
@@ -2407,7 +2407,7 @@ bool TableWidgetContents::nonEmpty(const QTableWidgetItem *item, int headerColum
     if (item->flags() != defaultFlags)
         return true;
 
-    QString text = qVariantValue<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole)).value();
+    QString text = qvariant_cast<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole)).value();
     if (!text.isEmpty()) {
         if (headerColumn < 0 || text != defaultHeaderText(headerColumn))
             return true;
@@ -2545,7 +2545,7 @@ QTreeWidgetItem *TreeWidgetContents::ItemContents::createTreeItem(DesignerIconCa
 
     if (m_itemFlags != -1) {
         if (editor)
-            item->setData(0, ItemFlagsShadowRole, qVariantFromValue(m_itemFlags));
+            item->setData(0, ItemFlagsShadowRole, QVariant::fromValue(m_itemFlags));
         else
             item->setFlags((Qt::ItemFlags)m_itemFlags);
     }

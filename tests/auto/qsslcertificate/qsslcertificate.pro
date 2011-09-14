@@ -15,7 +15,7 @@ win32 {
 }
 
 wince*|symbian: {
-  certFiles.sources = certificates more-certificates
+  certFiles.files = certificates more-certificates
   certFiles.path    = .
   DEPLOYMENT += certFiles
 }

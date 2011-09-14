@@ -387,6 +387,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     \value MaxUser Last user type ID
     \value OpenGL2
     \value PaintBuffer
+    \value Blitter
 */
 
 /*!
@@ -755,14 +756,15 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     path.setFillRule(Qt::WindingFill);
 #endif
     if (ti.glyphs.numGlyphs)
-        ti.fontEngine->addOutlineToPath(p.x(), p.y(), ti.glyphs, &path, ti.flags);
+        ti.fontEngine->addOutlineToPath(0, 0, ti.glyphs, &path, ti.flags);
     if (!path.isEmpty()) {
-        bool oldAA = painter()->renderHints() & QPainter::Antialiasing;
+        painter()->save();
         painter()->setRenderHint(QPainter::Antialiasing,
                                  bool((painter()->renderHints() & QPainter::TextAntialiasing)
                                       && !(painter()->font().styleStrategy() & QFont::NoAntialias)));
+        painter()->translate(p.x(), p.y());
         painter()->fillPath(path, state->pen().brush());
-        painter()->setRenderHint(QPainter::Antialiasing, oldAA);
+        painter()->restore();
     }
 }
 

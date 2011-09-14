@@ -341,6 +341,7 @@ public:
     // returns the number of items inserted, which may be less than (rowCount * columnCount)
     int itemCount() const;
     QGridLayoutItem *itemAt(int index) const;
+    int indexOf(QGraphicsLayoutItem *item) const;
 
     int effectiveFirstRow(Qt::Orientation orientation = Qt::Vertical) const;
     int effectiveLastRow(Qt::Orientation orientation = Qt::Vertical) const;

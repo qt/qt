@@ -77,14 +77,23 @@
 
     \snippet doc/src/snippets/code/src_network_socket_qudpsocket.cpp 0
 
+    QUdpSocket also supports UDP multicast. Use joinMulticastGroup() and
+    leaveMulticastGroup() to control group membership, and
+    QAbstractSocket::MulticastTtlOption and
+    QAbstractSocket::MulticastLoopbackOption to set the TTL and loopback socket
+    options. Use setMulticastInterface() to control the outgoing interface for
+    multicast datagrams, and multicastInterface() to query it.
+
     With QUdpSocket, you can also establish a virtual connection to a
     UDP server using connectToHost() and then use read() and write()
     to exchange datagrams without specifying the receiver for each
     datagram.
 
-    The \l{network/broadcastsender}{Broadcast Sender} and
-    \l{network/broadcastreceiver}{Broadcast Receiver} examples
-    illustrate how to use QUdpSocket in applications.
+    The \l{network/broadcastsender}{Broadcast Sender},
+    \l{network/broadcastreceiver}{Broadcast Receiver},
+    \l{network/multicastsender}{Multicast Sender}, and
+    \l{network/multicastreceiver}{Multicast Receiver} examples illustrate how
+    to use QUdpSocket in applications.
 
     \section1 Symbian Platform Security Requirements
 
@@ -145,6 +154,7 @@
 */
 
 #include "qhostaddress.h"
+#include "qnetworkinterface.h"
 #include "qabstractsocket_p.h"
 #include "qudpsocket.h"
 
@@ -192,7 +202,7 @@ bool QUdpSocketPrivate::doEnsureInitialized(const QHostAddress &bindAddress, qui
 #endif
 
     // now check if the socket engine is initialized and to the right type
-    if (!socketEngine || !socketEngine->isValid() || socketEngine->protocol() != proto) {
+    if (!socketEngine || !socketEngine->isValid()) {
         resolveProxy(remoteAddress.toString(), bindPort);
         if (!initSocketLayer(address->protocol()))
             return false;
@@ -328,6 +338,116 @@ bool QUdpSocket::bind(quint16 port, BindMode mode)
     return bind(QHostAddress::Any, port, mode);
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
+
+/*!
+    \since 4.8
+
+    Joins the the multicast group specified by \a groupAddress on the default
+    interface chosen by the operating system. The socket must be in BoundState,
+    otherwise an error occurs.
+
+    This function returns true if successful; otherwise it returns false
+    and sets the socket error accordingly.
+
+    \sa leaveMulticastGroup()
+*/
+bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress)
+{
+    return joinMulticastGroup(groupAddress, QNetworkInterface());
+}
+
+/*!
+    \since 4.8
+    \overload
+
+    Joins the multicast group address \a groupAddress on the interface \a
+    iface.
+
+    \sa leaveMulticastGroup()
+*/
+bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
+                                    const QNetworkInterface &iface)
+{
+    Q_D(QUdpSocket);
+    QT_CHECK_BOUND("QUdpSocket::joinMulticastGroup()", false);
+    return d->socketEngine->joinMulticastGroup(groupAddress, iface);
+}
+
+/*!
+    \since 4.8
+
+    Leaves the multicast group specified by \a groupAddress on the default
+    interface chosen by the operating system. The socket must be in BoundState,
+    otherwise an error occurs.
+
+   This function returns true if successful; otherwise it returns false and
+   sets the socket error accordingly.
+
+   \sa joinMulticastGroup()
+*/
+bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
+{
+    return leaveMulticastGroup(groupAddress, QNetworkInterface());
+}
+
+/*!
+    \since 4.8
+    \overload
+
+    Leaves the multicast group specified by \a groupAddress on the interface \a
+    iface.
+
+    \sa joinMulticastGroup()
+*/
+bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
+                                     const QNetworkInterface &iface)
+{
+    QT_CHECK_BOUND("QUdpSocket::leaveMulticastGroup()", false);
+    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, iface);
+}
+
+/*!
+    \since 4.8
+
+    Returns the interface for the outgoing interface for multicast datagrams.
+    This corresponds to the IP_MULTICAST_IF socket option for IPv4 sockets and
+    the IPV6_MULTICAST_IF socket option for IPv6 sockets. If no interface has
+    been previously set, this function returns an invalid QNetworkInterface.
+    The socket must be in BoundState, otherwise an invalid QNetworkInterface is
+    returned.
+
+    \sa setMulticastInterface()
+*/
+QNetworkInterface QUdpSocket::multicastInterface() const
+{
+    Q_D(const QUdpSocket);
+    QT_CHECK_BOUND("QUdpSocket::multicastInterface()", QNetworkInterface());
+    return d->socketEngine->multicastInterface();
+}
+
+/*!
+    \since 4.8
+
+    Sets the outgoing interface for multicast datagrams to the interface \a
+    iface. This corresponds to the IP_MULTICAST_IF socket option for IPv4
+    sockets and the IPV6_MULTICAST_IF socket option for IPv6 sockets. The
+    socket must be in BoundState, otherwise this function does nothing.
+
+    \sa multicastInterface(), joinMulticastGroup(), leaveMulticastGroup()
+*/
+void QUdpSocket::setMulticastInterface(const QNetworkInterface &iface)
+{
+    Q_D(QUdpSocket);
+    if (!isValid()) {
+        qWarning("QUdpSocket::setMulticastInterface() called on a QUdpSocket when not in QUdpSocket::BoundState");
+        return;
+    }
+    d->socketEngine->setMulticastInterface(iface);
+}
+
+#endif // QT_NO_NETWORKINTERFACE
+
 /*!
     Returns true if at least one datagram is waiting to be read;
     otherwise returns false.
@@ -388,16 +508,6 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
         return -1;
 
     qint64 sent = d->socketEngine->writeDatagram(data, size, address, port);
-#ifdef Q_OS_SYMBIAN
-    if( QSysInfo::s60Version() <= QSysInfo::SV_S60_5_0 ) {
-        // This is evil hack, but for some reason native RSocket::SendTo returns 0,
-        // for large datagrams (such as 600 bytes). Based on comments from Open C team
-        // this should happen only in platforms <= S60 5.0.
-        // As an workaround, we just set sent = size
-        if( sent == 0 )
-            sent = size;
-    }
-#endif
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {

@@ -193,15 +193,15 @@ DEFINES += USE_MY_STUFF QT_DLL
 
 
 #! [28]
-myFiles.sources = path\*.png
+myFiles.files = path\*.png
 DEPLOYMENT += myFiles
 #! [28]
 
 
 #! [29]
-myFiles.sources = path\file1.ext1 path2\file2.ext1 path3\*
+myFiles.files = path\file1.ext1 path2\file2.ext1 path3\*
 myFiles.path = \some\path\on\device
-someother.sources = C:\additional\files\*
+someother.files = C:\additional\files\*
 someother.path = \myFiles\path2
 DEPLOYMENT += myFiles someother
 #! [29]
@@ -831,12 +831,12 @@ CONFIG(debug, debug|release) {
 #! [127]
 
 #! [128]
-customplugin.sources = customimageplugin.dll
-customplugin.sources += c:\myplugins\othercustomimageplugin.dll
+customplugin.files = customimageplugin.dll
+customplugin.files += c:\myplugins\othercustomimageplugin.dll
 customplugin.path = imageformats
-dynamiclibrary.sources = mylib.dll helper.exe
+dynamiclibrary.files = mylib.dll helper.exe
 dynamiclibrary.path = \sys\bin
-globalplugin.sources = someglobalimageplugin.dll
+globalplugin.files = someglobalimageplugin.dll
 globalplugin.path = \resource\qt\plugins\imageformats
 DEPLOYMENT += customplugin dynamiclibrary globalplugin
 #! [128]
@@ -905,7 +905,7 @@ MMP_RULES += myIfdefBlock
 #! [139]
 
 #! [140]
-somelib.sources = somelib.dll
+somelib.files = somelib.dll
 somelib.path = \sys\bin
 somelib.pkg_prerules = "(0x12345678), 2, 2, 0, {\"Some Package\"}" \
                   "(0x87654321), 1, *, * ~ 2, 2, 0, {\"Some Other Package\"}"
@@ -1003,7 +1003,7 @@ DEPLOYMENT -= default_bin_deployment default_resource_deployment default_reg_dep
 
 #! [155]
 default_bin_deployment.flags += FILERUN RUNINSTALL
-dep_note.sources = install_note.txt
+dep_note.files = install_note.txt
 dep_note.flags = FILETEXT TEXTEXIT
 DEPLOYMENT += dep_note
 #! [155]
@@ -1011,3 +1011,19 @@ DEPLOYMENT += dep_note
 #! [156]
 DEPLOYMENT.display_name = My Qt App
 #! [156]
+
+#! [157]
+packagesExist(sqlite3 QtNetwork QtDeclarative) {
+    DEFINES += USE_FANCY_UI
+}
+#! [157]
+
+#! [158]
+#ifdef USE_FANCY_UI
+    // Use the fancy UI, as we have extra packages available
+#endif
+#! [158]
+
+#! [159]
+RSS_RULES += "graphics_memory=12288;"
+#! [159]

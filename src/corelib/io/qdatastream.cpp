@@ -223,6 +223,7 @@ QT_BEGIN_NAMESPACE
     \value ReadPastEnd      The data stream has read past the end of the
                             data in the underlying device.
     \value ReadCorruptData  The data stream has read corrupt data.
+    \value WriteFailed      The data stream cannot write to the underlying device.
 */
 
 /*****************************************************************************
@@ -242,6 +243,11 @@ QT_BEGIN_NAMESPACE
         return retVal; \
     }
 #endif
+
+#define CHECK_STREAM_WRITE_PRECOND(retVal) \
+    CHECK_STREAM_PRECOND(retVal) \
+    if (q_status != Ok) \
+        return retVal;
 
 enum {
     DefaultStreamVersion = QDataStream::Qt_4_6
@@ -495,6 +501,9 @@ void QDataStream::resetStatus()
 /*!
     Sets the status of the data stream to the \a status given.
 
+    Subsequent calls to setStatus() are ignored until resetStatus()
+    is called.
+
     \sa Status status() resetStatus()
 */
 void QDataStream::setStatus(Status status)
@@ -575,8 +584,9 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_3 Version 9 (Qt 4.3)
     \value Qt_4_4 Version 10 (Qt 4.4)
     \value Qt_4_5 Version 11 (Qt 4.5)
-    \value Qt_4_6 Version 12 (Qt 4.6)
+    \value Qt_4_6 Version 12 (Qt 4.6, Qt 4.7, Qt 4.8)
     \value Qt_4_7 Same as Qt_4_6.
+    \value Qt_4_8 Same as Qt_4_6.
 
     \sa setVersion(), version()
 */
@@ -992,8 +1002,9 @@ int QDataStream::readRawData(char *s, int len)
 
 QDataStream &QDataStream::operator<<(qint8 i)
 {
-    CHECK_STREAM_PRECOND(*this)
-    dev->putChar(i);
+    CHECK_STREAM_WRITE_PRECOND(*this)
+    if (!dev->putChar(i))
+        q_status = WriteFailed;
     return *this;
 }
 
@@ -1015,11 +1026,12 @@ QDataStream &QDataStream::operator<<(qint8 i)
 
 QDataStream &QDataStream::operator<<(qint16 i)
 {
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
     if (!noswap) {
         i = qbswap(i);
     }
-    dev->write((char *)&i, sizeof(qint16));
+    if (dev->write((char *)&i, sizeof(qint16)) != sizeof(qint16))
+        q_status = WriteFailed;
     return *this;
 }
 
@@ -1032,11 +1044,12 @@ QDataStream &QDataStream::operator<<(qint16 i)
 
 QDataStream &QDataStream::operator<<(qint32 i)
 {
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
     if (!noswap) {
         i = qbswap(i);
     }
-    dev->write((char *)&i, sizeof(qint32));
+    if (dev->write((char *)&i, sizeof(qint32)) != sizeof(qint32))
+        q_status = WriteFailed;
     return *this;
 }
 
@@ -1057,7 +1070,7 @@ QDataStream &QDataStream::operator<<(qint32 i)
 
 QDataStream &QDataStream::operator<<(qint64 i)
 {
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
     if (version() < 6) {
         quint32 i1 = i & 0xffffffff;
         quint32 i2 = i >> 32;
@@ -1066,7 +1079,8 @@ QDataStream &QDataStream::operator<<(qint64 i)
         if (!noswap) {
             i = qbswap(i);
         }
-        dev->write((char *)&i, sizeof(qint64));
+        if (dev->write((char *)&i, sizeof(qint64)) != sizeof(qint64))
+            q_status = WriteFailed;
     }
     return *this;
 }
@@ -1086,8 +1100,9 @@ QDataStream &QDataStream::operator<<(qint64 i)
 
 QDataStream &QDataStream::operator<<(bool i)
 {
-    CHECK_STREAM_PRECOND(*this)
-    dev->putChar(qint8(i));
+    CHECK_STREAM_WRITE_PRECOND(*this)
+    if (!dev->putChar(qint8(i)))
+        q_status = WriteFailed;
     return *this;
 }
 
@@ -1108,7 +1123,7 @@ QDataStream &QDataStream::operator<<(float f)
         return *this;
     }
 
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
     float g = f;                                // fixes float-on-stack problem
     if (!noswap) {
         union {
@@ -1119,7 +1134,8 @@ QDataStream &QDataStream::operator<<(float f)
         x.val2 = qbswap(x.val2);
         g = x.val1;
     }
-    dev->write((char *)&g, sizeof(float));
+    if (dev->write((char *)&g, sizeof(float)) != sizeof(float))
+        q_status = WriteFailed;
     return *this;
 }
 
@@ -1141,10 +1157,11 @@ QDataStream &QDataStream::operator<<(double f)
         return *this;
     }
 
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
 #ifndef Q_DOUBLE_FORMAT
     if (noswap) {
-        dev->write((char *)&f, sizeof(double));
+        if (dev->write((char *)&f, sizeof(double)) != sizeof(double))
+            q_status = WriteFailed;
     } else {
         union {
             double val1;
@@ -1152,7 +1169,8 @@ QDataStream &QDataStream::operator<<(double f)
         } x;
         x.val1 = f;
         x.val2 = qbswap(x.val2);
-        dev->write((char *)&x.val2, sizeof(double));
+        if (dev->write((char *)&x.val2, sizeof(double)) != sizeof(double))
+            q_status = WriteFailed;
     }
 #else
     union {
@@ -1181,7 +1199,8 @@ QDataStream &QDataStream::operator<<(double f)
         b[Q_DF(1)] = *p++;
         b[Q_DF(0)] = *p;
     }
-    dev->write(b, 8);
+    if (dev->write(b, 8) != 8)
+        q_status = WriteFailed;
 #endif
     return *this;
 }
@@ -1221,7 +1240,7 @@ QDataStream &QDataStream::operator<<(const char *s)
 
 QDataStream &QDataStream::writeBytes(const char *s, uint len)
 {
-    CHECK_STREAM_PRECOND(*this)
+    CHECK_STREAM_WRITE_PRECOND(*this)
     *this << (quint32)len;                        // write length specifier
     if (len)
         writeRawData(s, len);
@@ -1239,8 +1258,11 @@ QDataStream &QDataStream::writeBytes(const char *s, uint len)
 
 int QDataStream::writeRawData(const char *s, int len)
 {
-    CHECK_STREAM_PRECOND(-1)
-    return dev->write(s, len);
+    CHECK_STREAM_WRITE_PRECOND(-1)
+    int ret = dev->write(s, len);
+    if (ret != len)
+        q_status = WriteFailed;
+    return ret;
 }
 
 /*!

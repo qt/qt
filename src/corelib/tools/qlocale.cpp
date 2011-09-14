@@ -48,90 +48,48 @@ static QSystemLocale *QSystemLocale_globalSystemLocale();
 QT_END_NAMESPACE
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#   include "private/qcore_mac_p.h"
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
 #include "qstring.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qlocale_tools_p.h"
 #include "qdatetime_p.h"
 #include "qnamespace.h"
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+#include "qstringbuilder.h"
 #if defined(Q_WS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
 #endif
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
-#endif
 #include "private/qnumeric_p.h"
-
-#include <ctype.h>
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#include <stdlib.h>
-#include <qdebug.h>
-#include <time.h>
-
-#if defined(__GLIBC__) && !defined(__UCLIBC__)
-#    include <fenv.h>
-#endif
-
-#if !defined(QT_QLOCALE_NEEDS_VOLATILE)
-#  if defined(Q_CC_GNU)
-#    if  __GNUC__ == 4
-#      define QT_QLOCALE_NEEDS_VOLATILE
-#    elif defined(Q_OS_WIN)
-#      define QT_QLOCALE_NEEDS_VOLATILE
-#    endif
-#  endif
-#endif
-
-#if defined(QT_QLOCALE_NEEDS_VOLATILE)
-#   define NEEDS_VOLATILE volatile
-#else
-#   define NEEDS_VOLATILE
-#endif
-
-// Sizes as defined by the ISO C99 standard - fallback
-#ifndef LLONG_MAX
-#   define LLONG_MAX Q_INT64_C(0x7fffffffffffffff)
-#endif
-#ifndef LLONG_MIN
-#   define LLONG_MIN (-LLONG_MAX - Q_INT64_C(1))
-#endif
-#ifndef ULLONG_MAX
-#   define ULLONG_MAX Q_UINT64_C(0xffffffffffffffff)
-#endif
-
-#define CONVERSION_BUFF_SIZE 255
+#include "private/qsystemlibrary_p.h"
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_QLOCALE_USES_FCVT
-static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
-                        int *sign, char **rve, char **digits_str);
-#endif
-Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
-                        int *sign, char **rve, char **digits_str);
-Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
-static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
-
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-inline bool isascii(int c)
-{
-        return (c >= 0 && c <=127);
-}
-#endif
-
 #if defined(Q_OS_SYMBIAN)
 void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
+#endif
+
+#ifndef QT_NO_SYSTEMLOCALE
+static QSystemLocale *_systemLocale = 0;
+Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
+static QLocalePrivate *system_lp = 0;
+Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
+#endif
+
+#ifdef QT_USE_ICU
+extern bool qt_initIcu(const QString &localeName);
+extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
+extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
 #endif
 
 /******************************************************************************
@@ -142,25 +100,14 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
+QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
 {
-    for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
-        if (ImperialMeasurementSystems[i].languageId == m_language_id
-            && ImperialMeasurementSystems[i].countryId == m_country_id) {
-            return QLocale::ImperialSystem;
-        }
-    }
-    return QLocale::MetricSystem;
-}
-
-// Assumes that code is a
-// QChar code[3];
-// If the code is two-digit the third digit must be 0
-static QLocale::Language codeToLanguage(const QChar *code)
-{
-    ushort uc1 = code[0].unicode();
-    ushort uc2 = code[1].unicode();
-    ushort uc3 = code[2].unicode();
+    int len = code.length();
+    if (len != 2 && len != 3)
+        return QLocale::C;
+    ushort uc1 = len-- > 0 ? code[0].toLower().unicode() : 0;
+    ushort uc2 = len-- > 0 ? code[1].toLower().unicode() : 0;
+    ushort uc3 = len-- > 0 ? code[2].toLower().unicode() : 0;
 
     if (uc1 == 'n' && uc2 == 'o' && uc3 == 0)
         uc2 = 'b';
@@ -174,13 +121,34 @@ static QLocale::Language codeToLanguage(const QChar *code)
     return QLocale::C;
 }
 
-// Assumes that code is a
-// QChar code[3];
-static QLocale::Country codeToCountry(const QChar *code)
+QLocale::Script QLocalePrivate::codeToScript(const QString &code)
 {
-    ushort uc1 = code[0].unicode();
-    ushort uc2 = code[1].unicode();
-    ushort uc3 = code[2].unicode();
+    int len = code.length();
+    if (len != 4)
+        return QLocale::AnyScript;
+
+    // script is titlecased in our data
+    unsigned char c0 = code.at(0).toUpper().toLatin1();
+    unsigned char c1 = code.at(1).toLower().toLatin1();
+    unsigned char c2 = code.at(2).toLower().toLatin1();
+    unsigned char c3 = code.at(3).toLower().toLatin1();
+
+    const unsigned char *c = script_code_list;
+    for (int i = 0; i < QLocale::LastScript; ++i, c += 4) {
+        if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
+            return QLocale::Script(i);
+    }
+    return QLocale::AnyScript;
+}
+
+QLocale::Country QLocalePrivate::codeToCountry(const QString &code)
+{
+    int len = code.length();
+    if (len != 2 && len != 3)
+        return QLocale::AnyCountry;
+    ushort uc1 = len-- > 0 ? code[0].toUpper().unicode() : 0;
+    ushort uc2 = len-- > 0 ? code[1].toUpper().unicode() : 0;
+    ushort uc3 = len-- > 0 ? code[2].toUpper().unicode() : 0;
 
     const unsigned char *c = country_code_list;
     for (; *c != 0; c += 3) {
@@ -191,12 +159,14 @@ static QLocale::Country codeToCountry(const QChar *code)
     return QLocale::AnyCountry;
 }
 
-static QString languageToCode(QLocale::Language language)
+QString QLocalePrivate::languageCode() const
 {
-    if (language == QLocale::C)
+    if (m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (m_language_id == QLocale::C)
         return QLatin1String("C");
 
-    const unsigned char *c = language_code_list + 3*(uint(language));
+    const unsigned char *c = language_code_list + 3*(uint(m_language_id));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
@@ -208,12 +178,20 @@ static QString languageToCode(QLocale::Language language)
     return code;
 }
 
-static QString countryToCode(QLocale::Country country)
+QString QLocalePrivate::scriptCode() const
 {
-    if (country == QLocale::AnyCountry)
+    if (m_script_id == QLocale::AnyScript || m_script_id > QLocale::LastScript)
+        return QString();
+    const unsigned char *c = script_code_list + 4*(uint(m_script_id));
+    return QString::fromLatin1((const char *)c, 4);
+}
+
+QString QLocalePrivate::countryCode() const
+{
+    if (m_country_id == QLocale::AnyCountry)
         return QString();
 
-    const unsigned char *c = country_code_list + 3*(uint(country));
+    const unsigned char *c = country_code_list + 3*(uint(m_country_id));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
@@ -225,10 +203,46 @@ static QString countryToCode(QLocale::Country country)
     return code;
 }
 
-static const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Country country)
+QString QLocalePrivate::bcp47Name() const
 {
-    unsigned language_id = language;
-    unsigned country_id = country;
+    if (m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (m_language_id == QLocale::C)
+        return QLatin1String("C");
+    const unsigned char *lang = language_code_list + 3*(uint(m_language_id));
+    const unsigned char *script =
+            (m_script_id != QLocale::AnyScript ? script_code_list + 4*(uint(m_script_id)) : 0);
+    const unsigned char *country =
+            (m_country_id != QLocale::AnyCountry  ? country_code_list + 3*(uint(m_country_id)) : 0);
+    char len = (lang[2] != 0 ? 3 : 2) + (script ? 4+1 : 0) + (country ? (country[2] != 0 ? 3 : 2)+1 : 0);
+    QString name(len, Qt::Uninitialized);
+    QChar *uc = name.data();
+    *uc++ = ushort(lang[0]);
+    *uc++ = ushort(lang[1]);
+    if (lang[2] != 0)
+        *uc++ = ushort(lang[2]);
+    if (script) {
+        *uc++ = QLatin1Char('-');
+        *uc++ = ushort(script[0]);
+        *uc++ = ushort(script[1]);
+        *uc++ = ushort(script[2]);
+        *uc++ = ushort(script[3]);
+    }
+    if (country) {
+        *uc++ = QLatin1Char('-');
+        *uc++ = ushort(country[0]);
+        *uc++ = ushort(country[1]);
+        if (country[2] != 0)
+            *uc++ = ushort(country[2]);
+    }
+    return name;
+}
+
+const QLocalePrivate *QLocalePrivate::findLocale(QLocale::Language language, QLocale::Script script, QLocale::Country country)
+{
+    const unsigned language_id = language;
+    const unsigned script_id = script;
+    const unsigned country_id = country;
 
     uint idx = locale_index[language_id];
 
@@ -237,102 +251,140 @@ static const QLocalePrivate *findLocale(QLocale::Language language, QLocale::Cou
     if (idx == 0) // default language has no associated country
         return d;
 
-    if (country == QLocale::AnyCountry)
+    if (script == QLocale::AnyScript && country == QLocale::AnyCountry)
         return d;
 
     Q_ASSERT(d->languageId() == language_id);
 
-    while (d->languageId() == language_id
-                && d->countryId() != country_id)
-        ++d;
-
-    if (d->countryId() == country_id
-            && d->languageId() == language_id)
-        return d;
+    if (country == QLocale::AnyCountry) {
+        while (d->m_language_id == language_id && d->m_script_id != script_id)
+            ++d;
+        if (d->m_language_id == language_id && d->m_script_id == script_id)
+            return d;
+    } else if (script == QLocale::AnyScript) {
+        while (d->m_language_id == language_id) {
+            if (d->m_script_id == script_id && d->m_country_id == country_id)
+                return d;
+            ++d;
+        }
+    } else {
+        // both script and country are explicitly specified
+        while (d->m_language_id == language_id) {
+            if (d->m_script_id == script_id && d->m_country_id == country_id)
+                return d;
+            ++d;
+        }
+    }
 
     return locale_data + idx;
 }
 
-static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry_begin)
+static bool parse_locale_tag(const QString &input, int &i, QString *result, const QString &separators)
 {
-    for (int i = 0; i < 3; ++i)
-        lang_begin[i] = 0;
-    for (int i = 0; i < 3; ++i)
-        cntry_begin[i] = 0;
-
-    int l = name.length();
-
-    QChar *lang = lang_begin;
-    QChar *cntry = cntry_begin;
-
-    int state = 0;
-    const QChar *uc = name.unicode();
-    for (int i = 0; i < l; ++i) {
-        if (uc->unicode() == '.' || uc->unicode() == '@')
+    *result = QString(8, Qt::Uninitialized); // worst case according to BCP47
+    QChar *pch = result->data();
+    const QChar *uc = input.data() + i;
+    const int l = input.length();
+    int size = 0;
+    for (; i < l && size < 8; ++i, ++size) {
+        if (separators.contains(*uc))
             break;
-
-        switch (state) {
-            case 0:
-                // parsing language
-                if (uc->unicode() == '_') {
-                    state = 1;
-                    break;
-                }
-                if (lang - lang_begin == 3)
-                    return false;
-                if (uc->unicode() < 'a' || uc->unicode() > 'z')
-                    return false;
-
-                *lang = *uc;
-                ++lang;
-                break;
-            case 1:
-                // parsing country
-                if (cntry - cntry_begin == 3) {
-                    cntry_begin[0] = 0;
-                    break;
-                }
-
-                *cntry = *uc;
-                ++cntry;
-                break;
-        }
-
-        ++uc;
+        if (! ((uc->unicode() >= 'a' && uc->unicode() <= 'z') ||
+               (uc->unicode() >= 'A' && uc->unicode() <= 'Z') ||
+               (uc->unicode() >= '0' && uc->unicode() <= '9')) ) // latin only
+            return false;
+        *pch++ = *uc++;
     }
-
-    int lang_len = lang - lang_begin;
-
-    return lang_len == 2 || lang_len == 3;
+    result->truncate(size);
+    return true;
 }
 
-void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry)
+bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry)
+{
+    const int length = name.length();
+
+    lang = script = cntry = QString();
+
+    const QString separators = QLatin1String("_-.@");
+    enum ParserState { NoState, LangState, ScriptState, CountryState };
+    ParserState state = LangState;
+    for (int i = 0; i < length && state != NoState; ) {
+        QString value;
+        if (!parse_locale_tag(name, i, &value, separators) ||value.isEmpty())
+            break;
+        QChar sep = i < length ? name.at(i) : QChar();
+        switch (state) {
+        case LangState:
+            if (!sep.isNull() && !separators.contains(sep)) {
+                state = NoState;
+                break;
+            }
+            lang = value;
+            if (i == length) {
+                // just language was specified
+                state = NoState;
+                break;
+            }
+            state = ScriptState;
+            break;
+        case ScriptState: {
+            QString scripts = QString::fromLatin1((const char *)script_code_list, sizeof(script_code_list));
+            if (value.length() == 4 && scripts.indexOf(value) % 4 == 0) {
+                // script name is always 4 characters
+                script = value;
+                state = CountryState;
+            } else {
+                // it wasn't a script, maybe it is a country then?
+                cntry = value;
+                state = NoState;
+            }
+            break;
+        }
+        case CountryState:
+            cntry = value;
+            state = NoState;
+            break;
+        case NoState:
+            // shouldn't happen
+            qWarning("QLocale: This should never happen");
+            break;
+        }
+        ++i;
+    }
+    return lang.length() == 2 || lang.length() == 3;
+}
+
+void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &lang,
+                                       QLocale::Script &script, QLocale::Country &cntry)
 {
     lang = QLocale::C;
+    script = QLocale::AnyScript;
     cntry = QLocale::AnyCountry;
 
-    QChar lang_code[3];
-    QChar cntry_code[3];
-    if (!splitLocaleName(name, lang_code, cntry_code))
+    QString lang_code;
+    QString script_code;
+    QString cntry_code;
+    if (!qt_splitLocaleName(name, lang_code, script_code, cntry_code))
         return;
 
-    lang = codeToLanguage(lang_code);
+    lang = QLocalePrivate::codeToLanguage(lang_code);
     if (lang == QLocale::C)
         return;
-
-    if (cntry_code[0].unicode() != 0)
-        cntry = codeToCountry(cntry_code);
+    script = QLocalePrivate::codeToScript(script_code);
+    cntry = QLocalePrivate::codeToCountry(cntry_code);
 }
 
 static const QLocalePrivate *findLocale(const QString &name)
 {
     QLocale::Language lang;
+    QLocale::Script script;
     QLocale::Country cntry;
-    getLangAndCountry(name, lang, cntry);
+    QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
 
-    return findLocale(lang, cntry);
+    return QLocalePrivate::findLocale(lang, script, cntry);
 }
-static QString readEscapedFormatString(const QString &format, int *idx)
+
+QString qt_readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
@@ -366,7 +418,7 @@ static QString readEscapedFormatString(const QString &format, int *idx)
     return result;
 }
 
-static int repeatCount(const QString &s, int i)
+int qt_repeatCount(const QString &s, int i)
 {
     QChar c = s.at(i);
     int j = i + 1;
@@ -379,1009 +431,10 @@ static const QLocalePrivate *default_lp = 0;
 static uint default_number_options = 0;
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QByteArray envVarLocale()
-{
-    static QByteArray lang = 0;
-#ifdef Q_OS_UNIX
-    lang = qgetenv("LC_ALL");
-    if (lang.isNull())
-        lang = qgetenv("LC_NUMERIC");
-    if (lang.isNull())
-#endif
-        lang = qgetenv("LANG");
-    return lang;
-}
 
-
-#if defined(Q_OS_WIN)
-/******************************************************************************
-** Wrappers for Windows locale system functions
-*/
-
-static const char *winLangCodeToIsoName(int code);
-static QString winIso639LangName(LCID id = LOCALE_USER_DEFAULT);
-static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
-
-static QString getWinLocaleInfo(LCTYPE type)
-{
-    LCID id = GetUserDefaultLCID();
-    int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
-
-    if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", (int)type);
-        return QString();
-    }
-
-    QByteArray buff(cnt, 0);
-
-    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
-
-    if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", (int)type);
-        return QString();
-    }
-
-    return QString::fromWCharArray(reinterpret_cast<const wchar_t *>(buff.data()));
-}
-
-QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
-{
-    QByteArray result;
-    if (id == LOCALE_USER_DEFAULT) {
-        result = envVarLocale();
-        QChar lang[3];
-        QChar cntry[3];
-        if ( result == "C" || (!result.isEmpty()
-                && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) ) {
-            long id = 0;
-            bool ok = false;
-            id = qstrtoll(result.data(), 0, 0, &ok);
-            if ( !ok || id == 0 || id < INT_MIN || id > INT_MAX )
-                return result;
-            else
-                return winLangCodeToIsoName( (int)id );
-        }
-    }
-
-#if defined(Q_OS_WINCE)
-    result = winLangCodeToIsoName(id != LOCALE_USER_DEFAULT ? id : GetUserDefaultLCID());
-#else
-    if (id == LOCALE_USER_DEFAULT)
-        id = GetUserDefaultLCID();
-    QString resultuage = winIso639LangName(id);
-    QString country = winIso3116CtryName(id);
-    result = resultuage.toLatin1();
-    if (!country.isEmpty()) {
-        result += '_';
-        result += country.toLatin1();
-    }
-#endif
-
-    return result;
-}
-
-Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id)
-{
-    return QLocale(QString::fromLatin1(getWinLocaleName(id)));
-}
-
-static QString winToQtFormat(const QString &sys_fmt)
-{
-    QString result;
-    int i = 0;
-
-    while (i < sys_fmt.size()) {
-        if (sys_fmt.at(i).unicode() == QLatin1Char('\'')) {
-            QString text = readEscapedFormatString(sys_fmt, &i);
-            if (text == QLatin1String("'"))
-                result += QLatin1String("''");
-            else
-                result += QString(QLatin1Char('\'') + text + QLatin1Char('\''));
-            continue;
-        }
-
-        QChar c = sys_fmt.at(i);
-        int repeat = repeatCount(sys_fmt, i);
-
-        switch (c.unicode()) {
-            // Date
-            case 'y':
-                if (repeat > 5)
-                    repeat = 5;
-                else if (repeat == 3)
-                    repeat = 2;
-                switch (repeat) {
-                    case 1:
-                        result += QLatin1String("yy"); // "y" unsupported by Qt, use "yy"
-                        break;
-                    case 5:
-                        result += QLatin1String("yyyy"); // "yyyyy" same as "yyyy" on Windows
-                        break;
-                    default:
-                        result += QString(repeat, QLatin1Char('y'));
-                        break;
-                }
-                break;
-            case 'g':
-                if (repeat > 2)
-                    repeat = 2;
-                switch (repeat) {
-                    case 2:
-                        break; // no equivalent of "gg" in Qt
-                    default:
-                        result += QLatin1Char('g');
-                        break;
-                }
-                break;
-            case 't':
-                if (repeat > 2)
-                    repeat = 2;
-                result += QLatin1String("AP"); // "t" unsupported, use "AP"
-                break;
-            default:
-                result += QString(repeat, c);
-                break;
-        }
-
-        i += repeat;
-    }
-
-    return result;
-}
-
-
-
-static QString winDateToString(const QDate &date, DWORD flags)
-{
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    st.wYear = date.year();
-    st.wMonth = date.month();
-    st.wDay = date.day();
-
-    LCID id = GetUserDefaultLCID();
-
-    wchar_t buf[255];
-    if (GetDateFormat(id, flags, &st, 0, buf, 255))
-        return QString::fromWCharArray(buf);
-
-    return QString();
-}
-
-static QString winTimeToString(const QTime &time)
-{
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    st.wHour = time.hour();
-    st.wMinute = time.minute();
-    st.wSecond = time.second();
-    st.wMilliseconds = 0;
-
-    DWORD flags = 0;
-    LCID id = GetUserDefaultLCID();
-
-    wchar_t buf[255];
-    if (GetTimeFormat(id, flags, &st, 0, buf, 255))
-        return QString::fromWCharArray(buf);
-
-    return QString();
-}
-
-static QString winDayName(int day, bool short_format)
-{
-    static const LCTYPE short_day_map[]
-        = { LOCALE_SABBREVDAYNAME1, LOCALE_SABBREVDAYNAME2,
-            LOCALE_SABBREVDAYNAME3, LOCALE_SABBREVDAYNAME4, LOCALE_SABBREVDAYNAME5,
-            LOCALE_SABBREVDAYNAME6, LOCALE_SABBREVDAYNAME7 };
-
-    static const LCTYPE long_day_map[]
-        = { LOCALE_SDAYNAME1, LOCALE_SDAYNAME2,
-            LOCALE_SDAYNAME3, LOCALE_SDAYNAME4, LOCALE_SDAYNAME5,
-            LOCALE_SDAYNAME6, LOCALE_SDAYNAME7 };
-
-    day -= 1;
-
-    LCTYPE type = short_format
-                    ? short_day_map[day] : long_day_map[day];
-    return getWinLocaleInfo(type);
-}
-
-static QString winMonthName(int month, bool short_format)
-{
-    static const LCTYPE short_month_map[]
-        = { LOCALE_SABBREVMONTHNAME1, LOCALE_SABBREVMONTHNAME2, LOCALE_SABBREVMONTHNAME3,
-            LOCALE_SABBREVMONTHNAME4, LOCALE_SABBREVMONTHNAME5, LOCALE_SABBREVMONTHNAME6,
-            LOCALE_SABBREVMONTHNAME7, LOCALE_SABBREVMONTHNAME8, LOCALE_SABBREVMONTHNAME9,
-            LOCALE_SABBREVMONTHNAME10, LOCALE_SABBREVMONTHNAME11, LOCALE_SABBREVMONTHNAME12 };
-
-    static const LCTYPE long_month_map[]
-        = { LOCALE_SMONTHNAME1, LOCALE_SMONTHNAME2, LOCALE_SMONTHNAME3,
-            LOCALE_SMONTHNAME4, LOCALE_SMONTHNAME5, LOCALE_SMONTHNAME6,
-            LOCALE_SMONTHNAME7, LOCALE_SMONTHNAME8, LOCALE_SMONTHNAME9,
-            LOCALE_SMONTHNAME10, LOCALE_SMONTHNAME11, LOCALE_SMONTHNAME12 };
-
-    month -= 1;
-    if (month < 0 || month > 11)
-    return QString();
-
-    LCTYPE type = short_format ? short_month_map[month] : long_month_map[month];
-    return getWinLocaleInfo(type);
-}
-
-static QLocale::MeasurementSystem winSystemMeasurementSystem()
-{
-    LCID id = GetUserDefaultLCID();
-    wchar_t output[2];
-
-    if (GetLocaleInfo(id, LOCALE_IMEASURE, output, 2)) {
-        QString iMeasure = QString::fromWCharArray(output);
-        if (iMeasure == QLatin1String("1")) {
-            return QLocale::ImperialSystem;
-        }
-    }
-
-    return QLocale::MetricSystem;
-}
-
-static QString winSystemAMText()
-{
-    LCID id = GetUserDefaultLCID();
-    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
-
-    if (GetLocaleInfo(id, LOCALE_S1159, output, 15)) {
-        return QString::fromWCharArray(output);
-    }
-
-    return QString();
-}
-
-static QString winSystemPMText()
-{
-    LCID id = GetUserDefaultLCID();
-    wchar_t output[15]; // maximum length including  terminating zero character for Win2003+
-
-    if (GetLocaleInfo(id, LOCALE_S2359, output, 15)) {
-        return QString::fromWCharArray(output);
-    }
-
-    return QString();
-}
-
-/*!
-    \since 4.6
-    Returns the fallback locale obtained from the system.
- */
-QLocale QSystemLocale::fallbackLocale() const
-{
-    return QLocale(QString::fromLatin1(getWinLocaleName()));
-}
-
-QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
-{
-    LCTYPE locale_info = 0;
-    bool format_string = false;
-
-    switch(type) {
-//     case Name:
-//         return getWinLocaleName();
-    case DecimalPoint:
-        locale_info = LOCALE_SDECIMAL;
-        break;
-    case GroupSeparator:
-        locale_info = LOCALE_STHOUSAND;
-        break;
-    case NegativeSign:
-        locale_info = LOCALE_SNEGATIVESIGN;
-        break;
-    case PositiveSign:
-        locale_info = LOCALE_SPOSITIVESIGN;
-        break;
-    case DateFormatLong:
-        locale_info = LOCALE_SLONGDATE;
-        format_string = true;
-        break;
-    case DateFormatShort:
-        locale_info = LOCALE_SSHORTDATE;
-        format_string = true;
-        break;
-    case TimeFormatLong:
-    case TimeFormatShort:
-        locale_info = LOCALE_STIMEFORMAT;
-        format_string = true;
-        break;
-
-    case DateTimeFormatLong:
-    case DateTimeFormatShort:
-        return QString(query(type == DateTimeFormatLong ? DateFormatLong : DateFormatShort).toString()
-            + QLatin1Char(' ') + query(type == DateTimeFormatLong ? TimeFormatLong : TimeFormatShort).toString());
-    case DayNameLong:
-    case DayNameShort:
-        return winDayName(in.toInt(), (type == DayNameShort));
-    case MonthNameLong:
-    case MonthNameShort:
-        return winMonthName(in.toInt(), (type == MonthNameShort));
-    case DateToStringShort:
-    case DateToStringLong:
-        return winDateToString(in.toDate(), type == DateToStringShort ? DATE_SHORTDATE : DATE_LONGDATE);
-    case TimeToStringShort:
-    case TimeToStringLong:
-        return winTimeToString(in.toTime());
-    case DateTimeToStringShort:
-    case DateTimeToStringLong: {
-        const QDateTime dt = in.toDateTime();
-        return QString(winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
-            + QLatin1Char(' ') + winTimeToString(dt.time())); }
-
-    case ZeroDigit:
-        locale_info = LOCALE_SNATIVEDIGITS;
-        break;
-
-    case LanguageId:
-    case CountryId: {
-        QString locale = QString::fromLatin1(getWinLocaleName());
-        QLocale::Language lang;
-        QLocale::Country cntry;
-        getLangAndCountry(locale, lang, cntry);
-        if (type == LanguageId)
-            return lang;
-        if (cntry == QLocale::AnyCountry)
-            return fallbackLocale().country();
-        return cntry;
-    }
-
-    case MeasurementSystem:
-        return QVariant(static_cast<int>(winSystemMeasurementSystem()));
-
-    case AMText:
-        return QVariant(winSystemAMText());
-    case PMText:
-        return QVariant(winSystemPMText());
-    default:
-        break;
-    }
-    if (locale_info) {
-        QString result = getWinLocaleInfo(locale_info);
-        if (format_string)
-            result = winToQtFormat(result);
-        if (!result.isEmpty())
-            return result;
-    }
-    return QVariant();
-}
-
-struct WindowsToISOListElt {
-    ushort windows_code;
-    char iso_name[6];
-};
-
-/* NOTE: This array should be sorted by the first column! */
-static const WindowsToISOListElt windows_to_iso_list[] = {
-    { 0x0401, "ar_SA" },
-    { 0x0402, "bg\0  " },
-    { 0x0403, "ca\0  " },
-    { 0x0404, "zh_TW" },
-    { 0x0405, "cs\0  " },
-    { 0x0406, "da\0  " },
-    { 0x0407, "de\0  " },
-    { 0x0408, "el\0  " },
-    { 0x0409, "en_US" },
-    { 0x040a, "es\0  " },
-    { 0x040b, "fi\0  " },
-    { 0x040c, "fr\0  " },
-    { 0x040d, "he\0  " },
-    { 0x040e, "hu\0  " },
-    { 0x040f, "is\0  " },
-    { 0x0410, "it\0  " },
-    { 0x0411, "ja\0  " },
-    { 0x0412, "ko\0  " },
-    { 0x0413, "nl\0  " },
-    { 0x0414, "no\0  " },
-    { 0x0415, "pl\0  " },
-    { 0x0416, "pt_BR" },
-    { 0x0418, "ro\0  " },
-    { 0x0419, "ru\0  " },
-    { 0x041a, "hr\0  " },
-    { 0x041c, "sq\0  " },
-    { 0x041d, "sv\0  " },
-    { 0x041e, "th\0  " },
-    { 0x041f, "tr\0  " },
-    { 0x0420, "ur\0  " },
-    { 0x0421, "in\0  " },
-    { 0x0422, "uk\0  " },
-    { 0x0423, "be\0  " },
-    { 0x0425, "et\0  " },
-    { 0x0426, "lv\0  " },
-    { 0x0427, "lt\0  " },
-    { 0x0429, "fa\0  " },
-    { 0x042a, "vi\0  " },
-    { 0x042d, "eu\0  " },
-    { 0x042f, "mk\0  " },
-    { 0x0436, "af\0  " },
-    { 0x0438, "fo\0  " },
-    { 0x0439, "hi\0  " },
-    { 0x043e, "ms\0  " },
-    { 0x0458, "mt\0  " },
-    { 0x0801, "ar_IQ" },
-    { 0x0804, "zh_CN" },
-    { 0x0807, "de_CH" },
-    { 0x0809, "en_GB" },
-    { 0x080a, "es_MX" },
-    { 0x080c, "fr_BE" },
-    { 0x0810, "it_CH" },
-    { 0x0812, "ko\0  " },
-    { 0x0813, "nl_BE" },
-    { 0x0814, "no\0  " },
-    { 0x0816, "pt\0  " },
-    { 0x081a, "sr\0  " },
-    { 0x081d, "sv_FI" },
-    { 0x0c01, "ar_EG" },
-    { 0x0c04, "zh_HK" },
-    { 0x0c07, "de_AT" },
-    { 0x0c09, "en_AU" },
-    { 0x0c0a, "es\0  " },
-    { 0x0c0c, "fr_CA" },
-    { 0x0c1a, "sr\0  " },
-    { 0x1001, "ar_LY" },
-    { 0x1004, "zh_SG" },
-    { 0x1007, "de_LU" },
-    { 0x1009, "en_CA" },
-    { 0x100a, "es_GT" },
-    { 0x100c, "fr_CH" },
-    { 0x1401, "ar_DZ" },
-    { 0x1407, "de_LI" },
-    { 0x1409, "en_NZ" },
-    { 0x140a, "es_CR" },
-    { 0x140c, "fr_LU" },
-    { 0x1801, "ar_MA" },
-    { 0x1809, "en_IE" },
-    { 0x180a, "es_PA" },
-    { 0x1c01, "ar_TN" },
-    { 0x1c09, "en_ZA" },
-    { 0x1c0a, "es_DO" },
-    { 0x2001, "ar_OM" },
-    { 0x2009, "en_JM" },
-    { 0x200a, "es_VE" },
-    { 0x2401, "ar_YE" },
-    { 0x2409, "en\0  " },
-    { 0x240a, "es_CO" },
-    { 0x2801, "ar_SY" },
-    { 0x2809, "en_BZ" },
-    { 0x280a, "es_PE" },
-    { 0x2c01, "ar_JO" },
-    { 0x2c09, "en_TT" },
-    { 0x2c0a, "es_AR" },
-    { 0x3001, "ar_LB" },
-    { 0x300a, "es_EC" },
-    { 0x3401, "ar_KW" },
-    { 0x340a, "es_CL" },
-    { 0x3801, "ar_AE" },
-    { 0x380a, "es_UY" },
-    { 0x3c01, "ar_BH" },
-    { 0x3c0a, "es_PY" },
-    { 0x4001, "ar_QA" },
-    { 0x400a, "es_BO" },
-    { 0x440a, "es_SV" },
-    { 0x480a, "es_HN" },
-    { 0x4c0a, "es_NI" },
-    { 0x500a, "es_PR" }
-};
-
-static const int windows_to_iso_count
-    = sizeof(windows_to_iso_list)/sizeof(WindowsToISOListElt);
-
-static const char *winLangCodeToIsoName(int code)
-{
-    int cmp = code - windows_to_iso_list[0].windows_code;
-    if (cmp < 0)
-        return 0;
-
-    if (cmp == 0)
-        return windows_to_iso_list[0].iso_name;
-
-    int begin = 0;
-    int end = windows_to_iso_count;
-
-    while (end - begin > 1) {
-        uint mid = (begin + end)/2;
-
-        const WindowsToISOListElt *elt = windows_to_iso_list + mid;
-        int cmp = code - elt->windows_code;
-        if (cmp < 0)
-            end = mid;
-        else if (cmp > 0)
-            begin = mid;
-        else
-            return elt->iso_name;
-    }
-
-    return 0;
-
-}
-
-static QString winIso639LangName(LCID id)
-{
-    QString result;
-
-    // Windows returns the wrong ISO639 for some languages, we need to detect them here using
-    // the language code
-    QString lang_code;
-    wchar_t out[256];
-    if (GetLocaleInfo(id, LOCALE_ILANGUAGE, out, 255))
-        lang_code = QString::fromWCharArray(out);
-
-    if (!lang_code.isEmpty()) {
-        const char *endptr;
-        bool ok;
-        QByteArray latin1_lang_code = lang_code.toLatin1();
-        int i = qstrtoull(latin1_lang_code, &endptr, 16, &ok);
-        if (ok && *endptr == '\0') {
-            switch (i) {
-                case 0x814:
-                    result = QLatin1String("nn"); // Nynorsk
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    if (!result.isEmpty())
-        return result;
-
-    // not one of the problematic languages - do the usual lookup
-    if (GetLocaleInfo(id, LOCALE_SISO639LANGNAME , out, 255))
-        result = QString::fromWCharArray(out);
-
-    return result;
-}
-
-static QString winIso3116CtryName(LCID id)
-{
-    QString result;
-
-    wchar_t out[256];
-    if (GetLocaleInfo(id, LOCALE_SISO3166CTRYNAME, out, 255))
-        result = QString::fromWCharArray(out);
-
-    return result;
-}
-
-
-#elif defined(Q_OS_MAC)
-/******************************************************************************
-** Wrappers for Mac locale system functions
-*/
-
-static QByteArray getMacLocaleName()
-{
-    QByteArray result = envVarLocale();
-
-    QChar lang[3];
-    QChar cntry[3];
-    if (result.isEmpty() || result != "C"
-            && !splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) {
-        QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
-        CFStringRef locale = CFLocaleGetIdentifier(l);
-        result = QCFString::toQString(locale).toUtf8();
-    }
-    return result;
-}
-
-static QString macMonthName(int month, bool short_format)
-{
-    month -= 1;
-    if (month < 0 || month > 11)
-        return QString();
-
-    QCFType<CFDateFormatterRef> formatter
-        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-    QCFType<CFArrayRef> values
-        = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                  short_format ? kCFDateFormatterShortMonthSymbols
-                                               : kCFDateFormatterMonthSymbols));
-    if (values != 0) {
-        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-        return QCFString::toQString(cfstring);
-    }
-    return QString();
-}
-
-
-static QString macDayName(int day, bool short_format)
-{
-    if (day < 1 || day > 7)
-        return QString();
-
-    QCFType<CFDateFormatterRef> formatter
-        = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
-                                kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                            short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                         : kCFDateFormatterWeekdaySymbols));
-    if (values != 0) {
-        CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-        return QCFString::toQString(cfstring);
-    }
-    return QString();
-}
-
-static QString macDateToString(const QDate &date, bool short_format)
-{
-    CFGregorianDate macGDate;
-    macGDate.year = date.year();
-    macGDate.month = date.month();
-    macGDate.day = date.day();
-    macGDate.hour = 0;
-    macGDate.minute = 0;
-    macGDate.second = 0.0;
-    QCFType<CFDateRef> myDate
-        = CFDateCreate(0, CFGregorianDateGetAbsoluteTime(macGDate,
-                                                         QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault())));
-    QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
-    CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle : kCFDateFormatterLongStyle;
-    QCFType<CFDateFormatterRef> myFormatter
-        = CFDateFormatterCreate(kCFAllocatorDefault,
-                                mylocale, style,
-                                kCFDateFormatterNoStyle);
-    return QCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
-}
-
-static QString macTimeToString(const QTime &time, bool short_format)
-{
-    CFGregorianDate macGDate;
-    // Assume this is local time and the current date
-    QDate dt = QDate::currentDate();
-    macGDate.year = dt.year();
-    macGDate.month = dt.month();
-    macGDate.day = dt.day();
-    macGDate.hour = time.hour();
-    macGDate.minute = time.minute();
-    macGDate.second = time.second();
-    QCFType<CFDateRef> myDate
-        = CFDateCreate(0, CFGregorianDateGetAbsoluteTime(macGDate,
-                                                         QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault())));
-
-    QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
-    CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle :  kCFDateFormatterLongStyle;
-    QCFType<CFDateFormatterRef> myFormatter = CFDateFormatterCreate(kCFAllocatorDefault,
-                                                                    mylocale,
-                                                                    kCFDateFormatterNoStyle,
-                                                                    style);
-    return QCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
-}
-
-static QString macToQtFormat(const QString &sys_fmt)
-{
-    QString result;
-    int i = 0;
-
-    while (i < sys_fmt.size()) {
-        if (sys_fmt.at(i).unicode() == '\'') {
-            QString text = readEscapedFormatString(sys_fmt, &i);
-            if (text == QLatin1String("'"))
-                result += QLatin1String("''");
-            else
-                result += QLatin1Char('\'') + text + QLatin1Char('\'');
-            continue;
-        }
-
-        QChar c = sys_fmt.at(i);
-        int repeat = repeatCount(sys_fmt, i);
-
-        switch (c.unicode()) {
-            case 'G': // Qt doesn't support these :(
-            case 'Y':
-            case 'D':
-            case 'F':
-            case 'w':
-            case 'W':
-            case 'g':
-                break;
-
-            case 'u': // extended year - use 'y'
-                if (repeat < 4)
-                    result += QLatin1String("yy");
-                else
-                    result += QLatin1String("yyyy");
-                break;
-            case 'S': // fractional second
-                if (repeat < 3)
-                    result += QLatin1Char('z');
-                else
-                    result += QLatin1String("zzz");
-                break;
-            case 'E':
-                if (repeat <= 3)
-                    result += QLatin1String("ddd");
-                else
-                    result += QLatin1String("dddd");
-                break;
-            case 'e':
-                if (repeat >= 2)
-                    result += QLatin1String("dd");
-                else
-                    result += QLatin1Char('d');
-                break;
-            case 'a':
-                result += QLatin1String("AP");
-                break;
-            case 'k':
-                result += QString(repeat, QLatin1Char('H'));
-                break;
-            case 'K':
-                result += QString(repeat, QLatin1Char('h'));
-                break;
-            case 'z':
-            case 'Z':
-            case 'v':
-                result += QLatin1Char('t');
-                break;
-            default:
-                result += QString(repeat, c);
-                break;
-        }
-
-        i += repeat;
-    }
-
-    return result;
-}
-
-QString getMacDateFormat(CFDateFormatterStyle style)
-{
-    QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
-    QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
-                                                                  l, style, kCFDateFormatterNoStyle);
-    return macToQtFormat(QCFString::toQString(CFDateFormatterGetFormat(formatter)));
-}
-
-static QString getMacTimeFormat(CFDateFormatterStyle style)
-{
-    QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
-    QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
-                                                                  l, kCFDateFormatterNoStyle, style);
-    return macToQtFormat(QCFString::toQString(CFDateFormatterGetFormat(formatter)));
-}
-
-static QString getCFLocaleValue(CFStringRef key)
-{
-    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
-    CFTypeRef value = CFLocaleGetValue(locale, key);
-    return QCFString::toQString(CFStringRef(static_cast<CFTypeRef>(value)));
-}
-
-static QLocale::MeasurementSystem macMeasurementSystem()
-{
-    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
-    CFStringRef system = static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleMeasurementSystem));
-    if (QCFString::toQString(system) == QLatin1String("Metric")) {
-        return QLocale::MetricSystem;
-    } else {
-        return QLocale::ImperialSystem;
-    }
-}
-
-static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
-{
-    QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
-             CFSTR("AppleLanguages"),
-             kCFPreferencesAnyApplication,
-             kCFPreferencesCurrentUser,
-             kCFPreferencesAnyHost);
-    if (languages && CFArrayGetCount(languages) > 0) {
-        QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
-                                                     CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
-        if (language)
-            *language = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleLanguageCode)));
-        if (country)
-            *country = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleCountryCode)));
-    }
-}
-
-QLocale QSystemLocale::fallbackLocale() const
-{
-    return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
-}
-
-QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
-{
-    switch(type) {
-//     case Name:
-//         return getMacLocaleName();
-    case DecimalPoint: {
-        QString value = getCFLocaleValue(kCFLocaleDecimalSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
-    case GroupSeparator: {
-        QString value = getCFLocaleValue(kCFLocaleGroupingSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
-    case DateFormatLong:
-    case DateFormatShort:
-        return getMacDateFormat(type == DateFormatShort
-                                ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle);
-    case TimeFormatLong:
-    case TimeFormatShort:
-        return getMacTimeFormat(type == TimeFormatShort
-                                ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle);
-    case DayNameLong:
-    case DayNameShort:
-        return macDayName(in.toInt(), (type == DayNameShort));
-    case MonthNameLong:
-    case MonthNameShort:
-        return macMonthName(in.toInt(), (type == MonthNameShort));
-    case DateToStringShort:
-    case DateToStringLong:
-        return macDateToString(in.toDate(), (type == DateToStringShort));
-    case TimeToStringShort:
-    case TimeToStringLong:
-        return macTimeToString(in.toTime(), (type == TimeToStringShort));
-
-    case NegativeSign:
-    case PositiveSign:
-    case ZeroDigit:
-        break;
-    case LanguageId:
-    case CountryId: {
-        QString preferredLanguage;
-        QString preferredCountry(3, QChar()); // codeToCountry assumes QChar[3]
-        getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
-        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
-        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
-        const QLocalePrivate *d = findLocale(languageCode, countryCode);
-        if (type == LanguageId)
-            return (QLocale::Language)d->languageId();
-        return (QLocale::Country)d->countryId();
-    }
-
-    case MeasurementSystem:
-        return QVariant(static_cast<int>(macMeasurementSystem()));
-
-    case AMText:
-    case PMText:
-        break;
-    default:
-        break;
-    }
-    return QVariant();
-}
-
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-
-static uint unixGetSystemMeasurementSystem()
-{
-    QString meas_locale = QString::fromLocal8Bit(qgetenv("LC_ALL"));
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit(qgetenv("LC_MEASUREMENT"));
-    }
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit(qgetenv("LANG"));
-    }
-    if (meas_locale.isEmpty()) {
-        meas_locale = QString::fromLocal8Bit("C");
-    }
-
-    if (meas_locale.compare(QString::fromLocal8Bit("Metric"), Qt::CaseInsensitive) == 0)
-        return 0;
-    if (meas_locale.compare(QString::fromLocal8Bit("Other"), Qt::CaseInsensitive) == 0)
-        return 0;
-
-    const QLocalePrivate* locale = findLocale(meas_locale);
-    return locale->measurementSystem();
-}
-
-/*!
-    \internal
-*/
-QLocale QSystemLocale::fallbackLocale() const
-{
-    return QLocale(QLatin1String(envVarLocale()));
-}
-
-/*!
-    \internal
-*/
-QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
-{
-    if (type == MeasurementSystem) {
-        return QVariant(unixGetSystemMeasurementSystem());
-    } else {
-        return QVariant();
-    }
-}
-
-#elif !defined(Q_OS_SYMBIAN)
-
-/*!
-    \since 4.6
-
-    Returns a fallback locale, that will get used for everything that
-    is not explicitly overridden by the system locale.
-*/
-QLocale QSystemLocale::fallbackLocale() const
-{
-    return QLocale(QLatin1String(envVarLocale()));
-}
-
-/*!
-    Performs a query of the given \a type in the system locale for
-    customized values or conversion. If the method returns a null
-    QVariant, the conversion of the fallbackLocale() will be used.
-
-    \a in is unused for some of the query types.
-
-    \sa QSystemLocale::QueryType
-*/
-QVariant QSystemLocale::query(QueryType /* type */, QVariant /* in */) const
-{
-    return QVariant();
-}
-
-#endif
-
-#ifndef QT_NO_SYSTEMLOCALE
-static QSystemLocale *_systemLocale = 0;
-Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
-static QLocalePrivate *system_lp = 0;
-Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
-#endif
 
 /******************************************************************************
 ** Default system locale behavior
-*/
-
-/*!
-    \class QSystemLocale
-    \brief The QSystemLocale class can be used to finetune the system locale
-    of the user.
-    \since 4.2
-
-    \ingroup i18n
-
-    \warning This class is only useful in very rare cases. Usually QLocale offers
-    all the functionality required for application development.
-
-    QSystemLocale allows to override the values provided by the system
-    locale (QLocale::system()).
-
-    \sa QLocale
-*/
-
-/*!
-  \enum QSystemLocale::QueryType
-
-  Specifies the type of information queried by query(). For each value
-  the type of information to return from the query() method is listed.
-
-  \value LanguageId a uint specifying the language.
-  \value CountryId a uint specifying the country.
-  \value DecimalPoint a QString specifying the decimal point.
-  \value GroupSeparator a QString specifying the group separator.
-  \value ZeroDigit a QString specifying the zero digit.
-  \value NegativeSign a QString specifying the minus sign.
-  \value PositiveSign a QString specifying the plus sign.
-  \value DateFormatLong a QString specifying the long date format
-  \value DateFormatShort a QString specifying the short date format
-  \value TimeFormatLong a QString specifying the long time format
-  \value TimeFormatShort a QString specifying the short time format
-  \value DayNameLong a QString specifying the name of a weekday. the in variant contains an integer between 1 and 7 (Monday - Sunday)
-  \value DayNameShort a QString specifying the short name of a weekday. the in variant contains an integer between 1 and 7 (Monday - Sunday)
-  \value MonthNameLong a QString specifying the name of a month. the in variant contains an integer between 1 and 12
-  \value MonthNameShort a QString specifying the short name of a month. the in variant contains an integer between 1 and 12
-  \value DateToStringLong converts the QDate stored in the in variant to a QString using the long date format
-  \value DateToStringShort converts the QDate stored in the in variant to a QString using the short date format
-  \value TimeToStringLong converts the QTime stored in the in variant to a QString using the long time format
-  \value TimeToStringShort converts the QTime stored in the in variant to a QString using the short time format
-  \value DateTimeFormatLong a QString specifying the long date time format
-  \value DateTimeFormatShort a QString specifying the short date time format
-  \value DateTimeToStringLong converts the QDateTime in the in variant to a QString using the long datetime format
-  \value DateTimeToStringShort converts the QDateTime in the in variant to a QString using the short datetime format
-  \value MeasurementSystem a QLocale::MeasurementSystem enum specifying the measurement system
-  \value AMText a string that represents the system AM designator associated with a 12-hour clock.
-  \value PMText a string that represents the system PM designator associated with a 12-hour clock.
 */
 
 /*!
@@ -1419,9 +472,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -1430,6 +480,10 @@ void QLocalePrivate::updateSystemPrivate()
     const QSystemLocale *sys_locale = systemLocale();
     if (!system_lp)
         system_lp = globalLocalePrivate();
+
+    // tell the object that the system locale has changed.
+    sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
+
     *system_lp = *sys_locale->fallbackLocale().d();
 
 #if defined(Q_OS_SYMBIAN)
@@ -1437,11 +491,18 @@ void QLocalePrivate::updateSystemPrivate()
 #endif
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
-    if (!res.isNull())
+    if (!res.isNull()) {
         system_lp->m_language_id = res.toInt();
+        system_lp->m_script_id = QLocale::AnyScript; // default for compatibility
+    }
     res = sys_locale->query(QSystemLocale::CountryId, QVariant());
-    if (!res.isNull())
+    if (!res.isNull()) {
         system_lp->m_country_id = res.toInt();
+        system_lp->m_script_id = QLocale::AnyScript; // default for compatibility
+    }
+    res = sys_locale->query(QSystemLocale::ScriptId, QVariant());
+    if (!res.isNull())
+        system_lp->m_script_id = res.toInt();
 
     res = sys_locale->query(QSystemLocale::DecimalPoint, QVariant());
     if (!res.isNull())
@@ -1462,6 +523,12 @@ void QLocalePrivate::updateSystemPrivate()
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
     if (!res.isNull())
         system_lp->m_plus = res.toString().at(0).unicode();
+
+#ifdef QT_USE_ICU
+    if (!default_lp)
+        qt_initIcu(system_lp->bcp47Name());
+#endif
+
 }
 #endif
 
@@ -1498,12 +565,14 @@ static QString getLocaleListData(const ushort *data, int size, int index)
     const ushort *end = data;
     while (size > 0 && *end != separator)
         ++end, --size;
+    if (end-data == 0)
+        return QString();
     return QString::fromRawData(reinterpret_cast<const QChar*>(data), end-data);
 }
 
 static inline QString getLocaleData(const ushort *data, int size)
 {
-    return QString::fromRawData(reinterpret_cast<const QChar*>(data), size);
+    return size ? QString::fromRawData(reinterpret_cast<const QChar*>(data), size) : QString();
 }
 
 
@@ -1523,649 +592,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 }
 #endif // QT_NO_DATASTREAM
 
-
-/*!
-    \class QLocale
-    \brief The QLocale class converts between numbers and their
-    string representations in various languages.
-
-    \reentrant
-    \ingroup i18n
-    \ingroup string-processing
-    \ingroup shared
-
-
-    QLocale is initialized with a language/country pair in its
-    constructor and offers number-to-string and string-to-number
-    conversion functions similar to those in QString.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_tools_qlocale.cpp 0
-
-    QLocale supports the concept of a default locale, which is
-    determined from the system's locale settings at application
-    startup. The default locale can be changed by calling the
-    static member setDefault(). Setting the default locale has the
-    following effects:
-
-    \list
-    \i If a QLocale object is constructed with the default constructor,
-       it will use the default locale's settings.
-    \i QString::toInt(), QString::toDouble(), etc., interpret the
-       string according to the default locale. If this fails, it
-       falls back on the "C" locale.
-    \i QString::arg() uses the default locale to format a number when
-       its position specifier in the format string contains an 'L',
-       e.g. "%L1".
-    \endlist
-
-    The following example illustrates how to use QLocale directly:
-
-    \snippet doc/src/snippets/code/src_corelib_tools_qlocale.cpp 1
-
-    When a language/country pair is specified in the constructor, one
-    of three things can happen:
-
-    \list
-    \i If the language/country pair is found in the database, it is used.
-    \i If the language is found but the country is not, or if the country
-       is \c AnyCountry, the language is used with the most
-       appropriate available country (for example, Germany for German),
-    \i If neither the language nor the country are found, QLocale
-       defaults to the default locale (see setDefault()).
-    \endlist
-
-    Use language() and country() to determine the actual language and
-    country values used.
-
-    An alternative method for constructing a QLocale object is by
-    specifying the locale name.
-
-    \snippet doc/src/snippets/code/src_corelib_tools_qlocale.cpp 2
-
-    This constructor converts the locale name to a language/country
-    pair; it does not use the system locale database.
-
-    QLocale's data is based on Common Locale Data Repository v1.8.1.
-
-    The double-to-string and string-to-double conversion functions are
-    covered by the following licenses:
-
-    \legalese
-    Copyright (c) 1991 by AT&T.
-
-    Permission to use, copy, modify, and distribute this software for any
-    purpose without fee is hereby granted, provided that this entire notice
-    is included in all copies of any software which is or includes a copy
-    or modification of this software and in all copies of the supporting
-    documentation for such software.
-
-    THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-    WARRANTY.  IN PARTICULAR, NEITHER THE AUTHOR NOR AT&T MAKES ANY
-    REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
-    OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
-
-    This product includes software developed by the University of
-    California, Berkeley and its contributors.
-
-    \sa QString::arg(), QString::toInt(), QString::toDouble()
-*/
-
-/*!
-    \enum QLocale::Language
-
-    This enumerated type is used to specify a language.
-
-    \value C The "C" locale is identical in behavior to English/UnitedStates.
-    \value Abkhazian
-    \value Afan
-    \value Afar
-    \value Afrikaans
-    \value Albanian
-    \value Amharic
-    \value Arabic
-    \value Armenian
-    \value Assamese
-    \value Aymara
-    \value Azerbaijani
-    \value Bashkir
-    \value Basque
-    \value Bengali
-    \value Bhutani
-    \value Bihari
-    \value Bislama
-    \value Bosnian
-    \value Breton
-    \value Bulgarian
-    \value Burmese
-    \value Byelorussian
-    \value Cambodian
-    \value Catalan
-    \value Chinese
-    \value Cornish
-    \value Corsican
-    \value Croatian
-    \value Czech
-    \value Danish
-    \value Divehi
-    \value Dutch
-    \value English
-    \value Esperanto
-    \value Estonian
-    \value Faroese
-    \value FijiLanguage
-    \value Finnish
-    \value French
-    \value Frisian
-    \value Gaelic
-    \value Galician
-    \value Georgian
-    \value German
-    \value Greek
-    \value Greenlandic
-    \value Guarani
-    \value Gujarati
-    \value Hausa
-    \value Hebrew
-    \value Hindi
-    \value Hungarian
-    \value Icelandic
-    \value Indonesian
-    \value Interlingua
-    \value Interlingue
-    \value Inuktitut
-    \value Inupiak
-    \value Irish
-    \value Italian
-    \value Japanese
-    \value Javanese
-    \value Kannada
-    \value Kashmiri
-    \value Kazakh
-    \value Kinyarwanda
-    \value Kirghiz
-    \value Korean
-    \value Kurdish
-    \value Kurundi
-    \value Laothian
-    \value Latin
-    \value Latvian
-    \value Lingala
-    \value Lithuanian
-    \value Macedonian
-    \value Malagasy
-    \value Malay
-    \value Malayalam
-    \value Maltese
-    \value Manx
-    \value Maori
-    \value Marathi
-    \value Moldavian
-    \value Mongolian
-    \value NauruLanguage
-    \value Nepali
-    \value Norwegian
-    \value NorwegianBokmal
-    \value Nynorsk Obsolete, please use NorwegianNynorsk
-    \value NorwegianNynorsk
-    \value Occitan
-    \value Oriya
-    \value Pashto
-    \value Persian
-    \value Polish
-    \value Portuguese
-    \value Punjabi
-    \value Quechua
-    \value RhaetoRomance
-    \value Romanian
-    \value Russian
-    \value Samoan
-    \value Sangho
-    \value Sanskrit
-    \value Serbian
-    \value SerboCroatian
-    \value Sesotho
-    \value Setswana
-    \value Shona
-    \value Sindhi
-    \value Singhalese
-    \value Siswati
-    \value Slovak
-    \value Slovenian
-    \value Somali
-    \value Spanish
-    \value Sundanese
-    \value Swahili
-    \value Swedish
-    \value Tagalog
-    \value Tajik
-    \value Tamil
-    \value Tatar
-    \value Telugu
-    \value Thai
-    \value Tibetan
-    \value Tigrinya
-    \value TongaLanguage
-    \value Tsonga
-    \value Turkish
-    \value Turkmen
-    \value Twi
-    \value Uigur
-    \value Ukrainian
-    \value Urdu
-    \value Uzbek
-    \value Vietnamese
-    \value Volapuk
-    \value Welsh
-    \value Wolof
-    \value Xhosa
-    \value Yiddish
-    \value Yoruba
-    \value Zhuang
-    \value Zulu
-    \value Bosnian
-    \value Divehi
-    \value Manx
-    \value Cornish
-    \value Akan
-    \value Konkani
-    \value Ga
-    \value Igbo
-    \value Kamba
-    \value Syriac
-    \value Blin
-    \value Geez
-    \value Koro
-    \value Sidamo
-    \value Atsam
-    \value Tigre
-    \value Jju
-    \value Friulian
-    \value Venda
-    \value Ewe
-    \value Walamo
-    \value Hawaiian
-    \value Tyap
-    \value Chewa
-    \value Filipino
-    \value SwissGerman
-    \value SichuanYi
-    \value Kpelle
-    \value LowGerman
-    \value SouthNdebele
-    \value NorthernSotho
-    \value NorthernSami
-    \value Taroko
-    \value Gusii
-    \value Taita
-    \value Fulah
-    \value Kikuyu
-    \value Samburu
-    \value Sena
-    \value NorthNdebele
-    \value Rombo
-    \value Tachelhit
-    \value Kabyle
-    \value Nyankole
-    \value Bena
-    \value Vunjo
-    \value Bambara
-    \value Embu
-    \value Cherokee
-    \value Morisyen
-    \value Makonde
-    \value Langi
-    \value Ganda
-    \value Bemba
-    \value Kabuverdianu
-    \value Meru
-    \value Kalenjin
-    \value Nama
-    \value Machame
-    \value Colognian
-    \value Masai
-    \value Soga
-    \value Luyia
-    \value Asu
-    \value Teso
-    \value Saho
-    \value KoyraChiini
-    \value Rwa
-    \value Luo
-    \value Chiga
-    \value CentralMoroccoTamazight
-    \value KoyraboroSenni
-    \value Shambala
-    \omitvalue LastLanguage
-
-    \sa language()
-*/
-
-/*!
-    \enum QLocale::Country
-
-    This enumerated type is used to specify a country.
-
-    \value AnyCountry
-    \value Afghanistan
-    \value Albania
-    \value Algeria
-    \value AmericanSamoa
-    \value Andorra
-    \value Angola
-    \value Anguilla
-    \value Antarctica
-    \value AntiguaAndBarbuda
-    \value Argentina
-    \value Armenia
-    \value Aruba
-    \value Australia
-    \value Austria
-    \value Azerbaijan
-    \value Bahamas
-    \value Bahrain
-    \value Bangladesh
-    \value Barbados
-    \value Belarus
-    \value Belgium
-    \value Belize
-    \value Benin
-    \value Bermuda
-    \value Bhutan
-    \value Bolivia
-    \value BosniaAndHerzegowina
-    \value Botswana
-    \value BouvetIsland
-    \value Brazil
-    \value BritishIndianOceanTerritory
-    \value BruneiDarussalam
-    \value Bulgaria
-    \value BurkinaFaso
-    \value Burundi
-    \value Cambodia
-    \value Cameroon
-    \value Canada
-    \value CapeVerde
-    \value CaymanIslands
-    \value CentralAfricanRepublic
-    \value Chad
-    \value Chile
-    \value China
-    \value ChristmasIsland
-    \value CocosIslands
-    \value Colombia
-    \value Comoros
-    \value DemocraticRepublicOfCongo
-    \value PeoplesRepublicOfCongo
-    \value CookIslands
-    \value CostaRica
-    \value IvoryCoast
-    \value Croatia
-    \value Cuba
-    \value Cyprus
-    \value CzechRepublic
-    \value Denmark
-    \value Djibouti
-    \value Dominica
-    \value DominicanRepublic
-    \value EastTimor
-    \value Ecuador
-    \value Egypt
-    \value ElSalvador
-    \value EquatorialGuinea
-    \value Eritrea
-    \value Estonia
-    \value Ethiopia
-    \value FalklandIslands
-    \value FaroeIslands
-    \value FijiCountry
-    \value Finland
-    \value France
-    \value MetropolitanFrance
-    \value FrenchGuiana
-    \value FrenchPolynesia
-    \value FrenchSouthernTerritories
-    \value Gabon
-    \value Gambia
-    \value Georgia
-    \value Germany
-    \value Ghana
-    \value Gibraltar
-    \value Greece
-    \value Greenland
-    \value Grenada
-    \value Guadeloupe
-    \value Guam
-    \value Guatemala
-    \value Guinea
-    \value GuineaBissau
-    \value Guyana
-    \value Haiti
-    \value HeardAndMcDonaldIslands
-    \value Honduras
-    \value HongKong
-    \value Hungary
-    \value Iceland
-    \value India
-    \value Indonesia
-    \value Iran
-    \value Iraq
-    \value Ireland
-    \value Israel
-    \value Italy
-    \value Jamaica
-    \value Japan
-    \value Jordan
-    \value Kazakhstan
-    \value Kenya
-    \value Kiribati
-    \value DemocraticRepublicOfKorea
-    \value RepublicOfKorea
-    \value Kuwait
-    \value Kyrgyzstan
-    \value Lao
-    \value Latvia
-    \value Lebanon
-    \value Lesotho
-    \value Liberia
-    \value LibyanArabJamahiriya
-    \value Liechtenstein
-    \value Lithuania
-    \value Luxembourg
-    \value Macau
-    \value Macedonia
-    \value Madagascar
-    \value Malawi
-    \value Malaysia
-    \value Maldives
-    \value Mali
-    \value Malta
-    \value MarshallIslands
-    \value Martinique
-    \value Mauritania
-    \value Mauritius
-    \value Mayotte
-    \value Mexico
-    \value Micronesia
-    \value Moldova
-    \value Monaco
-    \value Mongolia
-    \value Montserrat
-    \value Morocco
-    \value Mozambique
-    \value Myanmar
-    \value Namibia
-    \value NauruCountry
-    \value Nepal
-    \value Netherlands
-    \value NetherlandsAntilles
-    \value NewCaledonia
-    \value NewZealand
-    \value Nicaragua
-    \value Niger
-    \value Nigeria
-    \value Niue
-    \value NorfolkIsland
-    \value NorthernMarianaIslands
-    \value Norway
-    \value Oman
-    \value Pakistan
-    \value Palau
-    \value PalestinianTerritory
-    \value Panama
-    \value PapuaNewGuinea
-    \value Paraguay
-    \value Peru
-    \value Philippines
-    \value Pitcairn
-    \value Poland
-    \value Portugal
-    \value PuertoRico
-    \value Qatar
-    \value Reunion
-    \value Romania
-    \value RussianFederation
-    \value Rwanda
-    \value SaintKittsAndNevis
-    \value StLucia
-    \value StVincentAndTheGrenadines
-    \value Samoa
-    \value SanMarino
-    \value SaoTomeAndPrincipe
-    \value SaudiArabia
-    \value Senegal
-    \value SerbiaAndMontenegro
-    \value Seychelles
-    \value SierraLeone
-    \value Singapore
-    \value Slovakia
-    \value Slovenia
-    \value SolomonIslands
-    \value Somalia
-    \value SouthAfrica
-    \value SouthGeorgiaAndTheSouthSandwichIslands
-    \value Spain
-    \value SriLanka
-    \value StHelena
-    \value StPierreAndMiquelon
-    \value Sudan
-    \value Suriname
-    \value SvalbardAndJanMayenIslands
-    \value Swaziland
-    \value Sweden
-    \value Switzerland
-    \value SyrianArabRepublic
-    \value Taiwan
-    \value Tajikistan
-    \value Tanzania
-    \value Thailand
-    \value Togo
-    \value Tokelau
-    \value TongaCountry
-    \value TrinidadAndTobago
-    \value Tunisia
-    \value Turkey
-    \value Turkmenistan
-    \value TurksAndCaicosIslands
-    \value Tuvalu
-    \value Uganda
-    \value Ukraine
-    \value UnitedArabEmirates
-    \value UnitedKingdom
-    \value UnitedStates
-    \value UnitedStatesMinorOutlyingIslands
-    \value Uruguay
-    \value Uzbekistan
-    \value Vanuatu
-    \value VaticanCityState
-    \value Venezuela
-    \value VietNam
-    \value BritishVirginIslands
-    \value USVirginIslands
-    \value WallisAndFutunaIslands
-    \value WesternSahara
-    \value Yemen
-    \value Yugoslavia
-    \value Zambia
-    \value Zimbabwe
-    \value SerbiaAndMontenegro
-    \value Montenegro
-    \value Serbia
-    \value SaintBarthelemy
-    \value SaintMartin
-    \value LatinAmericaAndTheCaribbean
-    \omitvalue LastCountry
-
-    \sa country()
-*/
-
-/*!
-    \enum QLocale::FormatType
-
-    This enum describes the types of format that can be used when
-    converting QDate and QTime objects to strings.
-
-    \value LongFormat The long version of day and month names; for
-    example, returning "January" as a month name.
-
-    \value ShortFormat The short version of day and month names; for
-    example, returning "Jan" as a month name.
-
-    \value NarrowFormat A special version of day and month names for
-    use when space is limited; for example, returning "J" as a month
-    name. Note that the narrow format might contain the same text for
-    different months and days or it can even be an empty string if the
-    locale doesn't support narrow names, so you should avoid using it
-    for date formatting. Also, for the system locale this format is
-    the same as ShortFormat.
-*/
-
-/*!
-    \enum QLocale::NumberOption
-
-    This enum defines a set of options for number-to-string and string-to-number
-    conversions. They can be retrieved with numberOptions() and set with
-    setNumberOptions().
-
-    \value OmitGroupSeparator If this option is set, the number-to-string functions
-            will not insert group separators in their return values. The default
-            is to insert group separators.
-    \value RejectGroupSeparator If this option is set, the string-to-number functions
-            will fail if they encounter group separators in their input. The default
-            is to accept numbers containing correctly placed group separators.
-
-    \sa setNumberOptions() numberOptions()
-*/
-
-/*!
-    \enum QLocale::MeasurementSystem
-
-    This enum defines which units are used for measurement.
-
-    \value MetricSystem This value indicates metric units, such as meters,
-            centimeters and millimeters.
-    \value ImperialSystem This value indicates imperial units, such as inches and
-            miles. There are several distinct imperial systems in the world; this
-            value stands for the official United States imperial units.
-
-    \since 4.4
-*/
-
-
-/*!
-    \fn bool QLocale::operator==(const QLocale &other) const
-
-    Returns true if the QLocale object is the same as the \a other
-    locale specified; otherwise returns false.
-*/
-
-/*!
-    \fn bool QLocale::operator!=(const QLocale &other) const
-
-    Returns true if the QLocale object is not the same as the \a other
-    locale specified; otherwise returns false.
-*/
 
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocalePrivate) - 1;
 
@@ -2199,27 +625,30 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
 /*!
     Constructs a QLocale object with the specified \a name,
     which has the format
-    "language[_territory][.codeset][@modifier]" or "C", where:
+    "language[_script][_country][.codeset][@modifier]" or "C", where:
 
     \list
     \i language is a lowercase, two-letter, ISO 639 language code,
-    \i territory is an uppercase, two-letter, ISO 3166 country code,
+    \i script is a titlecase, four-letter, ISO 15924 script code,
+    \i country is an uppercase, two- or three-letter, ISO 3166 country code (also "419" as defined by United Nations),
     \i and codeset and modifier are ignored.
     \endlist
+
+    The separator can be either underscore or a minus sign.
 
     If the string violates the locale format, or language is not
     a valid ISO 369 code, the "C" locale is used instead. If country
     is not present, or is not a valid ISO 3166 code, the most
     appropriate country is chosen for the specified language.
 
-    The language and country codes are converted to their respective
-    \c Language and \c Country enums. After this conversion is
-    performed the constructor behaves exactly like QLocale(Country,
+    The language, script and country codes are converted to their respective
+    \c Language, \c Script and \c Country enums. After this conversion is
+    performed the constructor behaves exactly like QLocale(Country, Script,
     Language).
 
-    This constructor is much slower than QLocale(Country, Language).
+    This constructor is much slower than QLocale(Country, Script, Language).
 
-    \sa name()
+    \sa bcp47Name()
 */
 
 QLocale::QLocale(const QString &name)
@@ -2266,7 +695,46 @@ QLocale::QLocale()
 QLocale::QLocale(Language language, Country country)
     : v(0)
 {
-    const QLocalePrivate *d = findLocale(language, country);
+    const QLocalePrivate *d = QLocalePrivate::findLocale(language, QLocale::AnyScript, country);
+
+    // If not found, should default to system
+    if (d->languageId() == QLocale::C && language != QLocale::C) {
+        p.numberOptions = default_number_options;
+        p.index = localePrivateIndex(defaultPrivate());
+    } else {
+        p.numberOptions = 0;
+        p.index = localePrivateIndex(d);
+    }
+}
+\
+/*!
+    \since 4.8
+
+    Constructs a QLocale object with the specified \a language, \a script and
+    \a country.
+
+    \list
+    \i If the language/script/country is found in the database, it is used.
+    \i If both \a script is AnyScript and \a country is AnyCountry, the
+       language is used with the most appropriate available script and country
+       (for example, Germany for German),
+    \i If either \a script is AnyScript or \a country is AnyCountry, the
+       language is used with the first locale that matches the given \a script
+       and \a country.
+    \i If neither the language nor the country are found, QLocale
+       defaults to the default locale (see setDefault()).
+    \endlist
+
+    The language, script and country that are actually used can be queried
+    using language(), script() and country().
+
+    \sa setDefault() language() script() country()
+*/
+
+QLocale::QLocale(Language language, Script script, Country country)
+    : v(0)
+{
+    const QLocalePrivate *d = QLocalePrivate::findLocale(language, script, country);
 
     // If not found, should default to system
     if (d->languageId() == QLocale::C && language != QLocale::C) {
@@ -2328,6 +796,80 @@ QLocale::NumberOptions QLocale::numberOptions() const
 }
 
 /*!
+    \since 4.8
+
+    Returns \a str quoted according to the current locale using the given
+    quotation \a style.
+*/
+QString QLocale::quoteString(const QString &str, QuotationStyle style) const
+{
+    return quoteString(&str, style);
+}
+
+/*!
+    \since 4.8
+
+    \overload
+*/
+QString QLocale::quoteString(const QStringRef &str, QuotationStyle style) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res;
+        if (style == QLocale::AlternateQuotation)
+            res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation, QVariant::fromValue(str));
+        if (res.isNull() || style == QLocale::StandardQuotation)
+            res = systemLocale()->query(QSystemLocale::StringToStandardQuotation, QVariant::fromValue(str));
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    if (style == QLocale::StandardQuotation)
+        return QChar(d()->m_quotation_start) % str % QChar(d()->m_quotation_end);
+    else
+        return QChar(d()->m_alternate_quotation_start) % str % QChar(d()->m_alternate_quotation_end);
+}
+
+/*!
+    \since 4.8
+
+    Returns a string that represents a join of a given \a list of strings with
+    a separator defined by the locale.
+*/
+QString QLocale::createSeparatedList(const QStringList &list) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res;
+        res = systemLocale()->query(QSystemLocale::ListToSeparatedString, QVariant::fromValue(list));
+
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    const int size = list.size();
+    if (size == 1) {
+        return list.at(0);
+    } else if (size == 2) {
+        QString format = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_two_idx, d()->m_list_pattern_part_two_size);
+        return format.arg(list.at(0), list.at(1));
+    } else if (size > 2) {
+        QString formatStart = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_start_idx, d()->m_list_pattern_part_start_size);
+        QString formatMid = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_mid_idx, d()->m_list_pattern_part_mid_size);
+        QString formatEnd = getLocaleData(list_pattern_part_data + d()->m_list_pattern_part_end_idx, d()->m_list_pattern_part_end_size);
+        QString result = formatStart.arg(list.at(0), list.at(1));
+        for (int i = 2; i < size - 1; ++i)
+            result = formatMid.arg(result, list.at(i));
+        result = formatEnd.arg(result, list.at(size - 1));
+        return result;
+    }
+
+    return QString();
+}
+
+/*!
     \nonreentrant
 
     Sets the global default locale to \a locale. These
@@ -2346,12 +888,16 @@ void QLocale::setDefault(const QLocale &locale)
 {
     default_lp = locale.d();
     default_number_options = locale.numberOptions();
+
+#ifdef QT_USE_ICU
+    qt_initIcu(locale.bcp47Name());
+#endif
 }
 
 /*!
     Returns the language of this locale.
 
-    \sa country(), languageToString(), name()
+    \sa script(), country(), languageToString(), bcp47Name()
 */
 QLocale::Language QLocale::language() const
 {
@@ -2359,9 +905,21 @@ QLocale::Language QLocale::language() const
 }
 
 /*!
+    \since 4.8
+
+    Returns the script of this locale.
+
+    \sa language(), country(), languageToString(), scriptToString(), bcp47Name()
+*/
+QLocale::Script QLocale::script() const
+{
+    return Script(d()->m_script_id);
+}
+
+/*!
     Returns the country of this locale.
 
-    \sa language(), countryToString(), name()
+    \sa language(), script(), countryToString(), bcp47Name()
 */
 QLocale::Country QLocale::country() const
 {
@@ -2372,34 +930,70 @@ QLocale::Country QLocale::country() const
     Returns the language and country of this locale as a
     string of the form "language_country", where
     language is a lowercase, two-letter ISO 639 language code,
-    and country is an uppercase, two-letter ISO 3166 country code.
+    and country is an uppercase, two- or three-letter ISO 3166 country code.
 
-    \sa language(), country()
+    Note that even if QLocale object was constructed with an explicit script,
+    name() will not contain it for compatibility reasons. Use bcp47Name() instead
+    if you need a full locale name.
+
+    \sa QLocale(), language(), script(), country(), bcp47Name()
 */
 
 QString QLocale::name() const
 {
-    Language l = language();
+    const QLocalePrivate *dd = d();
 
-    QString result = languageToCode(l);
+    if (dd->m_language_id == QLocale::AnyLanguage)
+        return QString();
+    if (dd->m_language_id == QLocale::C)
+        return QLatin1String("C");
 
-    if (l == C)
-        return result;
+    const unsigned char *c = language_code_list + 3*(uint(dd->m_language_id));
 
-    Country c = country();
-    if (c == AnyCountry)
-        return result;
+    QString result(7, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
+    const ushort *begin = data;
 
-    result.append(QLatin1Char('_'));
-    result.append(countryToCode(c));
+    *data++ = ushort(c[0]);
+    *data++ = ushort(c[1]);
+    if (c[2] != 0)
+        *data++ = ushort(c[2]);
+    if (dd->m_country_id != AnyCountry) {
+        *data++ = '_';
+        const unsigned char *c = country_code_list + 3*(uint(dd->m_country_id));
+        *data++ = ushort(c[0]);
+        *data++ = ushort(c[1]);
+        if (c[2] != 0)
+            *data++ = ushort(c[2]);
+    }
+    result.resize(data - begin);
 
     return result;
 }
 
 /*!
+    \since 4.8
+
+    Returns the dash-separated language, script and country (and possibly other BCP47 fields)
+    of this locale as a string.
+
+    Unlike the uiLanguages() the returned value of the bcp47Name() represents
+    the locale name of the QLocale data but not the language the user-interface
+    should be in.
+
+    This function tries to conform the locale name to BCP47.
+
+    \sa language(), country(), script(), uiLanguages()
+*/
+QString QLocale::bcp47Name() const
+{
+    return d()->bcp47Name();
+}
+
+/*!
     Returns a QString containing the name of \a language.
 
-    \sa countryToString(), name()
+    \sa countryToString(), scriptToString(), bcp47Name()
 */
 
 QString QLocale::languageToString(Language language)
@@ -2412,7 +1006,7 @@ QString QLocale::languageToString(Language language)
 /*!
     Returns a QString containing the name of \a country.
 
-    \sa country(), name()
+    \sa languageToString(), scriptToString(), country(), bcp47Name()
 */
 
 QString QLocale::countryToString(Country country)
@@ -2420,6 +1014,20 @@ QString QLocale::countryToString(Country country)
     if (uint(country) > uint(QLocale::LastCountry))
         return QLatin1String("Unknown");
     return QLatin1String(country_name_list + country_name_index[country]);
+}
+
+/*!
+    \since 4.8
+
+    Returns a QString containing the name of \a script.
+
+    \sa languageToString(), countryToString(), script(), bcp47Name()
+*/
+QString QLocale::scriptToString(QLocale::Script script)
+{
+    if (uint(script) > uint(QLocale::LastScript))
+        return QLatin1String("Unknown");
+    return QLatin1String(script_name_list + script_name_index[script]);
 }
 
 /*!
@@ -2721,7 +1329,7 @@ static bool timeFormatContainsAP(const QString &format)
     int i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            readEscapedFormatString(format, &i);
+            qt_readEscapedFormatString(format, &i);
             continue;
         }
 
@@ -3229,12 +1837,49 @@ QLocale QLocale::system()
     return result;
 }
 
+
 /*!
+    \since 4.8
+
+    Returns a list of valid locale objects that match the given \a language, \a
+    script and \a country.
+
+    Getting a list of all locales:
+    QList<QLocale> allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+*/
+QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
+                                        QLocale::Script script,
+                                        QLocale::Country country)
+{
+    if (uint(language) > QLocale::LastLanguage || uint(script) > QLocale::LastScript ||
+            uint(country) > QLocale::LastCountry)
+        return QList<QLocale>();
+
+    QList<QLocale> result;
+    const QLocalePrivate *d = locale_data;
+    if (language == QLocale::AnyLanguage && script == QLocale::AnyScript && country == QLocale::AnyCountry)
+        result.reserve(locale_data_size);
+    if (language != QLocale::C)
+        d += locale_index[language];
+    while ( (d != locale_data + locale_data_size)
+            && (language == QLocale::AnyLanguage || d->m_language_id == uint(language))) {
+        QLocale locale(QLocale::C);
+        locale.p.index = localePrivateIndex(d);
+        result.append(locale);
+        ++d;
+    }
+    return result;
+}
+
+/*!
+    \obsolete
     \since 4.3
 
     Returns the list of countries that have entires for \a language in Qt's locale
     database. If the result is an empty list, then \a language is not represented in
     Qt's locale database.
+
+    \sa matchingLocales()
 */
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
@@ -3449,31 +2094,74 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
 }
 
 /*!
+    \since 4.8
+
+    Returns the first day of the week according to the current locale.
+*/
+Qt::DayOfWeek QLocale::firstDayOfWeek() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::FirstDayOfWeek, QVariant());
+        if (!res.isNull())
+            return static_cast<Qt::DayOfWeek>(res.toUInt());
+    }
+#endif
+    return static_cast<Qt::DayOfWeek>(d()->m_first_day_of_week);
+}
+
+QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
+{
+    for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
+        if (ImperialMeasurementSystems[i].languageId == m_language_id
+            && ImperialMeasurementSystems[i].countryId == m_country_id) {
+            return QLocale::ImperialSystem;
+        }
+    }
+    return QLocale::MetricSystem;
+}
+
+/*!
+    \since 4.8
+
+    Returns a list of days that are considered weekdays according to the current locale.
+*/
+QList<Qt::DayOfWeek> QLocale::weekdays() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::Weekdays, QVariant());
+        if (!res.isNull())
+            return static_cast<QList<Qt::DayOfWeek> >(res.value<QList<Qt::DayOfWeek> >());
+    }
+#endif
+    QList<Qt::DayOfWeek> weekdays;
+    quint16 weekendStart = d()->m_weekend_start;
+    quint16 weekendEnd = d()->m_weekend_end;
+    for (int day = Qt::Monday; day <= Qt::Sunday; day++) {
+        if ((weekendEnd >= weekendStart && (day < weekendStart || day > weekendEnd)) ||
+            (weekendEnd < weekendStart && (day > weekendEnd && day < weekendStart)))
+                weekdays << static_cast<Qt::DayOfWeek>(day);
+    }
+    return weekdays;
+}
+
+/*!
     \since 4.4
 
     Returns the measurement system for the locale.
 */
 QLocale::MeasurementSystem QLocale::measurementSystem() const
 {
-    MeasurementSystem meas = MetricSystem;
-    bool found = false;
-
 #ifndef QT_NO_SYSTEMLOCALE
     if (d() == systemPrivate()) {
         QVariant res = systemLocale()->query(QSystemLocale::MeasurementSystem, QVariant());
-        if (!res.isNull()) {
-            meas = MeasurementSystem(res.toInt());
-            found = true;
-        }
+        if (!res.isNull())
+            return MeasurementSystem(res.toInt());
     }
 #endif
 
-    if (!found) {
-        meas = d()->measurementSystem();
-        found = true;
-    }
-
-    return meas;
+    return d()->measurementSystem();
 }
 
 /*!
@@ -3492,6 +2180,42 @@ Qt::LayoutDirection QLocale::textDirection() const
         return Qt::RightToLeft;
 
     return Qt::LeftToRight;
+}
+
+/*!
+  \since 4.8
+
+  Returns an uppercase copy of \a str.
+*/
+QString QLocale::toUpper(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToUpper(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toUpper();
+}
+
+/*!
+  \since 4.8
+
+  Returns a lowercase copy of \a str.
+*/
+QString QLocale::toLower(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToLower(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toLower();
 }
 
 
@@ -3536,193 +2260,6 @@ QString QLocale::pmText() const
 }
 
 
-/*!
-\fn QString QLocale::toString(short i) const
-
-\overload
-
-\sa toShort()
-*/
-
-/*!
-\fn QString QLocale::toString(ushort i) const
-
-\overload
-
-\sa toUShort()
-*/
-
-/*!
-\fn QString QLocale::toString(int i) const
-
-\overload
-
-\sa toInt()
-*/
-
-/*!
-\fn QString QLocale::toString(uint i) const
-
-\overload
-
-\sa toUInt()
-*/
-
-/*
-\fn QString QLocale::toString(long i) const
-
-\overload
-
-\sa  toLong()
-*/
-
-/*
-\fn QString QLocale::toString(ulong i) const
-
-\overload
-
-\sa toULong()
-*/
-
-/*!
-\fn QString QLocale::toString(float i, char f = 'g', int prec = 6) const
-
-\overload
-
-\a f and \a prec have the same meaning as in QString::number(double, char, int).
-
-\sa toDouble()
-*/
-
-
-static QString qulltoa(qulonglong l, int base, const QLocalePrivate &locale)
-{
-    ushort buff[65]; // length of MAX_ULLONG in base 2
-    ushort *p = buff + 65;
-    const QChar _zero = locale.zero();
-
-    if (base != 10 || _zero.unicode() == '0') {
-        while (l != 0) {
-            int c = l % base;
-
-            --p;
-
-            if (c < 10)
-                *p = '0' + c;
-            else
-                *p = c - 10 + 'a';
-
-            l /= base;
-        }
-    }
-    else {
-        while (l != 0) {
-            int c = l % base;
-
-            *(--p) = _zero.unicode() + c;
-
-            l /= base;
-        }
-    }
-
-    return QString(reinterpret_cast<QChar *>(p), 65 - (p - buff));
-}
-
-static QString qlltoa(qlonglong l, int base, const QLocalePrivate &locale)
-{
-    return qulltoa(l < 0 ? -l : l, base, locale);
-}
-
-enum PrecisionMode {
-    PMDecimalDigits =             0x01,
-    PMSignificantDigits =   0x02,
-    PMChopTrailingZeros =   0x03
-};
-
-static QString &decimalForm(QString &digits, int decpt, uint precision,
-                            PrecisionMode pm,
-                            bool always_show_decpt,
-                            bool thousands_group,
-                            const QLocalePrivate &locale)
-{
-    if (decpt < 0) {
-        for (int i = 0; i < -decpt; ++i)
-            digits.prepend(locale.zero());
-        decpt = 0;
-    }
-    else if (decpt > digits.length()) {
-        for (int i = digits.length(); i < decpt; ++i)
-            digits.append(locale.zero());
-    }
-
-    if (pm == PMDecimalDigits) {
-        uint decimal_digits = digits.length() - decpt;
-        for (uint i = decimal_digits; i < precision; ++i)
-            digits.append(locale.zero());
-    }
-    else if (pm == PMSignificantDigits) {
-        for (uint i = digits.length(); i < precision; ++i)
-            digits.append(locale.zero());
-    }
-    else { // pm == PMChopTrailingZeros
-    }
-
-    if (always_show_decpt || decpt < digits.length())
-        digits.insert(decpt, locale.decimal());
-
-    if (thousands_group) {
-        for (int i = decpt - 3; i > 0; i -= 3)
-            digits.insert(i, locale.group());
-    }
-
-    if (decpt == 0)
-        digits.prepend(locale.zero());
-
-    return digits;
-}
-
-static QString &exponentForm(QString &digits, int decpt, uint precision,
-                                PrecisionMode pm,
-                                bool always_show_decpt,
-                                const QLocalePrivate &locale)
-{
-    int exp = decpt - 1;
-
-    if (pm == PMDecimalDigits) {
-        for (uint i = digits.length(); i < precision + 1; ++i)
-            digits.append(locale.zero());
-    }
-    else if (pm == PMSignificantDigits) {
-        for (uint i = digits.length(); i < precision; ++i)
-            digits.append(locale.zero());
-    }
-    else { // pm == PMChopTrailingZeros
-    }
-
-    if (always_show_decpt || digits.length() > 1)
-        digits.insert(1, locale.decimal());
-
-    digits.append(locale.exponential());
-    digits.append(locale.longLongToString(exp, 2, 10,
-                    -1, QLocalePrivate::AlwaysShowSign));
-
-    return digits;
-}
-
-static bool isZero(double d)
-{
-    uchar *ch = (uchar *)&d;
-#ifdef QT_ARMFPA
-        return !(ch[3] & 0x7F || ch[2] || ch[1] || ch[0] || ch[7] || ch[6] || ch[5] || ch[4]);
-#else
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return !(ch[0] & 0x7F || ch[1] || ch[2] || ch[3] || ch[4] || ch[5] || ch[6] || ch[7]);
-    } else {
-        return !(ch[7] & 0x7F || ch[6] || ch[5] || ch[4] || ch[3] || ch[2] || ch[1] || ch[0]);
-    }
-#endif
-}
-
 QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                                          const QLocale *q) const
 {
@@ -3752,12 +2289,12 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
     int i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            result.append(readEscapedFormatString(format, &i));
+            result.append(qt_readEscapedFormatString(format, &i));
             continue;
         }
 
         const QChar c = format.at(i);
-        int repeat = repeatCount(format, i);
+        int repeat = qt_repeatCount(format, i);
         bool used = false;
         if (date) {
             switch (c.unicode()) {
@@ -3888,7 +2425,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
                 } else {
                     repeat = 1;
                 }
-                result.append(am_pm == AM ? QLatin1String("am") : QLatin1String("pm"));
+                result.append(am_pm == AM ? q->amText().toLower() : q->pmText().toLower());
                 break;
 
             case 'A':
@@ -3898,7 +2435,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
                 } else {
                     repeat = 1;
                 }
-                result.append(am_pm == AM ? QLatin1String("AM") : QLatin1String("PM"));
+                result.append(am_pm == AM ? q->amText().toUpper() : q->pmText().toUpper());
                 break;
 
             case 'z':
@@ -3941,6 +2478,19 @@ QString QLocalePrivate::doubleToString(double d,
                                        DoubleForm form,
                                        int width,
                                        unsigned flags) const
+{
+    return QLocalePrivate::doubleToString(zero(), plus(), minus(), exponential(),
+                                          group(), decimal(),
+                                          d, precision, form, width, flags);
+}
+
+QString QLocalePrivate::doubleToString(const QChar _zero, const QChar plus, const QChar minus,
+                                       const QChar exponential, const QChar group, const QChar decimal,
+                                       double d,
+                                       int precision,
+                                       DoubleForm form,
+                                       int width,
+                                       unsigned flags)
 {
     if (precision == -1)
         precision = 6;
@@ -4019,8 +2569,6 @@ QString QLocalePrivate::doubleToString(double d,
             free(buff);
 #endif // QT_QLOCALE_USES_FCVT
 
-        const QChar _zero = zero();
-
         if (_zero.unicode() != '0') {
             ushort z = _zero.unicode() - '0';
             for (int i = 0; i < digits.length(); ++i)
@@ -4030,14 +2578,15 @@ QString QLocalePrivate::doubleToString(double d,
         bool always_show_decpt = (flags & Alternate || flags & ForcePoint);
         switch (form) {
             case DFExponent: {
-                num_str = exponentForm(digits, decpt, precision, PMDecimalDigits,
-                                                    always_show_decpt, *this);
+                num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
+                                       digits, decpt, precision, PMDecimalDigits,
+                                       always_show_decpt);
                 break;
             }
             case DFDecimal: {
-                num_str = decimalForm(digits, decpt, precision, PMDecimalDigits,
-                                        always_show_decpt, flags & ThousandsGroup,
-                                        *this);
+                num_str = decimalForm(_zero, decimal, group,
+                                      digits, decpt, precision, PMDecimalDigits,
+                                      always_show_decpt, flags & ThousandsGroup);
                 break;
             }
             case DFSignificantDigits: {
@@ -4045,12 +2594,13 @@ QString QLocalePrivate::doubleToString(double d,
                             PMSignificantDigits : PMChopTrailingZeros;
 
                 if (decpt != digits.length() && (decpt <= -4 || decpt > precision))
-                    num_str = exponentForm(digits, decpt, precision, mode,
-                                                    always_show_decpt, *this);
+                    num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
+                                           digits, decpt, precision, mode,
+                                           always_show_decpt);
                 else
-                    num_str = decimalForm(digits, decpt, precision, mode,
-                                            always_show_decpt, flags & ThousandsGroup,
-                                            *this);
+                    num_str = decimalForm(_zero, decimal, group,
+                                          digits, decpt, precision, mode,
+                                          always_show_decpt, flags & ThousandsGroup);
                 break;
             }
         }
@@ -4071,14 +2621,14 @@ QString QLocalePrivate::doubleToString(double d,
             --num_pad_chars;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(zero());
+            num_str.prepend(_zero);
     }
 
     // add sign
     if (negative)
-        num_str.prepend(minus());
+        num_str.prepend(minus);
     else if (flags & QLocalePrivate::AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & QLocalePrivate::BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
@@ -4091,6 +2641,16 @@ QString QLocalePrivate::doubleToString(double d,
 QString QLocalePrivate::longLongToString(qlonglong l, int precision,
                                             int base, int width,
                                             unsigned flags) const
+{
+    return QLocalePrivate::longLongToString(zero(), group(), plus(), minus(),
+                                            l, precision, base, width, flags);
+}
+
+QString QLocalePrivate::longLongToString(const QChar zero, const QChar group,
+                                         const QChar plus, const QChar minus,
+                                         qlonglong l, int precision,
+                                         int base, int width,
+                                         unsigned flags)
 {
     bool precision_not_specified = false;
     if (precision == -1) {
@@ -4108,20 +2668,20 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
 
     QString num_str;
     if (base == 10)
-        num_str = qlltoa(l, base, *this);
+        num_str = qlltoa(l, base, zero);
     else
-        num_str = qulltoa(l, base, *this);
+        num_str = qulltoa(l, base, zero);
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {
         for (int i = num_str.length() - 3; i > 0; i -= 3) {
-            num_str.insert(i, group());
+            num_str.insert(i, group);
             ++cnt_thousand_sep;
         }
     }
 
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+        num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
     if ((flags & Alternate || flags & ShowBase)
             && base == 8
@@ -4151,7 +2711,7 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+            num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
     }
 
     if (flags & CapitalEorX)
@@ -4164,9 +2724,9 @@ QString QLocalePrivate::longLongToString(qlonglong l, int precision,
 
     // add sign
     if (negative)
-        num_str.prepend(minus());
+        num_str.prepend(minus);
     else if (flags & AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
@@ -4177,24 +2737,34 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
                                             int base, int width,
                                             unsigned flags) const
 {
+    return QLocalePrivate::unsLongLongToString(zero(), group(), plus(),
+                                               l, precision, base, width, flags);
+}
+
+QString QLocalePrivate::unsLongLongToString(const QChar zero, const QChar group,
+                                            const QChar plus,
+                                            qulonglong l, int precision,
+                                            int base, int width,
+                                            unsigned flags)
+{
     bool precision_not_specified = false;
     if (precision == -1) {
         precision_not_specified = true;
         precision = 1;
     }
 
-    QString num_str = qulltoa(l, base, *this);
+    QString num_str = qulltoa(l, base, zero);
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {
         for (int i = num_str.length() - 3; i > 0; i -=3) {
-            num_str.insert(i, group());
+            num_str.insert(i, group);
             ++cnt_thousand_sep;
         }
     }
 
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+        num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
     if ((flags & Alternate || flags & ShowBase)
             && base == 8
@@ -4218,7 +2788,7 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(base == 10 ? zero() : QChar::fromLatin1('0'));
+            num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
     }
 
     if (flags & CapitalEorX)
@@ -4231,85 +2801,11 @@ QString QLocalePrivate::unsLongLongToString(qulonglong l, int precision,
 
     // add sign
     if (flags & AlwaysShowSign)
-        num_str.prepend(plus());
+        num_str.prepend(plus);
     else if (flags & BlankBeforePositive)
         num_str.prepend(QLatin1Char(' '));
 
     return num_str;
-}
-
-// Removes thousand-group separators in "C" locale.
-static bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
-{
-    int group_cnt = 0; // counts number of group chars
-    int decpt_idx = -1;
-
-    char *data = num->data();
-    int l = qstrlen(data);
-
-    // Find the decimal point and check if there are any group chars
-    int i = 0;
-    for (; i < l; ++i) {
-        char c = data[i];
-
-        if (c == ',') {
-            if (i == 0 || data[i - 1] < '0' || data[i - 1] > '9')
-                return false;
-            if (i == l - 1 || data[i + 1] < '0' || data[i + 1] > '9')
-                return false;
-            ++group_cnt;
-        }
-        else if (c == '.') {
-            // Fail if more than one decimal points
-            if (decpt_idx != -1)
-                return false;
-            decpt_idx = i;
-        } else if (c == 'e' || c == 'E') {
-            // an 'e' or 'E' - if we have not encountered a decimal
-            // point, this is where it "is".
-            if (decpt_idx == -1)
-                decpt_idx = i;
-        }
-    }
-
-    // If no group chars, we're done
-    if (group_cnt == 0)
-        return true;
-
-    // No decimal point means that it "is" at the end of the string
-    if (decpt_idx == -1)
-        decpt_idx = l;
-
-    i = 0;
-    while (i < l && group_cnt > 0) {
-        char c = data[i];
-
-        if (c == ',') {
-            // Don't allow group chars after the decimal point
-            if (i > decpt_idx)
-                return false;
-
-            // Check that it is placed correctly relative to the decpt
-            if ((decpt_idx - i) % 4 != 0)
-                return false;
-
-            // Remove it
-            memmove(data + i, data + i + 1, l - i - 1);
-            data[--l] = '\0';
-
-            --group_cnt;
-            --decpt_idx;
-        } else {
-            // Check that we are not missing a separator
-            if (i < decpt_idx
-                    && (decpt_idx - i) % 4 == 0
-                    && !(i == 0 && c == '-')) // check for negative sign at start of string
-                return false;
-            ++i;
-        }
-    }
-
-    return true;
 }
 
 /*
@@ -4333,8 +2829,6 @@ bool QLocalePrivate::numberToCLocale(const QString &num,
         ++idx;
     if (idx == l)
         return false;
-
-    const QChar _group = group();
 
     while (idx < l) {
         const QChar &in = uc[idx];
@@ -4622,2701 +3116,212 @@ qulonglong QLocalePrivate::bytearrayToUnsLongLong(const char *num, int base, boo
     return l;
 }
 
-/*-
- * Copyright (c) 1992, 1993
- *        The Regents of the University of California.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgment:
- *        This product includes software developed by the University of
- *        California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
+/*!
+    \since 4.8
 
-// static char sccsid[] = "@(#)strtouq.c        8.1 (Berkeley) 6/4/93";
-//  "$FreeBSD: src/lib/libc/stdlib/strtoull.c,v 1.5.2.1 2001/03/02 09:45:20 obrien Exp $";
+    \enum QLocale::CurrencySymbolFormat
 
-/*
- * Convert a string to an unsigned long long integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
- */
-static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok)
-{
-    register const char *s = nptr;
-    register qulonglong acc;
-    register unsigned char c;
-    register qulonglong qbase, cutoff;
-    register int any, cutlim;
+    Specifies the format of the currency symbol.
 
-    if (ok != 0)
-        *ok = true;
-
-    /*
-     * See strtoq for comments as to the logic used.
-     */
-    s = nptr;
-    do {
-        c = *s++;
-    } while (isspace(c));
-    if (c == '-') {
-        if (ok != 0)
-            *ok = false;
-        if (endptr != 0)
-            *endptr = s - 1;
-        return 0;
-    } else {
-        if (c == '+')
-            c = *s++;
-    }
-    if ((base == 0 || base == 16) &&
-        c == '0' && (*s == 'x' || *s == 'X')) {
-        c = s[1];
-        s += 2;
-        base = 16;
-    }
-    if (base == 0)
-        base = c == '0' ? 8 : 10;
-    qbase = unsigned(base);
-    cutoff = qulonglong(ULLONG_MAX) / qbase;
-    cutlim = qulonglong(ULLONG_MAX) % qbase;
-    for (acc = 0, any = 0;; c = *s++) {
-        if (!isascii(c))
-            break;
-        if (isdigit(c))
-            c -= '0';
-        else if (isalpha(c))
-            c -= isupper(c) ? 'A' - 10 : 'a' - 10;
-        else
-            break;
-        if (c >= base)
-            break;
-        if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
-            any = -1;
-        else {
-            any = 1;
-            acc *= qbase;
-            acc += c;
-        }
-    }
-    if (any == 0) {
-        if (ok != 0)
-            *ok = false;
-    } else if (any < 0) {
-        acc = ULLONG_MAX;
-        if (ok != 0)
-            *ok = false;
-    }
-    if (endptr != 0)
-        *endptr = (any ? s - 1 : nptr);
-    return acc;
-}
-
-
-//  "$FreeBSD: src/lib/libc/stdlib/strtoll.c,v 1.5.2.1 2001/03/02 09:45:20 obrien Exp $";
-
-
-/*
- * Convert a string to a long long integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
- */
-static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
-{
-    register const char *s;
-    register qulonglong acc;
-    register unsigned char c;
-    register qulonglong qbase, cutoff;
-    register int neg, any, cutlim;
-
-    /*
-     * Skip white space and pick up leading +/- sign if any.
-     * If base is 0, allow 0x for hex and 0 for octal, else
-     * assume decimal; if base is already 16, allow 0x.
-     */
-    s = nptr;
-    do {
-        c = *s++;
-    } while (isspace(c));
-    if (c == '-') {
-        neg = 1;
-        c = *s++;
-    } else {
-        neg = 0;
-        if (c == '+')
-            c = *s++;
-    }
-    if ((base == 0 || base == 16) &&
-        c == '0' && (*s == 'x' || *s == 'X')) {
-        c = s[1];
-        s += 2;
-        base = 16;
-    }
-    if (base == 0)
-        base = c == '0' ? 8 : 10;
-
-    /*
-     * Compute the cutoff value between legal numbers and illegal
-     * numbers.  That is the largest legal value, divided by the
-     * base.  An input number that is greater than this value, if
-     * followed by a legal input character, is too big.  One that
-     * is equal to this value may be valid or not; the limit
-     * between valid and invalid numbers is then based on the last
-     * digit.  For instance, if the range for quads is
-     * [-9223372036854775808..9223372036854775807] and the input base
-     * is 10, cutoff will be set to 922337203685477580 and cutlim to
-     * either 7 (neg==0) or 8 (neg==1), meaning that if we have
-     * accumulated a value > 922337203685477580, or equal but the
-     * next digit is > 7 (or 8), the number is too big, and we will
-     * return a range error.
-     *
-     * Set any if any `digits' consumed; make it negative to indicate
-     * overflow.
-     */
-    qbase = unsigned(base);
-    cutoff = neg ? qulonglong(0-(LLONG_MIN + LLONG_MAX)) + LLONG_MAX : LLONG_MAX;
-    cutlim = cutoff % qbase;
-    cutoff /= qbase;
-    for (acc = 0, any = 0;; c = *s++) {
-        if (!isascii(c))
-            break;
-        if (isdigit(c))
-            c -= '0';
-        else if (isalpha(c))
-            c -= isupper(c) ? 'A' - 10 : 'a' - 10;
-        else
-            break;
-        if (c >= base)
-            break;
-        if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
-            any = -1;
-        else {
-            any = 1;
-            acc *= qbase;
-            acc += c;
-        }
-    }
-    if (any < 0) {
-        acc = neg ? LLONG_MIN : LLONG_MAX;
-        if (ok != 0)
-            *ok = false;
-    } else if (neg) {
-        acc = (~acc) + 1;
-    }
-    if (endptr != 0)
-        *endptr = (any >= 0 ? s - 1 : nptr);
-
-    if (ok != 0)
-        *ok = any > 0;
-
-    return acc;
-}
-
-#ifndef QT_QLOCALE_USES_FCVT
-
-/*        From: NetBSD: strtod.c,v 1.26 1998/02/03 18:44:21 perry Exp */
-/* $FreeBSD: src/lib/libc/stdlib/netbsd_strtod.c,v 1.2.2.2 2001/03/02 17:14:15 tegge Exp $        */
-
-/* Please send bug reports to
-        David M. Gay
-        AT&T Bell Laboratories, Room 2C-463
-        600 Mountain Avenue
-        Murray Hill, NJ 07974-2070
-        U.S.A.
-        dmg@research.att.com or research!dmg
- */
-
-/* strtod for IEEE-, VAX-, and IBM-arithmetic machines.
- *
- * This strtod returns a nearest machine number to the input decimal
- * string (or sets errno to ERANGE).  With IEEE arithmetic, ties are
- * broken by the IEEE round-even rule.  Otherwise ties are broken by
- * biased rounding (add half and chop).
- *
- * Inspired loosely by William D. Clinger's paper "How to Read Floating
- * Point Numbers Accurately" [Proc. ACM SIGPLAN '90, pp. 92-101].
- *
- * Modifications:
- *
- *        1. We only require IEEE, IBM, or VAX double-precision
- *                arithmetic (not IEEE double-extended).
- *        2. We get by with floating-point arithmetic in a case that
- *                Clinger missed -- when we're computing d * 10^n
- *                for a small integer d and the integer n is not too
- *                much larger than 22 (the maximum integer k for which
- *                we can represent 10^k exactly), we may be able to
- *                compute (d*10^k) * 10^(e-k) with just one roundoff.
- *        3. Rather than a bit-at-a-time adjustment of the binary
- *                result in the hard case, we use floating-point
- *                arithmetic to determine the adjustment to within
- *                one bit; only in really hard cases do we need to
- *                compute a second residual.
- *        4. Because of 3., we don't need a large table of powers of 10
- *                for ten-to-e (just some small tables, e.g. of 10^k
- *                for 0 <= k <= 22).
- */
-
-/*
- * #define IEEE_LITTLE_ENDIAN for IEEE-arithmetic machines where the least
- *        significant byte has the lowest address.
- * #define IEEE_BIG_ENDIAN for IEEE-arithmetic machines where the most
- *        significant byte has the lowest address.
- * #define Long int on machines with 32-bit ints and 64-bit longs.
- * #define Sudden_Underflow for IEEE-format machines without gradual
- *        underflow (i.e., that flush to zero on underflow).
- * #define IBM for IBM mainframe-style floating-point arithmetic.
- * #define VAX for VAX-style floating-point arithmetic.
- * #define Unsigned_Shifts if >> does treats its left operand as unsigned.
- * #define No_leftright to omit left-right logic in fast floating-point
- *        computation of dtoa.
- * #define Check_FLT_ROUNDS if FLT_ROUNDS can assume the values 2 or 3.
- * #define RND_PRODQUOT to use rnd_prod and rnd_quot (assembly routines
- *        that use extended-precision instructions to compute rounded
- *        products and quotients) with IBM.
- * #define ROUND_BIASED for IEEE-format with biased rounding.
- * #define Inaccurate_Divide for IEEE-format with correctly rounded
- *        products but inaccurate quotients, e.g., for Intel i860.
- * #define Just_16 to store 16 bits per 32-bit Long when doing high-precision
- *        integer arithmetic.  Whether this speeds things up or slows things
- *        down depends on the machine and the number being converted.
- * #define KR_headers for old-style C function headers.
- * #define Bad_float_h if your system lacks a float.h or if it does not
- *        define some or all of DBL_DIG, DBL_MAX_10_EXP, DBL_MAX_EXP,
- *        FLT_RADIX, FLT_ROUNDS, and DBL_MAX.
- * #define MALLOC your_malloc, where your_malloc(n) acts like malloc(n)
- *        if memory is available and otherwise does something you deem
- *        appropriate.  If MALLOC is undefined, malloc will be invoked
- *        directly -- and assumed always to succeed.
- */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-__RCSID("$NetBSD: strtod.c,v 1.26 1998/02/03 18:44:21 perry Exp $");
-#endif /* LIBC_SCCS and not lint */
-
-/*
-#if defined(__m68k__)    || defined(__sparc__) || defined(__i386__) || \
-     defined(__mips__)    || defined(__ns32k__) || defined(__alpha__) || \
-     defined(__powerpc__) || defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_MAC) || \
-     defined(mips) || defined(Q_OS_AIX) || defined(Q_OS_SOLARIS)
-#           define IEEE_BIG_OR_LITTLE_ENDIAN 1
-#endif
+    \value CurrencyIsoCode a ISO-4217 code of the currency.
+    \value CurrencySymbol a currency symbol.
+    \value CurrencyDisplayName a user readable name of the currency.
 */
 
-// *All* of our architectures have IEEE arithmetic, don't they?
-#define IEEE_BIG_OR_LITTLE_ENDIAN 1
-
-#ifdef __arm32__
-/*
- * Although the CPU is little endian the FP has different
- * byte and word endianness. The byte order is still little endian
- * but the word order is big endian.
- */
-#define IEEE_BIG_OR_LITTLE_ENDIAN
-#endif
-
-#ifdef vax
-#define VAX
-#endif
-
-#define Long        qint32
-#define ULong        quint32
-
-#define MALLOC malloc
-
-#ifdef BSD_QDTOA_DEBUG
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <stdio.h>
-QT_END_INCLUDE_NAMESPACE
-
-#define Bug(x) {fprintf(stderr, "%s\n", x); exit(1);}
-#endif
-
-#ifdef Unsigned_Shifts
-#define Sign_Extend(a,b) if (b < 0) a |= 0xffff0000;
-#else
-#define Sign_Extend(a,b) /*no-op*/
-#endif
-
-#if (defined(IEEE_BIG_OR_LITTLE_ENDIAN) + defined(VAX) + defined(IBM)) != 1
-#error Exactly one of IEEE_BIG_OR_LITTLE_ENDIAN, VAX, or IBM should be defined.
-#endif
-
-static inline ULong _getWord0(const NEEDS_VOLATILE double x)
-{
-    const NEEDS_VOLATILE uchar *ptr = reinterpret_cast<const NEEDS_VOLATILE uchar *>(&x);
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ptr[0]<<24) + (ptr[1]<<16) + (ptr[2]<<8) + ptr[3];
-    } else {
-        return (ptr[7]<<24) + (ptr[6]<<16) + (ptr[5]<<8) + ptr[4];
-    }
-}
-
-static inline void _setWord0(NEEDS_VOLATILE double *x, ULong l)
-{
-    NEEDS_VOLATILE uchar *ptr = reinterpret_cast<NEEDS_VOLATILE uchar *>(x);
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        ptr[0] = uchar(l>>24);
-        ptr[1] = uchar(l>>16);
-        ptr[2] = uchar(l>>8);
-        ptr[3] = uchar(l);
-    } else {
-        ptr[7] = uchar(l>>24);
-        ptr[6] = uchar(l>>16);
-        ptr[5] = uchar(l>>8);
-        ptr[4] = uchar(l);
-    }
-}
-
-static inline ULong _getWord1(const NEEDS_VOLATILE double x)
-{
-    const NEEDS_VOLATILE uchar *ptr = reinterpret_cast<const NEEDS_VOLATILE uchar *>(&x);
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return (ptr[4]<<24) + (ptr[5]<<16) + (ptr[6]<<8) + ptr[7];
-    } else {
-        return (ptr[3]<<24) + (ptr[2]<<16) + (ptr[1]<<8) + ptr[0];
-    }
-}
-static inline void _setWord1(NEEDS_VOLATILE double *x, ULong l)
-{
-    NEEDS_VOLATILE uchar *ptr = reinterpret_cast<uchar NEEDS_VOLATILE *>(x);
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        ptr[4] = uchar(l>>24);
-        ptr[5] = uchar(l>>16);
-        ptr[6] = uchar(l>>8);
-        ptr[7] = uchar(l);
-    } else {
-        ptr[3] = uchar(l>>24);
-        ptr[2] = uchar(l>>16);
-        ptr[1] = uchar(l>>8);
-        ptr[0] = uchar(l);
-    }
-}
-
-static inline ULong getWord0(const NEEDS_VOLATILE double x)
-{
-#ifdef QT_ARMFPA
-    return _getWord1(x);
-#else
-    return _getWord0(x);
-#endif
-}
-
-static inline void setWord0(NEEDS_VOLATILE double *x, ULong l)
-{
-#ifdef QT_ARMFPA
-    _setWord1(x, l);
-#else
-    _setWord0(x, l);
-#endif
-}
-
-static inline ULong getWord1(const NEEDS_VOLATILE double x)
-{
-#ifdef QT_ARMFPA
-    return _getWord0(x);
-#else
-    return _getWord1(x);
-#endif
-}
-
-static inline void setWord1(NEEDS_VOLATILE double *x, ULong l)
-{
-#ifdef QT_ARMFPA
-    _setWord0(x, l);
-#else
-    _setWord1(x, l);
-#endif
-}
-
-static inline void Storeinc(ULong *&a, const ULong &b, const ULong &c)
-{
-
-    *a = (ushort(b) << 16) | ushort(c);
-    ++a;
-}
-
-/* #define P DBL_MANT_DIG */
-/* Ten_pmax = floor(P*log(2)/log(5)) */
-/* Bletch = (highest power of 2 < DBL_MAX_10_EXP) / 16 */
-/* Quick_max = floor((P-1)*log(FLT_RADIX)/log(10) - 1) */
-/* Int_max = floor(P*log(FLT_RADIX)/log(10) - 1) */
-
-#if defined(IEEE_BIG_OR_LITTLE_ENDIAN)
-#define Exp_shift  20
-#define Exp_shift1 20
-#define Exp_msk1    0x100000
-#define Exp_msk11   0x100000
-#define Exp_mask  0x7ff00000
-#define P 53
-#define Bias 1023
-#define IEEE_Arith
-#define Emin (-1022)
-#define Exp_1  0x3ff00000
-#define Exp_11 0x3ff00000
-#define Ebits 11
-#define Frac_mask  0xfffff
-#define Frac_mask1 0xfffff
-#define Ten_pmax 22
-#define Bletch 0x10
-#define Bndry_mask  0xfffff
-#define Bndry_mask1 0xfffff
-#if defined(LSB) && defined(Q_OS_VXWORKS)
-#undef LSB
-#endif
-#define LSB 1
-#define Sign_bit 0x80000000
-#define Log2P 1
-#define Tiny0 0
-#define Tiny1 1
-#define Quick_max 14
-#define Int_max 14
-#define Infinite(x) (getWord0(x) == 0x7ff00000) /* sufficient test for here */
-#else
-#undef  Sudden_Underflow
-#define Sudden_Underflow
-#ifdef IBM
-#define Exp_shift  24
-#define Exp_shift1 24
-#define Exp_msk1   0x1000000
-#define Exp_msk11  0x1000000
-#define Exp_mask  0x7f000000
-#define P 14
-#define Bias 65
-#define Exp_1  0x41000000
-#define Exp_11 0x41000000
-#define Ebits 8        /* exponent has 7 bits, but 8 is the right value in b2d */
-#define Frac_mask  0xffffff
-#define Frac_mask1 0xffffff
-#define Bletch 4
-#define Ten_pmax 22
-#define Bndry_mask  0xefffff
-#define Bndry_mask1 0xffffff
-#define LSB 1
-#define Sign_bit 0x80000000
-#define Log2P 4
-#define Tiny0 0x100000
-#define Tiny1 0
-#define Quick_max 14
-#define Int_max 15
-#else /* VAX */
-#define Exp_shift  23
-#define Exp_shift1 7
-#define Exp_msk1    0x80
-#define Exp_msk11   0x800000
-#define Exp_mask  0x7f80
-#define P 56
-#define Bias 129
-#define Exp_1  0x40800000
-#define Exp_11 0x4080
-#define Ebits 8
-#define Frac_mask  0x7fffff
-#define Frac_mask1 0xffff007f
-#define Ten_pmax 24
-#define Bletch 2
-#define Bndry_mask  0xffff007f
-#define Bndry_mask1 0xffff007f
-#define LSB 0x10000
-#define Sign_bit 0x8000
-#define Log2P 1
-#define Tiny0 0x80
-#define Tiny1 0
-#define Quick_max 15
-#define Int_max 15
-#endif
-#endif
-
-#ifndef IEEE_Arith
-#define ROUND_BIASED
-#endif
-
-#ifdef RND_PRODQUOT
-#define rounded_product(a,b) a = rnd_prod(a, b)
-#define rounded_quotient(a,b) a = rnd_quot(a, b)
-extern double rnd_prod(double, double), rnd_quot(double, double);
-#else
-#define rounded_product(a,b) a *= b
-#define rounded_quotient(a,b) a /= b
-#endif
-
-#define Big0 (Frac_mask1 | Exp_msk1*(DBL_MAX_EXP+Bias-1))
-#define Big1 0xffffffff
-
-#ifndef Just_16
-/* When Pack_32 is not defined, we store 16 bits per 32-bit Long.
- * This makes some inner loops simpler and sometimes saves work
- * during multiplications, but it often seems to make things slightly
- * slower.  Hence the default is now to store 32 bits per Long.
- */
-#ifndef Pack_32
-#define Pack_32
-#endif
-#endif
-
-#define Kmax 15
-
-struct
-Bigint {
-    struct Bigint *next;
-    int k, maxwds, sign, wds;
-    ULong x[1];
-};
-
- typedef struct Bigint Bigint;
-
-static Bigint *Balloc(int k)
-{
-    int x;
-    Bigint *rv;
-
-    x = 1 << k;
-    rv = static_cast<Bigint *>(MALLOC(sizeof(Bigint) + (x-1)*sizeof(Long)));
-    Q_CHECK_PTR(rv);
-    rv->k = k;
-    rv->maxwds = x;
-    rv->sign = rv->wds = 0;
-    return rv;
-}
-
-static void Bfree(Bigint *v)
-{
-    free(v);
-}
-
-#define Bcopy(x,y) memcpy(reinterpret_cast<char *>(&x->sign), reinterpret_cast<char *>(&y->sign), \
-y->wds*sizeof(Long) + 2*sizeof(int))
-
-/* multiply by m and add a */
-static Bigint *multadd(Bigint *b, int m, int a)
-{
-    int i, wds;
-    ULong *x, y;
-#ifdef Pack_32
-    ULong xi, z;
-#endif
-    Bigint *b1;
-
-    wds = b->wds;
-    x = b->x;
-    i = 0;
-    do {
-#ifdef Pack_32
-        xi = *x;
-        y = (xi & 0xffff) * m + a;
-        z = (xi >> 16) * m + (y >> 16);
-        a = (z >> 16);
-        *x++ = (z << 16) + (y & 0xffff);
-#else
-        y = *x * m + a;
-        a = (y >> 16);
-        *x++ = y & 0xffff;
-#endif
-    }
-    while(++i < wds);
-    if (a) {
-        if (wds >= b->maxwds) {
-            b1 = Balloc(b->k+1);
-            Bcopy(b1, b);
-            Bfree(b);
-            b = b1;
-        }
-        b->x[wds++] = a;
-        b->wds = wds;
-    }
-    return b;
-}
-
-static Bigint *s2b(const char *s, int nd0, int nd, ULong y9)
-{
-    Bigint *b;
-    int i, k;
-    Long x, y;
-
-    x = (nd + 8) / 9;
-    for(k = 0, y = 1; x > y; y <<= 1, k++) ;
-#ifdef Pack_32
-    b = Balloc(k);
-    b->x[0] = y9;
-    b->wds = 1;
-#else
-    b = Balloc(k+1);
-    b->x[0] = y9 & 0xffff;
-    b->wds = (b->x[1] = y9 >> 16) ? 2 : 1;
-#endif
-
-    i = 9;
-    if (9 < nd0) {
-        s += 9;
-        do b = multadd(b, 10, *s++ - '0');
-        while(++i < nd0);
-        s++;
-    }
-    else
-        s += 10;
-    for(; i < nd; i++)
-        b = multadd(b, 10, *s++ - '0');
-    return b;
-}
-
-static int hi0bits(ULong x)
-{
-    int k = 0;
-
-    if (!(x & 0xffff0000)) {
-        k = 16;
-        x <<= 16;
-    }
-    if (!(x & 0xff000000)) {
-        k += 8;
-        x <<= 8;
-    }
-    if (!(x & 0xf0000000)) {
-        k += 4;
-        x <<= 4;
-    }
-    if (!(x & 0xc0000000)) {
-        k += 2;
-        x <<= 2;
-    }
-    if (!(x & 0x80000000)) {
-        k++;
-        if (!(x & 0x40000000))
-            return 32;
-    }
-    return k;
-}
-
-static int lo0bits(ULong *y)
-{
-    int k;
-    ULong x = *y;
-
-    if (x & 7) {
-        if (x & 1)
-            return 0;
-        if (x & 2) {
-            *y = x >> 1;
-            return 1;
-        }
-        *y = x >> 2;
-        return 2;
-    }
-    k = 0;
-    if (!(x & 0xffff)) {
-        k = 16;
-        x >>= 16;
-    }
-    if (!(x & 0xff)) {
-        k += 8;
-        x >>= 8;
-    }
-    if (!(x & 0xf)) {
-        k += 4;
-        x >>= 4;
-    }
-    if (!(x & 0x3)) {
-        k += 2;
-        x >>= 2;
-    }
-    if (!(x & 1)) {
-        k++;
-        x >>= 1;
-        if (!x & 1)
-            return 32;
-    }
-    *y = x;
-    return k;
-}
-
-static Bigint *i2b(int i)
-{
-    Bigint *b;
-
-    b = Balloc(1);
-    b->x[0] = i;
-    b->wds = 1;
-    return b;
-}
-
-static Bigint *mult(Bigint *a, Bigint *b)
-{
-    Bigint *c;
-    int k, wa, wb, wc;
-    ULong carry, y, z;
-    ULong *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
-#ifdef Pack_32
-    ULong z2;
-#endif
-
-    if (a->wds < b->wds) {
-        c = a;
-        a = b;
-        b = c;
-    }
-    k = a->k;
-    wa = a->wds;
-    wb = b->wds;
-    wc = wa + wb;
-    if (wc > a->maxwds)
-        k++;
-    c = Balloc(k);
-    for(x = c->x, xa = x + wc; x < xa; x++)
-        *x = 0;
-    xa = a->x;
-    xae = xa + wa;
-    xb = b->x;
-    xbe = xb + wb;
-    xc0 = c->x;
-#ifdef Pack_32
-    for(; xb < xbe; xb++, xc0++) {
-        if ((y = *xb & 0xffff) != 0) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            do {
-                z = (*x & 0xffff) * y + (*xc & 0xffff) + carry;
-                carry = z >> 16;
-                z2 = (*x++ >> 16) * y + (*xc >> 16) + carry;
-                carry = z2 >> 16;
-                Storeinc(xc, z2, z);
-            }
-            while(x < xae);
-            *xc = carry;
-        }
-        if ((y = *xb >> 16) != 0) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            z2 = *xc;
-            do {
-                z = (*x & 0xffff) * y + (*xc >> 16) + carry;
-                carry = z >> 16;
-                Storeinc(xc, z, z2);
-                z2 = (*x++ >> 16) * y + (*xc & 0xffff) + carry;
-                carry = z2 >> 16;
-            }
-            while(x < xae);
-            *xc = z2;
-        }
-    }
-#else
-    for(; xb < xbe; xc0++) {
-        if (y = *xb++) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            do {
-                z = *x++ * y + *xc + carry;
-                carry = z >> 16;
-                *xc++ = z & 0xffff;
-            }
-            while(x < xae);
-            *xc = carry;
-        }
-    }
-#endif
-    for(xc0 = c->x, xc = xc0 + wc; wc > 0 && !*--xc; --wc) ;
-    c->wds = wc;
-    return c;
-}
-
-static Bigint *p5s;
-
-struct p5s_deleter
-{
-    ~p5s_deleter()
-    {
-        while (p5s) {
-            Bigint *next = p5s->next;
-            Bfree(p5s);
-            p5s = next;
-        }
-    }
-};
-
-static Bigint *pow5mult(Bigint *b, int k)
-{
-    Bigint *b1, *p5, *p51;
-    int i;
-    static const int p05[3] = { 5, 25, 125 };
-
-    if ((i = k & 3) != 0)
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU)
-    {
-        // work around a bug on 64 bit IRIX gcc
-        int *p = (int *) p05;
-        b = multadd(b, p[i-1], 0);
-    }
-#else
-    b = multadd(b, p05[i-1], 0);
-#endif
-
-    if (!(k >>= 2))
-        return b;
-    if (!(p5 = p5s)) {
-        /* first time */
-        static p5s_deleter deleter;
-        p5 = p5s = i2b(625);
-        p5->next = 0;
-    }
-    for(;;) {
-        if (k & 1) {
-            b1 = mult(b, p5);
-            Bfree(b);
-            b = b1;
-        }
-        if (!(k >>= 1))
-            break;
-        if (!(p51 = p5->next)) {
-            p51 = p5->next = mult(p5,p5);
-            p51->next = 0;
-        }
-        p5 = p51;
-    }
-    return b;
-}
-
-static Bigint *lshift(Bigint *b, int k)
-{
-    int i, k1, n, n1;
-    Bigint *b1;
-    ULong *x, *x1, *xe, z;
-
-#ifdef Pack_32
-    n = k >> 5;
-#else
-    n = k >> 4;
-#endif
-    k1 = b->k;
-    n1 = n + b->wds + 1;
-    for(i = b->maxwds; n1 > i; i <<= 1)
-        k1++;
-    b1 = Balloc(k1);
-    x1 = b1->x;
-    for(i = 0; i < n; i++)
-        *x1++ = 0;
-    x = b->x;
-    xe = x + b->wds;
-#ifdef Pack_32
-    if (k &= 0x1f) {
-        k1 = 32 - k;
-        z = 0;
-        do {
-            *x1++ = *x << k | z;
-            z = *x++ >> k1;
-        }
-        while(x < xe);
-        if ((*x1 = z) != 0)
-            ++n1;
-    }
-#else
-    if (k &= 0xf) {
-        k1 = 16 - k;
-        z = 0;
-        do {
-            *x1++ = *x << k  & 0xffff | z;
-            z = *x++ >> k1;
-        }
-        while(x < xe);
-        if (*x1 = z)
-            ++n1;
-    }
-#endif
-    else do
-        *x1++ = *x++;
-    while(x < xe);
-    b1->wds = n1 - 1;
-    Bfree(b);
-    return b1;
-}
-
-static int cmp(Bigint *a, Bigint *b)
-{
-    ULong *xa, *xa0, *xb, *xb0;
-    int i, j;
-
-    i = a->wds;
-    j = b->wds;
-#ifdef BSD_QDTOA_DEBUG
-    if (i > 1 && !a->x[i-1])
-        Bug("cmp called with a->x[a->wds-1] == 0");
-    if (j > 1 && !b->x[j-1])
-        Bug("cmp called with b->x[b->wds-1] == 0");
-#endif
-    if (i -= j)
-        return i;
-    xa0 = a->x;
-    xa = xa0 + j;
-    xb0 = b->x;
-    xb = xb0 + j;
-    for(;;) {
-        if (*--xa != *--xb)
-            return *xa < *xb ? -1 : 1;
-        if (xa <= xa0)
-            break;
-    }
-    return 0;
-}
-
-static Bigint *diff(Bigint *a, Bigint *b)
-{
-    Bigint *c;
-    int i, wa, wb;
-    Long borrow, y;        /* We need signed shifts here. */
-    ULong *xa, *xae, *xb, *xbe, *xc;
-#ifdef Pack_32
-    Long z;
-#endif
-
-    i = cmp(a,b);
-    if (!i) {
-        c = Balloc(0);
-        c->wds = 1;
-        c->x[0] = 0;
-        return c;
-    }
-    if (i < 0) {
-        c = a;
-        a = b;
-        b = c;
-        i = 1;
-    }
-    else
-        i = 0;
-    c = Balloc(a->k);
-    c->sign = i;
-    wa = a->wds;
-    xa = a->x;
-    xae = xa + wa;
-    wb = b->wds;
-    xb = b->x;
-    xbe = xb + wb;
-    xc = c->x;
-    borrow = 0;
-#ifdef Pack_32
-    do {
-        y = (*xa & 0xffff) - (*xb & 0xffff) + borrow;
-        borrow = y >> 16;
-        Sign_Extend(borrow, y);
-        z = (*xa++ >> 16) - (*xb++ >> 16) + borrow;
-        borrow = z >> 16;
-        Sign_Extend(borrow, z);
-        Storeinc(xc, z, y);
-    }
-    while(xb < xbe);
-    while(xa < xae) {
-        y = (*xa & 0xffff) + borrow;
-        borrow = y >> 16;
-        Sign_Extend(borrow, y);
-        z = (*xa++ >> 16) + borrow;
-        borrow = z >> 16;
-        Sign_Extend(borrow, z);
-        Storeinc(xc, z, y);
-    }
-#else
-    do {
-        y = *xa++ - *xb++ + borrow;
-        borrow = y >> 16;
-        Sign_Extend(borrow, y);
-        *xc++ = y & 0xffff;
-    }
-    while(xb < xbe);
-    while(xa < xae) {
-        y = *xa++ + borrow;
-        borrow = y >> 16;
-        Sign_Extend(borrow, y);
-        *xc++ = y & 0xffff;
-    }
-#endif
-    while(!*--xc)
-        wa--;
-    c->wds = wa;
-    return c;
-}
-
-static double ulp(double x)
-{
-    Long L;
-    double a;
-
-    L = (getWord0(x) & Exp_mask) - (P-1)*Exp_msk1;
-#ifndef Sudden_Underflow
-    if (L > 0) {
-#endif
-#ifdef IBM
-        L |= Exp_msk1 >> 4;
-#endif
-        setWord0(&a, L);
-        setWord1(&a, 0);
-#ifndef Sudden_Underflow
-    }
-    else {
-        L = -L >> Exp_shift;
-        if (L < Exp_shift) {
-            setWord0(&a, 0x80000 >> L);
-            setWord1(&a, 0);
-        }
-        else {
-            setWord0(&a, 0);
-            L -= Exp_shift;
-            setWord1(&a, L >= 31 ? 1U : 1U << (31 - L));
-        }
-    }
-#endif
-    return a;
-}
-
-static double b2d(Bigint *a, int *e)
-{
-    ULong *xa, *xa0, w, y, z;
-    int k;
-    double d;
-
-    xa0 = a->x;
-    xa = xa0 + a->wds;
-    y = *--xa;
-#ifdef BSD_QDTOA_DEBUG
-    if (!y) Bug("zero y in b2d");
-#endif
-    k = hi0bits(y);
-    *e = 32 - k;
-#ifdef Pack_32
-    if (k < Ebits) {
-        setWord0(&d, Exp_1 | y >> (Ebits - k));
-        w = xa > xa0 ? *--xa : 0;
-        setWord1(&d, y << ((32-Ebits) + k) | w >> (Ebits - k));
-        goto ret_d;
-    }
-    z = xa > xa0 ? *--xa : 0;
-    if (k -= Ebits) {
-        setWord0(&d, Exp_1 | y << k | z >> (32 - k));
-        y = xa > xa0 ? *--xa : 0;
-        setWord1(&d, z << k | y >> (32 - k));
-    }
-    else {
-        setWord0(&d, Exp_1 | y);
-        setWord1(&d, z);
-    }
-#else
-    if (k < Ebits + 16) {
-        z = xa > xa0 ? *--xa : 0;
-        setWord0(&d, Exp_1 | y << k - Ebits | z >> Ebits + 16 - k);
-        w = xa > xa0 ? *--xa : 0;
-        y = xa > xa0 ? *--xa : 0;
-        setWord1(&d, z << k + 16 - Ebits | w << k - Ebits | y >> 16 + Ebits - k);
-        goto ret_d;
-    }
-    z = xa > xa0 ? *--xa : 0;
-    w = xa > xa0 ? *--xa : 0;
-    k -= Ebits + 16;
-    setWord0(&d, Exp_1 | y << k + 16 | z << k | w >> 16 - k);
-    y = xa > xa0 ? *--xa : 0;
-    setWord1(&d, w << k + 16 | y << k);
-#endif
- ret_d:
-    return d;
-}
-
-static Bigint *d2b(double d, int *e, int *bits)
-{
-    Bigint *b;
-    int de, i, k;
-    ULong *x, y, z;
-
-#ifdef Pack_32
-    b = Balloc(1);
-#else
-    b = Balloc(2);
-#endif
-    x = b->x;
-
-    z = getWord0(d) & Frac_mask;
-    setWord0(&d, getWord0(d) & 0x7fffffff);        /* clear sign bit, which we ignore */
-#ifdef Sudden_Underflow
-    de = (int)(getWord0(d) >> Exp_shift);
-#ifndef IBM
-    z |= Exp_msk11;
-#endif
-#else
-    if ((de = int(getWord0(d) >> Exp_shift)) != 0)
-        z |= Exp_msk1;
-#endif
-#ifdef Pack_32
-    if ((y = getWord1(d)) != 0) {
-        if ((k = lo0bits(&y)) != 0) {
-            x[0] = y | z << (32 - k);
-            z >>= k;
-        }
-        else
-            x[0] = y;
-        i = b->wds = (x[1] = z) ? 2 : 1;
-    }
-    else {
-#ifdef BSD_QDTOA_DEBUG
-        if (!z)
-            Bug("Zero passed to d2b");
-#endif
-        k = lo0bits(&z);
-        x[0] = z;
-        i = b->wds = 1;
-        k += 32;
-    }
-#else
-    if (y = getWord1(d)) {
-        if (k = lo0bits(&y))
-            if (k >= 16) {
-                x[0] = y | z << 32 - k & 0xffff;
-                x[1] = z >> k - 16 & 0xffff;
-                x[2] = z >> k;
-                i = 2;
-            }
-            else {
-                x[0] = y & 0xffff;
-                x[1] = y >> 16 | z << 16 - k & 0xffff;
-                x[2] = z >> k & 0xffff;
-                x[3] = z >> k+16;
-                i = 3;
-            }
-        else {
-            x[0] = y & 0xffff;
-            x[1] = y >> 16;
-            x[2] = z & 0xffff;
-            x[3] = z >> 16;
-            i = 3;
-        }
-    }
-    else {
-#ifdef BSD_QDTOA_DEBUG
-        if (!z)
-            Bug("Zero passed to d2b");
-#endif
-        k = lo0bits(&z);
-        if (k >= 16) {
-            x[0] = z;
-            i = 0;
-        }
-        else {
-            x[0] = z & 0xffff;
-            x[1] = z >> 16;
-            i = 1;
-        }
-        k += 32;
-    }
-    while(!x[i])
-        --i;
-    b->wds = i + 1;
-#endif
-#ifndef Sudden_Underflow
-    if (de) {
-#endif
-#ifdef IBM
-        *e = (de - Bias - (P-1) << 2) + k;
-        *bits = 4*P + 8 - k - hi0bits(getWord0(d) & Frac_mask);
-#else
-        *e = de - Bias - (P-1) + k;
-        *bits = P - k;
-#endif
-#ifndef Sudden_Underflow
-    }
-    else {
-        *e = de - Bias - (P-1) + 1 + k;
-#ifdef Pack_32
-        *bits = 32*i - hi0bits(x[i-1]);
-#else
-        *bits = (i+2)*16 - hi0bits(x[i]);
-#endif
-    }
-#endif
-    return b;
-}
-
-static double ratio(Bigint *a, Bigint *b)
-{
-    double da, db;
-    int k, ka, kb;
-
-    da = b2d(a, &ka);
-    db = b2d(b, &kb);
-#ifdef Pack_32
-    k = ka - kb + 32*(a->wds - b->wds);
-#else
-    k = ka - kb + 16*(a->wds - b->wds);
-#endif
-#ifdef IBM
-    if (k > 0) {
-        setWord0(&da, getWord0(da) + (k >> 2)*Exp_msk1);
-        if (k &= 3)
-            da *= 1 << k;
-    }
-    else {
-        k = -k;
-        setWord0(&db, getWord0(db) + (k >> 2)*Exp_msk1);
-        if (k &= 3)
-            db *= 1 << k;
-    }
-#else
-    if (k > 0)
-        setWord0(&da, getWord0(da) + k*Exp_msk1);
-    else {
-        k = -k;
-        setWord0(&db, getWord0(db) + k*Exp_msk1);
-    }
-#endif
-    return da / db;
-}
-
-static const double tens[] = {
-    1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
-    1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
-    1e20, 1e21, 1e22
-#ifdef VAX
-    , 1e23, 1e24
-#endif
-};
-
-#ifdef IEEE_Arith
-static const double bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
-static const double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128, 1e-256 };
-#define n_bigtens 5
-#else
-#ifdef IBM
-static const double bigtens[] = { 1e16, 1e32, 1e64 };
-static const double tinytens[] = { 1e-16, 1e-32, 1e-64 };
-#define n_bigtens 3
-#else
-static const double bigtens[] = { 1e16, 1e32 };
-static const double tinytens[] = { 1e-16, 1e-32 };
-#define n_bigtens 2
-#endif
-#endif
-
-/*
-  The pre-release gcc3.3 shipped with SuSE 8.2 has a bug which causes
-  the comparison 1e-100 == 0.0 to return true. As a workaround, we
-  compare it to a global variable containing 0.0, which produces
-  correct assembler output.
-
-  ### consider detecting the broken compilers and using the static
-  ### double for these, and use a #define for all working compilers
+/*!
+    \since 4.8
+    Returns a currency symbol according to the \a format.
 */
-static double g_double_zero = 0.0;
-
-Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
+QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 {
-    int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, dsign,
-        e, e1, esign, i, j, k, nd, nd0, nf, nz, nz0, sign;
-    const char *s, *s0, *s1;
-    double aadj, aadj1, adj, rv, rv0;
-    Long L;
-    ULong y, z;
-    Bigint *bb1, *bd0;
-    Bigint *bb = NULL, *bd = NULL, *bs = NULL, *delta = NULL;/* pacify gcc */
-
-    /*
-      #ifndef KR_headers
-      const char decimal_point = localeconv()->decimal_point[0];
-      #else
-      const char decimal_point = '.';
-      #endif */
-    if (ok != 0)
-        *ok = true;
-
-    const char decimal_point = '.';
-
-    sign = nz0 = nz = 0;
-    rv = 0.;
-
-
-    for(s = s00; isspace(uchar(*s)); s++)
-        ;
-
-    if (*s == '-') {
-        sign = 1;
-        s++;
-    } else if (*s == '+') {
-        s++;
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencySymbol, format);
+        if (!res.isNull())
+            return res.toString();
     }
-
-    if (*s == '\0') {
-        s = s00;
-        goto ret;
-    }
-
-    if (*s == '0') {
-        nz0 = 1;
-        while(*++s == '0') ;
-        if (!*s)
-            goto ret;
-    }
-    s0 = s;
-    y = z = 0;
-    for(nd = nf = 0; (c = *s) >= '0' && c <= '9'; nd++, s++)
-        if (nd < 9)
-            y = 10*y + c - '0';
-        else if (nd < 16)
-            z = 10*z + c - '0';
-    nd0 = nd;
-    if (c == decimal_point) {
-        c = *++s;
-        if (!nd) {
-            for(; c == '0'; c = *++s)
-                nz++;
-            if (c > '0' && c <= '9') {
-                s0 = s;
-                nf += nz;
-                nz = 0;
-                goto have_dig;
-            }
-            goto dig_done;
-        }
-        for(; c >= '0' && c <= '9'; c = *++s) {
-        have_dig:
-            nz++;
-            if (c -= '0') {
-                nf += nz;
-                for(i = 1; i < nz; i++)
-                    if (nd++ < 9)
-                        y *= 10;
-                    else if (nd <= DBL_DIG + 1)
-                        z *= 10;
-                if (nd++ < 9)
-                    y = 10*y + c;
-                else if (nd <= DBL_DIG + 1)
-                    z = 10*z + c;
-                nz = 0;
-            }
-        }
-    }
- dig_done:
-    e = 0;
-    if (c == 'e' || c == 'E') {
-        if (!nd && !nz && !nz0) {
-            s = s00;
-            goto ret;
-        }
-        s00 = s;
-        esign = 0;
-        switch(c = *++s) {
-        case '-':
-            esign = 1;
-        case '+':
-            c = *++s;
-        }
-        if (c >= '0' && c <= '9') {
-            while(c == '0')
-                c = *++s;
-            if (c > '0' && c <= '9') {
-                L = c - '0';
-                s1 = s;
-                while((c = *++s) >= '0' && c <= '9')
-                    L = 10*L + c - '0';
-                if (s - s1 > 8 || L > 19999)
-                    /* Avoid confusion from exponents
-                     * so large that e might overflow.
-                     */
-                    e = 19999; /* safe for 16 bit ints */
-                else
-                    e = int(L);
-                if (esign)
-                    e = -e;
-            }
-            else
-                e = 0;
-        }
-        else
-            s = s00;
-    }
-    if (!nd) {
-        if (!nz && !nz0)
-            s = s00;
-        goto ret;
-    }
-    e1 = e -= nf;
-
-    /* Now we have nd0 digits, starting at s0, followed by a
-     * decimal point, followed by nd-nd0 digits.  The number we're
-     * after is the integer represented by those digits times
-     * 10**e */
-
-    if (!nd0)
-        nd0 = nd;
-    k = nd < DBL_DIG + 1 ? nd : DBL_DIG + 1;
-    rv = y;
-    if (k > 9)
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU)
-    {
-        // work around a bug on 64 bit IRIX gcc
-        double *t = (double *) tens;
-        rv = t[k - 9] * rv + z;
-    }
-#else
-    rv = tens[k - 9] * rv + z;
 #endif
-
-    bd0 = 0;
-    if (nd <= DBL_DIG
-#ifndef RND_PRODQUOT
-        && FLT_ROUNDS == 1
-#endif
-        ) {
-        if (!e)
-            goto ret;
-        if (e > 0) {
-            if (e <= Ten_pmax) {
-#ifdef VAX
-                goto vax_ovfl_check;
-#else
-                /* rv = */ rounded_product(rv, tens[e]);
-                goto ret;
-#endif
-            }
-            i = DBL_DIG - nd;
-            if (e <= Ten_pmax + i) {
-                /* A fancier test would sometimes let us do
-                 * this for larger i values.
-                 */
-                e -= i;
-                rv *= tens[i];
-#ifdef VAX
-                /* VAX exponent range is so narrow we must
-                 * worry about overflow here...
-                 */
-            vax_ovfl_check:
-                setWord0(&rv, getWord0(rv) - P*Exp_msk1);
-                /* rv = */ rounded_product(rv, tens[e]);
-                if ((getWord0(rv) & Exp_mask)
-                    > Exp_msk1*(DBL_MAX_EXP+Bias-1-P))
-                    goto ovfl;
-                setWord0(&rv, getWord0(rv) + P*Exp_msk1);
-#else
-                /* rv = */ rounded_product(rv, tens[e]);
-#endif
-                goto ret;
-            }
-        }
-#ifndef Inaccurate_Divide
-        else if (e >= -Ten_pmax) {
-            /* rv = */ rounded_quotient(rv, tens[-e]);
-            goto ret;
-        }
-#endif
-    }
-    e1 += nd - k;
-
-    /* Get starting approximation = rv * 10**e1 */
-
-    if (e1 > 0) {
-        if ((i = e1 & 15) != 0)
-            rv *= tens[i];
-        if (e1 &= ~15) {
-            if (e1 > DBL_MAX_10_EXP) {
-            ovfl:
-                //                                errno = ERANGE;
-                if (ok != 0)
-                    *ok = false;
-#ifdef __STDC__
-                rv = HUGE_VAL;
-#else
-                /* Can't trust HUGE_VAL */
-#ifdef IEEE_Arith
-                setWord0(&rv, Exp_mask);
-                setWord1(&rv, 0);
-#else
-                setWord0(&rv, Big0);
-                setWord1(&rv, Big1);
-#endif
-#endif
-                if (bd0)
-                    goto retfree;
-                goto ret;
-            }
-            if (e1 >>= 4) {
-                for(j = 0; e1 > 1; j++, e1 >>= 1)
-                    if (e1 & 1)
-                        rv *= bigtens[j];
-                /* The last multiplication could overflow. */
-                setWord0(&rv, getWord0(rv) - P*Exp_msk1);
-                rv *= bigtens[j];
-                if ((z = getWord0(rv) & Exp_mask)
-                    > Exp_msk1*(DBL_MAX_EXP+Bias-P))
-                    goto ovfl;
-                if (z > Exp_msk1*(DBL_MAX_EXP+Bias-1-P)) {
-                    /* set to largest number */
-                    /* (Can't trust DBL_MAX) */
-                    setWord0(&rv, Big0);
-                    setWord1(&rv, Big1);
-                }
-                else
-                    setWord0(&rv, getWord0(rv) + P*Exp_msk1);
-            }
-
-        }
-    }
-    else if (e1 < 0) {
-        e1 = -e1;
-        if ((i = e1 & 15) != 0)
-            rv /= tens[i];
-        if (e1 &= ~15) {
-            e1 >>= 4;
-            if (e1 >= 1 << n_bigtens)
-                goto undfl;
-            for(j = 0; e1 > 1; j++, e1 >>= 1)
-                if (e1 & 1)
-                    rv *= tinytens[j];
-            /* The last multiplication could underflow. */
-            rv0 = rv;
-            rv *= tinytens[j];
-            if (rv == g_double_zero)
-                {
-                    rv = 2.*rv0;
-                    rv *= tinytens[j];
-                    if (rv == g_double_zero)
-                        {
-                        undfl:
-                            rv = 0.;
-                            //                                        errno = ERANGE;
-                            if (ok != 0)
-                                *ok = false;
-                            if (bd0)
-                                goto retfree;
-                            goto ret;
-                        }
-                    setWord0(&rv, Tiny0);
-                    setWord1(&rv, Tiny1);
-                    /* The refinement below will clean
-                     * this approximation up.
-                     */
-                }
-        }
-    }
-
-    /* Now the hard part -- adjusting rv to the correct value.*/
-
-    /* Put digits into bd: true value = bd * 10^e */
-
-    bd0 = s2b(s0, nd0, nd, y);
-
-    for(;;) {
-        bd = Balloc(bd0->k);
-        Bcopy(bd, bd0);
-        bb = d2b(rv, &bbe, &bbbits);        /* rv = bb * 2^bbe */
-        bs = i2b(1);
-
-        if (e >= 0) {
-            bb2 = bb5 = 0;
-            bd2 = bd5 = e;
-        }
-        else {
-            bb2 = bb5 = -e;
-            bd2 = bd5 = 0;
-        }
-        if (bbe >= 0)
-            bb2 += bbe;
-        else
-            bd2 -= bbe;
-        bs2 = bb2;
-#ifdef Sudden_Underflow
-#ifdef IBM
-        j = 1 + 4*P - 3 - bbbits + ((bbe + bbbits - 1) & 3);
-#else
-        j = P + 1 - bbbits;
-#endif
-#else
-        i = bbe + bbbits - 1;        /* logb(rv) */
-        if (i < Emin)        /* denormal */
-            j = bbe + (P-Emin);
-        else
-            j = P + 1 - bbbits;
-#endif
-        bb2 += j;
-        bd2 += j;
-        i = bb2 < bd2 ? bb2 : bd2;
-        if (i > bs2)
-            i = bs2;
-        if (i > 0) {
-            bb2 -= i;
-            bd2 -= i;
-            bs2 -= i;
-        }
-        if (bb5 > 0) {
-            bs = pow5mult(bs, bb5);
-            bb1 = mult(bs, bb);
-            Bfree(bb);
-            bb = bb1;
-        }
-        if (bb2 > 0)
-            bb = lshift(bb, bb2);
-        if (bd5 > 0)
-            bd = pow5mult(bd, bd5);
-        if (bd2 > 0)
-            bd = lshift(bd, bd2);
-        if (bs2 > 0)
-            bs = lshift(bs, bs2);
-        delta = diff(bb, bd);
-        dsign = delta->sign;
-        delta->sign = 0;
-        i = cmp(delta, bs);
-        if (i < 0) {
-            /* Error is less than half an ulp -- check for
-             * special case of mantissa a power of two.
-             */
-            if (dsign || getWord1(rv) || getWord0(rv) & Bndry_mask)
+    quint32 idx, size;
+    switch (format) {
+    case CurrencySymbol:
+        idx = d()->m_currency_symbol_idx;
+        size = d()->m_currency_symbol_size;
+        return getLocaleData(currency_symbol_data + idx, size);
+    case CurrencyDisplayName:
+        idx = d()->m_currency_display_name_idx;
+        size = d()->m_currency_display_name_size;
+        return getLocaleListData(currency_display_name_data + idx, size, 0);
+    case CurrencyIsoCode: {
+        int len = 0;
+        const QLocalePrivate *d = this->d();
+        for (; len < 3; ++len)
+            if (!d->m_currency_iso_code[len])
                 break;
-            delta = lshift(delta,Log2P);
-            if (cmp(delta, bs) > 0)
-                goto drop_down;
-            break;
-        }
-        if (i == 0) {
-            /* exactly half-way between */
-            if (dsign) {
-                if ((getWord0(rv) & Bndry_mask1) == Bndry_mask1
-                    &&  getWord1(rv) == 0xffffffff) {
-                    /*boundary case -- increment exponent*/
-                    setWord0(&rv, (getWord0(rv) & Exp_mask)
-                                + Exp_msk1
-#ifdef IBM
-                                | Exp_msk1 >> 4
-#endif
-                                );
-                    setWord1(&rv, 0);
-                    break;
-                }
-            }
-            else if (!(getWord0(rv) & Bndry_mask) && !getWord1(rv)) {
-            drop_down:
-                /* boundary case -- decrement exponent */
-#ifdef Sudden_Underflow
-                L = getWord0(rv) & Exp_mask;
-#ifdef IBM
-                if (L <  Exp_msk1)
-#else
-                    if (L <= Exp_msk1)
-#endif
-                        goto undfl;
-                L -= Exp_msk1;
-#else
-                L = (getWord0(rv) & Exp_mask) - Exp_msk1;
-#endif
-                setWord0(&rv, L | Bndry_mask1);
-                setWord1(&rv, 0xffffffff);
-#ifdef IBM
-                goto cont;
-#else
-                break;
-#endif
-            }
-#ifndef ROUND_BIASED
-            if (!(getWord1(rv) & LSB))
-                break;
-#endif
-            if (dsign)
-                rv += ulp(rv);
-#ifndef ROUND_BIASED
-            else {
-                rv -= ulp(rv);
-#ifndef Sudden_Underflow
-                if (rv == g_double_zero)
-                    goto undfl;
-#endif
-            }
-#endif
-            break;
-        }
-        if ((aadj = ratio(delta, bs)) <= 2.) {
-            if (dsign)
-                aadj = aadj1 = 1.;
-            else if (getWord1(rv) || getWord0(rv) & Bndry_mask) {
-#ifndef Sudden_Underflow
-                if (getWord1(rv) == Tiny1 && !getWord0(rv))
-                    goto undfl;
-#endif
-                aadj = 1.;
-                aadj1 = -1.;
-            }
-            else {
-                /* special case -- power of FLT_RADIX to be */
-                /* rounded down... */
-
-                if (aadj < 2./FLT_RADIX)
-                    aadj = 1./FLT_RADIX;
-                else
-                    aadj *= 0.5;
-                aadj1 = -aadj;
-            }
-        }
-        else {
-            aadj *= 0.5;
-            aadj1 = dsign ? aadj : -aadj;
-#ifdef Check_FLT_ROUNDS
-            switch(FLT_ROUNDS) {
-            case 2: /* towards +infinity */
-                aadj1 -= 0.5;
-                break;
-            case 0: /* towards 0 */
-            case 3: /* towards -infinity */
-                aadj1 += 0.5;
-            }
-#else
-            if (FLT_ROUNDS == 0)
-                aadj1 += 0.5;
-#endif
-        }
-        y = getWord0(rv) & Exp_mask;
-
-        /* Check for overflow */
-
-        if (y == Exp_msk1*(DBL_MAX_EXP+Bias-1)) {
-            rv0 = rv;
-            setWord0(&rv, getWord0(rv) - P*Exp_msk1);
-            adj = aadj1 * ulp(rv);
-            rv += adj;
-            if ((getWord0(rv) & Exp_mask) >=
-                Exp_msk1*(DBL_MAX_EXP+Bias-P)) {
-                if (getWord0(rv0) == Big0 && getWord1(rv0) == Big1)
-                    goto ovfl;
-                setWord0(&rv, Big0);
-                setWord1(&rv, Big1);
-                goto cont;
-            }
-            else
-                setWord0(&rv, getWord0(rv) + P*Exp_msk1);
-        }
-        else {
-#ifdef Sudden_Underflow
-            if ((getWord0(rv) & Exp_mask) <= P*Exp_msk1) {
-                rv0 = rv;
-                setWord0(&rv, getWord0(rv) + P*Exp_msk1);
-                adj = aadj1 * ulp(rv);
-                rv += adj;
-#ifdef IBM
-                if ((getWord0(rv) & Exp_mask) <  P*Exp_msk1)
-#else
-                    if ((getWord0(rv) & Exp_mask) <= P*Exp_msk1)
-#endif
-                        {
-                            if (getWord0(rv0) == Tiny0
-                                && getWord1(rv0) == Tiny1)
-                                goto undfl;
-                            setWord0(&rv, Tiny0);
-                            setWord1(&rv, Tiny1);
-                            goto cont;
-                        }
-                    else
-                        setWord0(&rv, getWord0(rv) - P*Exp_msk1);
-            }
-            else {
-                adj = aadj1 * ulp(rv);
-                rv += adj;
-            }
-#else
-            /* Compute adj so that the IEEE rounding rules will
-             * correctly round rv + adj in some half-way cases.
-             * If rv * ulp(rv) is denormalized (i.e.,
-             * y <= (P-1)*Exp_msk1), we must adjust aadj to avoid
-             * trouble from bits lost to denormalization;
-             * example: 1.2e-307 .
-             */
-            if (y <= (P-1)*Exp_msk1 && aadj >= 1.) {
-                aadj1 = int(aadj + 0.5);
-                if (!dsign)
-                    aadj1 = -aadj1;
-            }
-            adj = aadj1 * ulp(rv);
-            rv += adj;
-#endif
-        }
-        z = getWord0(rv) & Exp_mask;
-        if (y == z) {
-            /* Can we stop now? */
-            L = Long(aadj);
-            aadj -= L;
-            /* The tolerances below are conservative. */
-            if (dsign || getWord1(rv) || getWord0(rv) & Bndry_mask) {
-                if (aadj < .4999999 || aadj > .5000001)
-                    break;
-            }
-            else if (aadj < .4999999/FLT_RADIX)
-                break;
-        }
-    cont:
-        Bfree(bb);
-        Bfree(bd);
-        Bfree(bs);
-        Bfree(delta);
+        return len ? QString::fromLatin1(d->m_currency_iso_code, len) : QString();
     }
- retfree:
-    Bfree(bb);
-    Bfree(bd);
-    Bfree(bs);
-    Bfree(bd0);
-    Bfree(delta);
- ret:
-    if (se)
-        *se = s;
-    return sign ? -rv : rv;
+    }
+    return QString();
 }
 
-static int quorem(Bigint *b, Bigint *S)
-{
-    int n;
-    Long borrow, y;
-    ULong carry, q, ys;
-    ULong *bx, *bxe, *sx, *sxe;
-#ifdef Pack_32
-    Long z;
-    ULong si, zs;
-#endif
+/*!
+    \since 4.8
 
-    n = S->wds;
-#ifdef BSD_QDTOA_DEBUG
-    /*debug*/ if (b->wds > n)
-        /*debug*/        Bug("oversize b in quorem");
-#endif
-    if (b->wds < n)
-        return 0;
-    sx = S->x;
-    sxe = sx + --n;
-    bx = b->x;
-    bxe = bx + n;
-    q = *bxe / (*sxe + 1);        /* ensure q <= true quotient */
-#ifdef BSD_QDTOA_DEBUG
-    /*debug*/ if (q > 9)
-        /*debug*/        Bug("oversized quotient in quorem");
-#endif
-    if (q) {
-        borrow = 0;
-        carry = 0;
-        do {
-#ifdef Pack_32
-            si = *sx++;
-            ys = (si & 0xffff) * q + carry;
-            zs = (si >> 16) * q + (ys >> 16);
-            carry = zs >> 16;
-            y = (*bx & 0xffff) - (ys & 0xffff) + borrow;
-            borrow = y >> 16;
-            Sign_Extend(borrow, y);
-            z = (*bx >> 16) - (zs & 0xffff) + borrow;
-            borrow = z >> 16;
-            Sign_Extend(borrow, z);
-            Storeinc(bx, z, y);
-#else
-            ys = *sx++ * q + carry;
-            carry = ys >> 16;
-            y = *bx - (ys & 0xffff) + borrow;
-            borrow = y >> 16;
-            Sign_Extend(borrow, y);
-            *bx++ = y & 0xffff;
-#endif
-        }
-        while(sx <= sxe);
-        if (!*bxe) {
-            bx = b->x;
-            while(--bxe > bx && !*bxe)
-                --n;
-            b->wds = n;
-        }
+    Returns a localized string representation of \a value as a currency.
+    If the \a symbol is provided it is used instead of the default currency symbol.
+
+    \sa currencySymbol()
+*/
+QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
+        if (!res.isNull())
+            return res.toString();
     }
-    if (cmp(b, S) >= 0) {
-        q++;
-        borrow = 0;
-        carry = 0;
-        bx = b->x;
-        sx = S->x;
-        do {
-#ifdef Pack_32
-            si = *sx++;
-            ys = (si & 0xffff) + carry;
-            zs = (si >> 16) + (ys >> 16);
-            carry = zs >> 16;
-            y = (*bx & 0xffff) - (ys & 0xffff) + borrow;
-            borrow = y >> 16;
-            Sign_Extend(borrow, y);
-            z = (*bx >> 16) - (zs & 0xffff) + borrow;
-            borrow = z >> 16;
-            Sign_Extend(borrow, z);
-            Storeinc(bx, z, y);
-#else
-            ys = *sx++ + carry;
-            carry = ys >> 16;
-            y = *bx - (ys & 0xffff) + borrow;
-            borrow = y >> 16;
-            Sign_Extend(borrow, y);
-            *bx++ = y & 0xffff;
 #endif
-        }
-        while(sx <= sxe);
-        bx = b->x;
-        bxe = bx + n;
-        if (!*bxe) {
-            while(--bxe > bx && !*bxe)
-                --n;
-            b->wds = n;
-        }
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    if (d->m_currency_negative_format_size && value < 0) {
+        idx = d->m_currency_negative_format_idx;
+        size = d->m_currency_negative_format_size;
+        value = -value;
     }
-    return q;
+    QString str = d->longLongToString(value);
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, sym);
 }
 
-/* dtoa for IEEE arithmetic (dmg): convert double to ASCII string.
- *
- * Inspired by "How to Print Floating-Point Numbers Accurately" by
- * Guy L. Steele, Jr. and Jon L. White [Proc. ACM SIGPLAN '90, pp. 92-101].
- *
- * Modifications:
- *        1. Rather than iterating, we use a simple numeric overestimate
- *           to determine k = floor(log10(d)).  We scale relevant
- *           quantities using O(log2(k)) rather than O(k) multiplications.
- *        2. For some modes > 2 (corresponding to ecvt and fcvt), we don't
- *           try to generate digits strictly left to right.  Instead, we
- *           compute with fewer bits and propagate the carry if necessary
- *           when rounding the final digit up.  This is often faster.
- *        3. Under the assumption that input will be rounded nearest,
- *           mode 0 renders 1e23 as 1e23 rather than 9.999999999999999e22.
- *           That is, we allow equality in stopping tests when the
- *           round-nearest rule will give the same floating-point value
- *           as would satisfaction of the stopping test with strict
- *           inequality.
- *        4. We remove common factors of powers of 2 from relevant
- *           quantities.
- *        5. When converting floating-point integers less than 1e16,
- *           we use floating-point arithmetic rather than resorting
- *           to multiple-precision integers.
- *        6. When asked to produce fewer than 15 digits, we first try
- *           to get by with floating-point arithmetic; we resort to
- *           multiple-precision integer arithmetic only if we cannot
- *           guarantee that the floating-point calculation has given
- *           the correctly rounded result.  For k requested digits and
- *           "uniformly" distributed input, the probability is
- *           something like 10^(k-15) that we must resort to the Long
- *           calculation.
- */
-
-
-/* This actually sometimes returns a pointer to a string literal
-   cast to a char*. Do NOT try to modify the return value. */
-
-Q_CORE_EXPORT char *qdtoa ( double d, int mode, int ndigits, int *decpt, int *sign, char **rve, char **resultp)
+/*!
+    \since 4.8
+    \overload
+*/
+QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
 {
-    // Some values of the floating-point control word can cause _qdtoa to crash with an underflow.
-    // We set a safe value here.
-#ifdef Q_OS_WIN
-    _clear87();
-    unsigned int oldbits = _control87(0, 0);
-#ifndef MCW_EM
-#    ifdef _MCW_EM
-#        define MCW_EM _MCW_EM
-#    else
-#        define MCW_EM 0x0008001F
-#    endif
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
+        if (!res.isNull())
+            return res.toString();
+    }
 #endif
-    _control87(MCW_EM, MCW_EM);
-#endif
-
-#if defined(__GLIBC__) && !defined(__UCLIBC__)
-    fenv_t envp;
-    feholdexcept(&envp);
-#endif
-
-    char *s = _qdtoa(d, mode, ndigits, decpt, sign, rve, resultp);
-
-#ifdef Q_OS_WIN
-    _clear87();
-#ifndef _M_X64
-    _control87(oldbits, 0xFFFFF);
-#else
-    _control87(oldbits, _MCW_EM|_MCW_DN|_MCW_RC);
-#endif //_M_X64
-#endif //Q_OS_WIN
-
-#if defined(__GLIBC__) && !defined(__UCLIBC__)
-    fesetenv(&envp);
-#endif
-
-    return s;
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    QString str = d->unsLongLongToString(value);
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, sym);
 }
 
-static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt, int *sign, char **rve, char **resultp)
+/*!
+    \since 4.8
+    \overload
+*/
+QString QLocale::toCurrencyString(double value, const QString &symbol) const
 {
-    /*
-      Arguments ndigits, decpt, sign are similar to those
-      of ecvt and fcvt; trailing zeros are suppressed from
-      the returned string.  If not null, *rve is set to point
-      to the end of the return value.  If d is +-Infinity or NaN,
-      then *decpt is set to 9999.
-
-      mode:
-      0 ==> shortest string that yields d when read in
-      and rounded to nearest.
-      1 ==> like 0, but with Steele & White stopping rule;
-      e.g. with IEEE P754 arithmetic , mode 0 gives
-      1e23 whereas mode 1 gives 9.999999999999999e22.
-      2 ==> max(1,ndigits) significant digits.  This gives a
-      return value similar to that of ecvt, except
-      that trailing zeros are suppressed.
-      3 ==> through ndigits past the decimal point.  This
-      gives a return value similar to that from fcvt,
-      except that trailing zeros are suppressed, and
-      ndigits can be negative.
-      4-9 should give the same return values as 2-3, i.e.,
-      4 <= mode <= 9 ==> same return as mode
-      2 + (mode & 1).  These modes are mainly for
-      debugging; often they run slower but sometimes
-      faster than modes 2-3.
-      4,5,8,9 ==> left-to-right digit generation.
-      6-9 ==> don't try fast floating-point estimate
-      (if applicable).
-
-      Values of mode other than 0-9 are treated as mode 0.
-
-      Sufficient space is allocated to the return value
-      to hold the suppressed trailing zeros.
-    */
-
-    int bbits, b2, b5, be, dig, i, ieps, ilim0,
-        j, j1, k, k0, k_check, leftright, m2, m5, s2, s5,
-        try_quick;
-    int ilim = 0, ilim1 = 0, spec_case = 0;        /* pacify gcc */
-    Long L;
-#ifndef Sudden_Underflow
-    int denorm;
-    ULong x;
-#endif
-    Bigint *b, *b1, *delta, *mhi, *S;
-    Bigint *mlo = NULL; /* pacify gcc */
-    double d2;
-    double ds, eps;
-    char *s, *s0;
-
-    if (getWord0(d) & Sign_bit) {
-        /* set sign for everything, including 0's and NaNs */
-        *sign = 1;
-        setWord0(&d, getWord0(d) & ~Sign_bit);        /* clear sign bit */
-    }
-    else
-        *sign = 0;
-
-#if defined(IEEE_Arith) + defined(VAX)
-#ifdef IEEE_Arith
-    if ((getWord0(d) & Exp_mask) == Exp_mask)
-#else
-        if (getWord0(d)  == 0x8000)
-#endif
-            {
-                /* Infinity or NaN */
-                *decpt = 9999;
-                s =
-#ifdef IEEE_Arith
-                    !getWord1(d) && !(getWord0(d) & 0xfffff) ? const_cast<char*>("Infinity") :
-#endif
-                    const_cast<char*>("NaN");
-                if (rve)
-                    *rve =
-#ifdef IEEE_Arith
-                        s[3] ? s + 8 :
-#endif
-                        s + 3;
-                return s;
-            }
-#endif
-#ifdef IBM
-    d += 0; /* normalize */
-#endif
-    if (d == g_double_zero)
-        {
-            *decpt = 1;
-            s = const_cast<char*>("0");
-            if (rve)
-                *rve = s + 1;
-            return s;
-        }
-
-    b = d2b(d, &be, &bbits);
-#ifdef Sudden_Underflow
-    i = (int)(getWord0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1));
-#else
-    if ((i = int(getWord0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1))) != 0) {
-#endif
-        d2 = d;
-        setWord0(&d2, getWord0(d2) & Frac_mask1);
-        setWord0(&d2, getWord0(d2) | Exp_11);
-#ifdef IBM
-        if (j = 11 - hi0bits(getWord0(d2) & Frac_mask))
-            d2 /= 1 << j;
-#endif
-
-        /* log(x)        ~=~ log(1.5) + (x-1.5)/1.5
-         * log10(x)         =  log(x) / log(10)
-         *                ~=~ log(1.5)/log(10) + (x-1.5)/(1.5*log(10))
-         * log10(d) = (i-Bias)*log(2)/log(10) + log10(d2)
-         *
-         * This suggests computing an approximation k to log10(d) by
-         *
-         * k = (i - Bias)*0.301029995663981
-         *        + ( (d2-1.5)*0.289529654602168 + 0.176091259055681 );
-         *
-         * We want k to be too large rather than too small.
-         * The error in the first-order Taylor series approximation
-         * is in our favor, so we just round up the constant enough
-         * to compensate for any error in the multiplication of
-         * (i - Bias) by 0.301029995663981; since |i - Bias| <= 1077,
-         * and 1077 * 0.30103 * 2^-52 ~=~ 7.2e-14,
-         * adding 1e-13 to the constant term more than suffices.
-         * Hence we adjust the constant term to 0.1760912590558.
-         * (We could get a more accurate k by invoking log10,
-         *  but this is probably not worthwhile.)
-         */
-
-        i -= Bias;
-#ifdef IBM
-        i <<= 2;
-        i += j;
-#endif
-#ifndef Sudden_Underflow
-        denorm = 0;
-    }
-    else {
-        /* d is denormalized */
-
-        i = bbits + be + (Bias + (P-1) - 1);
-        x = i > 32  ? getWord0(d) << (64 - i) | getWord1(d) >> (i - 32)
-            : getWord1(d) << (32 - i);
-        d2 = x;
-        setWord0(&d2, getWord0(d2) - 31*Exp_msk1); /* adjust exponent */
-        i -= (Bias + (P-1) - 1) + 1;
-        denorm = 1;
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QSystemLocale::CurrencyToStringArgument arg(value, symbol);
+        QVariant res = systemLocale()->query(QSystemLocale::CurrencyToString, QVariant::fromValue(arg));
+        if (!res.isNull())
+            return res.toString();
     }
 #endif
-    ds = (d2-1.5)*0.289529654602168 + 0.1760912590558 + i*0.301029995663981;
-    k = int(ds);
-    if (ds < 0. && ds != k)
-        k--;        /* want k = floor(ds) */
-    k_check = 1;
-    if (k >= 0 && k <= Ten_pmax) {
-        if (d < tens[k])
-            k--;
-        k_check = 0;
+    const QLocalePrivate *d = this->d();
+    quint8 idx = d->m_currency_format_idx;
+    quint8 size = d->m_currency_format_size;
+    if (d->m_currency_negative_format_size && value < 0) {
+        idx = d->m_currency_negative_format_idx;
+        size = d->m_currency_negative_format_size;
+        value = -value;
     }
-    j = bbits - i - 1;
-    if (j >= 0) {
-        b2 = 0;
-        s2 = j;
-    }
-    else {
-        b2 = -j;
-        s2 = 0;
-    }
-    if (k >= 0) {
-        b5 = 0;
-        s5 = k;
-        s2 += k;
-    }
-    else {
-        b2 -= k;
-        b5 = -k;
-        s5 = 0;
-    }
-    if (mode < 0 || mode > 9)
-        mode = 0;
-    try_quick = 1;
-    if (mode > 5) {
-        mode -= 4;
-        try_quick = 0;
-    }
-    leftright = 1;
-    switch(mode) {
-    case 0:
-    case 1:
-        ilim = ilim1 = -1;
-        i = 18;
-        ndigits = 0;
-        break;
-    case 2:
-        leftright = 0;
-        /* no break */
-    case 4:
-        if (ndigits <= 0)
-            ndigits = 1;
-        ilim = ilim1 = i = ndigits;
-        break;
-    case 3:
-        leftright = 0;
-        /* no break */
-    case 5:
-        i = ndigits + k + 1;
-        ilim = i;
-        ilim1 = i - 1;
-        if (i <= 0)
-            i = 1;
-    }
-    QT_TRY {
-        *resultp = static_cast<char *>(malloc(i + 1));
-        Q_CHECK_PTR(*resultp);
-    } QT_CATCH(...) {
-        Bfree(b);
-        QT_RETHROW;
-    }
-    s = s0 = *resultp;
-
-    if (ilim >= 0 && ilim <= Quick_max && try_quick) {
-
-        /* Try to get by with floating-point arithmetic. */
-
-        i = 0;
-        d2 = d;
-        k0 = k;
-        ilim0 = ilim;
-        ieps = 2; /* conservative */
-        if (k > 0) {
-            ds = tens[k&0xf];
-            j = k >> 4;
-            if (j & Bletch) {
-                /* prevent overflows */
-                j &= Bletch - 1;
-                d /= bigtens[n_bigtens-1];
-                ieps++;
-            }
-            for(; j; j >>= 1, i++)
-                if (j & 1) {
-                    ieps++;
-                    ds *= bigtens[i];
-                }
-            d /= ds;
-        }
-        else if ((j1 = -k) != 0) {
-            d *= tens[j1 & 0xf];
-            for(j = j1 >> 4; j; j >>= 1, i++)
-                if (j & 1) {
-                    ieps++;
-                    d *= bigtens[i];
-                }
-        }
-        if (k_check && d < 1. && ilim > 0) {
-            if (ilim1 <= 0)
-                goto fast_failed;
-            ilim = ilim1;
-            k--;
-            d *= 10.;
-            ieps++;
-        }
-        eps = ieps*d + 7.;
-        setWord0(&eps, getWord0(eps) - (P-1)*Exp_msk1);
-        if (ilim == 0) {
-            S = mhi = 0;
-            d -= 5.;
-            if (d > eps)
-                goto one_digit;
-            if (d < -eps)
-                goto no_digits;
-            goto fast_failed;
-        }
-#ifndef No_leftright
-        if (leftright) {
-            /* Use Steele & White method of only
-             * generating digits needed.
-             */
-            eps = 0.5/tens[ilim-1] - eps;
-            for(i = 0;;) {
-                L = Long(d);
-                d -= L;
-                *s++ = '0' + int(L);
-                if (d < eps)
-                    goto ret1;
-                if (1. - d < eps)
-                    goto bump_up;
-                if (++i >= ilim)
-                    break;
-                eps *= 10.;
-                d *= 10.;
-            }
-        }
-        else {
-#endif
-            /* Generate ilim digits, then fix them up. */
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU)
-            // work around a bug on 64 bit IRIX gcc
-            double *t = (double *) tens;
-            eps *= t[ilim-1];
-#else
-            eps *= tens[ilim-1];
-#endif
-            for(i = 1;; i++, d *= 10.) {
-                L = Long(d);
-                d -= L;
-                *s++ = '0' + int(L);
-                if (i == ilim) {
-                    if (d > 0.5 + eps)
-                        goto bump_up;
-                    else if (d < 0.5 - eps) {
-                        while(*--s == '0') {}
-                        s++;
-                        goto ret1;
-                    }
-                    break;
-                }
-            }
-#ifndef No_leftright
-        }
-#endif
-    fast_failed:
-        s = s0;
-        d = d2;
-        k = k0;
-        ilim = ilim0;
-    }
-
-    /* Do we have a "small" integer? */
-
-    if (be >= 0 && k <= Int_max) {
-        /* Yes. */
-        ds = tens[k];
-        if (ndigits < 0 && ilim <= 0) {
-            S = mhi = 0;
-            if (ilim < 0 || d <= 5*ds)
-                goto no_digits;
-            goto one_digit;
-        }
-        for(i = 1;; i++) {
-            L = Long(d / ds);
-            d -= L*ds;
-#ifdef Check_FLT_ROUNDS
-            /* If FLT_ROUNDS == 2, L will usually be high by 1 */
-            if (d < 0) {
-                L--;
-                d += ds;
-            }
-#endif
-            *s++ = '0' + int(L);
-            if (i == ilim) {
-                d += d;
-                if (d > ds || (d == ds && L & 1)) {
-                bump_up:
-                    while(*--s == '9')
-                        if (s == s0) {
-                            k++;
-                            *s = '0';
-                            break;
-                        }
-                    ++*s++;
-                }
-                break;
-            }
-            if ((d *= 10.) == g_double_zero)
-                break;
-        }
-        goto ret1;
-    }
-
-    m2 = b2;
-    m5 = b5;
-    mhi = mlo = 0;
-    if (leftright) {
-        if (mode < 2) {
-            i =
-#ifndef Sudden_Underflow
-                denorm ? be + (Bias + (P-1) - 1 + 1) :
-#endif
-#ifdef IBM
-                1 + 4*P - 3 - bbits + ((bbits + be - 1) & 3);
-#else
-            1 + P - bbits;
-#endif
-        }
-        else {
-            j = ilim - 1;
-            if (m5 >= j)
-                m5 -= j;
-            else {
-                s5 += j -= m5;
-                b5 += j;
-                m5 = 0;
-            }
-            if ((i = ilim) < 0) {
-                m2 -= i;
-                i = 0;
-            }
-        }
-        b2 += i;
-        s2 += i;
-        mhi = i2b(1);
-    }
-    if (m2 > 0 && s2 > 0) {
-        i = m2 < s2 ? m2 : s2;
-        b2 -= i;
-        m2 -= i;
-        s2 -= i;
-    }
-    if (b5 > 0) {
-        if (leftright) {
-            if (m5 > 0) {
-                mhi = pow5mult(mhi, m5);
-                b1 = mult(mhi, b);
-                Bfree(b);
-                b = b1;
-            }
-            if ((j = b5 - m5) != 0)
-                b = pow5mult(b, j);
-        }
-        else
-            b = pow5mult(b, b5);
-    }
-    S = i2b(1);
-    if (s5 > 0)
-        S = pow5mult(S, s5);
-
-    /* Check for special case that d is a normalized power of 2. */
-
-    if (mode < 2) {
-        if (!getWord1(d) && !(getWord0(d) & Bndry_mask)
-#ifndef Sudden_Underflow
-            && getWord0(d) & Exp_mask
-#endif
-            ) {
-            /* The special case */
-            b2 += Log2P;
-            s2 += Log2P;
-            spec_case = 1;
-        }
-        else
-            spec_case = 0;
-    }
-
-    /* Arrange for convenient computation of quotients:
-     * shift left if necessary so divisor has 4 leading 0 bits.
-     *
-     * Perhaps we should just compute leading 28 bits of S once
-     * and for all and pass them and a shift to quorem, so it
-     * can do shifts and ors to compute the numerator for q.
-     */
-#ifdef Pack_32
-    if ((i = ((s5 ? 32 - hi0bits(S->x[S->wds-1]) : 1) + s2) & 0x1f) != 0)
-        i = 32 - i;
-#else
-    if (i = ((s5 ? 32 - hi0bits(S->x[S->wds-1]) : 1) + s2) & 0xf)
-        i = 16 - i;
-#endif
-    if (i > 4) {
-        i -= 4;
-        b2 += i;
-        m2 += i;
-        s2 += i;
-    }
-    else if (i < 4) {
-        i += 28;
-        b2 += i;
-        m2 += i;
-        s2 += i;
-    }
-    if (b2 > 0)
-        b = lshift(b, b2);
-    if (s2 > 0)
-        S = lshift(S, s2);
-    if (k_check) {
-        if (cmp(b,S) < 0) {
-            k--;
-            b = multadd(b, 10, 0);        /* we botched the k estimate */
-            if (leftright)
-                mhi = multadd(mhi, 10, 0);
-            ilim = ilim1;
-        }
-    }
-    if (ilim <= 0 && mode > 2) {
-        if (ilim < 0 || cmp(b,S = multadd(S,5,0)) <= 0) {
-            /* no digits, fcvt style */
-        no_digits:
-            k = -1 - ndigits;
-            goto ret;
-        }
-    one_digit:
-        *s++ = '1';
-        k++;
-        goto ret;
-    }
-    if (leftright) {
-        if (m2 > 0)
-            mhi = lshift(mhi, m2);
-
-        /* Compute mlo -- check for special case
-         * that d is a normalized power of 2.
-         */
-
-        mlo = mhi;
-        if (spec_case) {
-            mhi = Balloc(mhi->k);
-            Bcopy(mhi, mlo);
-            mhi = lshift(mhi, Log2P);
-        }
-
-        for(i = 1;;i++) {
-            dig = quorem(b,S) + '0';
-            /* Do we yet have the shortest decimal string
-             * that will round to d?
-             */
-            j = cmp(b, mlo);
-            delta = diff(S, mhi);
-            j1 = delta->sign ? 1 : cmp(b, delta);
-            Bfree(delta);
-#ifndef ROUND_BIASED
-            if (j1 == 0 && !mode && !(getWord1(d) & 1)) {
-                if (dig == '9')
-                    goto round_9_up;
-                if (j > 0)
-                    dig++;
-                *s++ = dig;
-                goto ret;
-            }
-#endif
-            if (j < 0 || (j == 0 && !mode
-#ifndef ROUND_BIASED
-                          && !(getWord1(d) & 1)
-#endif
-                          )) {
-                if (j1 > 0) {
-                    b = lshift(b, 1);
-                    j1 = cmp(b, S);
-                    if ((j1 > 0 || (j1 == 0 && dig & 1))
-                        && dig++ == '9')
-                        goto round_9_up;
-                }
-                *s++ = dig;
-                goto ret;
-            }
-            if (j1 > 0) {
-                if (dig == '9') { /* possible if i == 1 */
-                round_9_up:
-                    *s++ = '9';
-                    goto roundoff;
-                }
-                *s++ = dig + 1;
-                goto ret;
-            }
-            *s++ = dig;
-            if (i == ilim)
-                break;
-            b = multadd(b, 10, 0);
-            if (mlo == mhi)
-                mlo = mhi = multadd(mhi, 10, 0);
-            else {
-                mlo = multadd(mlo, 10, 0);
-                mhi = multadd(mhi, 10, 0);
-            }
-        }
-    }
-    else
-        for(i = 1;; i++) {
-            *s++ = dig = quorem(b,S) + '0';
-            if (i >= ilim)
-                break;
-            b = multadd(b, 10, 0);
-        }
-
-    /* Round off last digit */
-
-    b = lshift(b, 1);
-    j = cmp(b, S);
-    if (j > 0 || (j == 0 && dig & 1)) {
-    roundoff:
-        while(*--s == '9')
-            if (s == s0) {
-                k++;
-                *s++ = '1';
-                goto ret;
-            }
-        ++*s++;
-    }
-    else {
-        while(*--s == '0') {}
-        s++;
-    }
- ret:
-    Bfree(S);
-    if (mhi) {
-        if (mlo && mlo != mhi)
-            Bfree(mlo);
-        Bfree(mhi);
-    }
- ret1:
-    Bfree(b);
-    if (s == s0) {                                /* don't return empty string */
-        *s++ = '0';
-        k = 0;
-    }
-    *s = 0;
-    *decpt = k + 1;
-    if (rve)
-        *rve = s;
-    return s0;
-}
-#else
-// NOT thread safe!
-
-#include <errno.h>
-
-Q_CORE_EXPORT char *qdtoa( double d, int mode, int ndigits, int *decpt, int *sign, char **rve, char **resultp)
-{
-    if(rve)
-      *rve = 0;
-
-    char *res;
-    if (mode == 0)
-        ndigits = 80;
-
-    if (mode == 3)
-        res = fcvt(d, ndigits, decpt, sign);
-    else
-        res = ecvt(d, ndigits, decpt, sign);
-
-    int n = qstrlen(res);
-    if (mode == 0) { // remove trailing 0's
-        const int stop = qMax(1, *decpt);
-        int i;
-        for (i = n-1; i >= stop; --i) {
-            if (res[i] != '0')
-                break;
-        }
-        n = i + 1;
-    }
-    *resultp = static_cast<char*>(malloc(n + 1));
-    Q_CHECK_PTR(resultp);
-    qstrncpy(*resultp, res, n + 1);
-    return *resultp;
+    QString str = d->doubleToString(value, d->m_currency_digits,
+                                    QLocalePrivate::DFDecimal);
+    QString sym = symbol.isNull() ? currencySymbol() : symbol;
+    if (sym.isEmpty())
+        sym = currencySymbol(QLocale::CurrencyIsoCode);
+    QString format = getLocaleData(currency_format_data + idx, size);
+    return format.arg(str, sym);
 }
 
-Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
+/*!
+    \since 4.8
+
+    Returns an ordered list of locale names for translation purposes in
+    preference order.
+
+    The return value represents locale names that the user expects to see the
+    UI translation in.
+
+    Most like you do not need to use this function directly, but just pass the
+    QLocale object to the QTranslator::load() function.
+
+    The first item in the list is the most preferred one.
+
+    \sa QTranslator, bcp47Name()
+*/
+QStringList QLocale::uiLanguages() const
 {
-    errno = 0;
-    double ret = strtod((char*)s00, (char**)se);
-    if (ok) {
-      if((ret == 0.0l && errno == ERANGE)
-         || ret == HUGE_VAL || ret == -HUGE_VAL)
-        *ok = false;
-      else
-        *ok = true; // the result will be that we don't report underflow in this case
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::UILanguages, QVariant());
+        if (!res.isNull()) {
+            QStringList result = res.toStringList();
+            if (!result.isEmpty())
+                return result;
+        }
     }
-    return ret;
+#endif
+    return QStringList(bcp47Name());
 }
-#endif // QT_QLOCALE_USES_FCVT
+
+/*!
+    \since 4.8
+
+    Returns a native name of the language for the locale. For example
+    "Schwiizertüütsch" for Swiss-German locale.
+
+    \sa nativeCountryName(), languageToString()
+*/
+QString QLocale::nativeLanguageName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeLanguageName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_language_endonym_idx, d()->m_language_endonym_size);
+}
+
+/*!
+    \since 4.8
+
+    Returns a native name of the country for the locale. For example
+    "España" for Spanish/Spain locale.
+
+    \sa nativeLanguageName(), countryToString()
+*/
+QString QLocale::nativeCountryName() const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (d() == systemPrivate()) {
+        QVariant res = systemLocale()->query(QSystemLocale::NativeCountryName, QVariant());
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+    return getLocaleData(endonyms_data + d()->m_country_endonym_idx, d()->m_country_endonym_size);
+}
 
 QT_END_NAMESPACE

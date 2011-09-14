@@ -9,4 +9,5 @@ DESTDIR = ./
 MOC_DIR = .moc/
 TMP_DIR = .tmp/
 
+symbian: TARGET.CAPABILITY = NetworkServices
 
