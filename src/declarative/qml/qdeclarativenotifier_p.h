@@ -99,8 +99,15 @@ private:
 
     enum { InvalidType, SignalType, NotifierType } type;
     union {
-        char signalData[sizeof(Signal)];
-        char notifierData[sizeof(Notifier)];
+        struct {
+            Signal *signal;
+            union {
+                char signalData[sizeof(Signal)];
+                qint64 q_for_alignment_1;
+                double q_for_alignment_2;
+            };
+        };
+        Notifier notifier;
     };
 
     inline Notifier *toNotifier();
@@ -194,7 +201,7 @@ void QDeclarativeNotifierEndpoint::connect(QDeclarativeNotifier *notifier)
 void QDeclarativeNotifierEndpoint::disconnect()
 {
     if (type == SignalType) {
-        Signal *s = (Signal *)&signalData;
+        Signal *s = asSignal();
         if (s->source) {
             QMetaObject::disconnectOne(s->source, s->sourceSignal, target, targetMethod);
             s->source = 0;
@@ -234,7 +241,8 @@ QDeclarativeNotifierEndpoint::Notifier *QDeclarativeNotifierEndpoint::toNotifier
 
 QDeclarativeNotifierEndpoint::Notifier *QDeclarativeNotifierEndpoint::asNotifier() 
 { 
-    return (Notifier *)(&notifierData); 
+    Q_ASSERT(type == NotifierType);
+    return &notifier;
 }
 
 QDeclarativeNotifierEndpoint::Signal *QDeclarativeNotifierEndpoint::toSignal()
@@ -243,16 +251,15 @@ QDeclarativeNotifierEndpoint::Signal *QDeclarativeNotifierEndpoint::toSignal()
         return asSignal();
 
     disconnect();
-    Signal *s = asSignal();
-    new (s) Signal;
+    signal = new (&signalData) Signal;
     type = SignalType;
-
-    return s;
+    return signal;
 }
 
 QDeclarativeNotifierEndpoint::Signal *QDeclarativeNotifierEndpoint::asSignal() 
 { 
-    return (Signal *)(&signalData); 
+    Q_ASSERT(type == SignalType);
+    return signal;
 }
 
 QT_END_NAMESPACE
