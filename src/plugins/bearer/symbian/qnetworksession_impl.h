@@ -68,11 +68,12 @@
 QT_BEGIN_NAMESPACE
 
 class ConnectionProgressNotifier;
+class ConnectionStarter;
 class SymbianEngine;
 
 typedef void (*TOpenCUnSetdefaultifFunction)();
 
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
                                  , public MMobilityProtocolResp
 #endif
@@ -125,7 +126,7 @@ public: // From MMobilityProtocolResp
 #endif    
 
 protected: // From CActive
-    void RunL();
+    void ConnectionStartComplete(TInt statusCode);
     void DoCancel();
     
 private Q_SLOTS:
@@ -149,6 +150,7 @@ private:
     bool easyWlanTrueIapId(TUint32 &trueIapId) const;
 #endif
 
+    void closeHandles();
 
 private: // data
     SymbianEngine *engine;
@@ -166,12 +168,13 @@ private: // data
     mutable RConnection iConnection;
     mutable RConnectionMonitor iConnectionMonitor;
     ConnectionProgressNotifier* ipConnectionNotifier;
-    
+    ConnectionStarter* ipConnectionStarter;
+
     bool iHandleStateNotificationsFromManager;
     bool iFirstSync;
     bool iStoppedByUser;
     bool iClosedByUser;
-    
+
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE    
     CActiveCommsMobilityApiExt* iMobility;
 #endif    
@@ -189,6 +192,7 @@ private: // data
     bool isOpening;
 
     friend class ConnectionProgressNotifier;
+    friend class ConnectionStarter;
 };
 
 class ConnectionProgressNotifier : public CActive
@@ -209,6 +213,24 @@ private: // Data
     RConnection& iConnection;
     TNifProgressBuf iProgress;
     
+};
+
+class ConnectionStarter : public CActive
+{
+public:
+    ConnectionStarter(QNetworkSessionPrivateImpl &owner, RConnection &connection);
+    ~ConnectionStarter();
+
+    void Start();
+    void Start(TConnPref &pref);
+protected:
+    void RunL();
+    TInt RunError(TInt err);
+    void DoCancel();
+
+private: // Data
+    QNetworkSessionPrivateImpl &iOwner;
+    RConnection& iConnection;
 };
 
 QT_END_NAMESPACE
