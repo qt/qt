@@ -99,6 +99,7 @@ QtGui
  - Accessibility: Return text attributes for QTextEdit.
  - Accessibility: Make accessibility work on Windows with alien widgets
  - Accessibility: Several enablers for accessible graphicsview and Qt Quick applications.
+ - Fixed loading BMP files with version 4 and 5 headers, ignoring extra data.
 
 QtNetwork
 ---------
@@ -124,6 +125,7 @@ QtNetwork
    QGLFunctions will undefine GLEW's defines.
  - Optimize behavior of QGLTextureCache
  - Support subpixel antialiasing when possible.
+ - [QTBUG-13450] Fixed path drawing on FBOs without stencil buffer.
 
 QtScript
 --------
@@ -133,6 +135,11 @@ QtSql
 -----
 
  - Update sqlite to 3.7.7.1
+
+QtSvg
+-----
+ - [QTBUG-16216] Fixed infinite loop when loading some SVGs with CSS style.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
