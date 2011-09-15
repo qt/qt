@@ -184,7 +184,7 @@ void RenderBlock::destroy()
                         childBox->remove();
                 }
             }
-        } else if (isInline() && parent())
+        } else if (parent())
             parent()->dirtyLinesFromChangedChild(this);
     }
 
@@ -665,10 +665,10 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
     // Make sure we don't append things after :after-generated content if we have it.
     if (!beforeChild) {
         RenderObject* lastRenderer = lastChild();
-        if (isAfterContent(lastRenderer))
+        while (lastRenderer && lastRenderer->isAnonymous() && !isAfterContent(lastRenderer))
+            lastRenderer = lastRenderer->lastChild();
+        if (lastRenderer && isAfterContent(lastRenderer))
             beforeChild = lastRenderer;
-        else if (lastRenderer && lastRenderer->isAnonymousBlock() && isAfterContent(lastRenderer->lastChild()))
-            beforeChild = lastRenderer->lastChild();
     }
 
     // If the requested beforeChild is not one of our children, then this is because
@@ -3204,8 +3204,10 @@ void RenderBlock::removeFloatingObject(RenderBox* o)
                     logicalBottom = max(logicalBottom, logicalTop + 1);
                 }
                 if (r->m_originatingLine) {
-                    ASSERT(r->m_originatingLine->renderer() == this);
-                    r->m_originatingLine->markDirty();
+                    if (!selfNeedsLayout()) {
+                        ASSERT(r->m_originatingLine->renderer() == this);
+                        r->m_originatingLine->markDirty();
+                    }
 #if !ASSERT_DISABLED
                     r->m_originatingLine = 0;
 #endif
@@ -3668,7 +3670,7 @@ void RenderBlock::clearFloats()
                     }
 
                     floatMap.remove(f->m_renderer);
-                    if (oldFloatingObject->m_originatingLine) {
+                    if (oldFloatingObject->m_originatingLine && !selfNeedsLayout()) {
                         ASSERT(oldFloatingObject->m_originatingLine->renderer() == this);
                         oldFloatingObject->m_originatingLine->markDirty();
                     }

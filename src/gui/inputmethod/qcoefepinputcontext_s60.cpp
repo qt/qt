@@ -64,6 +64,8 @@
 #define QT_EAknCursorPositionChanged MAknEdStateObserver::EAknEdwinStateEvent(6)
 // MAknEdStateObserver::EAknActivatePenInputRequest
 #define QT_EAknActivatePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(7)
+// MAknEdStateObserver::EAknClosePenInputRequest
+#define QT_EAknClosePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(10)
 
 // EAknEditorFlagSelectionVisible is only valid from 3.2 onwards.
 // Sym^3 AVKON FEP manager expects that this flag is used for FEP-aware editors
@@ -107,6 +109,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_inDestruction(false),
       m_pendingInputCapabilitiesChanged(false),
+      m_pendingTransactionCancel(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
@@ -252,9 +255,6 @@ bool QCoeFepInputContext::needsInputPanel()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
-    // close when it discovers that the underlying widget does not have input capabilities.
-
     if (!focusWidget())
         return false;
 
@@ -318,6 +318,12 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!needsInputPanel())
         return false;
 
+    if ((event->type() == QEvent::CloseSoftwareInputPanel)
+        && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)) {
+        m_fepState->ReportAknEdStateEventL(QT_EAknClosePenInputRequest);
+        return false;
+    }
+
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Only request virtual keyboard if it is not yet active or if this is the first time
         // panel is requested for this application.
@@ -354,10 +360,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             if (sControl) {
                 sControl->setIgnoreFocusChanged(false);
             }
-            //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
-            //When this is happening, do not filter out pointer events.
-            if (!m_pointerHandler)
-                return true;
         }
     }
 
@@ -473,7 +475,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             if (gv->scene()->focusItem()) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
@@ -580,7 +582,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     if (!moveWithinVisibleArea) {
         // Check if the widget contains cursorPositionChanged signal and connect to it.
         QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem()) {
+        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
@@ -1062,8 +1064,10 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     // We are not supposed to ever have a tempPreeditString and a real preedit string
     // from S60 at the same time, so it should be safe to rely on this test to determine
     // whether we should honor S60's request to clear the text or not.
-    if (m_hasTempPreeditString)
+    if (m_hasTempPreeditString || m_pendingTransactionCancel)
         return;
+
+    m_pendingTransactionCancel = true;
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
@@ -1071,6 +1075,13 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     m_preeditString.clear();
     m_inlinePosition = 0;
     sendEvent(event);
+
+    // Sync with native side editor state. Native side can then do various operations
+    // based on editor state, such as removing 'exact word bubble'.
+    if (!m_pendingInputCapabilitiesChanged)
+        ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+
+    m_pendingTransactionCancel = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
@@ -1080,7 +1091,18 @@ TInt QCoeFepInputContext::DocumentLengthForFep() const
         return 0;
 
     QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
-    return variant.value<QString>().size() + m_preeditString.size();
+
+    int size = variant.value<QString>().size() + m_preeditString.size();
+
+    // To fix an issue with backspaces not being generated if document size is zero,
+    // fake document length to be at least one always, except when dealing with
+    // hidden text widgets, where this faking would generate extra asterisk. Since the
+    // primary use of hidden text widgets is password fields, they are unlikely to
+    // support multiple lines anyway.
+    if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
+        size = 1;
+
+    return size;
 }
 
 TInt QCoeFepInputContext::DocumentMaximumLengthForFep() const
@@ -1163,6 +1185,12 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
     // FEP expects the preedit string to be part of the editor content, so let's mix it in.
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     text.insert(cursor, m_preeditString);
+
+    // Add additional space to empty non-password text to compensate
+    // for the fake length we specified in DocumentLengthForFep().
+    if (text.size() == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
+        text += QChar(0x20);
+
     aEditorContent.Copy(qt_QString2TPtrC(text.mid(aDocumentPosition, aLengthToRetrieve)));
 }
 

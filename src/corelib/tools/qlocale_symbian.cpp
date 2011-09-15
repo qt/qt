@@ -195,7 +195,9 @@ QByteArray qt_symbianLocaleName(int code)
     return qt_resolveSymbianLocaleName(code, ISO);
 }
 
-// order is: normal, abbr, nmode, nmode+abbr
+// Rows are: normal, abbr, nmode, nmode+abbr
+// First three values on a row are used for three component date,
+// while the last two are used for two component date (i.e. no year).
 static const char *us_locale_dep[] = {
     "MM", "dd", "yyyy", "MM", "dd",
     "M", "d", "yy", "M", "d",
@@ -214,6 +216,13 @@ static const char *jp_locale_dep[] = {
     "yyyy", "MMMM", "dd", "MMMM", "dd",
     "yy", "MMM", "d", "MMM", "d" };
 
+// 0 = day, 1 = month, 2 = year
+static const int digit_map[] = {
+    1, 0, 2, 1, 0, // American
+    0, 1, 2, 0, 1, // European
+    2, 1, 0, 1, 0  // Japanese
+};
+
 /*!
     Returns a Qt version of the given \a sys_fmt Symbian locale format string.
 */
@@ -229,6 +238,9 @@ static QString s60ToQtFormat(const QString &sys_fmt)
     int i = 0;
     bool open_escape = false;
     bool abbrev_next = false;
+    bool abbrev_day = false;
+    bool abbrev_month = false;
+    bool abbrev_year = false;
     bool locale_indep_ordering = false;
     bool minus_mode = false;
     bool plus_mode = false;
@@ -305,8 +317,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'D':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_day = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("dd");
@@ -318,8 +333,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'M':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_month = true;
                         break;
+                    }
 
                     if (!n_mode) {
                         if (!abbrev_next)
@@ -340,8 +358,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                 {
                     n_mode = true;
 
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_month = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("MMMM");
@@ -353,8 +374,11 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                 case 'Y':
                 {
-                    if (!locale_indep_ordering)
+                    if (!locale_indep_ordering) {
+                        if (abbrev_next)
+                            abbrev_year = true;
                         break;
+                    }
 
                     if (!abbrev_next)
                         result += QLatin1String("yyyy");
@@ -522,7 +546,9 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                     const char **locale_dep;
                     switch (df) {
-                        default: // fallthru to american
+                        default:
+                            df = EDateAmerican;
+                            // fallthru to american
                         case EDateAmerican:
                             locale_dep = us_locale_dep;
                             break;
@@ -534,12 +560,33 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                             break;
                     }
                     int offset = 0;
-                    if (abbrev_next)
+                    int adjustedDigit = c.digitValue() - 1;
+
+                    bool abbrev_this = abbrev_next;
+                    // If abbreviation specified for this digit, use that.
+                    // Otherwise abbreviate according to %D, %M, and %Y specified previously.
+                    if (!abbrev_this) {
+                        switch (digit_map[adjustedDigit + (static_cast<int>(df) * 5)]) {
+                            case 0:
+                                abbrev_this = abbrev_day;
+                                break;
+                            case 1:
+                                abbrev_this = abbrev_month;
+                                break;
+                            case 2:
+                                abbrev_this = abbrev_year;
+                                break;
+                            default:
+                                break; // never happens
+                        }
+                    }
+
+                    if (abbrev_this)
                         offset += 5;
                     if (n_mode)
                         offset += 10;
 
-                    result += QLatin1String(locale_dep[offset + (c.digitValue()-1)]);
+                    result += QLatin1String(locale_dep[offset + (adjustedDigit)]);
                     break;
                 }
 
