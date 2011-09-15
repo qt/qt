@@ -737,7 +737,7 @@ void QNetworkAccessHttpBackend::readFromHttp()
 
 void QNetworkAccessHttpBackend::replyFinished()
 {
-    if (httpReply->bytesAvailable())
+    if (!httpReply || httpReply->bytesAvailable())
         // we haven't read everything yet. Wait some more.
         return;
 
@@ -788,6 +788,9 @@ void QNetworkAccessHttpBackend::checkForRedirect(const int statusCode)
 
 void QNetworkAccessHttpBackend::replyHeaderChanged()
 {
+    if (!httpReply)
+        return;
+
     setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, httpReply->isPipeliningUsed());
 
     // reconstruct the HTTP header
@@ -1128,7 +1131,7 @@ bool QNetworkAccessHttpBackend::canResume() const
         return false;
 
     // Can only resume if server/resource supports Range header.
-    if (httpReply->headerField("Accept-Ranges", "none") == "none")
+    if (!httpReply || httpReply->headerField("Accept-Ranges", "none") == "none")
         return false;
 
     // We only support resuming for byte ranges.
