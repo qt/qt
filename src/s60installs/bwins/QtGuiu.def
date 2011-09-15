@@ -1901,7 +1901,7 @@ EXPORTS
 	?ResourceFileName@QS60MainApplication@@UBE?AV?$TBuf@$0BAA@@@XZ @ 1900 NONAME ; class TBuf<256> QS60MainApplication::ResourceFileName(void) const
 	?RestoreMenuL@QS60MainAppUi@@UAEXPAVCCoeControl@@HW4TMenuType@MEikMenuObserver@@@Z @ 1901 NONAME ; void QS60MainAppUi::RestoreMenuL(class CCoeControl *, int, enum MEikMenuObserver::TMenuType)
 	?_q_clipboardChanged@QLineControl@@AAEXXZ @ 1902 NONAME ; void QLineControl::_q_clipboardChanged(void)
-	?_q_delayedDestroy@QWidgetPrivate@@QAEXPAVCCoeControl@@@Z @ 1903 NONAME ; void QWidgetPrivate::_q_delayedDestroy(class CCoeControl *)
+	?_q_delayedDestroy@QWidgetPrivate@@QAEXPAVCCoeControl@@@Z @ 1903 NONAME ABSENT ; void QWidgetPrivate::_q_delayedDestroy(class CCoeControl *)
 	?_q_deleteSelected@QLineControl@@AAEXXZ @ 1904 NONAME ; void QLineControl::_q_deleteSelected(void)
 	?_q_showIfNotHidden@QWidgetPrivate@@QAEXXZ @ 1905 NONAME ; void QWidgetPrivate::_q_showIfNotHidden(void)
 	?about@QMessageBox@@SAXPAVQWidget@@ABVQString@@1@Z @ 1906 NONAME ; void QMessageBox::about(class QWidget *, class QString const &, class QString const &)
@@ -14045,4 +14045,57 @@ EXPORTS
 	?setStyleName@QFont@@QAEXABVQString@@@Z @ 14044 NONAME ; void QFont::setStyleName(class QString const &)
 	?styleName@QFont@@QBE?AVQString@@XZ @ 14045 NONAME ; class QString QFont::styleName(void) const
 	?styleName@QFontInfo@@QBE?AVQString@@XZ @ 14046 NONAME ; class QString QFontInfo::styleName(void) const
+	?initialize@QTreeViewPrivate@@QAEXXZ @ 14047 NONAME ; void QTreeViewPrivate::initialize(void)
+	?expand@QTreeViewPrivate@@QAEXH_N@Z @ 14048 NONAME ; void QTreeViewPrivate::expand(int, bool)
+	?removeViewItems@QTreeViewPrivate@@QAEXHH@Z @ 14049 NONAME ; void QTreeViewPrivate::removeViewItems(int, int)
+	?drawAnimatedOperation@QTreeViewPrivate@@QBEXPAVQPainter@@@Z @ 14050 NONAME ; void QTreeViewPrivate::drawAnimatedOperation(class QPainter *) const
+	?firstVisibleItem@QTreeViewPrivate@@QBEHPAH@Z @ 14051 NONAME ; int QTreeViewPrivate::firstVisibleItem(int *) const
+	?hasFamily@QFontDatabase@@QBE_NABVQString@@@Z @ 14052 NONAME ; bool QFontDatabase::hasFamily(class QString const &) const
+	?insertViewItems@QTreeViewPrivate@@QAEXHHABUQTreeViewItem@@@Z @ 14053 NONAME ; void QTreeViewPrivate::insertViewItems(int, int, struct QTreeViewItem const &)
+	??0QTreeViewPrivate@@QAE@XZ @ 14054 NONAME ; QTreeViewPrivate::QTreeViewPrivate(void)
+	??_EQTreeViewPrivate@@UAE@I@Z @ 14055 NONAME ; QTreeViewPrivate::~QTreeViewPrivate(unsigned int)
+	?q_func@QTreeViewPrivate@@ABEPBVQTreeView@@XZ @ 14056 NONAME ; class QTreeView const * QTreeViewPrivate::q_func(void) const
+	?viewIndex@QTreeViewPrivate@@QBEHABVQModelIndex@@@Z @ 14057 NONAME ; int QTreeViewPrivate::viewIndex(class QModelIndex const &) const
+	?q_func@QTreeViewPrivate@@AAEPAVQTreeView@@XZ @ 14058 NONAME ; class QTreeView * QTreeViewPrivate::q_func(void)
+	?updateScrollBars@QTreeViewPrivate@@QAEXXZ @ 14059 NONAME ; void QTreeViewPrivate::updateScrollBars(void)
+	?indentationForItem@QTreeViewPrivate@@QBEHH@Z @ 14060 NONAME ; int QTreeViewPrivate::indentationForItem(int) const
+	?above@QTreeViewPrivate@@QBEHH@Z @ 14061 NONAME ; int QTreeViewPrivate::above(int) const
+	?_q_columnsRemoved@QTreeViewPrivate@@UAEXABVQModelIndex@@HH@Z @ 14062 NONAME ; void QTreeViewPrivate::_q_columnsRemoved(class QModelIndex const &, int, int)
+	?columnRanges@QTreeViewPrivate@@QBE?AV?$QList@U?$QPair@HH@@@@ABVQModelIndex@@0@Z @ 14063 NONAME ; class QList<struct QPair<int, int> > QTreeViewPrivate::columnRanges(class QModelIndex const &, class QModelIndex const &) const
+	?_q_modelDestroyed@QTreeViewPrivate@@UAEXXZ @ 14064 NONAME ; void QTreeViewPrivate::_q_modelDestroyed(void)
+	?coordinateForItem@QTreeViewPrivate@@QBEHH@Z @ 14065 NONAME ; int QTreeViewPrivate::coordinateForItem(int) const
+	?accessibleTable2Index@QTreeViewPrivate@@QBEHABVQModelIndex@@@Z @ 14066 NONAME ; int QTreeViewPrivate::accessibleTable2Index(class QModelIndex const &) const
+	?select@QTreeViewPrivate@@QAEXABVQModelIndex@@0V?$QFlags@W4SelectionFlag@QItemSelectionModel@@@@@Z @ 14067 NONAME ; void QTreeViewPrivate::select(class QModelIndex const &, class QModelIndex const &, class QFlags<enum QItemSelectionModel::SelectionFlag>)
+	?drawPixmapFragments@QPaintEngineEx@@UAEXPBVQRectF@@0HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 14068 NONAME ; void QPaintEngineEx::drawPixmapFragments(class QRectF const *, class QRectF const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?draggablePaintPairs@QTreeViewPrivate@@UBE?AV?$QList@U?$QPair@VQRect@@VQModelIndex@@@@@@ABV?$QList@VQModelIndex@@@@PAVQRect@@@Z @ 14069 NONAME ; class QList<struct QPair<class QRect, class QModelIndex> > QTreeViewPrivate::draggablePaintPairs(class QList<class QModelIndex> const &, class QRect *) const
+	?beginAnimatedOperation@QTreeViewPrivate@@QAEXXZ @ 14070 NONAME ; void QTreeViewPrivate::beginAnimatedOperation(void)
+	?columnAt@QTreeViewPrivate@@QBEHH@Z @ 14071 NONAME ; int QTreeViewPrivate::columnAt(int) const
+	?pageUp@QTreeViewPrivate@@QBEHH@Z @ 14072 NONAME ; int QTreeViewPrivate::pageUp(int) const
+	?isItemHiddenOrDisabled@QTreeViewPrivate@@QBE_NH@Z @ 14073 NONAME ; bool QTreeViewPrivate::isItemHiddenOrDisabled(int) const
+	?expandOrCollapseItemAtPos@QTreeViewPrivate@@QAE_NABVQPoint@@@Z @ 14074 NONAME ; bool QTreeViewPrivate::expandOrCollapseItemAtPos(class QPoint const &)
+	?paintAlternatingRowColors@QTreeViewPrivate@@QBEXPAVQPainter@@PAVQStyleOptionViewItemV4@@HH@Z @ 14075 NONAME ; void QTreeViewPrivate::paintAlternatingRowColors(class QPainter *, class QStyleOptionViewItemV4 *, int, int) const
+	?drawPixmapFragments@QPainter@@QAEXPBVQRectF@@0HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 14076 NONAME ; void QPainter::drawPixmapFragments(class QRectF const *, class QRectF const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?itemDecorationRect@QTreeViewPrivate@@QBE?AVQRect@@ABVQModelIndex@@@Z @ 14077 NONAME ; class QRect QTreeViewPrivate::itemDecorationRect(class QModelIndex const &) const
+	??1QTreeViewPrivate@@UAE@XZ @ 14078 NONAME ; QTreeViewPrivate::~QTreeViewPrivate(void)
+	?storeExpanded@QTreeViewPrivate@@QAE_NABVQPersistentModelIndex@@@Z @ 14079 NONAME ; bool QTreeViewPrivate::storeExpanded(class QPersistentModelIndex const &)
+	?hasVisibleChildren@QTreeViewPrivate@@QBE_NABVQModelIndex@@@Z @ 14080 NONAME ; bool QTreeViewPrivate::hasVisibleChildren(class QModelIndex const &) const
+	?itemAtCoordinate@QTreeViewPrivate@@QBEHH@Z @ 14081 NONAME ; int QTreeViewPrivate::itemAtCoordinate(int) const
+	?renderTreeToPixmapForAnimation@QTreeViewPrivate@@QBE?AVQPixmap@@ABVQRect@@@Z @ 14082 NONAME ; class QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(class QRect const &) const
+	?prepareAnimatedOperation@QTreeViewPrivate@@QAEXHW4Direction@QAbstractAnimation@@@Z @ 14083 NONAME ; void QTreeViewPrivate::prepareAnimatedOperation(int, enum QAbstractAnimation::Direction)
+	?_q_endAnimatedOperation@QTreeViewPrivate@@QAEXXZ @ 14084 NONAME ; void QTreeViewPrivate::_q_endAnimatedOperation(void)
+	?startAndEndColumns@QTreeViewPrivate@@QBE?AU?$QPair@HH@@ABVQRect@@@Z @ 14085 NONAME ; struct QPair<int, int> QTreeViewPrivate::startAndEndColumns(class QRect const &) const
+	?invalidateHeightCache@QTreeViewPrivate@@QBEXH@Z @ 14086 NONAME ; void QTreeViewPrivate::invalidateHeightCache(int) const
+	?isIndexExpanded@QTreeViewPrivate@@QBE_NABVQModelIndex@@@Z @ 14087 NONAME ; bool QTreeViewPrivate::isIndexExpanded(class QModelIndex const &) const
+	?layout@QTreeViewPrivate@@QAEXH_N0@Z @ 14088 NONAME ; void QTreeViewPrivate::layout(int, bool, bool)
+	?cancelPasswordEchoTimer@QLineControl@@AAEXXZ @ 14089 NONAME ; void QLineControl::cancelPasswordEchoTimer(void)
+	?collapse@QTreeViewPrivate@@QAEXH_N@Z @ 14090 NONAME ; void QTreeViewPrivate::collapse(int, bool)
+	?modelIndex@QTreeViewPrivate@@QBE?AVQModelIndex@@HH@Z @ 14091 NONAME ; class QModelIndex QTreeViewPrivate::modelIndex(int, int) const
+	?itemHeight@QTreeViewPrivate@@QBEHH@Z @ 14092 NONAME ; int QTreeViewPrivate::itemHeight(int) const
+	?isRowHidden@QTreeViewPrivate@@QBE_NABVQModelIndex@@@Z @ 14093 NONAME ; bool QTreeViewPrivate::isRowHidden(class QModelIndex const &) const
+	?_q_sortIndicatorChanged@QTreeViewPrivate@@QAEXHW4SortOrder@Qt@@@Z @ 14094 NONAME ; void QTreeViewPrivate::_q_sortIndicatorChanged(int, enum Qt::SortOrder)
+	?pageDown@QTreeViewPrivate@@QBEHH@Z @ 14095 NONAME ; int QTreeViewPrivate::pageDown(int) const
+	?_q_modelAboutToBeReset@QTreeViewPrivate@@QAEXXZ @ 14096 NONAME ; void QTreeViewPrivate::_q_modelAboutToBeReset(void)
+	?itemDecorationAt@QTreeViewPrivate@@QBEHABVQPoint@@@Z @ 14097 NONAME ; int QTreeViewPrivate::itemDecorationAt(class QPoint const &) const
+	?below@QTreeViewPrivate@@QBEHH@Z @ 14098 NONAME ; int QTreeViewPrivate::below(int) const
+	?_q_columnsAboutToBeRemoved@QTreeViewPrivate@@UAEXABVQModelIndex@@HH@Z @ 14099 NONAME ; void QTreeViewPrivate::_q_columnsAboutToBeRemoved(class QModelIndex const &, int, int)
 

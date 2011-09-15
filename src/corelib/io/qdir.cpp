@@ -198,7 +198,7 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
 
     QString absoluteName;
     if (fileEngine.isNull()) {
-        if (!dirEntry.isRelative()) {
+        if (!dirEntry.isRelative() && dirEntry.isClean()) {
             absoluteDirEntry = dirEntry;
             return;
         }
@@ -1633,9 +1633,24 @@ bool QDir::operator==(const QDir &dir) const
     if (d->filters == other->filters
        && d->sort == other->sort
        && d->nameFilters == other->nameFilters) {
-        d->resolveAbsoluteEntry();
-        other->resolveAbsoluteEntry();
-        return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+
+        // Assume directories are the same if path is the same
+        if (d->dirEntry.filePath() == other->dirEntry.filePath())
+            return true;
+
+        if (exists()) {
+            if (!dir.exists())
+                return false; //can't be equal if only one exists
+            // Both exist, fallback to expensive canonical path computation
+            return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+        } else {
+            if (dir.exists())
+                return false; //can't be equal if only one exists
+            // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
+            d->resolveAbsoluteEntry();
+            other->resolveAbsoluteEntry();
+            return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+        }
     }
     return false;
 }
@@ -2004,7 +2019,7 @@ QString QDir::cleanPath(const QString &path)
     const QChar *p = name.unicode();
     for (int i = 0, last = -1, iwrite = 0; i < len; ++i) {
         if (p[i] == QLatin1Char('/')) {
-            while (i < len-1 && p[i+1] == QLatin1Char('/')) {
+            while (i+1 < len && p[i+1] == QLatin1Char('/')) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) //allow unc paths
                 if (!i)
                     break;
@@ -2012,9 +2027,9 @@ QString QDir::cleanPath(const QString &path)
                 i++;
             }
             bool eaten = false;
-            if (i < len - 1 && p[i+1] == QLatin1Char('.')) {
+            if (i+1 < len && p[i+1] == QLatin1Char('.')) {
                 int dotcount = 1;
-                if (i < len - 2 && p[i+2] == QLatin1Char('.'))
+                if (i+2 < len && p[i+2] == QLatin1Char('.'))
                     dotcount++;
                 if (i == len - dotcount - 1) {
                     if (dotcount == 1) {

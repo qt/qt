@@ -2,8 +2,7 @@ SOURCES += s60framework/qs60mainapplication.cpp \
     s60framework/qs60mainappui.cpp \
     s60framework/qs60maindocument.cpp \
     s60framework/qs60keycapture.cpp
-HEADERS += qs60keycapture_p.h \
-    s60framework/qs60mainapplication_p.h \
+HEADERS += s60framework/qs60mainapplication_p.h \
     s60framework/qs60mainapplication.h \
     s60framework/qs60mainappui.h \
     s60framework/qs60maindocument.h \

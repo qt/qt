@@ -287,6 +287,9 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
             nameToTitle.insert(fake->name(),arg);
+            if (fake->subType() == Node::Example) {
+
+            }
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

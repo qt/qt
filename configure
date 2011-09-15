@@ -3269,6 +3269,10 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
     fi
 fi
 
+if [ ! -n "$PKG_CONFIG" ]; then
+    QT_CONFIG="$QT_CONFIG no-pkg-config"
+fi
+
 # process CFG_MAC_ARCHS
 if [ "$PLATFORM_MAC" = "yes" ]; then
 #   check -arch arguments for validity.
@@ -9011,6 +9015,10 @@ for file in .projects .projects.3; do
             SPEC=$XQMAKESPEC ;;
         *s60main/s60main.pro)
             if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_SYMBIAN" != "yes" ]; then
+                continue
+            fi;;
+        *activeqt/*)
+            if [ "$PLATFORM" = "win32-g++" ] || [ "$XPLATFORM" = "win32-g++" ]; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;
