@@ -143,6 +143,8 @@ Qt for Linux/X11
  - Various fixes to FontConfig font matching code to make it consistent
    with other X11 programs. [QTBUG-2148, QTBUG-19947, QTBUG-14269]
  - Added experimental support for armCC
+ - Experimental support for associating Wayland clients with PID or a token,
+   to facilitate window management.
 
 Qt for Windows
 --------------
