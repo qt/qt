@@ -77,6 +77,9 @@ QtGui
    like UltraLight. [QTBUG-19366]
  - Visual text cursor movement behavior is added to QTextEdit and QLineEdit controls,
    which can be used as an optional mode for bi-directional text editing. [QTBUG-13859]
+ - Fixed several bidi reordering bugs.
+ - Make HTML exported from QTextDocument containing empty lines more compliant.
+ - Include font pixel size when exporting HTML from QTextDocument.
  - Fixed a rare race condition when showing toplevel windows on X11
  - Accessibility: Fix potential crash in QDockWidget.
  - Accessibility: Fix crash when asking for relations of child accessibles.
@@ -114,6 +117,7 @@ QtNetwork
  - Including <QtOpenGL> will not work in combination with GLEW, as
    QGLFunctions will undefine GLEW's defines.
  - Optimize behavior of QGLTextureCache
+ - Support subpixel antialiasing when possible.
 
 QtScript
 --------
