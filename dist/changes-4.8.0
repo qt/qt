@@ -28,7 +28,7 @@ for Qt for Embedded Linux (QWS), making it much easier to port Qt to new platfor
 General Improvements
 --------------------
 
-- 
+-
 
 Third party components
 ----------------------
@@ -183,6 +183,36 @@ Qt for Symbian
    be made via a specific network. For example to mobile operator websites
    only accessible via the cellular network, or to websites inside a firewall
  - System proxy settings now work correctly when using service networks [QTBUG-18618]
+ - Prevent horizontal lines appearing under entered characters when predictive text is off
+ - Checked state is not shown on highlighted itemview item when using QS60Style [QTBUG-19668]
+ - Icon is not shown correctly in a menu item in all cases when using QS60Style [QTBUG-19330]
+ - Remove S60 3rd edition support from QS60Style [QTBUG-18615]
+ - Prevent softkeys from coming to foreground when taskswitcher is opened [QTBUG-19225]
+ - Improve robustness of QS60Style when creating native theme bitmaps [QTBUG-21119]
+ - Make spinboxes and lineedits slightly taller in QS60Style
+ - Default graphics memory quota for Symbian applications support [QT-4963]
+ - Improved support for shadow builds in Symbian [QTBUG-10432]
+ - Fixed panic when global QSettings instance needs flusing at app exit [QTBUG-21421]
+ - Detect app caption and pkg name translations by id attribute [QT-5247]
+ - Fixed center aligned layouts for Symbian [QTBUG-14704]
+ - Fixed Symbian system date format parsing [QT-5237]
+ - Skip softkeys update if application is not on foreground in Symbian [QTBUG-19225]
+ - Removed S60 version plugins [QTBUG-18614]
+ - Improved DEFINES crossplatform compatibility in Symbian builds [QTBUG-19232]
+ - Fixed loss of focus and activation when hiding a child widget [QTBUG-19196]
+ - Fixed softkeys in case a dialog with softkeys that have icons is closed [QTBUG-19154]
+ - Update softkeys after orientation switch [QTBUG-19150]
+ - Implemented support for enable_backup CONFIG value [QTBUG-17214]
+ - Improved logic to find default certificates in createpackage script [QTBUG-18684]
+ - Changed createpackage and patch_capabilties scripts use tmp dir [QTBUG-11394]
+ - Added ".make.cache" to the files to be cleaned for symbian-abld [QTBUG-15733]
+ - Fixed emulator deployment for items with "!:" drive [QTBUG-18134]
+ - Removed broken "deploy.path" support from Symbian [QTBUG-14426]
+ - Strip echo suppression character "@" from commands in symbian-sbsv2 [QTBUG-4767]
+ - Don't leave from QNotifyChangeEvent::RunL() in QFileSystemWatcher [QT-4660]
+ - Fixed QProcess::waitForFinished WaitForRequest handling in Symbian [QT-4659]
+ - Changed DEPLOYMENT keyword to accept both .sources and .files [QTBUG-3216]
+ - Removed static vs dynamic library autodetection from qmake in Symbian [QTBUG-13498]
 
 Qt for Windows CE
 -----------------
