@@ -69,6 +69,7 @@ QtCore
 QtGui
 -----
 
+ - QApplication: Add a queryKeyboardModifiers() method.
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
  - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
  - QGraphicsLayout: Made setInstantInvalidatePropagation() public
@@ -145,6 +146,7 @@ QtDBus
 ------
  - Make QDBusServer work [QTBUG-186]
  - QDBusConnection: Add methods disconnectFromPeer and connectToPeer
+ - Make the DBus timeout configurable in QDBusAbstractInterface.
 
 ****************************************************************************
 *                          Database Drivers                                *
