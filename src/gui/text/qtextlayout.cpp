@@ -375,7 +375,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
@@ -515,7 +515,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
