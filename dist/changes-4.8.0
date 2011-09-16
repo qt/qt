@@ -152,6 +152,7 @@ Qt for Mac OS X
  - QApplication has now implemented macEventFilter for Qt/Cocoa
  - HarfBuzz can now be used as an optional text layout engine on Mac OS X.
    [QTBUG-17728]
+ - Qt shows some love to OS X Lion (10.7).
 
 Qt for Embedded Linux
 ---------------------
