@@ -235,6 +235,9 @@ Qt for Windows CE
 - Sun Studio 12
     * Fixed build issues in the OpenGL module on Solaris with CC 5.9. [QTBUG-19641]
 
+- Microsoft Visual C++
+    * Fixed build issues with STLport. [QTBUG-18374]
+
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
