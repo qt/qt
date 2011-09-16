@@ -163,6 +163,10 @@ Qt for Windows
 --------------
  - DirectWrite experimental text shaping engine is added with subpixel
    positioning support. [QTBUG-12678]
+ - QElapsedTimer: use QueryPerformanceCounter if available.
+ - MSVC runtime is bound to the runtime you're building with. This makes
+   deployment on Windows easier. (QTBUG-8215)
+ - QLocalSocket::isValid() has been fixed. (QTBUG-18204)
 
 Qt for Mac OS X
 ---------------
@@ -272,9 +276,21 @@ Qt for Windows CE
 
 
 - qmake
+    * MinGW: fix DEF_FILE for shadow builds. (QTBUG-11643)
 
+- qmake - Visual Studio project generator
+    * Support x64 Qt builds. (QTBUG-17911)
+    * QMAKE_PROJECT_NAME qmake variable introduced to set the project's name.
+    * Support PCHs with other extensions than ".h". (QTBUG-16639)
+    * Fix setting PCH options manually via the MSVC compiler flags.
+      (QTBUG-15594)
+    * Set the output directory correctly. (QTBUG-16490)
+    * Fix handling of DEFINES from .prl files. (QTBUG-16024)
+    * Fix the language settings generated Windows resource files.
+      (QTBUG-12249)
 
 - configure
+    * The endianness for Windows is always set to little endian.
 
 
 - qtconfig
