@@ -101,6 +101,7 @@ QtGui
  - Accessibility: Make accessibility work on Windows with alien widgets
  - Accessibility: Several enablers for accessible graphicsview and Qt Quick applications.
  - Fixed loading BMP files with version 4 and 5 headers, ignoring extra data.
+ - QTextCursor optimization
 
 QtNetwork
 ---------
