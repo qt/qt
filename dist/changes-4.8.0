@@ -229,7 +229,8 @@ Qt for Windows CE
 
 
 - qmake
-
+    * Implemented "aux" template that allows making use of the INSTALLS variable 
+      without building anything. Needed for projects with QML entry point.
 
 - configure
 
