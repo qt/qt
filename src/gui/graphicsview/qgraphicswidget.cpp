@@ -1173,6 +1173,12 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         QApplication::sendEvent(this, &event);
         break;
     }
+    case ItemChildAddedChange: {
+        QGraphicsItem *child = qVariantValue<QGraphicsItem *>(value);
+        if (child->isWidget())
+            static_cast<QGraphicsWidget *>(child)->d_func()->resolveLayoutDirection();
+        break;
+    }
     default:
         break;
     }

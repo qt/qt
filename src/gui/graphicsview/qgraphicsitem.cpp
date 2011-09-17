@@ -5378,11 +5378,9 @@ void QGraphicsItemPrivate::invalidateParentGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
     do {
-        if (itemPrivate->graphicsEffect) {
+        if (itemPrivate->graphicsEffect && !itemPrivate->updateDueToGraphicsEffect) {
             itemPrivate->notifyInvalidated = 1;
-
-            if (!itemPrivate->updateDueToGraphicsEffect)
-                static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+            static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
@@ -5690,21 +5688,27 @@ void QGraphicsItem::update(const QRectF &rect)
     d_ptr->invalidateParentGraphicsEffectsRecursively();
 #endif //QT_NO_GRAPHICSEFFECT
 
-    if (CacheMode(d_ptr->cacheMode) != NoCache) {
-        // Invalidate cache.
-        QGraphicsItemCache *cache = d_ptr->extraItemCache();
-        if (!cache->allExposed) {
-            if (rect.isNull()) {
-                cache->allExposed = true;
-                cache->exposed.clear();
-            } else {
-                cache->exposed.append(rect);
+#ifndef QT_NO_GRAPHICSEFFECT
+    if (!d_ptr->updateDueToGraphicsEffect) {
+#endif
+        if (CacheMode(d_ptr->cacheMode) != NoCache) {
+            // Invalidate cache.
+            QGraphicsItemCache *cache = d_ptr->extraItemCache();
+            if (!cache->allExposed) {
+                if (rect.isNull()) {
+                    cache->allExposed = true;
+                    cache->exposed.clear();
+                } else {
+                    cache->exposed.append(rect);
+                }
             }
+            // Only invalidate cache; item is already dirty.
+            if (d_ptr->fullUpdatePending)
+                return;
         }
-        // Only invalidate cache; item is already dirty.
-        if (d_ptr->fullUpdatePending)
-            return;
+#ifndef QT_NO_GRAPHICSEFFECT
     }
+#endif
 
     if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, rect);

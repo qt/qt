@@ -124,6 +124,8 @@ private slots:
     void layout();
     void layoutDirection_data();
     void layoutDirection();
+    void recursiveLayoutDirection_data();
+    void recursiveLayoutDirection();
     void paint_data();
     void paint();
     void palettePropagation();
@@ -1213,14 +1215,20 @@ void tst_QGraphicsWidget::layout()
 void tst_QGraphicsWidget::layoutDirection_data()
 {
     QTest::addColumn<Qt::LayoutDirection>("layoutDirection");
-    QTest::newRow("rtl") << Qt::RightToLeft;
-    QTest::newRow("ltr") << Qt::LeftToRight;
+    QTest::addColumn<bool>("setDirectionBeforeAddingWidget");
+
+    QTest::newRow("rtl, setting direction before adding widget") << Qt::RightToLeft << true;
+    QTest::newRow("ltr, setting direction before adding widget") << Qt::LeftToRight << true;
+    QTest::newRow("rtl, setting direction after adding widget") << Qt::RightToLeft << false;
+    QTest::newRow("ltr, setting direction after adding widget") << Qt::LeftToRight << false;
+
 }
 
 // Qt::LayoutDirection layoutDirection() const public
 void tst_QGraphicsWidget::layoutDirection()
 {
     QFETCH(Qt::LayoutDirection, layoutDirection);
+    QFETCH(bool, setDirectionBeforeAddingWidget);
     QGraphicsScene scene;
     QGraphicsView *view = new QGraphicsView(&scene);
     SubQGraphicsWidget widget;
@@ -1228,13 +1236,16 @@ void tst_QGraphicsWidget::layoutDirection()
     QCOMPARE(widget.layoutDirection(), Qt::LeftToRight);
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), false);
 
+    if (setDirectionBeforeAddingWidget)
+        widget.setLayoutDirection(layoutDirection);
     QList<SubQGraphicsWidget*> children;
     for (int i = 0; i < 10; ++i) {
         SubQGraphicsWidget *item = new SubQGraphicsWidget(&widget);
         children.append(item);
         QCOMPARE(item->testAttribute(Qt::WA_SetLayoutDirection), false);
     }
-    widget.setLayoutDirection(layoutDirection);
+    if (!setDirectionBeforeAddingWidget)
+        widget.setLayoutDirection(layoutDirection);
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
     QTest::qWaitForWindowShown(view);
@@ -1245,6 +1256,42 @@ void tst_QGraphicsWidget::layoutDirection()
         QTRY_COMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
     }
     delete view;
+}
+
+void tst_QGraphicsWidget::recursiveLayoutDirection_data()
+{
+    QTest::addColumn<Qt::LayoutDirection>("layoutDirection");
+    QTest::addColumn<bool>("setDirectionBeforeAddingWidget");
+
+    QTest::newRow("rtl, setting direction before adding widget") << Qt::RightToLeft << true;
+    QTest::newRow("ltr, setting direction before adding widget") << Qt::LeftToRight << true;
+    QTest::newRow("rtl, setting direction after adding widget") << Qt::RightToLeft << false;
+    QTest::newRow("ltr, setting direction after adding widget") << Qt::LeftToRight << false;
+}
+
+void tst_QGraphicsWidget::recursiveLayoutDirection()
+{
+    QFETCH(Qt::LayoutDirection, layoutDirection);
+    QFETCH(bool, setDirectionBeforeAddingWidget);
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(widget);
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout2 = new QGraphicsLinearLayout(widget2);
+    QGraphicsWidget *widget3 = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout3 = new QGraphicsLinearLayout(widget3);
+
+    if (setDirectionBeforeAddingWidget)
+        widget->setLayoutDirection(layoutDirection);
+    layout->addItem(widget2);
+    layout2->addItem(widget3);
+    if (!setDirectionBeforeAddingWidget)
+        widget->setLayoutDirection(layoutDirection);
+
+    QCOMPARE(widget->layoutDirection(), layoutDirection);
+    QCOMPARE(widget2->layoutDirection(), layoutDirection);
+    QCOMPARE(widget3->layoutDirection(), layoutDirection);
+
+    delete widget;
 }
 
 void tst_QGraphicsWidget::paint_data()
