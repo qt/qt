@@ -629,7 +629,6 @@ public:
     int lineNumberForTextPosition(int pos);
     int positionAfterVisualMovement(int oldPos, QTextCursor::MoveOperation op);
     void insertionPointsForLine(int lineNum, QVector<int> &insertionPoints);
-
     void resetFontEngineCache();
 
 private:
