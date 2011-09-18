@@ -78,6 +78,8 @@ private slots:
     void dropShadowClipping();
     void childrenVisibilityShouldInvalidateCache();
     void prepareGeometryChangeInvalidateCache();
+    void graphicsEffectUpdateShouldNotInvalidateGraphicsItemCache();
+    void graphicsEffectUpdateShouldInvalidateParentGraphicsEffect();
     void itemHasNoContents();
 };
 
@@ -730,6 +732,99 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     item->setPos(item->pos() + QPointF(10, 10));
     QTest::qWait(50);
     QCOMPARE(item->nbPaint, 0);
+}
+
+class MyGraphicsEffect : public QGraphicsEffect
+{
+    public:
+        MyGraphicsEffect(QObject *parent = 0) :
+            QGraphicsEffect(parent), nbSourceInvalidations(0)
+            {}
+        int nbSourceInvalidations;
+    protected:
+        void draw(QPainter *painter)
+        {
+            drawSource(painter);
+        }
+
+        void sourceChanged(ChangeFlags flags)
+        {
+            if (flags == SourceInvalidated)
+                nbSourceInvalidations++;
+        }
+};
+
+void tst_QGraphicsEffect::graphicsEffectUpdateShouldNotInvalidateGraphicsItemCache()
+{
+    QGraphicsScene scene;
+    MyGraphicsItem parent;
+    parent.resize(200, 200);
+    parent.setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    scene.addItem(&parent);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(parent.nbPaint, 1);
+
+    //we set an effect on the parent
+    MyGraphicsEffect* opacityEffect = new MyGraphicsEffect(&parent);
+    opacityEffect->update();
+    parent.setGraphicsEffect(opacityEffect);
+    //flush the events
+    QApplication::processEvents();
+    //new effect applied->repaint
+    QCOMPARE(parent.nbPaint, 1);
+
+    opacityEffect->update();
+    //flush the events
+    QApplication::processEvents();
+    //A change to the effect shouldn't invalidate the graphicsitem's cache
+    // => it shouldn't trigger a paint
+    QCOMPARE(parent.nbPaint, 1);
+}
+
+void tst_QGraphicsEffect::graphicsEffectUpdateShouldInvalidateParentGraphicsEffect()
+{
+    QGraphicsScene scene;
+    // Add the parent
+    MyGraphicsItem parent;
+    parent.resize(200, 200);
+    scene.addItem(&parent);
+    // Add a child to the parent
+    MyGraphicsItem child(&parent);
+    child.resize(100, 100);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    //flush the events
+    QApplication::processEvents();
+    QTRY_COMPARE(parent.nbPaint, 1);
+    QTRY_COMPARE(child.nbPaint, 1);
+
+    //we set an effect on the parent and the child
+    MyGraphicsEffect* effectForParent = new MyGraphicsEffect(&parent);
+    parent.setGraphicsEffect(effectForParent);
+
+    MyGraphicsEffect* effectForChild = new MyGraphicsEffect(&child);
+    child.setGraphicsEffect(effectForChild);
+    //flush the events
+    QApplication::processEvents();
+    // Both effects should start with no source invalidations
+    QCOMPARE(effectForParent->nbSourceInvalidations, 0);
+    QCOMPARE(effectForChild->nbSourceInvalidations, 0);
+
+    // Trigger an update of the child graphics effect
+    effectForChild->update();
+    //flush the events
+    QApplication::processEvents();
+    // An update of the effect on the child shouldn't tell that effect that its source has been invalidated
+    QCOMPARE(effectForChild->nbSourceInvalidations, 0);
+    // The effect on the parent should however be notified of an invalidated source
+    QCOMPARE(effectForParent->nbSourceInvalidations, 1);
 }
 
 void tst_QGraphicsEffect::itemHasNoContents()
