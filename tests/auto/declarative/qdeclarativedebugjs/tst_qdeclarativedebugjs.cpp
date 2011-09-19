@@ -43,7 +43,6 @@
 #include <QtDeclarative/QDeclarativeEngine>
 #include <QtDeclarative/private/qdeclarativedebugclient_p.h>
 #include <QtDeclarative/private/qdeclarativedebugservice_p.h>
-#include <QtDeclarative/private/qdeclarativedebug_p.h>
 #include <QtDeclarative/private/qjsdebuggeragent_p.h>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
