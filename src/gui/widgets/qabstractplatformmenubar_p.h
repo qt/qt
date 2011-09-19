@@ -39,75 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHRUN_H
-#define QGLYPHRUN_H
+#ifndef QABSTRACTPLATFORMMENUBAR_P_H
+#define QABSTRACTPLATFORMMENUBAR_P_H
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qpoint.h>
-#include <QtGui/qrawfont.h>
+#include <qfactoryinterface.h>
+#include <qglobal.h>
+#include <qplugin.h>
 
-#if !defined(QT_NO_RAWFONT)
-
-QT_BEGIN_HEADER
+#ifndef QT_NO_MENUBAR
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+class QAction;
+class QActionEvent;
+class QEvent;
+class QMenuBar;
+class QObject;
+class QWidget;
 
-class QGlyphRunPrivate;
-class Q_GUI_EXPORT QGlyphRun
+class QAbstractPlatformMenuBar;
+
+struct QPlatformMenuBarFactoryInterface : public QFactoryInterface
+{
+    virtual QAbstractPlatformMenuBar *create() = 0;
+};
+
+#define QPlatformMenuBarFactoryInterface_iid "com.nokia.qt.QPlatformMenuBarFactoryInterface"
+Q_DECLARE_INTERFACE(QPlatformMenuBarFactoryInterface, QPlatformMenuBarFactoryInterface_iid)
+
+/*!
+    The platform-specific implementation of a menubar
+*/
+class QAbstractPlatformMenuBar
 {
 public:
-    QGlyphRun();
-    QGlyphRun(const QGlyphRun &other);
-    ~QGlyphRun();
+    virtual ~QAbstractPlatformMenuBar() {}
 
-    QRawFont rawFont() const;
-    void setRawFont(const QRawFont &rawFont);
+    virtual void init(QMenuBar *) = 0;
 
-    void setRawData(const quint32 *glyphIndexArray,
-                    const QPointF *glyphPositionArray,
-                    int size);
+    virtual void setVisible(bool visible) = 0;
 
-    QVector<quint32> glyphIndexes() const;
-    void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
+    virtual void actionEvent(QActionEvent *) = 0;
 
-    QVector<QPointF> positions() const;
-    void setPositions(const QVector<QPointF> &positions);
+    virtual void handleReparent(QWidget *oldParent, QWidget *newParent, QWidget *oldWindow, QWidget *newWindow) = 0;
 
-    void clear();
+    virtual bool allowCornerWidgets() const = 0;
 
-    QGlyphRun &operator=(const QGlyphRun &other);
+    virtual void popupAction(QAction *) = 0;
 
-    bool operator==(const QGlyphRun &other) const;
-    inline bool operator!=(const QGlyphRun &other) const
-    { return !operator==(other); }
+    virtual void setNativeMenuBar(bool) = 0;
 
-    void setOverline(bool overline);
-    bool overline() const;
+    virtual bool isNativeMenuBar() const = 0;
 
-    void setUnderline(bool underline);
-    bool underline() const;
+    /*!
+        Return true if the native menubar is capable of listening to the
+        shortcut keys. If false is returned, QMenuBar will trigger actions on
+        shortcut itself.
+    */
+    virtual bool shortcutsHandledByNativeMenuBar() const = 0;
 
-    void setStrikeOut(bool strikeOut);
-    bool strikeOut() const;
-
-private:
-    friend class QGlyphRunPrivate;
-    friend class QTextLine;
-
-    QGlyphRun operator+(const QGlyphRun &other) const;
-    QGlyphRun &operator+=(const QGlyphRun &other);
-
-    void detach();
-    QExplicitlySharedDataPointer<QGlyphRunPrivate> d;
+    virtual bool menuBarEventFilter(QObject *, QEvent *event) = 0;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_MENUBAR
 
-#endif // QT_NO_RAWFONT
-
-#endif // QGLYPHS_H
+#endif // QABSTRACTPLATFORMMENUBAR_P_H

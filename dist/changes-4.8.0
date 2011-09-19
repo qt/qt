@@ -65,6 +65,7 @@ QtCore
  - optimised performance of QFileInfo, QDir, QDirIterator, these classes now share metadata and access the filesystem less
  - QFile: new open() overloads allow control over whether QFile should close an adopted file handle or not
  - Fix QProcess emitting two started signals on X11 [QTBUG-7039]
+ - QLocale: added locale dependent to{Upper,Lower} string conversions
 
 QtGui
 -----
@@ -88,6 +89,8 @@ QtGui
  - Fixed several bidi reordering bugs.
  - Make HTML exported from QTextDocument containing empty lines more compliant.
  - Include font pixel size when exporting HTML from QTextDocument.
+ - QPainter: Added a fast stroking algorithm for thin (< 1px wide) aliased and antialiased
+   lines, giving a huge improvement in drawing speed for certain cases
  - Fixed a rare race condition when showing toplevel windows on X11
  - Accessibility: Fix potential crash in QDockWidget.
  - Accessibility: Fix crash when asking for relations of child accessibles.
@@ -133,6 +136,10 @@ QtNetwork
 QtScript
 --------
  - Deprecated qScriptValueFromQMetaObject, qScriptValueToValue, qScriptValueFromValue
+
+QtDBus
+------
+ - Added a method that returns the local machine ID
 
 QtSql
 -----
@@ -299,6 +306,8 @@ Qt for Windows CE
     * Fix handling of DEFINES from .prl files. (QTBUG-16024)
     * Fix the language settings generated Windows resource files.
       (QTBUG-12249)
+    * Implemented "aux" template that allows making use of the INSTALLS variable
+      without building anything. Needed for projects with QML entry point.
 
 - configure
     * The endianness for Windows is always set to little endian.

@@ -39,75 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHRUN_H
-#define QGLYPHRUN_H
+#ifndef QX11MENUBAR_P_H
+#define QX11MENUBAR_P_H
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qpoint.h>
-#include <QtGui/qrawfont.h>
+#ifndef QT_NO_MENUBAR
 
-#if !defined(QT_NO_RAWFONT)
-
-QT_BEGIN_HEADER
+#include "qabstractplatformmenubar_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+class QMenuBar;
 
-class QGlyphRunPrivate;
-class Q_GUI_EXPORT QGlyphRun
+class QX11MenuBar : public QAbstractPlatformMenuBar
 {
 public:
-    QGlyphRun();
-    QGlyphRun(const QGlyphRun &other);
-    ~QGlyphRun();
+    ~QX11MenuBar();
 
-    QRawFont rawFont() const;
-    void setRawFont(const QRawFont &rawFont);
+    virtual void init(QMenuBar *);
 
-    void setRawData(const quint32 *glyphIndexArray,
-                    const QPointF *glyphPositionArray,
-                    int size);
+    virtual void setVisible(bool visible);
 
-    QVector<quint32> glyphIndexes() const;
-    void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
+    virtual void actionEvent(QActionEvent *e);
 
-    QVector<QPointF> positions() const;
-    void setPositions(const QVector<QPointF> &positions);
+    virtual void handleReparent(QWidget *oldParent, QWidget *newParent, QWidget *oldWindow, QWidget *newWindow);
 
-    void clear();
+    virtual bool allowCornerWidgets() const;
 
-    QGlyphRun &operator=(const QGlyphRun &other);
+    virtual void popupAction(QAction*);
 
-    bool operator==(const QGlyphRun &other) const;
-    inline bool operator!=(const QGlyphRun &other) const
-    { return !operator==(other); }
+    virtual void setNativeMenuBar(bool);
+    virtual bool isNativeMenuBar() const;
 
-    void setOverline(bool overline);
-    bool overline() const;
-
-    void setUnderline(bool underline);
-    bool underline() const;
-
-    void setStrikeOut(bool strikeOut);
-    bool strikeOut() const;
+    virtual bool shortcutsHandledByNativeMenuBar() const;
+    virtual bool menuBarEventFilter(QObject *, QEvent *event);
 
 private:
-    friend class QGlyphRunPrivate;
-    friend class QTextLine;
-
-    QGlyphRun operator+(const QGlyphRun &other) const;
-    QGlyphRun &operator+=(const QGlyphRun &other);
-
-    void detach();
-    QExplicitlySharedDataPointer<QGlyphRunPrivate> d;
+    QMenuBar *menuBar;
+    int nativeMenuBar : 3;  // Only has values -1, 0, and 1
 };
+
+QPlatformMenuBarFactoryInterface *qt_guiPlatformMenuBarFactory();
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_MENUBAR
 
-#endif // QT_NO_RAWFONT
-
-#endif // QGLYPHS_H
+#endif /* QX11MENUBAR_P_H */
