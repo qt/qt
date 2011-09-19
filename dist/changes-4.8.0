@@ -19,10 +19,16 @@ information about a particular change.
 *                           General                                        *
 ****************************************************************************
 
+Qt Platform Abstraction
+-----------------------
+
+Qt 4.8 adds a new platform: QPA (also known as Lighthouse). QPA is a replacement
+for Qt for Embedded Linux (QWS), making it much easier to port Qt to new platforms.
+
 General Improvements
 --------------------
 
-- 
+-
 
 Third party components
 ----------------------
@@ -58,11 +64,13 @@ QtCore
  - QUrl: add method for retrieving effective top level domain [QTBUG-13601] (MR-1205)
  - optimised performance of QFileInfo, QDir, QDirIterator, these classes now share metadata and access the filesystem less
  - QFile: new open() overloads allow control over whether QFile should close an adopted file handle or not
+ - Fix QProcess emitting two started signals on X11 [QTBUG-7039]
  - QLocale: added locale dependent to{Upper,Lower} string conversions
 
 QtGui
 -----
 
+ - QApplication: Add a queryKeyboardModifiers() method.
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
  - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
  - QGraphicsLayout: Made setInstantInvalidatePropagation() public
@@ -78,7 +86,10 @@ QtGui
    like UltraLight. [QTBUG-19366]
  - Visual text cursor movement behavior is added to QTextEdit and QLineEdit controls,
    which can be used as an optional mode for bi-directional text editing. [QTBUG-13859]
- - QPainter: Added a fast stroking algorithm for thin (< 1px wide) aliased and antialiased 
+ - Fixed several bidi reordering bugs.
+ - Make HTML exported from QTextDocument containing empty lines more compliant.
+ - Include font pixel size when exporting HTML from QTextDocument.
+ - QPainter: Added a fast stroking algorithm for thin (< 1px wide) aliased and antialiased
    lines, giving a huge improvement in drawing speed for certain cases
  - Fixed a rare race condition when showing toplevel windows on X11
  - Accessibility: Fix potential crash in QDockWidget.
@@ -93,6 +104,8 @@ QtGui
  - Accessibility: Return text attributes for QTextEdit.
  - Accessibility: Make accessibility work on Windows with alien widgets
  - Accessibility: Several enablers for accessible graphicsview and Qt Quick applications.
+ - Fixed loading BMP files with version 4 and 5 headers, ignoring extra data.
+ - QTextCursor optimization
 
 QtNetwork
 ---------
@@ -117,6 +130,8 @@ QtNetwork
  - Including <QtOpenGL> will not work in combination with GLEW, as
    QGLFunctions will undefine GLEW's defines.
  - Optimize behavior of QGLTextureCache
+ - Support subpixel antialiasing when possible.
+ - [QTBUG-13450] Fixed path drawing on FBOs without stencil buffer.
 
 QtScript
 --------
@@ -129,6 +144,17 @@ QtDBus
 QtSql
 -----
  - Update sqlite to 3.7.7.1
+
+QtSvg
+-----
+ - [QTBUG-16216] Fixed infinite loop when loading some SVGs with CSS style.
+
+QtDBus
+------
+ - Make QDBusServer work [QTBUG-186]
+ - QDBusConnection: Add methods disconnectFromPeer and connectToPeer
+ - Make the DBus timeout configurable in QDBusAbstractInterface.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -145,11 +171,17 @@ Qt for Linux/X11
  - Various fixes to FontConfig font matching code to make it consistent
    with other X11 programs. [QTBUG-2148, QTBUG-19947, QTBUG-14269]
  - Added experimental support for armCC
+ - Experimental support for associating Wayland clients with PID or a token,
+   to facilitate window management.
 
 Qt for Windows
 --------------
  - DirectWrite experimental text shaping engine is added with subpixel
    positioning support. [QTBUG-12678]
+ - QElapsedTimer: use QueryPerformanceCounter if available.
+ - MSVC runtime is bound to the runtime you're building with. This makes
+   deployment on Windows easier. (QTBUG-8215)
+ - QLocalSocket::isValid() has been fixed. (QTBUG-18204)
 
 Qt for Mac OS X
 ---------------
@@ -177,6 +209,36 @@ Qt for Symbian
    be made via a specific network. For example to mobile operator websites
    only accessible via the cellular network, or to websites inside a firewall
  - System proxy settings now work correctly when using service networks [QTBUG-18618]
+ - Prevent horizontal lines appearing under entered characters when predictive text is off
+ - Checked state is not shown on highlighted itemview item when using QS60Style [QTBUG-19668]
+ - Icon is not shown correctly in a menu item in all cases when using QS60Style [QTBUG-19330]
+ - Remove S60 3rd edition support from QS60Style [QTBUG-18615]
+ - Prevent softkeys from coming to foreground when taskswitcher is opened [QTBUG-19225]
+ - Improve robustness of QS60Style when creating native theme bitmaps [QTBUG-21119]
+ - Make spinboxes and lineedits slightly taller in QS60Style
+ - Default graphics memory quota for Symbian applications support [QT-4963]
+ - Improved support for shadow builds in Symbian [QTBUG-10432]
+ - Fixed panic when global QSettings instance needs flusing at app exit [QTBUG-21421]
+ - Detect app caption and pkg name translations by id attribute [QT-5247]
+ - Fixed center aligned layouts for Symbian [QTBUG-14704]
+ - Fixed Symbian system date format parsing [QT-5237]
+ - Skip softkeys update if application is not on foreground in Symbian [QTBUG-19225]
+ - Removed S60 version plugins [QTBUG-18614]
+ - Improved DEFINES crossplatform compatibility in Symbian builds [QTBUG-19232]
+ - Fixed loss of focus and activation when hiding a child widget [QTBUG-19196]
+ - Fixed softkeys in case a dialog with softkeys that have icons is closed [QTBUG-19154]
+ - Update softkeys after orientation switch [QTBUG-19150]
+ - Implemented support for enable_backup CONFIG value [QTBUG-17214]
+ - Improved logic to find default certificates in createpackage script [QTBUG-18684]
+ - Changed createpackage and patch_capabilties scripts use tmp dir [QTBUG-11394]
+ - Added ".make.cache" to the files to be cleaned for symbian-abld [QTBUG-15733]
+ - Fixed emulator deployment for items with "!:" drive [QTBUG-18134]
+ - Removed broken "deploy.path" support from Symbian [QTBUG-14426]
+ - Strip echo suppression character "@" from commands in symbian-sbsv2 [QTBUG-4767]
+ - Don't leave from QNotifyChangeEvent::RunL() in QFileSystemWatcher [QT-4660]
+ - Fixed QProcess::waitForFinished WaitForRequest handling in Symbian [QT-4659]
+ - Changed DEPLOYMENT keyword to accept both .sources and .files [QTBUG-3216]
+ - Removed static vs dynamic library autodetection from qmake in Symbian [QTBUG-13498]
 
 Qt for Windows CE
 -----------------
@@ -187,6 +249,9 @@ Qt for Windows CE
 ****************************************************************************
 - Sun Studio 12
     * Fixed build issues in the OpenGL module on Solaris with CC 5.9. [QTBUG-19641]
+
+- Microsoft Visual C++
+    * Fixed build issues with STLport. [QTBUG-18374]
 
 ****************************************************************************
 *                          Tools                                           *
@@ -229,10 +294,23 @@ Qt for Windows CE
 
 
 - qmake
-    * Implemented "aux" template that allows making use of the INSTALLS variable 
+    * MinGW: fix DEF_FILE for shadow builds. (QTBUG-11643)
+
+- qmake - Visual Studio project generator
+    * Support x64 Qt builds. (QTBUG-17911)
+    * QMAKE_PROJECT_NAME qmake variable introduced to set the project's name.
+    * Support PCHs with other extensions than ".h". (QTBUG-16639)
+    * Fix setting PCH options manually via the MSVC compiler flags.
+      (QTBUG-15594)
+    * Set the output directory correctly. (QTBUG-16490)
+    * Fix handling of DEFINES from .prl files. (QTBUG-16024)
+    * Fix the language settings generated Windows resource files.
+      (QTBUG-12249)
+    * Implemented "aux" template that allows making use of the INSTALLS variable
       without building anything. Needed for projects with QML entry point.
 
 - configure
+    * The endianness for Windows is always set to little endian.
 
 
 - qtconfig
