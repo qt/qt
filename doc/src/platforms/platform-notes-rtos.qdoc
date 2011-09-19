@@ -313,7 +313,7 @@
     ARM INTEGRITY target:
 
     \code
-    ./configure --hostprefix=$PWD -embedded integrity -xplatform unsupported/qws/integrity-arm-cxarm -static -qt-kbd-integrity -qt-mouse-integrity -no-mouse-linuxtp -no-mouse-pc -no-kbd-tty -qt-gfx-integrityfb -no-qt3support -no-gfx-linuxfb -no-glib -no-openssl -no-largefile -little-endian -arch integrity -prefix / -opensource -no-feature-QWS_MULTIPROCESS -no-feature-SHAREDMEMORY -no-feature-PROCESS -no-feature-SYSTEMSEMAPHORE -no-feature-PRINTER -no-feature-QWS_QPF2 -no-scripttools
+    ./configure --hostprefix=$PWD -embedded integrity -xplatform unsupported/qws/integrity-arm-cxarm -static -qt-kbd-integrity -qt-mouse-integrity -no-mouse-linuxtp -no-mouse-pc -no-kbd-tty -qt-gfx-integrityfb -no-qt3support -no-gfx-linuxfb -no-glib -no-openssl -no-largefile -little-endian -arch integrity -prefix / -opensource -no-feature-QWS_MULTIPROCESS -no-feature-SHAREDMEMORY -no-feature-PROCESS -no-feature-SYSTEMSEMAPHORE -no-feature-PRINTER -no-feature-QWS_QPF2 -no-libtiff -no-exceptions -no-scripttools
     \endcode
 
     \list
@@ -326,6 +326,7 @@
     \o \c{-no-qt3support} - required since the Qt3 support classes are not supported on INTEGRITY
     \o \c{-no-exceptions} - reduces the size of the library by disabling exception support
     \o \c{-no-openssl} - disable support for OpenSSL
+    \o \c(-no-libtiff} - disable support for libTIFF
     \o \c{-no-glib} - disable support for unavailable Glib
     \o \c{-no-largefile} - disable support for large (> 2TB) files
     \o \c{-no-scripttools} - disable support for QtScript tools
@@ -346,7 +347,13 @@
        of INTEGRITY_DIR and INTEGRITY_BSP in unsupported/qws/integrity-arm-cxarm/qmake.conf.
        If you do not do this, you will have to modify the resulting generated projects.gpj
 
-    \o GIF support is currently not enabled.
+    \o Compilation of native preprocessing tools (moc, rcc, uic) is not automatic. From
+       a Linux shell or a MingWin shell, you can run the following command to compile these tools :
+       \code
+       cd src/tools/bootstrap && make && cd ../rcc && make && cd ../moc && make && cd ../uic && make && cd ../../..
+       \endcode
+
+    \o GIF and TIFF support are currently not enabled.
 
     \o Default .int files are generated. You may want to modify the amount of heap assigned
        to each example by modifying the HeapSize declaration in the specific example .int file.
