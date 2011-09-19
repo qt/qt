@@ -289,6 +289,12 @@ void QDeclarativeBorderImage::setSource(const QUrl &url)
         load();
 }
 
+void QDeclarativeBorderImage::setSourceSize(const QSize& size)
+{
+    Q_UNUSED(size);
+    qmlInfo(this) << "Setting sourceSize for borderImage not supported";
+}
+
 void QDeclarativeBorderImage::load()
 {
     Q_D(QDeclarativeBorderImage);

@@ -51,6 +51,8 @@ using namespace std;
 static WTF::RefCountedLeakCounter rangeCounter("Range");
 #endif
 
+typedef Vector<RefPtr<Node> > NodeVector;
+
 inline Range::Range(PassRefPtr<Document> ownerDocument)
     : m_ownerDocument(ownerDocument)
     , m_start(m_ownerDocument)
@@ -621,7 +623,9 @@ static inline Node* childOfCommonRootBeforeOffset(Node* container, unsigned offs
 {
     ASSERT(container);
     ASSERT(commonRoot);
-    ASSERT(commonRoot->contains(container));
+    
+    if (!commonRoot->contains(container))
+        return 0;
 
     if (container == commonRoot) {
         container = container->firstChild();
@@ -663,8 +667,6 @@ static inline unsigned lengthOfContentsInNode(Node* node)
 
 PassRefPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionCode& ec)
 {
-    typedef Vector<RefPtr<Node> > NodeVector;
-
     RefPtr<DocumentFragment> fragment;
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
         fragment = DocumentFragment::create(m_ownerDocument.get());
@@ -675,7 +677,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     if (ec)
         return 0;
 
-    Node* commonRoot = commonAncestorContainer(ec);
+    RefPtr<Node> commonRoot = commonAncestorContainer(ec);
     if (ec)
         return 0;
     ASSERT(commonRoot);
@@ -686,8 +688,8 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     }
 
     // what is the highest node that partially selects the start / end of the range?
-    Node* partialStart = highestAncestorUnderCommonRoot(m_start.container(), commonRoot);
-    Node* partialEnd = highestAncestorUnderCommonRoot(m_end.container(), commonRoot);
+    RefPtr<Node> partialStart = highestAncestorUnderCommonRoot(m_start.container(), commonRoot.get());
+    RefPtr<Node> partialEnd = highestAncestorUnderCommonRoot(m_end.container(), commonRoot.get());
 
     // Start and end containers are different.
     // There are three possibilities here:
@@ -706,29 +708,32 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     //
     // These are deleted, cloned, or extracted (i.e. both) depending on action.
 
+    // Note that we are verifying that our common root hierarchy is still intact
+    // after any DOM mutation event, at various stages below. See webkit bug 60350.
+
     RefPtr<Node> leftContents;
-    if (m_start.container() != commonRoot) {
+    if (m_start.container() != commonRoot && commonRoot->contains(m_start.container())) {
         leftContents = processContentsBetweenOffsets(action, 0, m_start.container(), m_start.offset(), lengthOfContentsInNode(m_start.container()), ec);
-        leftContents = processAncestorsAndTheirSiblings(action, m_start.container(), ProcessContentsForward, leftContents, commonRoot, ec);
+        leftContents = processAncestorsAndTheirSiblings(action, m_start.container(), ProcessContentsForward, leftContents, commonRoot.get(), ec);
     }
 
     RefPtr<Node> rightContents;
-    if (m_end.container() != commonRoot) {
+    if (m_end.container() != commonRoot && commonRoot->contains(m_end.container())) {
         rightContents = processContentsBetweenOffsets(action, 0, m_end.container(), 0, m_end.offset(), ec);
-        rightContents = processAncestorsAndTheirSiblings(action, m_end.container(), ProcessContentsBackward, rightContents, commonRoot, ec);
+        rightContents = processAncestorsAndTheirSiblings(action, m_end.container(), ProcessContentsBackward, rightContents, commonRoot.get(), ec);
     }
 
     // delete all children of commonRoot between the start and end container
-    Node* processStart = childOfCommonRootBeforeOffset(m_start.container(), m_start.offset(), commonRoot);
-    if (m_start.container() != commonRoot) // processStart contains nodes before m_start.
+    RefPtr<Node> processStart = childOfCommonRootBeforeOffset(m_start.container(), m_start.offset(), commonRoot.get());
+    if (processStart && m_start.container() != commonRoot) // processStart contains nodes before m_start.
         processStart = processStart->nextSibling();
-    Node* processEnd = childOfCommonRootBeforeOffset(m_end.container(), m_end.offset(), commonRoot);
+    RefPtr<Node> processEnd = childOfCommonRootBeforeOffset(m_end.container(), m_end.offset(), commonRoot.get());
 
     // Collapse the range, making sure that the result is not within a node that was partially selected.
     if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
-        if (partialStart)
+        if (partialStart && commonRoot->contains(partialStart.get()))
             setStart(partialStart->parentNode(), partialStart->nodeIndex() + 1, ec);
-        else if (partialEnd)
+        else if (partialEnd && commonRoot->contains(partialEnd.get()))
             setStart(partialEnd->parentNode(), partialEnd->nodeIndex(), ec);
         if (ec)
             return 0;
@@ -743,7 +748,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
 
     if (processStart) {
         NodeVector nodes;
-        for (Node* n = processStart; n && n != processEnd; n = n->nextSibling())
+        for (Node* n = processStart.get(); n && n != processEnd; n = n->nextSibling())
             nodes.append(n);
         processNodes(action, nodes, commonRoot, fragment, ec);
     }
@@ -834,7 +839,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
         break;
     }
 
-    return result;
+    return result.release();
 }
 
 void Range::processNodes(ActionType action, Vector<RefPtr<Node> >& nodes, PassRefPtr<Node> oldContainer, PassRefPtr<Node> newContainer, ExceptionCode& ec)
@@ -875,9 +880,14 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
         // FIXME: This assertion may fail if DOM is modified during mutation event
         // FIXME: Share code with Range::processNodes
         ASSERT(!firstChildInAncestorToProcess || firstChildInAncestorToProcess->parentNode() == ancestor);
-        RefPtr<Node> next;
-        for (Node* child = firstChildInAncestorToProcess.get(); child; child = next.get()) {
-            next = direction == ProcessContentsForward ? child->nextSibling() : child->previousSibling();
+        
+        NodeVector nodes;
+        for (Node* child = firstChildInAncestorToProcess.get(); child;
+            child = (direction == ProcessContentsForward) ? child->nextSibling() : child->previousSibling())
+            nodes.append(child);
+
+        for (NodeVector::const_iterator it = nodes.begin(); it != nodes.end(); it++) {
+            Node* child = it->get();
             switch (action) {
             case DELETE_CONTENTS:
                 ancestor->removeChild(child, ec);
@@ -899,7 +909,7 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
         firstChildInAncestorToProcess = direction == ProcessContentsForward ? ancestor->nextSibling() : ancestor->previousSibling();
     }
 
-    return clonedContainer;
+    return clonedContainer.release();
 }
 
 PassRefPtr<DocumentFragment> Range::extractContents(ExceptionCode& ec)

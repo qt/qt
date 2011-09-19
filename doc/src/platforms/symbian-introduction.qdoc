@@ -74,6 +74,8 @@
     Platform security capabilities are added via the
     \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
     qmake variable.
+
+    \sa {platform-notes-symbian.html#required-capabilities}{Required Capabilities}
 */
 
 /*!

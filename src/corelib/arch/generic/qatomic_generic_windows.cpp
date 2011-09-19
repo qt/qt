@@ -43,6 +43,7 @@
 
 #include <QtCore/qatomic.h>
 
+QT_BEGIN_NAMESPACE
 
 class QCriticalSection
 {
@@ -129,3 +130,5 @@ void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff
         qAtomicCriticalSection.unlock();
     return returnValue;
 }
+
+QT_END_NAMESPACE

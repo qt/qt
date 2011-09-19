@@ -142,8 +142,7 @@ QInputEvent::~QInputEvent()
     and QWidget::mouseMoveEvent() to receive mouse events in your own
     widgets.
 
-    \sa QWidget::setMouseTracking() QWidget::grabMouse()
-    QCursor::pos()
+    \sa QWidget::setMouseTracking() QWidget::grabMouse() QCursor::pos()
 */
 
 /*!

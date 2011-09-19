@@ -407,7 +407,11 @@ bool QDeclarativeTextInputPrivate::determineHorizontalAlignment()
     if (hAlignImplicit) {
         // if no explicit alignment has been set, follow the natural layout direction of the text
         QString text = control->text();
-        bool isRightToLeft = text.isEmpty() ? QApplication::keyboardInputDirection() == Qt::RightToLeft : text.isRightToLeft();
+        if (text.isEmpty())
+            text = control->preeditAreaText();
+        bool isRightToLeft = text.isEmpty()
+                ? QApplication::keyboardInputDirection() == Qt::RightToLeft
+                : text.isRightToLeft();
         return setHAlign(isRightToLeft ? QDeclarativeTextInput::AlignRight : QDeclarativeTextInput::AlignLeft);
     }
     return false;
@@ -874,7 +878,8 @@ void QDeclarativeTextInputPrivate::updateInputMethodHints()
     \o TextInput.Normal - Displays the text as it is. (Default)
     \o TextInput.Password - Displays asterixes instead of characters.
     \o TextInput.NoEcho - Displays nothing.
-    \o TextInput.PasswordEchoOnEdit - Displays all but the current character as asterixes.
+    \o TextInput.PasswordEchoOnEdit - Displays characters as they are entered
+    while editing, otherwise displays asterisks.
     \endlist
 */
 QDeclarativeTextInput::EchoMode QDeclarativeTextInput::echoMode() const
@@ -1906,6 +1911,7 @@ void QDeclarativeTextInput::cursorPosChanged()
 void QDeclarativeTextInput::updateCursorRectangle()
 {
     Q_D(QDeclarativeTextInput);
+    d->determineHorizontalAlignment();
     d->updateHorizontalScroll();
     updateRect();//TODO: Only update rect between pos's
     updateMicroFocus();

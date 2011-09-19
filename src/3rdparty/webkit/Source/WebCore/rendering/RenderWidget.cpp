@@ -125,6 +125,10 @@ void RenderWidget::destroy()
         document()->axObjectCache()->childrenChanged(this->parent());
         document()->axObjectCache()->remove(this);
     }
+
+    if (!documentBeingDestroyed() && parent()) 
+        parent()->dirtyLinesFromChangedChild(this);
+
     remove();
 
     if (m_hasCounterNodeMap)
@@ -138,6 +142,11 @@ void RenderWidget::destroy()
 
     if (style() && (style()->logicalHeight().isPercent() || style()->logicalMinHeight().isPercent() || style()->logicalMaxHeight().isPercent()))
         RenderBlock::removePercentHeightDescendant(this);
+
+    // If this renderer is owning renderer for the frameview's custom scrollbars,
+    // we need to clear it from the scrollbar. See webkit bug 64737.
+    if (style() && style()->hasPseudoStyle(SCROLLBAR) && frame() && frame()->view())
+        frame()->view()->clearOwningRendererForCustomScrollbars(this);
 
     if (hasLayer()) {
         layer()->clearClipRects();

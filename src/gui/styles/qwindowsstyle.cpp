@@ -177,11 +177,14 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
             // Alt has been pressed - find all widgets that care
             QList<QWidget *> l = widget->findChildren<QWidget *>();
-            for (int pos=0 ; pos < l.size() ; ++pos) {
+            for (int pos=0 ; pos < l.size() ;) {
                 QWidget *w = l.at(pos);
                 if (w->isWindow() || !w->isVisible() ||
-                    w->style()->styleHint(SH_UnderlineShortcut, 0, w))
+                    w->style()->styleHint(SH_UnderlineShortcut, 0, w)) {
                     l.removeAt(pos);
+                    continue;
+                }
+                pos++;
             }
             // Update states before repainting
             d->seenAlt.append(widget);

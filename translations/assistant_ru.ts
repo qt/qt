@@ -259,6 +259,10 @@ Reason:
         <translation>Адрес</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>Меню панели инструментов</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>Меню закладок</translation>
     </message>
@@ -285,40 +289,8 @@ Reason:
 <context>
     <name>CentralWidget</name>
     <message>
-        <source>Add new page</source>
-        <translation>Открыть новую страницу</translation>
-    </message>
-    <message>
-        <source>Close current page</source>
-        <translation>Закрыть текущую страницу</translation>
-    </message>
-    <message>
         <source>Print Document</source>
         <translation>Печать документа</translation>
-    </message>
-    <message>
-        <source>unknown</source>
-        <translation>безымянная вкладка</translation>
-    </message>
-    <message>
-        <source>Add New Page</source>
-        <translation>Открыть новую страницу</translation>
-    </message>
-    <message>
-        <source>Close This Page</source>
-        <translation>Закрыть данную страницу</translation>
-    </message>
-    <message>
-        <source>Close Other Pages</source>
-        <translation>Закрыть остальные страницы</translation>
-    </message>
-    <message>
-        <source>Add Bookmark for this Page...</source>
-        <translation>Добавить закладку для этой страницы...</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <translation>Поиск</translation>
     </message>
 </context>
 <context>
@@ -655,6 +627,49 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>&amp;Назад</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>&amp;Вперёд</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>&amp;Домой</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>У&amp;величить</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>У&amp;меньшить</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>&amp;Копировать выделенный текст</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>&amp;Печать...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>П&amp;оиск в тексте...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>&amp;Поиск</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -679,16 +694,28 @@ Reason:
         <translation>&lt;title&gt;Ошибка 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Страница не найдена&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>Открыть ссылку</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>Копировать &amp;адрес ссылки</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Копировать</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>Перезагрузить</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
         <translation>Открыть ссылку в новой вкладке	Ctrl+LMB</translation>
     </message>
     <message>
-        <source>Open Link in New Tab</source>
-        <translation>Открыть ссылку в новой вкладке</translation>
+        <source>Open Link in New Page</source>
+        <translation>Открыть ссылку в новой странице</translation>
     </message>
 </context>
 <context>
@@ -899,10 +926,6 @@ Reason:
         <translation>Предпросмотр печати...</translation>
     </message>
     <message>
-        <source>&amp;Print...</source>
-        <translation>&amp;Печать...</translation>
-    </message>
-    <message>
         <source>New &amp;Tab</source>
         <translation>Новая &amp;вкладка</translation>
     </message>
@@ -923,18 +946,6 @@ Reason:
         <translation>&amp;Правка</translation>
     </message>
     <message>
-        <source>&amp;Copy selected Text</source>
-        <translation>&amp;Копировать выделенный текст</translation>
-    </message>
-    <message>
-        <source>&amp;Find in Text...</source>
-        <translation>П&amp;оиск в тексте...</translation>
-    </message>
-    <message>
-        <source>&amp;Find</source>
-        <translation>&amp;Поиск</translation>
-    </message>
-    <message>
         <source>Find &amp;Next</source>
         <translation>Найти &amp;следующее</translation>
     </message>
@@ -949,14 +960,6 @@ Reason:
     <message>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;in</source>
-        <translation>У&amp;величить</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;out</source>
-        <translation>У&amp;меньшить</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -989,22 +992,6 @@ Reason:
     <message>
         <source>&amp;Go</source>
         <translation>&amp;Перейти</translation>
-    </message>
-    <message>
-        <source>&amp;Home</source>
-        <translation>&amp;Домой</translation>
-    </message>
-    <message>
-        <source>ALT+Home</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>&amp;Back</source>
-        <translation>&amp;Назад</translation>
-    </message>
-    <message>
-        <source>&amp;Forward</source>
-        <translation>&amp;Вперёд</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1045,6 +1032,22 @@ Reason:
     <message>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
+    </message>
+    <message>
+        <source>Open Pages</source>
+        <translation>Открытые страницы</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>Панель закладок</translation>
+    </message>
+    <message>
+        <source>E&amp;xit</source>
+        <translation>В&amp;ыход</translation>
+    </message>
+    <message>
+        <source>ALT+P</source>
+        <translation></translation>
     </message>
     <message>
         <source>About...</source>
@@ -1101,6 +1104,17 @@ Reason:
     <message>
         <source>Updating search index</source>
         <translation>Обновление индекса полнотекстового поиска</translation>
+    </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
+    <message>
+        <source>Close %1</source>
+        <translation>Закрыть %1</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>Закрыть всё, кроме %1</translation>
     </message>
 </context>
 <context>
@@ -1322,6 +1336,14 @@ Do you want to remove it?</source>
         <source>Blank Page</source>
         <translation>Пустая страница</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Внешний вид</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>Показывать вкладки для каждой страницы</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1510,6 +1532,29 @@ qhelpgenerator &lt;файл-проекта-справки&gt; [ОПЦИИ]
     <message>
         <source>Select All</source>
         <translation>Выделить всё</translation>
+    </message>
+</context>
+<context>
+    <name>TabBar</name>
+    <message>
+        <source>(Untitled)</source>
+        <translation>(Без названия)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>Новая &amp;вкладка</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>&amp;Закрыть вкладку</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>Закрыть остальные вкладки</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>Добавить закладку для этой страницы...</translation>
     </message>
 </context>
 <context>

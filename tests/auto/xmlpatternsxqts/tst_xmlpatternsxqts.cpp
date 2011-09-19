@@ -70,30 +70,8 @@ void tst_XmlPatternsXQTS::catalogPath(QString &write) const
     if(dontRun())
         QSKIP("This test takes too long time to run on the majority of platforms.", SkipAll);
 
-    QProcess p4;
-
-    QStringList arguments;
-    arguments << QLatin1String("where")
-              << QLatin1String("//depot/autotests/4.4/tests/auto/xmlpatternsxqts/XQTS/XQTSCatalog.xml");
-    p4.start(QLatin1String("p4"), arguments);
-    QVERIFY(p4.waitForFinished());
-    QCOMPARE(p4.exitCode(), 0);
-    QCOMPARE(p4.exitStatus(), QProcess::NormalExit);
-
-    /* `p4 where' prints for instance:
-     *
-     *    //depot/qt/4.4/tests/auto/xmlpatternsxqts/... //fenglich-englich/qt-4.4/tests/auto/xmlpatternsxqts/... /home/fenglich/dev/autotests/4.4/tests/auto/xmlpatternsxqts/XQTS/XQTSCatalog.xml
-     *
-     * so we want the last string.
-     */
-    write = QString::fromLocal8Bit(p4.readAllStandardOutput()).split(QLatin1Char(' ')).last().trimmed();
-
-    if(write.isEmpty() || !QFile::exists(write))
-    {
-        QEXPECT_FAIL("", "//depot/autotests/4.4/tests/auto/xmlpatternsxqts/XQTS/ must be part of the perforce client spec, "
-                         "checked out at an arbitrary location, for this test to run. The test suite will now be skipped.", Abort);
-        QVERIFY(false);
-    }
+    write = QLatin1String("TESTSUITE/XQTSCatalog.xml");
+    return;
 }
 
 QTEST_MAIN(tst_XmlPatternsXQTS)

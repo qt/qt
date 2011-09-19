@@ -793,6 +793,7 @@ XSDTestSuiteHandler::XSDTestSuiteHandler(const QUrl &catalogFile) : m_ts(0)
                 << QLatin1String("schZ012_a")
                 << QLatin1String("stZ041")
                 << QLatin1String("wildZ010");
+
 }
 
 bool XSDTestSuiteHandler::startElement(const QString &namespaceURI,
