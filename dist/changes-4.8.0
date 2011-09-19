@@ -50,6 +50,9 @@ QtCore
  - QMutexLocker: improved performence of the non contended case by inlining some function
  - QThreadStorage: Added possibility to store object by value instead of by pointer [QTBUG-15033]
  - QThread: fixed few race conditions [QTBUG-17257, QTBUG-15030]
+ - QtConcurrent: Entry points were re-written and interfaces changed. This work was
+done in order to add support for QtConcurrent on Symbian, but ultimately it was noted
+that the changes lead to a leaner API and the change applies to all platforms.
  - QtConcurrent: added support for c++0x lambda in few functions
  - QObject: Improved performence of the signal activation
  - QObject: added ways to connect signals using QMetaMethod
@@ -66,6 +69,9 @@ QtCore
  - QFile: new open() overloads allow control over whether QFile should close an adopted file handle or not
  - Fix QProcess emitting two started signals on X11 [QTBUG-7039]
  - QLocale: added locale dependent to{Upper,Lower} string conversions
+ - QUuid: Optimize QUuid::toString() and relevant, circa 20 times faster than before on the test machine. [QTBUG-19418]
+ - QUuid: Add QUuid::toByteArray() and relevant, same behavior with QUuid::toString(). [QTBUG-19419]
+ - QUuid: Add QUuid::toRfc4122() and fromRfc4122(), provide interfaces by following the RFC-4122 [QTBUG-19420]
 
 QtGui
 -----
@@ -239,6 +245,8 @@ Qt for Symbian
  - Fixed QProcess::waitForFinished WaitForRequest handling in Symbian [QT-4659]
  - Changed DEPLOYMENT keyword to accept both .sources and .files [QTBUG-3216]
  - Removed static vs dynamic library autodetection from qmake in Symbian [QTBUG-13498]
+ - QtConcurrent is now working both with RVCT 2.2 and GCCE 4.4.1 on Symbian, but not with WINSCW,
+the compiler of Symbian emulator (and there is no plan to support it). [QTBUG-5182] [QTBUG-9070]
 
 Qt for Windows CE
 -----------------
