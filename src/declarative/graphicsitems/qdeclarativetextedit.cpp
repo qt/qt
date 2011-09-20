@@ -1712,7 +1712,9 @@ void QDeclarativeTextEdit::updateSize()
             setImplicitWidth(newWidth);
         else if (d->requireImplicitWidth)
             setImplicitWidth(naturalWidth);
-        qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
+        qreal newHeight = d->document->size().height();
+        if (newHeight == 0)
+            newHeight = fm.height();
         setImplicitHeight(newHeight);
 
         d->paintedSize = QSize(newWidth, newHeight);

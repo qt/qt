@@ -1,3 +1,165 @@
+2011-09-12  Adam Klein  <adamk@chromium.org>
+
+        Fix out-of-bounds access in Gradient::sortStopsIfNecessary
+        https://bugs.webkit.org/show_bug.cgi?id=67958
+
+        Reviewed by Darin Adler.
+
+        Reported by Valgrind in http://crbug.com/77049.
+
+        The errant code was added as an optimization in r67804.
+        This patch reverts that one, as all parties agree that the optimization
+        doesn't seem worthwhile, and there clearly aren't any tests covering
+        the special case.
+
+        No new tests, as existing tests should cover the remaining call to
+        |std::stable_sort|.
+
+        * platform/graphics/Gradient.cpp:
+        (WebCore::Gradient::sortStopsIfNecessary):
+
+2011-09-09  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Assert being hit in AccessibilityRenderObject::addChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=61805
+
+        Reviewed by Chris Fleizach.
+
+        Fix nextSibling and previousSibling to handle adjacent continuations
+        properly, otherwise nodes end up appearing in the accessibility
+        tree twice (or a debug assertion could be raised).
+
+        Test: accessibility/adjacent-continuations-cause-assertion-failure.html
+
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::previousSibling):
+        (WebCore::AccessibilityRenderObject::nextSibling):
+
+2011-09-08  Abhishek Arya  <inferno@chromium.org>
+
+        :before content rendering issues with list markers and run-ins.
+        https://bugs.webkit.org/show_bug.cgi?id=67735
+
+        1) Remove the isAnonymous checks for run-in detection since the
+        run-in can belong to a node.
+        2) When the parent has block children, then the list marker will
+        be enclosed in an anonymous block. In that case, for going to the
+        next list marker, we need to traverse one level up. We don't need
+        this check when searching for generated run-in (loop 2), since we
+        know parent will have inline children, so the list marker wont be
+        enclosed in an anonymous block.
+
+        Reviewed by Dave Hyatt.
+
+        Tests: fast/lists/list-marker-before-content-table.html
+               fast/runin/runin-generated-before-content.html
+
+        * rendering/RenderObjectChildList.cpp:
+        (WebCore::RenderObjectChildList::beforePseudoElementRenderer):
+
+2011-09-10  Ken Buchanan <kenrb@chromium.org>
+
+        Crash due to bad data in SVGDocumentExtensions m_pendingResources
+        https://bugs.webkit.org/show_bug.cgi?id=67488
+
+        Reviewed by Nikolas Zimmermann.
+
+        Resolving a crash condition caused by the deletion of
+        elements while pending resource entries for those elements are still
+        recorded.
+
+        * rendering/svg/RenderSVGResourceContainer.cpp:
+        (WebCore::RenderSVGResourceContainer::registerResource)
+        * svg/SVGDocumentExtensions.h:
+        (WebCore::SVGDocumentExtensions::isElementInPendingResources)
+        * svg/SVGDocumentExtensions.cpp:
+        (WebCore::SVGDocumentExtensions::addPendingResource)
+        (WebCore::SVGDocumentExtensions::isElementInPendingResources)
+        (WebCore::SVGDocumentExtensions::removeElementFromPendingResources)
+        * svg/SVGStyledElement.h:
+        (WebCore::SVGStyledElement::clearHasPendingResourcesIfPossible)
+        * svg/SVGStyledElement.cpp:
+        (WebCore::SVGStyledElement::buildPendingResourcesIfNeeded)
+        (WebCore::SVGStyledElement::clearHasPendingResourcesIfPossible)
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::svgAttributeChanged)
+
+2011-09-08  Alexey Proskuryakov  <ap@apple.com>
+
+        REGRESSION (r66874): Missing RefPtr in ScriptController
+        https://bugs.webkit.org/show_bug.cgi?id=67748
+
+        Reviewed by Adam Barth.
+
+        * bindings/ScriptControllerBase.cpp: (WebCore::ScriptController::executeScript):
+
+2011-09-06  Abhishek Arya  <inferno@chromium.org>
+
+        Style not propagated to anonymous boxes and anonymous
+        inline-blocks.
+        https://bugs.webkit.org/show_bug.cgi?id=67364
+
+        Reviewed by James Robinson.
+
+        Share propagateStyleToAnonymousChildren with RenderBlock::styleDidChange.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::styleDidChange):
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::propagateStyleToAnonymousChildren):
+        * rendering/RenderObject.h:
+
+2011-09-04  Abhishek Arya  <inferno@chromium.org>
+
+        Style not propagated to anonymous boxes and anonymous
+        inline-blocks.
+        https://bugs.webkit.org/show_bug.cgi?id=67364
+
+        Reviewed by James Robinson.
+
+        Tests: fast/ruby/ruby-block-style-not-updated-with-before-after-content.html
+               fast/ruby/ruby-block-style-not-updated.html
+               fast/ruby/ruby-inline-style-not-updated-with-before-after-content.html
+               fast/ruby/ruby-inline-style-not-updated.html
+               fast/table/table-row-style-not-updated-with-after-content.html
+               fast/table/table-row-style-not-updated-with-before-content.html
+               fast/table/table-row-style-not-updated.html
+               fast/table/table-style-not-updated.html
+
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::propagateStyleToAnonymousChildren):
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::isBeforeAfterContent):
+        * rendering/RenderRuby.cpp:
+        (WebCore::RenderRubyAsInline::styleDidChange):
+        (WebCore::RenderRubyAsBlock::styleDidChange):
+        * rendering/RenderRuby.h:
+        * rendering/RenderTable.cpp:
+        (WebCore::RenderTable::styleDidChange):
+        * rendering/RenderTableRow.cpp:
+        (WebCore::RenderTableRow::styleDidChange):
+        (WebCore::RenderTableRow::addChild):
+        * rendering/RenderTableSection.cpp:
+        (WebCore::RenderTableSection::styleDidChange):
+        (WebCore::RenderTableSection::addChild):
+        * rendering/RenderTableSection.h:
+
+2011-09-05  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in RenderObjectChildList::destroyLeftOverChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=64753
+
+        Reviewed by James Robinson.
+
+        If any of the ancestors between column span element and containing
+        column's block is a continuation, then don't attempt to render the
+        column span by splitting the block into continuations.
+
+        Test: fast/multicol/column-span-parent-continuation-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::columnsBlockForSpanningElement):
+
 2011-08-30  Abhishek Arya  <inferno@chromium.org>
 
         Removed m_owner accessed in custom scrollbars.

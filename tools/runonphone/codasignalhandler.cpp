@@ -169,7 +169,7 @@ int CodaSignalHandler::run()
         QString deviceError = "No such port";
         if (d->codaDevice)
             deviceError = d->codaDevice->device()->errorString();
-        reportError(tr("Could not open serial device: ").arg(deviceError));
+        reportError(tr("Could not open serial device: %1").arg(deviceError));
         SymbianUtils::SymbianDeviceManager::instance()->releaseCodaDevice(d->codaDevice);
         return 1;
     }
