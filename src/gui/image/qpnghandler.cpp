@@ -217,6 +217,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
     png_colorp palette = 0;
     int num_palette;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+    png_set_interlace_handling(png_ptr);
 
     if (color_type == PNG_COLOR_TYPE_GRAY) {
         // Black & White or 8-bit grayscale
