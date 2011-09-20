@@ -19,7 +19,10 @@ HEADERS         = qvfb.h \
                   gammaview.h \
                   qvfbprotocol.h \
                   qvfbshmem.h \
-                  qvfbmmap.h
+                  qvfbmmap.h \
+                  ../../src/gui/embedded/qlock_p.h \
+                  ../../src/gui/embedded/qwslock_p.h \
+                  ../../src/gui/embedded/qwssignalhandler_p.h
 
 SOURCES         = qvfb.cpp \
 		  qvfbview.cpp \
@@ -28,7 +31,10 @@ SOURCES         = qvfb.cpp \
 		  qanimationwriter.cpp \
                   qvfbprotocol.cpp \
                   qvfbshmem.cpp \
-                  qvfbmmap.cpp
+                  qvfbmmap.cpp \
+                  ../../src/gui/embedded/qlock.cpp \
+                  ../../src/gui/embedded/qwslock.cpp \
+                  ../../src/gui/embedded/qwssignalhandler.cpp
 
 !embedded {
     DEFINES         += QT_NO_QWS_SIGNALHANDLER

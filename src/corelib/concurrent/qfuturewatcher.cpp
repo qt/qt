@@ -600,5 +600,8 @@ void QFutureWatcherBase::setPaused(bool) { }
 void QFutureWatcherBase::pause() { }
 void QFutureWatcherBase::resume() { }
 void QFutureWatcherBase::togglePaused() { }
+bool QFutureWatcherBase::event(QEvent *) { return false; }
+void QFutureWatcherBase::connectNotify(const char *) { }
+void QFutureWatcherBase::disconnectNotify(const char *) { }
 
 #endif // QT_NO_QFUTURE

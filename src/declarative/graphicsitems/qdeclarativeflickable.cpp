@@ -1532,7 +1532,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
-            if (d->pressed) // we are already pressed - this is a delayed replay
+            if (d->pressed && !event->spontaneous()) // we are already pressed - this is a delayed replay
                 return false;
 
             d->handleMousePressEvent(&mouseEvent);

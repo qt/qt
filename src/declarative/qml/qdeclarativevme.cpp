@@ -209,7 +209,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEObjectStack &stack,
                 if (instr.init.contextCache != -1) 
                     ctxt->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    ctxt->optimizedBindings = new QDeclarativeCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    ctxt->optimizedBindings = new QDeclarativeCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt, comp);
             }
             break;
 

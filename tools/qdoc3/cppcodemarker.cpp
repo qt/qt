@@ -919,7 +919,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     int i = 0;
     int start = 0;
     int finish = 0;
-    char ch;
+    QChar ch;
     QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
     QRegExp functionRegExp("q([A-Z][a-z]+)+");
 
@@ -929,13 +929,13 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	QString tag;
         bool target = false;
 
-	if (isalpha(ch) || ch == '_') {
+	if (ch.isLetter() || ch == '_') {
 	    QString ident;
 	    do {
-		ident += ch;
-                finish = i;
-		readChar();
-            } while (ch >= 0 && isalnum(ch) || ch == '_');
+            ident += ch;
+            finish = i;
+            readChar();
+        } while (ch.isLetterOrNumber() || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
 		tag = QLatin1String("type");
@@ -952,14 +952,14 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		    tag = QLatin1String("func");
                     target = true;
 	    }
-	} else if (isdigit(ch)) {
+	} else if (ch.isDigit()) {
 	    do {
                 finish = i;
 		readChar();
-	    } while (isalnum(ch) || ch == '.');
+	    } while (ch.isLetterOrNumber() || ch == '.');
 	    tag = QLatin1String("number");
 	} else {
-	    switch (ch) {
+	    switch (ch.unicode()) {
 	    case '+':
 	    case '-':
 	    case '!':
