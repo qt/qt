@@ -503,9 +503,11 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
         twf << wrapperStreamBuffer << endl;
 
         // Wrapped files deployment
-        QString currentPath = qmake_getpwd();
+        QString currentPath = Option::output_dir;
+        if (!currentPath.endsWith(QLatin1Char('/')))
+            currentPath += QLatin1Char('/');
         QString sisName = QString("%1.sis").arg(fixedTarget);
-        twf << "\"" << currentPath << "/" << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
+        twf << "\"" << currentPath << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
         bootStrapPath.append("/smartinstaller.sis");
@@ -993,7 +995,12 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
                                     if (xml.name() == sourceElement) {
                                         source = xml.readElementText();
                                     } else if (xml.name() == translationElement) {
-                                        translation = xml.readElementText();
+                                        // Technically translation element can have child elements
+                                        // i.e. numerusform and lengthvariant. We don't support
+                                        // these for actual caption/pkgname translations, but since
+                                        // they may be present on other unrelated message elements,
+                                        // we need to explicitly skip them to avoid parsing errors.
+                                        translation = xml.readElementText(QXmlStreamReader::SkipChildElements);
                                     } else {
                                         xml.skipCurrentElement();
                                     }

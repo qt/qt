@@ -774,7 +774,7 @@
     \row    \o QtCore
             \o \c PowerMgmt if QProcess::kill(...) or QProcess::terminate(...) is called.
     \row    \o QtCore
-            \o \c AllFiles when \l{http://developer.symbian.org/wiki/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
+            \o \c AllFiles when \l{http://wiki.forum.nokia.com/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
     \row    \o QtDeclarative
             \o \c NetworkServices is automatically added for this module if no capabilities are explicitly specified.
     \row    \o QtNetwork
@@ -798,22 +798,27 @@
 
     \section1 Multimedia and Phonon Support
 
-    Qt provides a backend for Qt's Phonon module, which supports
-    video and sound playback through Symbian's Multimedia Framework, MMF.
+    Qt provides a high-level API for multimedia functionality with
+    (\l{http://doc.qt.nokia.com/qtmobility/multimedia.html}).
 
-    In this release the support is experimental. Video playback may have
-    flickering issues, and support for effects and playback queueing is
-    incomplete.
+    Qt also provides a backend for Qt's Phonon module, which supports video and
+    sound playback through Symbian's Multimedia Framework, MMF. Note that Phonon
+    support is not being extended, and that Qt's multimedia module will
+    take over for Phonon at a later stage.
+
+    In this release the support is experimental. Video playback may show
+    artifacts when the video is moved or resized (for instance during
+    orientation flips). This problem is present on Symbian^1 and earlier
+    versions, and on Symbian^3 systems.
 
     The audio and video formats that Phonon supports depends on what support
     the platform provides for MMF. The emulator is known to have limited
     codec support.
 
-    In addition, there exists a backend for the Helix framework. However, due
-    to it not shipping with Qt, its availability depends on the Symbian
-    platform in use. If available, it is loaded in preference over the MMF
-    plugin. If the Helix plugin fails to load, the MMF plugin, if present on
-    the device, will be loaded instead.
+    In addition, there exists a backend for the Helix framework. However, since
+    it is not shipped with Qt, its availability depends on the Symbian platform
+    in use. If the MFF plugin fails to load, the Helix plugin, if present on the
+    device, will be loaded instead.
 
     \section1 Hardware Accelerated Rendering
 

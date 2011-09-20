@@ -54,7 +54,9 @@
 //
 
 #include "qrawfont.h"
+
 #include "qfontengine_p.h"
+#include <QtCore/qthread.h>
 #include <QtCore/qthreadstorage.h>
 
 #if !defined(QT_NO_RAWFONT)
@@ -71,21 +73,17 @@ public:
         , thread(0)
 #if defined(Q_WS_WIN)
         , fontHandle(NULL)
-        , ptrAddFontMemResourceEx(NULL)
-        , ptrRemoveFontMemResourceEx(NULL)
 #endif
     {}
 
     QRawFontPrivate(const QRawFontPrivate &other)
-        : hintingPreference(other.hintingPreference)
+        : fontEngine(other.fontEngine)
+        , hintingPreference(other.hintingPreference)
         , thread(other.thread)
 #if defined(Q_WS_WIN)
         , fontHandle(NULL)
-        , ptrAddFontMemResourceEx(other.ptrAddFontMemResourceEx)
-        , ptrRemoveFontMemResourceEx(other.ptrRemoveFontMemResourceEx)
 #endif
     {
-        fontEngine = other.fontEngine;
         if (fontEngine != 0)
             fontEngine->ref.ref();
     }
@@ -94,6 +92,12 @@ public:
     {
         Q_ASSERT(ref == 0);
         cleanUp();
+    }
+
+    inline bool isValid() const
+    {
+        Q_ASSERT(thread == 0 || thread == QThread::currentThread());
+        return fontEngine != 0;
     }
 
     void cleanUp();
@@ -111,14 +115,7 @@ public:
 
 #if defined(Q_WS_WIN)
     HANDLE fontHandle;
-
-    typedef HANDLE (WINAPI *PtrAddFontMemResourceEx)(PVOID, DWORD, PVOID, DWORD *);
-    typedef BOOL (WINAPI *PtrRemoveFontMemResourceEx)(HANDLE);
-
-    PtrAddFontMemResourceEx ptrAddFontMemResourceEx;
-    PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx;
-
-#endif // Q_WS_WIN
+#endif
 };
 
 QT_END_NAMESPACE

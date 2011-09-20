@@ -89,6 +89,7 @@ Settings::Settings(Page* page)
     : m_page(page)
     , m_editableLinkBehavior(EditableLinkDefaultBehavior)
     , m_textDirectionSubmenuInclusionBehavior(TextDirectionSubmenuAutomaticallyIncluded)
+    , m_passwordEchoDurationInSeconds(1)
     , m_minimumFontSize(0)
     , m_minimumLogicalFontSize(0)
     , m_defaultFontSize(0)
@@ -182,6 +183,7 @@ Settings::Settings(Page* page)
     , m_shouldInjectUserScriptsInInitialEmptyDocument(false)
     , m_allowDisplayOfInsecureContent(true)
     , m_allowRunningOfInsecureContent(true)
+    , m_passwordEchoEnabled(false)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.

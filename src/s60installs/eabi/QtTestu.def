@@ -132,38 +132,39 @@ EXPORTS
 	_ZN8QTestLog10setLogModeENS_7LogModeE @ 131 NONAME
 	_ZN8QTestLog11stopLoggingEv @ 132 NONAME
 	_ZN8QTestLog12setFlushModeENS_9FlushModeE @ 133 NONAME
-	_ZN8QTestLog12startLoggingEj @ 134 NONAME
-	_ZN8QTestLog12startLoggingEv @ 135 NONAME
-	_ZN8QTestLog12verboseLevelEv @ 136 NONAME
-	_ZN8QTestLog14outputFileNameEv @ 137 NONAME
-	_ZN8QTestLog14redirectOutputEPKc @ 138 NONAME
-	_ZN8QTestLog14setMaxWarningsEi @ 139 NONAME
-	_ZN8QTestLog15setVerboseLevelEi @ 140 NONAME
-	_ZN8QTestLog16addIgnoreMessageE9QtMsgTypePKc @ 141 NONAME
-	_ZN8QTestLog17enterTestFunctionEPKc @ 142 NONAME
-	_ZN8QTestLog17leaveTestFunctionEv @ 143 NONAME
-	_ZN8QTestLog18addBenchmarkResultERK16QBenchmarkResult @ 144 NONAME
-	_ZN8QTestLog23unhandledIgnoreMessagesEv @ 145 NONAME
-	_ZN8QTestLog28printUnhandledIgnoreMessagesEv @ 146 NONAME
-	_ZN8QTestLog4infoEPKcS1_i @ 147 NONAME
-	_ZN8QTestLog4warnEPKc @ 148 NONAME
-	_ZN8QTestLog7addFailEPKcS1_i @ 149 NONAME
-	_ZN8QTestLog7addPassEPKc @ 150 NONAME
-	_ZN8QTestLog7addSkipEPKcN5QTest8SkipModeES1_i @ 151 NONAME
-	_ZN8QTestLog7logModeEv @ 152 NONAME
-	_ZN8QTestLog8addXFailEPKcS1_i @ 153 NONAME
-	_ZN8QTestLog8addXPassEPKcS1_i @ 154 NONAME
-	_ZN8QTestLogC1Ev @ 155 NONAME
-	_ZN8QTestLogC2Ev @ 156 NONAME
-	_ZN8QTestLogD1Ev @ 157 NONAME
-	_ZN8QTestLogD2Ev @ 158 NONAME
-	_ZNK10QTestTable12elementCountEv @ 159 NONAME
-	_ZNK10QTestTable13elementTypeIdEi @ 160 NONAME
-	_ZNK10QTestTable7dataTagEi @ 161 NONAME
-	_ZNK10QTestTable7indexOfEPKc @ 162 NONAME
-	_ZNK10QTestTable7isEmptyEv @ 163 NONAME
-	_ZNK10QTestTable8testDataEi @ 164 NONAME
-	_ZNK10QTestTable9dataCountEv @ 165 NONAME
+	_ZN8QTestLog12startLoggingEv @ 134 NONAME
+	_ZN8QTestLog12verboseLevelEv @ 135 NONAME
+	_ZN8QTestLog14outputFileNameEv @ 136 NONAME
+	_ZN8QTestLog14redirectOutputEPKc @ 137 NONAME
+	_ZN8QTestLog14setMaxWarningsEi @ 138 NONAME
+	_ZN8QTestLog15setVerboseLevelEi @ 139 NONAME
+	_ZN8QTestLog16addIgnoreMessageE9QtMsgTypePKc @ 140 NONAME
+	_ZN8QTestLog17enterTestFunctionEPKc @ 141 NONAME
+	_ZN8QTestLog17leaveTestFunctionEv @ 142 NONAME
+	_ZN8QTestLog18addBenchmarkResultERK16QBenchmarkResult @ 143 NONAME
+	_ZN8QTestLog23unhandledIgnoreMessagesEv @ 144 NONAME
+	_ZN8QTestLog28printUnhandledIgnoreMessagesEv @ 145 NONAME
+	_ZN8QTestLog4infoEPKcS1_i @ 146 NONAME
+	_ZN8QTestLog4warnEPKc @ 147 NONAME
+	_ZN8QTestLog7addFailEPKcS1_i @ 148 NONAME
+	_ZN8QTestLog7addPassEPKc @ 149 NONAME
+	_ZN8QTestLog7addSkipEPKcN5QTest8SkipModeES1_i @ 150 NONAME
+	_ZN8QTestLog7logModeEv @ 151 NONAME
+	_ZN8QTestLog8addXFailEPKcS1_i @ 152 NONAME
+	_ZN8QTestLog8addXPassEPKcS1_i @ 153 NONAME
+	_ZN8QTestLogC1Ev @ 154 NONAME
+	_ZN8QTestLogC2Ev @ 155 NONAME
+	_ZN8QTestLogD1Ev @ 156 NONAME
+	_ZN8QTestLogD2Ev @ 157 NONAME
+	_ZNK10QTestTable12elementCountEv @ 158 NONAME
+	_ZNK10QTestTable13elementTypeIdEi @ 159 NONAME
+	_ZNK10QTestTable7dataTagEi @ 160 NONAME
+	_ZNK10QTestTable7indexOfEPKc @ 161 NONAME
+	_ZNK10QTestTable7isEmptyEv @ 162 NONAME
+	_ZNK10QTestTable8testDataEi @ 163 NONAME
+	_ZNK10QTestTable9dataCountEv @ 164 NONAME
+	_ZN8QTestLog12startLoggingEj @ 165 NONAME
 	_ZN14QTestEventLoop18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 166 NONAME
 	_ZN14QTestEventLoop25staticMetaObjectExtraDataE @ 167 NONAME DATA 8
+	_ZN5QTest18printAvailableTagsE @ 168 NONAME DATA 1
 

@@ -58,9 +58,7 @@
 #endif
 
 // This is necessary in order to be able to perform delayed invocation on slots
-// which take arguments of type WId.  One example is
-// QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
-// CCoeControl objects until after the CONE event handler has finished running.
+// which take arguments of type WId.
 Q_DECLARE_METATYPE(WId)
 
 // Workaround for the fact that S60 SDKs 3.x do not contain the akntoolbar.h
@@ -238,7 +236,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     bool checkExtra = true;
     if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
         // Do not allow fullscreen/maximized windows to expand beyond client rect
-        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        TRect r = S60->clientRect();
         w = qMin(w, r.Width());
         h = qMin(h, r.Height());
 
@@ -491,8 +489,8 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         // Delay deletion of the control in case this function is called in the
         // context of a CONE event handler such as
         // CCoeControl::ProcessPointerEventL
-        QMetaObject::invokeMethod(q, "_q_delayedDestroy",
-            Qt::QueuedConnection, Q_ARG(WId, destroyw));
+        widCleanupList << destroyw;
+        QMetaObject::invokeMethod(q, "_q_cleanupWinIds", Qt::QueuedConnection);
     }
 
     if (q->testAttribute(Qt::WA_AcceptTouchEvents))

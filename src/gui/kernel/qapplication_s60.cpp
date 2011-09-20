@@ -115,6 +115,8 @@ QWidget *qt_button_down = 0;                     // widget got last button-down
 
 QSymbianControl *QSymbianControl::lastFocusedControl = 0;
 
+static Qt::KeyboardModifiers app_keyboardModifiers = Qt::NoModifier;
+
 QS60Data* qGlobalS60Data()
 {
     return qt_s60Data();
@@ -580,13 +582,20 @@ QPoint QSymbianControl::translatePointForFixedNativeOrientation(const TPoint &po
 {
     QPoint pos(pointerEventPos.iX, pointerEventPos.iY);
     if (qwidget->d_func()->fixNativeOrientationCalled) {
-        QSize wsize = qwidget->size();
-        TSize size = Size();
+        QSize wsize = qwidget->size(); // always same as the size in the native orientation
+        TSize size = Size(); // depends on the current orientation
         if (size.iWidth == wsize.height() && size.iHeight == wsize.width()) {
             qreal x = pos.x();
             qreal y = pos.y();
-            pos.setX(size.iHeight - y);
-            pos.setY(x);
+            if (S60->screenRotation == QS60Data::ScreenRotation90) {
+                // DisplayRightUp
+                pos.setX(size.iHeight - y);
+                pos.setY(x);
+            } else if (S60->screenRotation == QS60Data::ScreenRotation270) {
+                // DisplayLeftUp
+                pos.setX(y);
+                pos.setY(size.iWidth - x);
+            }
         }
     }
     return pos;
@@ -735,6 +744,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
+    app_keyboardModifiers = modifiers;
 
     QPoint widgetPos = translatePointForFixedNativeOrientation(pEvent.iPosition);
     TPoint controlScreenPos = PositionRelativeToScreen();
@@ -2588,6 +2598,11 @@ bool QApplication::isEffectEnabled(Qt::UIEffect /* effect */)
 void QApplication::setEffectEnabled(Qt::UIEffect /* effect */, bool /* enable */)
 {
     // TODO: Implement QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
+}
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return app_keyboardModifiers;
 }
 
 TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)

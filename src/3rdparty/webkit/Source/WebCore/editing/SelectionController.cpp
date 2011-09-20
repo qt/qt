@@ -1401,7 +1401,7 @@ void SelectionController::selectAll()
         return;
     }
     
-    Node* root = 0;
+    RefPtr<Node> root = 0;
     if (isContentEditable())
         root = highestEditableRoot(m_selection.start());
     else {
@@ -1411,7 +1411,7 @@ void SelectionController::selectAll()
     }
     if (!root)
         return;
-    VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root));
+    VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
     if (shouldChangeSelection(newSelection))
         setSelection(newSelection);
     selectFrameElementInParentIfFullySelected();

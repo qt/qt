@@ -45,10 +45,13 @@
 #include <QScopedPointer>
 #include <QTimer>
 #include <QFileInfo>
+#include "symbianutils/codadevice.h"
 #include "symbianutils/trkutils.h"
 #include "symbianutils/trkdevice.h"
 #include "symbianutils/launcher.h"
+#include "symbianutils/symbiandevicemanager.h"
 
+#include "codasignalhandler.h"
 #include "trksignalhandler.h"
 #include "serenum.h"
 #include "ossignalconverter.h"
@@ -66,10 +69,12 @@ void printUsage(QTextStream& outstream, QString exeName)
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
             << "--nocrashlog                             Don't capture call stack if test crashes" << endl
             << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
+            << "--coda                                   Use CODA instead of TRK (default agent)" << endl
             << endl
             << "USB COM ports can usually be autodetected, use -p or -f to force a specific port." << endl
+            << "TRK is the default debugging agent, use --coda option when using CODA instead of TRK." << endl
             << "If using System TRK, it is possible to copy the program directly to sys/bin on the phone." << endl
-            << "-s can be used with both System and Application TRK to install the program" << endl;
+            << "-s can be used with both System and Application TRK/CODA to install the program" << endl;
 }
 
 #define CHECK_PARAMETER_EXISTS if(!it.hasNext()) { printUsage(outstream, args[0]); return 1; }
@@ -92,6 +97,7 @@ int main(int argc, char *argv[])
     int loglevel=1;
     int timeout=0;
     bool crashlog = true;
+    bool coda = false;
     QString crashlogpath;
     QListIterator<QString> it(args);
     it.next(); //skip name of program
@@ -130,6 +136,11 @@ int main(int argc, char *argv[])
                 downloadRemoteFile = it.next();
                 CHECK_PARAMETER_EXISTS
                 downloadLocalFile = it.next();
+                QFileInfo downloadInfo(downloadLocalFile);
+                if (downloadInfo.exists() && !downloadInfo.isFile()) {
+                    errstream << downloadLocalFile << " is not a file." << endl;
+                    return 1;
+                }
             }
             else if (arg == "--timeout" || arg == "-t") {
                 CHECK_PARAMETER_EXISTS
@@ -140,6 +151,8 @@ int main(int argc, char *argv[])
                     return 1;
                 }
             }
+            else if (arg == "--coda")
+                coda = true;
             else if (arg == "--verbose" || arg == "-v")
                 loglevel=2;
             else if (arg == "--quiet" || arg == "-q")
@@ -200,76 +213,117 @@ int main(int argc, char *argv[])
         }
     }
 
+    CodaSignalHandler codaHandler;
     QScopedPointer<trk::Launcher> launcher;
-    launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
-    QFileInfo exeInfo(exeFile);
+    TrkSignalHandler trkHandler;
+    QFileInfo info(exeFile);
     QFileInfo uploadInfo(uploadLocalFile);
-    if (!sisFile.isEmpty()) {
-        launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
-        launcher->setCopyFileName(sisFile, "c:\\data\\testtemp.sis");
-        launcher->setInstallFileName("c:\\data\\testtemp.sis");
-    }
-    else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
-        launcher->addStartupActions(trk::Launcher::ActionCopy);
-        launcher->setCopyFileName(uploadLocalFile, uploadRemoteFile);
-    }
-    if (!exeFile.isEmpty()) {
-        launcher->addStartupActions(trk::Launcher::ActionRun);
-        launcher->setFileName(QString("c:\\sys\\bin\\") + exeInfo.fileName());
-        launcher->setCommandLineArgs(cmdLine);
-    }
-    if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {
-        launcher->addStartupActions(trk::Launcher::ActionDownload);
-        launcher->setDownloadFileName(downloadRemoteFile, downloadLocalFile);
-    }
-    if (loglevel > 0)
-        outstream << "Connecting to target via " << serialPortName << endl;
-    launcher->setTrkServerName(serialPortName);
 
-    if (loglevel > 1)
-        launcher->setVerbose(1);
+    if (coda) {
+        codaHandler.setSerialPortName(serialPortName);
+        codaHandler.setLogLevel(loglevel);
 
-    TrkSignalHandler handler;
-    handler.setLogLevel(loglevel);
-    handler.setCrashLogging(crashlog);
-    handler.setCrashLogPath(crashlogpath);
+        if (!sisFile.isEmpty()) {
+            codaHandler.setActionType(ActionCopyInstall);
+            QString dstName = "c:\\data\\testtemp.sis";
+            codaHandler.setCopyFileName(sisFile, dstName);
+        }
+        else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
+            codaHandler.setActionType(ActionCopy);
+            codaHandler.setCopyFileName(uploadLocalFile, uploadRemoteFile);
+        }
+        if (!exeFile.isEmpty()) {
+            codaHandler.setActionType(ActionRun);
+            codaHandler.setAppFileName(QString("c:\\sys\\bin\\") + info.fileName());
+            codaHandler.setCommandLineArgs(cmdLine.join(QLatin1String(", ")));
+        }
+        if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {
+            codaHandler.setActionType(ActionDownload);
+            codaHandler.setDownloadFileName(downloadRemoteFile, downloadLocalFile);
+        }
 
-    QObject::connect(launcher.data(), SIGNAL(copyingStarted()), &handler, SLOT(copyingStarted()));
-    QObject::connect(launcher.data(), SIGNAL(canNotConnect(const QString &)), &handler, SLOT(canNotConnect(const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(canNotCreateFile(const QString &, const QString &)), &handler, SLOT(canNotCreateFile(const QString &, const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(canNotWriteFile(const QString &, const QString &)), &handler, SLOT(canNotWriteFile(const QString &, const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(canNotCloseFile(const QString &, const QString &)), &handler, SLOT(canNotCloseFile(const QString &, const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(installingStarted()), &handler, SLOT(installingStarted()));
-    QObject::connect(launcher.data(), SIGNAL(canNotInstall(const QString &, const QString &)), &handler, SLOT(canNotInstall(const QString &, const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(installingFinished()), &handler, SLOT(installingFinished()));
-    QObject::connect(launcher.data(), SIGNAL(startingApplication()), &handler, SLOT(startingApplication()));
-    QObject::connect(launcher.data(), SIGNAL(applicationRunning(uint)), &handler, SLOT(applicationRunning(uint)));
-    QObject::connect(launcher.data(), SIGNAL(canNotRun(const QString &)), &handler, SLOT(canNotRun(const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(applicationOutputReceived(const QString &)), &handler, SLOT(applicationOutputReceived(const QString &)));
-    QObject::connect(launcher.data(), SIGNAL(copyProgress(int)), &handler, SLOT(copyProgress(int)));
-    QObject::connect(launcher.data(), SIGNAL(stateChanged(int)), &handler, SLOT(stateChanged(int)));
-    QObject::connect(launcher.data(), SIGNAL(processStopped(uint,uint,uint,QString)), &handler, SLOT(stopped(uint,uint,uint,QString)));
-    QObject::connect(launcher.data(), SIGNAL(libraryLoaded(trk::Library)), &handler, SLOT(libraryLoaded(trk::Library)));
-    QObject::connect(launcher.data(), SIGNAL(libraryUnloaded(trk::Library)), &handler, SLOT(libraryUnloaded(trk::Library)));
-    QObject::connect(launcher.data(), SIGNAL(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)), &handler, SLOT(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)));
-    QObject::connect(&handler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resumeProcess(uint,uint)));
-    QObject::connect(&handler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
-    QObject::connect(&handler, SIGNAL(getRegistersAndCallStack(uint,uint)), launcher.data(), SLOT(getRegistersAndCallStack(uint,uint)));
-    QObject::connect(launcher.data(), SIGNAL(finished()), &handler, SLOT(finished()));
+        if (loglevel > 0)
+            outstream << "Connecting to target via " << serialPortName << endl;
 
-    QObject::connect(OsSignalConverter::instance(), SIGNAL(terminate()), launcher.data(), SLOT(terminate()), Qt::QueuedConnection);
+        if (timeout > 0)
+            codaHandler.setTimeout(timeout);
 
-    QTimer timer;
-    timer.setSingleShot(true);
-    QObject::connect(&timer, SIGNAL(timeout()), &handler, SLOT(timeout()));
-    if (timeout > 0) {
-        timer.start(timeout);
-    }
+        QObject::connect(OsSignalConverter::instance(), SIGNAL(terminate()), &codaHandler, SLOT(terminate()), Qt::QueuedConnection);
+        return codaHandler.run();
 
-    QString errorMessage;
-    if (!launcher->startServer(&errorMessage)) {
-        errstream << errorMessage << endl;
-        return 1;
+    } else {
+        launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
+        QStringList srcNames, dstNames;
+        if (!sisFile.isEmpty()) {
+            launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
+            srcNames.append(sisFile);
+            QLatin1String dstName("c:\\data\\testtemp.sis");
+            dstNames.append(dstName);
+            launcher->setInstallFileNames(QStringList(dstName));
+        }
+        if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
+            launcher->addStartupActions(trk::Launcher::ActionCopy);
+            srcNames.append(uploadLocalFile);
+            dstNames.append(uploadRemoteFile);
+        }
+        launcher->setCopyFileNames(srcNames, dstNames);
+        if (!exeFile.isEmpty()) {
+            launcher->addStartupActions(trk::Launcher::ActionRun);
+            launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());
+            launcher->setCommandLineArgs(cmdLine.join(QLatin1String(" ")));
+        }
+        if (!downloadRemoteFile.isEmpty() && !downloadLocalFile.isEmpty()) {
+            launcher->addStartupActions(trk::Launcher::ActionDownload);
+            launcher->setDownloadFileName(downloadRemoteFile, downloadLocalFile);
+        }
+        if (loglevel > 0)
+            outstream << "Connecting to target via " << serialPortName << endl;
+        launcher->setTrkServerName(serialPortName);
+
+        if (loglevel > 1)
+            launcher->setVerbose(1);
+
+        trkHandler.setLogLevel(loglevel);
+        trkHandler.setCrashLogging(crashlog);
+        trkHandler.setCrashLogPath(crashlogpath);
+
+        QObject::connect(launcher.data(), SIGNAL(copyingStarted(const QString &)), &trkHandler, SLOT(copyingStarted(const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(canNotConnect(const QString &)), &trkHandler, SLOT(canNotConnect(const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(canNotCreateFile(const QString &, const QString &)), &trkHandler, SLOT(canNotCreateFile(const QString &, const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(canNotWriteFile(const QString &, const QString &)), &trkHandler, SLOT(canNotWriteFile(const QString &, const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(canNotCloseFile(const QString &, const QString &)), &trkHandler, SLOT(canNotCloseFile(const QString &, const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(installingStarted(const QString &)), &trkHandler, SLOT(installingStarted(const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(canNotInstall(const QString &, const QString &)), &trkHandler, SLOT(canNotInstall(const QString &, const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(installingFinished()), &trkHandler, SLOT(installingFinished()));
+        QObject::connect(launcher.data(), SIGNAL(startingApplication()), &trkHandler, SLOT(startingApplication()));
+        QObject::connect(launcher.data(), SIGNAL(applicationRunning(uint)), &trkHandler, SLOT(applicationRunning(uint)));
+        QObject::connect(launcher.data(), SIGNAL(canNotRun(const QString &)), &trkHandler, SLOT(canNotRun(const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(applicationOutputReceived(const QString &)), &trkHandler, SLOT(applicationOutputReceived(const QString &)));
+        QObject::connect(launcher.data(), SIGNAL(copyProgress(int)), &trkHandler, SLOT(copyProgress(int)));
+        QObject::connect(launcher.data(), SIGNAL(stateChanged(int)), &trkHandler, SLOT(stateChanged(int)));
+        QObject::connect(launcher.data(), SIGNAL(processStopped(uint,uint,uint,QString)), &trkHandler, SLOT(stopped(uint,uint,uint,QString)));
+        QObject::connect(launcher.data(), SIGNAL(libraryLoaded(trk::Library)), &trkHandler, SLOT(libraryLoaded(trk::Library)));
+        QObject::connect(launcher.data(), SIGNAL(libraryUnloaded(trk::Library)), &trkHandler, SLOT(libraryUnloaded(trk::Library)));
+        QObject::connect(launcher.data(), SIGNAL(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)), &trkHandler, SLOT(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)));
+        QObject::connect(&trkHandler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resumeProcess(uint,uint)));
+        QObject::connect(&trkHandler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
+        QObject::connect(&trkHandler, SIGNAL(getRegistersAndCallStack(uint,uint)), launcher.data(), SLOT(getRegistersAndCallStack(uint,uint)));
+        QObject::connect(launcher.data(), SIGNAL(finished()), &trkHandler, SLOT(finished()));
+
+        QObject::connect(OsSignalConverter::instance(), SIGNAL(terminate()), launcher.data(), SLOT(terminate()), Qt::QueuedConnection);
+
+        QTimer timer;
+        timer.setSingleShot(true);
+        QObject::connect(&timer, SIGNAL(timeout()), &trkHandler, SLOT(timeout()));
+        if (timeout > 0) {
+            timer.start(timeout);
+        }
+
+        QString errorMessage;
+        if (!launcher->startServer(&errorMessage)) {
+            errstream << errorMessage << endl;
+            return 1;
+        }
     }
 
     return a.exec();

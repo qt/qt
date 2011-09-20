@@ -1,3 +1,30 @@
+2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix build with Intel compiler on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=65088
+
+        Intel compiler needs .lib suffixes instead of .a
+
+        * WebKit2.pri:
+
+2011-06-23  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Windowless Plugins : <input> cursor blinks even after transferring focus to plugin
+        https://bugs.webkit.org/show_bug.cgi?id=30355
+
+        PluginView needs to use page->focusController()->setFocusedNode() when focusing a plugin
+        in order to clear the FrameSelection in the currently focused node. In its platform-specific
+        code Chromium already does this (WebPluginContainerImpl.cpp).
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebCore::PluginView::focusPluginElement): Using FocusController::setFocusedNode() makes
+                                                   the call to FocusController:setFocusedFrame() redundant, since the
+                                                   former calls it.
+
 2011-06-27  Huang Dongsung  <luxtella@company100.net>
 
         Reviewed by Kenneth Rohde Christiansen.

@@ -444,9 +444,15 @@ void tst_QDir::QDir_default()
 void tst_QDir::compare()
 {
     // operator==
+
+    // Not using QCOMPARE to test result of QDir::operator==
+
     QDir dir;
     dir.makeAbsolute();
     QVERIFY(dir == QDir::currentPath());
+
+    QVERIFY(QDir() == QDir(QDir::currentPath()));
+    QVERIFY(QDir("../") == QDir(QDir::currentPath() + "/.."));
 }
 
 static QStringList filterLinks(const QStringList &list)
@@ -1127,6 +1133,11 @@ void tst_QDir::absolutePath_data()
     QTest::newRow("4") << "c:/machine/share/dir1" << "c:/machine/share/dir1";
     QTest::newRow("5") << "c:\\machine\\share\\dir1" << "c:/machine/share/dir1";
 #endif
+    //test dirty paths are cleaned (QTBUG-19995)
+    QTest::newRow("/home/qt/.") << QDir::rootPath() + "home/qt/." << QDir::rootPath() + "home/qt";
+    QTest::newRow("/system/data/../config") << QDir::rootPath() + "system/data/../config" << QDir::rootPath() + "system/config";
+    QTest::newRow("//home//qt/") << QDir::rootPath() + "/home//qt/" << QDir::rootPath() + "home/qt";
+    QTest::newRow("foo/../bar") << "foo/../bar" << QDir::currentPath() + "/bar";
     QTest::newRow("resource") << ":/prefix/foo.bar" << ":/prefix/foo.bar";
 }
 
@@ -1935,6 +1946,34 @@ void tst_QDir::equalityOperator_data()
     QTest::newRow("relativepaths") << "entrylist/" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << "./entrylist" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << true;
+
+    QTest::newRow("QTBUG-20495") << QDir::currentPath() + "/entrylist/.." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << "." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    //need a path in the root directory that is unlikely to be a symbolic link.
+#if defined (Q_OS_WIN)
+    QString pathinroot("c:/windows/..");
+#elif defined (Q_OS_SYMBIAN)
+    QString pathinroot("c:/data/..");
+#else
+    QString pathinroot("/sbin/..");
+#endif
+    QTest::newRow("QTBUG-20495-root") << pathinroot << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << QDir::rootPath() << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("slashdot") << QDir::rootPath() + "." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << QDir::rootPath() << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("slashdotslash") << QDir::rootPath() + "./" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << QDir::rootPath() << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("nonexistantpaths") << "dir-that-dont-exist" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << "another-dir-that-dont-exist" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << false;
 
     QTest::newRow("diff-filters") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Dirs)

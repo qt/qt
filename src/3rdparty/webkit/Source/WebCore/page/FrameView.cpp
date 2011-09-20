@@ -1938,7 +1938,7 @@ void FrameView::updateWidget(RenderEmbeddedObject* object)
         static_cast<HTMLPlugInImageElement*>(ownerElement)->updateWidget(CreateAnyWidgetType);
     // FIXME: It is not clear that Media elements need or want this updateWidget() call.
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    else if (ownerElement->hasTagName(videoTag) || ownerElement->hasTagName(audioTag))
+    else if (ownerElement->isMediaElement())
         static_cast<HTMLMediaElement*>(ownerElement)->updateWidget(CreateAnyWidgetType);
 #endif
     else
@@ -2275,6 +2275,23 @@ bool FrameView::hasCustomScrollbars() const
     }
 
     return false;
+}
+
+void FrameView::clearOwningRendererForCustomScrollbars(RenderBox* box)
+{
+    const HashSet<RefPtr<Widget> >* viewChildren = children();
+    HashSet<RefPtr<Widget> >::const_iterator end = viewChildren->end();
+    for (HashSet<RefPtr<Widget> >::const_iterator current = viewChildren->begin(); current != end; ++current) {
+        Widget* widget = current->get();
+        if (widget->isScrollbar()) {
+            Scrollbar* scrollbar = static_cast<Scrollbar*>(widget);
+            if (scrollbar->isCustomScrollbar()) {
+                RenderScrollbar* customScrollbar = toRenderScrollbar(scrollbar);
+                if (customScrollbar->owningRenderer() == box)
+                    customScrollbar->clearOwningRenderer();
+            }
+        }
+    }
 }
 
 FrameView* FrameView::parentFrameView() const
