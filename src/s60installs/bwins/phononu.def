@@ -570,32 +570,36 @@ EXPORTS
 	?setOutputDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 569 NONAME ; bool Phonon::PulseSupport::setOutputDevice(class QString, int)
 	?qt_metacast@AudioDataOutput@Phonon@@UAEPAXPBD@Z @ 570 NONAME ; void * Phonon::AudioDataOutput::qt_metacast(char const *)
 	?clearStreamCache@PulseSupport@Phonon@@QAEXVQString@@@Z @ 571 NONAME ; void Phonon::PulseSupport::clearStreamCache(class QString)
-	?qt_static_metacall@MediaObject@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 572 NONAME ; void Phonon::MediaObject::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@AbstractMediaStream@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 573 NONAME ; void Phonon::AbstractMediaStream::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@MediaController@Phonon@@0UQMetaObjectExtraData@@B @ 574 NONAME ; struct QMetaObjectExtraData const Phonon::MediaController::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@AudioDataOutput@Phonon@@0UQMetaObjectExtraData@@B @ 575 NONAME ; struct QMetaObjectExtraData const Phonon::AudioDataOutput::staticMetaObjectExtraData
-	?qt_static_metacall@VolumeFaderEffect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 576 NONAME ; void Phonon::VolumeFaderEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@AbstractMediaStream@Phonon@@0UQMetaObjectExtraData@@B @ 577 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractMediaStream::staticMetaObjectExtraData
-	?qt_static_metacall@AbstractAudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 578 NONAME ; void Phonon::AbstractAudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@AudioDataOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 579 NONAME ; void Phonon::AudioDataOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@PulseSupport@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 580 NONAME ; void Phonon::PulseSupport::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@SeekSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 581 NONAME ; void Phonon::SeekSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@AudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 582 NONAME ; struct QMetaObjectExtraData const Phonon::AudioOutput::staticMetaObjectExtraData
-	?qt_static_metacall@MediaController@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 583 NONAME ; void Phonon::MediaController::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@VolumeSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 584 NONAME ; void Phonon::VolumeSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@VideoPlayer@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 585 NONAME ; void Phonon::VideoPlayer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@Effect@Phonon@@0UQMetaObjectExtraData@@B @ 586 NONAME ; struct QMetaObjectExtraData const Phonon::Effect::staticMetaObjectExtraData
-	?qt_static_metacall@VideoWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 587 NONAME ; void Phonon::VideoWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@VideoPlayer@Phonon@@0UQMetaObjectExtraData@@B @ 588 NONAME ; struct QMetaObjectExtraData const Phonon::VideoPlayer::staticMetaObjectExtraData
-	?qt_static_metacall@EffectWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 589 NONAME ; void Phonon::EffectWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@VolumeSlider@Phonon@@0UQMetaObjectExtraData@@B @ 590 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeSlider::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@AbstractAudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 591 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractAudioOutput::staticMetaObjectExtraData
+	??_EEffectParameter@Phonon@@QAE@I@Z @ 572 NONAME ABSENT ; Phonon::EffectParameter::~EffectParameter(unsigned int)
+	??_EPath@Phonon@@QAE@I@Z @ 573 NONAME ABSENT ; Phonon::Path::~Path(unsigned int)
+	??_EMediaSource@Phonon@@QAE@I@Z @ 574 NONAME ABSENT ; Phonon::MediaSource::~MediaSource(unsigned int)
+	??_EObjectDescriptionData@Phonon@@QAE@I@Z @ 575 NONAME ABSENT ; Phonon::ObjectDescriptionData::~ObjectDescriptionData(unsigned int)
+	?qt_static_metacall@AbstractMediaStream@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 576 NONAME ; void Phonon::AbstractMediaStream::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@MediaObject@Phonon@@0UQMetaObjectExtraData@@B @ 577 NONAME ; struct QMetaObjectExtraData const Phonon::MediaObject::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@VolumeSlider@Phonon@@0UQMetaObjectExtraData@@B @ 578 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeSlider::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@VolumeFaderEffect@Phonon@@0UQMetaObjectExtraData@@B @ 579 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeFaderEffect::staticMetaObjectExtraData
+	?qt_static_metacall@VideoWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 580 NONAME ; void Phonon::VideoWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@MediaObject@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 581 NONAME ; void Phonon::MediaObject::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@EffectWidget@Phonon@@0UQMetaObjectExtraData@@B @ 582 NONAME ; struct QMetaObjectExtraData const Phonon::EffectWidget::staticMetaObjectExtraData
+	?qt_static_metacall@VolumeFaderEffect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 583 NONAME ; void Phonon::VolumeFaderEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@SeekSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 584 NONAME ; void Phonon::SeekSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@AudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 585 NONAME ; void Phonon::AudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@VideoPlayer@Phonon@@0UQMetaObjectExtraData@@B @ 586 NONAME ; struct QMetaObjectExtraData const Phonon::VideoPlayer::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@AbstractAudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 587 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractAudioOutput::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@AudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 588 NONAME ; struct QMetaObjectExtraData const Phonon::AudioOutput::staticMetaObjectExtraData
+	?qt_static_metacall@PulseSupport@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 589 NONAME ; void Phonon::PulseSupport::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@AbstractMediaStream@Phonon@@0UQMetaObjectExtraData@@B @ 590 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractMediaStream::staticMetaObjectExtraData
+	?qt_static_metacall@VideoPlayer@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 591 NONAME ; void Phonon::VideoPlayer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@PulseSupport@Phonon@@0UQMetaObjectExtraData@@B @ 592 NONAME ; struct QMetaObjectExtraData const Phonon::PulseSupport::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@VideoWidget@Phonon@@0UQMetaObjectExtraData@@B @ 593 NONAME ; struct QMetaObjectExtraData const Phonon::VideoWidget::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@VolumeFaderEffect@Phonon@@0UQMetaObjectExtraData@@B @ 594 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeFaderEffect::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@EffectWidget@Phonon@@0UQMetaObjectExtraData@@B @ 595 NONAME ; struct QMetaObjectExtraData const Phonon::EffectWidget::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@SeekSlider@Phonon@@0UQMetaObjectExtraData@@B @ 596 NONAME ; struct QMetaObjectExtraData const Phonon::SeekSlider::staticMetaObjectExtraData
-	?qt_static_metacall@Effect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 597 NONAME ; void Phonon::Effect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@AudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 598 NONAME ; void Phonon::AudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@MediaObject@Phonon@@0UQMetaObjectExtraData@@B @ 599 NONAME ; struct QMetaObjectExtraData const Phonon::MediaObject::staticMetaObjectExtraData
+	?qt_static_metacall@AbstractAudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 593 NONAME ; void Phonon::AbstractAudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@MediaController@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 594 NONAME ; void Phonon::MediaController::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@Effect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 595 NONAME ; void Phonon::Effect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@Effect@Phonon@@0UQMetaObjectExtraData@@B @ 596 NONAME ; struct QMetaObjectExtraData const Phonon::Effect::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@AudioDataOutput@Phonon@@0UQMetaObjectExtraData@@B @ 597 NONAME ; struct QMetaObjectExtraData const Phonon::AudioDataOutput::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@SeekSlider@Phonon@@0UQMetaObjectExtraData@@B @ 598 NONAME ; struct QMetaObjectExtraData const Phonon::SeekSlider::staticMetaObjectExtraData
+	?qt_static_metacall@VolumeSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 599 NONAME ; void Phonon::VolumeSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@VideoWidget@Phonon@@0UQMetaObjectExtraData@@B @ 600 NONAME ; struct QMetaObjectExtraData const Phonon::VideoWidget::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@MediaController@Phonon@@0UQMetaObjectExtraData@@B @ 601 NONAME ; struct QMetaObjectExtraData const Phonon::MediaController::staticMetaObjectExtraData
+	?qt_static_metacall@EffectWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 602 NONAME ; void Phonon::EffectWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@AudioDataOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 603 NONAME ; void Phonon::AudioDataOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 

@@ -67,6 +67,7 @@ void printUsage(QTextStream& outstream, QString exeName)
             << "-q, --quiet                              hide progress messages" << endl
             << "-u, --upload <local file> <remote file>  upload file to phone" << endl
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
+            << "-T, --tempfile <remote file>             specify temporary sis file name" << endl
             << "--nocrashlog                             Don't capture call stack if test crashes" << endl
             << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
             << "--coda                                   Use CODA instead of TRK (default agent)" << endl
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
     QString uploadRemoteFile;
     QString downloadRemoteFile;
     QString downloadLocalFile;
+    QString dstName = "c:\\data\\testtemp.sis";
     int loglevel=1;
     int timeout=0;
     bool crashlog = true;
@@ -153,6 +155,10 @@ int main(int argc, char *argv[])
             }
             else if (arg == "--coda")
                 coda = true;
+            else if (arg == "--tempfile" || arg == "-T") {
+                CHECK_PARAMETER_EXISTS
+                dstName = it.next();
+            }
             else if (arg == "--verbose" || arg == "-v")
                 loglevel=2;
             else if (arg == "--quiet" || arg == "-q")
@@ -225,7 +231,6 @@ int main(int argc, char *argv[])
 
         if (!sisFile.isEmpty()) {
             codaHandler.setActionType(ActionCopyInstall);
-            QString dstName = "c:\\data\\testtemp.sis";
             codaHandler.setCopyFileName(sisFile, dstName);
         }
         else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
@@ -257,7 +262,6 @@ int main(int argc, char *argv[])
         if (!sisFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
             srcNames.append(sisFile);
-            QLatin1String dstName("c:\\data\\testtemp.sis");
             dstNames.append(dstName);
             launcher->setInstallFileNames(QStringList(dstName));
         }
