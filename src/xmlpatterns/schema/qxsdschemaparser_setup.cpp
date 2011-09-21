@@ -260,8 +260,9 @@ using namespace QPatternist;
 
 void XsdSchemaParser::setupStateMachines()
 {
+    NamePool::Ptr namePool(m_namePool);
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, simpleType?) : attribute
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -277,7 +278,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, ((simpleType | complexType)?, alternative*, (unique | key | keyref)*)) : element
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -320,7 +321,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (simpleContent | complexContent | (openContent?, (group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?), assert*))) : complexType
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -385,7 +386,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (restriction | extension)) : simpleContent/complexContent
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartState);
@@ -404,7 +405,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern | assertion)*)?, ((attribute | attributeGroup)*, anyAttribute?), assert*) : simpleContent restriction
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -503,7 +504,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, ((attribute | attributeGroup)*, anyAttribute?), assert*) : simple content extension
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -536,7 +537,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, openContent?, ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?), assert*)) : complex content restriction/complex content extension
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -596,7 +597,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, ((attribute | attributeGroup)*, anyAttribute?)) : named attribute group
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -621,7 +622,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (all | choice | sequence)?) : group
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -642,7 +643,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (element | any)*) : all
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -664,7 +665,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (element | group | choice | sequence | any)*) : choice sequence
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -697,7 +698,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?) : any/selector/field/notation/include/import/referred attribute group/anyAttribute/all facets/assert
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -730,7 +731,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (selector, field+)) : unique/key/keyref
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartState);
@@ -751,7 +752,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (simpleType | complexType)?) : alternative
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -769,7 +770,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (appinfo | documentation)* : annotation
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -785,7 +786,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (restriction | list | union)) : simpleType
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartState);
@@ -806,7 +807,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, (simpleType?, (minExclusive | minInclusive | maxExclusive | maxInclusive | totalDigits | fractionDigits | length | minLength | maxLength | enumeration | whiteSpace | pattern | assertion)*)) : simple type restriction
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -877,7 +878,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, simpleType?) : list
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -893,7 +894,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, simpleType*) : union
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -910,7 +911,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for ((include | import | redefine |i override |  annotation)*, (defaultOpenContent, annotation*)?, (((simpleType | complexType | group | attributeGroup) | element | attribute | notation), annotation*)*) : schema
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -987,7 +988,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation?, any) : defaultOpenContent
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -1003,7 +1004,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation | (simpleType | complexType | group | attributeGroup))* : redefine
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -1025,7 +1026,7 @@ void XsdSchemaParser::setupStateMachines()
     }
 
     {
-        XsdStateMachine<XsdSchemaToken::NodeName> machine(m_namePool);
+        XsdStateMachine<XsdSchemaToken::NodeName> machine(namePool);
 
         // setup state machine for (annotation | (simpleType | complexType | group | attributeGroup | element | attribute | notation))* : override
         const XsdStateMachine<XsdSchemaToken::NodeName>::StateId startState = machine.addState(XsdStateMachine<XsdSchemaToken::NodeName>::StartEndState);
@@ -1055,56 +1056,57 @@ void XsdSchemaParser::setupStateMachines()
 
 void XsdSchemaParser::setupBuiltinTypeNames()
 {
+    NamePool::Ptr namePool(m_namePool);
     m_builtinTypeNames.reserve(48);
 
-    m_builtinTypeNames.insert(BuiltinTypes::xsAnyType->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsAnySimpleType->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUntyped->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsAnyAtomicType->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUntypedAtomic->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDateTime->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDate->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsTime->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDuration->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsYearMonthDuration->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDayTimeDuration->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsFloat->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDouble->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsInteger->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsDecimal->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNonPositiveInteger->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNegativeInteger->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsLong->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsInt->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsShort->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsByte->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNonNegativeInteger->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedLong->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedInt->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedShort->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedByte->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsPositiveInteger->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsGYearMonth->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsGYear->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsGMonthDay->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsGDay->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsGMonth->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsBoolean->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsBase64Binary->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsHexBinary->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsAnyURI->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsQName->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsString->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNormalizedString->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsToken->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsLanguage->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNMTOKEN->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsName->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNCName->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsID->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsIDREF->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsENTITY->name(m_namePool));
-    m_builtinTypeNames.insert(BuiltinTypes::xsNOTATION->name(m_namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsAnyType->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsAnySimpleType->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUntyped->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsAnyAtomicType->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUntypedAtomic->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDateTime->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDate->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsTime->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDuration->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsYearMonthDuration->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDayTimeDuration->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsFloat->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDouble->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsInteger->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsDecimal->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNonPositiveInteger->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNegativeInteger->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsLong->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsInt->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsShort->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsByte->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNonNegativeInteger->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedLong->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedInt->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedShort->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsUnsignedByte->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsPositiveInteger->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsGYearMonth->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsGYear->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsGMonthDay->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsGDay->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsGMonth->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsBoolean->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsBase64Binary->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsHexBinary->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsAnyURI->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsQName->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsString->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNormalizedString->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsToken->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsLanguage->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNMTOKEN->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsName->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNCName->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsID->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsIDREF->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsENTITY->name(namePool));
+    m_builtinTypeNames.insert(BuiltinTypes::xsNOTATION->name(namePool));
 }
 
 QT_END_NAMESPACE
