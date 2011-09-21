@@ -56,6 +56,7 @@ that the changes lead to a leaner API and the change applies to all platforms.
  - QtConcurrent: added support for c++0x lambda in few functions
  - QObject: Improved performence of the signal activation
  - QObject: added ways to connect signals using QMetaMethod
+ - QObject: added senderSignalIndex method to discover the signal that invoked a slot
  - QObject: deprecated qFindChild and qFindChildren
  - QObject: optimize constructions and destruction of objects
  - QObject: Qt::BlockingQueuedConnection can handle the return value [QTBUG-10440]
