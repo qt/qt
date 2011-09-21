@@ -77,6 +77,7 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <AknPopupFader.h>          // MAknFadedComponent and TAknPopupFader
+#include <bitstd.h>                 // EGraphicsOrientation constants
 #ifdef QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
 #include <gfxtranseffect/gfxtranseffect.h> // BeginFullScreen
 #include <akntranseffect.h> // BeginFullScreen
@@ -212,6 +213,14 @@ public:
 
     int nativeScreenWidthInPixels;
     int nativeScreenHeightInPixels;
+
+    enum ScreenRotation {
+        ScreenRotation0, // portrait (or the native orientation)
+        ScreenRotation90, // typically DisplayLeftUp landscape
+        ScreenRotation180, // not used
+        ScreenRotation270 // DisplayRightUp landscape when 3-way orientation is supported
+    };
+    ScreenRotation screenRotation;
 
     int beginFullScreenCalled : 1;
     int endFullScreenCalled : 1;
@@ -383,6 +392,24 @@ inline void QS60Data::updateScreenSize()
     S60->defaultDpiY = S60->screenHeightInPixels / inches;
     inches = S60->screenWidthInTwips / (TReal)KTwipsPerInch;
     S60->defaultDpiX = S60->screenWidthInPixels / inches;
+
+    switch (params.iRotation) {
+    case CFbsBitGc::EGraphicsOrientationNormal:
+        S60->screenRotation = ScreenRotation0;
+        break;
+    case CFbsBitGc::EGraphicsOrientationRotated90:
+        S60->screenRotation = ScreenRotation90;
+        break;
+    case CFbsBitGc::EGraphicsOrientationRotated180:
+        S60->screenRotation = ScreenRotation180;
+        break;
+    case CFbsBitGc::EGraphicsOrientationRotated270:
+        S60->screenRotation = ScreenRotation270;
+        break;
+    default:
+        S60->screenRotation = ScreenRotation0;
+        break;
+    }
 
     int screens = S60->screenCount();
     for (int i = 0; i < screens; ++i) {

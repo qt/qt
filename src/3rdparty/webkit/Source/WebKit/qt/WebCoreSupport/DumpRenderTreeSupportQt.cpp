@@ -23,6 +23,9 @@
 #include "config.h"
 #include "DumpRenderTreeSupportQt.h"
 
+#if USE(JSC)
+#include "APICast.h"
+#endif
 #include "ApplicationCacheStorage.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "ChromeClientQt.h"
@@ -74,6 +77,7 @@
 #include "SVGSMILElement.h"
 #endif
 #include "TextIterator.h"
+#include "WebCoreTestSupport.h"
 #include "WorkerThread.h"
 #include <wtf/CurrentTime.h>
 
@@ -673,6 +677,11 @@ void DumpRenderTreeSupportQt::dumpFrameLoader(bool b)
     FrameLoaderClientQt::dumpFrameLoaderCallbacks = b;
 }
 
+void DumpRenderTreeSupportQt::dumpProgressFinishedCallback(bool b)
+{
+    FrameLoaderClientQt::dumpProgressFinishedCallback = b;
+}
+
 void DumpRenderTreeSupportQt::dumpUserGestureInFrameLoader(bool b)
 {
     FrameLoaderClientQt::dumpUserGestureInFrameLoaderCallbacks = b;
@@ -1107,6 +1116,44 @@ void DumpRenderTreeSupportQt::removeShadowRoot(const QWebElement& element)
     if (!webElement)
         return;
     webElement->removeShadowRoot();
+}
+
+void DumpRenderTreeSupportQt::injectInternalsObject(QWebFrame* frame)
+{
+    WebCore::Frame* coreFrame = QWebFramePrivate::core(frame);
+#if USE(JSC)
+    JSC::JSLock lock(JSC::SilenceAssertionsOnly);
+
+    JSDOMWindow* window = toJSDOMWindow(coreFrame, mainThreadNormalWorld());
+    Q_ASSERT(window);
+
+    JSC::ExecState* exec = window->globalExec();
+    Q_ASSERT(exec);
+
+    JSContextRef context = toRef(exec);
+    WebCoreTestSupport::injectInternalsObject(context);
+#elif USE(V8)
+    WebCoreTestSupport::injectInternalsObject(V8Proxy::mainWorldContext(coreFrame));
+#endif
+}
+
+void DumpRenderTreeSupportQt::resetInternalsObject(QWebFrame* frame)
+{
+    WebCore::Frame* coreFrame = QWebFramePrivate::core(frame);
+#if USE(JSC)
+    JSC::JSLock lock(JSC::SilenceAssertionsOnly);
+
+    JSDOMWindow* window = toJSDOMWindow(coreFrame, mainThreadNormalWorld());
+    Q_ASSERT(window);
+
+    JSC::ExecState* exec = window->globalExec();
+    Q_ASSERT(exec);
+
+    JSContextRef context = toRef(exec);
+    WebCoreTestSupport::resetInternalsObject(context);
+#elif USE(V8)
+    WebCoreTestSupport::resetInternalsObject(V8Proxy::mainWorldContext(coreFrame));
+#endif
 }
 
 // Provide a backward compatibility with previously exported private symbols as of QtWebKit 4.6 release

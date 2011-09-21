@@ -58,9 +58,7 @@
 #endif
 
 // This is necessary in order to be able to perform delayed invocation on slots
-// which take arguments of type WId.  One example is
-// QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
-// CCoeControl objects until after the CONE event handler has finished running.
+// which take arguments of type WId.
 Q_DECLARE_METATYPE(WId)
 
 // Workaround for the fact that S60 SDKs 3.x do not contain the akntoolbar.h
@@ -85,21 +83,6 @@ QWidget *QWidgetPrivate::keyboardGrabber = 0;
 CEikButtonGroupContainer *QS60Data::cba = 0;
 
 int qt_symbian_create_desktop_on_screen = -1;
-
-static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
-{
-    if ( a.count() != b.count())
-        return false;
-    int index=0;
-    while (index<a.count()) {
-        if (a.at(index)->softKeyRole() != b.at(index)->softKeyRole())
-            return false;
-        if (a.at(index)->text().compare(b.at(index)->text())!=0)
-            return false;
-        index++;
-    }
-    return true;
-}
 
 void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 {
@@ -233,7 +216,6 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     QPoint oldPos(q->pos());
     QSize oldSize(q->size());
-    QRect oldGeom(data.crect);
 
     bool checkExtra = true;
     if (q->isWindow() && (data.window_state & (Qt::WindowFullScreen | Qt::WindowMaximized))) {
@@ -350,11 +332,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
     bool topLevel = (flags & Qt::Window);
     bool popup = (type == Qt::Popup);
-    bool dialog = (type == Qt::Dialog
-                   || type == Qt::Sheet
-                   || (flags & Qt::MSWindowsFixedSizeDialogHint));
     bool desktop = (type == Qt::Desktop);
-    //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
@@ -491,8 +469,8 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         // Delay deletion of the control in case this function is called in the
         // context of a CONE event handler such as
         // CCoeControl::ProcessPointerEventL
-        QMetaObject::invokeMethod(q, "_q_delayedDestroy",
-            Qt::QueuedConnection, Q_ARG(WId, destroyw));
+        widCleanupList << destroyw;
+        QMetaObject::invokeMethod(q, "_q_cleanupWinIds", Qt::QueuedConnection);
     }
 
     if (q->testAttribute(Qt::WA_AcceptTouchEvents))
@@ -1077,7 +1055,7 @@ void QWidgetPrivate::registerTouchWindow()
 int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
-    int val;
+    int val = 0;
     if (m == PdmWidth) {
         val = data->crect.width();
     } else if (m == PdmHeight) {

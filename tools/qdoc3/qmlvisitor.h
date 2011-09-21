@@ -57,6 +57,7 @@ public:
     virtual ~QmlDocVisitor();
 
     bool visit(QDeclarativeJS::AST::UiImportList *imports);
+    void endVisit(QDeclarativeJS::AST::UiImportList *definition);
 
     bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
     void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
@@ -77,6 +78,7 @@ private:
     QString document;
     QList<QPair<QString, QString> > importList;
     QSet<QString> commands;
+    QSet<quint32> usedComments;
     Tree *tree;
     InnerNode *current;
 };

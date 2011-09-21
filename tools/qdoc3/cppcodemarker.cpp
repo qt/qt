@@ -878,26 +878,6 @@ static const char * const keywordTable[] = {
     "signals", "slots", "emit", 0
 };
 
-static QString untabified(const QString &in)
-{
-    QString res;
-    int col = 0;
-    int i = 0;
-
-    for (; i < (int) in.length(); i++) {
-	if (in[i] == QChar('\t')) {
-	    res += QString("        " + (col & 0x7));
-	    col = (col + 8) & ~0x7;
-	} else {
-	    res += in[i];
-	    if (in[i] == QChar('\n'))
-		col = 0;
-	}
-    }
-
-    return res;
-}
-
 /*
     @char
     @class
@@ -939,7 +919,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     int i = 0;
     int start = 0;
     int finish = 0;
-    char ch;
+    QChar ch;
     QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
     QRegExp functionRegExp("q([A-Z][a-z]+)+");
 
@@ -949,13 +929,13 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	QString tag;
         bool target = false;
 
-	if (isalpha(ch) || ch == '_') {
+	if (ch.isLetter() || ch == '_') {
 	    QString ident;
 	    do {
-		ident += ch;
-                finish = i;
-		readChar();
-            } while (ch >= 0 && isalnum(ch) || ch == '_');
+            ident += ch;
+            finish = i;
+            readChar();
+        } while (ch.isLetterOrNumber() || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
 		tag = QLatin1String("type");
@@ -972,14 +952,14 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 		    tag = QLatin1String("func");
                     target = true;
 	    }
-	} else if (isdigit(ch)) {
+	} else if (ch.isDigit()) {
 	    do {
                 finish = i;
 		readChar();
-	    } while (isalnum(ch) || ch == '.');
+	    } while (ch.isLetterOrNumber() || ch == '.');
 	    tag = QLatin1String("number");
 	} else {
-	    switch (ch) {
+	    switch (ch.unicode()) {
 	    case '+':
 	    case '-':
 	    case '!':
@@ -1157,15 +1137,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                               "property",
                                               "properties");
 	    FastSection qmlsignals(qmlClassNode,
-                                   "Signals",
+                                   "Signal Handlers",
                                    "",
-                                   "signal",
-                                   "signals");
+                                   "signal handler",
+                                   "signal handlers");
 	    FastSection qmlattachedsignals(qmlClassNode,
-                                           "Attached Signals",
+                                           "Attached Signal Handlers",
                                            "",
-                                           "signal",
-                                           "signals");
+                                           "signal handler",
+                                           "signal handlers");
 	    FastSection qmlmethods(qmlClassNode,
                                    "Methods",
                                    "",
@@ -1220,9 +1200,9 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
             FastSection qmlproperties(qmlClassNode, "Property Documentation","qmlprop","member","members");
 	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation","qmlattprop",
                                               "member","members");
-            FastSection qmlsignals(qmlClassNode,"Signal Documentation","qmlsig","member","members");
-	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Documentation","qmlattsig",
-                                           "member","members");
+            FastSection qmlsignals(qmlClassNode,"Signal Handler Documentation","qmlsig","handler","handlers");
+	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Handler Documentation","qmlattsig",
+                                           "handler","handlers");
             FastSection qmlmethods(qmlClassNode,"Method Documentation","qmlmeth","member","members");
 	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation","qmlattmeth",
                                            "member","members");

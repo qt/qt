@@ -37,6 +37,7 @@
 #include "RenderCombineText.h"
 #include "RenderLayer.h"
 #include "RenderView.h"
+#include "Settings.h"
 #include "Text.h"
 #include "TextBreakIterator.h"
 #include "TextResourceDecoder.h"
@@ -52,6 +53,37 @@ using namespace WTF;
 using namespace Unicode;
 
 namespace WebCore {
+
+class SecureTextTimer;
+typedef HashMap<RenderText*, SecureTextTimer*> SecureTextTimerMap;
+static SecureTextTimerMap* gSecureTextTimers = 0;
+
+class SecureTextTimer : public TimerBase {
+public:
+    SecureTextTimer(RenderText* renderText)
+        : m_renderText(renderText)
+        , m_lastTypedCharacterOffset(-1)
+    {
+    }
+
+    void restartWithNewText(unsigned lastTypedCharacterOffset)
+    {
+        m_lastTypedCharacterOffset = lastTypedCharacterOffset;
+        startOneShot(m_renderText->document()->settings()->passwordEchoDurationInSeconds());
+    }
+    void invalidate() { m_lastTypedCharacterOffset = -1; }
+    unsigned lastTypedCharacterOffset() { return m_lastTypedCharacterOffset; }
+
+private:
+    virtual void fired()
+    {
+        ASSERT(gSecureTextTimers->contains(m_renderText));
+        m_renderText->setText(m_renderText->text(), true /* forcing setting text as it may be masked later */);
+    }
+
+    RenderText* m_renderText;
+    int m_lastTypedCharacterOffset;
+};
 
 static void makeCapitalized(String* string, UChar previous)
 {
@@ -196,6 +228,9 @@ void RenderText::removeAndDestroyTextBoxes()
 
 void RenderText::destroy()
 {
+    if (SecureTextTimer* secureTextTimer = gSecureTextTimers ? gSecureTextTimers->take(this) : 0)
+        delete secureTextTimer;
+
     removeAndDestroyTextBoxes();
     RenderObject::destroy();
 }
@@ -1158,13 +1193,13 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
         case TSNONE:
             break;
         case TSCIRCLE:
-            m_text.makeSecure(whiteBullet);
+            secureText(whiteBullet);
             break;
         case TSDISC:
-            m_text.makeSecure(bullet);
+            secureText(bullet);
             break;
         case TSSQUARE:
-            m_text.makeSecure(blackSquare);
+            secureText(blackSquare);
         }
     }
 
@@ -1172,6 +1207,28 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     ASSERT(!isBR() || (textLength() == 1 && m_text[0] == '\n'));
 
     m_isAllASCII = m_text.containsOnlyASCII();
+}
+
+void RenderText::secureText(UChar mask)
+{
+    if (!m_text.length())
+        return;
+
+    int lastTypedCharacterOffsetToReveal = -1;
+    String revealedText;
+    SecureTextTimer* secureTextTimer = gSecureTextTimers ? gSecureTextTimers->get(this) : 0;
+    if (secureTextTimer && secureTextTimer->isActive()) {
+        lastTypedCharacterOffsetToReveal = secureTextTimer->lastTypedCharacterOffset();
+        if (lastTypedCharacterOffsetToReveal >= 0)
+            revealedText.append(m_text[lastTypedCharacterOffsetToReveal]);
+    }
+
+    m_text.fill(mask);
+    if (lastTypedCharacterOffsetToReveal >= 0) {
+        m_text.replace(lastTypedCharacterOffsetToReveal, 1, revealedText);
+        // m_text may be updated later before timer fires. We invalidate the lastTypedCharacterOffset to avoid inconsistency.
+        secureTextTimer->invalidate();
+    }
 }
 
 void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
@@ -1596,5 +1653,18 @@ void RenderText::checkConsistency() const
 }
 
 #endif
+
+void RenderText::momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacterOffset)
+{
+    if (!gSecureTextTimers)
+        gSecureTextTimers = new SecureTextTimerMap;
+
+    SecureTextTimer* secureTextTimer = gSecureTextTimers->get(this);
+    if (!secureTextTimer) {
+        secureTextTimer = new SecureTextTimer(this);
+        gSecureTextTimers->add(this, secureTextTimer);
+    }
+    secureTextTimer->restartWithNewText(lastTypedCharacterOffset);
+}
 
 } // namespace WebCore

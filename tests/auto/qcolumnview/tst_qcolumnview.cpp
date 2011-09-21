@@ -461,6 +461,7 @@ void tst_QColumnView::scrollTo()
         view.setCurrentIndex(index);
         QTest::qWait(ANIMATION_DELAY);
         view.scrollTo(index, QAbstractItemView::EnsureVisible);
+        QTest::qWait(ANIMATION_DELAY);
         index = index.parent();
         if (start != level) {
             if (!reverse)

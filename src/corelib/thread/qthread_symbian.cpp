@@ -324,12 +324,13 @@ void *QThreadPrivate::start(void *arg)
     data->threadId = QThread::currentThreadId();
     set_thread_data(data);
 
+    CTrapCleanup *cleanup = CTrapCleanup::New();
+    q_check_ptr(cleanup);
+
     {
         QMutexLocker locker(&thr->d_func()->mutex);
         data->quitNow = thr->d_func()->exited;
     }
-
-    CTrapCleanup *cleanup = CTrapCleanup::New();
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);

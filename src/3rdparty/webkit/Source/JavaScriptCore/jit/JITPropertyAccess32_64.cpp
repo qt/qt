@@ -225,9 +225,9 @@ void JIT::emit_op_method_check(Instruction* currentInstruction)
     move(TrustedImm32(JSValue::CellTag), regT1);
     Jump match = jump();
     
-    ASSERT_JIT_OFFSET(differenceBetween(info.structureToCompare, protoObj), patchOffsetMethodCheckProtoObj);
+    ASSERT_JIT_OFFSET_UNUSED(protoObj, differenceBetween(info.structureToCompare, protoObj), patchOffsetMethodCheckProtoObj);
     ASSERT_JIT_OFFSET(differenceBetween(info.structureToCompare, protoStructureToCompare), patchOffsetMethodCheckProtoStruct);
-    ASSERT_JIT_OFFSET(differenceBetween(info.structureToCompare, putFunction), patchOffsetMethodCheckPutFunction);
+    ASSERT_JIT_OFFSET_UNUSED(putFunction, differenceBetween(info.structureToCompare, putFunction), patchOffsetMethodCheckPutFunction);
     
     // Link the failure cases here.
     structureCheck.link(this);
@@ -436,9 +436,9 @@ void JIT::compileGetByIdHotPath()
     
     loadPtr(Address(regT0, OBJECT_OFFSETOF(JSObject, m_propertyStorage)), regT2);
     DataLabel32 displacementLabel1 = loadPtrWithAddressOffsetPatch(Address(regT2, patchGetByIdDefaultOffset), regT0); // payload
-    ASSERT_JIT_OFFSET(differenceBetween(hotPathBegin, displacementLabel1), patchOffsetGetByIdPropertyMapOffset1);
+    ASSERT_JIT_OFFSET_UNUSED(displacementLabel1, differenceBetween(hotPathBegin, displacementLabel1), patchOffsetGetByIdPropertyMapOffset1);
     DataLabel32 displacementLabel2 = loadPtrWithAddressOffsetPatch(Address(regT2, patchGetByIdDefaultOffset), regT1); // tag
-    ASSERT_JIT_OFFSET(differenceBetween(hotPathBegin, displacementLabel2), patchOffsetGetByIdPropertyMapOffset2);
+    ASSERT_JIT_OFFSET_UNUSED(displacementLabel2, differenceBetween(hotPathBegin, displacementLabel2), patchOffsetGetByIdPropertyMapOffset2);
     
     Label putResult(this);
     ASSERT_JIT_OFFSET(differenceBetween(hotPathBegin, putResult), patchOffsetGetByIdPutResult);
@@ -514,8 +514,8 @@ void JIT::emit_op_put_by_id(Instruction* currentInstruction)
     
     END_UNINTERRUPTED_SEQUENCE(sequencePutById);
     
-    ASSERT_JIT_OFFSET(differenceBetween(hotPathBegin, displacementLabel1), patchOffsetPutByIdPropertyMapOffset1);
-    ASSERT_JIT_OFFSET(differenceBetween(hotPathBegin, displacementLabel2), patchOffsetPutByIdPropertyMapOffset2);
+    ASSERT_JIT_OFFSET_UNUSED(displacementLabel1, differenceBetween(hotPathBegin, displacementLabel1), patchOffsetPutByIdPropertyMapOffset1);
+    ASSERT_JIT_OFFSET_UNUSED(displacementLabel2, differenceBetween(hotPathBegin, displacementLabel2), patchOffsetPutByIdPropertyMapOffset2);
 }
 
 void JIT::emitSlow_op_put_by_id(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)

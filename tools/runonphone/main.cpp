@@ -65,8 +65,9 @@ void printUsage(QTextStream& outstream, QString exeName)
             << "-t, --timeout <milliseconds>             terminate test if timeout occurs" << endl
             << "-v, --verbose                            show debugging output" << endl
             << "-q, --quiet                              hide progress messages" << endl
-            << "-u, --upload <local file>                upload executable file to phone" << endl
+            << "-u, --upload <local file> <remote file>  upload file to phone" << endl
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
+            << "-T, --tempfile <remote file>             specify temporary sis file name" << endl
             << "--nocrashlog                             Don't capture call stack if test crashes" << endl
             << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
             << "--coda                                   Use CODA instead of TRK (default agent)" << endl
@@ -91,8 +92,10 @@ int main(int argc, char *argv[])
     QTextStream outstream(stdout);
     QTextStream errstream(stderr);
     QString uploadLocalFile;
+    QString uploadRemoteFile;
     QString downloadRemoteFile;
     QString downloadLocalFile;
+    QString dstName = "c:\\data\\testtemp.sis";
     int loglevel=1;
     int timeout=0;
     bool crashlog = true;
@@ -127,10 +130,8 @@ int main(int argc, char *argv[])
                     errstream << "Executable file (" << uploadLocalFile << ") doesn't exist" << endl;
                     return 1;
                 }
-                if (!(QFileInfo(uploadLocalFile).suffix() == "exe")) {
-                    errstream << "File (" << uploadLocalFile << ") must be an executable" << endl;
-                    return 1;
-                }
+                CHECK_PARAMETER_EXISTS
+                uploadRemoteFile = it.next();
             }
             else if (arg == "--download" || arg == "-d") {
                 CHECK_PARAMETER_EXISTS
@@ -154,6 +155,10 @@ int main(int argc, char *argv[])
             }
             else if (arg == "--coda")
                 coda = true;
+            else if (arg == "--tempfile" || arg == "-T") {
+                CHECK_PARAMETER_EXISTS
+                dstName = it.next();
+            }
             else if (arg == "--verbose" || arg == "-v")
                 loglevel=2;
             else if (arg == "--quiet" || arg == "-q")
@@ -174,7 +179,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (exeFile.isEmpty() && sisFile.isEmpty() && uploadLocalFile.isEmpty() &&
+    if (exeFile.isEmpty() && sisFile.isEmpty() &&
+        (uploadLocalFile.isEmpty() || uploadRemoteFile.isEmpty()) &&
         (downloadLocalFile.isEmpty() || downloadRemoteFile.isEmpty())) {
         printUsage(outstream, args[0]);
         return 1;
@@ -225,13 +231,11 @@ int main(int argc, char *argv[])
 
         if (!sisFile.isEmpty()) {
             codaHandler.setActionType(ActionCopyInstall);
-            QString dstName = "c:\\data\\testtemp.sis";
             codaHandler.setCopyFileName(sisFile, dstName);
         }
         else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
             codaHandler.setActionType(ActionCopy);
-            QString dstName = QString("c:\\sys\\bin\\") + uploadInfo.fileName();
-            codaHandler.setCopyFileName(uploadLocalFile, dstName);
+            codaHandler.setCopyFileName(uploadLocalFile, uploadRemoteFile);
         }
         if (!exeFile.isEmpty()) {
             codaHandler.setActionType(ActionRun);
@@ -254,19 +258,19 @@ int main(int argc, char *argv[])
 
     } else {
         launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
+        QStringList srcNames, dstNames;
         if (!sisFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
-            QStringList srcName(sisFile);
-            QStringList dstName("c:\\data\\testtemp.sis");
-            launcher->setCopyFileNames(srcName, dstName);
-            launcher->setInstallFileNames(dstName);
+            srcNames.append(sisFile);
+            dstNames.append(dstName);
+            launcher->setInstallFileNames(QStringList(dstName));
         }
-        else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
+        if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
             launcher->addStartupActions(trk::Launcher::ActionCopy);
-            QStringList srcName(uploadLocalFile);
-            QStringList dstName(QString("c:\\sys\\bin\\") + uploadInfo.fileName());
-            launcher->setCopyFileNames(srcName, dstName);
+            srcNames.append(uploadLocalFile);
+            dstNames.append(uploadRemoteFile);
         }
+        launcher->setCopyFileNames(srcNames, dstNames);
         if (!exeFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionRun);
             launcher->setFileName(QString("c:\\sys\\bin\\") + info.fileName());

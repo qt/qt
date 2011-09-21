@@ -43,6 +43,7 @@
 #define QACCESSIBLEMENU_H
 
 #include <QtGui/qaccessiblewidget.h>
+#include <QtGui/qaccessible2.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,8 +102,9 @@ protected:
 
 
 
-class QAccessibleMenuItem : public QAccessibleInterface
+class QAccessibleMenuItem : public QAccessibleActionInterface, public QAccessibleInterfaceEx
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
@@ -123,9 +125,17 @@ public:
     virtual QString text ( Text t, int child ) const;
     virtual int userActionCount ( int child ) const;
 
+    // action interface
+    virtual int actionCount();
+    virtual void doAction(int actionIndex);
+    virtual QString description(int);
+    virtual QString name(int);
+    virtual QString localizedName(int);
+    virtual QStringList keyBindings(int);
+
+    virtual QVariant invokeMethodEx(Method, int, const QVariantList &);
+
     QWidget *owner() const;
-
-
 protected:
     QAction *action() const;
 private:

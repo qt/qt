@@ -475,6 +475,7 @@ EXPORTS
 	_ZN14QSqlTableModel25staticMetaObjectExtraDataE @ 474 NONAME DATA 8
 	_ZN16QSqlDriverPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 475 NONAME
 	_ZN16QSqlDriverPlugin25staticMetaObjectExtraDataE @ 476 NONAME DATA 8
-	_ZN24QSqlRelationalTableModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 477 NONAME
-	_ZN24QSqlRelationalTableModel25staticMetaObjectExtraDataE @ 478 NONAME DATA 8
+	_ZN24QSqlRelationalTableModel11setJoinModeENS_8JoinModeE @ 477 NONAME
+	_ZN24QSqlRelationalTableModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 478 NONAME
+	_ZN24QSqlRelationalTableModel25staticMetaObjectExtraDataE @ 479 NONAME DATA 8
 

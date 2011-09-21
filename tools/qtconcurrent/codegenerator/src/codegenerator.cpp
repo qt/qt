@@ -134,7 +134,7 @@ const Compound operator+(const Item &a, const char * const text)
 
 const Compound operator+(const char * const text, const Item &b)
 {
-    return Compound(Text(text), b);    
+    return Compound(Text(text), b);
 }
 
 }

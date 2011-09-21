@@ -322,8 +322,10 @@ public:
 
     inline bool isBeforeContent() const;
     inline bool isAfterContent() const;
+    inline bool isBeforeOrAfterContent() const;
     static inline bool isBeforeContent(const RenderObject* obj) { return obj && obj->isBeforeContent(); }
     static inline bool isAfterContent(const RenderObject* obj) { return obj && obj->isAfterContent(); }
+    static inline bool isBeforeOrAfterContent(const RenderObject* obj) { return obj && obj->isBeforeOrAfterContent(); }
 
     bool childrenInline() const { return m_childrenInline; }
     void setChildrenInline(bool b = true) { m_childrenInline = b; }
@@ -791,6 +793,7 @@ protected:
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
     // Overrides should call the superclass at the start
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
 
     void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide,
                             Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
@@ -932,6 +935,11 @@ inline bool RenderObject::isAfterContent() const
     return true;
 }
 
+inline bool RenderObject::isBeforeOrAfterContent() const
+{
+    return isBeforeContent() || isAfterContent();
+}
+
 inline void RenderObject::setNeedsLayout(bool b, bool markParents)
 {
     bool alreadyNeededLayout = m_needsLayout;
@@ -1022,10 +1030,13 @@ inline void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, R
         if (!container && !o->isRenderView())
             return;
         if (!last->isText() && (last->style()->position() == FixedPosition || last->style()->position() == AbsolutePosition)) {
+            bool willSkipRelativelyPositionedInlines = !o->isRenderBlock();
             while (o && !o->isRenderBlock()) // Skip relatively positioned inlines and get to the enclosing RenderBlock.
                 o = o->container();
             if (!o || o->m_posChildNeedsLayout)
                 return;
+            if (willSkipRelativelyPositionedInlines)
+                container = o->container();
             o->m_posChildNeedsLayout = true;
             simplifiedNormalFlowLayout = true;
             ASSERT(!o->isSetNeedsLayoutForbidden());
