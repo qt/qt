@@ -106,7 +106,7 @@ private:
                 qint64 q_for_alignment_1;
                 double q_for_alignment_2;
             };
-        };
+        } signal;
         Notifier notifier;
     };
 
@@ -251,15 +251,15 @@ QDeclarativeNotifierEndpoint::Signal *QDeclarativeNotifierEndpoint::toSignal()
         return asSignal();
 
     disconnect();
-    signal = new (&signalData) Signal;
+    signal.signal = new (&signal.signalData) Signal;
     type = SignalType;
-    return signal;
+    return signal.signal;
 }
 
 QDeclarativeNotifierEndpoint::Signal *QDeclarativeNotifierEndpoint::asSignal() 
 { 
     Q_ASSERT(type == SignalType);
-    return signal;
+    return signal.signal;
 }
 
 QT_END_NAMESPACE
