@@ -385,7 +385,7 @@ namespace QPatternist
             virtual bool isDefinedBySchema() const;
 
         private:
-            SchemaType::Ptr           m_superType;
+            SchemaType                *m_superType;
             NamedSchemaComponent      *m_context;
             DerivationMethod          m_derivationMethod;
             bool                      m_isAbstract;

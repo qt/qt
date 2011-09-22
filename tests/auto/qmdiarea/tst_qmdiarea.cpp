@@ -661,7 +661,7 @@ void tst_QMdiArea::changeWindowTitle()
 #else
     widget->setWindowState(Qt::WindowMaximized);
 #endif
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
@@ -671,7 +671,7 @@ void tst_QMdiArea::changeWindowTitle()
     qApp->processEvents();
     QTest::qWaitForWindowShown(mw);
 
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
@@ -689,7 +689,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
     widget->setWindowTitle( wc2 );
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc2) );
@@ -707,7 +707,7 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
 
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
 #endif
 #ifdef USE_SHOW
@@ -716,7 +716,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowNoState);
 #endif
     qApp->processEvents();
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QCOMPARE(mw->windowTitle(), mwc);
 #else
     QCOMPARE( mw->windowTitle(), mwc2 );
@@ -728,7 +728,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
 #endif
 
@@ -777,7 +777,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( mw->isWindowModified(), false);
     QCOMPARE( widget->isWindowModified(), true);
     widget->setWindowState(Qt::WindowMaximized);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -787,7 +787,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( widget->isWindowModified(), true);
 
     widget->setWindowState(Qt::WindowMaximized);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -797,7 +797,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( widget->isWindowModified(), false);
 
     widget->setWindowModified(true);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -2046,7 +2046,7 @@ void tst_QMdiArea::delayedPlacement()
 
 void tst_QMdiArea::iconGeometryInMenuBar()
 {
-#if !defined (Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined (Q_WS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QMainWindow mainWindow;
     QMenuBar *menuBar = mainWindow.menuBar();
     QMdiArea *mdiArea = new QMdiArea;
