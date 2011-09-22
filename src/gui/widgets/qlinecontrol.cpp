@@ -447,6 +447,8 @@ void QLineControl::moveCursor(int pos, bool mark)
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
     int priorState = 0;
+    int originalSelectionStart = m_selstart;
+    int originalSelectionEnd = m_selend;
     bool isGettingInput = !event->commitString().isEmpty()
             || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
@@ -525,6 +527,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     }
     m_textLayout.setAdditionalFormats(formats);
     updateDisplayText(/*force*/ true);
+    if (originalSelectionStart != m_selstart || originalSelectionEnd != m_selend)
+        emit selectionChanged();
     if (cursorPositionChanged)
         emitCursorPositionChanged();
     else if (m_preeditCursor != oldPreeditCursor)
