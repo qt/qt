@@ -275,6 +275,11 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (session->state() != QNetworkSession::Connected)
         return;
 
+    #ifndef QT_NO_NETWORKPROXY
+        // Re-set proxies here as new session might have changed them
+        proxyList = manager->d_func()->queryProxy(QNetworkProxyQuery(request.url()));
+    #endif
+
     switch (state) {
     case QNetworkReplyImplPrivate::Buffering:
     case QNetworkReplyImplPrivate::Working:

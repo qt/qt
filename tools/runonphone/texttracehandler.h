@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENKODEGLINTEGRATION_H
-#define QOPENKODEGLINTEGRATION_H
+#include <QObject>
+#include <QIODevice>
 
-#include <QtGui/QPlatformGLContext>
-#include <EGL/egl.h>
-
-class QEGLPlatformContext : public QPlatformGLContext
+class TextTraceHandlerPrivate;
+class TextTraceHandler : public QObject
 {
+    Q_OBJECT
 public:
-    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QEGLPlatformContext *shareContext = 0);
-    ~QEGLPlatformContext();
+    TextTraceHandler(QIODevice *device, QObject *parent = 0);
+    ~TextTraceHandler();
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-
-    QPlatformWindowFormat platformWindowFormat() const;
-
-    EGLContext eglContext() const;
+public slots:
+    void dataAvailable();
 private:
-    EGLContext m_eglContext;
-    EGLDisplay m_eglDisplay;
-    EGLSurface m_eglSurface;
-    EGLenum m_eglApi;
-
-    QPlatformWindowFormat m_windowFormat;
+    TextTraceHandlerPrivate *d;
 };
-
-#endif //QOPENKODEGLINTEGRATION_H

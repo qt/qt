@@ -92,7 +92,7 @@ private:
     const static QIcon staticIcon;
 };
 
-// Creating an icon statically should not cause a crash. 
+// Creating an icon statically should not cause a crash.
 // But we do not officially support this. See QTBUG-8666
 const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
 
@@ -468,7 +468,19 @@ void tst_QIcon::addFile()
     icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-32.png"), QSize(), QIcon::Selected);
     icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-128.png"), QSize(), QIcon::Selected);
 
-#ifndef Q_OS_WINCE
+#ifdef Q_OS_WINCE
+    // WinCE only includes the 16x16 images for size reasons
+    QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
+            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
+    QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
+            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
+#elif defined(Q_OS_SYMBIAN)
+    // Symbian only includes the 32x32 images for size reasons
+    QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() ==
+            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-32.png")).toImage());
+    QVERIFY(icon.pixmap(32, QIcon::Selected).toImage() ==
+            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
+#else
     QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
             QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
     QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() ==
@@ -481,12 +493,6 @@ void tst_QIcon::addFile()
             QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
     QVERIFY(icon.pixmap(128, QIcon::Selected).toImage() ==
             QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-128.png")).toImage());
-#else
-    // WinCE only includes the 16x16 images for size reasons
-    QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
-    QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
 #endif
 }
 
@@ -537,18 +543,27 @@ void tst_QIcon::availableSizes()
         QVERIFY(availableSizes.isEmpty());
     }
 
+#ifndef Q_OS_SYMBIAN
+    const int defaultDimension = 16;
+    QLatin1String standardIcon(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png");
+#else
+    // In Symbian, only 32 times 32 icons are included.
+    const int defaultDimension = 32;
+    QLatin1String standardIcon(":/trolltech/styles/commonstyle/images/standardbutton-open-32.png");
+#endif
+
     {
         // we try to load an icon from resources
-        QIcon icon(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"));
+        QIcon icon(standardIcon);
         QList<QSize> availableSizes = icon.availableSizes();
         QCOMPARE(availableSizes.size(), 1);
-        QCOMPARE(availableSizes.at(0), QSize(16, 16));
+        QCOMPARE(availableSizes.at(0), QSize(defaultDimension, defaultDimension));
     }
 
     {
         // load an icon from binary data.
         QPixmap pix;
-        QFile file(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"));
+        QFile file(standardIcon);
         QVERIFY(file.open(QIODevice::ReadOnly));
         uchar *data = file.map(0, file.size());
         QVERIFY(data != 0);
@@ -557,7 +572,7 @@ void tst_QIcon::availableSizes()
 
         QList<QSize> availableSizes = icon.availableSizes();
         QCOMPARE(availableSizes.size(), 1);
-        QCOMPARE(availableSizes.at(0), QSize(16,16));
+        QCOMPARE(availableSizes.at(0), QSize(defaultDimension, defaultDimension));
     }
 
     {
@@ -719,18 +734,29 @@ void tst_QIcon::fromTheme()
 
 void tst_QIcon::task223279_inconsistentAddFile()
 {
+#ifndef Q_OS_SYMBIAN
+    const int defaultDimension = 16;
+    const int invalidIconDimension = 32;
+    QLatin1String standardIcon(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png");
+#else
+    // Only 32 times 32 icons are included in Symbian
+    const int defaultDimension = 32;
+    const int invalidIconDimension = 64;
+    QLatin1String standardIcon(":/trolltech/styles/commonstyle/images/standardbutton-open-32.png");
+#endif
+
     QIcon icon1;
-    icon1.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"));
-    icon1.addFile(QLatin1String("IconThatDoesntExist"), QSize(32, 32));
-    QPixmap pm1 = icon1.pixmap(32, 32);
+    icon1.addFile(standardIcon);
+    icon1.addFile(QLatin1String("IconThatDoesntExist"), QSize(invalidIconDimension, invalidIconDimension));
+    QPixmap pm1 = icon1.pixmap(invalidIconDimension, invalidIconDimension);
 
     QIcon icon2;
-    icon2.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"));
+    icon2.addFile(standardIcon);
     icon2.addFile(QLatin1String("IconThatDoesntExist"));
-    QPixmap pm2 = icon1.pixmap(32, 32);
+    QPixmap pm2 = icon1.pixmap(invalidIconDimension, invalidIconDimension);
 
     QCOMPARE(pm1.isNull(), false);
-    QCOMPARE(pm1.size(), QSize(16,16));
+    QCOMPARE(pm1.size(), QSize(defaultDimension, defaultDimension));
     QCOMPARE(pm1.isNull(), pm2.isNull());
     QCOMPARE(pm1.size(), pm2.size());
 }

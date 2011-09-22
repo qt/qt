@@ -138,6 +138,8 @@ private slots:
     void textSemantics();
 #endif
     void cursorPositionChanged();
+    void mouseSelection();
+    void mouseSelectionDClick();
     void setTextCursor();
 #ifndef QT_NO_CLIPBOARD
     void undoAvailableAfterPaste();
@@ -783,6 +785,45 @@ void tst_QTextEdit::cursorPositionChanged()
     QCOMPARE(spy2.cursorPositions.count(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
+}
+
+void tst_QTextEdit::mouseSelection()
+{
+    ed->show();
+    ed->setPlainText(("Hello World"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(1);
+    QPoint p1 = ed->cursorRect(cursor).center();
+    cursor.setPosition(10);
+    QPoint p2 = ed->cursorRect(cursor).center();
+    QTest::mousePress(ed->viewport(), Qt::LeftButton, 0, p1);
+    {   QMouseEvent ev(QEvent::MouseMove, p2, Qt::LeftButton, Qt::LeftButton, 0);
+        QCoreApplication::sendEvent(ed->viewport(), &ev); }
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p2);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("ello Worl"));
+
+}
+
+void tst_QTextEdit::mouseSelectionDClick()
+{
+    ed->show();
+    ed->setPlainText(("Hello World"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(1);
+    QPoint p1 = ed->cursorRect(cursor).center();
+    cursor.setPosition(10);
+    QPoint p2 = ed->cursorRect(cursor).center();
+    QTest::mousePress(ed->viewport(), Qt::LeftButton, 0, p1);
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p1);
+    QTest::mouseDClick(ed->viewport(), Qt::LeftButton, 0, p1);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("Hello"));
+    {   QMouseEvent ev(QEvent::MouseMove, p2, Qt::LeftButton, Qt::LeftButton, 0);
+        QCoreApplication::sendEvent(ed->viewport(), &ev); }
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p2);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("Hello World"));
 }
 
 void tst_QTextEdit::setTextCursor()

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENKODEGLINTEGRATION_H
-#define QOPENKODEGLINTEGRATION_H
+#include <QTextStream>
+#include "texttracehandler.h"
+#include "trkutils.h"
 
-#include <QtGui/QPlatformGLContext>
-#include <EGL/egl.h>
-
-class QEGLPlatformContext : public QPlatformGLContext
+class TextTraceHandlerPrivate
 {
 public:
-    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QEGLPlatformContext *shareContext = 0);
-    ~QEGLPlatformContext();
-
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-
-    QPlatformWindowFormat platformWindowFormat() const;
-
-    EGLContext eglContext() const;
-private:
-    EGLContext m_eglContext;
-    EGLDisplay m_eglDisplay;
-    EGLSurface m_eglSurface;
-    EGLenum m_eglApi;
-
-    QPlatformWindowFormat m_windowFormat;
+    TextTraceHandlerPrivate();
+    ~TextTraceHandlerPrivate();
+    QIODevice *device;
+    QTextStream out;
 };
 
-#endif //QOPENKODEGLINTEGRATION_H
+TextTraceHandlerPrivate::TextTraceHandlerPrivate()
+: out(stdout)
+{
+}
+
+TextTraceHandlerPrivate::~TextTraceHandlerPrivate()
+{
+    delete device;
+}
+
+TextTraceHandler::TextTraceHandler(QIODevice *device, QObject *parent)
+: QObject(parent)
+{
+    d = new TextTraceHandlerPrivate;
+    d->device = device;
+    connect(device, SIGNAL(readyRead()), this, SLOT(dataAvailable()));
+}
+
+TextTraceHandler::~TextTraceHandler()
+{
+    delete d;
+}
+
+void TextTraceHandler::dataAvailable()
+{
+    QByteArray result = d->device->readAll();
+    quint64 secs = 0;
+    quint64 ns = 0;
+    if (result.length() >= 8) {
+        quint64 timestamp = trk::extractInt64(result.constData()) & 0x0FFFFFFFFFFFFFFFULL;
+        secs = timestamp / 1000000000;
+        ns = timestamp % 1000000000;
+    }
+    d->out << QString("[%1.%2] %3").arg(secs).arg(ns).arg(QString(result.mid(8))) << endl;
+}
