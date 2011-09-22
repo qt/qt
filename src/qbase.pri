@@ -110,6 +110,9 @@ symbian {
     # workaround for the fact that some of our required includes in Symbian^3
     # now depend upon files in epoc32/include/platform
     INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
+
+    # All relevant files are marked as SMP safe for the Symbian port
+    MMP_RULES*=SMPSAFE
 }
 win32-borland:INCLUDEPATH += kernel
 
