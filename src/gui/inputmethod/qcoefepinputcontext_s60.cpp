@@ -1277,7 +1277,11 @@ void QCoeFepInputContext::translateInputWidget()
     // Translation should happen row-by-row, but initially it needs to ensure that cursor is visible.
     const qreal translation = m_transformation.height() ?
         cursor.height() : (cursorRect.bottom() - vkbRect.top());
-    const qreal dy = -(qMin(maxY, translation));
+    qreal dy = -(qMin(maxY, translation));
+
+    // Correct the translation direction, if the cursor rect would be moved outside of application area.
+    if ((cursorRect.bottom() + dy) < 0)
+        dy *= -1;
 
     // Do not allow transform above screen top, nor beyond scenerect
     if (m_transformation.height() + dy > 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
