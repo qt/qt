@@ -684,6 +684,37 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglPr
     else
         props = 0;
     EGLSurface surf;
+#ifdef Q_OS_SYMBIAN
+    // On Symbian there might be situations (especially on 32MB GPU devices)
+    // where Qt is trying to create EGL surface while some other application
+    // is still holding all available GPU memory but is about to release it
+    // soon. For an example when exiting native video recorder and going back to
+    // Qt application behind it. Video stack tear down takes some time and Qt
+    // app might be too quick in reserving its EGL surface and thus running out
+    // of GPU memory right away. So if EGL surface creation fails due to bad
+    // alloc, let's try recreating it four times within ~1 second if needed.
+    // This strategy gives some time for video recorder to tear down its stack
+    // and a chance to Qt for creating a valid surface.
+    int tries = 4;
+    while(tries--) {
+        if (devType == QInternal::Widget)
+            surf = eglCreateWindowSurface(QEgl::display(), cfg, windowDrawable, props);
+        else
+            surf = eglCreatePixmapSurface(QEgl::display(), cfg, pixmapDrawable, props);
+        if (surf == EGL_NO_SURFACE) {
+            EGLint error = eglGetError();
+            if (error == EGL_BAD_ALLOC) {
+                if (tries) {
+                    User::After(1000 * 250); // 250ms
+                    continue;
+                }
+            }
+            qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", error);
+        } else {
+            break;
+        }
+    }
+#else
     if (devType == QInternal::Widget)
         surf = eglCreateWindowSurface(QEgl::display(), cfg, windowDrawable, props);
     else
@@ -691,6 +722,7 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglPr
     if (surf == EGL_NO_SURFACE) {
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
     }
+#endif
     return surf;
 }
 #endif
