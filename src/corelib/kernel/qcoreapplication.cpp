@@ -1991,12 +1991,6 @@ QString QCoreApplication::applicationDirPath()
         appPath = qt_TDesC2QString(privatePath);
         appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
 
-        // Create the appPath if it doesn't exist. Non-existing appPath will cause
-        // Platform Security violations later on if the app doesn't have AllFiles capability.
-        err = fs.CreatePrivatePath(drive);
-        if (err != KErrNone)
-            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
-
         d->cachedApplicationDirPath = QFileInfo(appPath).path();
     }
 #else
