@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,34 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTXMLSTREAMER_H
-#define QTESTXMLSTREAMER_H
+#include <QTextStream>
+#include "texttracehandler.h"
+#include "trkutils.h"
 
-#include <QtTest/qtestbasicstreamer.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Test)
-
-class QTestElement;
-class QTestElementAttribute;
-
-class QTestXmlStreamer: public QTestBasicStreamer
+class TextTraceHandlerPrivate
 {
-    public:
-        QTestXmlStreamer();
-        ~QTestXmlStreamer();
-
-        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void output(QTestElement *element) const;
+public:
+    TextTraceHandlerPrivate();
+    ~TextTraceHandlerPrivate();
+    QIODevice *device;
+    QTextStream out;
 };
 
-QT_END_NAMESPACE
+TextTraceHandlerPrivate::TextTraceHandlerPrivate()
+: out(stdout)
+{
+}
 
-QT_END_HEADER
+TextTraceHandlerPrivate::~TextTraceHandlerPrivate()
+{
+    delete device;
+}
 
-#endif
+TextTraceHandler::TextTraceHandler(QIODevice *device, QObject *parent)
+: QObject(parent)
+{
+    d = new TextTraceHandlerPrivate;
+    d->device = device;
+    connect(device, SIGNAL(readyRead()), this, SLOT(dataAvailable()));
+}
+
+TextTraceHandler::~TextTraceHandler()
+{
+    delete d;
+}
+
+void TextTraceHandler::dataAvailable()
+{
+    QByteArray result = d->device->readAll();
+    quint64 secs = 0;
+    quint64 ns = 0;
+    if (result.length() >= 8) {
+        quint64 timestamp = trk::extractInt64(result.constData()) & 0x0FFFFFFFFFFFFFFFULL;
+        secs = timestamp / 1000000000;
+        ns = timestamp % 1000000000;
+    }
+    d->out << QString("[%1.%2] %3").arg(secs).arg(ns).arg(QString(result.mid(8))) << endl;
+}

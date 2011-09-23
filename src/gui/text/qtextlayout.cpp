@@ -375,7 +375,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
@@ -515,7 +515,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
@@ -2507,6 +2507,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     int pos = *cursorPos;
     int itm;
+    const HB_CharAttributes *attributes = eng->attributes();
+    while (pos < line.from + line.length && !attributes[pos].charStop)
+        pos++;
     if (pos == line.from + (int)line.length) {
         // end of line ensure we have the last item on the line
         itm = eng->findItem(pos-1);

@@ -241,21 +241,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         }
     }
 
-    // FIXME: We could save this call when the change only affected non-inherited properties
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->isAnonymousBlock()) {
-            RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyle(style());
-            if (style()->specifiesColumns()) {
-                if (child->style()->specifiesColumns())
-                    newStyle->inheritColumnPropertiesFrom(style());
-                if (child->style()->columnSpan())
-                    newStyle->setColumnSpan(true);
-            }
-            newStyle->setDisplay(BLOCK);
-            child->setStyle(newStyle.release());
-        }
-    }
-
+    propagateStyleToAnonymousChildren(true);    
     m_lineHeight = -1;
 
     // Update pseudos for :before and :after now.
@@ -654,8 +640,22 @@ RenderBlock* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
         && !newChild->isInline() && !isAnonymousColumnSpanBlock()) {
         if (style()->specifiesColumns())
             columnsBlockAncestor = this;
-        else if (!isInline() && parent() && parent()->isRenderBlock())
+        else if (!isInline() && parent() && parent()->isRenderBlock()) {
             columnsBlockAncestor = toRenderBlock(parent())->containingColumnsBlock(false);
+            
+            if (columnsBlockAncestor) {
+                // Make sure that none of the parent ancestors have a continuation.
+                // If yes, we do not want split the block into continuations.
+                RenderObject* curr = this;
+                while (curr && curr != columnsBlockAncestor) {
+                    if (curr->isRenderBlock() && toRenderBlock(curr)->continuation()) {
+                        columnsBlockAncestor = 0;
+                        break;
+                    }
+                    curr = curr->parent();
+                }
+            }
+        }
     }
     return columnsBlockAncestor;
 }

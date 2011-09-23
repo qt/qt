@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtTest module of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,34 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTXMLSTREAMER_H
-#define QTESTXMLSTREAMER_H
+#include <QObject>
+#include <QIODevice>
 
-#include <QtTest/qtestbasicstreamer.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Test)
-
-class QTestElement;
-class QTestElementAttribute;
-
-class QTestXmlStreamer: public QTestBasicStreamer
+class TextTraceHandlerPrivate;
+class TextTraceHandler : public QObject
 {
-    public:
-        QTestXmlStreamer();
-        ~QTestXmlStreamer();
+    Q_OBJECT
+public:
+    TextTraceHandler(QIODevice *device, QObject *parent = 0);
+    ~TextTraceHandler();
 
-        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void output(QTestElement *element) const;
+public slots:
+    void dataAvailable();
+private:
+    TextTraceHandlerPrivate *d;
 };
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif

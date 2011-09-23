@@ -273,6 +273,29 @@ bool QCoreApplicationPrivate::is_app_closing = false;
 // initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
 Q_CORE_EXPORT bool qt_locale_initialized = false;
 
+#ifdef Q_OS_SYMBIAN
+// The global QSettings needs to be cleaned where cleanup stack is available, which is not
+// normally the case when global static destructors are run.
+// Declare a custom QGlobalStaticDeleter for QSettings to handle that case.
+template<>
+class QGlobalStaticDeleter<QSettings>
+{
+public:
+    QGlobalStatic<QSettings> &globalStatic;
+    QGlobalStaticDeleter(QGlobalStatic<QSettings> &_globalStatic)
+        : globalStatic(_globalStatic)
+    { }
+
+    inline ~QGlobalStaticDeleter()
+    {
+        CTrapCleanup *cleanup = CTrapCleanup::New();
+        delete globalStatic.pointer;
+        delete cleanup;
+        globalStatic.pointer = 0;
+        globalStatic.destroyed = true;
+    }
+};
+#endif
 
 /*
   Create an instance of Trolltech.conf. This ensures that the settings will not
