@@ -716,13 +716,19 @@
     \l {http://www.developer.nokia.com/Community/Wiki/Nokia_Smart_Installer_for_Symbian#Supported_Devices}{Nokia Smart Installer for Symbian}
     documentation lists supported devices.
 
+    Qt versions are supported by Symbian devices as follows:
+    \list
+    \o Qt 4.6 is supported by S60 3rd Edition feature pack 1 and newer devices 
+    through \l {http://www.developer.nokia.com/Community/Wiki/Nokia_Smart_Installer_for_Symbian}{Smart Installer}.
+    \o Qt 4.7.3 is supported by S60 5th Edition and newer devices.
+    \endlist
     
-    ###how to formulate this:
-    Qt 4.6 for Symbian is supported for S60 3rd Edition feature pack 1 devices 
-    and onward via Smart Installer. Qt 4.7.3 is supported in S60 5th Edition 
-    devices and onward. Symbian^3 devices have Qt 4.6 support pre-installed. 
-    Symbian Anna has Qt 4.7.3 pre-installed and Symbian Belle has Qt 4.7.4 in 
-    device firmware (ROM).
+    Symbian devices have a pre-installed Qt support as follows:
+    \list
+    \o Symbian^3: Qt 4.6 in C: drive.
+    \o Symbian Anna: Qt 4.7.3 in C: drive.
+    \o Symbian Belle: Qt 4.7.4 in device firmware (ROM).
+    \endlist
     
 
     \section1 Supported Functionality
