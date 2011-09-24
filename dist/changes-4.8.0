@@ -163,6 +163,11 @@ QtDBus
 ------
  - Added a method that returns the local machine ID
 
+QtWebKit
+--------
+ - Update QtWebKit to 2.2.0
+   http://trac.webkit.org/wiki/QtWebKitRelease22
+
 QtSql
 -----
  - Update sqlite to 3.7.7.1
@@ -219,6 +224,7 @@ Qt for Embedded Linux
  - Improved support for INTEGRITY RTOS
  - Allow hard-coding the temp path in mkspecs (QT_UNIX_TEMP_PATH_OVERRIDE define)
  - Added support for opening LinuxInput devices exclusively (via ioctl EVIOCGRAB)
+ - Added eglnullws QScreen driver for use with OpenGL ES EGL null window system (NullWS).
 
 Qt for Symbian
 --------------
@@ -356,6 +362,9 @@ Qt for Windows CE
 - qmlplugindump
     * New tool to generate text descriptions of the QML components defined
       in plugins loaded by a QML module.
+
+- syncqt
+    * Fix to allow $QTDIR to contain any valid pathname characters.
 
 ****************************************************************************
 *                          Plugins                                         *
