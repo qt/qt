@@ -2531,6 +2531,12 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(interface->actionText(QAccessible::DefaultAction, QAccessible::Name, 4), QString());
     QCOMPARE(interface->actionText(QAccessible::DefaultAction, QAccessible::Name, 5), QString("Execute"));
 
+    // QTBUG-21578 - after setting accessible name on a menu it would no longer
+    // return the right names for it's children.
+    QCOMPARE(interface->text(QAccessible::Name, 1), QString("New..."));
+    file->setAccessibleName("File");
+    QCOMPARE(interface->text(QAccessible::Name, 1), QString("New..."));
+
     QAccessibleInterface *iface = 0;
     QAccessibleInterface *iface2 = 0;
 
