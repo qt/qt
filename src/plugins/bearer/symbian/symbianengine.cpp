@@ -329,7 +329,27 @@ void SymbianEngine::updateConfigurationsL()
             cpPriv->connectionId = 0;
             cpPriv->state = QNetworkConfiguration::Defined;
             cpPriv->type = QNetworkConfiguration::ServiceNetwork;
-            cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
+
+            // determine purpose of this SNAP
+            TUint32 purpose = CMManager::ESnapPurposeUnknown;
+            TRAP_IGNORE(purpose = destination.MetadataL(CMManager::ESnapMetadataPurpose));
+            switch (purpose) {
+            case CMManager::ESnapPurposeInternet:
+                cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
+                break;
+            case CMManager::ESnapPurposeIntranet:
+                cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+                break;
+            case CMManager::ESnapPurposeMMS:
+            case CMManager::ESnapPurposeOperator:
+                cpPriv->purpose = QNetworkConfiguration::ServiceSpecificPurpose;
+                break;
+            case CMManager::ESnapPurposeUnknown:
+            default:
+                cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
+                break;
+            }
+
             cpPriv->roamingSupported = false;
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
@@ -482,7 +502,37 @@ void SymbianEngine::updateConfigurationsL()
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     updateStatesToSnaps();
+    updatePurposeToIaps();
 #endif
+}
+
+//copy purpose from SNAP to child IAPs, unless child is contained in more than one SNAP with conflicting purposes.
+void SymbianEngine::updatePurposeToIaps()
+{
+    QMutexLocker lock(&mutex);
+    QHash<QString,int> purposes;
+    foreach (QNetworkConfigurationPrivatePointer snap, snapConfigurations.values()) {
+        QMutexLocker snaplock(&snap->mutex);
+        foreach (QNetworkConfigurationPrivatePointer iap, snap->serviceNetworkMembers.values()) {
+            QMutexLocker iaplock(&iap->mutex);
+            QString id = iap->id;
+            if (purposes.contains(id) && purposes.value(id) != snap->purpose)
+                purposes[id] = -1; //conflict detected
+            else
+                purposes[id] = snap->purpose;
+        }
+    }
+
+    for (QHash<QString,int>::const_iterator it = purposes.constBegin(); it != purposes.constEnd(); ++it) {
+        if (accessPointConfigurations.contains(it.key())) {
+            QNetworkConfigurationPrivatePointer iap = accessPointConfigurations.value(it.key());
+            QMutexLocker iaplock(&iap->mutex);
+            int purpose = it.value();
+            if (purpose == -1) //resolve conflicts as unknown
+                purpose = QNetworkConfiguration::UnknownPurpose;
+            iap->purpose = (QNetworkConfiguration::Purpose)purpose;
+        }
+    }
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE

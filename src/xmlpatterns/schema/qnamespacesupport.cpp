@@ -59,8 +59,8 @@ NamespaceSupport::NamespaceSupport()
 {
 }
 
-NamespaceSupport::NamespaceSupport(const NamePool::Ptr &namePool)
-    : m_namePool(namePool)
+NamespaceSupport::NamespaceSupport(NamePool &namePool)
+    : m_namePool(&namePool)
 {
     // the XML namespace
     m_ns.insert(StandardPrefixes::xml, StandardNamespaces::xml);
