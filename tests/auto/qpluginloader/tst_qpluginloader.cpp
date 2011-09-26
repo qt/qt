@@ -272,10 +272,10 @@ void tst_QPluginLoader::loadHints()
 
 void tst_QPluginLoader::deleteinstanceOnUnload()
 {
-    for (int pass = 0; pass < 2; ++pass) {
+    for (int pass = 0; pass < 4; ++pass) {
         QPluginLoader loader1;
         loader1.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
-        if (pass == 0)
+        if (pass < 2)
             loader1.load(); // not recommended, instance() should do the job.
         PluginInterface *instance1 = qobject_cast<PluginInterface*>(loader1.instance());
         QVERIFY(instance1);
@@ -283,21 +283,32 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 
         QPluginLoader loader2;
         loader2.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
-        if (pass == 0)
+        if (pass < 2)
             loader2.load(); // not recommended, instance() should do the job.
         PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader2.instance());
         QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
 
         QSignalSpy spy1(loader1.instance(), SIGNAL(destroyed()));
         QSignalSpy spy2(loader2.instance(), SIGNAL(destroyed()));
-        if (pass == 0) {
-            QCOMPARE(loader2.unload(), false);  // refcount not reached 0, not really unloaded
-            QCOMPARE(spy1.count(), 0);
-            QCOMPARE(spy2.count(), 0);
-        }
+
+        // refcount not reached 0, not really unloaded
+        if (pass % 2)
+            QCOMPARE(loader1.unload(), false);
+        else
+            QCOMPARE(loader2.unload(), false);
+
+        QCOMPARE(spy1.count(), 0);
+        QCOMPARE(spy2.count(), 0);
+
         QCOMPARE(instance1->pluginName(), QLatin1String("Plugin ok"));
         QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
-        QVERIFY(loader1.unload());   // refcount reached 0, did really unload
+
+        // refcount reached 0, did really unload
+        if (pass % 2)
+            QVERIFY(loader2.unload());
+        else
+            QVERIFY(loader1.unload());
+
         QCOMPARE(spy1.count(), 1);
         QCOMPARE(spy2.count(), 1);
     }
