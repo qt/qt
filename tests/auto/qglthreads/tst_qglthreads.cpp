@@ -49,6 +49,7 @@
 #include <unistd.h> // for usleep
 #define RUNNING_TIME 2000 // save GPU mem by running shorter time.
 #else
+#include "qplatformdefs.h" // for usleep
 #define RUNNING_TIME 5000
 #endif
 

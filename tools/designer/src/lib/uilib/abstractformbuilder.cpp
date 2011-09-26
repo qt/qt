@@ -1452,6 +1452,8 @@ struct FormBuilderSaveLayoutEntry {
     explicit FormBuilderSaveLayoutEntry(QLayoutItem *li = 0) :
         item(li), row(-1), column(-1), rowSpan(0), columnSpan(0), alignment(0) {}
 
+    void setAlignment(Qt::Alignment al);
+
     QLayoutItem *item;
     int row;
     int column;
@@ -1459,6 +1461,20 @@ struct FormBuilderSaveLayoutEntry {
     int columnSpan;
     Qt::Alignment alignment;
 };
+
+// filter out the case of "Spacer" and "QLayoutWidget" widgets
+void FormBuilderSaveLayoutEntry::setAlignment(Qt::Alignment al)
+{
+    if (!item->widget())
+        return;
+
+    const QString className = item->widget()->metaObject()->className();
+    if (className == QLatin1String("Spacer")
+            || className == QLatin1String("QLayoutWidget"))
+        return;
+
+    alignment = al;
+}
 
 // Create list from standard box layout
 static QList<FormBuilderSaveLayoutEntry> saveLayoutEntries(const QLayout *layout)
@@ -1469,7 +1485,7 @@ static QList<FormBuilderSaveLayoutEntry> saveLayoutEntries(const QLayout *layout
         for (int idx = 0; idx < count; ++idx) {
             QLayoutItem *item = layout->itemAt(idx);
             FormBuilderSaveLayoutEntry entry(item);
-            entry.alignment = item->alignment();
+            entry.setAlignment(item->alignment());
             rc.append(entry);
         }
     }
@@ -1486,7 +1502,7 @@ static QList<FormBuilderSaveLayoutEntry> saveGridLayoutEntries(QGridLayout *grid
             QLayoutItem *item = gridLayout->itemAt(idx);
             FormBuilderSaveLayoutEntry entry(item);
             gridLayout->getItemPosition(idx, &entry.row, &entry.column, &entry.rowSpan,&entry.columnSpan);
-            entry.alignment = item->alignment();
+            entry.setAlignment(item->alignment());
             rc.append(entry);
         }
     }
