@@ -198,7 +198,7 @@ QPluginLoader::~QPluginLoader()
 */
 QObject *QPluginLoader::instance()
 {
-    if (!isLoaded() && !load())
+    if (!load())
         return 0;
     if (!d->inst && d->instance)
         d->inst = d->instance();
