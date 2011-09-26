@@ -755,6 +755,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else if (hints & ImhNoAutoUppercase) {
         m_fepState->SetDefaultCase(EAknEditorLowerCase);
         m_fepState->SetCurrentCase(EAknEditorLowerCase);
+    } else if (hints & ImhHiddenText) {
+        m_fepState->SetDefaultCase(EAknEditorLowerCase);
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
     } else {
         m_fepState->SetDefaultCase(EAknEditorTextCase);
         m_fepState->SetCurrentCase(EAknEditorTextCase);
@@ -765,6 +768,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     if (hints & ImhLowercaseOnly) {
         flags |= EAknEditorLowerCase;
+    }
+    if (hints & ImhHiddenText) {
+        flags = EAknEditorAllCaseModes;
+        flags &= ~EAknEditorTextCase;
     }
     if (flags == 0) {
         flags = EAknEditorAllCaseModes;
