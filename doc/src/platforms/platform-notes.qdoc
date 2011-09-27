@@ -725,7 +725,6 @@
     
     Symbian devices have a pre-installed Qt support as follows:
     \list
-    \o Symbian^3: Qt 4.6 in C: drive.
     \o Symbian Anna: Qt 4.7.3 in C: drive.
     \o Symbian Belle: Qt 4.7.4 in device firmware (ROM).
     \endlist
@@ -856,7 +855,7 @@
 
     \section1 Hardware Accelerated Rendering
 
-    The default graphics system on Symbian^3 is OpenVG, which uses OpenVG
+    The default graphics system on Symbian Anna is OpenVG, which uses OpenVG
     hardware to accelerate \l QPainter functions. There are a few exceptions,
     where Qt will use software rendering fallback.
 
@@ -873,7 +872,7 @@
 
     \section1 QtOpenGL Support in Symbian
 
-     Qt 4.7 introduces the \l {QtOpenGL} module to Symbian^3. QtOpenGL is
+     Qt 4.7 introduces the \l {QtOpenGL} module. QtOpenGL is
      supported on devices which support OpenGL ES 2.0. Symbian platforms prior
      to Symbian^3 are not supported.
 
