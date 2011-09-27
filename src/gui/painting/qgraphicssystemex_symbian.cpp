@@ -55,8 +55,10 @@ QT_BEGIN_NAMESPACE
 static bool bcm2727Initialized = false;
 static bool bcm2727 = false;
 
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
 typedef EGLBoolean (*NOK_resource_profiling)(EGLDisplay, EGLint, EGLint*, EGLint, EGLint*);
 #define EGL_PROF_TOTAL_MEMORY_NOK 0x3070
+#endif
 
 // Detect if Qt is running on BCM2727 chip.
 // BCM2727 is a special case on Symbian because
