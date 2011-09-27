@@ -130,12 +130,12 @@ QString XsdComplexType::displayName(const NamePool::Ptr &np) const
 
 void XsdComplexType::setWxsSuperType(const SchemaType::Ptr &type)
 {
-    m_superType = type;
+    m_superType = type.data();
 }
 
 SchemaType::Ptr XsdComplexType::wxsSuperType() const
 {
-    return m_superType;
+    return SchemaType::Ptr(m_superType);
 }
 
 void XsdComplexType::setContext(const NamedSchemaComponent::Ptr &component)
