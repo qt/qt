@@ -19,6 +19,7 @@ qtconfig.flm /epoc32/tools/makefile_templates/qt/qtconfig.flm
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_extra_pre_targetdep.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_post_link.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_store_build.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_clean.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qt.xml /epoc32/tools/makefile_templates/qt/
 
 qt.conf    /epoc32/tools/qt.conf
