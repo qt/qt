@@ -382,7 +382,7 @@ namespace QPatternist
             XsdElement::WeakList substitutionGroups() const;
 
         private:
-            SchemaType::Ptr                   m_type;
+            SchemaType                        *m_type;
             Scope::Ptr                        m_scope;
             ValueConstraint::Ptr              m_valueConstraint;
             TypeTable::Ptr                    m_typeTable;

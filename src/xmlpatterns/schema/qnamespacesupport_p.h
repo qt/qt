@@ -97,7 +97,7 @@ namespace QPatternist
              *
              * @param namePool The name pool where all processed names are stored in.
              */
-            NamespaceSupport(const NamePool::Ptr &namePool);
+            NamespaceSupport(NamePool &namePool);
 
             /**
              * Adds a new prefix-to-namespace binding.
@@ -160,7 +160,7 @@ namespace QPatternist
         private:
             typedef QHash<QXmlName::PrefixCode, QXmlName::NamespaceCode> NamespaceHash;
 
-            NamePool::Ptr         m_namePool;
+            NamePool              *m_namePool;
             QStack<NamespaceHash> m_nsStack;
             NamespaceHash         m_ns;
     };

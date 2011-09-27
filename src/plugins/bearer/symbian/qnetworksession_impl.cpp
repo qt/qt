@@ -1377,6 +1377,9 @@ void QNetworkSessionPrivateImpl::handleSymbianConnectionStatusChange(TInt aConne
             newState(QNetworkSession::Closing,accessPointId);
             break;
 
+        // Connection stopped
+        case KConfigDaemonFinishedDeregistrationStop: //this comes if this is the last session, instead of KLinkLayerClosed
+        case KConfigDaemonFinishedDeregistrationPreserve:
         // Connection closed
         case KConnectionClosed:
         case KLinkLayerClosed:
