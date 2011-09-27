@@ -749,15 +749,30 @@
     \endtable
 
     The following technologies have limited support:
+    
 
     \table
     \header \o Technology
             \o Note
     \row    \o QtSql
-            \o The only driver supported is SQLite.
+            \o The supported drivers are SQLite and QSYMSQL.
     \row    \o QtMultimedia
             \o For support details see \l {Multimedia and Phonon Support} section.
     \endtable
+    
+    It is not recommended to use the following Qt widgets:
+    \list
+    \o QFileDialog with the \c DontUseNativeDialog option
+    \o QColorDialog with the \c DontUseNativeDialog option
+    \o QFontDialog
+    \o QWizard
+    \o QCalendarWidget
+    \o QDateTimeEdit
+    \o QMdiArea
+    \o QMdiSubWindow
+    \o QDockWidget
+    \o QPrintPreviewWidget
+    \endlist
 
     \section1 Compiler Notes
 
@@ -827,7 +842,7 @@
 
     In this release the support is experimental. Video playback may show
     artifacts when the video is moved or resized (for instance during
-    orientation flips). This problem is present on Symbian^1 and earlier
+    orientation flips). This problem is present on S60 5th Edition and earlier
     versions, and on Symbian^3 systems.
 
     The audio and video formats that Phonon supports depends on what support
