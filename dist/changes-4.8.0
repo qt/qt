@@ -147,10 +147,12 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
- - raster graphics system is now made as the default paint engine for
-   Mac OS X. [QTBUG-12615]
+ - Alien widgets is now used by default for Qt/Cocoa on Mac OS X. 
+ - Qt/Cocoa on Mac OS X has now full support for the raster paint engine.
+ - QApplication has now implemented macEventFilter for Qt/Cocoa
  - HarfBuzz can now be used as an optional text layout engine on Mac OS X.
    [QTBUG-17728]
+ - Qt shows some love to OS X Lion (10.7).
 
 Qt for Embedded Linux
 ---------------------
