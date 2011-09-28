@@ -94,6 +94,11 @@
 #define QT_EPSUidAknFep 0x100056de
 #define QT_EAknFepTouchInputActive 0x00000004
 
+// For compatibility with older Symbian^3 environments, which do not have this define yet.
+#ifndef R_AVKON_DISCREET_POPUP_TEXT_COPIED
+#define R_AVKON_DISCREET_POPUP_TEXT_COPIED 0x8cc0227
+#endif
+
 _LIT(KAvkonResourceFile, "z:\\resource\\avkon.rsc" );
 
 QT_BEGIN_NAMESPACE
@@ -1624,11 +1629,13 @@ void QCoeFepInputContext::copyOrCutTextToClipboard(const char *operation)
 
         if (cursor != anchor) {
             if (ccpuInvokeSlot(w, focusObject, operation)) {
-                TRAP_IGNORE(
-                    CAknDiscreetPopup::ShowGlobalPopupL(
-                        R_AVKON_DISCREET_POPUP_TEXT_COPIED,
-                        KAvkonResourceFile);
-                )
+                if (QSysInfo::symbianVersion() > QSysInfo::SV_SF_3) {
+                    TRAP_IGNORE(
+                        CAknDiscreetPopup::ShowGlobalPopupL(
+                            R_AVKON_DISCREET_POPUP_TEXT_COPIED,
+                            KAvkonResourceFile);
+                    )
+                }
             }
         }
     }
