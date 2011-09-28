@@ -2329,6 +2329,33 @@ QString QCoreApplication::applicationVersion()
 
 #ifndef QT_NO_LIBRARY
 
+#if defined(Q_OS_SYMBIAN)
+void qt_symbian_installLibraryPaths(QString installPathPlugins, QStringList& libPaths)
+{
+    // Add existing path on all drives for relative PluginsPath in Symbian
+    QString tempPath = installPathPlugins;
+    if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+        tempPath += QDir::separator();
+    }
+    RFs& fs = qt_s60GetRFs();
+    TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+    // Symbian searches should start from Y:. Fix start drive otherwise TFindFile starts from the session drive
+    _LIT(KStartDir, "Y:");
+    TFileName dirPath(KStartDir);
+    dirPath.Append(tempPathPtr);
+    TFindFile finder(fs);
+    TInt err = finder.FindByDir(tempPathPtr, dirPath);
+    while (err == KErrNone) {
+        QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
+                         finder.File().Length());
+        foundDir = QDir(foundDir).canonicalPath();
+        if (!libPaths.contains(foundDir))
+            libPaths.append(foundDir);
+        err = finder.Find();
+    }
+}
+#endif
+
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 
 /*!
@@ -2361,24 +2388,8 @@ QStringList QCoreApplication::libraryPaths()
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
-        // Add existing path on all drives for relative PluginsPath in Symbian
         if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
-            QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
-                tempPath += QDir::separator();
-            }
-            RFs& fs = qt_s60GetRFs();
-            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
-            TFindFile finder(fs);
-            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
-            while (err == KErrNone) {
-                QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
-                                 finder.File().Length());
-                foundDir = QDir(foundDir).canonicalPath();
-                if (!app_libpaths->contains(foundDir))
-                    app_libpaths->append(foundDir);
-                err = finder.Find();
-            }
+            qt_symbian_installLibraryPaths(installPathPlugins, *app_libpaths);
         }
 #else
         if (QFile::exists(installPathPlugins)) {
@@ -2492,6 +2503,36 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     coreappdata()->app_libpaths->removeAll(canonicalPath);
     QFactoryLoader::refreshAll();
 }
+
+#if defined(Q_OS_SYMBIAN)
+void QCoreApplicationPrivate::rebuildInstallLibraryPaths()
+{
+    // check there is not a single fixed install path
+    QString nativeInstallPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+    if (nativeInstallPathPlugins.at(1) == QChar(QLatin1Char(':')))
+        return;
+    QString installPathPlugins = QDir::cleanPath(nativeInstallPathPlugins);
+    // look for the install path at the drive roots
+    installPathPlugins.prepend(QChar(QLatin1Char(':')));
+
+    QMutexLocker locker(libraryPathMutex());
+    QStringList &app_libpaths = *coreappdata()->app_libpaths;
+    // Build a new library path, copying non-installPath components, and replacing existing install path with new
+    QStringList newPaths;
+    bool installPathFound = false;
+    foreach (QString path, app_libpaths) {
+        if (path.mid(1).compare(installPathPlugins, Qt::CaseInsensitive) == 0) {
+            // skip existing install paths, insert new install path when we find the first
+            if (!installPathFound)
+                qt_symbian_installLibraryPaths(nativeInstallPathPlugins, newPaths);
+            installPathFound = true;
+        } else {
+            newPaths.append(path);
+        }
+    }
+    app_libpaths = newPaths;
+}
+#endif
 
 #endif //QT_NO_LIBRARY
 
