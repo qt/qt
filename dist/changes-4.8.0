@@ -82,6 +82,7 @@ that the changes lead to a leaner API and the change applies to all platforms.
  - QProcessEnvironment: major optimizations, especially on Unix
  - Add branch prediction macros Q_LIKELY and Q_UNLIKELY
  - QSettings: don't assume XDG_CONFIG_HOME is latin1-encoded
+ - QDateTime: Fix generation of ISO8601 strings to include proper timezone information [QTBUG-18290]
 
 QtGui
 -----
