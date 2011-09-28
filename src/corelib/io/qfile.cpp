@@ -1332,6 +1332,13 @@ bool QFile::open(const RFile &f, OpenMode mode, FileHandleFlags handleFlags)
 
   This function is not supported on Windows CE.
 
+  On Symbian, this function returns -1 if the file was opened normally,
+  as Symbian OS native file handles do not fit in an int, and are
+  incompatible with C library functions that the handle would be used for.
+  If the file was opened using the overloads that take an open C library
+  file handle / file descriptor, then this function returns that same
+  handle.
+
   \sa QSocketNotifier
 */
 
