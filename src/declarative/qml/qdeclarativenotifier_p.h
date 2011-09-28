@@ -230,12 +230,12 @@ QDeclarativeNotifierEndpoint::Notifier *QDeclarativeNotifierEndpoint::toNotifier
         s->~Signal();
     }
 
+    type = NotifierType;
     Notifier *n = asNotifier();
     n->next = 0;
     n->prev = 0;
     n->disconnected = 0;
     n->notifier = 0;
-    type = NotifierType;
     return n;
 }
 
