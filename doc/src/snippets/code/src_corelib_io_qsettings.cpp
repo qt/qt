@@ -314,3 +314,24 @@ int main(int argc, char *argv[])
     ...
 }
 //! [29]
+
+//! [30]
+QSettings settings(QApplication::applicationDirPath() + "/MySoft.conf");
+//! [30]
+
+//! [31]
+#include <QSettings>
+#include <QDesktopServices>
+int main(int argc, char *argv[])
+{
+#ifdef Q_OS_SYMBIAN
+    // Use QDesktopServices:storageLocation as QApplication is not yet created
+    QSettings::setPath(
+        QSettings::NativeFormat, QSettings::UserScope,
+        QDesktopServices::storageLocation(QDesktopServices::DataLocation) + "/settings");
+#endif
+    QApplication app(argc, argv);
+
+    ...
+}
+//! [31]

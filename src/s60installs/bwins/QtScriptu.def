@@ -405,8 +405,10 @@ EXPORTS
 	?compare@QScriptDeclarativeClass@@UAE_NPAUObject@1@0@Z @ 404 NONAME ; bool QScriptDeclarativeClass::compare(struct QScriptDeclarativeClass::Object *, struct QScriptDeclarativeClass::Object *)
 	?toString@PersistentIdentifier@QScriptDeclarativeClass@@QBE?AVQString@@XZ @ 405 NONAME ; class QString QScriptDeclarativeClass::PersistentIdentifier::toString(void) const
 	?startsWithUpper@QScriptDeclarativeClass@@QAE_NABQAX@Z @ 406 NONAME ; bool QScriptDeclarativeClass::startsWithUpper(void * const const &)
-	?qt_static_metacall@QScriptEngine@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 407 NONAME ; void QScriptEngine::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QScriptEngine@@0UQMetaObjectExtraData@@B @ 408 NONAME ; struct QMetaObjectExtraData const QScriptEngine::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QScriptExtensionPlugin@@0UQMetaObjectExtraData@@B @ 409 NONAME ; struct QMetaObjectExtraData const QScriptExtensionPlugin::staticMetaObjectExtraData
-	?qt_static_metacall@QScriptExtensionPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 410 NONAME ; void QScriptExtensionPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??0QScriptExtensionInterface@@QAE@XZ @ 407 NONAME ABSENT ; QScriptExtensionInterface::QScriptExtensionInterface(void)
+	??_EQScriptValue@@QAE@I@Z @ 408 NONAME ABSENT ; QScriptValue::~QScriptValue(unsigned int)
+	?staticMetaObjectExtraData@QScriptEngine@@0UQMetaObjectExtraData@@B @ 409 NONAME ; struct QMetaObjectExtraData const QScriptEngine::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QScriptExtensionPlugin@@0UQMetaObjectExtraData@@B @ 410 NONAME ; struct QMetaObjectExtraData const QScriptExtensionPlugin::staticMetaObjectExtraData
+	?qt_static_metacall@QScriptExtensionPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 411 NONAME ; void QScriptExtensionPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QScriptEngine@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 412 NONAME ; void QScriptEngine::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 

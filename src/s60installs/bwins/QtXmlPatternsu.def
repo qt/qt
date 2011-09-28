@@ -277,8 +277,11 @@ EXPORTS
 	?writeEscapedAttribute@QXmlSerializer@@AAEXABVQString@@@Z @ 276 NONAME ; void QXmlSerializer::writeEscapedAttribute(class QString const &)
 	?staticMetaObject@QAbstractMessageHandler@@2UQMetaObject@@B @ 277 NONAME ; struct QMetaObject const QAbstractMessageHandler::staticMetaObject
 	?staticMetaObject@QAbstractUriResolver@@2UQMetaObject@@B @ 278 NONAME ; struct QMetaObject const QAbstractUriResolver::staticMetaObject
-	?qt_static_metacall@QAbstractUriResolver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 279 NONAME ; void QAbstractUriResolver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QAbstractUriResolver@@0UQMetaObjectExtraData@@B @ 280 NONAME ; struct QMetaObjectExtraData const QAbstractUriResolver::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QAbstractMessageHandler@@0UQMetaObjectExtraData@@B @ 281 NONAME ; struct QMetaObjectExtraData const QAbstractMessageHandler::staticMetaObjectExtraData
-	?qt_static_metacall@QAbstractMessageHandler@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 282 NONAME ; void QAbstractMessageHandler::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??_EQXmlQuery@@QAE@I@Z @ 279 NONAME ABSENT ; QXmlQuery::~QXmlQuery(unsigned int)
+	??4QXmlNodeModelIndex@@QAEAAV0@ABV0@@Z @ 280 NONAME ABSENT ; class QXmlNodeModelIndex & QXmlNodeModelIndex::operator=(class QXmlNodeModelIndex const &)
+	??_EQXmlItem@@QAE@I@Z @ 281 NONAME ABSENT ; QXmlItem::~QXmlItem(unsigned int)
+	?staticMetaObjectExtraData@QAbstractUriResolver@@0UQMetaObjectExtraData@@B @ 282 NONAME ; struct QMetaObjectExtraData const QAbstractUriResolver::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractMessageHandler@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 283 NONAME ; void QAbstractMessageHandler::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QAbstractUriResolver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 284 NONAME ; void QAbstractUriResolver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractMessageHandler@@0UQMetaObjectExtraData@@B @ 285 NONAME ; struct QMetaObjectExtraData const QAbstractMessageHandler::staticMetaObjectExtraData
 

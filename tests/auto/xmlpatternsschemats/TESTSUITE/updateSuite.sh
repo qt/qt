@@ -47,6 +47,8 @@
 #
 # To run the script, Saxon package version 9 and above shall be installed
 #
+# Installation instruction
+# http://johnbokma.com/mexit/2011/07/04/installing-saxon-he-ubuntu.html
 
 DIRECTORY_NAME="xmlschema2006-11-06"
 ARCHIVE_NAME="xsts-2007-06-20.tar.gz"
@@ -62,5 +64,6 @@ rm $ARCHIVE_NAME
 #CVSROOT=:pserver:anonymous@dev.w3.org:/sources/public cvs checkout -d xmlschema2006-11-06-new XML/xml-schema-test-suite/2004-01-14/xmlschema2006-11-06
 
 #Saxon need to be installed before the following command works.
-java -jar /usr/share/java/saxon.jar -xsl:unifyCatalog.xsl -s:$DIRECTORY_NAME/suite.xml > testSuites.xml
+#java -jar /usr/share/java/saxonb.jar -xsl:unifyCatalog.xsl -s:$DIRECTORY_NAME/suite.xml > testSuites.xml
 
+saxon9he-xslt -xsl:unifyCatalog.xsl -s:$DIRECTORY_NAME/suite.xml > testSuites.xml
