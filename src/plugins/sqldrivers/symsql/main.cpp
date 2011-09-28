@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtSql module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENKODEGLINTEGRATION_H
-#define QOPENKODEGLINTEGRATION_H
+#include <qsqldriverplugin.h>
+#include <QStringList>
+#include "../../../sql/drivers/symsql/qsql_symsql.h"
 
-#include <QtGui/QPlatformGLContext>
-#include <EGL/egl.h>
+QT_BEGIN_NAMESPACE
 
-class QEGLPlatformContext : public QPlatformGLContext
+class QSymSQLDriverPlugin : public QSqlDriverPlugin
 {
 public:
-    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QEGLPlatformContext *shareContext = 0);
-    ~QEGLPlatformContext();
+    QSymSQLDriverPlugin();
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-
-    QPlatformWindowFormat platformWindowFormat() const;
-
-    EGLContext eglContext() const;
-private:
-    EGLContext m_eglContext;
-    EGLDisplay m_eglDisplay;
-    EGLSurface m_eglSurface;
-    EGLenum m_eglApi;
-
-    QPlatformWindowFormat m_windowFormat;
+    QSqlDriver* create(const QString &);
+    QStringList keys() const;
 };
 
-#endif //QOPENKODEGLINTEGRATION_H
+QSymSQLDriverPlugin::QSymSQLDriverPlugin()
+    : QSqlDriverPlugin()
+{
+}
+
+QSqlDriver* QSymSQLDriverPlugin::create(const QString &name)
+{
+    if (name == QLatin1String("QSYMSQL")) {
+        QSymSQLDriver* driver = new QSymSQLDriver();
+        return driver;
+    }
+    return 0;
+}
+
+QStringList QSymSQLDriverPlugin::keys() const
+{
+    QStringList l;
+    l.append(QLatin1String("QSYMSQL"));
+    return l;
+}
+
+Q_EXPORT_STATIC_PLUGIN(QSymSQLDriverPlugin)
+Q_EXPORT_PLUGIN2(qsymsql, QSymSQLDriverPlugin)
+
+QT_END_NAMESPACE
