@@ -115,7 +115,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
     searchOrder << qSystemDirectory();
 
     if (!onlySystemDirectory) {
-        const QString PATH(QLatin1String(qgetenv("PATH").constData()));
+        const QString PATH = QString::fromWCharArray((const wchar_t *)_wgetenv(L"PATH"));
         searchOrder << PATH.split(QLatin1Char(';'), QString::SkipEmptyParts);
     }
     QString fileName = QString::fromWCharArray(libraryName);
