@@ -366,6 +366,10 @@ Qt for Windows CE
 - syncqt
     * Fix to allow $QTDIR to contain any valid pathname characters.
 
+- qdoc3
+    * Add support for documenting QML using module identifiers.
+    * Change the format of qdocconf files.
+
 ****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
