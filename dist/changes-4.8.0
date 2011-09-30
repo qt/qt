@@ -183,6 +183,11 @@ QtDBus
  - QDBusConnection: Add methods disconnectFromPeer and connectToPeer
  - Make the DBus timeout configurable in QDBusAbstractInterface.
 
+QtTest
+------
+ - Added -random and -seed options to tests, making the test cases within
+   a test execute in arbitrary order.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
