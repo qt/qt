@@ -62,25 +62,6 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_VERSION                         Doc::alias("version")
 int DitaXmlGenerator::id = 0;
 
-QString DitaXmlGenerator::sinceTitles[] =
-    {
-        "    New Namespaces",
-        "    New Classes",
-        "    New Member Functions",
-        "    New Functions in Namespaces",
-        "    New Global Functions",
-        "    New Macros",
-        "    New Enum Types",
-        "    New Typedefs",
-        "    New Properties",
-        "    New Variables",
-        "    New QML Elements",
-        "    New Qml Properties",
-        "    New Qml Signal Handlers",
-        "    New Qml Methods",
-        ""
-    };
-
 /*
   The strings in this array must appear in the same order as
   the values in enum DitaXmlGenerator::DitaTag.
@@ -1199,7 +1180,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                   Just output the href as if the image is in
                   the images directory...
                  */
-                fileName = QLatin1String("images/") + protectEnc(atom->string());
+                if (atom->string()[0] == '/')
+                    fileName = QLatin1String("images") + atom->string();
+                else
+                    fileName = QLatin1String("images/") + atom->string();
             }
 
             if (currentTag() != DT_xref)
@@ -3951,70 +3935,6 @@ void DitaXmlGenerator::findAllClasses(const InnerNode* node)
             }
         }
         ++c;
-    }
-}
-
-/*!
-  For generating the "New Classes... in 4.x" section on the
-  What's New in 4.x" page.
- */
-void DitaXmlGenerator::findAllSince(const InnerNode* node)
-{
-    NodeList::const_iterator child = node->childNodes().constBegin();
-    while (child != node->childNodes().constEnd()) {
-        QString sinceVersion = (*child)->since();
-        if (((*child)->access() != Node::Private) && !sinceVersion.isEmpty()) {
-            NewSinceMaps::iterator nsmap = newSinceMaps.find(sinceVersion);
-            if (nsmap == newSinceMaps.end())
-                nsmap = newSinceMaps.insert(sinceVersion,NodeMultiMap());
-            NewClassMaps::iterator ncmap = newClassMaps.find(sinceVersion);
-            if (ncmap == newClassMaps.end())
-                ncmap = newClassMaps.insert(sinceVersion,NodeMap());
-            NewClassMaps::iterator nqcmap = newQmlClassMaps.find(sinceVersion);
-            if (nqcmap == newQmlClassMaps.end())
-                nqcmap = newQmlClassMaps.insert(sinceVersion,NodeMap());
- 
-            if ((*child)->type() == Node::Function) {
-                FunctionNode *func = static_cast<FunctionNode *>(*child);
-                if ((func->status() > Node::Obsolete) &&
-                    (func->metaness() != FunctionNode::Ctor) &&
-                    (func->metaness() != FunctionNode::Dtor)) {
-                    nsmap.value().insert(func->name(),(*child));
-                }
-            }
-            else if ((*child)->url().isEmpty()) {
-                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    ncmap.value().insert(className,(*child));
-                }
-                else if ((*child)->subType() == Node::QmlClass) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    nqcmap.value().insert(className,(*child));
-                }
-            }
-            else {
-                QString name = (*child)->name();
-                if ((*child)->parent() &&
-                    (*child)->parent()->type() == Node::Namespace &&
-                    !(*child)->parent()->name().isEmpty())
-                    name = (*child)->parent()->name()+"::"+name;
-                nsmap.value().insert(name,(*child));
-            }
-            if ((*child)->isInnerNode()) {
-                findAllSince(static_cast<InnerNode *>(*child));
-            }
-        }
-        ++child;
     }
 }
 

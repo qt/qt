@@ -46,6 +46,7 @@
 #include <QObject>
 #include <QTimer>
 #include "codasignalhandler.h"
+#include "texttracehandler.h"
 
 static const quint64 DEFAULT_CHUNK_SIZE = 40000;
 
@@ -168,10 +169,13 @@ int CodaSignalHandler::run()
         QString deviceError = "No such port";
         if (d->codaDevice)
             deviceError = d->codaDevice->device()->errorString();
-        reportError(tr("Could not open serial device: ").arg(deviceError));
+        reportError(tr("Could not open serial device: %1").arg(deviceError));
         SymbianUtils::SymbianDeviceManager::instance()->releaseCodaDevice(d->codaDevice);
         return 1;
     }
+
+    TextTraceHandler *traceHandler = new TextTraceHandler(
+                SymbianUtils::SymbianDeviceManager::instance()->getOstChannel(d->serialPortName, 2), this);
 
     if (d->loglevel > 1) {
         d->codaDevice->setVerbose(1);
@@ -190,6 +194,8 @@ int CodaSignalHandler::run()
     d->eventLoop->exec();
     int result = d->result;
     reportMessage(tr("Done."));
+
+    delete traceHandler;
     disconnect(d->codaDevice.data(), 0, this, 0);
     SymbianUtils::SymbianDeviceManager::instance()->releaseCodaDevice(d->codaDevice);
 

@@ -63,13 +63,36 @@
 
 #include <fepbase.h>
 #include <aknedsts.h>
+#include <eikccpu.h>
 
 QT_BEGIN_NAMESPACE
+
+class QCoeFepInputMaskHandler
+{
+public:
+    QCoeFepInputMaskHandler(const QString &mask);
+    ~QCoeFepInputMaskHandler();
+    bool canPasteClipboard(const QString &text);
+private:
+    bool isValidInput(QChar key, QChar mask) const;
+private:
+    struct MaskInputData {
+        enum Casemode { NoCaseMode, Upper, Lower };
+        QChar maskChar;
+        bool separator;
+        Casemode caseMode;
+    };
+    int m_maxLength;
+    QChar m_blank;
+    MaskInputData *m_maskData;
+};
 
 class Q_AUTOTEST_EXPORT QCoeFepInputContext : public QInputContext,
                                               public MCoeFepAwareTextEditor,
                                               public MCoeFepAwareTextEditor_Extension1,
-                                              public MObjectProvider
+                                              public MObjectProvider,
+                                              public MEikCcpuEditor
+
 {
     Q_OBJECT
 
@@ -135,6 +158,25 @@ private:
     void DoCommitFepInlineEditL();
     MCoeFepAwareTextEditor_Extension1* Extension1(TBool& aSetToTrue);
     void ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType);
+    void enableSymbianCcpuSupport();
+    void changeCBA(bool showCopyAndOrPaste);
+    void copyOrCutTextToClipboard(const char *operation);
+
+    //From MEikCcpuEditor interface
+public:
+    TBool CcpuIsFocused() const;
+    TBool CcpuCanCut() const;
+    void CcpuCutL();
+    TBool CcpuCanCopy() const;
+    void CcpuCopyL();
+    TBool CcpuCanPaste() const;
+    void CcpuPasteL();
+    TBool CcpuCanUndo() const;
+    void CcpuUndoL();
+
+private slots:
+    void copy();
+    void paste();
 
     // From MCoeFepAwareTextEditor_Extension1
 public:
@@ -154,6 +196,7 @@ private:
     TUint m_textCapabilities;
     bool m_inDestruction;
     bool m_pendingInputCapabilitiesChanged;
+    bool m_pendingTransactionCancel;
     int m_cursorVisibility;
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
@@ -165,6 +208,12 @@ private:
     int m_splitViewResizeBy;
     Qt::WindowStates m_splitViewPreviousWindowStates;
     QRectF m_transformation;
+
+    CAknCcpuSupport *m_ccpu;
+    QAction *m_copyAction;
+    QAction *m_pasteAction;
+    QPointer<QWidget> m_lastFocusedEditor;
+    QPointer<QObject> m_lastFocusedObject;
 
     friend class tst_QInputContext;
 };

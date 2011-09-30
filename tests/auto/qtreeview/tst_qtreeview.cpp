@@ -2384,6 +2384,14 @@ void tst_QTreeView::extendedSelection()
     QTreeView view(&topLevel);
     view.resize(qMax(mousePressPos.x() * 2, 200), qMax(mousePressPos.y() * 2, 200));
     view.setModel(&model);
+
+    //ensure that mousePressPos is below the last row if we want to unselect
+    if (!selectedCount) {
+        int minimumHeight = model.rowCount() * view.visualRect(model.index(0,0)).size().height();
+        if (mousePressPos.y() < minimumHeight)
+            mousePressPos.setY(minimumHeight + 10);
+    }
+
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     topLevel.show();
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, mousePressPos);

@@ -95,7 +95,7 @@ class QDeclarativeCompiledBindingsPrivate;
 class QDeclarativeCompiledBindings : public QObject, public QDeclarativeAbstractExpression, public QDeclarativeRefCount
 {
 public:
-    QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context);
+    QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context, QDeclarativeRefCount *);
     virtual ~QDeclarativeCompiledBindings();
 
     QDeclarativeAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);

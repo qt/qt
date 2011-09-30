@@ -1190,7 +1190,7 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
 
 /*!
     \qmlproperty int Text::lineCount
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Returns the number of lines visible in the text item.
 
@@ -1206,7 +1206,7 @@ int QDeclarativeText::lineCount() const
 
 /*!
     \qmlproperty bool Text::truncated
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Returns true if the text has been truncated due to \l maximumLineCount
     or \l elide.
@@ -1223,7 +1223,7 @@ bool QDeclarativeText::truncated() const
 
 /*!
     \qmlproperty int Text::maximumLineCount
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Set this property to limit the number of lines that the text item will show.
     If elide is set to Text.ElideRight, the text will be elided appropriately.
@@ -1457,7 +1457,7 @@ qreal QDeclarativeText::paintedHeight() const
 
 /*!
     \qmlproperty real Text::lineHeight
-    \since Quick 1.1
+    \since QtQuick 1.1
 
     Sets the line height for the text.
     The value can be in pixels or a multiplier depending on lineHeightMode.

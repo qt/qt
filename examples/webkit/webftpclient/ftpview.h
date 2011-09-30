@@ -41,6 +41,9 @@
 #include <QWebView>
 
 class Downloader;
+QT_BEGIN_NAMESPACE
+class QNetworkAccessManager;
+QT_END_NAMESPACE
 
 class FtpView : public QWebView
 {

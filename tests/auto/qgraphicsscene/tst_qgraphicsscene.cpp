@@ -290,6 +290,7 @@ private slots:
     void taskQT_3674_doNotCrash();
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
     void taskQTBUG_16401_focusItem();
+    void taskQTBUG_19680_tabWidgetFocus();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4709,6 +4710,73 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     QVERIFY(!scene.focusItem());
     QApplication::sendEvent(&view, &focusIn);
     QVERIFY(!scene.focusItem());
+}
+
+void tst_QGraphicsScene::taskQTBUG_19680_tabWidgetFocus()
+{
+    QTabWidget tabWidget;
+    QGraphicsScene scene1;
+    QGraphicsScene scene2;
+    QGraphicsView view1(&scene1);
+    QGraphicsView view2(&scene2);
+
+    tabWidget.show();
+
+    tabWidget.addTab(&view1, "view1");
+    tabWidget.setCurrentWidget(&view1);
+
+    QGraphicsTextItem *textItem1 = scene1.addText("Text1");
+    textItem1->setFlags(QGraphicsItem::ItemIsFocusable);
+    textItem1->setTextInteractionFlags(Qt::TextEditorInteraction);
+    textItem1->setEnabled(true);
+    textItem1->setFocus();
+
+    tabWidget.addTab(&view2, "view2");
+    tabWidget.setCurrentWidget(&view2);
+
+    QGraphicsTextItem *textItem2 = scene2.addText("Text2");
+    textItem2->setFlags(QGraphicsItem::ItemIsFocusable);
+    textItem2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    textItem2->setEnabled(true);
+    textItem2->setFocus();
+
+    scene2.clearFocus();
+
+    view2.clearFocus();
+    view2.setEnabled(false);
+    view2.setInteractive(false);
+    view2.setVisible(false);
+    view2.setShown(false);
+    view2.hide();
+
+    tabWidget.clearFocus();
+    tabWidget.setEnabled(false);
+    tabWidget.setShown(false);
+    tabWidget.setVisible(false);
+    tabWidget.hide();
+
+    tabWidget.setFocus();
+    tabWidget.setEnabled(true);
+    tabWidget.activateWindow();
+    tabWidget.setShown(true);
+    tabWidget.setVisible(true);
+    tabWidget.show();
+
+    view2.setFocus();
+    view2.setEnabled(true);
+    view2.activateWindow();
+    view2.setInteractive(true);
+    view2.setVisible(true);
+    view2.setShown(true);
+    view2.show();
+
+    QTest::qWaitForWindowShown(&view2);
+    QApplication::setActiveWindow(&tabWidget);
+
+    textItem2->setFocus();
+
+    QVERIFY(scene2.isActive());
+    QVERIFY(textItem2->hasFocus());
 }
 
 QTEST_MAIN(tst_QGraphicsScene)
