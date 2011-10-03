@@ -699,7 +699,7 @@ bool XsdValidatingInstanceReader::validateElementComplexType(const XsdElement::P
                 if (complexType->contentType()->variety() == XsdComplexType::ContentType::Mixed) {
                     if (declaration->valueConstraint() && declaration->valueConstraint()->variety() == XsdElement::ValueConstraint::Fixed) {
                         if (hasChildElement()) {
-                            error(QtXmlPatterns::tr("Element %1 cannot contain other elements, as it has a fixed content.").arg(formatKeyword(declaration->displayName(m_namePool))));
+                            error(QtXmlPatterns::tr("Element %1 cannot contain other elements, as it has fixed content.").arg(formatKeyword(declaration->displayName(m_namePool))));
                             return false;
                         }
 
