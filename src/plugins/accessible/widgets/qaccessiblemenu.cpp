@@ -93,7 +93,7 @@ int QAccessibleMenu::childAt(int x, int y) const
 QString QAccessibleMenu::text(Text t, int child) const
 {
     QString tx = QAccessibleWidgetEx::text(t, child);
-    if (tx.size())
+    if (!child && tx.size())
         return tx;
 
     switch (t) {

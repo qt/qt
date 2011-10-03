@@ -850,6 +850,7 @@ void SymbianCommonGenerator::parseTsFiles(SymbianLocalizationList *symbianLocali
 
             foreach (QString file, symbianTsFiles) {
                 QRegExp matcher(matchStr);
+                matcher.setCaseSensitivity(Qt::CaseInsensitive);
                 if (matcher.exactMatch(file) && parseTsContent(file, &loc))
                     break;
             }
