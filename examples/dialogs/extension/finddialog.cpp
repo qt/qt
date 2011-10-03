@@ -104,9 +104,11 @@ FindDialog::FindDialog(QWidget *parent)
     connect(backSoftKeyAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     addAction(backSoftKeyAction);
 #else
+//! [6]
     buttonBox = new QDialogButtonBox(Qt::Vertical);
     buttonBox->addButton(findButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(moreButton, QDialogButtonBox::ActionRole);
+//! [6]
 
     connect(moreButton, SIGNAL(toggled(bool)), extension, SLOT(setVisible(bool)));
 #endif
