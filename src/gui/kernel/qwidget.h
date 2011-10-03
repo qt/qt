@@ -806,7 +806,7 @@ private:
     Q_DISABLE_COPY(QWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
 #ifdef Q_OS_SYMBIAN
-    Q_PRIVATE_SLOT(d_func(), void _q_delayedDestroy(WId winId))
+    Q_PRIVATE_SLOT(d_func(), void void _q_cleanupWinIds())
 #endif
 
     QWidgetData *data;

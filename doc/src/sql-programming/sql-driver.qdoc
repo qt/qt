@@ -60,6 +60,7 @@
     \row \o \link #QPSQL QPSQL\endlink \o PostgreSQL (versions 7.3 and above)
     \row \o \link #QSQLITE2 QSQLITE2\endlink \o SQLite version 2
     \row \o \link #QSQLITE QSQLITE\endlink \o SQLite version 3
+    \row \o \link #QSYMSQL QSYMSQL\endlink \o SQLite version 3 for Symbian SQL Database 
     \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server \note obsolete from Qt 4.7
     \endtable
 
@@ -665,6 +666,106 @@
     ship your own database plugin with your own SQLite library as illustrated above.
     Some versions of SQLite can be forced to write a specific file format by setting
     the \c{SQLITE_DEFAULT_FILE_FORMAT} define when building SQLite.
+    
+    \target QSYMSQL
+    \section2 QSYMSQL for SQLite (Version 3 and Above) with Symbian SQL Database
+
+    \section3 General Information about QSYMSQL
+
+    QSYMSQL driver enables clients to access the native Symbian database engine (“Symbian SQL”) 
+    through the QtSQL API.
+
+    The main difference to QSQLITE is that, with Symbian SQL database client can specify a 
+    set of access control policies when creating a new database.  It uses Symbian SQL security policy 
+    definitions within open() call (security policy is defined with in the connection options parameters).
+
+    Symbian RSqlSecurityPolicy class is a container for the security policies for a shared SQL database.
+
+    The container can contain:
+      security policies that apply to the database.
+      security policies that apply to individual database objects, i.e. database tables.
+
+    For the database, you use RSqlSecurityPolicy::SetDbPolicy() to apply a separate security policy to:
+      the database schema.
+      read activity on the database.
+      write activity on the database.
+
+    For database tables, you use RSqlSecurityPolicy::SetPolicy() to apply a separate security policy to:
+      write activity on each named database table.
+      read activity on each named database table.
+
+    More information about Symbian SQL and RSqlSecurityPolicy class reference about policy definitions, 
+    can be found from Forum Nokia Library: http://library.developer.nokia.com/.
+
+
+Example of setting Security Policy:
+
+    Connection options hold definition for security policies and all parameters that does not contain "POLICY_" will be
+    passed to RSqlDatabase. Policy will be filled according to parsed values.
+
+    Value in database wide parameters starts by definition which can be vendorId or secureId. These come directly from TSecurityPolicy class in Symbian. 
+
+    POLICY_DB_DEFAULT
+    Default security policy which will be used for the database and all database objects. POLICY_DB_DEFAULT must be 
+    defined before any other policy definitions can be used.    
+    POLICY_DB_READ
+    Read database security policy. An application with read database security policy can read from database.    
+    POLICY_DB_WRITE:
+    Write database security policy. An application with write database security policy can write to database. 
+    POLICY_DB_SCHEMA:
+    Schema database security policy. An application with schema database security policy can modify
+    the database schema, write to database, read from database.   
+
+    Format:
+    POLICY_DB_DEFAULT=cap1,cap2,cap3,cap4,cap5,cap6,cap7    (Up to 7 capabilities) 
+    POLICY_DB_READ=cap1,cap2,cap3,cap4,cap5,cap6,cap7       (Up to 7 capabilities)
+    POLICY_DB_WRITE=vendorid,cap1,cap2,cap3                 (Vendor ID and up to 3 capabilities)
+    POLICY_DB_SCHEMA=secureid,cap1,cap2,cap3                (Secure ID and up to 3 capabilities)  
+
+    Table policies does not support schema policy as database level does.
+
+    Table specific parameters would be as:    
+    POLICY_TABLE_WRITE=tablename,cap1,cap2,cap3,cap4,cap5,cap6,cap7
+    POLICY_TABLE_READ=tablename,cap1,cap2,cap3,cap4,cap5,cap6,cap7    
+
+    Vendor Id and Secure id format:    
+    vid[0x12345678]                              (Hex)    
+    sid[0x12345678]                              (Hex)                        
+
+    Examples:
+    Setting default policy:   
+    QSqlDatabase database = QSqlDatabase::addDatabase("QSYMSQL", "MyConnection");
+    database.setConnectOptions("POLICY_DB_DEFAULT=ReadDeviceData");
+    database.setDatabaseName("[12345678]myDatabase");
+    bool ok = database.open();   
+
+    Setting POLICY_DB_WRITE:
+    QSqlDatabase database = QSqlDatabase::addDatabase("QSYMSQL", "MyConnection");
+    database.setConnectOptions("POLICY_DB_DEFAULT=None; POLICY_DB_WRITE=sid[0x12345678], WriteDeviceData");
+    database.setDatabaseName("[12345678]myDatabase");
+    bool ok = database.open();   
+
+    FOREIGN KEY:  
+    Enabling foreign key support from underlying SQLite
+    add: "foreign_keys = ON" to your connection options string. This will be passes to SQLite.
+
+    Foreign key Example:   
+    QSqlDatabase database = QSqlDatabase::addDatabase("QSYMSQL", "MyConnection");
+    database.setDatabaseName("[12345678]myDatabase");
+    database.setConnectOptions("foreign_keys = ON");
+    bool ok = database.open();
+
+    \section3 How to Build the QSYMSQL Plugin
+
+    Building QSYMSQL requires Symbian SDK.
+
+    The build sequence is similar to the QSQLITE plugin with installing the plugin in the standard location.
+
+    Build sequence:
+
+    >cd sf\mw\qt\src\plugins\sqldrivers\symsql\
+    >qmake
+    >sbs -c winscw_udeb|armv5_urel
 
     \target QIBASE
     \section2 QIBASE for Borland InterBase

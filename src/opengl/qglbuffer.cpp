@@ -543,6 +543,10 @@ void *QGLBuffer::map(QGLBuffer::Access access)
         return 0;
     if (!glMapBufferARB)
         return 0;
+#ifdef QT_OPENGL_ES_2
+    if (access != QGLBuffer::WriteOnly)
+        return 0;
+#endif
     return glMapBufferARB(d->type, access);
 }
 

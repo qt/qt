@@ -251,13 +251,13 @@ inline static bool isValidUri(const QString &string)
 
 XsdSchemaParser::XsdSchemaParser(const XsdSchemaContext::Ptr &context, const XsdSchemaParserContext::Ptr &parserContext, QIODevice *device)
     : MaintainingReader<XsdSchemaToken, XsdTagScope::Type>(parserContext->elementDescriptions(), QSet<XsdSchemaToken::NodeName>(), context, device)
-    , m_context(context)
-    , m_parserContext(parserContext)
-    , m_namePool(m_parserContext->namePool())
-    , m_namespaceSupport(m_namePool)
+    , m_context(context.data())
+    , m_parserContext(parserContext.data())
+    , m_namePool(m_parserContext->namePool().data())
+    , m_namespaceSupport(*m_namePool)
 {
-    m_schema = m_parserContext->schema();
-    m_schemaResolver = m_parserContext->resolver();
+    m_schema = m_parserContext->schema().data();
+    m_schemaResolver = m_parserContext->resolver().data();
     m_idCache = XsdIdCache::Ptr(new XsdIdCache());
 
     setupStateMachines();
@@ -365,7 +365,7 @@ void XsdSchemaParser::attributeContentError(const char *attributeName, const cha
                                .arg(formatAttribute(attributeName))
                                .arg(formatElement(elementName))
                                .arg(formatData(value))
-                               .arg(formatType(m_namePool, type)));
+                               .arg(formatType(NamePool::Ptr(m_namePool), type)));
     } else {
         error(QtXmlPatterns::tr("%1 attribute of %2 element contains invalid content: {%3}.")
                                .arg(formatAttribute(attributeName))
@@ -520,7 +520,7 @@ void XsdSchemaParser::parseSchema(ParserType parserType)
 
     validateIdAttribute("schema");
 
-    TagValidationHandler tagValidator(XsdTagScope::Schema, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Schema, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -601,10 +601,10 @@ void XsdSchemaParser::parseInclude()
         m_includedSchemas.insert(url);
 
         const AutoPtr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
-                                                                         m_context, AccelTreeResourceLoader::ContinueOnError));
+                                                                         XsdSchemaContext::Ptr(m_context), AccelTreeResourceLoader::ContinueOnError));
         if (reply) {
             // parse the included schema by a different parser but with the same context
-            XsdSchemaParser parser(m_context, m_parserContext, reply.data());
+            XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.data());
             parser.setDocumentURI(url);
             parser.setTargetNamespaceExtended(m_targetNamespace);
             parser.setIncludedSchemas(m_includedSchemas);
@@ -623,7 +623,7 @@ void XsdSchemaParser::parseInclude()
 
     validateIdAttribute("include");
 
-    TagValidationHandler tagValidator(XsdTagScope::Include, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Include, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -697,10 +697,10 @@ void XsdSchemaParser::parseImport()
             m_importedSchemas.insert(importNamespace);
 
             AutoPtr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
-                                                                       m_context, AccelTreeResourceLoader::ContinueOnError));
+                                                                       XsdSchemaContext::Ptr(m_context), AccelTreeResourceLoader::ContinueOnError));
             if (reply) {
                 // parse the included schema by a different parser but with the same context
-                XsdSchemaParser parser(m_context, m_parserContext, reply.data());
+                XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.data());
                 parser.setDocumentURI(url);
                 parser.setTargetNamespace(importNamespace);
                 parser.setIncludedSchemas(m_includedSchemas);
@@ -724,7 +724,7 @@ void XsdSchemaParser::parseImport()
 
                 QFile file(QString::fromLatin1(":") + importNamespace);
                 if (file.open(QIODevice::ReadOnly)) {
-                    XsdSchemaParser parser(m_context, m_parserContext, &file);
+                    XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), &file);
                     parser.setDocumentURI(importNamespace);
                     parser.setTargetNamespace(importNamespace);
                     parser.setIncludedSchemas(m_includedSchemas);
@@ -747,7 +747,7 @@ void XsdSchemaParser::parseImport()
 
     validateIdAttribute("import");
 
-    TagValidationHandler tagValidator(XsdTagScope::Import, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Import, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -785,7 +785,7 @@ void XsdSchemaParser::parseRedefine()
 
     const QString schemaLocation = readAttribute(QString::fromLatin1("schemaLocation"));
 
-    TagValidationHandler tagValidator(XsdTagScope::Redefine, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Redefine, this, NamePool::Ptr(m_namePool));
 
     XsdSimpleType::List redefinedSimpleTypes;
     XsdComplexType::List redefinedComplexTypes;
@@ -812,8 +812,8 @@ void XsdSchemaParser::parseRedefine()
                 redefinedSimpleTypes.append(type);
 
                 const QXmlName baseTypeName = m_parserContext->resolver()->baseTypeNameOfType(type);
-                if (baseTypeName != type->name(m_namePool)) {
-                    error(QString::fromLatin1("redefined simple type %1 must have itself as base type").arg(formatType(m_namePool, type)));
+                if (baseTypeName != type->name(NamePool::Ptr(m_namePool))) {
+                    error(QString::fromLatin1("redefined simple type %1 must have itself as base type").arg(formatType(NamePool::Ptr(m_namePool), type)));
                     return;
                 }
             } else if (isSchemaTag(XsdSchemaToken::ComplexType, token, namespaceToken)) {
@@ -824,8 +824,8 @@ void XsdSchemaParser::parseRedefine()
 
                 // 5
                 const QXmlName baseTypeName = m_parserContext->resolver()->baseTypeNameOfType(type);
-                if (baseTypeName != type->name(m_namePool)) {
-                    error(QString::fromLatin1("redefined complex type %1 must have itself as base type").arg(formatType(m_namePool, type)));
+                if (baseTypeName != type->name(NamePool::Ptr(m_namePool))) {
+                    error(QString::fromLatin1("redefined complex type %1 must have itself as base type").arg(formatType(NamePool::Ptr(m_namePool), type)));
                     return;
                 }
             } else if (isSchemaTag(XsdSchemaToken::Group, token, namespaceToken)) {
@@ -855,7 +855,7 @@ void XsdSchemaParser::parseRedefine()
     }
 
     // we parse the schema given in the redefine tag into its own context
-    const XsdSchemaParserContext::Ptr redefinedContext(new XsdSchemaParserContext(m_namePool, m_context));
+    const XsdSchemaParserContext::Ptr redefinedContext(new XsdSchemaParserContext(NamePool::Ptr(m_namePool), XsdSchemaContext::Ptr(m_context)));
 
     if (m_redefinedSchemas.contains(url)) {
         // we have redefined that file already, according to the schema spec we are
@@ -863,11 +863,11 @@ void XsdSchemaParser::parseRedefine()
     } else {
         m_redefinedSchemas.insert(url);
         QNetworkReply *reply = AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
-                                                             m_context,
+                                                             XsdSchemaContext::Ptr(m_context),
                                                              (locationMustResolve ? AccelTreeResourceLoader::FailOnError : AccelTreeResourceLoader::ContinueOnError));
         if (reply) {
             // parse the included schema by a different parser but with the same context
-            XsdSchemaParser parser(m_context, redefinedContext, reply);
+            XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), redefinedContext, reply);
             parser.setDocumentURI(url);
             parser.setTargetNamespaceExtended(m_targetNamespace);
             parser.setIncludedSchemas(m_includedSchemas);
@@ -904,7 +904,7 @@ void XsdSchemaParser::parseRedefine()
         for (int j = 0; j < contextSimpleTypes.count(); ++j) {
             XsdSimpleType::Ptr contextType = contextSimpleTypes.at(j);
 
-            if (redefinedType->name(m_namePool) == contextType->name(m_namePool)) { // we found the right type
+            if (redefinedType->name(NamePool::Ptr(m_namePool)) == contextType->name(NamePool::Ptr(m_namePool))) { // we found the right type
                 found = true;
 
                 // 1) set name of context type to empty name
@@ -932,7 +932,7 @@ void XsdSchemaParser::parseRedefine()
         }
 
         if (!found) {
-            error(QString::fromLatin1("no matching type found to redefine simple type %1").arg(formatType(m_namePool, redefinedType)));
+            error(QString::fromLatin1("no matching type found to redefine simple type %1").arg(formatType(NamePool::Ptr(m_namePool), redefinedType)));
             return;
         }
     }
@@ -953,7 +953,7 @@ void XsdSchemaParser::parseRedefine()
         for (int j = 0; j < contextComplexTypes.count(); ++j) {
             XsdComplexType::Ptr contextType = contextComplexTypes.at(j);
 
-            if (redefinedType->name(m_namePool) == contextType->name(m_namePool)) { // we found the right type
+            if (redefinedType->name(NamePool::Ptr(m_namePool)) == contextType->name(NamePool::Ptr(m_namePool))) { // we found the right type
                 found = true;
 
                 // 1) set name of context type to empty name
@@ -981,7 +981,7 @@ void XsdSchemaParser::parseRedefine()
         }
 
         if (!found) {
-            error(QString::fromLatin1("no matching type found to redefine complex type %1").arg(formatType(m_namePool, redefinedType)));
+            error(QString::fromLatin1("no matching type found to redefine complex type %1").arg(formatType(NamePool::Ptr(m_namePool), redefinedType)));
             return;
         }
     }
@@ -998,11 +998,11 @@ void XsdSchemaParser::parseRedefine()
         int sameNameCounter = 0;
         for (int i = 0; i < particles.count(); ++i) {
             const XsdReference::Ptr ref(particles.at(i)->term());
-            if (ref->referenceName() == group->name(m_namePool)) {
+            if (ref->referenceName() == group->name(NamePool::Ptr(m_namePool))) {
                 referencedParticle = particles.at(i);
 
                 if (referencedParticle->minimumOccurs() != 1 || referencedParticle->maximumOccurs() != 1 || referencedParticle->maximumOccursUnbounded()) { // 6.1.2
-                    error(QString::fromLatin1("redefined group %1 can not contain reference to itself with minOccurs or maxOccurs != 1").arg(formatKeyword(group->displayName(m_namePool))));
+                    error(QString::fromLatin1("redefined group %1 can not contain reference to itself with minOccurs or maxOccurs != 1").arg(formatKeyword(group->displayName(NamePool::Ptr(m_namePool)))));
                     return;
                 }
                 sameNameCounter++;
@@ -1011,21 +1011,21 @@ void XsdSchemaParser::parseRedefine()
 
         // 6.1.1
         if (sameNameCounter > 1) {
-            error(QString::fromLatin1("redefined group %1 can not contain multiple references to itself").arg(formatKeyword(group->displayName(m_namePool))));
+            error(QString::fromLatin1("redefined group %1 can not contain multiple references to itself").arg(formatKeyword(group->displayName(NamePool::Ptr(m_namePool)))));
             return;
         }
 
         // search the group definition in the included schema (S2)
         XsdModelGroup::Ptr contextGroup;
         for (int j = 0; j < contextGroups.count(); ++j) {
-            if (group->name(m_namePool) == contextGroups.at(j)->name(m_namePool)) {
+            if (group->name(NamePool::Ptr(m_namePool)) == contextGroups.at(j)->name(NamePool::Ptr(m_namePool))) {
                 contextGroup = contextGroups.at(j);
                 break;
             }
         }
 
         if (!contextGroup) { // 6.2.1
-            error(QString::fromLatin1("redefined group %1 has no occurrence in included schema").arg(formatKeyword(group->displayName(m_namePool))));
+            error(QString::fromLatin1("redefined group %1 has no occurrence in included schema").arg(formatKeyword(group->displayName(NamePool::Ptr(m_namePool)))));
             return;
         }
 
@@ -1034,7 +1034,7 @@ void XsdSchemaParser::parseRedefine()
             // group from the included schema
 
             // set a anonymous name to the group of the included schema
-            contextGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(contextGroup->name(m_namePool).namespaceURI())));
+            contextGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(contextGroup->name(NamePool::Ptr(m_namePool)).namespaceURI())));
 
             // replace the self-reference with the group from the included schema
             referencedParticle->setTerm(contextGroup);
@@ -1050,7 +1050,7 @@ void XsdSchemaParser::parseRedefine()
             addElementGroup(group);
 
             // we have to add them, otherwise it is not resolved and we can't validate it later
-            contextGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(contextGroup->name(m_namePool).namespaceURI())));
+            contextGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(contextGroup->name(NamePool::Ptr(m_namePool)).namespaceURI())));
             addElementGroup(contextGroup);
 
             m_schemaResolver->addRedefinedGroups(group, contextGroup);
@@ -1075,13 +1075,13 @@ void XsdSchemaParser::parseRedefine()
             if (attributeUse->isReference()) {
                 const XsdAttributeReference::Ptr reference(attributeUse);
                 if (reference->type() == XsdAttributeReference::AttributeGroup) {
-                    if (group->name(m_namePool) == reference->referenceName())
+                    if (group->name(NamePool::Ptr(m_namePool)) == reference->referenceName())
                         sameNameCounter++;
                 }
             }
         }
         if (sameNameCounter > 1) {
-            error(QString::fromLatin1("redefined attribute group %1 can not contain multiple references to itself").arg(formatKeyword(group->displayName(m_namePool))));
+            error(QString::fromLatin1("redefined attribute group %1 can not contain multiple references to itself").arg(formatKeyword(group->displayName(NamePool::Ptr(m_namePool)))));
             return;
         }
 
@@ -1089,14 +1089,14 @@ void XsdSchemaParser::parseRedefine()
         XsdAttributeGroup::Ptr baseGroup;
         for (int j = 0; j < contextAttributeGroups.count(); ++j) {
             const XsdAttributeGroup::Ptr contextGroup(contextAttributeGroups.at(j));
-            if (group->name(m_namePool) == contextGroup->name(m_namePool)) {
+            if (group->name(NamePool::Ptr(m_namePool)) == contextGroup->name(NamePool::Ptr(m_namePool))) {
                 baseGroup = contextGroup;
                 break;
             }
         }
 
         if (!baseGroup) { // 7.2.1
-            error(QString::fromLatin1("redefined attribute group %1 has no occurrence in included schema").arg(formatKeyword(group->displayName(m_namePool))));
+            error(QString::fromLatin1("redefined attribute group %1 has no occurrence in included schema").arg(formatKeyword(group->displayName(NamePool::Ptr(m_namePool)))));
             return;
         }
 
@@ -1104,7 +1104,7 @@ void XsdSchemaParser::parseRedefine()
 
             // first set an anonymous name to the attribute group from the included
             // schema
-            baseGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(baseGroup->name(m_namePool).namespaceURI())));
+            baseGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(baseGroup->name(NamePool::Ptr(m_namePool)).namespaceURI())));
 
             // iterate over the attribute uses of the redefined attribute group
             // and replace the self-reference with the attribute group from the
@@ -1114,8 +1114,8 @@ void XsdSchemaParser::parseRedefine()
                 if (attributeUse->isReference()) {
                     const XsdAttributeReference::Ptr reference(attributeUse);
                     if (reference->type() == XsdAttributeReference::AttributeGroup) {
-                        if (group->name(m_namePool) == reference->referenceName()) {
-                            reference->setReferenceName(baseGroup->name(m_namePool));
+                        if (group->name(NamePool::Ptr(m_namePool)) == reference->referenceName()) {
+                            reference->setReferenceName(baseGroup->name(NamePool::Ptr(m_namePool)));
                             break;
                         }
                     }
@@ -1132,7 +1132,7 @@ void XsdSchemaParser::parseRedefine()
         if (sameNameCounter == 0) { // 7.2
 
             // we have to add them, otherwise it is not resolved and we can't validate it later
-            baseGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(baseGroup->name(m_namePool).namespaceURI())));
+            baseGroup->setName(m_parserContext->createAnonymousName(m_namePool->stringForNamespace(baseGroup->name(NamePool::Ptr(m_namePool)).namespaceURI())));
             addAttributeGroup(baseGroup);
 
             m_schemaResolver->addRedefinedAttributeGroups(group, baseGroup);
@@ -1191,7 +1191,7 @@ XsdAnnotation::Ptr XsdSchemaParser::parseAnnotation()
     // parse attributes
     validateIdAttribute("annotation");
 
-    TagValidationHandler tagValidator(XsdTagScope::Annotation, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Annotation, this, NamePool::Ptr(m_namePool));
 
     const XsdAnnotation::Ptr annotation(new XsdAnnotation());
 
@@ -1344,7 +1344,7 @@ void XsdSchemaParser::parseDefaultOpenContent()
 
     validateIdAttribute("defaultOpenContent");
 
-    TagValidationHandler tagValidator(XsdTagScope::DefaultOpenContent, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::DefaultOpenContent, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1392,7 +1392,7 @@ XsdSimpleType::Ptr XsdSchemaParser::parseGlobalSimpleType()
 
     validateIdAttribute("simpleType");
 
-    TagValidationHandler tagValidator(XsdTagScope::GlobalSimpleType, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::GlobalSimpleType, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1438,7 +1438,7 @@ XsdSimpleType::Ptr XsdSchemaParser::parseLocalSimpleType()
 
     validateIdAttribute("simpleType");
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalSimpleType, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalSimpleType, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1501,7 +1501,7 @@ void XsdSchemaParser::parseSimpleRestriction(const XsdSimpleType::Ptr &ptr)
     QList<XsdFacet::Ptr> enumerationFacets;
     QList<XsdFacet::Ptr> assertionFacets;
 
-    TagValidationHandler tagValidator(XsdTagScope::SimpleRestriction, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::SimpleRestriction, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1659,7 +1659,7 @@ void XsdSchemaParser::parseList(const XsdSimpleType::Ptr &ptr)
 
     validateIdAttribute("list");
 
-    TagValidationHandler tagValidator(XsdTagScope::List, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::List, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1713,7 +1713,7 @@ void XsdSchemaParser::parseList(const XsdSimpleType::Ptr &ptr)
     const XsdFacet::Ptr defaultFacet(new XsdFacet());
     defaultFacet->setType(XsdFacet::WhiteSpace);
     defaultFacet->setFixed(true);
-    defaultFacet->setValue(DerivedString<TypeString>::fromLexical(m_namePool, XsdSchemaToken::toString(XsdSchemaToken::Collapse)));
+    defaultFacet->setValue(DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), XsdSchemaToken::toString(XsdSchemaToken::Collapse)));
     XsdFacet::Hash facets;
     facets.insert(defaultFacet->type(), defaultFacet);
     ptr->setFacets(facets);
@@ -1756,7 +1756,7 @@ void XsdSchemaParser::parseUnion(const XsdSimpleType::Ptr &ptr)
 
     AnySimpleType::List memberTypes;
 
-    TagValidationHandler tagValidator(XsdTagScope::Union, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Union, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1828,7 +1828,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinExclusiveFacet()
     // as minExclusive can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "minExclusive", value, BuiltinTypes::xsAnySimpleType);
         return facet;
@@ -1838,7 +1838,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinExclusiveFacet()
 
     validateIdAttribute("minExclusive");
 
-    TagValidationHandler tagValidator(XsdTagScope::MinExclusiveFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MinExclusiveFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1892,7 +1892,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinInclusiveFacet()
     // as minInclusive can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "minInclusive", value, BuiltinTypes::xsAnySimpleType);
         return facet;
@@ -1902,7 +1902,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinInclusiveFacet()
 
     validateIdAttribute("minInclusive");
 
-    TagValidationHandler tagValidator(XsdTagScope::MinInclusiveFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MinInclusiveFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -1956,7 +1956,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxExclusiveFacet()
     // as maxExclusive can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "maxExclusive", value, BuiltinTypes::xsAnySimpleType);
         return facet;
@@ -1966,7 +1966,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxExclusiveFacet()
 
     validateIdAttribute("maxExclusive");
 
-    TagValidationHandler tagValidator(XsdTagScope::MaxExclusiveFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MaxExclusiveFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2020,7 +2020,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxInclusiveFacet()
     // as maxInclusive can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "maxInclusive", value, BuiltinTypes::xsAnySimpleType);
         return facet;
@@ -2030,7 +2030,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxInclusiveFacet()
 
     validateIdAttribute("maxInclusive");
 
-    TagValidationHandler tagValidator(XsdTagScope::MaxInclusiveFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MaxInclusiveFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2082,7 +2082,7 @@ XsdFacet::Ptr XsdSchemaParser::parseTotalDigitsFacet()
     }
 
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedInteger<TypePositiveInteger>::Ptr integer = DerivedInteger<TypePositiveInteger>::fromLexical(m_namePool, value);
+    DerivedInteger<TypePositiveInteger>::Ptr integer = DerivedInteger<TypePositiveInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (integer->hasError()) {
         attributeContentError("value", "totalDigits", value, BuiltinTypes::xsPositiveInteger);
         return facet;
@@ -2092,7 +2092,7 @@ XsdFacet::Ptr XsdSchemaParser::parseTotalDigitsFacet()
 
     validateIdAttribute("totalDigits");
 
-    TagValidationHandler tagValidator(XsdTagScope::TotalDigitsFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::TotalDigitsFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2144,7 +2144,7 @@ XsdFacet::Ptr XsdSchemaParser::parseFractionDigitsFacet()
     }
 
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (integer->hasError()) {
         attributeContentError("value", "fractionDigits", value, BuiltinTypes::xsNonNegativeInteger);
         return facet;
@@ -2154,7 +2154,7 @@ XsdFacet::Ptr XsdSchemaParser::parseFractionDigitsFacet()
 
     validateIdAttribute("fractionDigits");
 
-    TagValidationHandler tagValidator(XsdTagScope::FractionDigitsFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::FractionDigitsFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2206,7 +2206,7 @@ XsdFacet::Ptr XsdSchemaParser::parseLengthFacet()
     }
 
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (integer->hasError()) {
         attributeContentError("value", "length", value, BuiltinTypes::xsNonNegativeInteger);
         return facet;
@@ -2216,7 +2216,7 @@ XsdFacet::Ptr XsdSchemaParser::parseLengthFacet()
 
     validateIdAttribute("length");
 
-    TagValidationHandler tagValidator(XsdTagScope::LengthFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LengthFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2268,7 +2268,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinLengthFacet()
     }
 
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (integer->hasError()) {
         attributeContentError("value", "minLength", value, BuiltinTypes::xsNonNegativeInteger);
         return facet;
@@ -2278,7 +2278,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMinLengthFacet()
 
     validateIdAttribute("minLength");
 
-    TagValidationHandler tagValidator(XsdTagScope::MinLengthFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MinLengthFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2330,7 +2330,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxLengthFacet()
     }
 
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+    DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (integer->hasError()) {
         attributeContentError("value", "maxLength", value, BuiltinTypes::xsNonNegativeInteger);
         return facet;
@@ -2340,7 +2340,7 @@ XsdFacet::Ptr XsdSchemaParser::parseMaxLengthFacet()
 
     validateIdAttribute("maxLength");
 
-    TagValidationHandler tagValidator(XsdTagScope::MaxLengthFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::MaxLengthFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2384,7 +2384,7 @@ XsdFacet::Ptr XsdSchemaParser::parseEnumerationFacet()
 
     // as enumeration can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "enumeration", value);
         return facet;
@@ -2397,7 +2397,7 @@ XsdFacet::Ptr XsdSchemaParser::parseEnumerationFacet()
 
     validateIdAttribute("enumeration");
 
-    TagValidationHandler tagValidator(XsdTagScope::EnumerationFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::EnumerationFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2455,7 +2455,7 @@ XsdFacet::Ptr XsdSchemaParser::parseWhiteSpaceFacet()
         attributeContentError("value", "whiteSpace", value);
         return facet;
     } else {
-        DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+        DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
         if (string->hasError()) {
             attributeContentError("value", "whiteSpace", value);
             return facet;
@@ -2466,7 +2466,7 @@ XsdFacet::Ptr XsdSchemaParser::parseWhiteSpaceFacet()
 
     validateIdAttribute("whiteSpace");
 
-    TagValidationHandler tagValidator(XsdTagScope::WhiteSpaceFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::WhiteSpaceFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2508,7 +2508,7 @@ XsdFacet::Ptr XsdSchemaParser::parsePatternFacet()
     // as pattern can have a value of type anySimpleType, we just read
     // the string here and store it for later intepretation
     const QString value = readAttribute(QString::fromLatin1("value"));
-    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(m_namePool, value);
+    DerivedString<TypeString>::Ptr string = DerivedString<TypeString>::fromLexical(NamePool::Ptr(m_namePool), value);
     if (string->hasError()) {
         attributeContentError("value", "pattern", value);
         return facet;
@@ -2520,7 +2520,7 @@ XsdFacet::Ptr XsdSchemaParser::parsePatternFacet()
 
     validateIdAttribute("pattern");
 
-    TagValidationHandler tagValidator(XsdTagScope::PatternFacet, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::PatternFacet, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2608,7 +2608,7 @@ XsdComplexType::Ptr XsdSchemaParser::parseGlobalComplexType()
 
     validateIdAttribute("complexType");
 
-    TagValidationHandler tagValidator(XsdTagScope::GlobalComplexType, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::GlobalComplexType, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2763,7 +2763,7 @@ XsdComplexType::Ptr XsdSchemaParser::parseLocalComplexType()
 
     validateIdAttribute("complexType");
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalComplexType, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalComplexType, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2926,7 +2926,7 @@ void XsdSchemaParser::parseSimpleContent(const XsdComplexType::Ptr &complexType)
     // parse attributes
     validateIdAttribute("simpleContent");
 
-    TagValidationHandler tagValidator(XsdTagScope::SimpleContent, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::SimpleContent, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -2976,7 +2976,7 @@ void XsdSchemaParser::parseSimpleContentRestriction(const XsdComplexType::Ptr &c
     QList<XsdFacet::Ptr> enumerationFacets;
     QList<XsdFacet::Ptr> assertionFacets;
 
-    TagValidationHandler tagValidator(XsdTagScope::SimpleContentRestriction, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::SimpleContentRestriction, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3117,7 +3117,7 @@ void XsdSchemaParser::parseSimpleContentExtension(const XsdComplexType::Ptr &com
 
     validateIdAttribute("extension");
 
-    TagValidationHandler tagValidator(XsdTagScope::SimpleContentExtension, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::SimpleContentExtension, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3180,7 +3180,7 @@ void XsdSchemaParser::parseComplexContent(const XsdComplexType::Ptr &complexType
 
     validateIdAttribute("complexContent");
 
-    TagValidationHandler tagValidator(XsdTagScope::ComplexContent, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::ComplexContent, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3226,7 +3226,7 @@ void XsdSchemaParser::parseComplexContentRestriction(const XsdComplexType::Ptr &
 
     validateIdAttribute("restriction");
 
-    TagValidationHandler tagValidator(XsdTagScope::ComplexContentRestriction, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::ComplexContentRestriction, this, NamePool::Ptr(m_namePool));
 
     bool hasContent = false;
     while (!atEnd()) {
@@ -3312,7 +3312,7 @@ void XsdSchemaParser::parseComplexContentExtension(const XsdComplexType::Ptr &co
 
     validateIdAttribute("extension");
 
-    TagValidationHandler tagValidator(XsdTagScope::ComplexContentExtension, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::ComplexContentExtension, this, NamePool::Ptr(m_namePool));
 
     bool hasContent = false;
     while (!atEnd()) {
@@ -3401,7 +3401,7 @@ XsdAssertion::Ptr XsdSchemaParser::parseAssertion(const XsdSchemaToken::NodeName
 
     validateIdAttribute("assertion");
 
-    TagValidationHandler tagValidator(tag, this, m_namePool);
+    TagValidationHandler tagValidator(tag, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3456,7 +3456,7 @@ XsdComplexType::OpenContent::Ptr XsdSchemaParser::parseOpenContent()
 
     validateIdAttribute("openContent");
 
-    TagValidationHandler tagValidator(XsdTagScope::OpenContent, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::OpenContent, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3504,7 +3504,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseNamedGroup()
 
     validateIdAttribute("group");
 
-    TagValidationHandler tagValidator(XsdTagScope::NamedGroup, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::NamedGroup, this, NamePool::Ptr(m_namePool));
 
     XsdAnnotation::Ptr annotation;
 
@@ -3566,7 +3566,7 @@ XsdTerm::Ptr XsdSchemaParser::parseReferredGroup(const XsdParticle::Ptr &particl
 
     validateIdAttribute("group");
 
-    TagValidationHandler tagValidator(XsdTagScope::ReferredGroup, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::ReferredGroup, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3605,7 +3605,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseAll(const NamedSchemaComponent::Ptr &pa
 
     validateIdAttribute("all");
 
-    TagValidationHandler tagValidator(XsdTagScope::All, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::All, this, NamePool::Ptr(m_namePool));
 
     XsdParticle::List particles;
     while (!atEnd()) {
@@ -3682,7 +3682,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseLocalAll(const XsdParticle::Ptr &partic
 
     validateIdAttribute("all");
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalAll, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalAll, this, NamePool::Ptr(m_namePool));
 
     XsdParticle::List particles;
     while (!atEnd()) {
@@ -3741,7 +3741,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseChoice(const NamedSchemaComponent::Ptr 
 
     XsdParticle::List particles;
 
-    TagValidationHandler tagValidator(XsdTagScope::Choice, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Choice, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3815,7 +3815,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseLocalChoice(const XsdParticle::Ptr &par
 
     XsdParticle::List particles;
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalChoice, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalChoice, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3884,7 +3884,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseSequence(const NamedSchemaComponent::Pt
 
     XsdParticle::List particles;
 
-    TagValidationHandler tagValidator(XsdTagScope::Sequence, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Sequence, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -3958,7 +3958,7 @@ XsdModelGroup::Ptr XsdSchemaParser::parseLocalSequence(const XsdParticle::Ptr &p
 
     XsdParticle::List particles;
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalSequence, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalSequence, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4082,7 +4082,7 @@ XsdAttribute::Ptr XsdSchemaParser::parseGlobalAttribute()
 
     validateIdAttribute("attribute");
 
-    TagValidationHandler tagValidator(XsdTagScope::GlobalAttribute, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::GlobalAttribute, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4314,7 +4314,7 @@ XsdAttributeUse::Ptr XsdSchemaParser::parseLocalAttribute(const NamedSchemaCompo
 
     validateIdAttribute("attribute");
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalAttribute, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalAttribute, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4383,7 +4383,7 @@ XsdAttributeGroup::Ptr XsdSchemaParser::parseNamedAttributeGroup()
 
     validateIdAttribute("attributeGroup");
 
-    TagValidationHandler tagValidator(XsdTagScope::NamedAttributeGroup, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::NamedAttributeGroup, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4443,7 +4443,7 @@ XsdAttributeUse::Ptr XsdSchemaParser::parseReferredAttributeGroup()
 
     validateIdAttribute("attributeGroup");
 
-    TagValidationHandler tagValidator(XsdTagScope::ReferredAttributeGroup, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::ReferredAttributeGroup, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4581,7 +4581,7 @@ XsdElement::Ptr XsdSchemaParser::parseGlobalElement()
 
     XsdAlternative::List alternatives;
 
-    TagValidationHandler tagValidator(XsdTagScope::GlobalElement, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::GlobalElement, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -4856,7 +4856,7 @@ XsdTerm::Ptr XsdSchemaParser::parseLocalElement(const XsdParticle::Ptr &particle
 
     XsdAlternative::List alternatives;
 
-    TagValidationHandler tagValidator(XsdTagScope::LocalElement, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::LocalElement, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5015,7 +5015,7 @@ XsdIdentityConstraint::Ptr XsdSchemaParser::parseUnique()
 
     validateIdAttribute("unique");
 
-    TagValidationHandler tagValidator(XsdTagScope::Unique, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Unique, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5065,7 +5065,7 @@ XsdIdentityConstraint::Ptr XsdSchemaParser::parseKey()
 
     validateIdAttribute("key");
 
-    TagValidationHandler tagValidator(XsdTagScope::Key, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Key, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5120,7 +5120,7 @@ XsdIdentityConstraint::Ptr XsdSchemaParser::parseKeyRef(const XsdElement::Ptr &e
 
     validateIdAttribute("keyref");
 
-    TagValidationHandler tagValidator(XsdTagScope::KeyRef, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::KeyRef, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5171,7 +5171,7 @@ void XsdSchemaParser::parseSelector(const XsdIdentityConstraint::Ptr &ptr)
 
     validateIdAttribute("selector");
 
-    TagValidationHandler tagValidator(XsdTagScope::Selector, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Selector, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5213,7 +5213,7 @@ void XsdSchemaParser::parseField(const XsdIdentityConstraint::Ptr &ptr)
 
     validateIdAttribute("field");
 
-    TagValidationHandler tagValidator(XsdTagScope::Field, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Field, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5269,7 +5269,7 @@ XsdAlternative::Ptr XsdSchemaParser::parseAlternative()
 
     validateIdAttribute("alternative");
 
-    TagValidationHandler tagValidator(XsdTagScope::Alternative, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Alternative, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5339,7 +5339,7 @@ XsdNotation::Ptr XsdSchemaParser::parseNotation()
     if (hasAttribute(QString::fromLatin1("public"))) {
         const QString value = readAttribute(QString::fromLatin1("public"));
         if (!value.isEmpty()) {
-            const DerivedString<TypeToken>::Ptr publicId = DerivedString<TypeToken>::fromLexical(m_namePool, value);
+            const DerivedString<TypeToken>::Ptr publicId = DerivedString<TypeToken>::fromLexical(NamePool::Ptr(m_namePool), value);
             if (publicId->hasError()) {
                 attributeContentError("public", "notation", value, BuiltinTypes::xsToken);
                 return notation;
@@ -5375,7 +5375,7 @@ XsdNotation::Ptr XsdSchemaParser::parseNotation()
 
     validateIdAttribute("notation");
 
-    TagValidationHandler tagValidator(XsdTagScope::Notation, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Notation, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5498,7 +5498,7 @@ XsdWildcard::Ptr XsdSchemaParser::parseAny(const XsdParticle::Ptr &particle)
 
     validateIdAttribute("any");
 
-    TagValidationHandler tagValidator(XsdTagScope::Any, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::Any, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5610,7 +5610,7 @@ XsdWildcard::Ptr XsdSchemaParser::parseAnyAttribute()
 
     validateIdAttribute("anyAttribute");
 
-    TagValidationHandler tagValidator(XsdTagScope::AnyAttribute, this, m_namePool);
+    TagValidationHandler tagValidator(XsdTagScope::AnyAttribute, this, NamePool::Ptr(m_namePool));
 
     while (!atEnd()) {
         readNext();
@@ -5684,7 +5684,7 @@ bool XsdSchemaParser::parseMinMaxConstraint(const XsdParticle::Ptr &particle, co
     if (hasAttribute(QString::fromLatin1("minOccurs"))) {
         const QString value = readAttribute(QString::fromLatin1("minOccurs"));
 
-        DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+        DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
         if (integer->hasError()) {
             attributeContentError("minOccurs", elementName, value, BuiltinTypes::xsNonNegativeInteger);
             return false;
@@ -5702,7 +5702,7 @@ bool XsdSchemaParser::parseMinMaxConstraint(const XsdParticle::Ptr &particle, co
             particle->setMaximumOccursUnbounded(true);
         } else {
             particle->setMaximumOccursUnbounded(false);
-            DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(m_namePool, value);
+            DerivedInteger<TypeNonNegativeInteger>::Ptr integer = DerivedInteger<TypeNonNegativeInteger>::fromLexical(NamePool::Ptr(m_namePool), value);
             if (integer->hasError()) {
                 attributeContentError("maxOccurs", elementName, value, BuiltinTypes::xsNonNegativeInteger);
                 return false;
@@ -5963,7 +5963,7 @@ QString XsdSchemaParser::readXPathAttribute(const QString &attributeName, XPathT
         return QString();
     }
 
-    QXmlNamePool namePool(m_namePool.data());
+    QXmlNamePool namePool(NamePool::Ptr(m_namePool).data());
 
     QXmlQuery::QueryLanguage language = QXmlQuery::XPath20;
     switch (type) {
@@ -5994,7 +5994,7 @@ void XsdSchemaParser::validateIdAttribute(const char *elementName)
 {
     if (hasAttribute(QString::fromLatin1("id"))) {
         const QString value = readAttribute(QString::fromLatin1("id"));
-        DerivedString<TypeID>::Ptr id = DerivedString<TypeID>::fromLexical(m_namePool, value);
+        DerivedString<TypeID>::Ptr id = DerivedString<TypeID>::fromLexical(NamePool::Ptr(m_namePool), value);
         if (id->hasError()) {
             attributeContentError("id", elementName, value, BuiltinTypes::xsID);
         } else {
@@ -6014,7 +6014,7 @@ bool XsdSchemaParser::isSchemaTag(XsdSchemaToken::NodeName tag, XsdSchemaToken::
 
 void XsdSchemaParser::addElement(const XsdElement::Ptr &element)
 {
-    const QXmlName objectName = element->name(m_namePool);
+    const QXmlName objectName = element->name(NamePool::Ptr(m_namePool));
     if (m_schema->element(objectName)) {
         error(QtXmlPatterns::tr("Element %1 already defined.").arg(formatElement(m_namePool->displayName(objectName))));
     } else {
@@ -6025,7 +6025,7 @@ void XsdSchemaParser::addElement(const XsdElement::Ptr &element)
 
 void XsdSchemaParser::addAttribute(const XsdAttribute::Ptr &attribute)
 {
-    const QXmlName objectName = attribute->name(m_namePool);
+    const QXmlName objectName = attribute->name(NamePool::Ptr(m_namePool));
     if (m_schema->attribute(objectName)) {
         error(QtXmlPatterns::tr("Attribute %1 already defined.").arg(formatAttribute(m_namePool->displayName(objectName))));
     } else {
@@ -6037,12 +6037,12 @@ void XsdSchemaParser::addAttribute(const XsdAttribute::Ptr &attribute)
 void XsdSchemaParser::addType(const SchemaType::Ptr &type)
 {
     // we don't import redefinitions of builtin types, that just causes problems
-    if (m_builtinTypeNames.contains(type->name(m_namePool)))
+    if (m_builtinTypeNames.contains(type->name(NamePool::Ptr(m_namePool))))
         return;
 
-    const QXmlName objectName = type->name(m_namePool);
+    const QXmlName objectName = type->name(NamePool::Ptr(m_namePool));
     if (m_schema->type(objectName)) {
-        error(QtXmlPatterns::tr("Type %1 already defined.").arg(formatType(m_namePool, objectName)));
+        error(QtXmlPatterns::tr("Type %1 already defined.").arg(formatType(NamePool::Ptr(m_namePool), objectName)));
     } else {
         m_schema->addType(type);
         if (type->isSimpleType())
@@ -6063,9 +6063,9 @@ void XsdSchemaParser::addAnonymousType(const SchemaType::Ptr &type)
 
 void XsdSchemaParser::addAttributeGroup(const XsdAttributeGroup::Ptr &group)
 {
-    const QXmlName objectName = group->name(m_namePool);
+    const QXmlName objectName = group->name(NamePool::Ptr(m_namePool));
     if (m_schema->attributeGroup(objectName)) {
-        error(QtXmlPatterns::tr("Attribute group %1 already defined.").arg(formatKeyword(m_namePool, objectName)));
+        error(QtXmlPatterns::tr("Attribute group %1 already defined.").arg(formatKeyword(NamePool::Ptr(m_namePool), objectName)));
     } else {
         m_schema->addAttributeGroup(group);
         m_componentLocationHash.insert(group, currentSourceLocation());
@@ -6074,9 +6074,9 @@ void XsdSchemaParser::addAttributeGroup(const XsdAttributeGroup::Ptr &group)
 
 void XsdSchemaParser::addElementGroup(const XsdModelGroup::Ptr &group)
 {
-    const QXmlName objectName = group->name(m_namePool);
+    const QXmlName objectName = group->name(NamePool::Ptr(m_namePool));
     if (m_schema->elementGroup(objectName)) {
-        error(QtXmlPatterns::tr("Element group %1 already defined.").arg(formatKeyword(m_namePool, objectName)));
+        error(QtXmlPatterns::tr("Element group %1 already defined.").arg(formatKeyword(NamePool::Ptr(m_namePool), objectName)));
     } else {
         m_schema->addElementGroup(group);
         m_componentLocationHash.insert(group, currentSourceLocation());
@@ -6085,9 +6085,9 @@ void XsdSchemaParser::addElementGroup(const XsdModelGroup::Ptr &group)
 
 void XsdSchemaParser::addNotation(const XsdNotation::Ptr &notation)
 {
-    const QXmlName objectName = notation->name(m_namePool);
+    const QXmlName objectName = notation->name(NamePool::Ptr(m_namePool));
     if (m_schema->notation(objectName)) {
-        error(QtXmlPatterns::tr("Notation %1 already defined.").arg(formatKeyword(m_namePool, objectName)));
+        error(QtXmlPatterns::tr("Notation %1 already defined.").arg(formatKeyword(NamePool::Ptr(m_namePool), objectName)));
     } else {
         m_schema->addNotation(notation);
         m_componentLocationHash.insert(notation, currentSourceLocation());
@@ -6096,9 +6096,9 @@ void XsdSchemaParser::addNotation(const XsdNotation::Ptr &notation)
 
 void XsdSchemaParser::addIdentityConstraint(const XsdIdentityConstraint::Ptr &constraint)
 {
-    const QXmlName objectName = constraint->name(m_namePool);
+    const QXmlName objectName = constraint->name(NamePool::Ptr(m_namePool));
     if (m_schema->identityConstraint(objectName)) {
-        error(QtXmlPatterns::tr("Identity constraint %1 already defined.").arg(formatKeyword(m_namePool, objectName)));
+        error(QtXmlPatterns::tr("Identity constraint %1 already defined.").arg(formatKeyword(NamePool::Ptr(m_namePool), objectName)));
     } else {
         m_schema->addIdentityConstraint(constraint);
         m_componentLocationHash.insert(constraint, currentSourceLocation());
@@ -6109,7 +6109,7 @@ void XsdSchemaParser::addFacet(const XsdFacet::Ptr &facet, XsdFacet::Hash &facet
 {
     // @see http://www.w3.org/TR/xmlschema-2/#src-single-facet-value
     if (facets.contains(facet->type())) {
-        error(QtXmlPatterns::tr("Duplicated facets in simple type %1.").arg(formatType(m_namePool, type)));
+        error(QtXmlPatterns::tr("Duplicated facets in simple type %1.").arg(formatType(NamePool::Ptr(m_namePool), type)));
         return;
     }
 

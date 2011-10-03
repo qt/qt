@@ -7748,7 +7748,13 @@ bool QXmlSimpleReaderPrivate::processReference()
                                     return false;
                                 }
                                 if (ret) {
-                                    QString xmlRefString = ret->data();
+                                    QString xmlRefString;
+                                    QString buffer = ret->data();
+                                    while (buffer.length()>0){
+                                        xmlRefString += buffer;
+                                        ret->fetchData();
+                                        buffer = ret->data();
+                                    }
                                     delete ret;
                                     if (!stripTextDecl(xmlRefString)) {
                                         reportParseError(QLatin1String(XMLERR_ERRORINTEXTDECL));

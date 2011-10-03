@@ -70,7 +70,8 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 
 void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
-    QFile ft(gnuMakefileName);
+    QString mkFullPath = Option::output_dir + QLatin1Char('/') + gnuMakefileName;
+    QFile ft(mkFullPath);
     if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
         QTextStream t(&ft);

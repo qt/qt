@@ -66,6 +66,7 @@ protected:
     // (output file) (source , command)
     QMap<QString, QStringList> makmakeCommands;
     QStringList overriddenMmpKeywords;
+    QDir outputDir;
 
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString absolutizePath(const QString& origPath);

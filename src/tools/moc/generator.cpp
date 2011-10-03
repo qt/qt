@@ -574,7 +574,7 @@ void Generator::generateProperties()
                 strreg(p.name),
                 strreg(p.type));
         if (!(flags >> 24) && isQRealType(p.type))
-            fprintf(out, "(QMetaType::QReal << 24) | ");
+            fprintf(out, "((uint)QMetaType::QReal << 24) | ");
         fprintf(out, "0x%.8x,\n", flags);
     }
 

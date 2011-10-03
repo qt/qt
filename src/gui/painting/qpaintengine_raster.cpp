@@ -2396,12 +2396,18 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
 
         if (!s->flags.antialiased && s->matrix.type() == QTransform::TxScale) {
-            QRectF rr = s->matrix.mapRect(r);
+            QPointF rr_tl = s->matrix.map(r.topLeft());
+            QPointF rr_br = s->matrix.map(r.bottomRight());
 
-            const int x1 = qRound(rr.x());
-            const int y1 = qRound(rr.y());
-            const int x2 = qRound(rr.right());
-            const int y2 = qRound(rr.bottom());
+            int x1 = qRound(rr_tl.x());
+            int y1 = qRound(rr_tl.y());
+            int x2 = qRound(rr_br.x());
+            int y2 = qRound(rr_br.y());
+
+            if (x1 > x2)
+                qSwap(x1, x2);
+            if (y1 > y2)
+                qSwap(y1, y2);
 
             fillRect_normalized(QRect(x1, y1, x2-x1, y2-y1), &d->image_filler_xform, d);
             return;
@@ -2862,15 +2868,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     } else
 #endif
     {
-        QFontEngineGlyphCache::Type glyphType;
-        if (fontEngine->glyphFormat >= 0) {
-            glyphType = QFontEngineGlyphCache::Type(fontEngine->glyphFormat);
-        } else if (s->matrix.type() > QTransform::TxTranslate
-                   && d->glyphCacheType == QFontEngineGlyphCache::Raster_RGBMask) {
-            glyphType = QFontEngineGlyphCache::Raster_A8;
-        } else {
-            glyphType = d->glyphCacheType;
-        }
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
+                ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat)
+                : d->glyphCacheType;
 
         QImageTextureGlyphCache *cache =
             static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
@@ -3098,7 +3098,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_OS_MAC) && defined(Q_WS_QPA))
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
@@ -3438,7 +3438,7 @@ bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) 
 
 bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransform &m) const
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_WS_MAC) || (defined(Q_OS_MAC) && defined(Q_WS_QPA))
     // Mac font engines don't support scaling and rotation
     if (m.type() > QTransform::TxTranslate)
 #else
@@ -3552,7 +3552,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }
@@ -3578,7 +3578,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }
@@ -3764,6 +3764,11 @@ extern "C" {
     int q_gray_rendered_spans(QT_FT_Raster raster);
 }
 
+static inline uchar *alignAddress(uchar *address, quintptr alignmentMask)
+{
+    return (uchar *)(((quintptr)address + alignmentMask) & ~alignmentMask);
+}
+
 void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                                           ProcessSpans callback,
                                           void *userData, QRasterBuffer *)
@@ -3791,19 +3796,10 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     // minimize memory reallocations. However if initial size for
     // raster pool is changed for lower value, reallocations will
     // occur normally.
-    const int rasterPoolInitialSize = MINIMUM_POOL_SIZE;
-    int rasterPoolSize = rasterPoolInitialSize;
-    unsigned char *rasterPoolBase;
-#if defined(Q_WS_WIN64)
-    rasterPoolBase =
-        // We make use of setjmp and longjmp in qgrayraster.c which requires
-        // 16-byte alignment, hence we hardcode this requirement here..
-        (unsigned char *) _aligned_malloc(rasterPoolSize, sizeof(void*) * 2);
-#else
-    unsigned char rasterPoolOnStack[rasterPoolInitialSize];
-    rasterPoolBase = rasterPoolOnStack;
-#endif
-    Q_CHECK_PTR(rasterPoolBase);
+    int rasterPoolSize = MINIMUM_POOL_SIZE;
+    uchar rasterPoolOnStack[MINIMUM_POOL_SIZE + 0xf];
+    uchar *rasterPoolBase = alignAddress(rasterPoolOnStack, 0xf);
+    uchar *rasterPoolOnHeap = 0;
 
     qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
 
@@ -3839,31 +3835,20 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
         // Out of memory, reallocate some more and try again...
         if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
-            int new_size = rasterPoolSize * 2;
-            if (new_size > 1024 * 1024) {
+            rasterPoolSize *= 2;
+            if (rasterPoolSize > 1024 * 1024) {
                 qWarning("QPainter: Rasterization of primitive failed");
                 break;
             }
 
             rendered_spans += q_gray_rendered_spans(*grayRaster.data());
 
-#if defined(Q_WS_WIN64)
-            _aligned_free(rasterPoolBase);
-#else
-            if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
-                free(rasterPoolBase);
-#endif
+            free(rasterPoolOnHeap);
+            rasterPoolOnHeap = (uchar *)malloc(rasterPoolSize + 0xf);
 
-            rasterPoolSize = new_size;
-            rasterPoolBase =
-#if defined(Q_WS_WIN64)
-                // We make use of setjmp and longjmp in qgrayraster.c which requires
-                // 16-byte alignment, hence we hardcode this requirement here..
-                (unsigned char *) _aligned_malloc(rasterPoolSize, sizeof(void*) * 2);
-#else
-                (unsigned char *) malloc(rasterPoolSize);
-#endif
-            Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
+            Q_CHECK_PTR(rasterPoolOnHeap); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
+
+            rasterPoolBase = alignAddress(rasterPoolOnHeap, 0xf);
 
             qt_ft_grays_raster.raster_done(*grayRaster.data());
             qt_ft_grays_raster.raster_new(grayRaster.data());
@@ -3873,12 +3858,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         }
     }
 
-#if defined(Q_WS_WIN64)
-    _aligned_free(rasterPoolBase);
-#else
-    if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
-        free(rasterPoolBase);
-#endif
+    free(rasterPoolOnHeap);
 }
 
 void QRasterPaintEnginePrivate::recalculateFastImages()

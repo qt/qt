@@ -48,14 +48,16 @@ v8 {
         $$SOURCE_DIR/WebCore/bindings/v8 \
         $$SOURCE_DIR/WebCore/bindings/v8/custom \
         $$SOURCE_DIR/WebCore/bindings/v8/specialization \
-        $$SOURCE_DIR/WebCore/bridge/qt/v8
+        $$SOURCE_DIR/WebCore/bridge/qt/v8 \
+        $$SOURCE_DIR/WebCore/testing/v8
 
 } else {
     WEBCORE_INCLUDEPATH = \
         $$SOURCE_DIR/WebCore/bridge/jsc \
         $$SOURCE_DIR/WebCore/bindings/js \
         $$SOURCE_DIR/WebCore/bindings/js/specialization \
-        $$SOURCE_DIR/WebCore/bridge/c
+        $$SOURCE_DIR/WebCore/bridge/c \
+        $$SOURCE_DIR/WebCore/testing/js
 }
 
 WEBCORE_INCLUDEPATH = \
@@ -110,6 +112,7 @@ WEBCORE_INCLUDEPATH = \
     $$SOURCE_DIR/WebCore/svg/graphics \
     $$SOURCE_DIR/WebCore/svg/graphics/filters \
     $$SOURCE_DIR/WebCore/svg/properties \
+    $$SOURCE_DIR/WebCore/testing \
     $$SOURCE_DIR/WebCore/webaudio \
     $$SOURCE_DIR/WebCore/websockets \
     $$SOURCE_DIR/WebCore/wml \
@@ -150,7 +153,7 @@ symbian {
     CONFIG += do_not_build_as_thumb
 
     CONFIG(release, debug|release): QMAKE_CXXFLAGS.ARMCC += -OTime -O3
-    # Symbian plugin support
+    # Symbian plugin support.
     LIBS += -lefsrv
 
     !CONFIG(QTDIR_build) {
@@ -242,26 +245,22 @@ contains(DEFINES, WTF_USE_QT_BEARER=1) {
 }
 
 contains(DEFINES, ENABLE_VIDEO=1) {
-    contains(DEFINES, USE_QTKIT=1) {
-        DEFINES += WTF_USE_QTKIT=1
-
+    contains(DEFINES, WTF_USE_QTKIT=1) {
         INCLUDEPATH += $$PWD/platform/graphics/mac
 
         LIBS += -framework AppKit -framework AudioUnit \
                 -framework AudioToolbox -framework CoreAudio \
                 -framework QuartzCore -framework QTKit
 
-    } else:contains(DEFINES, USE_GSTREAMER=1) {
-        DEFINES += WTF_USE_GSTREAMER=1
+    } else:contains(DEFINES, WTF_USE_GSTREAMER=1) {
         DEFINES += ENABLE_GLIB_SUPPORT=1
 
         INCLUDEPATH += $$PWD/platform/graphics/gstreamer
 
         PKGCONFIG += glib-2.0 gio-2.0 gstreamer-0.10 gstreamer-app-0.10 gstreamer-base-0.10 gstreamer-interfaces-0.10 gstreamer-pbutils-0.10 gstreamer-plugins-base-0.10 gstreamer-video-0.10
-    } else:contains(MOBILITY_CONFIG, multimedia) {
+    } else:contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         CONFIG   *= mobility
         MOBILITY *= multimedia
-        DEFINES  += WTF_USE_QT_MULTIMEDIA=1
     }
 }
 
@@ -304,7 +303,7 @@ win32-* {
 }
 
 # Remove whole program optimizations due to miscompilations
-win32-msvc2005|win32-msvc2008|wince*:{
+win32-msvc2005|win32-msvc2008|win32-msvc2010|wince*:{
     QMAKE_CFLAGS_RELEASE -= -GL
     QMAKE_CXXFLAGS_RELEASE -= -GL
 
@@ -343,7 +342,7 @@ use_qt_mobile_theme: DEFINES += WTF_USE_QT_MOBILE_THEME=1
 defineTest(prependWebCoreLib) {
     pathToWebCoreOutput = $$ARGS/$$WEBCORE_DESTDIR
 
-    win32-msvc*|wince* {
+    win32-msvc*|wince*|win32-icc {
         LIBS = -l$$WEBCORE_TARGET $$LIBS
         LIBS = -L$$pathToWebCoreOutput $$LIBS
         POST_TARGETDEPS += $${pathToWebCoreOutput}$${QMAKE_DIR_SEP}$${WEBCORE_TARGET}.lib

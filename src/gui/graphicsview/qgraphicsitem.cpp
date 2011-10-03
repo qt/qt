@@ -1171,24 +1171,26 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     // Update focus scope item ptr in new scope.
     QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
     if (newFocusScopeItem && newParent) {
-        if (subFocusItem) {
-            // Find the subFocusItem's topmost focus scope.
-            QGraphicsItem *ancestorScope = 0;
-            QGraphicsItem *p = subFocusItem->d_ptr->parent;
-            while (p) {
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
-                    ancestorScope = p;
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsPanel)
-                    break;
-                p = p->d_ptr->parent;
-            }
-            if (ancestorScope)
-                newFocusScopeItem = ancestorScope;
-        }
-
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
+                if (subFocusItem && subFocusItem != q_ptr) {
+                    // Find the subFocusItem's topmost focus scope within the new parent's focusscope
+                    QGraphicsItem *ancestorScope = 0;
+                    QGraphicsItem *p2 = subFocusItem->d_ptr->parent;
+                    while (p2 && p2 != p) {
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
+                            ancestorScope = p2;
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsPanel)
+                            break;
+                        if (p2 == q_ptr)
+                            break;
+                        p2 = p2->d_ptr->parent;
+                    }
+                    if (ancestorScope)
+                        newFocusScopeItem = ancestorScope;
+                }
+
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
                 newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
@@ -5376,11 +5378,9 @@ void QGraphicsItemPrivate::invalidateParentGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
     do {
-        if (itemPrivate->graphicsEffect) {
+        if (itemPrivate->graphicsEffect && !itemPrivate->updateDueToGraphicsEffect) {
             itemPrivate->notifyInvalidated = 1;
-
-            if (!itemPrivate->updateDueToGraphicsEffect)
-                static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+            static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
@@ -5688,21 +5688,27 @@ void QGraphicsItem::update(const QRectF &rect)
     d_ptr->invalidateParentGraphicsEffectsRecursively();
 #endif //QT_NO_GRAPHICSEFFECT
 
-    if (CacheMode(d_ptr->cacheMode) != NoCache) {
-        // Invalidate cache.
-        QGraphicsItemCache *cache = d_ptr->extraItemCache();
-        if (!cache->allExposed) {
-            if (rect.isNull()) {
-                cache->allExposed = true;
-                cache->exposed.clear();
-            } else {
-                cache->exposed.append(rect);
+#ifndef QT_NO_GRAPHICSEFFECT
+    if (!d_ptr->updateDueToGraphicsEffect) {
+#endif
+        if (CacheMode(d_ptr->cacheMode) != NoCache) {
+            // Invalidate cache.
+            QGraphicsItemCache *cache = d_ptr->extraItemCache();
+            if (!cache->allExposed) {
+                if (rect.isNull()) {
+                    cache->allExposed = true;
+                    cache->exposed.clear();
+                } else {
+                    cache->exposed.append(rect);
+                }
             }
+            // Only invalidate cache; item is already dirty.
+            if (d_ptr->fullUpdatePending)
+                return;
         }
-        // Only invalidate cache; item is already dirty.
-        if (d_ptr->fullUpdatePending)
-            return;
+#ifndef QT_NO_GRAPHICSEFFECT
     }
+#endif
 
     if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, rect);

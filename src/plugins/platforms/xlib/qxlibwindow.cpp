@@ -687,7 +687,7 @@ QPlatformGLContext *QXlibWindow::glContext() const
         eglContextAttrs.append(EGL_NONE);
 
         EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)x_window,0);
-        that->mGLContext = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
+        that->mGLContext = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API, static_cast<QEGLPlatformContext *>(windowFormat.sharedGLContext()));
 #endif
 #endif
     }

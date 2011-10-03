@@ -347,7 +347,7 @@ QT_END_NAMESPACE
     QWidget *qwidget = QApplication::widgetAt(globalPoint);
     *currentDragTarget() = qwidget;
     if (!qwidget)
-        return [super draggingEntered:sender];
+        return NSDragOperationNone;
     if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
         return NSDragOperationNone;
 
@@ -413,7 +413,7 @@ QT_END_NAMESPACE
 
     QWidget *qwidget = QApplication::widgetAt(globalPoint);
     if (!qwidget)
-        return [super draggingEntered:sender];
+        return NSDragOperationNone;
 
     // First, check if the widget under the mouse has changed since the
     // last drag move events. If so, we need to change target, and dispatch
@@ -500,7 +500,7 @@ QT_END_NAMESPACE
 
     QWidget *qwidget = *currentDragTarget();
     if (!qwidget)
-        return [super draggingExited:sender];
+        return;
 
     if (dropData) {
         QDragLeaveEvent de;

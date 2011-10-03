@@ -184,6 +184,7 @@ EXPORTS
 	?createFromNativeImageHandleProvider@QVGPixmapData@@QAEXXZ @ 183 NONAME ; void QVGPixmapData::createFromNativeImageHandleProvider(void)
 	?releaseNativeImageHandle@QVGPixmapData@@QAEXXZ @ 184 NONAME ; void QVGPixmapData::releaseNativeImageHandle(void)
 	?forceToImage@QVGPixmapData@@IAEX_N@Z @ 185 NONAME ; void QVGPixmapData::forceToImage(bool)
-	?features@QVGWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 186 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QVGWindowSurface::features(void) const
+	?toVolatileImage@QVGPixmapData@@UBE?AVQVolatileImage@@XZ @ 186 NONAME ; class QVolatileImage QVGPixmapData::toVolatileImage(void) const
 	?supportsTransformations@QVGPaintEngine@@UBE_NMABVQTransform@@@Z @ 187 NONAME ; bool QVGPaintEngine::supportsTransformations(float, class QTransform const &) const
-	?toVolatileImage@QVGPixmapData@@UBE?AVQVolatileImage@@XZ @ 188 NONAME ; class QVolatileImage QVGPixmapData::toVolatileImage(void) const
+	?features@QVGWindowSurface@@UBE?AV?$QFlags@W4WindowSurfaceFeature@QWindowSurface@@@@XZ @ 188 NONAME ; class QFlags<enum QWindowSurface::WindowSurfaceFeature> QVGWindowSurface::features(void) const
+

@@ -102,15 +102,16 @@
     of the libraries used by the application.  Using static linking,
     however, the Qt run-time is compiled into the executable.
 
-    In general, you should deploy all plugins that your build of Qt uses,
-    excluding only those that you have identified as being unnecessary
-    for your application and its users.
+    In general, you should \l{Deploying Plugins}{deploy all plugins}
+    that your build of Qt uses, excluding only those that you have
+    identified as being unnecessary for your application and its users.
 
     For instance, you may need to deploy plugins for JPEG support and
     SQL drivers, but you should also deploy plugins that your users may
     require, including those for accessibility.
-    For more information about plugins, see the
-    \l{plugins-howto.html}{How to Create Qt Plugins} documentation.
+    For more information about plugins, see
+    \l{plugins-howto.html}{How to Create Qt Plugins} and
+    \l{Deploying Plugins}.
 
     When deploying an application using the shared library approach
     you must ensure that the Qt libraries will use the correct path to
@@ -501,7 +502,8 @@
 
     The \l{How to Create Qt Plugins} document outlines the issues you
     need to pay attention to when building and deploying plugins for
-    Qt applications.
+    Qt applications. More information about deployment can be found in
+    \l{Deploying Plugins}.
 */
 
 /*!

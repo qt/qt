@@ -70,10 +70,10 @@ public:
 
     QRawFont();
     QRawFont(const QString &fileName,
-             int pixelSize,
+             qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QByteArray &fontData,
-             int pixelSize,
+             qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QRawFont &other);
     ~QRawFont();
@@ -81,7 +81,10 @@ public:
     bool isValid() const;
 
     QRawFont &operator=(const QRawFont &other);
+
     bool operator==(const QRawFont &other) const;
+    inline bool operator!=(const QRawFont &other) const
+    { return !operator==(other); }
 
     QString familyName() const;
     QString styleName() const;
@@ -114,15 +117,15 @@ public:
     qreal unitsPerEm() const;
 
     void loadFromFile(const QString &fileName,
-                      int pixelSize,
+                      qreal pixelSize,
                       QFont::HintingPreference hintingPreference);
 
     void loadFromData(const QByteArray &fontData,
-                      int pixelSize,
+                      qreal pixelSize,
                       QFont::HintingPreference hintingPreference);
 
     bool supportsCharacter(quint32 ucs4) const;
-    bool supportsCharacter(const QChar &character) const;
+    bool supportsCharacter(QChar character) const;
     QList<QFontDatabase::WritingSystem> supportedWritingSystems() const;
 
     QByteArray fontTable(const char *tagName) const;
@@ -132,9 +135,6 @@ public:
 
 private:
     friend class QRawFontPrivate;
-
-    void detach();
-
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };
 

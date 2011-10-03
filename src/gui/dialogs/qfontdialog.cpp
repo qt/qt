@@ -160,7 +160,7 @@ QFontDialog::QFontDialog(QWidget *parent)
     \since 4.5
 
     Constructs a standard font dialog with the given \a parent and specified
-    \a initial color.
+    \a initial font.
 */
 QFontDialog::QFontDialog(const QFont &initial, QWidget *parent)
     : QDialog(*new QFontDialogPrivate, parent, DefaultWindowFlags)

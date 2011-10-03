@@ -164,7 +164,7 @@ bool EnvironmentalReverb::getParameters(CMdaAudioOutputStream *stream,
         parameters.append(createParameter(
             Diffusion, tr("Diffusion (%)"), effect->Diffusion(), 0, 100));
 
-        //: ReflectionsDelay: Amount of delay between the arrival the direct
+        //: ReflectionsDelay: Amount of delay between the arrival of the direct
         //: path from the source and the arrival of the first reflection.
         parameters.append(createParameter(
             ReflectionsDelay, tr("Reflections delay (ms)"),
@@ -185,7 +185,7 @@ bool EnvironmentalReverb::getParameters(CMdaAudioOutputStream *stream,
             0, effect->ReverbDelayMax()));
 
         effect->ReverbLevelRange(min, max);
-        //: ReverbLevel Amplitude of reverberations.  This value is
+        //: ReverbLevel: Amplitude of reverberations.  This value is
         //: corrected by the RoomLevel to give the final reverberation
         //: amplitude.
         parameters.append(createParameter(

@@ -1063,7 +1063,7 @@ bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOpti
 {
     QMacStyle *macStyle = qobject_cast<QMacStyle *>(pushButton->style());
     if (!macStyle)
-        return false;
+        return true;    // revert to 'flat' behavior if not Mac style
     HIThemeButtonDrawInfo bdi;
     macStyle->d->initHIThemePushButton(option, pushButton, kThemeStateActive, &bdi);
     return bdi.kind == kThemeBevelButton;

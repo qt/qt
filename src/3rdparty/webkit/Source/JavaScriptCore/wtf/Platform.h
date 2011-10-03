@@ -365,7 +365,7 @@
 
 #endif /* ARM */
 
-#if CPU(ARM) || CPU(MIPS)
+#if CPU(ARM) || CPU(MIPS) || CPU(SH4)
 #define WTF_CPU_NEEDS_ALIGNED_ACCESS 1
 #endif
 
@@ -581,7 +581,7 @@
 #define WTF_USE_PTHREAD_BASED_QT 1
 #endif
 
-#if (PLATFORM(GTK) || PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || (PLATFORM(QT) && (OS(DARWIN) || USE(PTHREAD_BASED_QT)) && !ENABLE(SINGLE_THREADED))) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
+#if (PLATFORM(GTK) || PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || (PLATFORM(QT) && (OS(DARWIN) || USE(PTHREAD_BASED_QT)) && !ENABLE(SINGLE_THREADED))) && !OS(QNX) && !defined(ENABLE_JSC_MULTIPLE_THREADS)
 #define ENABLE_JSC_MULTIPLE_THREADS 1
 #endif
 
@@ -1014,8 +1014,13 @@
 #define ENABLE_JIT 0
 #endif
 
-/* JIT is not implemented for 64 bit on MSVC */
-#if !defined(ENABLE_JIT) && COMPILER(MSVC) && CPU(X86_64)
+/* JIT is not implemented for Windows 64-bit */
+#if !defined(ENABLE_JIT) && OS(WINDOWS) && CPU(X86_64)
+#define ENABLE_JIT 0
+#endif
+
+/* Disable JIT for WINSCW Symbian Emulator */
+#if !defined(ENABLE_JIT) && COMPILER(WINSCW)
 #define ENABLE_JIT 0
 #endif
 
@@ -1023,7 +1028,8 @@
 #if !defined(ENABLE_JIT) \
     && (CPU(X86) || CPU(X86_64) || CPU(ARM) || CPU(MIPS)) \
     && (OS(DARWIN) || !COMPILER(GCC) || GCC_VERSION_AT_LEAST(4, 1, 0)) \
-    && !OS(WINCE)
+    && !OS(WINCE) \
+    && !OS(QNX)
 #define ENABLE_JIT 1
 #endif
 

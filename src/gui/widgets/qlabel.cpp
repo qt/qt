@@ -59,6 +59,10 @@
 #include <qaccessible.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include "qt_s60_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -91,6 +95,13 @@ QT_BEGIN_NAMESPACE
          \o The same as an empty plain text. This is the default. Set
             by clear().
     \endtable
+
+    \warning When passing a QString to the constructor or calling setText(),
+    make sure to sanitize your input, as QLabel tries to guess whether it
+    displays the text as plain text or as rich text. You may want to call
+    setTextFormat() explicitly, e.g. in case you expect the text to be in
+    plain format but cannot control the text source (for instance when
+    displaying data loaded from the Web).
 
     When the content is changed using any of these functions, any
     previous content is cleared.
@@ -691,7 +702,11 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 
             bool tryWidth = (w < 0) && (align & Qt::TextWordWrap);
             if (tryWidth)
+#ifdef Q_OS_SYMBIAN
+                w = qMin(S60->clientRect().Width(), q->maximumSize().width());
+#else
                 w = qMin(fm.averageCharWidth() * 80, q->maximumSize().width());
+#endif
             else if (w < 0)
                 w = 2000;
             w -= (hextra + contentsMargin.width());
