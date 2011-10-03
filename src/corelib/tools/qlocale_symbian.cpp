@@ -135,6 +135,7 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangHebrew,              "he_IL" },  // 57
     { ELangHindi,               "hi_IN" },  // 58
     { ELangIndonesian,          "id_ID" },  // 59
+    { ELangKazakh,              "kk_KZ" },  // 63
     { ELangKorean,              "ko_KO" },  // 65
     { ELangLatvian,             "lv_LV" },  // 67
     { ELangLithuanian,          "lt_LT" },  // 68
@@ -159,6 +160,7 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangEnglish_Prc,         "en_CN" },  // 159 ### Not supported by CLDR
     { ELangEnglish_Japan,       "en_JP"},   // 160 ### Not supported by CLDR
     { ELangEnglish_Thailand,    "en_TH" },  // 161 ### Not supported by CLDR
+    { 230/*ELangEnglish_India*/,"en_IN" },  // 230 - appeared in Symbian^3
     { ELangMalay_Apac,          "ms" },     // 326
 #endif
     { 327/*ELangIndonesian_Apac*/,"id_ID" } // 327 - appeared in Symbian^3
