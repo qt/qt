@@ -39,31 +39,29 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QDebug>
-#include <QDeclarativeComponent>
-#include <QDeclarativeEngine>
-#include <QStringList>
-#include <QtDeclarative/private/qdeclarativedebugservice_p.h>
+#ifndef QDECLARATIVEDEBUG_H
+#define QDECLARATIVEDEBUG_H
 
-int main(int argc, char *argv[])
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+struct Q_DECLARATIVE_EXPORT QDeclarativeDebuggingEnabler
 {
-    QApplication app(argc, argv);
+    QDeclarativeDebuggingEnabler();
+};
 
-    const QUrl path = QUrl::fromLocalFile(app.arguments().last());
+// Execute code in constructor before first QDeclarativeEngine is instantiated
+#if defined(QT_DECLARATIVE_DEBUG)
+static QDeclarativeDebuggingEnabler qmlEnableDebuggingHelper;
+#endif
 
-    QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, path);
+QT_END_NAMESPACE
 
-    if (!component.isReady()) {
-        qWarning() << component.errorString();
-        return -1;
-    }
+QT_END_HEADER
 
-    QObject *obj = component.create();
-
-//    printf("%u\n", QDeclarativeDebugService::idForObject(obj));
-//    fflush(stdout);
-
-    return app.exec();
-}
+#endif // QDECLARATIVEDEBUG_H

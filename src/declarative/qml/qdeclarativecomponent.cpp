@@ -53,7 +53,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
-#include "private/qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativeenginedebugservice_p.h"
 #include <QtScript/qscriptvalueiterator.h>
 
 #include <QStack>
@@ -896,7 +896,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     if (enginePriv->isDebugging && rv) {
         if  (!parentContext->isInternal)
             parentContext->asQDeclarativeContextPrivate()->instances.append(rv);
-        QDeclarativeEngineDebugServer::instance()->objectCreated(parentContext->engine, rv);
+        QDeclarativeEngineDebugService::instance()->objectCreated(parentContext->engine, rv);
     }
 
     return rv;

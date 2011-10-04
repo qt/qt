@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "private/qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativeenginedebugservice_p.h"
 
 #include "private/qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
@@ -59,14 +59,14 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
+Q_GLOBAL_STATIC(QDeclarativeEngineDebugService, qmlEngineDebugService);
 
-QDeclarativeEngineDebugServer *QDeclarativeEngineDebugServer::instance()
+QDeclarativeEngineDebugService *QDeclarativeEngineDebugService::instance()
 {
-    return qmlEngineDebugServer();
+    return qmlEngineDebugService();
 }
 
-QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
+QDeclarativeEngineDebugService::QDeclarativeEngineDebugService(QObject *parent)
 : QDeclarativeDebugService(QLatin1String("QDeclarativeEngine"), parent),
     m_watch(new QDeclarativeWatcher(this))
 {
@@ -75,7 +75,7 @@ QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 }
 
 QDataStream &operator<<(QDataStream &ds, 
-                        const QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
+                        const QDeclarativeEngineDebugService::QDeclarativeObjectData &data)
 {
     ds << data.url << data.lineNumber << data.columnNumber << data.idString
        << data.objectName << data.objectType << data.objectId << data.contextId;
@@ -83,7 +83,7 @@ QDataStream &operator<<(QDataStream &ds,
 }
 
 QDataStream &operator>>(QDataStream &ds, 
-                        QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
+                        QDeclarativeEngineDebugService::QDeclarativeObjectData &data)
 {
     ds >> data.url >> data.lineNumber >> data.columnNumber >> data.idString
        >> data.objectName >> data.objectType >> data.objectId >> data.contextId;
@@ -91,7 +91,7 @@ QDataStream &operator>>(QDataStream &ds,
 }
 
 QDataStream &operator<<(QDataStream &ds, 
-                        const QDeclarativeEngineDebugServer::QDeclarativeObjectProperty &data)
+                        const QDeclarativeEngineDebugService::QDeclarativeObjectProperty &data)
 {
     ds << (int)data.type << data.name << data.value << data.valueTypeName
        << data.binding << data.hasNotifySignal;
@@ -99,12 +99,12 @@ QDataStream &operator<<(QDataStream &ds,
 }
 
 QDataStream &operator>>(QDataStream &ds,  
-                        QDeclarativeEngineDebugServer::QDeclarativeObjectProperty &data)
+                        QDeclarativeEngineDebugService::QDeclarativeObjectProperty &data)
 {
     int type;
     ds >> type >> data.name >> data.value >> data.valueTypeName
        >> data.binding >> data.hasNotifySignal;
-    data.type = (QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Type)type;
+    data.type = (QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Type)type;
     return ds;
 }
 
@@ -131,8 +131,8 @@ static bool hasValidSignal(QObject *object, const QString &propertyName)
     return true;
 }
 
-QDeclarativeEngineDebugServer::QDeclarativeObjectProperty 
-QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
+QDeclarativeEngineDebugService::QDeclarativeObjectProperty
+QDeclarativeEngineDebugService::propertyData(QObject *obj, int propIdx)
 {
     QDeclarativeObjectProperty rv;
 
@@ -164,7 +164,7 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     return rv;
 }
 
-QVariant QDeclarativeEngineDebugServer::valueContents(const QVariant &value) const
+QVariant QDeclarativeEngineDebugService::valueContents(const QVariant &value) const
 {
     int userType = value.userType();
 
@@ -193,7 +193,7 @@ QVariant QDeclarativeEngineDebugServer::valueContents(const QVariant &value) con
     return QLatin1String("<unknown value>");
 }
 
-void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message, 
+void QDeclarativeEngineDebugService::buildObjectDump(QDataStream &message,
                                            QObject *object, bool recur, bool dumpProperties)
 {
     message << objectData(object);
@@ -264,7 +264,7 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         message << fakeProperties[ii];
 }
 
-void QDeclarativeEngineDebugServer::prepareDeferredObjects(QObject *obj)
+void QDeclarativeEngineDebugService::prepareDeferredObjects(QObject *obj)
 {
     qmlExecuteDeferred(obj);
 
@@ -276,7 +276,7 @@ void QDeclarativeEngineDebugServer::prepareDeferredObjects(QObject *obj)
 
 }
 
-void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
+void QDeclarativeEngineDebugService::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
 {
     QDeclarativeContextData *p = QDeclarativeContextData::get(ctxt);
 
@@ -316,7 +316,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
     }
 }
 
-void QDeclarativeEngineDebugServer::buildStatesList(QDeclarativeContext *ctxt, bool cleanList=false)
+void QDeclarativeEngineDebugService::buildStatesList(QDeclarativeContext *ctxt, bool cleanList=false)
 {
     if (cleanList)
         m_allStates.clear();
@@ -333,7 +333,7 @@ void QDeclarativeEngineDebugServer::buildStatesList(QDeclarativeContext *ctxt, b
     }
 }
 
-void QDeclarativeEngineDebugServer::buildStatesList(QObject *obj)
+void QDeclarativeEngineDebugService::buildStatesList(QObject *obj)
 {
     if (QDeclarativeState *state = qobject_cast<QDeclarativeState *>(obj)) {
             m_allStates.append(state);
@@ -345,8 +345,8 @@ void QDeclarativeEngineDebugServer::buildStatesList(QObject *obj)
     }
 }
 
-QDeclarativeEngineDebugServer::QDeclarativeObjectData 
-QDeclarativeEngineDebugServer::objectData(QObject *object)
+QDeclarativeEngineDebugService::QDeclarativeObjectData
+QDeclarativeEngineDebugService::objectData(QObject *object)
 {
     QDeclarativeData *ddata = QDeclarativeData::get(object);
     QDeclarativeObjectData rv;
@@ -385,7 +385,7 @@ QDeclarativeEngineDebugServer::objectData(QObject *object)
     return rv;
 }
 
-void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
+void QDeclarativeEngineDebugService::messageReceived(const QByteArray &message)
 {
     QDataStream ds(message);
 
@@ -545,7 +545,7 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
     }
 }
 
-void QDeclarativeEngineDebugServer::setBinding(int objectId,
+void QDeclarativeEngineDebugService::setBinding(int objectId,
                                                const QString &propertyName,
                                                const QVariant &expression,
                                                bool isLiteralValue,
@@ -600,7 +600,7 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                         oldBinding->destroy();
                     binding->update();
                 } else {
-                    qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
+                    qWarning() << "QDeclarativeEngineDebugService::setBinding: unable to set property" << propertyName << "on object" << object;
                 }
             }
 
@@ -613,13 +613,13 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                     propertyChanges->changeExpression(propertyName, expression.toString());
                 }
             } else {
-                qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
+                qWarning() << "QDeclarativeEngineDebugService::setBinding: unable to set property" << propertyName << "on object" << object;
             }
         }
     }
 }
 
-void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &propertyName)
+void QDeclarativeEngineDebugService::resetBinding(int objectId, const QString &propertyName)
 {
     QObject *object = objectForId(objectId);
     QDeclarativeContext *context = qmlContext(object);
@@ -664,7 +664,7 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
     }
 }
 
-void QDeclarativeEngineDebugServer::setMethodBody(int objectId, const QString &method, const QString &body)
+void QDeclarativeEngineDebugService::setMethodBody(int objectId, const QString &method, const QString &body)
 {
     QObject *object = objectForId(objectId);
     QDeclarativeContext *context = qmlContext(object);
@@ -703,7 +703,7 @@ void QDeclarativeEngineDebugServer::setMethodBody(int objectId, const QString &m
     vmeMetaObject->setVmeMethod(prop->coreIndex, QDeclarativeExpressionPrivate::evalInObjectScope(contextData, object, jsfunction, contextData->url.toString(), lineNumber, 0));
 }
 
-void QDeclarativeEngineDebugServer::propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value)
+void QDeclarativeEngineDebugService::propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value)
 {
     QByteArray reply;
     QDataStream rs(&reply, QIODevice::WriteOnly);
@@ -713,7 +713,7 @@ void QDeclarativeEngineDebugServer::propertyChanged(int id, int objectId, const 
     sendMessage(reply);
 }
 
-void QDeclarativeEngineDebugServer::addEngine(QDeclarativeEngine *engine)
+void QDeclarativeEngineDebugService::addEngine(QDeclarativeEngine *engine)
 {
     Q_ASSERT(engine);
     Q_ASSERT(!m_engines.contains(engine));
@@ -721,7 +721,7 @@ void QDeclarativeEngineDebugServer::addEngine(QDeclarativeEngine *engine)
     m_engines.append(engine);
 }
 
-void QDeclarativeEngineDebugServer::remEngine(QDeclarativeEngine *engine)
+void QDeclarativeEngineDebugService::remEngine(QDeclarativeEngine *engine)
 {
     Q_ASSERT(engine);
     Q_ASSERT(m_engines.contains(engine));
@@ -729,7 +729,7 @@ void QDeclarativeEngineDebugServer::remEngine(QDeclarativeEngine *engine)
     m_engines.removeAll(engine);
 }
 
-void QDeclarativeEngineDebugServer::objectCreated(QDeclarativeEngine *engine, QObject *object)
+void QDeclarativeEngineDebugService::objectCreated(QDeclarativeEngine *engine, QObject *object)
 {
     Q_ASSERT(engine);
     Q_ASSERT(m_engines.contains(engine));
