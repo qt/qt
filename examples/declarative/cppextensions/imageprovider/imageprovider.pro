@@ -24,5 +24,5 @@ symbian:{
 
     importFiles.sources = ImageProviderCore/qmlimageproviderplugin.dll ImageProviderCore/qmldir
     importFiles.path = ImageProviderCore
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 }

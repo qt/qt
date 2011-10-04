@@ -20,5 +20,5 @@ symbian:{
     importFiles.sources = QWidgets/qmlqwidgetsplugin.dll QWidgets/qmldir
     importFiles.path = QWidgets
 
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 }
