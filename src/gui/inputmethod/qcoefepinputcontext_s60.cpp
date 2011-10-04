@@ -898,6 +898,9 @@ void QCoeFepInputContext::ensureWidgetVisibility()
 
 void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
 {
+    if (!widget)
+        return;
+
     // Native side opening and closing its virtual keyboard when it changes the keyboard layout,
     // has an adverse impact on long tap timer. Cancel the timer when splitview opens to avoid this.
     QSymbianControl *symControl = static_cast<QSymbianControl*>(widget->effectiveWinId());
