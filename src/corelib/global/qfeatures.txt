@@ -1268,13 +1268,6 @@ Requires: CURSOR
 Name: Cursor
 SeeAlso: ???
 
-Feature: QWS_ALPHA_CURSOR
-Description: Supports alpha-blended cursors.
-Section: Qt for Embedded Linux
-Requires:
-Name: Alpha Cursor
-SeeAlso: ???
-
 Feature: QWS_MANAGER
 Description: Supports the window manager.
 Section: Qt for Embedded Linux
