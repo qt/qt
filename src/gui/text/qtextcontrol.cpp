@@ -408,7 +408,6 @@ void QTextControlPrivate::init(Qt::TextFormat format, const QString &text, QText
     setContent(format, text, document);
 
     doc->setUndoRedoEnabled(interactionFlags & Qt::TextEditable);
-    q->setCursorWidth(-1);
 }
 
 void QTextControlPrivate::setContent(Qt::TextFormat format, const QString &text, QTextDocument *document)
@@ -2236,7 +2235,10 @@ int QTextControl::cursorWidth() const
 {
 #ifndef QT_NO_PROPERTIES
     Q_D(const QTextControl);
-    return d->doc->documentLayout()->property("cursorWidth").toInt();
+    int width = d->doc->documentLayout()->property("cursorWidth").toInt();
+    if (width == -1)
+        width = QApplication::style()->pixelMetric(QStyle::PM_TextCursorWidth);
+    return width;
 #else
     return 1;
 #endif
@@ -2248,8 +2250,6 @@ void QTextControl::setCursorWidth(int width)
 #ifdef QT_NO_PROPERTIES
     Q_UNUSED(width);
 #else
-    if (width == -1)
-        width = QApplication::style()->pixelMetric(QStyle::PM_TextCursorWidth);
     d->doc->documentLayout()->setProperty("cursorWidth", width);
 #endif
     d->repaintCursor();
