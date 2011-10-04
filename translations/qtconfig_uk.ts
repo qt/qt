@@ -36,6 +36,10 @@
         <translation>У вікні документу</translation>
     </message>
     <message>
+        <source>Unknown</source>
+        <translation>Невідомий</translation>
+    </message>
+    <message>
         <source>Auto (default)</source>
         <translation>Автоматично (типово)</translation>
     </message>
@@ -92,6 +96,10 @@
         <translation>Збереження змін...</translation>
     </message>
     <message>
+        <source>Saved changes.</source>
+        <translation>Зміни збережено.</translation>
+    </message>
+    <message>
         <source>Over The Spot</source>
         <translation>Над вікном документу</translation>
     </message>
@@ -122,25 +130,6 @@
     <message>
         <source>Save changes to settings?</source>
         <translation>Зберегти зміни до налаштувань?</translation>
-    </message>
-    <message>
-        <source>&amp;Yes</source>
-        <translation>&amp;Так</translation>
-    </message>
-    <message>
-        <source>&amp;No</source>
-        <translation>&amp;Ні</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>&amp;Скасувати</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowBase</name>
-    <message>
-        <source>Qt Configuration</source>
-        <translation>Налаштування Qt</translation>
     </message>
     <message>
         <source>Appearance</source>
@@ -179,8 +168,8 @@
         <translation>Створити палітру</translation>
     </message>
     <message>
-        <source>&amp;3-D Effects:</source>
-        <translation>&amp;3-D ефекти:</translation>
+        <source>&amp;Button Background:</source>
+        <translation>Фон &amp;кнопки:</translation>
     </message>
     <message>
         <source>Window Back&amp;ground:</source>
@@ -351,22 +340,6 @@
         <translation>Стиль введення XIM:</translation>
     </message>
     <message>
-        <source>On The Spot</source>
-        <translation>У вікні документу</translation>
-    </message>
-    <message>
-        <source>Over The Spot</source>
-        <translation>Над вікном документу</translation>
-    </message>
-    <message>
-        <source>Off The Spot</source>
-        <translation>В рядку стану</translation>
-    </message>
-    <message>
-        <source>Root</source>
-        <translation>В додатковому вікні</translation>
-    </message>
-    <message>
         <source>Default Input Method:</source>
         <translation>Типовий метод введення:</translation>
     </message>
@@ -411,11 +384,7 @@
         <translation>Веб-сайт:</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>&lt;a href=&quot;http://phonon.kde.org&quot;&gt;http://phonon.kde.org/&lt;/a&gt;</source>
         <translation></translation>
     </message>
     <message>
@@ -423,11 +392,7 @@ p, li { white-space: pre-wrap; }
         <translation>Про GStreamer</translation>
     </message>
     <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;http://gstreamer.freedesktop.org/&lt;/a&gt;</source>
         <translation></translation>
     </message>
     <message>
@@ -472,7 +437,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation></translation>
     </message>
     <message>
         <source>E&amp;xit</source>
@@ -481,6 +446,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Exit</source>
         <translation>Вийти</translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation></translation>
     </message>
     <message>
         <source>&amp;About</source>
@@ -500,14 +469,10 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PaletteEditorAdvancedBase</name>
+    <name>PaletteEditorAdvanced</name>
     <message>
         <source>Tune Palette</source>
         <translation>Налаштувати палітру</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Edit Palette&lt;/b&gt;&lt;p&gt;Change the palette of the current widget or form.&lt;/p&gt;&lt;p&gt;Use a generated palette or select colors for each color group and each color role.&lt;/p&gt;&lt;p&gt;The palette can be tested with different widget layouts in the preview section.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;Редагування палітри&lt;/b&gt;&lt;p&gt;Змінити палітру поточного віджета чи форми.&lt;/p&gt;&lt;p&gt;Використовуйте згенеровану палітру чи оберіть кольори для кожної групи кольорів та кожної кольорової ролі.&lt;/p&gt;&lt;p&gt;Палітру можна протестувати з різними розміщеннями віджетів в секції попереднього перегляду.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Select &amp;Palette:</source>
@@ -558,24 +523,36 @@ p, li { white-space: pre-wrap; }
         <translation>Текст вікна</translation>
     </message>
     <message>
-        <source>Button</source>
-        <translation>Кнопка</translation>
-    </message>
-    <message>
         <source>Base</source>
         <translation>Базовий</translation>
+    </message>
+    <message>
+        <source>AlternateBase</source>
+        <translation>Альтернативний базовий</translation>
+    </message>
+    <message>
+        <source>ToolTipBase</source>
+        <translation>Базовий спливаючої підказки</translation>
+    </message>
+    <message>
+        <source>ToolTipText</source>
+        <translation>Текст спливаючої підказки</translation>
     </message>
     <message>
         <source>Text</source>
         <translation>Текст</translation>
     </message>
     <message>
-        <source>BrightText</source>
-        <translation>Яскравий текст</translation>
+        <source>Button</source>
+        <translation>Кнопка</translation>
     </message>
     <message>
         <source>ButtonText</source>
         <translation>Текст кнопки</translation>
+    </message>
+    <message>
+        <source>BrightText</source>
+        <translation>Яскравий текст</translation>
     </message>
     <message>
         <source>Highlight</source>
@@ -586,24 +563,20 @@ p, li { white-space: pre-wrap; }
         <translation>Підсвічений текст</translation>
     </message>
     <message>
+        <source>Link</source>
+        <translation>Посилання</translation>
+    </message>
+    <message>
+        <source>LinkVisited</source>
+        <translation>Відвідане посилання</translation>
+    </message>
+    <message>
         <source>&amp;Select Color:</source>
         <translation>&amp;Оберіть колір:</translation>
     </message>
     <message>
-        <source>Choose a color</source>
-        <translation>Оберіть колір</translation>
-    </message>
-    <message>
-        <source>Choose a color for the selected central color role.</source>
-        <translation>Виберіть колір для вказаної головної кольорової ролі.</translation>
-    </message>
-    <message>
         <source>3-D shadow &amp;effects</source>
         <translation>3-D &amp;ефекти тіні</translation>
-    </message>
-    <message>
-        <source>Build &amp;from button color</source>
-        <translation>Будувати &amp;з кольору кнопки</translation>
     </message>
     <message>
         <source>Generate shadings</source>
@@ -612,6 +585,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Check to let 3D-effect colors be calculated from button-color.</source>
         <translation>Увімкніть, щоб кольори 3D-ефектів розраховувались з кольору кнопки.</translation>
+    </message>
+    <message>
+        <source>Build &amp;from button color</source>
+        <translation>Будувати &amp;з кольору кнопки</translation>
     </message>
     <message>
         <source>Choose 3D-effect color role</source>
@@ -646,24 +623,16 @@ p, li { white-space: pre-wrap; }
         <translation>Оберіть &amp;колір:</translation>
     </message>
     <message>
+        <source>Choose a color</source>
+        <translation>Оберіть колір</translation>
+    </message>
+    <message>
+        <source>Choose a color for the selected central color role.</source>
+        <translation>Виберіть колір для вказаної головної кольорової ролі.</translation>
+    </message>
+    <message>
         <source>Choose a color for the selected effect color role.</source>
         <translation>Оберіть колір для вказаної кольорової ролі ефектів.</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Close dialog and apply all changes.</source>
-        <translation>Закрити діалог та застосувати усі зміни.</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Скасувати</translation>
-    </message>
-    <message>
-        <source>Close dialog and discard all changes.</source>
-        <translation>Закрити діалог та відкинути усі зміни.</translation>
     </message>
 </context>
 <context>
@@ -674,14 +643,14 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>PreviewWidgetBase</name>
+    <name>PreviewWidget</name>
     <message>
         <source>Preview Window</source>
         <translation>Вікно попереднього перегляду</translation>
     </message>
     <message>
-        <source>ButtonGroup</source>
-        <translation>Група кнопок</translation>
+        <source>GroupBox</source>
+        <translation>Контейнер</translation>
     </message>
     <message>
         <source>RadioButton1</source>
@@ -696,8 +665,8 @@ p, li { white-space: pre-wrap; }
         <translation>Перемикач 3</translation>
     </message>
     <message>
-        <source>ButtonGroup2</source>
-        <translation>Група кнопок 2</translation>
+        <source>GroupBox2</source>
+        <translation>Контейнер 2</translation>
     </message>
     <message>
         <source>CheckBox1</source>
@@ -720,18 +689,9 @@ p, li { white-space: pre-wrap; }
         <translation>Кнопка</translation>
     </message>
     <message>
-        <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</source>
-        <translation>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
-&lt;/p&gt;
-&lt;p&gt;
-&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
-&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
+        <translation></translation>
     </message>
 </context>
 </TS>

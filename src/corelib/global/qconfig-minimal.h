@@ -324,9 +324,6 @@
 #ifndef QT_NO_QWSEMBEDWIDGET
 #  define QT_NO_QWSEMBEDWIDGET
 #endif
-#ifndef QT_NO_QWS_ALPHA_CURSOR
-#  define QT_NO_QWS_ALPHA_CURSOR
-#endif
 #ifndef QT_NO_QWS_CURSOR
 #  define QT_NO_QWS_CURSOR
 #endif

@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>On The Spot</source>
-        <translation type="unfinished"></translation>
+        <translation>В тексте</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -101,15 +101,15 @@
     </message>
     <message>
         <source>Over The Spot</source>
-        <translation type="unfinished"></translation>
+        <translation>Поверх текста</translation>
     </message>
     <message>
         <source>Off The Spot</source>
-        <translation type="unfinished"></translation>
+        <translation>Вне текста</translation>
     </message>
     <message>
         <source>Root</source>
-        <translation type="unfinished"></translation>
+        <translation>Общий</translation>
     </message>
     <message>
         <source>Select a Directory</source>

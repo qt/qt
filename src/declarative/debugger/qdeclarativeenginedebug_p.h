@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QDECLARATIVEDEBUG_H
-#define QDECLARATIVEDEBUG_H
+#ifndef QDECLARATIVEENGINEDEBUG_H
+#define QDECLARATIVEENGINEDEBUG_H
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -384,4 +384,4 @@ Q_DECLARE_METATYPE(QDeclarativeDebugPropertyReference)
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEDEBUG_H
+#endif // QDECLARATIVEENGINEDEBUG_H
