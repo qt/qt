@@ -361,13 +361,6 @@ static const NumerusTableEntry numerusTable[] = {
 
 static const int NumerusTableSize = sizeof(numerusTable) / sizeof(numerusTable[0]);
 
-// magic number for the file
-static const int MagicLength = 16;
-static const uchar magic[MagicLength] = {
-    0x3c, 0xb8, 0x64, 0x18, 0xca, 0xef, 0x9c, 0x95,
-    0xcd, 0x21, 0x1c, 0xbf, 0x60, 0xa1, 0xbd, 0xdd
-};
-
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules)
 {
