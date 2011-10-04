@@ -80,7 +80,12 @@ QT_END_HEADER
 errno_t qt_wince_getenv_s(size_t*, char*, size_t, const char*);
 errno_t qt_wince__putenv_s(const char*, const char*);
 
+// Std --------------------------------------------------------------
 #ifdef __cplusplus // have this as tiff plugin is written in C
+namespace std {
+    template <class T> inline T floor(const T& a) {return ::floor(a);}
+}
+
 extern "C" {
 #endif
 

@@ -52,6 +52,10 @@
 
 #include <cmath>
 
+#ifdef Q_OS_WINCE
+#    include <qfunctions_wince.h>
+#endif
+
 namespace QmlJSDebugger {
 
 class SelectionRectShape : public QGraphicsRectItem
