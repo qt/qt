@@ -25,7 +25,7 @@ TEMPLATE        = subdirs
     }
     contains(QT_CONFIG, declarative) {
         SUBDIRS += qml
-        !symbian: SUBDIRS += qmlplugindump
+        !wince*:!symbian: SUBDIRS += qmlplugindump
     }
 }
 
