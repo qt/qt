@@ -84,6 +84,7 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_OS_WINCE)
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
+    Q_UNUSED(onlySystemDirectory);
     return ::LoadLibrary(libraryName);
 }
 #else

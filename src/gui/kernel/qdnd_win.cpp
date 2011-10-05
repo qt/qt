@@ -539,6 +539,8 @@ QOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
             if (!(currentButtons & buttons))
                 return ResultFromScode(DRAGDROP_S_DROP);
         }
+#else
+    Q_UNUSED(grfKeyState);
 #endif
         QApplication::processEvents();
         return NOERROR;

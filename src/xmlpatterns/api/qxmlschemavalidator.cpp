@@ -202,6 +202,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) c
     try {
         item = loader.openDocument(source, normalizedUri, d->m_context);
     } catch (QPatternist::Exception exception) {
+        Q_UNUSED(exception);
         return false;
     }
 
@@ -216,6 +217,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) c
     try {
         reader.read();
     } catch (QPatternist::Exception exception) {
+        Q_UNUSED(exception);
         return false;
     }
 

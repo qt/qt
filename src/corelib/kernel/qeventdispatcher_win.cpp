@@ -542,6 +542,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         }
     }
 #ifdef Q_OS_WINCE
+    Q_UNUSED(code);
     return 0;
 #else
     return CallNextHookEx(0, code, wp, lp);

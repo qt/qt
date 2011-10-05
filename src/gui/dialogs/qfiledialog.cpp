@@ -910,7 +910,9 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
   */
 QStringList QFileDialogPrivate::typedFiles() const
 {
+#ifdef Q_OS_UNIX
     Q_Q(const QFileDialog);
+#endif
     QStringList files;
     QString editText = lineEdit()->text();
     if (!editText.contains(QLatin1Char('"'))) {
