@@ -51,7 +51,7 @@
 
 #include <QtCore/qdebug.h>
 
-#include <math.h>
+#include <QtCore/qmath.h>
 
 #define DELAY_STOP_TIMER_INTERVAL 32
 
@@ -98,20 +98,20 @@ bool QSmoothedAnimation::recalc()
     s = to - initialValue;
     vi = initialVelocity;
 
-    s = (invert? -1.0: 1.0) * s;
+    s = (invert? qreal(-1.0): qreal(1.0)) * s;
 
     if (userDuration > 0 && velocity > 0) {
         tf = s / velocity;
-        if (tf > (userDuration / 1000.)) tf = (userDuration / 1000.);
+        if (tf > (userDuration / qreal(1000.))) tf = (userDuration / qreal(1000.));
     } else if (userDuration > 0) {
-        tf = userDuration / 1000.;
+        tf = userDuration / qreal(1000.);
     } else if (velocity > 0) {
         tf = s / velocity;
     } else {
         return false;
     }
 
-    finalDuration = ceil(tf * 1000.0);
+    finalDuration = ceil(tf * qreal(1000.0));
 
     if (maximumEasingTime == 0) {
         a = 0;
@@ -121,33 +121,33 @@ bool QSmoothedAnimation::recalc()
         vp = velocity;
         sp = 0;
         sd = s;
-    } else if (maximumEasingTime != -1 && tf > (maximumEasingTime / 1000.)) {
-        qreal met = maximumEasingTime / 1000.;
+    } else if (maximumEasingTime != -1 && tf > (maximumEasingTime / qreal(1000.))) {
+        qreal met = maximumEasingTime / qreal(1000.);
         td = tf - met;
 
         qreal c1 = td;
         qreal c2 = (tf - td) * vi - tf * velocity;
-        qreal c3 = -0.5 * (tf - td) * vi * vi;
+        qreal c3 = qreal(-0.5) * (tf - td) * vi * vi;
 
-        qreal vp1 = (-c2 + sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+        qreal vp1 = (-c2 + qSqrt(c2 * c2 - 4 * c1 * c3)) / (qreal(2.) * c1);
 
         vp = vp1;
         a = vp / met;
         d = a;
         tp = (vp - vi) / a;
-        sp = vi * tp + 0.5 * a * tp * tp;
+        sp = vi * tp + qreal(0.5) * a * tp * tp;
         sd = sp + (td - tp) * vp;
     } else {
-        qreal c1 = 0.25 * tf * tf;
-        qreal c2 = 0.5 * vi * tf - s;
-        qreal c3 = -0.25 * vi * vi;
+        qreal c1 = qreal(0.25) * tf * tf;
+        qreal c2 = qreal(0.5) * vi * tf - s;
+        qreal c3 = qreal(-0.25) * vi * vi;
 
-        qreal a1 = (-c2 + sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+        qreal a1 = (-c2 + qSqrt(c2 * c2 - 4 * c1 * c3)) / (qreal(2.) * c1);
 
-        qreal tp1 = 0.5 * tf - 0.5 * vi / a1;
+        qreal tp1 = qreal(0.5) * tf - qreal(0.5) * vi / a1;
         qreal vp1 = a1 * tp1 + vi;
 
-        qreal sp1 = 0.5 * a1 * tp1 * tp1 + vi * tp1;
+        qreal sp1 = qreal(0.5) * a1 * tp1 * tp1 + vi * tp1;
 
         a = a1;
         d = a1;
@@ -165,7 +165,7 @@ qreal QSmoothedAnimation::easeFollow(qreal time_seconds)
     qreal value;
     if (time_seconds < tp) {
         trackVelocity = vi + time_seconds * a;
-        value = 0.5 * a * time_seconds * time_seconds + vi * time_seconds;
+        value = qreal(0.5) * a * time_seconds * time_seconds + vi * time_seconds;
     } else if (time_seconds < td) {
         time_seconds -= tp;
         trackVelocity = vp;
@@ -173,7 +173,7 @@ qreal QSmoothedAnimation::easeFollow(qreal time_seconds)
     } else if (time_seconds < tf) {
         time_seconds -= td;
         trackVelocity = vp - time_seconds * a;
-        value = sd - 0.5 * d * time_seconds * time_seconds + vp * time_seconds;
+        value = sd - qreal(0.5) * d * time_seconds * time_seconds + vp * time_seconds;
     } else {
         trackVelocity = 0;
         value = s;
@@ -186,10 +186,10 @@ qreal QSmoothedAnimation::easeFollow(qreal time_seconds)
 
 void QSmoothedAnimation::updateCurrentTime(int t)
 {
-    qreal time_seconds = qreal(t - lastTime) / 1000.;
+    qreal time_seconds = qreal(t - lastTime) / qreal(1000.);
 
     qreal value = easeFollow(time_seconds);
-    value *= (invert? -1.0: 1.0);
+    value *= (invert? qreal(-1.0): qreal(1.0));
     QDeclarativePropertyPrivate::write(target, initialValue + value,
                                        QDeclarativePropertyPrivate::BypassInterceptor
                                        | QDeclarativePropertyPrivate::DontRemoveBinding);
@@ -213,7 +213,7 @@ void QSmoothedAnimation::init()
         return;
     }
 
-    bool hasReversed = trackVelocity != 0. &&
+    bool hasReversed = trackVelocity != qreal(0.) &&
                       ((!invert) == ((initialValue - to) > 0));
 
     if (hasReversed) {
