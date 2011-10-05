@@ -1212,10 +1212,10 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         }
         qreal accel = deceleration;
         qreal v2 = v * v;
-        qreal overshootDist = 0.0;
-        if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeGridView::SnapOneRow) {
+        qreal overshootDist = qreal(0.0);
+        if ((maxDistance > qreal(0.0) && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeGridView::SnapOneRow) {
             // + rowSize()/4 to encourage moving at least one item in the flick direction
-            qreal dist = v2 / (accel * 2.0) + rowSize()/4;
+            qreal dist = v2 / (accel * qreal(2.0)) + rowSize()/4;
             dist = qMin(dist, maxDistance);
             if (v > 0)
                 dist = -dist;

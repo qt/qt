@@ -1744,15 +1744,33 @@ TBool QCoeFepInputContext::CcpuIsFocused() const
 TBool QCoeFepInputContext::CcpuCanCut() const
 {
     bool retval = false;
+    if (m_inDestruction)
+        return retval;
     QWidget *w = focusWidget();
-    if (!w)
+    QObject *focusObject = 0;
+    if (!w) {
         w = m_lastFocusedEditor;
-    else
-        w = getQWidgetFromQGraphicsView(w);
+        focusObject = m_lastFocusedObject;
+    } else {
+        w = getQWidgetFromQGraphicsView(w, &focusObject);
+    }
     if (w) {
-        int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-        retval = cursor != anchor;
+        QRect microFocus = w->inputMethodQuery(Qt::ImMicroFocus).toRect();
+        if (microFocus.isNull()) {
+            // For some reason, the editor does not have microfocus. Most probably,
+            // it is due to using native fullscreen editing mode with QML apps.
+            // Try accessing "selectedText" directly.
+            QObject *invokeTarget = w;
+            if (focusObject)
+                invokeTarget = focusObject;
+
+            QString selectedText = invokeTarget->property("selectedText").toString();
+            retval = !selectedText.isNull();
+        } else {
+            int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+            int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+            retval = cursor != anchor;
+        }
     }
     return retval;
 }
@@ -1775,6 +1793,9 @@ void QCoeFepInputContext::CcpuCopyL()
 TBool QCoeFepInputContext::CcpuCanPaste() const
 {
     bool canPaste = false;
+    if (m_inDestruction)
+        return canPaste;
+
     QString textToPaste = QApplication::clipboard()->text();
     if (!textToPaste.isEmpty()) {
         QWidget *w = focusWidget();
