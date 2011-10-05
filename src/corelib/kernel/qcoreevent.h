@@ -209,8 +209,8 @@ public:
         // last event id used = 132
 
 #ifdef QT_KEYPAD_NAVIGATION
-        EnterEditFocus = 150,                   // enter edit mode in keypad navigation
-        LeaveEditFocus = 151,                   // enter edit mode in keypad navigation
+        EnterEditFocus = 150,                   // enter edit mode in keypad navigation (Defined only with QT_KEYPAD_NAVIGATION)
+        LeaveEditFocus = 151,                   // leave edit mode in keypad navigation (Defined only with QT_KEYPAD_NAVIGATION)
 #endif
         AcceptDropsChange = 152,
 
