@@ -1744,6 +1744,8 @@ TBool QCoeFepInputContext::CcpuIsFocused() const
 TBool QCoeFepInputContext::CcpuCanCut() const
 {
     bool retval = false;
+    if (m_inDestruction)
+        return retval;
     QWidget *w = focusWidget();
     if (!w)
         w = m_lastFocusedEditor;
@@ -1775,6 +1777,9 @@ void QCoeFepInputContext::CcpuCopyL()
 TBool QCoeFepInputContext::CcpuCanPaste() const
 {
     bool canPaste = false;
+    if (m_inDestruction)
+        return canPaste;
+
     QString textToPaste = QApplication::clipboard()->text();
     if (!textToPaste.isEmpty()) {
         QWidget *w = focusWidget();
