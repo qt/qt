@@ -1644,8 +1644,6 @@ void QCoeFepInputContext::changeCBA(bool showCopyAndOrPaste)
 
 void QCoeFepInputContext::copyOrCutTextToClipboard(const char *operation)
 {
-    bool hasText = false;
-
     QWidget *w = focusWidget();
     QObject *focusObject = 0;
     if (!w) {
