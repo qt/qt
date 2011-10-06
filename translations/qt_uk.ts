@@ -408,7 +408,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>Затримка відбиття (мс)</translation>
     </message>
     <message>
@@ -423,7 +423,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>Рівень луни (мБ)</translation>
     </message>
     <message>
@@ -481,7 +481,7 @@ have libgstreamer-plugins-base installed.</source>
         <translation>Гучність: %1%</translation>
     </message>
     <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>Використовуйте цей повзунок для регулювання гучності. Крайня ліва позиція - 0%, крайня права - %1%</translation>
     </message>
     <message>
@@ -3723,7 +3723,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Corner Toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>Кутова панель</translation>
     </message>
 </context>
 <context>
@@ -6477,8 +6477,8 @@ Do you want to overwrite it?</source>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <source>Ok</source>
-        <translation>Ok</translation>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Select</source>
@@ -7111,6 +7111,10 @@ Do you want to overwrite it?</source>
     <name>QWebFrame</name>
     <message>
         <source>Request cancelled</source>
+        <translation>Запит скасовано</translation>
+    </message>
+    <message>
+        <source>Request canceled</source>
         <translation>Запит скасовано</translation>
     </message>
     <message>
@@ -8832,7 +8836,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9676,7 +9680,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10084,7 +10088,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
