@@ -99,16 +99,16 @@ static void qt_win_resolve_libs()
 
         triedResolve = true;
 #if !defined(Q_WS_WINCE)
-        QSystemLibrary lib(L"shell32");
+        QSystemLibrary lib(QLatin1String("shell32"));
         ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");
         ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDListW");
         ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
 #else
         // CE stores them in a different lib and does not use unicode version
-        HINSTANCE handle = LoadLibrary(L"Ceshell");
-        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)GetProcAddress(handle, L"SHBrowseForFolder");
-        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)GetProcAddress(handle, L"SHGetPathFromIDList");
-        ptrSHGetMalloc = (PtrSHGetMalloc)GetProcAddress(handle, L"SHGetMalloc");
+        QSystemLibrary lib(QLatin1String("Ceshell"));
+        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolder");
+        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDList");
+        ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
         if (ptrSHBrowseForFolder && ptrSHGetPathFromIDList && ptrSHGetMalloc)
             qt_priv_ptr_valid = true;
 #endif

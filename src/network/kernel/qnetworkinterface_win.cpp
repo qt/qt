@@ -67,19 +67,12 @@ static void resolveLibs()
     if (!done) {
         done = true;
 
-        HINSTANCE iphlpapiHnd = QSystemLibrary::load(L"iphlpapi");
-        if (iphlpapiHnd == NULL)
-            return;
-
-#if defined(Q_OS_WINCE)
-        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, L"GetAdaptersInfo");
-        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, L"GetAdaptersAddresses");
-        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddress(iphlpapiHnd, L"GetNetworkParams");
-#else
-        ptrGetAdaptersInfo = (PtrGetAdaptersInfo)GetProcAddress(iphlpapiHnd, "GetAdaptersInfo");
-        ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)GetProcAddress(iphlpapiHnd, "GetAdaptersAddresses");
-        ptrGetNetworkParams = (PtrGetNetworkParams)GetProcAddress(iphlpapiHnd, "GetNetworkParams");
-#endif
+        QSystemLibrary iphlpapi(QLatin1String("iphlpapi"));
+        if (iphlpapi.load()) {
+            ptrGetAdaptersInfo = (PtrGetAdaptersInfo)iphlpapi.resolve("GetAdaptersInfo");
+            ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)iphlpapi.resolve("GetAdaptersAddresses");
+            ptrGetNetworkParams = (PtrGetNetworkParams)iphlpapi.resolve("GetNetworkParams");
+        }
     }
 }
 

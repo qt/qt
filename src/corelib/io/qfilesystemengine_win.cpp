@@ -188,12 +188,12 @@ static void resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
-        if (advapiHnd) {
-            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
-            ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
+        QSystemLibrary advapi32(QLatin1String("advapi32"));
+        if (advapi32.load()) {
+            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)advapi32.resolve("GetNamedSecurityInfoW");
+            ptrLookupAccountSidW = (PtrLookupAccountSidW)advapi32.resolve("LookupAccountSidW");
+            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)advapi32.resolve("BuildTrusteeWithSidW");
+            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)advapi32.resolve("GetEffectiveRightsFromAclW");
         }
         if (ptrBuildTrusteeWithSidW) {
             // Create TRUSTEE for current user
@@ -208,9 +208,9 @@ static void resolveLibs()
             }
 
             typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
-            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
+            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)advapi32.resolve("AllocateAndInitializeSid");
             typedef PVOID (WINAPI *PtrFreeSid)(PSID);
-            PtrFreeSid ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
+            PtrFreeSid ptrFreeSid = (PtrFreeSid)advapi32.resolve("FreeSid");
             if (ptrAllocateAndInitializeSid && ptrFreeSid) {
                 // Create TRUSTEE for Everyone (World)
                 SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
@@ -220,12 +220,14 @@ static void resolveLibs()
                 ptrFreeSid(pWorld);
             }
         }
-        HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
-        if (userenvHnd)
-            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
-        HINSTANCE kernel32 = LoadLibrary(L"kernel32");
-        if(kernel32)
-            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)GetProcAddress(kernel32, "GetVolumePathNamesForVolumeNameW");
+
+        QSystemLibrary userenv(QLatin1String("userenv"));
+        if (userenv.load())
+            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)userenv.resolve("GetUserProfileDirectoryW");
+
+        QSystemLibrary kernel32(QLatin1String("kernel32"));
+        if (kernel32.load())
+            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)kernel32.resolve("GetVolumePathNamesForVolumeNameW");
 #endif
     }
 }
@@ -254,11 +256,10 @@ static bool resolveUNCLibs()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
-        if (hLib) {
-            ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
-            if (ptrNetShareEnum)
-                ptrNetApiBufferFree = (PtrNetApiBufferFree)GetProcAddress(hLib, "NetApiBufferFree");
+        QSystemLibrary netapi32(QLatin1String("kernel32"));
+        if (netapi32.load()) {
+            ptrNetShareEnum = (PtrNetShareEnum)netapi32.resolve("NetShareEnum");
+            ptrNetApiBufferFree = (PtrNetApiBufferFree)netapi32.resolve("NetApiBufferFree");
         }
 #endif
     }
