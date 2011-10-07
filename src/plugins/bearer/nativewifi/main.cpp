@@ -44,7 +44,7 @@
 
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qmutexpool_p.h>
-#include <QtCore/qlibrary.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <QtNetwork/private/qbearerplugin_p.h>
 
@@ -63,30 +63,33 @@ static void resolveLibrary()
         QMutexLocker locker(QMutexPool::globalInstanceGet(&local_WlanOpenHandle));
 #endif
 
-        if (!triedResolve) {
-            local_WlanOpenHandle = (WlanOpenHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanOpenHandle");
-            local_WlanRegisterNotification = (WlanRegisterNotificationProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanRegisterNotification");
-            local_WlanEnumInterfaces = (WlanEnumInterfacesProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanEnumInterfaces");
-            local_WlanGetAvailableNetworkList = (WlanGetAvailableNetworkListProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanGetAvailableNetworkList");
-            local_WlanQueryInterface = (WlanQueryInterfaceProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanQueryInterface");
-            local_WlanConnect = (WlanConnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanConnect");
-            local_WlanDisconnect = (WlanDisconnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanDisconnect");
-            local_WlanScan = (WlanScanProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanScan");
-            local_WlanFreeMemory = (WlanFreeMemoryProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanFreeMemory");
-            local_WlanCloseHandle = (WlanCloseHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanCloseHandle");
+        if (triedResolve)
+            return;
 
-            triedResolve = true;
+        QSystemLibrary wlanapi(QLatin1String("wlanapi"));
+        if (wlanapi.load()) {
+            local_WlanOpenHandle = (WlanOpenHandleProto)
+                wlanapi.resolve("WlanOpenHandle");
+            local_WlanRegisterNotification = (WlanRegisterNotificationProto)
+                wlanapi.resolve("WlanRegisterNotification");
+            local_WlanEnumInterfaces = (WlanEnumInterfacesProto)
+                wlanapi.resolve("WlanEnumInterfaces");
+            local_WlanGetAvailableNetworkList = (WlanGetAvailableNetworkListProto)
+                wlanapi.resolve("WlanGetAvailableNetworkList");
+            local_WlanQueryInterface = (WlanQueryInterfaceProto)
+                wlanapi.resolve("WlanQueryInterface");
+            local_WlanConnect = (WlanConnectProto)
+                wlanapi.resolve("WlanConnect");
+            local_WlanDisconnect = (WlanDisconnectProto)
+                wlanapi.resolve("WlanDisconnect");
+            local_WlanScan = (WlanScanProto)
+                wlanapi.resolve("WlanScan");
+            local_WlanFreeMemory = (WlanFreeMemoryProto)
+                wlanapi.resolve("WlanFreeMemory");
+            local_WlanCloseHandle = (WlanCloseHandleProto)
+                wlanapi.resolve("WlanCloseHandle");
         }
+        triedResolve = true;
     }
 }
 
