@@ -42,13 +42,9 @@
 #include "qnativewifiengine.h"
 #include "platformdefs.h"
 
-#include <QtCore/qmutex.h>
-#include <QtCore/private/qmutexpool_p.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #include <QtNetwork/private/qbearerplugin_p.h>
-
-#include <QtCore/qdebug.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
@@ -56,16 +52,8 @@ QT_BEGIN_NAMESPACE
 
 static void resolveLibrary()
 {
-    static volatile bool triedResolve = false;
-
+    static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_WlanOpenHandle));
-#endif
-
-        if (triedResolve)
-            return;
-
         QSystemLibrary wlanapi(QLatin1String("wlanapi"));
         if (wlanapi.load()) {
             local_WlanOpenHandle = (WlanOpenHandleProto)

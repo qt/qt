@@ -45,9 +45,7 @@
 #include "private/qnativesocketengine_p.h"
 #include <ws2tcpip.h>
 #include <private/qsystemlibrary_p.h>
-#include <qmutex.h>
 #include <qurl.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,6 +82,10 @@ static void resolveLibrary()
 {
     // Attempt to resolve getaddrinfo(); without it we'll have to fall
     // back to gethostbyname(), which has no IPv6 support.
+    static bool triedResolve = false;
+    if (triedResolve)
+        return;
+
 #if !defined(Q_OS_WINCE)
     QSystemLibrary ws2lib(QLatin1String("ws2_32"));
 #else
@@ -94,6 +96,8 @@ static void resolveLibrary()
         local_freeaddrinfo = (freeaddrinfoProto)ws2lib.resolve("freeaddrinfo");
         local_getnameinfo = (getnameinfoProto)ws2lib.resolve("getnameinfo");
     }
+
+    triedResolve = true;
 }
 
 #if defined(Q_OS_WINCE)
@@ -103,20 +107,12 @@ QMutex qPrivCEMutex;
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
+    resolveLibrary();
+
 #if defined(Q_OS_WINCE)
     QMutexLocker locker(&qPrivCEMutex);
 #endif
     QWindowsSockInit winSock;
-
-    // Load res_init on demand.
-    static volatile bool triedResolve = false;
-    if (!triedResolve) {
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_getaddrinfo));
-        if (!triedResolve) {
-            resolveLibrary();
-            triedResolve = true;
-        }
-    }
 
     QHostInfo results;
 

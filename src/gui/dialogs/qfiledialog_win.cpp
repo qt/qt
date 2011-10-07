@@ -55,10 +55,6 @@
 #include <private/qsystemlibrary_p.h>
 #include "qfiledialog_win_p.h"
 
-#ifndef QT_NO_THREAD
-#  include <private/qmutexpool_p.h>
-#endif
-
 #ifdef Q_WS_WINCE
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
@@ -83,20 +79,7 @@ QT_BEGIN_NAMESPACE
 static void qt_win_resolve_libs()
 {
     static bool triedResolve = false;
-
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        // protect initialization
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-
 #if !defined(Q_WS_WINCE)
         QSystemLibrary lib(QLatin1String("shell32"));
         ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");

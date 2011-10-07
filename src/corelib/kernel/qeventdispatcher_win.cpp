@@ -53,7 +53,6 @@
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -322,11 +321,6 @@ static void resolveTimerAPI()
 {
     static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve)
-            return;
-#endif
 #ifndef Q_OS_WINCE
         QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
