@@ -854,19 +854,15 @@ void qt_init(QApplicationPrivate *priv, int)
     qt_win_initialize_directdraw();
 
 #ifndef Q_OS_WINCE
-    ptrUpdateLayeredWindowIndirect =
-        (PtrUpdateLayeredWindowIndirect) QSystemLibrary::resolve(QLatin1String("user32"),
-                                                           "UpdateLayeredWindowIndirect");
-    ptrUpdateLayeredWindow =
-        (PtrUpdateLayeredWindow) QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "UpdateLayeredWindow");
+    QSystemLibrary user32(QLatin1String("user32"));
+    ptrUpdateLayeredWindowIndirect = (PtrUpdateLayeredWindowIndirect)user32.resolve("UpdateLayeredWindowIndirect");
+    ptrUpdateLayeredWindow = (PtrUpdateLayeredWindow)user32.resolve("UpdateLayeredWindow");
 
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
 
     // Notify Vista and Windows 7 that we support highter DPI settings
-    ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
-        QSystemLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware");
+    ptrSetProcessDPIAware = (PtrSetProcessDPIAware)user32.resolve("SetProcessDPIAware");
     if (ptrSetProcessDPIAware)
         ptrSetProcessDPIAware();
 #endif
@@ -886,29 +882,16 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
 #elif !defined(Q_WS_WINCE)
   #if !defined(QT_NO_NATIVE_GESTURES)
-    priv->GetGestureInfo =
-            (PtrGetGestureInfo)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                 "GetGestureInfo");
-    priv->GetGestureExtraArgs =
-            (PtrGetGestureExtraArgs)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                      "GetGestureExtraArgs");
-    priv->CloseGestureInfoHandle =
-            (PtrCloseGestureInfoHandle)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                         "CloseGestureInfoHandle");
-    priv->SetGestureConfig =
-            (PtrSetGestureConfig)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "SetGestureConfig");
-    priv->GetGestureConfig =
-            (PtrGetGestureConfig)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "GetGestureConfig");
+    priv->GetGestureInfo = (PtrGetGestureInfo)user32.resolve("GetGestureInfo");
+    priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs)user32.resolve("GetGestureExtraArgs");
+    priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle)user32.resolve("CloseGestureInfoHandle");
+    priv->SetGestureConfig = (PtrSetGestureConfig)user32.resolve("SetGestureConfig");
+    priv->GetGestureConfig = (PtrGetGestureConfig)user32.resolve("GetGestureConfig");
   #endif // QT_NO_NATIVE_GESTURES
     QSystemLibrary libTheme(QLatin1String("uxtheme"));
-    priv->BeginPanningFeedback =
-            (PtrBeginPanningFeedback)libTheme.resolve("BeginPanningFeedback");
-    priv->UpdatePanningFeedback =
-            (PtrUpdatePanningFeedback)libTheme.resolve("UpdatePanningFeedback");
-    priv->EndPanningFeedback =
-        (PtrEndPanningFeedback)libTheme.resolve("EndPanningFeedback");
+    priv->BeginPanningFeedback = (PtrBeginPanningFeedback)libTheme.resolve("BeginPanningFeedback");
+    priv->UpdatePanningFeedback = (PtrUpdatePanningFeedback)libTheme.resolve("UpdatePanningFeedback");
+    priv->EndPanningFeedback = (PtrEndPanningFeedback)libTheme.resolve("EndPanningFeedback");
 #endif
 #endif // QT_NO_GESTURES
 }

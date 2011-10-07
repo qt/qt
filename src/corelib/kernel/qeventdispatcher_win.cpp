@@ -328,13 +328,15 @@ static void resolveTimerAPI()
             return;
 #endif
         triedResolve = true;
-#if !defined(Q_OS_WINCE)
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
+#ifndef Q_OS_WINCE
+        QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
+        QSystemLibrary library(QLatin1String("winmm"));
 #endif
+        if (library.load()) {
+            qtimeSetEvent = (ptimeSetEvent)library.resolve("timeSetEvent");
+            qtimeKillEvent = (ptimeKillEvent)library.resolve("timeKillEvent");
+        }
     }
 }
 
