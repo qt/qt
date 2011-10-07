@@ -397,6 +397,9 @@ private slots:
     void minimizedWindowModeTransitions();
     void normalWindowModeTransitions();
     void focusSwitchClosesPopupMenu();
+#if !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
+    void opacityChangeCausesBackingStoreRecreation();
+#endif
 #endif
 
     void focusProxyAndInputMethods();
@@ -10334,7 +10337,47 @@ void tst_QWidget::focusSwitchClosesPopupMenu()
     mainWindow.activateWindow();
     QVERIFY(!CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
 }
-#endif
+
+#if !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
+class OpacityChangeWidget : public QWidget
+{
+public:
+    OpacityChangeWidget() : m_paintEngineType(QPaintEngine::MaxUser) { }
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter painter(this);
+        m_paintEngineType = painter.paintEngine()->type();
+    }
+    QPaintEngine::Type paintEngineType() const { return m_paintEngineType; }
+private:
+    QPaintEngine::Type m_paintEngineType;
+};
+
+void tst_QWidget::opacityChangeCausesBackingStoreRecreation()
+{
+    OpacityChangeWidget w;
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    const QPaintEngine::Type type = w.paintEngineType();
+    if (QPaintEngine::OpenGL != type && QPaintEngine::OpenVG != type) {
+        QSKIP("Test case is only valid when using opengl or openvg graphics system", SkipAll);
+    } else {
+        if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
+            QSKIP("Test case is only valid when EGL surface transparency is not supported", SkipAll);
+        } else {
+            // Making window transparent should force switch to raster graphics system
+            w.setAttribute(Qt::WA_TranslucentBackground, true);
+            w.repaint();
+            QCOMPARE(w.paintEngineType(), QPaintEngine::Raster);
+            // Making window opaque should cause switch back to previous graphics system
+            w.setAttribute(Qt::WA_TranslucentBackground, false);
+            w.repaint();
+            QCOMPARE(w.paintEngineType(), type);
+        }
+    }
+}
+#endif // !Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+#endif // Q_OS_SYMBIAN
 
 class InputContextTester : public QInputContext
 {
