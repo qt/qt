@@ -559,20 +559,22 @@ Symbian platform,
 
 */
 /*! \page install-Symbian.html
-\title Installing Qt for the Symbian platform
+\title Installing Qt for the Symbian Platform
 \ingroup installation
 \ingroup qtsymbian
 \brief How to install Qt for the Symbian platform.
 \previouspage Installation
 \tableofcontents
 
+    \l {http://qt.nokia.com/downloads}{Qt SDK} provides all the necessary tools 
+    and libraries for developing Qt applications. However, if you want to build 
+    Qt itself for Symbian, follow the instructions below.
+
 Qt for the Symbian platform has some requirements that are given in more detail
 in the \l{Qt for the Symbian platform Requirements} document.
 
 This document describes how to install and configure Qt for
-the Symbian platform from scratch. If you are using pre-built binaries, follow
-the instructions given in the \l{Installing Qt for the Symbian platform from a
-Binary Package} document.
+the Symbian platform from scratch.
 
 \section1 Step 1: Set Up the Development Environment
 

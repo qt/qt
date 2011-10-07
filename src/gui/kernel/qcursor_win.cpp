@@ -477,7 +477,7 @@ void QCursorData::update()
         QPixmap pixmap = QApplicationPrivate::instance()->getPixmapCursor(cshape);
         hcurs = create32BitCursor(pixmap, hx, hy);
     }
-        break;
+        return;
     default:
         qWarning("QCursor::update: Invalid cursor shape %d", cshape);
         return;

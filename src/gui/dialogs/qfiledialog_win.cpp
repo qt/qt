@@ -654,7 +654,7 @@ QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
     // GetOpenFileName() will return only one folder name for all the files. To retrieve
     // the correct path for all selected files, we have to use Common Item Dialog interfaces.
 #ifndef Q_WS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         return qt_win_CID_get_open_file_names(args, initialDirectory, filterLst, selectedFilter, idx);
 #endif
 
@@ -741,7 +741,7 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
 QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 {
 #ifndef Q_WS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         return qt_win_CID_get_existing_directory(args);
 #endif
 

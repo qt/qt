@@ -572,8 +572,7 @@ public:
 #endif
         }
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
             vistaInitPending = true;
 #endif
     }

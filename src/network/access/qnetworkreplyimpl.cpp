@@ -471,6 +471,7 @@ bool QNetworkReplyImplPrivate::isCachingEnabled() const
 
 void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
 {
+    Q_Q(QNetworkReplyImpl);
     if (!enable && !cacheEnabled)
         return;                 // nothing to do
     if (enable && cacheEnabled)
@@ -493,15 +494,27 @@ void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
         networkCache()->remove(url);
         cacheSaveDevice = 0;
         cacheEnabled = false;
+        QObject::disconnect(networkCache(), SIGNAL(destroyed()), q, SLOT(_q_cacheDestroyed()));
     }
+}
+
+void QNetworkReplyImplPrivate::_q_cacheDestroyed()
+{
+    //destruction of cache invalidates cacheSaveDevice
+    cacheSaveDevice = 0;
+    cacheEnabled = false;
 }
 
 void QNetworkReplyImplPrivate::completeCacheSave()
 {
-    if (cacheEnabled && errorCode != QNetworkReplyImpl::NoError) {
-        networkCache()->remove(url);
-    } else if (cacheEnabled && cacheSaveDevice) {
-        networkCache()->insert(cacheSaveDevice);
+    Q_Q(QNetworkReplyImpl);
+    if (cacheEnabled) {
+        if (errorCode != QNetworkReplyImpl::NoError) {
+            networkCache()->remove(url);
+        } else if (cacheSaveDevice) {
+            networkCache()->insert(cacheSaveDevice);
+        }
+        QObject::disconnect(networkCache(), SIGNAL(destroyed()), q, SLOT(_q_cacheDestroyed()));
     }
     cacheSaveDevice = 0;
     cacheEnabled = false;
@@ -561,6 +574,8 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
         networkCache()->remove(url);
         cacheSaveDevice = 0;
         cacheEnabled = false;
+    } else {
+        q->connect(networkCache(), SIGNAL(destroyed()), SLOT(_q_cacheDestroyed()));
     }
 }
 
