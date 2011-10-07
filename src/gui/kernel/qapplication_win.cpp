@@ -218,9 +218,9 @@ static bool aygResolved = false;
 static void resolveAygLibs()
 {
     if (!aygResolved) {
-        aygResolved = true;
         QSystemLibrary ayglib(QLatin1String("aygshell"));
         ptrRecognizeGesture = (AygRecognizeGesture) ayglib.resolve("SHRecognizeGesture");
+        aygResolved = true;
     }
 }
 #endif // QT_NO_GESTURES
@@ -2371,15 +2371,14 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     break;
                 }
 
+#if !defined(Q_OS_WINCE)
                 typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
                 static PtrLresultFromObject ptrLresultFromObject = 0;
                 static bool oleaccChecked = false;
-
                 if (!oleaccChecked) {
+                    QSystemLibrary oleacclib(QLatin1String("oleacc"));
+                    ptrLresultFromObject = (PtrLresultFromObject)oleacclib.resolve("LresultFromObject");
                     oleaccChecked = true;
-#if !defined(Q_OS_WINCE)
-                    ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
-#endif
                 }
                 if (ptrLresultFromObject) {
                     QAccessibleInterface *acc = QAccessible::queryAccessibleInterface(widget);
@@ -2396,6 +2395,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     if (res > 0)
                         RETURN(res);
                 }
+#endif
             }
             result = false;
             break;
@@ -3181,8 +3181,8 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
 
             if (curWin != 0) {
                 if (!trackMouseEventLookup) {
-                    trackMouseEventLookup = true;
                     ptrTrackMouseEvent = (PtrTrackMouseEvent)QSystemLibrary::resolve(QLatin1String("comctl32"), "_TrackMouseEvent");
+                    trackMouseEventLookup = true;
                 }
                 if (ptrTrackMouseEvent && !qApp->d_func()->inPopupMode()) {
                     // We always have to set the tracking, since

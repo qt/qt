@@ -63,16 +63,14 @@ static void resolveLibs()
 {
     // try to find the functions we need from Iphlpapi.dll
     static bool done = false;
-
     if (!done) {
-        done = true;
-
         QSystemLibrary iphlpapi(QLatin1String("iphlpapi"));
         if (iphlpapi.load()) {
             ptrGetAdaptersInfo = (PtrGetAdaptersInfo)iphlpapi.resolve("GetAdaptersInfo");
             ptrGetAdaptersAddresses = (PtrGetAdaptersAddresses)iphlpapi.resolve("GetAdaptersAddresses");
             ptrGetNetworkParams = (PtrGetNetworkParams)iphlpapi.resolve("GetNetworkParams");
         }
+        done = true;
     }
 }
 

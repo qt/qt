@@ -186,7 +186,6 @@ static void resolveLibs()
         }
 #endif
 
-        triedResolve = true;
 #if !defined(Q_OS_WINCE)
         QSystemLibrary advapi32(QLatin1String("advapi32"));
         if (advapi32.load()) {
@@ -229,6 +228,7 @@ static void resolveLibs()
         if (kernel32.load())
             ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)kernel32.resolve("GetVolumePathNamesForVolumeNameW");
 #endif
+        triedResolve = true;
     }
 }
 #endif // QT_NO_LIBRARY
@@ -254,7 +254,7 @@ static bool resolveUNCLibs()
             return ptrNetShareEnum && ptrNetApiBufferFree;
         }
 #endif
-        triedResolve = true;
+
 #if !defined(Q_OS_WINCE)
         QSystemLibrary netapi32(QLatin1String("kernel32"));
         if (netapi32.load()) {
@@ -262,6 +262,7 @@ static bool resolveUNCLibs()
             ptrNetApiBufferFree = (PtrNetApiBufferFree)netapi32.resolve("NetApiBufferFree");
         }
 #endif
+        triedResolve = true;
     }
     return ptrNetShareEnum && ptrNetApiBufferFree;
 }

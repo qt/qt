@@ -97,7 +97,6 @@ static void qt_win_resolve_libs()
         }
 #endif
 
-        triedResolve = true;
 #if !defined(Q_WS_WINCE)
         QSystemLibrary lib(QLatin1String("shell32"));
         ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");
@@ -112,6 +111,8 @@ static void qt_win_resolve_libs()
         if (ptrSHBrowseForFolder && ptrSHGetPathFromIDList && ptrSHGetMalloc)
             qt_priv_ptr_valid = true;
 #endif
+
+        triedResolve = true;
     }
 }
 

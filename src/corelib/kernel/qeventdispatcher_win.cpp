@@ -327,7 +327,6 @@ static void resolveTimerAPI()
         if (triedResolve)
             return;
 #endif
-        triedResolve = true;
 #ifndef Q_OS_WINCE
         QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
@@ -337,6 +336,8 @@ static void resolveTimerAPI()
             qtimeSetEvent = (ptimeSetEvent)library.resolve("timeSetEvent");
             qtimeKillEvent = (ptimeKillEvent)library.resolve("timeKillEvent");
         }
+
+        triedResolve = true;
     }
 }
 
