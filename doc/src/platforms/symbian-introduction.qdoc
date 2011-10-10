@@ -42,7 +42,6 @@
     \o
      \list
         \o \l {Qt for the Symbian platform Requirements}
-        \o \l {Installing Qt for the Symbian platform from a Binary Package}
         \o \l {Installing Qt for the Symbian platform}
         \o \l {The Symbian platform - Introduction to Qt}{Introduction to using Qt}
     \endlist
@@ -55,7 +54,7 @@
     \endlist
     \o
     \list
-        \o \l {Deploying an Application on the Symbian platform}{Deploying Applications}
+        \o \l {Deploying an Application on the Symbian Platform}{Deploying Applications}
     \endlist
     \endtable
 */
@@ -74,6 +73,8 @@
     Platform security capabilities are added via the
     \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
     qmake variable.
+
+    \sa {platform-notes-symbian.html#required-capabilities}{Required Capabilities}
 */
 
 /*!
@@ -92,9 +93,6 @@
     required to use Qt for the Symbian platform.
 
     \section1 Installing Qt and Running Demos
-
-    Follow the instructions found in \l{Installing Qt for the Symbian platform from a Binary Package}
-    to learn how to install Qt using a binary package and how to build and run Qt demos.
 
     Follow the instructions found in \l{Installing Qt for the Symbian platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
