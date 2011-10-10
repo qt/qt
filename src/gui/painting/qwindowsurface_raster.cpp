@@ -254,8 +254,9 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     } else
 #endif
     {
+        int depth = widget->x11Info().depth();
         const QImage &src = d->image->image;
-        if (src.format() != QImage::Format_RGB32 || widget->x11Info().depth() < 24) {
+        if (src.format() != QImage::Format_RGB32 || depth < 24 || X11->bppForDepth.value(depth) != 32) {
             Q_ASSERT(src.depth() >= 16);
             const QImage sub_src(src.scanLine(br.y()) + br.x() * (uint(src.depth()) / 8),
                                  br.width(), br.height(), src.bytesPerLine(), src.format());
@@ -267,7 +268,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         } else {
             // qpaintengine_x11.cpp
             extern void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image, Drawable hd, GC gc, Display *dpy, Visual *visual, int depth);
-            qt_x11_drawImage(br, wpos, src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
+            qt_x11_drawImage(br, wpos, src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), depth);
         }
     }
 
