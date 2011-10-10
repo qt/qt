@@ -4304,7 +4304,7 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
     QGraphicsWidget *widgetItem = static_cast<QGraphicsWidget *>(item);
     QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
     const qreal windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
-                                ? proxy->widget()->windowOpacity() : 1.0;
+                                ? proxy->widget()->windowOpacity() : qreal(1.0);
     const qreal oldPainterOpacity = painter->opacity();
 
     if (qFuzzyIsNull(windowOpacity))
