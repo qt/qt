@@ -256,7 +256,7 @@ static bool resolveUNCLibs()
 #endif
 
 #if !defined(Q_OS_WINCE)
-        QSystemLibrary netapi32(QLatin1String("kernel32"));
+        QSystemLibrary netapi32(QLatin1String("Netapi32"));
         if (netapi32.load()) {
             ptrNetShareEnum = (PtrNetShareEnum)netapi32.resolve("NetShareEnum");
             ptrNetApiBufferFree = (PtrNetApiBufferFree)netapi32.resolve("NetApiBufferFree");
