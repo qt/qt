@@ -353,8 +353,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
     static bool resolvedNWE = false;
     if (!resolvedNWE) {
-        resolvedNWE = true;
         ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
+        resolvedNWE = true;
     }
     if (!ptrNotifyWinEvent)
         return;
