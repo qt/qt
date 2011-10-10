@@ -11049,7 +11049,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 qreal QWidget::windowOpacity() const
 {
     Q_D(const QWidget);
-    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / 255. : 1.0;
+    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / qreal(255.) : qreal(1.0);
 }
 
 void QWidget::setWindowOpacity(qreal opacity)

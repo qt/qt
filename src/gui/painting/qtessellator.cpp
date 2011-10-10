@@ -1400,7 +1400,7 @@ void QTessellator::tessellateRect(const QPointF &a_, const QPointF &b_, qreal wi
     if (delta.x == 0 && delta.y == 0)
         return;
 
-    qreal hw = 0.5 * width;
+    qreal hw = qreal(0.5) * width;
 
     if (delta.x == 0) {
         Q27Dot5 halfWidth = FloatToQ27Dot5(hw);
