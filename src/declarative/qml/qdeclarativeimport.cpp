@@ -361,8 +361,11 @@ bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath
     Q_ASSERT(typeLoader);
     const QDeclarativeDirParser *qmldirParser = typeLoader->qmlDirParser(absoluteFilePath);
     if (qmldirParser->hasError()) {
-        if (errorString)
-            *errorString = QDeclarativeImportDatabase::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
+        if (errorString) {
+            const QList<QDeclarativeError> qmldirErrors = qmldirParser->errors(uri);
+            for (int i = 0; i < qmldirErrors.size(); ++i)
+                *errorString += qmldirErrors.at(i).description();
+        }
         return false;
     }
 
@@ -1022,7 +1025,7 @@ bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QSt
     if (!engineInitialized || !typesRegistered) {
         if (!QDeclarative_isFileCaseCorrect(absoluteFilePath)) {
             if (errorString) 
-                *errorString = tr("File name case mismatch for \"%2\"").arg(absoluteFilePath);
+                *errorString = tr("File name case mismatch for \"%1\"").arg(absoluteFilePath);
             return false;
         }
         QPluginLoader loader(absoluteFilePath);

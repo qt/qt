@@ -108,14 +108,14 @@ bool QDeclarativeDirParser::parse()
         QFile file(_filePathSouce);
         if (!QDeclarative_isFileCaseCorrect(_filePathSouce)) {
             QDeclarativeError error;
-            error.setDescription(QString::fromUtf8("cannot load module \"%1\": File name case mismatch for \"%2\"").arg(_url.toString()).arg(_filePathSouce));
+            error.setDescription(QString::fromUtf8("cannot load module \"$$URI$$\": File name case mismatch for \"%1\"").arg(_filePathSouce));
             _errors.prepend(error);
             return false;
         } else if (file.open(QFile::ReadOnly)) {
             _source = QString::fromUtf8(file.readAll());
         } else {
             QDeclarativeError error;
-            error.setDescription(QString::fromUtf8("module \"%1\" definition \"%2\" not readable").arg(_url.toString()).arg(_filePathSouce));
+            error.setDescription(QString::fromUtf8("module \"$$URI$$\" definition \"%1\" not readable").arg(_filePathSouce));
             _errors.prepend(error);
             return false;
         }
@@ -243,9 +243,16 @@ bool QDeclarativeDirParser::hasError() const
     return false;
 }
 
-QList<QDeclarativeError> QDeclarativeDirParser::errors() const
+QList<QDeclarativeError> QDeclarativeDirParser::errors(const QString &uri) const
 {
-    return _errors;
+    QList<QDeclarativeError> errors = _errors;
+    for (int i = 0; i < errors.size(); ++i) {
+        QDeclarativeError &e = errors[i];
+        QString description = e.description();
+        description.replace(QLatin1String("$$URI$$"), uri);
+        e.setDescription(description);
+    }
+    return errors;
 }
 
 QList<QDeclarativeDirParser::Plugin> QDeclarativeDirParser::plugins() const

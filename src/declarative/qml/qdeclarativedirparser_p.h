@@ -80,7 +80,7 @@ public:
     bool parse();
 
     bool hasError() const;
-    QList<QDeclarativeError> errors() const;
+    QList<QDeclarativeError> errors(const QString &uri) const;
 
     struct Plugin
     {

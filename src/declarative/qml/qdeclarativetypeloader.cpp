@@ -789,18 +789,13 @@ Return a QDeclarativeDirParser for absoluteFilePath.  The QDeclarativeDirParser 
 const QDeclarativeDirParser *QDeclarativeTypeLoader::qmlDirParser(const QString &absoluteFilePath)
 {
     QDeclarativeDirParser *qmldirParser;
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_DARWIN) || defined(Q_OS_SYMBIAN)
-    QString lowPath(absoluteFilePath.toLower());
-#else
-    QString lowPath(absoluteFilePath);
-#endif
-    QHash<QString,QDeclarativeDirParser*>::const_iterator it = m_importQmlDirCache.find(lowPath);
+    QHash<QString,QDeclarativeDirParser*>::const_iterator it = m_importQmlDirCache.find(absoluteFilePath);
     if (it == m_importQmlDirCache.end()) {
         qmldirParser = new QDeclarativeDirParser;
         qmldirParser->setFileSource(absoluteFilePath);
         qmldirParser->setUrl(QUrl::fromLocalFile(absoluteFilePath));
         qmldirParser->parse();
-        m_importQmlDirCache.insert(lowPath, qmldirParser);
+        m_importQmlDirCache.insert(absoluteFilePath, qmldirParser);
     } else {
         qmldirParser = *it;
     }
