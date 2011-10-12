@@ -42,9 +42,9 @@ symbian {
 wince*|symbian {
     scriptFiles.sources = ../lackey/scripts/*.js
     scriptFiles.path = lackey/scripts
-    DEPLOYMENT = additionalFiles scriptFiles
+    DEPLOYMENT += additionalFiles scriptFiles
     QT += script    # for easy deployment of QtScript
-    
+
     requires(contains(QT_CONFIG,script))
 }
 

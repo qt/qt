@@ -15,7 +15,7 @@ wince*|symbian: {
   copier.path = copier
   paster.sources = ../paster/paster.exe  
   paster.path = paster
-  
+
   symbian: {
     LIBS += -lbafl -lestor -letext
 
@@ -27,6 +27,6 @@ wince*|symbian: {
     reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/paster_reg.rsc
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
   }
-  
-  DEPLOYMENT = copier paster rsc reg_resource
+
+  DEPLOYMENT += copier paster rsc reg_resource
 }

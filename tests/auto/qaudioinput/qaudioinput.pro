@@ -6,7 +6,7 @@ QT = core multimedia
 
 wince* {
     deploy.sources += 4.wav
-    DEPLOYMENT = deploy
+    DEPLOYMENT += deploy
     DEFINES += SRCDIR=\\\"\\\"
     QT += gui
 } else {
