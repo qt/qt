@@ -2762,7 +2762,7 @@ qreal QDeclarativeListView::minXExtent() const
                 d->minExtent += d->header->size();
         }
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-            d->minExtent += highlightStart;
+            d->minExtent += d->isRightToLeft() ? -highlightStart : highlightStart;
             d->minExtent = qMax(d->minExtent, -(endPositionFirstItem - highlightEnd + 1));
         }
         d->minExtentDirty = false;
