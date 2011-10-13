@@ -262,11 +262,11 @@
     <name>QVFb</name>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Plik</translation>
     </message>
     <message>
         <source>&amp;Configure...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Konfiguruj...</translation>
     </message>
     <message>
         <source>&amp;Save image...</source>
@@ -274,19 +274,19 @@
     </message>
     <message>
         <source>&amp;Animation...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Animacja...</translation>
     </message>
     <message>
         <source>&amp;Quit</source>
-        <translation type="unfinished"></translation>
+        <translation>Za&amp;kończ</translation>
     </message>
     <message>
         <source>&amp;View</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Widok</translation>
     </message>
     <message>
         <source>Show &amp;Cursor</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokaż ku&amp;rsor</translation>
     </message>
     <message>
         <source>&amp;Refresh Rate...</source>
@@ -294,55 +294,55 @@
     </message>
     <message>
         <source>&amp;No rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Brak rotacji</translation>
     </message>
     <message>
         <source>&amp;90° rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotacja &amp;90°</translation>
     </message>
     <message>
         <source>1&amp;80° rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotacja 1&amp;80°</translation>
     </message>
     <message>
         <source>2&amp;70° rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotacja 2&amp;70°</translation>
     </message>
     <message>
         <source>Zoom scale &amp;0.5</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie &amp;0.5</translation>
     </message>
     <message>
         <source>Zoom scale 0.7&amp;5</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie 0.7&amp;5</translation>
     </message>
     <message>
         <source>Zoom scale &amp;1</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie &amp;1</translation>
     </message>
     <message>
         <source>Zoom scale &amp;2</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie &amp;2</translation>
     </message>
     <message>
         <source>Zoom scale &amp;3</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie &amp;3</translation>
     </message>
     <message>
         <source>Zoom scale &amp;4</source>
-        <translation type="unfinished"></translation>
+        <translation>Powiększenie &amp;4</translation>
     </message>
     <message>
         <source>Zoom &amp;scale...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Powiększenie...</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pomoc</translation>
     </message>
     <message>
         <source>&amp;About...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Informacje o...</translation>
     </message>
     <message>
         <source>Save Main Screen image</source>
@@ -397,19 +397,19 @@
     <name>QVFbRateDialog</name>
     <message>
         <source>Target frame rate:</source>
-        <translation type="unfinished"></translation>
+        <translation>Docelowa częstotliwość:</translation>
     </message>
     <message>
         <source>%1fps</source>
-        <translation type="unfinished"></translation>
+        <translation>%1fps</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Anuluj</translation>
     </message>
 </context>
 </TS>
