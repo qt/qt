@@ -968,7 +968,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     for (int i = 0; i < si.num_glyphs; ++i)
-        si.width += glyphs.advances_x[i];
+        si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
 
 static inline bool hasCaseChange(const QScriptItem &si)
@@ -993,8 +993,7 @@ static void heuristicSetGlyphAttributes(const QChar *uc, int length, QGlyphLayou
 
     int glyph_pos = 0;
     for (int i = 0; i < length; i++) {
-        if (uc[i].unicode() >= 0xd800 && uc[i].unicode() < 0xdc00 && i < length-1
-            && uc[i+1].unicode() >= 0xdc00 && uc[i+1].unicode() < 0xe000) {
+        if (uc[i].isHighSurrogate() && i < length-1 && uc[i+1].isLowSurrogate()) {
             logClusters[i] = glyph_pos;
             logClusters[++i] = glyph_pos;
         } else {
@@ -1387,6 +1386,7 @@ QTextEngine::~QTextEngine()
     if (!stackEngine)
         delete layoutData;
     delete specialData;
+    resetFontEngineCache();
 }
 
 const HB_CharAttributes *QTextEngine::attributes() const
@@ -1447,6 +1447,13 @@ static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
     }
 }
 
+void QTextEngine::resetFontEngineCache()
+{
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
+    feCache.reset();
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1455,9 +1462,7 @@ void QTextEngine::invalidate()
     if (specialData)
         specialData->resolvedFormatIndices.clear();
 
-    releaseCachedFontEngine(feCache.prevFontEngine);
-    releaseCachedFontEngine(feCache.prevScaledFontEngine);
-    feCache.reset();
+    resetFontEngineCache();
 }
 
 void QTextEngine::clearLineData()
@@ -2658,7 +2663,7 @@ void QTextEngine::splitItem(int item, int pos) const
         QFixed w = 0;
         const QGlyphLayout g = shapedGlyphs(&oldItem);
         for(int j = 0; j < breakGlyph; ++j)
-            w += g.advances_x[j];
+            w += g.advances_x[j] * !g.attributes[j].dontPrint;
 
         newItem.width = oldItem.width - w;
         oldItem.width = w;
@@ -2951,7 +2956,7 @@ int QTextEngine::lineNumberForTextPosition(int pos)
         return lines.size() - 1;
     for (int i = 0; i < lines.size(); ++i) {
         const QScriptLine& line = lines[i];
-        if (line.from + line.length > pos)
+        if (line.from + line.length + line.trailingSpaces > pos)
             return i;
     }
     return -1;

@@ -129,6 +129,7 @@ private slots:
     void textWidthWithLineSeparator();
     void cursorInLigatureWithMultipleLines();
     void xToCursorForLigatures();
+    void cursorInNonStopChars();
 
 private:
     QFont testFont;
@@ -1465,7 +1466,7 @@ void tst_QTextLayout::textWidthWithLineSeparator()
 void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 {
 #if !defined(Q_WS_MAC)
-    QSKIP("This test can not be run on Mac", SkipAll);
+    QSKIP("This test can only be run on Mac", SkipAll);
 #endif
     QTextLayout layout("first line finish", QFont("Times", 20));
     layout.beginLayout();
@@ -1481,7 +1482,7 @@ void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 void tst_QTextLayout::xToCursorForLigatures()
 {
 #if !defined(Q_WS_MAC)
-    QSKIP("This test can not be run on Mac", SkipAll);
+    QSKIP("This test can only be run on Mac", SkipAll);
 #endif
     QTextLayout layout("fi", QFont("Times", 20));
     layout.beginLayout();
@@ -1500,6 +1501,20 @@ void tst_QTextLayout::xToCursorForLigatures()
     qreal width = line.naturalTextWidth();
     QVERIFY(line.xToCursor(0) == line.xToCursor(width / 2) ||
             line.xToCursor(width) == line.xToCursor(width / 2));
+}
+
+void tst_QTextLayout::cursorInNonStopChars()
+{
+#if defined(Q_WS_MAC)
+    QSKIP("This test can not be run on Mac", SkipAll);
+#endif
+    QTextLayout layout(QString::fromUtf8("\xE0\xA4\xA4\xE0\xA5\x8D\xE0\xA4\xA8"));
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    QVERIFY(line.cursorToX(1) == line.cursorToX(3));
+    QVERIFY(line.cursorToX(2) == line.cursorToX(3));
 }
 
 QTEST_MAIN(tst_QTextLayout)

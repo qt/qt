@@ -128,12 +128,12 @@ bool XsdElement::isElement() const
 
 void XsdElement::setType(const SchemaType::Ptr &type)
 {
-    m_type = type;
+    m_type = type.data();
 }
 
 SchemaType::Ptr XsdElement::type() const
 {
-    return m_type;
+    return SchemaType::Ptr(m_type);
 }
 
 void XsdElement::setScope(const Scope::Ptr &scope)

@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+/*
+  node.cpp
+*/
+
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
@@ -152,6 +156,16 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
     linkPair.first = link;
     linkPair.second = desc;
     linkMap[linkType] = linkPair;
+}
+
+/*!
+    Sets the information about the project and version a node was introduced
+    in. The string is simplified, removing excess whitespace before being
+    stored.
+*/
+void Node::setSince(const QString &since)
+{
+    sinc = since.simplified();
 }
 
 /*!

@@ -11,6 +11,7 @@ symbian:{
 #    DEFINES += QTEST_NO_SPECIALIZATIONS
     TARGET.CAPABILITY="None"
     RSS_RULES ="group_name=\"QtTests\";" 
+    MMP_RULES*=SMPSAFE
 }
 
 # prefix test binary with tst_

@@ -375,7 +375,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
@@ -515,7 +515,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
-    d->feCache.reset();
+    d->resetFontEngineCache();
 }
 
 /*!
@@ -814,7 +814,7 @@ QTextLine QTextLayout::createLine()
     if (l && d->lines.at(l-1).length < 0) {
         QTextLine(l-1, d).setNumColumns(INT_MAX);
     }
-    int from = l > 0 ? d->lines.at(l-1).from + d->lines.at(l-1).length : 0;
+    int from = l > 0 ? d->lines.at(l-1).from + d->lines.at(l-1).length + d->lines.at(l-1).trailingSpaces : 0;
     int strlen = d->layoutData->string.length();
     if (l && from >= strlen) {
         if (!d->lines.at(l-1).length || d->layoutData->string.at(strlen - 1) != QChar::LineSeparator)
@@ -1708,6 +1708,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 {
     QScriptLine &line = eng->lines[i];
     line.length = 0;
+    line.trailingSpaces = 0;
     line.textWidth = 0;
     line.hasTrailingSpaces = false;
 
@@ -1931,7 +1932,7 @@ found:
     if (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
         line.textWidth += lbh.spaceData.textWidth;
     if (lbh.spaceData.length) {
-        line.length += lbh.spaceData.length;
+        line.trailingSpaces = lbh.spaceData.length;
         line.hasTrailingSpaces = true;
     }
 
@@ -1995,7 +1996,7 @@ int QTextLine::textLength() const
         && eng->block.isValid() && i == eng->lines.count()-1) {
         return eng->lines[i].length - 1;
     }
-    return eng->lines[i].length;
+    return eng->lines[i].length + eng->lines[i].trailingSpaces;
 }
 
 static void drawMenuText(QPainter *p, QFixed x, QFixed y, const QScriptItem &si, QTextItemInt &gf, QTextEngine *eng,
@@ -2506,6 +2507,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     int pos = *cursorPos;
     int itm;
+    const HB_CharAttributes *attributes = eng->attributes();
+    while (pos < line.from + line.length && !attributes[pos].charStop)
+        pos++;
     if (pos == line.from + (int)line.length) {
         // end of line ensure we have the last item on the line
         itm = eng->findItem(pos-1);
@@ -2607,6 +2611,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         }
         x += eng->offsetInLigature(si, pos, end, glyph_pos);
     }
+
+    if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.width)
+        x = line.width;
 
     *cursorPos = pos + si->position;
     return x.toReal();

@@ -482,6 +482,11 @@ void tst_QFileInfo::absolutePath_data()
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
 #endif
+    QTest::newRow("QTBUG-19995.1") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                   << drivePrefix + "/System/Library"
+                                   << "Frameworks";
+    QTest::newRow("QTBUG-19995.2") << drivePrefix + "/System/Library/StartupItems/../Frameworks/"
+                                   << drivePrefix + "/System/Library/Frameworks" << "";
 }
 
 void tst_QFileInfo::absolutePath()
@@ -503,6 +508,7 @@ void tst_QFileInfo::absFilePath_data()
 
     QTest::newRow("relativeFile") << "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
+    QString drivePrefix;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QString curr = QDir::currentPath();
 
@@ -511,7 +517,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
 
     // Make sure drive-relative paths return correct absolute paths (task 255326)
-    QString drivePrefix = QDir::currentPath().left(2);
+    drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
@@ -521,6 +527,8 @@ void tst_QFileInfo::absFilePath_data()
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "/home/andy/tmp.txt";
 #endif
+    QTest::newRow("QTBUG-19995") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                 << drivePrefix + "/System/Library/Frameworks";
 }
 
 void tst_QFileInfo::absFilePath()
@@ -1395,7 +1403,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
             wchar_t errstr[0x100];
             DWORD count = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
                 0, err, 0, errstr, 0x100, 0);
-            QString error(QString::fromUtf16(errstr, count));
+            QString error(QString::fromWCharArray (errstr, count));
             qWarning() << error;
             //we need at least one data set for the test not to assert fail when skipping _data function
             QDir target("target");

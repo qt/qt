@@ -57,6 +57,21 @@
 #include <e32property.h>
 
 #include <limits.h>
+
+#include <eikccpu.h>
+#include <aknedsts.h>
+#include <coeinput.h>
+#include <w32std.h>
+#include <akndiscreetpopup.h>
+
+#include <qtextedit.h>
+#include <qplaintextedit.h>
+#include <qlineedit.h>
+#include <qclipboard.h>
+#include <qvalidator.h>
+#include <qgraphicsproxywidget.h>
+#include <qgraphicsitem.h>
+
 // You only find these enumerations on SDK 5 onwards, so we need to provide our own
 // to remain compatible with older releases. They won't be called by pre-5.0 SDKs.
 
@@ -64,6 +79,8 @@
 #define QT_EAknCursorPositionChanged MAknEdStateObserver::EAknEdwinStateEvent(6)
 // MAknEdStateObserver::EAknActivatePenInputRequest
 #define QT_EAknActivatePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(7)
+// MAknEdStateObserver::EAknClosePenInputRequest
+#define QT_EAknClosePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(10)
 
 // EAknEditorFlagSelectionVisible is only valid from 3.2 onwards.
 // Sym^3 AVKON FEP manager expects that this flag is used for FEP-aware editors
@@ -77,7 +94,252 @@
 #define QT_EPSUidAknFep 0x100056de
 #define QT_EAknFepTouchInputActive 0x00000004
 
+_LIT(KAvkonResourceFile, "z:\\resource\\avkon.rsc" );
+
 QT_BEGIN_NAMESPACE
+
+static QWidget* getFocusedChild(const QList<QObject*>& objectList)
+{
+    for (int j = 0; j < objectList.count(); j++) {
+        if (QWidget* ow = qobject_cast<QWidget *>(objectList[j])) {
+            if (ow->hasFocus()) {
+                return ow;
+            } else {
+                if (QWidget* rw = getFocusedChild(ow->children()))
+                    return rw;
+            }
+        }
+    }
+    return 0;
+}
+
+// A generic method for invoking "cut", "copy", and "paste" slots on editor
+// All supported editors are expected to have these.
+static bool ccpuInvokeSlot(QObject *obj, QObject *focusObject, const char *member)
+{
+    QObject *invokeTarget = obj;
+    if (focusObject)
+        invokeTarget = focusObject;
+
+    return QMetaObject::invokeMethod(invokeTarget, member, Qt::DirectConnection);
+}
+
+// focusObject is used to return a pointer to focused graphics object, if any
+static QWidget *getQWidgetFromQGraphicsView(QWidget *widget, QObject **focusObject = 0)
+{
+    if (focusObject)
+        *focusObject = 0;
+
+    if (!widget)
+        return 0;
+
+    if (QGraphicsView* qgv = qobject_cast<QGraphicsView *>(widget)) {
+        QGraphicsItem *focusItem = 0;
+        if (qgv->scene())
+            focusItem = qgv->scene()->focusItem();
+        if (focusItem) {
+            if (focusObject)
+                *focusObject = focusItem->toGraphicsObject();
+            if (QGraphicsProxyWidget* const qgpw = qgraphicsitem_cast<QGraphicsProxyWidget* const>(focusItem)) {
+                if (QWidget* w = qgpw->widget()) {
+                    if (w->layout()) {
+                        if (QWidget* rw = getFocusedChild(w->children()))
+                            return rw;
+                    } else {
+                        return w;
+                    }
+                }
+            }
+        }
+    }
+    return widget;
+}
+
+QCoeFepInputMaskHandler::QCoeFepInputMaskHandler(const QString &mask)
+{
+    QString inputMask;
+    int delimiter = mask.indexOf(QLatin1Char(';'));
+    if (mask.isEmpty() || delimiter == 0)
+        return;
+
+    if (delimiter == -1) {
+        m_blank = QLatin1Char(' ');
+        inputMask = mask;
+    } else {
+        inputMask = mask.left(delimiter);
+        m_blank = (delimiter + 1 < mask.length()) ? mask[delimiter + 1] : QLatin1Char(' ');
+    }
+
+    // Calculate m_maxLength / m_maskData length
+    m_maxLength = 0;
+    QChar c = 0;
+    for (int i = 0; i < inputMask.length(); i++) {
+        c = inputMask.at(i);
+        if (i > 0 && inputMask.at(i - 1) == QLatin1Char('\\')) {
+            m_maxLength++;
+            continue;
+        }
+        if (c != QLatin1Char('\\') && c != QLatin1Char('!')
+            && c != QLatin1Char('<') && c != QLatin1Char('>')
+            && c != QLatin1Char('{') && c != QLatin1Char('}')
+            && c != QLatin1Char('[') && c != QLatin1Char(']')) {
+            m_maxLength++;
+        }
+    }
+
+    m_maskData = new MaskInputData[m_maxLength];
+
+    MaskInputData::Casemode m = MaskInputData::NoCaseMode;
+    c = 0;
+    bool s = false;
+    bool escape = false;
+    int index = 0;
+    for (int i = 0; i < inputMask.length(); i++) {
+        c = inputMask.at(i);
+        if (escape) {
+            s = true;
+            m_maskData[index].maskChar = c;
+            m_maskData[index].separator = s;
+            m_maskData[index].caseMode = m;
+            index++;
+            escape = false;
+        } else if (c == QLatin1Char('<')) {
+            m = MaskInputData::Lower;
+        } else if (c == QLatin1Char('>')) {
+            m = MaskInputData::Upper;
+        } else if (c == QLatin1Char('!')) {
+            m = MaskInputData::NoCaseMode;
+        } else if (c != QLatin1Char('{') && c != QLatin1Char('}') && c != QLatin1Char('[') && c != QLatin1Char(']')) {
+            switch (c.unicode()) {
+            case 'A':
+            case 'a':
+            case 'N':
+            case 'n':
+            case 'X':
+            case 'x':
+            case '9':
+            case '0':
+            case 'D':
+            case 'd':
+            case '#':
+            case 'H':
+            case 'h':
+            case 'B':
+            case 'b':
+                s = false;
+                break;
+            case '\\':
+                escape = true;
+                break;
+            default:
+                s = true;
+                break;
+            }
+
+            if (!escape) {
+                m_maskData[index].maskChar = c;
+                m_maskData[index].separator = s;
+                m_maskData[index].caseMode = m;
+                index++;
+            }
+        }
+    }
+}
+
+QCoeFepInputMaskHandler::~QCoeFepInputMaskHandler()
+{
+    if (m_maskData)
+        delete[] m_maskData;
+}
+
+bool QCoeFepInputMaskHandler::canPasteClipboard(const QString &text)
+{
+    if (!m_maskData)
+        return true;
+
+    if (text.length() > m_maxLength)
+        return false;
+    int limit = qMin(m_maxLength, text.length());
+    for (int i = 0; i < limit; ++i) {
+        if (m_maskData[i].separator) {
+            if (text.at(i) != m_maskData[i].maskChar)
+                return false;
+        } else {
+            if (!isValidInput(text.at(i), m_maskData[i].maskChar))
+                return false;
+        }
+    }
+    return true;
+}
+
+bool QCoeFepInputMaskHandler::isValidInput(QChar key, QChar mask) const
+{
+    switch (mask.unicode()) {
+    case 'A':
+        if (key.isLetter())
+            return true;
+        break;
+    case 'a':
+        if (key.isLetter() || key == m_blank)
+            return true;
+        break;
+    case 'N':
+        if (key.isLetterOrNumber())
+            return true;
+        break;
+    case 'n':
+        if (key.isLetterOrNumber() || key == m_blank)
+            return true;
+        break;
+    case 'X':
+        if (key.isPrint())
+            return true;
+        break;
+    case 'x':
+        if (key.isPrint() || key == m_blank)
+            return true;
+        break;
+    case '9':
+        if (key.isNumber())
+            return true;
+        break;
+    case '0':
+        if (key.isNumber() || key == m_blank)
+            return true;
+        break;
+    case 'D':
+        if (key.isNumber() && key.digitValue() > 0)
+            return true;
+        break;
+    case 'd':
+        if ((key.isNumber() && key.digitValue() > 0) || key == m_blank)
+            return true;
+        break;
+    case '#':
+        if (key.isNumber() || key == QLatin1Char('+') || key == QLatin1Char('-') || key == m_blank)
+            return true;
+        break;
+    case 'B':
+        if (key == QLatin1Char('0') || key == QLatin1Char('1'))
+            return true;
+        break;
+    case 'b':
+        if (key == QLatin1Char('0') || key == QLatin1Char('1') || key == m_blank)
+            return true;
+        break;
+    case 'H':
+        if (key.isNumber() || (key >= QLatin1Char('a') && key <= QLatin1Char('f')) || (key >= QLatin1Char('A') && key <= QLatin1Char('F')))
+            return true;
+        break;
+    case 'h':
+        if (key.isNumber() || (key >= QLatin1Char('a') && key <= QLatin1Char('f')) || (key >= QLatin1Char('A') && key <= QLatin1Char('F')) || key == m_blank)
+            return true;
+        break;
+    default:
+        break;
+    }
+    return false;
+}
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
 {
@@ -107,13 +369,15 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_textCapabilities(TCoeInputCapabilities::EAllText),
       m_inDestruction(false),
       m_pendingInputCapabilitiesChanged(false),
+      m_pendingTransactionCancel(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
       m_hasTempPreeditString(false),
       m_splitViewResizeBy(0),
-      m_splitViewPreviousWindowStates(Qt::WindowNoState)
+      m_splitViewPreviousWindowStates(Qt::WindowNoState),
+      m_ccpu(0)
 {
     m_fepState->SetObjectProvider(this);
     int defaultFlags = EAknEditorFlagDefault;
@@ -130,6 +394,29 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetPermittedCases( EAknEditorAllCaseModes );
     m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     m_fepState->SetNumericKeymap(EAknEditorAlphanumericNumberModeKeymap);
+    enableSymbianCcpuSupport();
+
+    //adding softkeys
+    QString copyLabel = QLatin1String("Copy");
+    QString pasteLabel = QLatin1String("Paste");
+    TRAP_IGNORE(
+        CEikonEnv* coe = CEikonEnv::Static();
+        if (coe) {
+            HBufC* copyBuf = coe->AllocReadResourceLC(R_TEXT_SOFTKEY_COPY);
+            copyLabel = qt_TDesC2QString(*copyBuf);
+            CleanupStack::PopAndDestroy(copyBuf);
+            HBufC* pasteBuf = coe->AllocReadResourceLC(R_TEXT_SOFTKEY_PASTE);
+            pasteLabel = qt_TDesC2QString(*pasteBuf);
+            CleanupStack::PopAndDestroy(pasteBuf);
+        }
+    )
+
+    m_copyAction = new QAction(copyLabel, QApplication::desktop());
+    m_pasteAction = new QAction(pasteLabel, QApplication::desktop());
+    m_copyAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    m_pasteAction->setSoftKeyRole(QAction::NegativeSoftKey);
+    connect(m_copyAction, SIGNAL(triggered()), this, SLOT(copy()));
+    connect(m_pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
 }
 
 QCoeFepInputContext::~QCoeFepInputContext()
@@ -142,8 +429,8 @@ QCoeFepInputContext::~QCoeFepInputContext()
     // but is synchronous, rather than asynchronous.
     CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
 
-    if (m_fepState)
-        delete m_fepState;
+    delete m_fepState;
+    delete m_ccpu;
 }
 
 void QCoeFepInputContext::reset()
@@ -252,9 +539,6 @@ bool QCoeFepInputContext::needsInputPanel()
 
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
-    // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
-    // close when it discovers that the underlying widget does not have input capabilities.
-
     if (!focusWidget())
         return false;
 
@@ -318,6 +602,12 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!needsInputPanel())
         return false;
 
+    if ((event->type() == QEvent::CloseSoftwareInputPanel)
+        && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)) {
+        m_fepState->ReportAknEdStateEventL(QT_EAknClosePenInputRequest);
+        return false;
+    }
+
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Only request virtual keyboard if it is not yet active or if this is the first time
         // panel is requested for this application.
@@ -341,6 +631,12 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             sControl = focusWidget()->effectiveWinId()->MopGetObject(sControl);
             Q_ASSERT(sControl);
 
+            // Store last focused widget and object in case of fullscreen VKB
+            QObject *focusObject = 0;
+            m_lastFocusedEditor = getQWidgetFromQGraphicsView(focusWidget(), &focusObject);
+            m_lastFocusedObject = focusObject; // Can be null
+            Q_ASSERT(m_lastFocusedEditor);
+
             // The FEP UI temporarily steals focus when it shows up the first time, causing
             // all sorts of weird effects on the focused widgets. Since it will immediately give
             // back focus to us, we temporarily disable focus handling until the job's done.
@@ -354,10 +650,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             if (sControl) {
                 sControl->setIgnoreFocusChanged(false);
             }
-            //If m_pointerHandler has already been set, it means that fep inline editing is in progress.
-            //When this is happening, do not filter out pointer events.
-            if (!m_pointerHandler)
-                return true;
         }
     }
 
@@ -367,28 +659,66 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event)
 {
     Q_UNUSED(keyWidget);
+    if (event->type() == QSymbianEvent::WindowServerEvent) {
+        const TWsEvent* wsEvent = event->windowServerEvent();
+        TInt eventType = 0;
+        if (wsEvent)
+            eventType = wsEvent->Type();
+
+        if (eventType == EEventKey) {
+            TKeyEvent* keyEvent = wsEvent->Key();
+            if (keyEvent) {
+                switch (keyEvent->iScanCode) {
+                case EEikCmdEditCopy:
+                    CcpuCopyL();
+                    break;
+                case EEikCmdEditCut:
+                    CcpuCutL();
+                    break;
+                case EEikCmdEditPaste:
+                    CcpuPasteL();
+                    break;
+                case EStdKeyF21:
+                    changeCBA(true);
+                    break;
+                default:
+                    break;
+                }
+                switch (keyEvent->iCode) {
+                case EKeyLeftArrow:
+                case EKeyRightArrow:
+                case EKeyUpArrow:
+                case EKeyDownArrow:
+                    if (CcpuCanCopy() && ((keyEvent->iModifiers & EModifierShift) == EModifierShift))
+                        changeCBA(true);
+                    break;
+                default:
+                    break;
+                }
+            }
+        } else if (eventType == EEventKeyUp) {
+            if (wsEvent->Key() && wsEvent->Key()->iScanCode == EStdKeyLeftShift)
+               changeCBA(false);
+        } else if (eventType == EEventWindowVisibilityChanged && S60->splitViewLastWidget) {
+            QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
+            const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
+
+            if (alwaysResize) {
+                TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
+                if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                    ensureFocusWidgetVisible(S60->splitViewLastWidget);
+                if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
+                    resetSplitViewWidget(true);
+            }
+        }
+    }
+
     if (event->type() == QSymbianEvent::CommandEvent)
         // A command basically means the same as a button being pushed. With Qt buttons
         // that would normally result in a reset of the input method due to the focus change.
         // This should also happen for commands.
         reset();
 
-    if (event->type() == QSymbianEvent::WindowServerEvent
-        && event->windowServerEvent()
-        && event->windowServerEvent()->Type() == EEventWindowVisibilityChanged
-        && S60->splitViewLastWidget) {
-
-        QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
-        const bool alwaysResize = (gv && gv->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff);
-
-        if (alwaysResize) {
-            TUint visibleFlags = event->windowServerEvent()->VisibilityChanged()->iFlags;
-            if (visibleFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
-                ensureFocusWidgetVisible(S60->splitViewLastWidget);
-            if (visibleFlags & TWsVisibilityChangedEvent::ENotVisible)
-                resetSplitViewWidget(true);
-        }
-    }
 
     if (event->type() == QSymbianEvent::ResourceChangeEvent
          && (event->resourceChangeType() == KEikMessageFadeAllWindows
@@ -473,7 +803,7 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     windowToMove->setUpdatesEnabled(false);
 
     if (!alwaysResize) {
-        if (gv->scene()) {
+        if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             if (gv->scene()->focusItem()) {
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
@@ -580,7 +910,7 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     if (!moveWithinVisibleArea) {
         // Check if the widget contains cursorPositionChanged signal and connect to it.
         QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem()) {
+        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
             int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
             if (index != -1)
                 connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
@@ -1062,8 +1392,10 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     // We are not supposed to ever have a tempPreeditString and a real preedit string
     // from S60 at the same time, so it should be safe to rely on this test to determine
     // whether we should honor S60's request to clear the text or not.
-    if (m_hasTempPreeditString)
+    if (m_hasTempPreeditString || m_pendingTransactionCancel)
         return;
+
+    m_pendingTransactionCancel = true;
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
@@ -1071,6 +1403,13 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     m_preeditString.clear();
     m_inlinePosition = 0;
     sendEvent(event);
+
+    // Sync with native side editor state. Native side can then do various operations
+    // based on editor state, such as removing 'exact word bubble'.
+    if (!m_pendingInputCapabilitiesChanged)
+        ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+
+    m_pendingTransactionCancel = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
@@ -1080,7 +1419,18 @@ TInt QCoeFepInputContext::DocumentLengthForFep() const
         return 0;
 
     QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
-    return variant.value<QString>().size() + m_preeditString.size();
+
+    int size = variant.value<QString>().size() + m_preeditString.size();
+
+    // To fix an issue with backspaces not being generated if document size is zero,
+    // fake document length to be at least one always, except when dealing with
+    // hidden text widgets, where this faking would generate extra asterisk. Since the
+    // primary use of hidden text widgets is password fields, they are unlikely to
+    // support multiple lines anyway.
+    if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
+        size = 1;
+
+    return size;
 }
 
 TInt QCoeFepInputContext::DocumentMaximumLengthForFep() const
@@ -1163,6 +1513,12 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
     // FEP expects the preedit string to be part of the editor content, so let's mix it in.
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     text.insert(cursor, m_preeditString);
+
+    // Add additional space to empty non-password text to compensate
+    // for the fake length we specified in DocumentLengthForFep().
+    if (text.size() == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
+        text += QChar(0x20);
+
     aEditorContent.Copy(qt_QString2TPtrC(text.mid(aDocumentPosition, aLengthToRetrieve)));
 }
 
@@ -1202,6 +1558,71 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
     aHeight = metrics.height();
     aAscent = metrics.ascent();
 }
+
+void QCoeFepInputContext::enableSymbianCcpuSupport()
+{
+    if (!m_ccpu) {
+        QT_TRAP_THROWING(
+            m_ccpu = new (ELeave) CAknCcpuSupport(this);
+            m_ccpu->SetMopParent(this);
+            CleanupStack::PushL(m_ccpu);
+            m_ccpu->ConstructL();
+            CleanupStack::Pop(m_ccpu);
+        );
+        Q_ASSERT(m_fepState);
+        if (m_fepState)
+            m_fepState->SetCcpuState(this);
+    }
+}
+
+void QCoeFepInputContext::changeCBA(bool showCopyAndOrPaste)
+{
+    QWidget *w = focusWidget();
+    if (!w)
+        w = m_lastFocusedEditor;
+
+    if (w) {
+        if (showCopyAndOrPaste) {
+            if (CcpuCanCopy())
+                w->addAction(m_copyAction);
+            if (CcpuCanPaste())
+                w->addAction(m_pasteAction);
+        } else {
+            w->removeAction(m_copyAction);
+            w->removeAction(m_pasteAction);
+        }
+    }
+}
+
+void QCoeFepInputContext::copyOrCutTextToClipboard(const char *operation)
+{
+    bool hasText = false;
+
+    QWidget *w = focusWidget();
+    QObject *focusObject = 0;
+    if (!w) {
+        w = m_lastFocusedEditor;
+        focusObject = m_lastFocusedObject;
+    } else {
+        w = getQWidgetFromQGraphicsView(w, &focusObject);
+    }
+
+    if (w) {
+        int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+
+        if (cursor != anchor) {
+            if (ccpuInvokeSlot(w, focusObject, operation)) {
+                TRAP_IGNORE(
+                    CAknDiscreetPopup::ShowGlobalPopupL(
+                        R_AVKON_DISCREET_POPUP_TEXT_COPIED,
+                        KAvkonResourceFile);
+                )
+            }
+        }
+    }
+}
+
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
@@ -1265,6 +1686,142 @@ MCoeFepAwareTextEditor_Extension1::CState* QCoeFepInputContext::State(TUid /*aTy
     // per QCoeFepInputContext, which should be deleted if the SetStateTransferingOwnershipL
     // function is used to set a new one.
     return m_fepState;
+}
+
+TBool QCoeFepInputContext::CcpuIsFocused() const
+{
+    return focusWidget() != 0;
+}
+
+TBool QCoeFepInputContext::CcpuCanCut() const
+{
+    bool retval = false;
+    QWidget *w = focusWidget();
+    if (!w)
+        w = m_lastFocusedEditor;
+    else
+        w = getQWidgetFromQGraphicsView(w);
+    if (w) {
+        int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+        retval = cursor != anchor;
+    }
+    return retval;
+}
+
+void QCoeFepInputContext::CcpuCutL()
+{
+    copyOrCutTextToClipboard("cut");
+}
+
+TBool QCoeFepInputContext::CcpuCanCopy() const
+{
+    return CcpuCanCut();
+}
+
+void QCoeFepInputContext::CcpuCopyL()
+{
+    copyOrCutTextToClipboard("copy");
+}
+
+TBool QCoeFepInputContext::CcpuCanPaste() const
+{
+    bool canPaste = false;
+    QString textToPaste = QApplication::clipboard()->text();
+    if (!textToPaste.isEmpty()) {
+        QWidget *w = focusWidget();
+        QObject *focusObject = 0;
+        if (!w) {
+            w = m_lastFocusedEditor;
+            focusObject = m_lastFocusedObject;
+        } else {
+            w = getQWidgetFromQGraphicsView(w, &focusObject);
+        }
+        if (w) {
+            // First, check if we are dealing with standard Qt editors (QLineEdit, QTextEdit, or QPlainTextEdit),
+            // as they do not have queryable property.
+            if (QTextEdit* tedit = qobject_cast<QTextEdit *>(w)) {
+                canPaste = tedit->canPaste();
+            } else if (QPlainTextEdit* ptedit = qobject_cast<QPlainTextEdit *>(w)) {
+                canPaste = ptedit->canPaste();
+            } else if (QLineEdit* ledit = qobject_cast<QLineEdit *>(w)) {
+                QString fullText = ledit->text();
+                if (ledit->hasSelectedText()) {
+                    fullText.remove(ledit->selectionStart(), ledit->selectedText().length());
+                    fullText.insert(ledit->selectionStart(), textToPaste);
+                } else {
+                    fullText.insert(ledit->cursorPosition(), textToPaste);
+                }
+
+                if (fullText.length() > ledit->maxLength()) {
+                    canPaste = false;
+                } else {
+                    const QValidator* validator = ledit->validator();
+                    if (validator) {
+                        int pos = 0;
+                        if (validator->validate(fullText, pos) == QValidator::Invalid)
+                            canPaste = false;
+                        else
+                            canPaste = true;
+                    } else {
+                        QString mask(ledit->inputMask());
+                        if (!mask.isEmpty()) {
+                            QCoeFepInputMaskHandler maskhandler(mask);
+                            if (maskhandler.canPasteClipboard(fullText))
+                                canPaste = true;
+                            else
+                                canPaste = false;
+                        } else {
+                            canPaste = true;
+                        }
+                    }
+                }
+            } else {
+                // Unknown editor (probably a QML one); Request the "canPaste" property.
+                QObject *invokeTarget = w;
+                if (focusObject)
+                    invokeTarget = focusObject;
+
+                canPaste = invokeTarget->property("canPaste").toBool();
+            }
+        }
+    }
+    return canPaste;
+}
+
+void QCoeFepInputContext::CcpuPasteL()
+{
+    QWidget *w = focusWidget();
+    QObject *focusObject = 0;
+    if (!w) {
+        w = m_lastFocusedEditor;
+        focusObject = m_lastFocusedObject;
+    } else {
+        w = getQWidgetFromQGraphicsView(w, &focusObject);
+    }
+    if (w)
+        ccpuInvokeSlot(w, focusObject, "paste");
+}
+
+TBool QCoeFepInputContext::CcpuCanUndo() const
+{
+    //not supported
+    return EFalse;
+}
+
+void QCoeFepInputContext::CcpuUndoL()
+{
+    //not supported
+}
+
+void QCoeFepInputContext::copy()
+{
+    QT_TRAP_THROWING(CcpuCopyL());
+}
+
+void QCoeFepInputContext::paste()
+{
+    QT_TRAP_THROWING(CcpuPasteL());
 }
 
 TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(TTypeUid /*id*/)

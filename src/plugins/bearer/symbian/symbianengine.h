@@ -155,6 +155,7 @@ public Q_SLOTS:
 
 private:
     void updateStatesToSnaps();
+    void updatePurposeToIaps();
     bool changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
                                     QNetworkConfiguration::StateFlags newState);
     bool changeConfigurationStateAtMinTo(QNetworkConfigurationPrivatePointer ptr,

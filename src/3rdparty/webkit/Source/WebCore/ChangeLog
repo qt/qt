@@ -1,3 +1,332 @@
+2011-09-12  Adam Klein  <adamk@chromium.org>
+
+        Fix out-of-bounds access in Gradient::sortStopsIfNecessary
+        https://bugs.webkit.org/show_bug.cgi?id=67958
+
+        Reviewed by Darin Adler.
+
+        Reported by Valgrind in http://crbug.com/77049.
+
+        The errant code was added as an optimization in r67804.
+        This patch reverts that one, as all parties agree that the optimization
+        doesn't seem worthwhile, and there clearly aren't any tests covering
+        the special case.
+
+        No new tests, as existing tests should cover the remaining call to
+        |std::stable_sort|.
+
+        * platform/graphics/Gradient.cpp:
+        (WebCore::Gradient::sortStopsIfNecessary):
+
+2011-09-09  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Assert being hit in AccessibilityRenderObject::addChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=61805
+
+        Reviewed by Chris Fleizach.
+
+        Fix nextSibling and previousSibling to handle adjacent continuations
+        properly, otherwise nodes end up appearing in the accessibility
+        tree twice (or a debug assertion could be raised).
+
+        Test: accessibility/adjacent-continuations-cause-assertion-failure.html
+
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::previousSibling):
+        (WebCore::AccessibilityRenderObject::nextSibling):
+
+2011-09-08  Abhishek Arya  <inferno@chromium.org>
+
+        :before content rendering issues with list markers and run-ins.
+        https://bugs.webkit.org/show_bug.cgi?id=67735
+
+        1) Remove the isAnonymous checks for run-in detection since the
+        run-in can belong to a node.
+        2) When the parent has block children, then the list marker will
+        be enclosed in an anonymous block. In that case, for going to the
+        next list marker, we need to traverse one level up. We don't need
+        this check when searching for generated run-in (loop 2), since we
+        know parent will have inline children, so the list marker wont be
+        enclosed in an anonymous block.
+
+        Reviewed by Dave Hyatt.
+
+        Tests: fast/lists/list-marker-before-content-table.html
+               fast/runin/runin-generated-before-content.html
+
+        * rendering/RenderObjectChildList.cpp:
+        (WebCore::RenderObjectChildList::beforePseudoElementRenderer):
+
+2011-09-10  Ken Buchanan <kenrb@chromium.org>
+
+        Crash due to bad data in SVGDocumentExtensions m_pendingResources
+        https://bugs.webkit.org/show_bug.cgi?id=67488
+
+        Reviewed by Nikolas Zimmermann.
+
+        Resolving a crash condition caused by the deletion of
+        elements while pending resource entries for those elements are still
+        recorded.
+
+        * rendering/svg/RenderSVGResourceContainer.cpp:
+        (WebCore::RenderSVGResourceContainer::registerResource)
+        * svg/SVGDocumentExtensions.h:
+        (WebCore::SVGDocumentExtensions::isElementInPendingResources)
+        * svg/SVGDocumentExtensions.cpp:
+        (WebCore::SVGDocumentExtensions::addPendingResource)
+        (WebCore::SVGDocumentExtensions::isElementInPendingResources)
+        (WebCore::SVGDocumentExtensions::removeElementFromPendingResources)
+        * svg/SVGStyledElement.h:
+        (WebCore::SVGStyledElement::clearHasPendingResourcesIfPossible)
+        * svg/SVGStyledElement.cpp:
+        (WebCore::SVGStyledElement::buildPendingResourcesIfNeeded)
+        (WebCore::SVGStyledElement::clearHasPendingResourcesIfPossible)
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::svgAttributeChanged)
+
+2011-09-08  Alexey Proskuryakov  <ap@apple.com>
+
+        REGRESSION (r66874): Missing RefPtr in ScriptController
+        https://bugs.webkit.org/show_bug.cgi?id=67748
+
+        Reviewed by Adam Barth.
+
+        * bindings/ScriptControllerBase.cpp: (WebCore::ScriptController::executeScript):
+
+2011-09-06  Abhishek Arya  <inferno@chromium.org>
+
+        Style not propagated to anonymous boxes and anonymous
+        inline-blocks.
+        https://bugs.webkit.org/show_bug.cgi?id=67364
+
+        Reviewed by James Robinson.
+
+        Share propagateStyleToAnonymousChildren with RenderBlock::styleDidChange.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::styleDidChange):
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::propagateStyleToAnonymousChildren):
+        * rendering/RenderObject.h:
+
+2011-09-04  Abhishek Arya  <inferno@chromium.org>
+
+        Style not propagated to anonymous boxes and anonymous
+        inline-blocks.
+        https://bugs.webkit.org/show_bug.cgi?id=67364
+
+        Reviewed by James Robinson.
+
+        Tests: fast/ruby/ruby-block-style-not-updated-with-before-after-content.html
+               fast/ruby/ruby-block-style-not-updated.html
+               fast/ruby/ruby-inline-style-not-updated-with-before-after-content.html
+               fast/ruby/ruby-inline-style-not-updated.html
+               fast/table/table-row-style-not-updated-with-after-content.html
+               fast/table/table-row-style-not-updated-with-before-content.html
+               fast/table/table-row-style-not-updated.html
+               fast/table/table-style-not-updated.html
+
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::propagateStyleToAnonymousChildren):
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::isBeforeAfterContent):
+        * rendering/RenderRuby.cpp:
+        (WebCore::RenderRubyAsInline::styleDidChange):
+        (WebCore::RenderRubyAsBlock::styleDidChange):
+        * rendering/RenderRuby.h:
+        * rendering/RenderTable.cpp:
+        (WebCore::RenderTable::styleDidChange):
+        * rendering/RenderTableRow.cpp:
+        (WebCore::RenderTableRow::styleDidChange):
+        (WebCore::RenderTableRow::addChild):
+        * rendering/RenderTableSection.cpp:
+        (WebCore::RenderTableSection::styleDidChange):
+        (WebCore::RenderTableSection::addChild):
+        * rendering/RenderTableSection.h:
+
+2011-09-05  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in RenderObjectChildList::destroyLeftOverChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=64753
+
+        Reviewed by James Robinson.
+
+        If any of the ancestors between column span element and containing
+        column's block is a continuation, then don't attempt to render the
+        column span by splitting the block into continuations.
+
+        Test: fast/multicol/column-span-parent-continuation-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::columnsBlockForSpanningElement):
+
+2011-08-30  Abhishek Arya  <inferno@chromium.org>
+
+        Removed m_owner accessed in custom scrollbars.
+        https://bugs.webkit.org/show_bug.cgi?id=64737
+
+        Reviewed by David Hyatt.
+
+        Problem does not reproduce in DRT, even with Eventhandler tricks
+        and gc(). So, adding a manual test.
+
+        * manual-tests/custom-scrollbar-renderer-removed-crash.html: Added.
+        * page/FrameView.cpp:
+        (WebCore::FrameView::clearOwningRendererForCustomScrollbars):
+        * page/FrameView.h:
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::willBeDestroyed): when this renderbox is getting
+        destroyed, clear the custom scrollbar in this frameview having this renderbox
+        as its owning renderer.
+        * rendering/RenderScrollbar.cpp:
+        (WebCore::RenderScrollbar::getScrollbarPseudoStyle): fix the null check.
+
+2011-09-04  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in Range::processAncestorsAndTheirSiblings.
+        https://bugs.webkit.org/show_bug.cgi?id=67556
+
+        Reviewed by Ryosuke Niwa.
+
+        Create a temporary RefPtr Node vector to keep all the ancestor's
+        childs so that we don't access removed child nodes.
+
+        Test: fast/dom/Range/range-delete-contents-event-fire-crash.html
+
+        * dom/Range.cpp:
+        (WebCore::Range::processContents):
+        (WebCore::Range::processAncestorsAndTheirSiblings):
+
+2011-08-30  Adam Barth  <abarth@webkit.org>
+
+        Flaky crash with JavaScript URLs
+        https://bugs.webkit.org/show_bug.cgi?id=66360
+
+        Reviewed by Nate Chapin.
+
+        This patch teaches DocumentWriter::begin to make a copy of the URL
+        before beginning a new document to avoid a crash.
+
+        Test: fast/loader/javascript-url-iframe-crash.html
+
+        * loader/DocumentWriter.cpp:
+        (WebCore::DocumentWriter::begin):
+
+2011-08-30  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        Emit last progress notification before calling dispatchDidFinishLoad
+        https://bugs.webkit.org/show_bug.cgi?id=28851
+
+        Reviewed by Adam Barth.
+
+        Original patch by Xan Lopez. Change FrameLoader to dispatch the notifications in
+        a more natural sequence.
+
+        Test: http/tests/loading/progress-finished-callback.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::checkLoadCompleteForThisFrame):
+
+2011-08-22  Nate Chapin  <japhet@chromium.org>
+
+        Unload events can crash us when they blank out
+        a parent frame.
+        https://bugs.webkit.org/show_bug.cgi?id=64741
+
+        Reviewed by Adam Barth.
+
+        Test: fast/loader/document-destruction-within-unload.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::stopLoading): Prevent unload events
+            from going into infinite recursion.
+        (WebCore::FrameLoader::setDocumentLoader): Ensure we don't
+            let set m_documentLoader to a DocumentLoader with a null Frame*.
+        (WebCore::FrameLoader::detachChildren): Save off a vector of
+            children to detach, rather than doing it inline.
+
+2011-08-30  Abhishek Arya  <inferno@chromium.org>
+
+        Style not updated for table parts in :before, :after content.
+        https://bugs.webkit.org/show_bug.cgi?id=66141        
+
+        Reviewed by Dave Hyatt.
+
+        Tests: fast/table/table-before-child-style-update.html
+               fast/table/table-row-before-child-style-update.html
+
+        * rendering/RenderObjectChildList.cpp:
+        (WebCore::RenderObjectChildList::updateBeforeAfterContent):
+
+2011-08-25  Abhishek Arya  <inferno@chromium.org>
+
+        Incorrect layout of :before and :after content, with display
+        table, table-row and table-cell.
+        https://bugs.webkit.org/show_bug.cgi?id=66699
+
+        Reviewed by David Hyatt.
+
+        Tests: fast/table/table-after-child-in-table.html
+               fast/table/table-before-child-in-table.html
+               fast/table/table-cell-after-child-in-block.html
+               fast/table/table-cell-after-child-in-table.html
+               fast/table/table-cell-before-child-in-block.html
+               fast/table/table-cell-before-child-in-table.html
+               fast/table/table-row-after-child-in-block.html
+               fast/table/table-row-after-child-in-table.html
+               fast/table/table-row-before-child-in-block.html
+               fast/table/table-row-before-child-in-table.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::addChildIgnoringAnonymousColumnBlocks):
+        Fix the looping condition to detect :after child correctly.
+        isAnonymousBlock() does not apply to tables, instead
+        using isAnonymous().
+        * rendering/RenderTableRow.cpp:
+        (WebCore::RenderTableRow::addChild): Don't add the new child
+        in the generatedContainer with :before, :after content.
+        * rendering/RenderTableSection.cpp:
+        (WebCore::RenderTableSection::addChild): Don't add the new child
+        in the generatedContainer with :before, :after content.
+
+2011-08-29  Abhishek Arya  <inferno@chromium.org>
+
+        Crash in InlineBox::deleteLine due to accessing removed
+        renderer.
+        https://bugs.webkit.org/show_bug.cgi?id=66015
+
+        Reviewed by Simon Fraser.
+
+        Test: fast/block/line-layout/inline-box-wrapper-crash.html
+
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::positionLineBox): Make sure that the
+        previous inline box wrapper is destroyed properly, before
+        setting a new one.
+
+2011-08-30  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
+
+        [Qt] Do not unconditionally use pkg-config in .pro files
+        https://bugs.webkit.org/show_bug.cgi?id=67055
+
+        Reviewed by Andreas Kling.
+
+        Original patch from Rohan McGovern <rohan.mcgovern@nokia.com>
+
+        Using the first pkg-config in PATH is prone to errors when cross
+        compiling inside the Qt repository (using Qt's build-system).
+
+        This patch protect calls for pkg-config with
+        !contains(QT_CONFIG, no-pkg-config). no-pkg-config is added to
+        QT_CONFIG by Qt's 'configure' when cross-compiling on systems
+        without pkg-config.
+
+        The respective change in Qt's configure has been submited already.
+
+        No new tests as this is just a build change.
+
+        * features.pri: protect pkg-config calls
+
 2011-08-25  Ademar de Souza Reis Jr.  <ademar.reis@openbossa.org>
 
         [Qt] Enable password echo on Symbian builds
