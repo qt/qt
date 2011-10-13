@@ -364,7 +364,7 @@
     </message>
     <message>
         <source>page</source>
-        <translation>strona</translation>
+        <translation type="obsolete">strona</translation>
     </message>
     <message>
         <source>Insert Page</source>
@@ -476,7 +476,7 @@
     </message>
     <message>
         <source>subwindow</source>
-        <translation>podokno</translation>
+        <translation type="obsolete">podokno</translation>
     </message>
     <message>
         <source>Subwindow</source>
@@ -528,6 +528,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>Zmień rozmieszczenie widżetu &apos;%1&apos; z %2 na %3</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>Zmień wyrównanie w rozmieszczeniu</translation>
     </message>
     <message>
         <source>Change script</source>
@@ -876,16 +880,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>Niepoprawna wartość rozciągniecia dla &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>Niepoprawna wartość minimalna dla &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1820,6 +1820,10 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
         <translation>&amp;Plik</translation>
     </message>
     <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Edycja</translation>
+    </message>
+    <message>
         <source>F&amp;orm</source>
         <translation>&amp;Formularz</translation>
     </message>
@@ -1857,7 +1861,7 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
     </message>
     <message>
         <source>Edit</source>
-        <translation>Edycja</translation>
+        <translation type="obsolete">Edycja</translation>
     </message>
     <message>
         <source>Toolbars</source>
@@ -1901,8 +1905,6 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
     <message>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
-----------
-Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
         <translation>Pusta nazwa klasy została przekazana do %1 (nazwa obiektu: &apos;%2&apos;).</translation>
@@ -3741,12 +3743,20 @@ Czy chcesz nadpisać szablon?</translation>
         <translation>Odziedziczony</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[Motyw] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>Poziomo</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>Pionowo</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Motyw</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4337,6 +4347,17 @@ Czy chcesz nadpisać szablon?</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>Ustaw ikonę dla motywu</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>Podaj nazwę ikony z bieżącego motywu:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -4483,15 +4504,15 @@ Czy chcesz nadpisać szablon?</translation>
     </message>
     <message>
         <source>Shortcut:</source>
-        <translation>Skrót:</translation>
+        <translation type="obsolete">Skrót:</translation>
     </message>
     <message>
         <source>Checkable:</source>
-        <translation>Przełączalny:</translation>
+        <translation type="obsolete">Przełączalny:</translation>
     </message>
     <message>
         <source>ToolTip:</source>
-        <translation>Podpowiedź:</translation>
+        <translation type="obsolete">Podpowiedź:</translation>
     </message>
     <message>
         <source>...</source>
@@ -4500,6 +4521,22 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <source>Object &amp;name:</source>
         <translation>&amp;Nazwa obiektu:</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>&amp;Podpowiedź:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>Ikonka z &amp;motywu:</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>P&amp;rzełączalna:</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>&amp;Skrót:</translation>
     </message>
 </context>
 <context>
@@ -4758,8 +4795,16 @@ Wybierz inną nazwę.</translation>
         <translation>Wybierz plik...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>Ustaw ikonkę z motywu...</translation>
+    </message>
+    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[Motyw] %1</translation>
     </message>
 </context>
 <context>
@@ -5136,6 +5181,42 @@ Klasa: %2</translation>
         <translation>Zmień sygnały/sloty...</translation>
     </message>
     <message>
+        <source>Layout Alignment</source>
+        <translation>Wyrównanie w rozmieszczeniu</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>Brak poziomego wyrównania</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Do lewej</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>Wyśrodkuj w poziomie</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Do prawej</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>Brak pionowego wyrównania</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Do góry</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>Wyśrodkuj w pionie</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Do dołu</translation>
+    </message>
+    <message>
         <source>Go to slot...</source>
         <translation>Przejdź do slotu...</translation>
     </message>
@@ -5350,6 +5431,10 @@ Klasa: %2</translation>
     <message>
         <source>Insert &amp;Image</source>
         <translation>Wstaw &amp;obrazek</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>Uprość tekst sformatowany</translation>
     </message>
 </context>
 <context>
