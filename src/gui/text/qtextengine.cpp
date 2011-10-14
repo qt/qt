@@ -1334,6 +1334,7 @@ QTextEngine::~QTextEngine()
     if (!stackEngine)
         delete layoutData;
     delete specialData;
+    resetFontEngineCache();
 }
 
 const HB_CharAttributes *QTextEngine::attributes() const
@@ -1394,6 +1395,13 @@ static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
     }
 }
 
+void QTextEngine::resetFontEngineCache()
+{
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
+    feCache.reset();
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1402,9 +1410,7 @@ void QTextEngine::invalidate()
     if (specialData)
         specialData->resolvedFormatIndices.clear();
 
-    releaseCachedFontEngine(feCache.prevFontEngine);
-    releaseCachedFontEngine(feCache.prevScaledFontEngine);
-    feCache.reset();
+    resetFontEngineCache();
 }
 
 void QTextEngine::clearLineData()

@@ -8,7 +8,7 @@ wince* {
   additional.path = desktopsettingsaware
   someTest.sources = test.pro
   someTest.path = test
-  DEPLOYMENT = additional deploy someTest
+  DEPLOYMENT += additional deploy someTest
 }
 
 symbian: {
