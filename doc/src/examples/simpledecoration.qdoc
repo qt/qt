@@ -30,7 +30,7 @@
     \title Simple Decoration Example
     \ingroup qt-embedded
 
-    The Simple Decoration example shows how to create a custom window decoration
+    \brief The Simple Decoration example shows how to create a custom window decoration
     for embedded applications.
 
     \image embedded-simpledecoration-example.png

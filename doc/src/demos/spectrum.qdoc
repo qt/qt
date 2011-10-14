@@ -29,7 +29,7 @@
     \example demos/spectrum
     \title Spectrum Analyzer
 
-    The Spectrum Analyzer demo shows how the \l{QtMultimedia Module} can be
+    \brief The Spectrum Analyzer demo shows how the \l{QtMultimedia Module} can be
     used in Qt applications to capture and then play back an audio stream.
 
     \image spectrum-demo.png

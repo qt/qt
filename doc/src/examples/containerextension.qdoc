@@ -29,7 +29,7 @@
     \example designer/containerextension
     \title Container Extension Example
 
-    The Container Extension example shows how to create a custom
+    \brief The Container Extension example shows how to create a custom
     multi-page plugin for Qt Designer using the
     QDesignerContainerExtension class.
 

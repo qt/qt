@@ -29,8 +29,10 @@
     \example network/fortuneserver
     \title Fortune Server Example
 
-    The Fortune Server example shows how to create a server for a simple
-    network service. It is intended to be run alongside the
+    \brief The Fortune Server example shows how to create a server for a simple
+    network service.
+    
+    The example is intended to be run alongside the
     \l{network/fortuneclient}{Fortune Client} example or the
     \l{network/blockingfortuneclient}{Blocking Fortune Client} example.
 

@@ -29,7 +29,7 @@
     \example webkit/webftpclient
     \title Web FTP Client Example
 
-    The Web FTP Client example shows how to add support for a new protocol
+    \brief The Web FTP Client example shows how to add support for a new protocol
     to QtWebKit-based applications.
 
     \image webkit-webftpclient.png An FTP client displaying the contents of the ftp.qt.nokia.com site.

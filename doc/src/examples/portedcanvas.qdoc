@@ -29,7 +29,7 @@
     \example graphicsview/portedcanvas
     \title Ported Canvas Example
 
-    The Ported Canvas example is a port of the old
+    \brief The Ported Canvas example is a port of the old
     QCanvas example from Qt 3 to the Graphics View framework.
 
     \sa {Porting to Graphics View}

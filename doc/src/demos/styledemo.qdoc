@@ -29,5 +29,7 @@
     \example demos/embedded/styledemo
     \title Embedded Styles Demonstration
 
+    \brief The Embedded Styles demo shows how to use Qt Style APIs in embedded contexts
+
     \image styledemo-demo.png
 */

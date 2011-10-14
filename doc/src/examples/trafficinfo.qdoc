@@ -29,7 +29,7 @@
     \example xmlpatterns/trafficinfo
     \title TrafficInfo Example
 
-    Shows how XQuery can be used extract information from WML documents provided by a WAP service.
+    \brief The Traffic Info example shows how XQuery can be used extract information from WML documents provided by a WAP service.
 
     \section1 Overview
 
