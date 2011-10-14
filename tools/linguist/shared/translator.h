@@ -254,6 +254,8 @@ private:
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules);
 
+QString getNumerusInfoString();
+
 bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd);
 
 /*

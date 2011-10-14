@@ -111,7 +111,7 @@ public:
             int relatedIndex; // When IsFunction
         };
         uint overrideIndexIsProperty : 1;
-        int overrideIndex : 31;
+        signed int overrideIndex : 31;
         int revision; 
         int metaObjectOffset;
 

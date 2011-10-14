@@ -39,6 +39,7 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativedebug \
            qdeclarativedebugclient \
            qdeclarativedebugservice \
+           qdeclarativedebugjs \
            qdeclarativedom \
            qdeclarativeecmascript \
            qdeclarativeflickable \

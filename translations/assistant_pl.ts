@@ -262,6 +262,10 @@ Powód:
         <translation>Adres</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>Menu paska narzędzi</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>Menu zakładek</translation>
     </message>
@@ -289,11 +293,11 @@ Powód:
     <name>CentralWidget</name>
     <message>
         <source>Add new page</source>
-        <translation>Dodaj nową stronę</translation>
+        <translation type="obsolete">Dodaj nową stronę</translation>
     </message>
     <message>
         <source>Close current page</source>
-        <translation>Zamknij bieżącą stronę</translation>
+        <translation type="obsolete">Zamknij bieżącą stronę</translation>
     </message>
     <message>
         <source>Print Document</source>
@@ -301,27 +305,27 @@ Powód:
     </message>
     <message>
         <source>unknown</source>
-        <translation>nieznany</translation>
+        <translation type="obsolete">nieznany</translation>
     </message>
     <message>
         <source>Add New Page</source>
-        <translation>Dodaj nową stronę</translation>
+        <translation type="obsolete">Dodaj nową stronę</translation>
     </message>
     <message>
         <source>Close This Page</source>
-        <translation>Zamknij tą stronę</translation>
+        <translation type="obsolete">Zamknij tą stronę</translation>
     </message>
     <message>
         <source>Close Other Pages</source>
-        <translation>Zamknij inne strony</translation>
+        <translation type="obsolete">Zamknij inne strony</translation>
     </message>
     <message>
         <source>Add Bookmark for this Page...</source>
-        <translation>Dodaj zakładkę dla tej strony...</translation>
+        <translation type="obsolete">Dodaj zakładkę dla tej strony...</translation>
     </message>
     <message>
         <source>Search</source>
-        <translation>Wyszukaj</translation>
+        <translation type="obsolete">Wyszukaj</translation>
     </message>
 </context>
 <context>
@@ -661,6 +665,49 @@ Powód:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>&amp;Wstecz</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>W &amp;przód</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>Strona &amp;startowa</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation>ALT+Home</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>Po&amp;większ</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>Po&amp;mniejsz</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>S&amp;kopiuj zaznaczony tekst</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>&amp;Drukuj...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>Znajdź w &amp;tekście...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>&amp;Znajdź</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -685,8 +732,20 @@ Powód:
         <translation>&lt;title&gt;Błąd 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Strona nie może być znaleziona&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>Otwórz odsyłacz</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>Skopiuj &amp;odsyłacz</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Skopiuj</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>Przeładuj</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
@@ -694,7 +753,11 @@ Powód:
     </message>
     <message>
         <source>Open Link in New Tab</source>
-        <translation>Otwórz odsyłacz w nowej karcie</translation>
+        <translation type="obsolete">Otwórz odsyłacz w nowej karcie</translation>
+    </message>
+    <message>
+        <source>Open Link in New Page</source>
+        <translation>Otwórz odsyłacz na nowej stronie</translation>
     </message>
 </context>
 <context>
@@ -902,7 +965,7 @@ Powód:
     </message>
     <message>
         <source>&amp;Print...</source>
-        <translation>Wy&amp;drukuj...</translation>
+        <translation type="obsolete">Wy&amp;drukuj...</translation>
     </message>
     <message>
         <source>New &amp;Tab</source>
@@ -922,15 +985,15 @@ Powód:
     </message>
     <message>
         <source>&amp;Copy selected Text</source>
-        <translation>S&amp;kopiuj zaznaczony tekst</translation>
+        <translation type="obsolete">S&amp;kopiuj zaznaczony tekst</translation>
     </message>
     <message>
         <source>&amp;Find in Text...</source>
-        <translation>Znajdź w &amp;tekście...</translation>
+        <translation type="obsolete">Znajdź w &amp;tekście...</translation>
     </message>
     <message>
         <source>&amp;Find</source>
-        <translation>&amp;Znajdź</translation>
+        <translation type="obsolete">&amp;Znajdź</translation>
     </message>
     <message>
         <source>Find &amp;Next</source>
@@ -946,11 +1009,11 @@ Powód:
     </message>
     <message>
         <source>Zoom &amp;in</source>
-        <translation>Po&amp;większ</translation>
+        <translation type="obsolete">Po&amp;większ</translation>
     </message>
     <message>
         <source>Zoom &amp;out</source>
-        <translation>Po&amp;mniejsz</translation>
+        <translation type="obsolete">Po&amp;mniejsz</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -974,15 +1037,15 @@ Powód:
     </message>
     <message>
         <source>&amp;Home</source>
-        <translation>Strona &amp;startowa</translation>
+        <translation type="obsolete">Strona &amp;startowa</translation>
     </message>
     <message>
         <source>&amp;Back</source>
-        <translation>&amp;Wstecz</translation>
+        <translation type="obsolete">&amp;Wstecz</translation>
     </message>
     <message>
         <source>&amp;Forward</source>
-        <translation>W &amp;przód</translation>
+        <translation type="obsolete">W &amp;przód</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1019,6 +1082,22 @@ Powód:
     <message>
         <source>About...</source>
         <translation>Informacje o programie...</translation>
+    </message>
+    <message>
+        <source>Open Pages</source>
+        <translation>Otwarte strony</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>Pasek z zakładkami</translation>
+    </message>
+    <message>
+        <source>E&amp;xit</source>
+        <translation>Za&amp;kończ</translation>
+    </message>
+    <message>
+        <source>ALT+P</source>
+        <translation>ALT+P</translation>
     </message>
     <message>
         <source>Navigation Toolbar</source>
@@ -1094,7 +1173,7 @@ Powód:
     </message>
     <message>
         <source>ALT+Home</source>
-        <translation>ALT+Home</translation>
+        <translation type="obsolete">ALT+Home</translation>
     </message>
     <message>
         <source>&amp;Bookmarks</source>
@@ -1107,6 +1186,17 @@ Powód:
     <message>
         <source>ALT+O</source>
         <translation>ALT+O</translation>
+    </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
+    <message>
+        <source>Close %1</source>
+        <translation>Zamknij %1</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>Zamknij wszystko z wyjątkiem %1</translation>
     </message>
 </context>
 <context>
@@ -1328,6 +1418,14 @@ Czy chcesz go usunąć?</translation>
         <source>Blank Page</source>
         <translation>Pusta strona</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Wygląd</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>Pokazuj karty dla każdej otwartej strony</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1524,6 +1622,29 @@ qhelpgenerator &lt;plik-projektu-pomocy&gt; [opcje]
     <message>
         <source>Select All</source>
         <translation>Zaznacz wszystko</translation>
+    </message>
+</context>
+<context>
+    <name>TabBar</name>
+    <message>
+        <source>(Untitled)</source>
+        <translation>(Nienazwany)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>Nowa kar&amp;ta</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>&amp;Zamknij kartę</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>Zamknij pozostałe karty</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>Dodaj zakładkę dla tej strony...</translation>
     </message>
 </context>
 <context>

@@ -514,7 +514,6 @@
     \ingroup internationalization
     \previouspage Internationalization with Qt
     \contentspage Internationalization with Qt
-    \nextpage Translation Rules for Plurals
     \brief How to write source code in a way that makes it possible for user-visible text to be translated.
 
     \tableofcontents
@@ -700,8 +699,8 @@
     set using QLocale::setDefault(). (If no default locale was
     specified, the "C" locale is used.)
 
-    A summary of the rules used to translate strings containing plurals can be
-    found in the \l{Translation Rules for Plurals} document.
+    A summary of supported languages and the rules used to translate strings
+    containing plurals can be obtained by running \tt{lupdate -list-languages}.
 
     \section1 Enabling Translation
 
@@ -717,55 +716,5 @@
 
     \section1 Further Reading
 
-    \l{Qt Linguist Manual}, \l{Hello tr() Example}, \l{Translation Rules for Plurals}
-*/
-
-/*!
-    \page i18n-plural-rules.html
-    \title Translation Rules for Plurals
-    \ingroup internationalization
-    \previouspage Writing Source Code for Translation
-    \contentspage Internationalization with Qt
-    \brief A summary of the translation rules for plurals produced by Qt's i18n tools.
-
-    The table below shows the specific rules that are produced by Qt Linguist
-    and \c lrelease for a selection of languages. Cells marked \e otherwise
-    indicate the form used when none of the other rules are appropriate for a
-    specific language.
-
-    \table 80%
-    \header \o Language \o Rule 1 \o Rule 2 \o Rule 3
-    \row \o English \o \c{n == 1} 
-        \o \e{otherwise} \o N/A
-    \row \o French \o \c{n < 2} 
-        \o \e{otherwise} \o N/A
-    \row \o Czech \o \c{n % 100 == 1} 
-        \o \c{n % 100 >= 2 && n % 100 <= 4} 
-        \o \e{otherwise}
-    \row \o Irish \o \c{n == 1} 
-        \o \c{n == 2} \o \e{otherwise}
-    \row \o Latvian \o \c{n % 10 == 1&& n % 100 != 11} 
-        \o \c{n != 0} \o \e{otherwise}
-    \row \o Lithuanian \o \c{n % 10 == 1&& n % 100 != 11} 
-        \o \c{n % 100 != 12 && n % 10 == 2} 
-        \o \e{otherwise}
-    \row \o Macedonian \o \c{n % 10 == 1} 
-        \o \c{n % 10 == 2} \o \e{otherwise}
-    \row \o Polish \o \c{n == 1} 
-        \o \c{n % 10 >= 2 && n % 10 <= 4
-            && (n % 100 < 10 || n % 100 > 20)} 
-        \o \e{otherwise}
-    \row \o Romanian \o \c{n == 1} 
-        \o \c{n == 0|| (n % 100 >= 1 && n % 100 <= 20)} 
-        \o \e{otherwise}
-    \row \o Russian \o \c{n % 10 == 1&& n % 100 != 11} 
-        \o \c{n % 10 >= 2 && n % 10 <= 4
-            && (n % 100 < 10 || n % 100 > 20)} 
-        \o \e{otherwise}
-    \row \o Slovak \o \c{n == 1} \o \c{n >= 2 && n <= 4} 
-        \o \e{otherwise}
-    \row \o Japanese \o \e{otherwise} \o N/A \o N/A
-    \endtable
-
-    The rules themselves are not documented and are internal to Qt Linguist and \c lrelease.
+    \l{Qt Linguist Manual}, \l{Hello tr() Example}
 */

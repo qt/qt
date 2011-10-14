@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEENGINEDEBUG_P_H
-#define QDECLARATIVEENGINEDEBUG_P_H
+#ifndef QDECLARATIVEENGINEDEBUGSERVICE_P_H
+#define QDECLARATIVEENGINEDEBUGSERVICE_P_H
 
 //
 //  W A R N I N G
@@ -67,11 +67,11 @@ class QDeclarativeWatcher;
 class QDataStream;
 class QDeclarativeState;
 
-class QDeclarativeEngineDebugServer : public QDeclarativeDebugService
+class QDeclarativeEngineDebugService : public QDeclarativeDebugService
 {
     Q_OBJECT
 public:
-    QDeclarativeEngineDebugServer(QObject * = 0);
+    QDeclarativeEngineDebugService(QObject * = 0);
 
     struct QDeclarativeObjectData {
         QUrl url;
@@ -98,7 +98,7 @@ public:
     void remEngine(QDeclarativeEngine *);
     void objectCreated(QDeclarativeEngine *, QObject *);
 
-    static QDeclarativeEngineDebugServer *instance();
+    static QDeclarativeEngineDebugService *instance();
 
 protected:
     virtual void messageReceived(const QByteArray &);
@@ -123,12 +123,12 @@ private:
     QDeclarativeWatcher *m_watch;
     QList<QWeakPointer<QDeclarativeState> > m_allStates;
 };
-Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugServer::QDeclarativeObjectData &);
-Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &, QDeclarativeEngineDebugServer::QDeclarativeObjectData &);
-Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugServer::QDeclarativeObjectProperty &);
-Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &, QDeclarativeEngineDebugServer::QDeclarativeObjectProperty &);
+Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugService::QDeclarativeObjectData &);
+Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &, QDeclarativeEngineDebugService::QDeclarativeObjectData &);
+Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugService::QDeclarativeObjectProperty &);
+Q_DECLARATIVE_PRIVATE_EXPORT QDataStream &operator>>(QDataStream &, QDeclarativeEngineDebugService::QDeclarativeObjectProperty &);
 
 QT_END_NAMESPACE
 
-#endif // QDECLARATIVEENGINEDEBUG_P_H
+#endif // QDECLARATIVEENGINEDEBUGSERVICE_P_H
 

@@ -217,7 +217,7 @@ void QSymSQLResultPrivate::initColumns(QSqlRecord& rec)
     int nCols = stmt.ColumnCount();
     if (nCols <= 0) {
         q->setLastError(qMakeError(access, QCoreApplication::translate("QSymSQLResult",
-                        "Error retreving column count"), QSqlError::UnknownError, nCols));
+                        "Error retrieving column count"), QSqlError::UnknownError, nCols));
         return;
     }
        
@@ -227,7 +227,7 @@ void QSymSQLResultPrivate::initColumns(QSqlRecord& rec)
         
         if (err != KErrNone) {
             q->setLastError(qMakeError(access, QCoreApplication::translate("QSymSQLResult",
-                             "Error retreving column name"), QSqlError::UnknownError, err));
+                             "Error retrieving column name"), QSqlError::UnknownError, err));
              return;
         }
         
@@ -240,7 +240,7 @@ void QSymSQLResultPrivate::initColumns(QSqlRecord& rec)
         
         if (err != KErrNone) {
             q->setLastError(qMakeError(access, QCoreApplication::translate("QSymSQLResult",
-                             "Error retreving column type"), QSqlError::UnknownError, err));
+                             "Error retrieving column type"), QSqlError::UnknownError, err));
              return;
         }
         
