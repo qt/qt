@@ -523,6 +523,9 @@ public:
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
     void _q_aboutToQuit();
+
+    void emitAboutToReleaseGpuResources();
+    void emitAboutToUseGpuResources();
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
     void sendSyntheticEnterLeave(QWidget *widget);

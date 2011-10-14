@@ -408,7 +408,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
 #ifdef Q_OS_SYMBIAN
-        if(directory.isEmpty())
+        if (directory.isEmpty())
             prefix = QCoreApplication::applicationDirPath();
         else
             prefix = QFileInfo(directory).absoluteFilePath(); //TFindFile doesn't like dirty paths

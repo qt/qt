@@ -12198,4 +12198,11 @@ EXPORTS
 	_ZNK11QPixmapData15toVolatileImageEv @ 12197 NONAME
 	_ZNK14QVolatileImage13constImageRefEv @ 12198 NONAME
 	_Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12199 NONAME
+	_ZN11QTextEngine16getClusterLengthEPtPK17HB_CharAttributesiiiPi @ 12200 NONAME
+	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12201 NONAME
+	_ZN12QApplication22aboutToUseGpuResourcesEv @ 12202 NONAME
+	_ZN12QApplication26aboutToReleaseGpuResourcesEv @ 12203 NONAME
+	_ZN14QWidgetPrivate16_q_cleanupWinIdsEv @ 12204 NONAME
+	_ZN19QApplicationPrivate26emitAboutToUseGpuResourcesEv @ 12205 NONAME
+	_ZN19QApplicationPrivate30emitAboutToReleaseGpuResourcesEv @ 12206 NONAME
 
