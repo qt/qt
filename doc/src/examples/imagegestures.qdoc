@@ -29,7 +29,7 @@
     \example gestures/imagegestures
     \title Image Gestures Example
 
-    This example shows how to enable gestures for a widget and use gesture input
+    \brief The Image Gestures example shows how to enable gestures for a widget and use gesture input
     to perform actions.
 
     We use two classes to create the user interface for the application: \c MainWidget

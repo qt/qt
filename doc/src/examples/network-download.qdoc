@@ -29,7 +29,7 @@
     \example network/download
     \title Network Download Example
 
-    The Network Download example shows how to perform multiple downloads in
+    \brief The Network Download example shows how to perform multiple downloads in
     parallel using the QNetworkAccessManager class.
 
     This example is designed to be run from the command line.

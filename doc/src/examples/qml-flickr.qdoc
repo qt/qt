@@ -29,7 +29,7 @@
     \title Flickr Mobile
     \example demos/declarative/flickr
 
-    This demo shows how to write a mobile Flickr browser application in QML.
+    \brief The Qt Quick Flickr Mobile demo shows how to write a mobile Flickr browser application in QML.
 
     \image qml-flickr-demo.png
 */

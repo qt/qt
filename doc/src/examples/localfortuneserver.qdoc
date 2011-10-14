@@ -29,8 +29,10 @@
     \example ipc/localfortuneserver
     \title Local Fortune Server Example
 
-    The Local Fortune Server example shows how to create a server for a simple
-    local service. It is intended to be run alongside the
+    \brief The Local Fortune Server example shows how to create a server for a simple
+    local service.
+    
+    The example is intended to be run alongside the
     \l{ipc/localfortuneclient}{Local Fortune Client} example
 
     \image localfortuneserver-example.png Screenshot of the Local Fortune Server example

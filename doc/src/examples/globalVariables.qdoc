@@ -29,7 +29,7 @@
     \example xmlpatterns/xquery/globalVariables
     \title C++ Source Code Analyzer Example
 
-    This example uses XQuery and the \c xmlpatterns command line utility to
+    \brief The Global Variables example uses XQuery and the \c xmlpatterns command line utility to
     query C++ source code.
 
     \tableofcontents

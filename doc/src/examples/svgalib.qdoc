@@ -29,9 +29,11 @@
     \example qws/svgalib
     \title Accelerated Graphics Driver Example
 
-    The Accelerated Graphics Driver example shows how you can write
+    \brief The Accelerated Graphics Driver example shows how you can write
     your own accelerated graphics driver and \l {add your graphics
-    driver to Qt for Embedded Linux}.  In \l{Qt for Embedded Linux},
+    driver to Qt for Embedded Linux}.
+    
+    In \l{Qt for Embedded Linux},
     painting is a pure software implementation and is normally performed
     in two steps:
     The clients render each window onto a corresponding surface

@@ -29,7 +29,7 @@
     \example webkit/previewer
     \title Previewer Example
 
-    The Previewer example shows how to use QtWebKit's QWebView to preview
+    \brief The Previewer example shows how to use QtWebKit's QWebView to preview
     HTML data written in a QPlainTextEdit.
 
     \image previewer-example.png

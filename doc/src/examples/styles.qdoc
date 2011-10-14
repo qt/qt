@@ -29,7 +29,7 @@
     \example widgets/styles
     \title Styles Example
 
-    The Styles example illustrates how to create custom widget
+    \brief The Styles example illustrates how to create custom widget
     drawing styles using Qt, and demonstrates Qt's predefined styles.
 
     \image styles-enabledwood.png Screenshot of the Styles example

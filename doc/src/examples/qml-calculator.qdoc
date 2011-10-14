@@ -29,7 +29,7 @@
     \title Calculator
     \example demos/declarative/calculator
 
-    This demo shows how to write a simple calculator application in QML and JavaScript.
+    \brief The Qt Quick Calculator demo shows how to write a simple calculator application in QML and JavaScript.
 
     \image qml-calculator-example.png
 */

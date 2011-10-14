@@ -29,5 +29,5 @@
     \example openvg/star
     \title OpenVG Star Example
 
-    The OpenVG Star example demonstrates the use of Qt's OpenVG integration.
+    \brief The OpenVG Star example demonstrates the use of Qt's OpenVG integration.
 */

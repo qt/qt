@@ -29,7 +29,7 @@
     \example linguist/arrowpad
     \title Arrow Pad Example
 
-    This example is a slightly more involved and introduces a key \e
+    \brief ThArrow Pad Linguist example is a slightly more involved and introduces a key \e
     {Qt Linguist} concept: "contexts". It also shows how to use two
     or more languages.
 
