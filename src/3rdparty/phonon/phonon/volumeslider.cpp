@@ -42,7 +42,7 @@ VolumeSlider::VolumeSlider(QWidget *parent)
     setToolTip(tr("Volume: %1%").arg(100));
 #endif
 #ifndef QT_NO_WHATSTHIS
-    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%").arg(100));
+    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%").arg(100));
 #endif
 
     connect(&d->slider, SIGNAL(valueChanged(int)), SLOT(_k_sliderChanged(int)));
@@ -60,7 +60,7 @@ VolumeSlider::VolumeSlider(AudioOutput *output, QWidget *parent)
     setToolTip(tr("Volume: %1%").arg(100));
 #endif
 #ifndef QT_NO_WHATSTHIS
-    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%").arg(100));
+    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%").arg(100));
 #endif
 
     connect(&d->slider, SIGNAL(valueChanged(int)), SLOT(_k_sliderChanged(int)));
@@ -114,7 +114,7 @@ void VolumeSlider::setMaximumVolume(qreal volume)
     int max = static_cast<int>(volume * 100);
     k_ptr->slider.setMaximum(max);
 #ifndef QT_NO_WHATSTHIS
-    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%")
+    setWhatsThis(tr("Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%")
             .arg(max));
 #endif
 }

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,51 +39,29 @@
 **
 ****************************************************************************/
 
-#include <QTextStream>
-#include "texttracehandler.h"
-#include "trkutils.h"
+#ifndef QDECLARATIVEDEBUG_H
+#define QDECLARATIVEDEBUG_H
 
-class TextTraceHandlerPrivate
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+struct Q_DECLARATIVE_EXPORT QDeclarativeDebuggingEnabler
 {
-public:
-    TextTraceHandlerPrivate();
-    ~TextTraceHandlerPrivate();
-    QIODevice *device;
-    QTextStream out;
+    QDeclarativeDebuggingEnabler();
 };
 
-TextTraceHandlerPrivate::TextTraceHandlerPrivate()
-: out(stdout)
-{
-}
+// Execute code in constructor before first QDeclarativeEngine is instantiated
+#if defined(QT_DECLARATIVE_DEBUG)
+static QDeclarativeDebuggingEnabler qmlEnableDebuggingHelper;
+#endif
 
-TextTraceHandlerPrivate::~TextTraceHandlerPrivate()
-{
-    delete device;
-}
+QT_END_NAMESPACE
 
-TextTraceHandler::TextTraceHandler(QIODevice *device, QObject *parent)
-: QObject(parent)
-{
-    d = new TextTraceHandlerPrivate;
-    d->device = device;
-    connect(device, SIGNAL(readyRead()), this, SLOT(dataAvailable()));
-}
+QT_END_HEADER
 
-TextTraceHandler::~TextTraceHandler()
-{
-    delete d;
-}
-
-void TextTraceHandler::dataAvailable()
-{
-    QByteArray result = d->device->readAll();
-    quint64 secs = 0;
-    quint64 ns = 0;
-    if (result.length() >= 8) {
-        quint64 timestamp = trk::extractInt64(result.constData()) & 0x0FFFFFFFFFFFFFFFULL;
-        secs = timestamp / 1000000000;
-        ns = timestamp % 1000000000;
-    }
-    d->out << QString("[%1.%2] %3").arg(secs).arg(ns,9,10,QLatin1Char('0')).arg(QString(result.mid(8))) << endl;
-}
+#endif // QDECLARATIVEDEBUG_H

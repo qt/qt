@@ -4561,7 +4561,7 @@ yyreduce:
             {
                 parseInfo->staticContext->error(QtXmlPatterns::tr("The namespace for a user defined function "
                                                    "cannot be empty (try the predefined "
-                                                   "prefix %1 which exists for cases "
+                                                   "prefix %1, which exists for cases "
                                                    "like this)")
                                                    .arg(formatKeyword("local")),
                                                 ReportContext::XQST0060, fromYYLTYPE((yyloc), parseInfo));
