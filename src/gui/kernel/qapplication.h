@@ -298,6 +298,10 @@ Q_SIGNALS:
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);
 #endif
+#ifdef Q_OS_SYMBIAN
+    void aboutToReleaseGpuResources();
+    void aboutToUseGpuResources();
+#endif
 
 public:
     QString styleSheet() const;
