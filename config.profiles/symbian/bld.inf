@@ -19,6 +19,7 @@ qtconfig.flm /epoc32/tools/makefile_templates/qt/qtconfig.flm
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_extra_pre_targetdep.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_post_link.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_store_build.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_clean.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qt.xml /epoc32/tools/makefile_templates/qt/
 
 qt.conf    /epoc32/tools/qt.conf
@@ -80,5 +81,5 @@ translations/qt_zh_tw_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_
 PRJ_EXTENSIONS
 START EXTENSION qt/qtconfig
 OPTION QT_ROOT ..
-OPTION OPTIONS -opensource -confirm-license -openvg -opengl-es-2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -no-usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2
+OPTION OPTIONS -opensource -confirm-license -openvg -opengl-es-2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2
 END

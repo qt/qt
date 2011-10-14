@@ -29,7 +29,7 @@
     \title Minehunt
     \example demos/declarative/minehunt
 
-    This demo shows how to create a simple Minehunt game, using QML for the
+    \brief The Qt Quick Minehunt demo shows how to create a simple Minehunt game, using QML for the
     UI and C++ for the game logic.
 
     \image qml-minehunt-demo.png

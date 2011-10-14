@@ -29,5 +29,7 @@
     \example demos/embedded/fluidlauncher
     \title Fluid Launcher Demonstration
 
+    \brief The Fluid Launcher demo demonstrates an application launcher for mobile devices
+
     \image fluidlauncher-demo.png
 */

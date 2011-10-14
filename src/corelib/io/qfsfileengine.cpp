@@ -120,8 +120,11 @@ void QFSFileEnginePrivate::init()
     openMode = QIODevice::NotOpen;
     fd = -1;
     fh = 0;
-#if defined (Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
+#if defined (Q_OS_SYMBIAN)
+    symbianFilePos = 0;
+#if !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
     fileHandleForMaps = -1;
+#endif
 #endif
     lastIOCommand = IOFlushCommand;
     lastFlushFailed = false;

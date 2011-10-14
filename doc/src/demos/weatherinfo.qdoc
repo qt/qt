@@ -29,5 +29,7 @@
     \example demos/embedded/weatherinfo
     \title Weather Info Demonstration
 
+    \brief The Weather Info demo shows how to use XML files to build an embedded UI.
+
     \image weatherinfo-demo.png
 */

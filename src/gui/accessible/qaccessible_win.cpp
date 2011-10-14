@@ -1316,7 +1316,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
 
     (*pvarState).vt = VT_I4;
     AccessibleElement elem(varID.lVal, accessible);
-    (*pvarState).lVal = elem.iface ? elem.iface->state(elem.entry) : 0;
+    (*pvarState).lVal = elem.iface ? elem.iface->state(elem.entry) : State(Normal);
     return S_OK;
 }
 

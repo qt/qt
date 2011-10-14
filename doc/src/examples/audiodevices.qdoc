@@ -29,7 +29,7 @@
     \example multimedia/audiodevices
     \title Audio Devices Example
 
-    The Audio Devices example demonstrates the basic use of QAudioDeviceInfo class
+    \brief The Audio Devices example demonstrates the basic use of QAudioDeviceInfo class
     provided with Qt.
 
     \image audiodevices-example.png

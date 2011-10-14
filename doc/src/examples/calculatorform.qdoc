@@ -29,9 +29,11 @@
     \example designer/calculatorform
     \title Calculator Form Example
 
-    The Calculator Form Example shows how to use a form created with
+    \brief The Calculator Form Example shows how to use a form created with
     \QD in an application by using the user interface information from
-    a QWidget subclass.  We use \l{Using a Designer UI File in Your Application}
+    a QWidget subclass.
+    
+    We use \l{Using a Designer UI File in Your Application}
     {uic's auto-connection} feature to automatically connect signals
     from widgets on the form to slots in our code.
 

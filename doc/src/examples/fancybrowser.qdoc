@@ -29,7 +29,7 @@
     \example webkit/fancybrowser
     \title Fancy Browser Example
 
-    The Fancy Browser example shows how to use jQuery with QtWebKit to
+    \brief The Fancy Browser example shows how to use jQuery with QtWebKit to
     create a web browser with special effects and content
     manipulation.
 

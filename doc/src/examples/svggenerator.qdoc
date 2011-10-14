@@ -29,7 +29,7 @@
     \example painting/svggenerator
     \title SVG Generator Example
 
-    The SVG Generator example shows how to add SVG file export to applications.
+    \brief The SVG Generator example shows how to add SVG file export to applications.
 
     \image svggenerator-example.png
 

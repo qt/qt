@@ -29,7 +29,7 @@
     \example script/qstetrix
     \title Qt Script Tetrix Example
 
-    The QSTetrix example is a Qt Script version of the classic Tetrix game.
+    \brief The QSTetrix example is a Qt Script version of the classic Tetrix game.
 
     \image tetrix-example.png
 

@@ -516,7 +516,7 @@ QPlatformGLContext *QXcbWindow::glContext() const
 
         EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)m_window,0);
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
+        that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API, static_cast<QEGLPlatformContext *>(widget()->platformWindowFormat().sharedGLContext()));
 #elif defined(XCB_USE_DRI2)
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
         that->m_context = new QDri2Context(that);

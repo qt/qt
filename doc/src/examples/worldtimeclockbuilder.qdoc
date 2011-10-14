@@ -29,7 +29,7 @@
   \example designer/worldtimeclockbuilder
   \title World Time Clock Builder Example
 
-  The World Time Clock Builder example shows how forms created with Qt
+  \brief The World Time Clock Builder example shows how forms created with Qt
   Designer that contain custom widgets can be dynamically generated at
   run-time.
 

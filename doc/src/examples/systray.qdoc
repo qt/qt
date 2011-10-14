@@ -29,8 +29,7 @@
     \example desktop/systray
     \title System Tray Icon Example
 
-
-    The System Tray Icon example shows how to add an icon with a menu
+    \brief The System Tray Icon example shows how to add an icon with a menu
     and popup messages to a desktop environment's system tray.
 
     \image systemtray-example.png Screenshot of the System Tray Icon.

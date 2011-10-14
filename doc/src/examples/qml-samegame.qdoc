@@ -29,7 +29,7 @@
     \title Same Game
     \example demos/declarative/samegame
 
-    This demo shows how to write a 'Same Game' game in QML, using Javascript
+    \brief The Qt Quick Same Game demo shows how to write a 'Same Game' game in QML, using Javascript
     for all the game logic.
 
     \image qml-samegame-demo.png

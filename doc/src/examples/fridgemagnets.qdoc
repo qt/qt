@@ -29,7 +29,7 @@
     \example draganddrop/fridgemagnets
     \title Fridge Magnets Example
 
-    The Fridge Magnets example shows how to supply more than one type
+    \brief The Fridge Magnets example shows how to supply more than one type
     of MIME-encoded data with a drag and drop operation.
 
     \image fridgemagnets-example.png
