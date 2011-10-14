@@ -29,7 +29,7 @@
     \example demos/affine
     \title Affine Transformations
 
-    In this demo we show Qt's ability to perform affine transformations
+    \brief The Affine Transformations demo shows Qt's ability to perform affine transformations
     on painting operations.
 
     \image affine-demo.png

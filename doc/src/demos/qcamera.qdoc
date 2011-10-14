@@ -27,10 +27,10 @@
 
 /*!
     \page qcamera_example.html
-    \title QCamera Example
+    \title QCamera Demo
     \example demos/mobile/qcamera
 
-    This Qt C++ application demonstrates how to use Multimedia, Messaging and Contacts modules from \l{external: Qt Mobility Manual}{Qt Mobility}.
+    \brief The QCamera demo shows how to use Multimedia, Messaging and Contacts modules from Qt Mobility.
 
     \image qcameraexample.png
 

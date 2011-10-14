@@ -29,7 +29,7 @@
     \group all-examples
     \title Symbian Vibration Example
 
-    The Symbian Vibrator example shows how to get fine-grained vibration
+    \brief The Symbian Vibrator example shows how to get fine-grained vibration
     control on Symbian devices.
 
     Native Symbian APIs have to be used to enable vibration, since QtMobility

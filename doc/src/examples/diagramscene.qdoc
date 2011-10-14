@@ -29,12 +29,12 @@
     \example graphicsview/diagramscene
     \title Diagram Scene Example
     
-    This example shows use of Qt's graphics framework. 
+    \brief The Diagram Scene example is an application in which you can
+    create a flowchart diagram using the graphics view framework.
 
     \image diagramscene.png
 
-    The Diagram Scene example is an application in which you can
-    create a flowchart diagram. It is possible to add flowchart shapes
+    In this example it is possible to add flowchart shapes
     and text and connect the shapes by arrows as shown in the image
     above.  The shapes, arrows, and text can be given different
     colors, and it is possible to change the font, style, and

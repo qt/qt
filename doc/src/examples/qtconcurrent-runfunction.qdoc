@@ -29,7 +29,7 @@
     \example qtconcurrent/runfunction
     \title QtConcurrent Run Function Example
 
-    The QtConcurrent Run Function example shows how to apply concurrency to
+    \brief The QtConcurrent Run Function example shows how to apply concurrency to
     a standard function, using QFuture instances to retrieve return values
     at a later time.
 */

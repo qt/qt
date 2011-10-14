@@ -29,5 +29,5 @@
     \example help/contextsensitivehelp
     \title Context-Sensitive Help Example
 
-    This example shows how to use the services of the QHelpEngineCore class.
+    \brief The Context Sensitive Help example shows how to use the services of the QHelpEngineCore class.
 */

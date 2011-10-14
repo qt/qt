@@ -29,7 +29,7 @@
     \example dbus/dbus-chat
     \title D-Bus Chat Example
 
-    The D-Bus Chat example shows how to use D-Bus to communicate between two
+    \brief The D-Bus Chat example shows how to use D-Bus to communicate between two
     applications.
 
     \image dbus-chat-example.png

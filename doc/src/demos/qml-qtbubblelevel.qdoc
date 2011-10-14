@@ -27,13 +27,15 @@
 
 /*!
     \page qtbubblelevel_example.html
-    \title Qt Bubble Level Example
+    \title Qt Bubble Level Demo
     \example demos/mobile/qtbubblelevel
 
-Qt Bubble Level is a simple application that uses
-\l{external: Qt Mobility Manual}{Qt Mobility's} accelerometer APIs and hardware
+\brief Qt Bubble Level is a simple application that uses
+Qt Mobility's accelerometer APIs and hardware
 sensor information to calculate the inclination of the device and presents this
-as atraditional bubble level. The application provides a calibration feature to
+as atraditional bubble level.
+
+The application provides a calibration feature to
 handle any possible errors in accelerometer readings. The example is hosted in
 Projects Forum Nokia: https://projects.forum.nokia.com/qtbubblelevel
 

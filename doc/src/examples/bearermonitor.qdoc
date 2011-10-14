@@ -29,7 +29,7 @@
     \example network/bearermonitor
     \title Bearer Monitor Example
 
-    The Bearer Monitor example shows how to use the Bearer Management API.
+    \brief The Bearer Monitor example shows how to use the Bearer Management API.
 
     \image bearermonitor-example.png Screenshot of the Bearer Monitor example
 */

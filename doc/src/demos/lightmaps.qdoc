@@ -29,5 +29,7 @@
     \example demos/embedded/lightmaps
     \title Light Maps Demonstration
 
+    \brief The Light Maps demo shows graphics effects in an embedded context.
+
     \image lightmaps-demo.png
 */

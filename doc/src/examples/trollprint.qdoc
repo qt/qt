@@ -29,7 +29,7 @@
     \example linguist/trollprint
     \title Troll Print Example
 
-    Troll Print is an example application that lets the user choose
+    \brief Troll Print is an example application that lets the user choose
     printer settings. It comes in two versions: English and
     Portuguese.
 

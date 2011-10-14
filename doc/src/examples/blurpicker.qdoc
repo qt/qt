@@ -29,5 +29,7 @@
     \example effects/blurpicker
     \title Blur Picker Effect Example
 
+    \brief The Blur Picker Example shows the QGraphicsBlurEffect in action.
+
     \image blurpickereffect-example.png
 */

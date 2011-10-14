@@ -29,7 +29,7 @@
     \example graphicsview/flowlayout
     \title Graphics View Flow Layout Example
 
-    The Graphics View Flow Layout example shows the use of a flow layout
+    \brief The Graphics View Flow Layout example shows the use of a flow layout
     in a Graphics View widget.
 
     See the \l{Flow Layout Example} for a corresponding widget-based example.

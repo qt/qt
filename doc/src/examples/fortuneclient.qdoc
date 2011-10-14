@@ -29,8 +29,10 @@
     \example network/fortuneclient
     \title Fortune Client Example
 
-    The Fortune Client example shows how to create a client for a simple
-    network service using QTcpSocket. It is intended to be run alongside the
+    \brief The Fortune Client example shows how to create a client for a simple
+    network service using QTcpSocket.
+    
+    The example is intended to be run alongside the
     \l{network/fortuneserver}{Fortune Server} example or
     the \l{network/threadedfortuneserver}{Threaded Fortune Server} example.
 
