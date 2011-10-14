@@ -3394,7 +3394,7 @@ QString QApplication::sessionKey() const
     \fn void QApplication::aboutToReleaseGpuResources()
 
     This signal is emitted when application is about to release all
-    GPU resources accociated to contexts owned by application.
+    GPU resources associated to contexts owned by application.
 
     The signal is particularly useful if your application has allocated
     GPU resources directly apart from Qt and needs to do some last-second
