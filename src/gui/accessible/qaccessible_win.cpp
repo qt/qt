@@ -691,14 +691,7 @@ private:
 
 static inline BSTR QStringToBSTR(const QString &str)
 {
-    BSTR bstrVal;
-
-    int wlen = str.length()+1;
-    bstrVal = SysAllocStringByteLen(0, wlen*2);
-    memcpy(bstrVal, str.unicode(), sizeof(QChar)*(wlen));
-    bstrVal[wlen] = 0;
-
-    return bstrVal;
+    return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
 }
 
 /*
