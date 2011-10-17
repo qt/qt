@@ -530,7 +530,7 @@ public:
 
     void notifyQueryStarted(bool remoteSource) {
         Q_Q(QDeclarativeXmlListModel);
-        progress = remoteSource ? 0.0 : 1.0;
+        progress = remoteSource ? qreal(0.0) : qreal(1.0);
         status = QDeclarativeXmlListModel::Loading;
         errorString.clear();
         emit q->progressChanged(progress);

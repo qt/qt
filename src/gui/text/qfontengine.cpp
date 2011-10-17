@@ -381,9 +381,9 @@ void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rig
     glyph_metrics_t gi = boundingBox(glyph);
     bool isValid = gi.isValid();
     if (leftBearing != 0)
-        *leftBearing = isValid ? gi.x.toReal() : 0.0;
+        *leftBearing = isValid ? gi.x.toReal() : qreal(0.0);
     if (rightBearing != 0)
-        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : 0.0;
+        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : qreal(0.0);
 }
 
 glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)

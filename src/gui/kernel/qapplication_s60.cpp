@@ -1493,12 +1493,15 @@ void QSymbianControl::handleClientAreaChange()
     }
 }
 
-bool QSymbianControl::isSplitViewWidget(QWidget *widget) {
+bool QSymbianControl::isSplitViewWidget(QWidget *widget)
+{
     bool returnValue = true;
-    //Ignore events sent to non-active windows, not visible widgets and not parents of input widget.
+    // Ignore events sent to non-active windows, not visible widgets and not parents of input widget
+    // and non-Qt dialogs.
     if (!qwidget->isActiveWindow()
         || !qwidget->isVisible()
-        || !qwidget->isAncestorOf(widget)) {
+        || !qwidget->isAncestorOf(widget)
+        || CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
 
         returnValue = false;
     }
