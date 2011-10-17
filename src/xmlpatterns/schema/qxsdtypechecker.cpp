@@ -57,6 +57,7 @@
 #include "qxsdschemahelper_p.h"
 #include "qxsdschemamerger_p.h"
 #include "qxsdstatemachine_p.h"
+#include "qabstractfloat_p.h"
 
 #include "qxsdschemadebugger_p.h"
 
@@ -697,12 +698,20 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
     }
     if (facets.contains(XsdFacet::Enumeration)) {
         const XsdFacet::Ptr facet = facets.value(XsdFacet::Enumeration);
-        const DerivedString<TypeString>::Ptr valueStr = DerivedString<TypeString>::fromLexical(m_namePool, QString::number(value));
+        const Numeric::Ptr valuePtr = Double::fromValue(value);
+        const DerivedString<TypeString>::Ptr valueStr = DerivedString<TypeString>::fromLexical(m_namePool, valuePtr->stringValue());
 
         const AtomicValue::List multiValue = facet->multiValue();
         bool found = false;
         for (int j = 0; j < multiValue.count(); ++j) {
             if (XsdSchemaHelper::constructAndCompare(valueStr, AtomicComparator::OperatorEqual, multiValue.at(j), BuiltinTypes::xsDouble, m_context, m_reflection)) {
+                found = true;
+                break;
+            }
+
+            // Handle case when both facet and value are NaN separately as equals for NaN returns always false.
+            const Numeric::Ptr facetValue = ValueFactory::fromLexical(multiValue.at(j)->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsDouble, m_context, m_reflection);
+            if (facetValue->isNaN() && valuePtr->isNaN()) {
                 found = true;
                 break;
             }

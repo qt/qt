@@ -85,5 +85,5 @@ void TextTraceHandler::dataAvailable()
         secs = timestamp / 1000000000;
         ns = timestamp % 1000000000;
     }
-    d->out << QString("[%1.%2] %3").arg(secs).arg(ns).arg(QString(result.mid(8))) << endl;
+    d->out << QString("[%1.%2] %3").arg(secs).arg(ns,9,10,QLatin1Char('0')).arg(QString(result.mid(8))) << endl;
 }

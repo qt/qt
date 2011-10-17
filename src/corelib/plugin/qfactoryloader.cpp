@@ -50,14 +50,36 @@
 #include "qmutex.h"
 #include "qplugin.h"
 #include "qpluginloader.h"
+#include "qlibraryinfo.h"
 #include "private/qobject_p.h"
 #include "private/qcoreapplication_p.h"
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#include "private/qfilesystemwatcher_symbian_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_factoryloader_mutex, (QMutex::Recursive))
+
+#ifdef Q_OS_SYMBIAN
+class QSymbianSystemPluginWatcher : public QSymbianFileSystemWatcherInterface
+{
+public:
+    QSymbianSystemPluginWatcher();
+    ~QSymbianSystemPluginWatcher();
+
+    void watchForUpdates();
+    void handlePathChanged(QNotifyChangeEvent *e);
+
+    QList<QNotifyChangeEvent*> watchers;
+    TDriveList drives;
+};
+
+Q_GLOBAL_STATIC(QSymbianSystemPluginWatcher, qt_symbian_system_plugin_watcher)
+#endif
 
 class QFactoryLoaderPrivate : public QObjectPrivate
 {
@@ -98,9 +120,103 @@ QFactoryLoader::QFactoryLoader(const char *iid,
     QMutexLocker locker(qt_factoryloader_mutex());
     update();
     qt_factory_loaders()->append(this);
+#ifdef Q_OS_SYMBIAN
+    // kick off Symbian plugin watcher for updates
+    qt_symbian_system_plugin_watcher();
+#endif
 }
 
 
+void QFactoryLoader::updateDir(const QString &pluginDir, QSettings& settings)
+{
+    Q_D(QFactoryLoader);
+    QString path = pluginDir + d->suffix;
+    if (!QDir(path).exists(QLatin1String(".")))
+        return;
+
+    QStringList plugins = QDir(path).entryList(QDir::Files);
+    QLibraryPrivate *library = 0;
+    for (int j = 0; j < plugins.count(); ++j) {
+        QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
+
+        if (qt_debug_component()) {
+            qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
+        }
+        library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
+        if (!library->isPlugin(&settings)) {
+            if (qt_debug_component()) {
+                qDebug() << library->errorString;
+                qDebug() << "         not a plugin";
+            }
+            library->release();
+            continue;
+        }
+        QString regkey = QString::fromLatin1("Qt Factory Cache %1.%2/%3:/%4")
+                         .arg((QT_VERSION & 0xff0000) >> 16)
+                         .arg((QT_VERSION & 0xff00) >> 8)
+                         .arg(QLatin1String(d->iid))
+                         .arg(fileName);
+        QStringList reg, keys;
+        reg = settings.value(regkey).toStringList();
+        if (reg.count() && library->lastModified == reg[0]) {
+            keys = reg;
+            keys.removeFirst();
+        } else {
+            if (!library->loadPlugin()) {
+                if (qt_debug_component()) {
+                    qDebug() << library->errorString;
+                    qDebug() << "           could not load";
+                }
+                library->release();
+                continue;
+            }
+            QObject *instance = library->instance();
+            if (!instance) {
+                library->release();
+                // ignore plugins that have a valid signature but cannot be loaded.
+                continue;
+            }
+            QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
+            if (instance && factory && instance->qt_metacast(d->iid))
+                keys = factory->keys();
+            if (keys.isEmpty())
+                library->unload();
+            reg.clear();
+            reg << library->lastModified;
+            reg += keys;
+            settings.setValue(regkey, reg);
+        }
+        if (qt_debug_component()) {
+            qDebug() << "keys" << keys;
+        }
+
+        if (keys.isEmpty()) {
+            library->release();
+            continue;
+        }
+
+        int keysUsed = 0;
+        for (int k = 0; k < keys.count(); ++k) {
+            // first come first serve, unless the first
+            // library was built with a future Qt version,
+            // whereas the new one has a Qt version that fits
+            // better
+            QString key = keys.at(k);
+            if (!d->cs)
+                key = key.toLower();
+            QLibraryPrivate *previous = d->keyMap.value(key);
+            if (!previous || (previous->qt_version > QT_VERSION && library->qt_version <= QT_VERSION)) {
+                d->keyMap[key] = library;
+                d->keyList += keys.at(k);
+                keysUsed++;
+            }
+        }
+        if (keysUsed)
+            d->libraryList += library;
+        else
+            library->release();
+    }
+}
 
 void QFactoryLoader::update()
 {
@@ -114,86 +230,7 @@ void QFactoryLoader::update()
         if (d->loadedPaths.contains(pluginDir))
             continue;
         d->loadedPaths << pluginDir;
-
-        QString path = pluginDir + d->suffix;
-        if (!QDir(path).exists(QLatin1String(".")))
-            continue;
-
-        QStringList plugins = QDir(path).entryList(QDir::Files);
-        QLibraryPrivate *library = 0;
-        for (int j = 0; j < plugins.count(); ++j) {
-            QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
-            if (qt_debug_component()) {
-                qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
-            }
-            library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
-            if (!library->isPlugin(&settings)) {
-                if (qt_debug_component()) {
-                    qDebug() << library->errorString;
-                    qDebug() << "         not a plugin";
-                }
-                library->release();
-                continue;
-            }
-            QString regkey = QString::fromLatin1("Qt Factory Cache %1.%2/%3:/%4")
-                             .arg((QT_VERSION & 0xff0000) >> 16)
-                             .arg((QT_VERSION & 0xff00) >> 8)
-                             .arg(QLatin1String(d->iid))
-                             .arg(fileName);
-            QStringList reg, keys;
-            reg = settings.value(regkey).toStringList();
-            if (reg.count() && library->lastModified == reg[0]) {
-                keys = reg;
-                keys.removeFirst();
-            } else {
-                if (!library->loadPlugin()) {
-                    if (qt_debug_component()) {
-                        qDebug() << library->errorString;
-                        qDebug() << "           could not load";
-                    }
-                    library->release();
-                    continue;
-                }
-                QObject *instance = library->instance();
-                if (!instance) {
-                    library->release();
-                    // ignore plugins that have a valid signature but cannot be loaded.
-                    continue;
-                }
-                QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
-                if (instance && factory && instance->qt_metacast(d->iid))
-                    keys = factory->keys();
-                if (keys.isEmpty())
-                    library->unload();
-                reg.clear();
-                reg << library->lastModified;
-                reg += keys;
-                settings.setValue(regkey, reg);
-            }
-            if (qt_debug_component()) {
-                qDebug() << "keys" << keys;
-            }
-
-            if (keys.isEmpty()) {
-                library->release();
-                continue;
-            }
-            d->libraryList += library;
-            for (int k = 0; k < keys.count(); ++k) {
-                // first come first serve, unless the first
-                // library was built with a future Qt version,
-                // whereas the new one has a Qt version that fits
-                // better
-                QString key = keys.at(k);
-                if (!d->cs)
-                    key = key.toLower();
-                QLibraryPrivate *previous = d->keyMap.value(key);
-                if (!previous || (previous->qt_version > QT_VERSION && library->qt_version <= QT_VERSION)) {
-                    d->keyMap[key] = library;
-                    d->keyList += keys.at(k);
-                }
-            }
-        }
+        updateDir(pluginDir, settings);
     }
 #else
     Q_D(QFactoryLoader);
@@ -263,6 +300,56 @@ void QFactoryLoader::refreshAll()
         (*it)->update();
     }
 }
+
+#ifdef Q_OS_SYMBIAN
+QSymbianSystemPluginWatcher::QSymbianSystemPluginWatcher()
+{
+    qt_s60GetRFs().DriveList(drives);
+    watchForUpdates();
+}
+
+QSymbianSystemPluginWatcher::~QSymbianSystemPluginWatcher()
+{
+    qDeleteAll(watchers);
+}
+
+void QSymbianSystemPluginWatcher::watchForUpdates()
+{
+    QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+    if (installPathPlugins.at(1) == QChar(QLatin1Char(':')))
+        return;
+
+    installPathPlugins.prepend(QLatin1String("?:"));
+    installPathPlugins = QDir::toNativeSeparators(installPathPlugins);
+    RFs& fs = qt_s60GetRFs();
+    for (int i=0; i<KMaxDrives; i++) {
+        int attr = drives[i];
+        if ((attr & KDriveAttLocal) && !(attr & KDriveAttRom)) {
+            // start new watcher
+            TChar driveLetter;
+            fs.DriveToChar(i, driveLetter);
+            installPathPlugins[0] = driveLetter;
+            TPtrC ptr(qt_QString2TPtrC(installPathPlugins));
+            QNotifyChangeEvent *event = q_check_ptr(new QNotifyChangeEvent(fs, ptr, this, true));
+            watchers.push_back(event);
+        }
+    }
+}
+
+void QSymbianSystemPluginWatcher::handlePathChanged(QNotifyChangeEvent *e)
+{
+    QCoreApplicationPrivate::rebuildInstallLibraryPaths();
+    QMutexLocker locker(qt_factoryloader_mutex());
+    QString dirName(QDir::cleanPath(qt_TDesC2QString(e->watchedPath)));
+    QList<QFactoryLoader *> *loaders = qt_factory_loaders();
+    for (QList<QFactoryLoader *>::const_iterator it = loaders->constBegin();
+         it != loaders->constEnd(); ++it) {
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        (*it)->updateDir(dirName, settings);
+    }
+}
+
+#endif
 
 QT_END_NAMESPACE
 
