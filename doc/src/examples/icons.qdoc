@@ -29,8 +29,10 @@
     \example widgets/icons
     \title Icons Example
 
-    The Icons example shows how QIcon can generate pixmaps reflecting
-    an icon's state, mode and size. These pixmaps are generated from
+    \brief The Icons example shows how QIcon can generate pixmaps reflecting
+    an icon's state, mode and size.
+    
+    These pixmaps are generated from
     the set of pixmaps made available to the icon, and are used by Qt
     widgets to show an icon representing a particular action.
 

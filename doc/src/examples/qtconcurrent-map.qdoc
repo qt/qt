@@ -29,6 +29,6 @@
     \example qtconcurrent/map
     \title QtConcurrent Map Example
 
-    The QtConcurrent Map example shows how to use the synchronous (blocking)
+    \brief The QtConcurrent Map example shows how to use the synchronous (blocking)
     QtConcurrent API to scale a collection of images.
 */

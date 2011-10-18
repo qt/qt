@@ -29,7 +29,7 @@
     \example graphicsview/portedasteroids
     \title Ported Asteroids Example
 
-    The Ported Asteroids example is a port of the
+    \brief The Ported Asteroids example is a port of the
     Asteroids game, which was based on QCanvas, to the Graphics View
     framework.
  

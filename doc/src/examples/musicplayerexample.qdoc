@@ -29,8 +29,9 @@
     \example phonon/qmusicplayer
     \title Music Player Example
 
-    The Music Player Example shows how to use Phonon - the multimedia
+    \brief The Music Player Example shows how to use Phonon - the multimedia
     framework that comes with Qt - to create a simple music player.
+     
     The player can play music files, and provides simple playback
     control, such as pausing, stopping, and resuming the music.
 

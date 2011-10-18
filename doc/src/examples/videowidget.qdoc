@@ -29,7 +29,7 @@
     \example multimedia/videowidget
     \title Video Widget Example
 
-    The Video Widget example shows how to implement a video widget using
+    \brief The Video Widget example shows how to implement a video widget using
     QtMultimedia's QAbstractVideoSurface
 
     \image video-videowidget.png

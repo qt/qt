@@ -27,5 +27,8 @@
 
 /*!
     \example demos/embedded/digiflip
+
+    \brief The Digiflip demo shows the Animation Framework in an embedded context.
+
     \title Digiflip Demonstration
 */

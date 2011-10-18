@@ -29,7 +29,7 @@
   \example xmlpatterns/schema
   \title XML Schema Validation Example
 
-  The XML Schema Validation example shows how to use QtXmlPatterns to
+  \brief The XML Schema Validation example shows how to use QtXmlPatterns to
   validate XML with a W3C XML Schema.
 
   \tableofcontents

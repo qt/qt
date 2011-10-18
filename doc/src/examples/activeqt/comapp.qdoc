@@ -29,10 +29,12 @@
     \example activeqt/comapp
     \title COM App Example (ActiveQt)
 
-    The COM App example shows how to use ActiveQt to develop a Qt
-    application that can be automated via COM. Different QObject
-    based classes are exposed as COM objects that communicate with the
-    GUI of the running Qt application. The APIs of those COM objects
+    \brief The COM App example shows how to use ActiveQt to develop a Qt
+    application that can be automated via COM.
+    
+    Different QObject based classes are exposed as COM objects that
+    communicate with the GUI of the running Qt application.
+    The APIs of those COM objects
     has been designed to resemble the APIs of standard COM
     applications; i.e. those from Microsoft Office.
 

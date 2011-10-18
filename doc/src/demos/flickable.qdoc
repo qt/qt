@@ -29,5 +29,7 @@
     \example demos/embedded/flickable
     \title Flickable List Demonstration
 
+    \brief The Flickable List demo shows a flickable list in an embedded context.
+
     \image flickable-demo.png
 */
