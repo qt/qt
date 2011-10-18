@@ -161,17 +161,17 @@ bool QDeclarativeSpringAnimationPrivate::animate(const QDeclarativeProperty &pro
                 animation.velocity = animation.velocity + (spring * diff - damping * animation.velocity) / mass;
             else
                 animation.velocity = animation.velocity + spring * diff - damping * animation.velocity;
-            if (maxVelocity > 0.) {
+            if (maxVelocity > qreal(0.)) {
                 // limit velocity
                 if (animation.velocity > maxVelocity)
                     animation.velocity = maxVelocity;
                 else if (animation.velocity < -maxVelocity)
                     animation.velocity = -maxVelocity;
             }
-            animation.currentValue += animation.velocity * 16.0 / 1000.0;
+            animation.currentValue += animation.velocity * qreal(16.0) / qreal(1000.0);
             if (haveModulus) {
                 animation.currentValue = fmod(animation.currentValue, modulus);
-                if (animation.currentValue < 0.0)
+                if (animation.currentValue < qreal(0.0))
                     animation.currentValue += modulus;
             }
         }
@@ -195,7 +195,7 @@ bool QDeclarativeSpringAnimationPrivate::animate(const QDeclarativeProperty &pro
                 animation.currentValue = fmod(animation.currentValue, modulus);
         } else {
             animation.currentValue -= moveBy;
-            if (haveModulus && animation.currentValue < 0.0)
+            if (haveModulus && animation.currentValue < qreal(0.0))
                 animation.currentValue = fmod(animation.currentValue, modulus) + modulus;
         }
         if (lastTime - animation.start >= animation.duration) {

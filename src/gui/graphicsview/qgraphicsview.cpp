@@ -298,7 +298,7 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
         return INT_MIN;
     else if (d >= (qreal) INT_MAX)
         return INT_MAX;
-    return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
+    return d >= 0.0 ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1);
 }
 
 void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
@@ -1830,14 +1830,14 @@ void QGraphicsView::centerOn(const QPointF &pos)
             qint64 horizontal = 0;
             horizontal += horizontalScrollBar()->minimum();
             horizontal += horizontalScrollBar()->maximum();
-            horizontal -= int(viewPoint.x() - width / 2.0);
+            horizontal -= int(viewPoint.x() - width / qreal(2.0));
             horizontalScrollBar()->setValue(horizontal);
         } else {
-            horizontalScrollBar()->setValue(int(viewPoint.x() - width / 2.0));
+            horizontalScrollBar()->setValue(int(viewPoint.x() - width / qreal(2.0)));
         }
     }
     if (!d->topIndent)
-        verticalScrollBar()->setValue(int(viewPoint.y() - height / 2.0));
+        verticalScrollBar()->setValue(int(viewPoint.y() - height / qreal(2.0)));
     d->lastCenterPoint = oldCenterPoint;
 }
 
@@ -1886,22 +1886,22 @@ void QGraphicsView::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
     if (viewRect.left() <= left + xmargin) {
         // need to scroll from the left
         if (!d->leftIndent)
-            horizontalScrollBar()->setValue(int(viewRect.left() - xmargin - 0.5));
+            horizontalScrollBar()->setValue(int(viewRect.left() - xmargin - qreal(0.5)));
     }
     if (viewRect.right() >= right - xmargin) {
         // need to scroll from the right
         if (!d->leftIndent)
-            horizontalScrollBar()->setValue(int(viewRect.right() - width + xmargin + 0.5));
+            horizontalScrollBar()->setValue(int(viewRect.right() - width + xmargin + qreal(0.5)));
     }
     if (viewRect.top() <= top + ymargin) {
         // need to scroll from the top
         if (!d->topIndent)
-            verticalScrollBar()->setValue(int(viewRect.top() - ymargin - 0.5));
+            verticalScrollBar()->setValue(int(viewRect.top() - ymargin - qreal(0.5)));
     }
     if (viewRect.bottom() >= bottom - ymargin) {
         // need to scroll from the bottom
         if (!d->topIndent)
-            verticalScrollBar()->setValue(int(viewRect.bottom() - height + ymargin + 0.5));
+            verticalScrollBar()->setValue(int(viewRect.bottom() - height + ymargin + qreal(0.5)));
     }
 }
 

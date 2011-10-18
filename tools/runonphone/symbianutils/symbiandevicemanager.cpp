@@ -183,6 +183,9 @@ SymbianDevice::TrkDevicePtr SymbianDevice::acquireDevice()
                 << "acquired: " << m_data->deviceAcquired << " open: " << isOpen();
     if (isNull() || m_data->deviceAcquired)
         return TrkDevicePtr();
+    //if port was opened for coda (but is not acquired) then close it first.
+    if (m_data->codaDevice)
+        m_data->codaDevice->device()->close();
     if (m_data->device.isNull()) {
         m_data->device = TrkDevicePtr(new trk::TrkDevice);
         m_data->device->setPort(m_data->portName);

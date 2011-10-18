@@ -408,7 +408,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>Затухание отражений (мс)</translation>
     </message>
     <message>
@@ -423,7 +423,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>Уровень эха (мБар)</translation>
     </message>
     <message>
@@ -481,7 +481,7 @@ have libgstreamer-plugins-base installed.</source>
         <translation>Громкость: %1%</translation>
     </message>
     <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>Используйте данный регулятор для настройки громкости. Крайнее левое положение соответствует 0%, крайнее правое - %1%</translation>
     </message>
     <message>
@@ -6479,8 +6479,8 @@ Please choose a different file name.</source>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <source>Ok</source>
-        <translation>ОК</translation>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Select</source>
@@ -7113,6 +7113,10 @@ Please choose a different file name.</source>
     <name>QWebFrame</name>
     <message>
         <source>Request cancelled</source>
+        <translation>Запрос отменён</translation>
+    </message>
+    <message>
+        <source>Request canceled</source>
         <translation>Запрос отменён</translation>
     </message>
     <message>
@@ -8359,13 +8363,6 @@ Please choose a different file name.</source>
     </message>
 </context>
 <context>
-    <name>QmlJSDebugger::ToolBox</name>
-    <message>
-        <source>Qt Quick Toolbox</source>
-        <translation type="obsolete">Инструментарий Qt Quick</translation>
-    </message>
-</context>
-<context>
     <name>QmlJSDebugger::ZoomTool</name>
     <message>
         <source>Zoom to &amp;100%</source>
@@ -8799,6 +8796,10 @@ Please choose a different file name.</source>
         <translation>Функция стилей должна иметь имя с префиксом.</translation>
     </message>
     <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>Пространство имён для функции пользователя не может быть пустым (попробуйте предопределённый префикс %1, созданный для подобных случаев)</translation>
+    </message>
+    <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
         <translation>Пространтсво имён %1 зарезервировано, поэтому пользовательские функции не могут его использовать. Попробуйте предопределённый префикс %2, который существует для подобных ситуаций.</translation>
     </message>
@@ -8953,10 +8954,6 @@ Please choose a different file name.</source>
     <message>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
         <translation>Корневой узел второго аргумента функции %1 должен быть документом. %2 не является документом.</translation>
-    </message>
-    <message>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>Пространство имён для пользовательских функций не может быть пустым (попробуйте предопределённый префикс %1, который существует для подобных ситуаций)</translation>
     </message>
     <message>
         <source>A default namespace declaration must occur before function, variable, and option declarations.</source>
@@ -9519,7 +9516,7 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10107,10 +10104,6 @@ Please choose a different file name.</source>
         <translation>Для обнуляемых элементов недопустимо ограничение фиксированным значением.</translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation type="unfinished">Элемент %1 не может содержать другие элементы, т.к. имеет статическое содержимое.</translation>
-    </message>
-    <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
         <translation>Указанный тип %1 не может быть корректно замещён элементом типа %2.</translation>
     </message>
@@ -10141,6 +10134,10 @@ Please choose a different file name.</source>
     <message>
         <source>Element %1 contains not allowed text content.</source>
         <translation>Элемент %1 содержит недопустимое текстовое содержимое.</translation>
+    </message>
+    <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation>Элемент %1 не может содержать другие элементы, так как у него фиксированное содержимое.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
@@ -10180,11 +10177,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Key constraint %1 contains absent fields.</source>
-        <translation type="unfinished">Ограничение на ключ %1 содержит недостающие поля.</translation>
+        <translation>Ограничение на ключ %1 содержит недостающие поля.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ограничение на ключ %1 содержит ссылки на обнуляемый элемент %2.</translation>
     </message>
     <message>
         <source>No referenced value found for key reference %1.</source>
