@@ -4297,7 +4297,7 @@ bool QGLWidget::event(QEvent *e)
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
-            makeCurrent();
+            makeCurrent(); // Shouldn't happen but keep it here just for sure
 
         if (testAttribute(Qt::WA_TranslucentBackground))
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
@@ -4305,8 +4305,11 @@ bool QGLWidget::event(QEvent *e)
 
     // A re-parent is likely to destroy the Symbian window and re-create it. It is important
     // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
-    if (e->type() == QEvent::ParentAboutToChange)
+    if (e->type() == QEvent::ParentAboutToChange) {
+        if (d->glcx == QGLContext::currentContext())
+            d->glcx->doneCurrent();
         d->glcx->d_func()->destroyEglSurfaceForDevice();
+    }
 
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
