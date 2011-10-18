@@ -29,8 +29,10 @@
     \example xml/saxbookmarks
     \title SAX Bookmarks Example
 
-    The SAX Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
-    files that uses Qt's SAX-based API to read and parse the files. The DOM Bookmarks
+    \brief The SAX Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
+    files that uses Qt's SAX-based API to read and parse the files.
+    
+    The DOM Bookmarks
     example provides an alternative way to read this type of file.
 
     \image saxbookmarks-example.png

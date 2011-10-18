@@ -29,7 +29,7 @@
     \example script/context2d
     \title Context2D Example
 
-    This Qt Script example is an implementation of the Context2D API.
+    \brief This Qt Script example is an implementation of the Context2D API.
 
     \image context2d-example.png
 

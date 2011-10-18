@@ -29,7 +29,8 @@
 \example declarative/cppextensions/referenceexamples/adding
 \title Extending QML - Adding Types Example
 
-The Adding Types Example shows how to add a new element type, \c Person, to QML.
+\brief The Adding Types Example shows how to add a new element type, \c Person, to QML.
+
 The \c Person type can be used from QML like this:
 
 \snippet examples/declarative/cppextensions/referenceexamples/adding/example.qml 0

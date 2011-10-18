@@ -29,7 +29,7 @@
     \example script/defaultprototypes
     \title Default Prototypes Example
 
-    This Qt Script example shows how to use default prototypes
+    \brief The Default Prototypes QtScript example shows how to use default prototypes
     to make a non-QObject-based type scriptable.
 
     \image defaultprototypes-example.png

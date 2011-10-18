@@ -29,7 +29,7 @@
     \example designer/worldtimeclockplugin
     \title World Time Clock Plugin Example
 
-    The World Time Clock Plugin example shows how to create a custom
+    \brief The World Time Clock Plugin example shows how to create a custom
     widget plugin for \QD that uses signals and slots.
 
     \image worldtimeclockplugin-example.png

@@ -29,7 +29,7 @@
     \example touch/fingerpaint
     \title Finger Paint Example
 
-    The Finger Paint example shows the use of a touchscreen with a custom widget
+    \brief The Finger Paint example shows the use of a touchscreen with a custom widget
     to create a simple painting application.
 
     \image touch-fingerpaint-example.png

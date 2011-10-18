@@ -29,7 +29,7 @@
     \example demos/undo
     \title Undo Framework
 
-    This demo shows Qt's undo framework in action.
+    \brief This demo shows Qt's undo framework in action.
 
     \image undodemo.png
 

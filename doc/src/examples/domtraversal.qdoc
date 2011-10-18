@@ -29,7 +29,7 @@
     \example webkit/domtraversal
     \title DOM Traversal Example
 
-    The DOM Traversal example shows how to use the QWebElement class to access
+    \brief The DOM Traversal example shows how to use the QWebElement class to access
     the structure of a Web page.
 
     \image webkit-domtraversal.png

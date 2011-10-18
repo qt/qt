@@ -29,6 +29,6 @@
     \example graphicsview/weatheranchorlayout
     \title Weather Anchor Layout Example
 
-    The Weather Anchor Layout example shows more complex use of the
+    \brief The Weather Anchor Layout example shows more complex use of the
     QGraphicsAnchorLayout class to create a real-world window layout.
 */
