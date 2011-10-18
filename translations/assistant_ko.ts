@@ -259,6 +259,10 @@ Reason:
         <translation>주소</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>도구 모음 메뉴</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>책갈피 메뉴</translation>
     </message>
@@ -286,11 +290,11 @@ Reason:
     <name>CentralWidget</name>
     <message>
         <source>Add new page</source>
-        <translation>새 쪽 추가</translation>
+        <translation type="obsolete">새 쪽 추가</translation>
     </message>
     <message>
         <source>Close current page</source>
-        <translation>현재 쪽 닫기</translation>
+        <translation type="obsolete">현재 쪽 닫기</translation>
     </message>
     <message>
         <source>Print Document</source>
@@ -298,27 +302,27 @@ Reason:
     </message>
     <message>
         <source>unknown</source>
-        <translation>알 수 없음</translation>
+        <translation type="obsolete">알 수 없음</translation>
     </message>
     <message>
         <source>Add New Page</source>
-        <translation>새 쪽 추가</translation>
+        <translation type="obsolete">새 쪽 추가</translation>
     </message>
     <message>
         <source>Close This Page</source>
-        <translation>이 쪽 닫기</translation>
+        <translation type="obsolete">이 쪽 닫기</translation>
     </message>
     <message>
         <source>Close Other Pages</source>
-        <translation>다른 쪽 닫기</translation>
+        <translation type="obsolete">다른 쪽 닫기</translation>
     </message>
     <message>
         <source>Add Bookmark for this Page...</source>
-        <translation>이 쪽을 책갈피에 추가...</translation>
+        <translation type="obsolete">이 쪽을 책갈피에 추가...</translation>
     </message>
     <message>
         <source>Search</source>
-        <translation>찾기</translation>
+        <translation type="obsolete">찾기</translation>
     </message>
 </context>
 <context>
@@ -657,6 +661,49 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>뒤로(&amp;B)</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>앞으로(&amp;F)</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>홈 페이지(&amp;H)</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation>ALT+Home</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>확대(&amp;I)</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>축소(&amp;O)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>선택한 텍스트 복사(&amp;C)</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>인쇄(&amp;P)...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>텍스트에서 찾기(&amp;F)...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>찾기(&amp;F)</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -681,8 +728,20 @@ Reason:
         <translation>&lt;title&gt;404 오류...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;페이지를 찾을 수 없음&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>링크 열기</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>링크 주소 복사(&amp;L)</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>복사</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>새로 고침</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
@@ -690,7 +749,11 @@ Reason:
     </message>
     <message>
         <source>Open Link in New Tab</source>
-        <translation>새 탭으로 링크 열기</translation>
+        <translation type="obsolete">새 탭으로 링크 열기</translation>
+    </message>
+    <message>
+        <source>Open Link in New Page</source>
+        <translation>새 쪽으로 링크 열기</translation>
     </message>
 </context>
 <context>
@@ -881,8 +944,16 @@ Reason:
         <translation>책갈피</translation>
     </message>
     <message>
+        <source>Open Pages</source>
+        <translation>쪽 열기</translation>
+    </message>
+    <message>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>책갈피 도구 모음</translation>
     </message>
     <message>
         <source>Looking for Qt Documentation...</source>
@@ -906,7 +977,7 @@ Reason:
     </message>
     <message>
         <source>&amp;Print...</source>
-        <translation>인쇄(&amp;P)...</translation>
+        <translation type="obsolete">인쇄(&amp;P)...</translation>
     </message>
     <message>
         <source>&amp;Close Tab</source>
@@ -926,15 +997,15 @@ Reason:
     </message>
     <message>
         <source>&amp;Copy selected Text</source>
-        <translation>선택한 텍스트 복사(&amp;C)</translation>
+        <translation type="obsolete">선택한 텍스트 복사(&amp;C)</translation>
     </message>
     <message>
         <source>&amp;Find in Text...</source>
-        <translation>텍스트에서 찾기(&amp;F)...</translation>
+        <translation type="obsolete">텍스트에서 찾기(&amp;F)...</translation>
     </message>
     <message>
         <source>&amp;Find</source>
-        <translation>찾기(&amp;F)</translation>
+        <translation type="obsolete">찾기(&amp;F)</translation>
     </message>
     <message>
         <source>Find &amp;Next</source>
@@ -954,11 +1025,11 @@ Reason:
     </message>
     <message>
         <source>Zoom &amp;in</source>
-        <translation>확대(&amp;I)</translation>
+        <translation type="obsolete">확대(&amp;I)</translation>
     </message>
     <message>
         <source>Zoom &amp;out</source>
-        <translation>축소(&amp;O)</translation>
+        <translation type="obsolete">축소(&amp;O)</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -985,8 +1056,16 @@ Reason:
         <translation>찾기</translation>
     </message>
     <message>
+        <source>E&amp;xit</source>
+        <translation>끝내기(&amp;X)</translation>
+    </message>
+    <message>
         <source>ALT+S</source>
         <translation>ALT+S</translation>
+    </message>
+    <message>
+        <source>ALT+P</source>
+        <translation>ALT+P</translation>
     </message>
     <message>
         <source>&amp;Go</source>
@@ -994,19 +1073,19 @@ Reason:
     </message>
     <message>
         <source>&amp;Home</source>
-        <translation>홈 페이지(&amp;H)</translation>
+        <translation type="obsolete">홈 페이지(&amp;H)</translation>
     </message>
     <message>
         <source>ALT+Home</source>
-        <translation>ALT+Home</translation>
+        <translation type="obsolete">ALT+Home</translation>
     </message>
     <message>
         <source>&amp;Back</source>
-        <translation>뒤로(&amp;B)</translation>
+        <translation type="obsolete">뒤로(&amp;B)</translation>
     </message>
     <message>
         <source>&amp;Forward</source>
-        <translation>앞으로(&amp;F)</translation>
+        <translation type="obsolete">앞으로(&amp;F)</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1089,8 +1168,12 @@ Reason:
         <translation>연결된 내용을 찾을 수 없습니다.</translation>
     </message>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;버전 %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;저작권자 (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;버전 %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;버전 %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About %1</source>
@@ -1103,6 +1186,17 @@ Reason:
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>파일 &apos;%1&apos;을(를) 등록할 수 없음: %2</translation>
+    </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
+    <message>
+        <source>Close %1</source>
+        <translation>%1 닫기</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>%1 이외 모두 닫기</translation>
     </message>
 </context>
 <context>
@@ -1324,6 +1418,14 @@ Do you want to remove it?</source>
         <source>Restore to default</source>
         <translation>기본값으로 복원</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>모양</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>각각 쪽마다 탭 보이기</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1523,6 +1625,29 @@ qhelpgenerator &lt;help-project-file&gt; [옵션]
     <message>
         <source>Select All</source>
         <translation>모두 선택</translation>
+    </message>
+</context>
+<context>
+    <name>TabBar</name>
+    <message>
+        <source>(Untitled)</source>
+        <translation>(제목 없음)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>새 탭(&amp;T)</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>탭 닫기(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>다른 탭 닫기</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>이 쪽을 책갈피에 추가...</translation>
     </message>
 </context>
 <context>
