@@ -415,6 +415,8 @@ public:
     uint workaround_brokenTextureFromPixmap : 1;
     uint workaround_brokenTextureFromPixmap_init : 1;
 
+    uint workaround_brokenScissor : 1;
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;

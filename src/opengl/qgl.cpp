@@ -1716,6 +1716,8 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenScissor = false;
+
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
