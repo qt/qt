@@ -82,6 +82,7 @@ Qt applications.
 \section1 QML Add-Ons
 
 \list
+\o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian} - a native component set for the Symbian^3 platform
 \o \l{QtWebKit QML Module}
 \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
 \endlist
