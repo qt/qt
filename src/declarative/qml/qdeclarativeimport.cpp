@@ -46,6 +46,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qpluginloader.h>
 #include <QtCore/qlibraryinfo.h>
+#include <QtCore/qalgorithms.h>
 #include <QtDeclarative/qdeclarativeextensioninterface.h>
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativetypenamecache_p.h>
@@ -734,8 +735,12 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
         }
         RFs& fs = qt_s60GetRFs();
         TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+        // Symbian searches should start from Y:. Fix start drive otherwise TFindFile starts from the session drive
+        _LIT(KStartDir, "Y:");
+        TFileName dirPath(KStartDir);
+        dirPath.Append(tempPathPtr);
         TFindFile finder(fs);
-        TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
+        TInt err = finder.FindByDir(tempPathPtr, dirPath);
         while (err == KErrNone) {
             QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
                              finder.File().Length());
@@ -743,6 +748,9 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
             addImportPath(foundDir);
             err = finder.Find();
         }
+        // TFindFile found the directories in the order we want, but addImportPath reverses it.
+        // Reverse the order again to get it right.
+        QAlgorithmsPrivate::qReverse(fileImportPath.begin(), fileImportPath.end());
     } else {
         addImportPath(installImportsPath);
     }

@@ -82,6 +82,7 @@ that the changes lead to a leaner API and the change applies to all platforms.
  - QProcessEnvironment: major optimizations, especially on Unix
  - Add branch prediction macros Q_LIKELY and Q_UNLIKELY
  - QSettings: don't assume XDG_CONFIG_HOME is latin1-encoded
+ - QDateTime: Fix generation of ISO8601 strings to include proper timezone information [QTBUG-18290]
 
 QtGui
 -----
@@ -142,6 +143,7 @@ QtNetwork
  - HTTP cache: do not load resources from cache that must be revalidated [QTBUG-18983]
  - HTTP cache: change file organization (MR-2505)
  - SOCKS5: write errors are propagated to the outer socket [QTBUG-18713]
+ - Cookies: Commas are no longer used to support multiple cookies in a single Set-Cookie header [QTBUG-21456]
  - QNetworkReply: errorString() returns translated messages now [QTBUG-18382]
 
  QtOpenGL
@@ -183,6 +185,11 @@ QtDBus
  - Make QDBusServer work [QTBUG-186]
  - QDBusConnection: Add methods disconnectFromPeer and connectToPeer
  - Make the DBus timeout configurable in QDBusAbstractInterface.
+
+QtTest
+------
+ - Added -random and -seed options to tests, making the test cases within
+   a test execute in arbitrary order.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -369,6 +376,10 @@ Qt for Windows CE
 
 - syncqt
     * Fix to allow $QTDIR to contain any valid pathname characters.
+
+- qdoc3
+    * Add support for documenting QML using module identifiers.
+    * Change the format of qdocconf files.
 
 ****************************************************************************
 *                          Plugins                                         *

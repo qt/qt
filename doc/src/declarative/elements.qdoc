@@ -185,6 +185,7 @@ should first be obtained and installed.
 \list
 \o \l{WebView}{QtWebKit QML Module - WebView Element} - For displaying Web contents
 \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
+\o \l {http://doc.qt.nokia.com/qt-components-symbian-1.1/index.html}{Qt Quick Components}
 \endlist
 
 */

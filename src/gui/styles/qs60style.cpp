@@ -1679,7 +1679,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWaitAnim,
                         painter, progressRect, flags | orientationFlag | QS60StylePrivate::SF_Animation );
             } else {
-                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? qreal(1.0)
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 if (optionProgressBar->orientation == Qt::Horizontal) {
@@ -2010,7 +2010,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 1 : 0.75; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 1 : qreal(0.75); // Trial and error factors. Feel free to improve.
 #else
             const qreal opacity = 0.85;
 #endif
@@ -2148,8 +2148,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorRadioButton: {
             QRect buttonRect = option->rect;
             //there is empty (a. 33%) space in svg graphics for radiobutton
-            const qreal reduceWidth = (qreal)buttonRect.width() / 3.0;
-            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : 1.0;
+            const qreal reduceWidth = (qreal)buttonRect.width() / qreal(3.0);
+            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : qreal(1.0);
             // Try to occupy the full area
             const qreal scaler = 1 + (reduceWidth/rectWidth);
             buttonRect.setWidth((int)((buttonRect.width()-reduceWidth) * scaler));

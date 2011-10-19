@@ -103,6 +103,7 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <private/qgltexturepool_p.h>
+#include <private/qeglcontext_p.h>
 #endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -3432,8 +3433,25 @@ const QGLContext* QGLContext::currentContext()
     return 0;
 #else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
-    if (threadContext)
+    if (threadContext) {
+#ifdef Q_OS_SYMBIAN
+        // Query the current context and return null if it is different.
+        // This is needed to support mixed VG-GL rendering.
+        // QtOpenVG is free to make a QEglContext current at any time and
+        // QGLContext gets no notification that its underlying QEglContext is
+        // not current anymore. We query directly from EGL to be thread-safe.
+        // QEglContext does not store all the contexts per-thread.
+        if (threadContext->context) {
+            QEglContext *eglcontext = threadContext->context->d_func()->eglContext;
+            if (eglcontext) {
+                EGLContext ctx = eglcontext->context();
+                if (ctx != eglGetCurrentContext())
+                    return 0;
+            }
+        }
+#endif
         return threadContext->context;
+    }
     return 0;
 #endif //Q_WS_QPA
 }

@@ -246,7 +246,7 @@ void QDeclarativePathViewPrivate::updateHighlight()
         } else {
             qreal target = currentIndex;
 
-            offsetAdj = 0.0;
+            offsetAdj = qreal(0.0);
             tl.reset(moveHighlight);
             moveHighlight.setValue(highlightPosition);
 
@@ -255,14 +255,14 @@ void QDeclarativePathViewPrivate::updateHighlight()
             if (target - highlightPosition > modelCount/2) {
                 highlightUp = false;
                 qreal distance = modelCount - target + highlightPosition;
-                tl.move(moveHighlight, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * highlightPosition / distance));
-                tl.set(moveHighlight, modelCount-0.01);
+                tl.move(moveHighlight, qreal(0.0), QEasingCurve(QEasingCurve::InQuad), int(duration * highlightPosition / distance));
+                tl.set(moveHighlight, modelCount-qreal(0.01));
                 tl.move(moveHighlight, target, QEasingCurve(QEasingCurve::OutQuad), int(duration * (modelCount-target) / distance));
             } else if (target - highlightPosition <= -modelCount/2) {
                 highlightUp = true;
                 qreal distance = modelCount - highlightPosition + target;
-                tl.move(moveHighlight, modelCount-0.01, QEasingCurve(QEasingCurve::InQuad), int(duration * (modelCount-highlightPosition) / distance));
-                tl.set(moveHighlight, 0.0);
+                tl.move(moveHighlight, modelCount-qreal(0.01), QEasingCurve(QEasingCurve::InQuad), int(duration * (modelCount-highlightPosition) / distance));
+                tl.set(moveHighlight, qreal(0.0));
                 tl.move(moveHighlight, target, QEasingCurve(QEasingCurve::OutQuad), int(duration * target / distance));
             } else {
                 highlightUp = highlightPosition - target < 0;
@@ -287,18 +287,18 @@ void QDeclarativePathViewPrivate::setHighlightPosition(qreal pos)
         qreal relativeHighlight = qmlMod(pos + offset, range) / range;
 
         if (!highlightUp && relativeHighlight > end * mappedRange) {
-            qreal diff = 1.0 - relativeHighlight;
+            qreal diff = qreal(1.0) - relativeHighlight;
             setOffset(offset + diff * range);
         } else if (highlightUp && relativeHighlight >= (end - start) * mappedRange) {
             qreal diff = relativeHighlight - (end - start) * mappedRange;
-            setOffset(offset - diff * range - 0.00001);
+            setOffset(offset - diff * range - qreal(0.00001));
         }
 
         highlightPosition = pos;
         qreal pathPos = positionOfIndex(pos);
         updateItem(highlightItem, pathPos);
         if (QDeclarativePathViewAttached *att = attached(highlightItem))
-            att->setOnPath(pathPos != -1.0);
+            att->setOnPath(pathPos != qreal(-1.0));
     }
 }
 
@@ -1200,7 +1200,7 @@ void QDeclarativePathViewPrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEve
 
     qreal elapsed = qreal(lastElapsed + QDeclarativeItemPrivate::elapsed(lastPosTime)) / 1000.;
     qreal velocity = elapsed > 0. ? lastDist / elapsed : 0;
-    if (model && modelCount && qAbs(velocity) > 1.) {
+    if (model && modelCount && qAbs(velocity) > qreal(1.)) {
         qreal count = pathItems == -1 ? modelCount : pathItems;
         if (qAbs(velocity) > count * 2) // limit velocity
             velocity = (velocity > 0 ? count : -count) * 2;
@@ -1208,7 +1208,7 @@ void QDeclarativePathViewPrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEve
         qreal v2 = velocity*velocity;
         qreal accel = deceleration/10;
         // + 0.25 to encourage moving at least one item in the flick direction
-        qreal dist = qMin(qreal(modelCount-1), qreal(v2 / (accel * 2.0) + 0.25));
+        qreal dist = qMin(qreal(modelCount-1), qreal(v2 / (accel * qreal(2.0)) + qreal(0.25)));
         if (haveHighlightRange && highlightRangeMode == QDeclarativePathView::StrictlyEnforceRange) {
             // round to nearest item.
             if (velocity > 0.)
@@ -1217,13 +1217,13 @@ void QDeclarativePathViewPrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEve
                 dist = qRound(dist - offset) + offset;
             // Calculate accel required to stop on item boundary
             if (dist <= 0.) {
-                dist = 0.;
-                accel = 0.;
+                dist = qreal(0.);
+                accel = qreal(0.);
             } else {
                 accel = v2 / (2.0f * qAbs(dist));
             }
         }
-        offsetAdj = 0.0;
+        offsetAdj = qreal(0.0);
         moveOffset.setValue(offset);
         tl.accel(moveOffset, velocity, accel, dist);
         tl.callback(QDeclarativeTimeLineCallback(&moveOffset, fixOffsetCallback, this));
@@ -1588,7 +1588,7 @@ void QDeclarativePathView::createdItem(int index, QDeclarativeItem *item)
             att->setOnPath(false);
         }
         item->setParentItem(this);
-        d->updateItem(item, index < d->firstIndex ? 0.0 : 1.0);
+        d->updateItem(item, index < d->firstIndex ? qreal(0.0) : qreal(1.0));
     }
 }
 

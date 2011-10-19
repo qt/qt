@@ -178,9 +178,6 @@
 // QWSEmbedWidget
 //#define QT_NO_QWSEMBEDWIDGET
 
-// Alpha Cursor
-//#define QT_NO_QWS_ALPHA_CURSOR
-
 // Decoration
 //#define QT_NO_QWS_DECORATION_DEFAULT
 

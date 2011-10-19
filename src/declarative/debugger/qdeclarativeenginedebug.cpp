@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "private/qdeclarativedebug_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
 
 #include "private/qdeclarativedebugclient_p.h"
 
-#include <qdeclarativeenginedebug_p.h>
+#include <qdeclarativeenginedebugservice_p.h>
 
 #include <private/qobject_p.h>
 
@@ -207,7 +207,7 @@ void QDeclarativeEngineDebugPrivate::remove(QDeclarativeEngineDebug *c, QDeclara
 void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugObjectReference &o,
                                    bool simple)
 {
-    QDeclarativeEngineDebugServer::QDeclarativeObjectData data;
+    QDeclarativeEngineDebugService::QDeclarativeObjectData data;
     ds >> data;
     o.m_debugId = data.objectId;
     o.m_class = data.objectType;
@@ -234,7 +234,7 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
     ds >> propCount;
 
     for (int ii = 0; ii < propCount; ++ii) {
-        QDeclarativeEngineDebugServer::QDeclarativeObjectProperty data;
+        QDeclarativeEngineDebugService::QDeclarativeObjectProperty data;
         ds >> data;
         QDeclarativeDebugPropertyReference prop;
         prop.m_objectDebugId = o.m_debugId;
@@ -243,21 +243,21 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
         prop.m_hasNotifySignal = data.hasNotifySignal;
         prop.m_valueTypeName = data.valueTypeName;
         switch (data.type) {
-            case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Basic:
-            case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::List:
-            case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::SignalProperty:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Basic:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::List:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::SignalProperty:
             {
                 prop.m_value = data.value;
                 break;
             }
-            case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Object:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Object:
             {
                 QDeclarativeDebugObjectReference obj;
                 obj.m_debugId = prop.m_value.toInt();
                 prop.m_value = QVariant::fromValue(obj);
                 break;
             }
-            case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Unknown:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Unknown:
                 break;
         }
         o.m_properties << prop;

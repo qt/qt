@@ -1,0 +1,11 @@
+#ifndef QT_RESOURCES_IBY
+#define QT_RESOURCES_IBY
+
+#include <data_caging_paths_for_iby.hrh>
+
+// Localisation files
+
+data=DATAZ_\QT_TRANSLATIONS_DIR\qt.qm    QT_TRANSLATIONS_DIR\qt.qm
+
+#endif // __QT_RESOURCES_IBY__
+
