@@ -874,6 +874,10 @@ void QApplicationPrivate::construct(
     if (qt_is_gui_used)
         qt_guiPlatformPlugin();
 #endif
+
+#ifdef Q_OS_SYMBIAN
+    symbianHandleLiteModeStartup();
+#endif
 }
 
 #if defined(Q_WS_X11)
