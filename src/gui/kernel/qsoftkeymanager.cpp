@@ -61,7 +61,7 @@ QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
     QString softKeyText;
     switch (standardKey) {
     case OkSoftKey:
-        softKeyText = QSoftKeyManager::tr("Ok");
+        softKeyText = QSoftKeyManager::tr("OK");
         break;
     case SelectSoftKey:
         softKeyText = QSoftKeyManager::tr("Select");

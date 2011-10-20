@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Test for QTBUG-21375: xmlpatternsvalidator does not allow for non-numeric literals in xsd:double attributes
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="test1" type="TestType1" />
+    <xsd:element name="test2" type="TestType2" />
+    <xsd:element name="test3" type="TestType3" />
+
+    <xsd:complexType name="TestType1">
+        <xsd:attribute name="attribute1" type="DoubleWithRestrictions" default="INF" />
+    </xsd:complexType>
+
+    <xsd:complexType name="TestType2">
+        <xsd:attribute name="attribute2" type="DoubleWithRestrictions" default="-INF" />
+    </xsd:complexType>
+
+    <xsd:complexType name="TestType3">
+        <xsd:attribute name="attribute3" type="DoubleWithRestrictions" default="NaN" />
+    </xsd:complexType>
+
+    <xsd:simpleType name="DoubleWithRestrictions">
+        <xsd:union>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:double">
+                    <xsd:enumeration value="-INF" />
+                    <xsd:enumeration value="INF" />
+                    <xsd:enumeration value="NaN" />
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:union>
+    </xsd:simpleType>
+
+</xsd:schema>

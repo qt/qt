@@ -2719,7 +2719,7 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                     }
 
                     if (scale != 0)
-                        rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
+                        rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/qreal(M_PI);
                     else {
                         qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under scale of 0");
                         ok = false;

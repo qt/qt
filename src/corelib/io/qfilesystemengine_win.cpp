@@ -692,7 +692,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
         if (what & QFileSystemMetaData::UserWritePermission) {
             if (::_waccess((wchar_t*)entry.nativeFilePath().utf16(), W_OK) == 0)
                 data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-            data.knownFlagsMask |= QFileSystemMetaData::UserReadPermission;
+            data.knownFlagsMask |= QFileSystemMetaData::UserWritePermission;
         }
     }
 
@@ -1094,7 +1094,6 @@ QFileSystemEntry QFileSystemEngine::currentPath()
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
 #else
-    Q_UNUSED(fileName);
     //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
     if (qfsPrivateCurrentDir.isEmpty())
         qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();

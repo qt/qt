@@ -29,7 +29,7 @@
     \example xml/htmlinfo
     \title XML HTML Info Example
 
-    The XML HTML Info example provides a simple command line utility that
+    \brief The XML HTML Info example provides a simple command line utility that
     scans the current directory for HTML files and prints statistics about
     them to standard out.
     

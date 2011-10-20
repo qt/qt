@@ -29,8 +29,10 @@
     \example uitools/textfinder
     \title Text Finder Example
 
-    The Text Finder example demonstrates how to dynamically process forms
-    using the QtUiTools module. Dynamic form processing enables a form to
+    \brief The Text Finder example demonstrates how to dynamically process forms
+    using the QtUiTools module.
+    
+    Dynamic form processing enables a form to
     be processed at run-time only by changing the UI file for the project.
     The program allows the user to look up a particular word within the
     contents of a text file. This text file is included in the project's

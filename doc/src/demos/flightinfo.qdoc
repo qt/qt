@@ -29,5 +29,7 @@
     \example demos/embedded/flightinfo
     \title Flight Info Demonstration
 
+    \brief The Flight Info demo shows requesting data from an external server in a mbile device context.
+
     \image flightinfo-demo.png
 */

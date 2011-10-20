@@ -30,8 +30,10 @@
     \example demos/mobile/quickhit
     \title Quick Hit Demo
 
-    This demo shows how to use Mobility APIs to access device audio
-    capabilities. Uses the multimedia and systeminfo modules of
+    \brief The Quick Hit demo shows how to use Mobility APIs to access device audio
+    capabilities.
+    
+    The demo uses the multimedia and systeminfo modules of
     \l{external: Qt Mobility Manual}{Qt Mobility}.
 
     \note This demonstration requires QtMobility libraries.

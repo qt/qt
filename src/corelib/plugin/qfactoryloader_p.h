@@ -82,6 +82,7 @@ public:
 #endif
 
     void update();
+    void updateDir(const QString &pluginDir, QSettings& settings);
 
     static void refreshAll();
 };

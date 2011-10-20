@@ -29,7 +29,7 @@
   \example demos/macmainwindow
   \title Mac Main Window Demo
 
-  This demo shows how to create a main window that has the
+  \brief The Mac Main Window demo shows how to create a main window that has the
   same appearance as other Mac OS X applications such as Mail or iTunes.
   This includes customizing the item views and QSplitter and wrapping native
   widgets such as the search field.

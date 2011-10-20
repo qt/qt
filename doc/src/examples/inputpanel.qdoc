@@ -29,7 +29,7 @@
     \example tools/inputpanel
     \title Input Panel Example
 
-    The Input Panel example shows how to create an input panel that
+    \brief The Input Panel example shows how to create an input panel that
     can be used to input text into widgets using only the pointer and
     no keyboard.
 

@@ -29,6 +29,6 @@
     \example graphicsview/simpleanchorlayout
     \title Simple Anchor Layout Example
 
-    The Simple Anchor Layout example shows the basic use of the
+    \brief The Simple Anchor Layout example shows the basic use of the
     QGraphicsAnchorLayout class.
 */

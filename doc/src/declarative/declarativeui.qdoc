@@ -84,6 +84,7 @@ Qt applications.
 \list
 \o \l{QtWebKit QML Module}
 \o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
+\o \l {http://doc.qt.nokia.com/qt-components-symbian-1.1/index.html}{Qt Quick Components}
 \endlist
 
 \section1 Qt Quick Tools

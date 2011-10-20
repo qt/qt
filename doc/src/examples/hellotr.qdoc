@@ -29,8 +29,9 @@
     \example linguist/hellotr
     \title Hello tr() Example
 
-    This example is a small Hello World program with a Latin translation. The
-    screenshot below shows the English version.
+    \brief The Hello tr() example is a small Hello World program with a Latin translation.
+    
+    The screenshot below shows the English version.
 
     \image linguist-hellotr_en.png
 

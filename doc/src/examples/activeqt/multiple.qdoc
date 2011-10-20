@@ -36,9 +36,10 @@
     \example activeqt/multiple
     \title Multiple Example (ActiveQt)
 
-    The Multiple example demonstrates the implementation of a
+    \brief The Multiple example demonstrates the implementation of a
     QAxFactory to provide multiple ActiveX controls in a single in
     process ActiveX server using the \c QAXFACTORY_EXPORT() macro.
+    
     The ActiveX controls in this example are simple QWidget
     subclasses that reimplement QWidget::paintEvent().
 
