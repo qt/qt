@@ -505,63 +505,41 @@ void QWidgetPrivate::show_sys()
 #ifdef Q_WS_S60
         // Lazily initialize the S60 screen furniture when the first window is shown.
         if (q->isWindow() && !QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
-                && !S60->buttonGroupContainer() && !S60->statusPane()) {
+            && !q->testAttribute(Qt::WA_DontShowOnScreen) && !S60->screenFurnitureFullyCreated) {
+            // Create the status pane and CBA here if not yet done. These could be created earlier
+            // if application was launched in "App-Lite" version
+            if (!S60->buttonGroupContainer() && !S60->statusPane())
+                S60->createStatusPaneAndCBA();
 
-            if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
+            if (S60->buttonGroupContainer()) {
+                if (isFullscreen && !cbaRequested)
+                    S60->buttonGroupContainer()->MakeVisible(false);
+            }
 
-                // Create the status pane and CBA here
-                CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
-                MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
+            // If the creation of the first widget is delayed, for example by doing it
+            // inside the event loop, S60 somehow "forgets" to set the visibility of the
+            // toolbar (the three middle softkeys) when you flip the phone over, so we
+            // need to do it ourselves to avoid a "hole" in the application, even though
+            // Qt itself does not use the toolbar directly..
+            CAknAppUi *appui = dynamic_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+            if (appui) {
+                CAknToolbar *toolbar = appui->PopupToolbar();
+                if (toolbar && !toolbar->IsVisible())
+                    toolbar->SetToolbarVisibility(ETrue);
+            }
 
-                QT_TRAP_THROWING(
-                    factory->CreateResourceIndependentFurnitureL(ui);
-
-                    CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
-                        CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
-                    if (isFullscreen && !cbaRequested)
-                        cba->MakeVisible(false);
-
-                    CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
-                    Q_ASSERT(!oldCba);
-                    S60->setButtonGroupContainer(cba);
-
-                    // If the creation of the first widget is delayed, for example by doing it
-                    // inside the event loop, S60 somehow "forgets" to set the visibility of the
-                    // toolbar (the three middle softkeys) when you flip the phone over, so we
-                    // need to do it ourselves to avoid a "hole" in the application, even though
-                    // Qt itself does not use the toolbar directly..
-                    CAknAppUi *appui = dynamic_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
-                    if (appui) {
-                        CAknToolbar *toolbar = appui->PopupToolbar();
-                        if (toolbar && !toolbar->IsVisible())
-                            toolbar->SetToolbarVisibility(ETrue);
-                    }
-
-                    CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
-                    menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
-                    menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
-                    S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
-
-                    CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
-                    Q_ASSERT(!oldMenu);
-                )
-
-                if (S60->statusPane()) {
-                    // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
-                    // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
-                    QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
-                    S60->statusPane()->SetObserver(desktopControl);
-                    if (isFullscreen) {
-                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
-                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
-                        if (cbaVisible) {
-                            // Fix window dimensions as without screen furniture they will have
-                            // defaulted to full screen dimensions initially.
-                            id->handleClientAreaChange();
-                        }
+            if (S60->statusPane()) {
+               if (isFullscreen) {
+                    const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                    S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                    if (cbaVisible) {
+                        // Fix window dimensions as without screen furniture they will have
+                        // defaulted to full screen dimensions initially.
+                        id->handleClientAreaChange();
                     }
                 }
             }
+            S60->screenFurnitureFullyCreated = true;
         }
 #endif
 
