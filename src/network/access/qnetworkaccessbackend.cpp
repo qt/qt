@@ -72,10 +72,10 @@ public:
 
     QMutex mutex;
     //this is used to avoid (re)constructing factory data from destructors of other global classes
-    static QAtomicInt valid;
+    static QBasicAtomicInt valid;
 };
 Q_GLOBAL_STATIC(QNetworkAccessBackendFactoryData, factoryData)
-QAtomicInt QNetworkAccessBackendFactoryData::valid;
+QBasicAtomicInt QNetworkAccessBackendFactoryData::valid = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 {
