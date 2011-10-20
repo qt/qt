@@ -554,3 +554,8 @@
     \externalpage http://labs.qt.nokia.com/2011/05/03/qt-modules-maturity-level/
     \title Qt Modules' Maturity Level - Description
 */
+
+/*!
+    \externalpage http://doc.qt.nokia.com/qtquick-components-symbian-1.1/index.html
+    \title Qt Quick Components for Symbian 1.1
+*/

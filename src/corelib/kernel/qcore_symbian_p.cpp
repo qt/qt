@@ -45,6 +45,7 @@
 #include "qcore_symbian_p.h"
 #include <string>
 #include <in_sock.h>
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -115,6 +116,24 @@ public:
     QS60RFsSession() {
         qt_symbian_throwIfError(iFs.Connect());
         qt_symbian_throwIfError(iFs.ShareProtected());
+        //BC with 4.7: create private path on system drive
+        TInt sysdrive = iFs.GetSystemDrive();
+        TInt err = iFs.CreatePrivatePath(sysdrive);
+        if (err != KErrNone && err != KErrAlreadyExists)
+            qWarning("Failed to create private path on system drive.");
+        //BC with 4.7: set working directory to same drive as application
+        TFileName pfn = RProcess().FileName();
+        TInt drive;
+        if (pfn.Length() > 0 && iFs.CharToDrive(pfn[0], drive) == KErrNone) {
+            // for system drive or rom based apps, leave the path on system drive
+            if (drive != sysdrive && drive != EDriveZ) {
+                err = iFs.CreatePrivatePath(drive);
+                if (err == KErrNone || err == KErrAlreadyExists)
+                    iFs.SetSessionToPrivate(drive);
+                else
+                    qWarning("Failed to create private path on application drive.");
+            }
+        }
     }
 
     ~QS60RFsSession() {

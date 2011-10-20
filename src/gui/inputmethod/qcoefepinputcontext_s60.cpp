@@ -94,6 +94,11 @@
 #define QT_EPSUidAknFep 0x100056de
 #define QT_EAknFepTouchInputActive 0x00000004
 
+// For compatibility with older Symbian^3 environments, which do not have this define yet.
+#ifndef R_AVKON_DISCREET_POPUP_TEXT_COPIED
+#define R_AVKON_DISCREET_POPUP_TEXT_COPIED 0x8cc0227
+#endif
+
 _LIT(KAvkonResourceFile, "z:\\resource\\avkon.rsc" );
 
 QT_BEGIN_NAMESPACE
@@ -377,6 +382,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_hasTempPreeditString(false),
       m_splitViewResizeBy(0),
       m_splitViewPreviousWindowStates(Qt::WindowNoState),
+      m_splitViewPreviousFocusItem(0),
       m_ccpu(0)
 {
     m_fepState->SetObjectProvider(this);
@@ -446,6 +452,11 @@ void QCoeFepInputContext::reset()
     if (m_cachedPreeditString.isEmpty() && !(currentHints & Qt::ImhNoPredictiveText))
         m_cachedPreeditString = m_preeditString;
     commitCurrentString(true);
+
+    // QGraphicsScene calls reset() when changing focus item. Unfortunately, the new focus item is
+    // set right after resetting the input context. Therefore, asynchronously call ensureWidgetVisibility().
+    if (S60->splitViewLastWidget)
+        QMetaObject::invokeMethod(this,"ensureWidgetVisibility", Qt::QueuedConnection);
 }
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
@@ -788,9 +799,8 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
 {
     QGraphicsView *gv = qobject_cast<QGraphicsView*>(S60->splitViewLastWidget);
 
-    if (!gv) {
+    if (!gv)
         return;
-    }
 
     QSymbianControl *symControl = static_cast<QSymbianControl*>(gv->effectiveWinId());
     symControl->CancelLongTapTimer();
@@ -805,11 +815,13 @@ void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
     if (!alwaysResize) {
         if (gv->scene() && S60->partial_keyboardAutoTranslation) {
             if (gv->scene()->focusItem()) {
+                QGraphicsItem *focusItem =
+                    m_splitViewPreviousFocusItem ? m_splitViewPreviousFocusItem : gv->scene()->focusItem();
                 // Check if the widget contains cursorPositionChanged signal and disconnect from it.
                 QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-                int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+                int index = focusItem->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
                 if (index != -1)
-                    disconnect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+                    disconnect(focusItem->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
             }
 
             QGraphicsItem *rootItem = 0;
@@ -877,10 +889,18 @@ bool QCoeFepInputContext::isPartialKeyboardSupported()
     return (S60->partial_keyboard || !QApplication::testAttribute(Qt::AA_S60DisablePartialScreenInputMode));
 }
 
+void QCoeFepInputContext::ensureWidgetVisibility()
+{
+    ensureFocusWidgetVisible(S60->splitViewLastWidget);
+}
+
 // Ensure that the input widget is visible in the splitview rect.
 
 void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
 {
+    if (!widget)
+        return;
+
     // Native side opening and closing its virtual keyboard when it changes the keyboard layout,
     // has an adverse impact on long tap timer. Cancel the timer when splitview opens to avoid this.
     QSymbianControl *symControl = static_cast<QSymbianControl*>(widget->effectiveWinId());
@@ -908,15 +928,20 @@ void QCoeFepInputContext::ensureFocusWidgetVisible(QWidget *widget)
     // states getting changed.
 
     if (!moveWithinVisibleArea) {
-        // Check if the widget contains cursorPositionChanged signal and connect to it.
-        QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
-        if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
-            int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
-            if (index != -1)
-                connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
-        }
         S60->splitViewLastWidget = widget;
         m_splitViewPreviousWindowStates = windowToMove->windowState();
+    }
+
+    // Check if the widget contains cursorPositionChanged signal and connect to it.
+    if (gv->scene() && gv->scene()->focusItem() && S60->partial_keyboardAutoTranslation) {
+        QByteArray signal = QMetaObject::normalizedSignature(SIGNAL(cursorPositionChanged()));
+        if (m_splitViewPreviousFocusItem && m_splitViewPreviousFocusItem != gv->scene()->focusItem())
+            disconnect(m_splitViewPreviousFocusItem->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+        int index = gv->scene()->focusItem()->toGraphicsObject()->metaObject()->indexOfSignal(signal.right(signal.length() - 1));
+        if (index != -1) {
+            connect(gv->scene()->focusItem()->toGraphicsObject(), SIGNAL(cursorPositionChanged()), this, SLOT(translateInputWidget()));
+            m_splitViewPreviousFocusItem = gv->scene()->focusItem();
+        }
     }
 
     int windowTop = widget->window()->pos().y();
@@ -1083,6 +1108,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     } else if (hints & ImhNoAutoUppercase) {
         m_fepState->SetDefaultCase(EAknEditorLowerCase);
         m_fepState->SetCurrentCase(EAknEditorLowerCase);
+    } else if (hints & ImhHiddenText) {
+        m_fepState->SetDefaultCase(EAknEditorLowerCase);
+        m_fepState->SetCurrentCase(EAknEditorLowerCase);
     } else {
         m_fepState->SetDefaultCase(EAknEditorTextCase);
         m_fepState->SetCurrentCase(EAknEditorTextCase);
@@ -1093,6 +1121,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     if (hints & ImhLowercaseOnly) {
         flags |= EAknEditorLowerCase;
+    }
+    if (hints & ImhHiddenText) {
+        flags = EAknEditorAllCaseModes;
+        flags &= ~EAknEditorTextCase;
     }
     if (flags == 0) {
         flags = EAknEditorAllCaseModes;
@@ -1254,10 +1286,15 @@ void QCoeFepInputContext::translateInputWidget()
 
     m_transformation = (rootItem->transform().isTranslating()) ? QRectF(0,0, gv->width(), rootItem->transform().dy()) : QRectF();
 
-    // Adjust cursor bounding rect to be lower, so that view translates if the cursor gets near
-    // the splitview border.
-    QRect cursorRect = cursorP.boundingRect().adjusted(0, cursor.height(), 0, cursor.height());
-    if (splitViewRect.contains(cursorRect))
+    // Adjust cursor bounding rect towards navigation direction,
+    // so that view translates if the cursor gets near the splitview border.
+    QRect cursorRect = (cursorP.boundingRect().top() < 0) ?
+        cursorP.boundingRect().adjusted(0, -cursor.height(), 0, -cursor.height()) :
+        cursorP.boundingRect().adjusted(0, cursor.height(), 0, cursor.height());
+
+    // If the current cursor position and upcoming cursor positions are visible in the splitview
+    // area, do not move the view.
+    if (splitViewRect.contains(cursorRect) && splitViewRect.contains(cursorP.boundingRect()))
         return;
 
     // New Y position should be ideally just above the keyboard.
@@ -1269,18 +1306,29 @@ void QCoeFepInputContext::translateInputWidget()
     const qreal itemHeight = path.boundingRect().height();
 
     // Limit the maximum translation so that underlaying window content is not exposed.
-    qreal maxY = gv->sceneRect().bottom() - splitViewRect.bottom();
-    maxY = m_transformation.height() ? (qMin(itemHeight, maxY) + m_transformation.height()) : maxY;
-    if (maxY < 0)
-        maxY = 0;
+    qreal availableSpace = gv->sceneRect().bottom() - splitViewRect.bottom();
+    availableSpace = m_transformation.height() ?
+        (qMin(itemHeight, availableSpace) + m_transformation.height()) :
+        availableSpace;
 
     // Translation should happen row-by-row, but initially it needs to ensure that cursor is visible.
     const qreal translation = m_transformation.height() ?
         cursor.height() : (cursorRect.bottom() - vkbRect.top());
-    const qreal dy = -(qMin(maxY, translation));
+    qreal dy = 0.0;
+    if (availableSpace > 0)
+        dy = -(qMin(availableSpace, translation));
+    else
+        dy = -(translation);
 
-    // Do not allow transform above screen top, nor beyond scenerect
-    if (m_transformation.height() + dy > 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
+    // Correct the translation direction, if the cursor rect would be moved above application area.
+    if ((cursorP.boundingRect().bottom() + dy) < 0)
+        dy *= -1;
+
+    // Do not allow transform above screen top, nor beyond scenerect. Also, if there is no available
+    // space anymore, skip translation.
+    if ((m_transformation.height() + dy) > 0
+        || (gv->sceneRect().bottom() + m_transformation.height()) < 0
+        || !availableSpace) {
         // If we already have some transformation, remove it.
         if (m_transformation.height() < 0 || gv->sceneRect().bottom() + m_transformation.height() < 0) {
             rootItem->resetTransform();
@@ -1596,8 +1644,6 @@ void QCoeFepInputContext::changeCBA(bool showCopyAndOrPaste)
 
 void QCoeFepInputContext::copyOrCutTextToClipboard(const char *operation)
 {
-    bool hasText = false;
-
     QWidget *w = focusWidget();
     QObject *focusObject = 0;
     if (!w) {
@@ -1613,11 +1659,13 @@ void QCoeFepInputContext::copyOrCutTextToClipboard(const char *operation)
 
         if (cursor != anchor) {
             if (ccpuInvokeSlot(w, focusObject, operation)) {
-                TRAP_IGNORE(
-                    CAknDiscreetPopup::ShowGlobalPopupL(
-                        R_AVKON_DISCREET_POPUP_TEXT_COPIED,
-                        KAvkonResourceFile);
-                )
+                if (QSysInfo::symbianVersion() > QSysInfo::SV_SF_3) {
+                    TRAP_IGNORE(
+                        CAknDiscreetPopup::ShowGlobalPopupL(
+                            R_AVKON_DISCREET_POPUP_TEXT_COPIED,
+                            KAvkonResourceFile);
+                    )
+                }
             }
         }
     }
@@ -1696,15 +1744,33 @@ TBool QCoeFepInputContext::CcpuIsFocused() const
 TBool QCoeFepInputContext::CcpuCanCut() const
 {
     bool retval = false;
+    if (m_inDestruction)
+        return retval;
     QWidget *w = focusWidget();
-    if (!w)
+    QObject *focusObject = 0;
+    if (!w) {
         w = m_lastFocusedEditor;
-    else
-        w = getQWidgetFromQGraphicsView(w);
+        focusObject = m_lastFocusedObject;
+    } else {
+        w = getQWidgetFromQGraphicsView(w, &focusObject);
+    }
     if (w) {
-        int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-        retval = cursor != anchor;
+        QRect microFocus = w->inputMethodQuery(Qt::ImMicroFocus).toRect();
+        if (microFocus.isNull()) {
+            // For some reason, the editor does not have microfocus. Most probably,
+            // it is due to using native fullscreen editing mode with QML apps.
+            // Try accessing "selectedText" directly.
+            QObject *invokeTarget = w;
+            if (focusObject)
+                invokeTarget = focusObject;
+
+            QString selectedText = invokeTarget->property("selectedText").toString();
+            retval = !selectedText.isNull();
+        } else {
+            int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+            int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+            retval = cursor != anchor;
+        }
     }
     return retval;
 }
@@ -1727,6 +1793,9 @@ void QCoeFepInputContext::CcpuCopyL()
 TBool QCoeFepInputContext::CcpuCanPaste() const
 {
     bool canPaste = false;
+    if (m_inDestruction)
+        return canPaste;
+
     QString textToPaste = QApplication::clipboard()->text();
     if (!textToPaste.isEmpty()) {
         QWidget *w = focusWidget();

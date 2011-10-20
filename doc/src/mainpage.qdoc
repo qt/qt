@@ -110,6 +110,7 @@ applications using layouts and Qt Quick interfaces with QML.
 \o \l{Qt Quick} - create UIs using QML
     \list
     \o \l{external: Developing Qt Quick Applications}{Creator's QML Design Mode} - design Qt Quick interfaces using Creator's design mode
+    \o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian} - a native QML component set for the Symbian^3 platform
     \endlist
 \o \l{Widgets and Layouts} - primary elements for C++ based interfaces
     \list

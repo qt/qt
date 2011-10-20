@@ -2260,10 +2260,16 @@ void QWidgetPrivate::updateIsOpaque()
 #endif
 
 #ifdef Q_WS_S60
-    if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
-                && S60->avkonComponentsSupportTransparency) {
-        setOpaque(false);
-        return;
+    if (q->testAttribute(Qt::WA_TranslucentBackground)) {
+        if (q->windowType() & Qt::Dialog || q->windowType() & Qt::Popup) {
+            if (S60->avkonComponentsSupportTransparency) {
+                setOpaque(false);
+                return;
+            }
+        } else {
+            setOpaque(false);
+            return;
+        }
     }
 #endif
 
@@ -2283,11 +2289,16 @@ void QWidgetPrivate::updateIsOpaque()
     }
 
     if (q->isWindow() && !q->testAttribute(Qt::WA_NoSystemBackground)) {
+#ifdef Q_WS_S60
+        setOpaque(true);
+        return;
+#else
         const QBrush &windowBrush = q->palette().brush(QPalette::Window);
         if (windowBrush.style() != Qt::NoBrush && windowBrush.isOpaque()) {
             setOpaque(true);
             return;
         }
+#endif
     }
     setOpaque(false);
 }
@@ -10948,11 +10959,14 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
     case Qt::WA_TranslucentBackground:
+#if defined(Q_OS_SYMBIAN)
+        setAttribute(Qt::WA_NoSystemBackground, on);
+#else
         if (on) {
             setAttribute(Qt::WA_NoSystemBackground);
             d->updateIsTranslucent();
         }
-
+#endif
         break;
     case Qt::WA_AcceptTouchEvents:
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
@@ -11049,7 +11063,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 qreal QWidget::windowOpacity() const
 {
     Q_D(const QWidget);
-    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / 255. : 1.0;
+    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / qreal(255.) : qreal(1.0);
 }
 
 void QWidget::setWindowOpacity(qreal opacity)

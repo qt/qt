@@ -405,17 +405,6 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
     return qmlAttachedPropertiesObject(&idx, obj, &T::staticMetaObject, create);
 }
 
-// Enable debugging before any QDeclarativeEngine is created
-struct Q_DECLARATIVE_EXPORT QDeclarativeDebuggingEnabler
-{
-    QDeclarativeDebuggingEnabler();
-};
-
-// Execute code in constructor before first QDeclarativeEngine is instantiated
-#if defined(QT_DECLARATIVE_DEBUG)
-static QDeclarativeDebuggingEnabler qmlEnableDebuggingHelper;
-#endif
-
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QObject)

@@ -27,7 +27,6 @@ SOURCES += \
     $$PWD/qdeclarativeinfo.cpp \
     $$PWD/qdeclarativeerror.cpp \
     $$PWD/qdeclarativescriptparser.cpp \
-    $$PWD/qdeclarativeenginedebug.cpp \
     $$PWD/qdeclarativerewrite.cpp \
     $$PWD/qdeclarativevaluetype.cpp \
     $$PWD/qdeclarativecompiledbindings.cpp \
@@ -99,7 +98,6 @@ HEADERS += \
     $$PWD/qdeclarativedata_p.h \
     $$PWD/qdeclarativeerror.h \
     $$PWD/qdeclarativescriptparser_p.h \
-    $$PWD/qdeclarativeenginedebug_p.h \
     $$PWD/qdeclarativerewrite_p.h \
     $$PWD/qpodvector_p.h \
     $$PWD/qbitfield_p.h \

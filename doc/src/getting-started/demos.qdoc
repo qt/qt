@@ -149,13 +149,6 @@
        implement a small Web browser.
     \endlist
 
-    \section1 Multimedia
-
-    \list
-    \o \l{demos/spectrum}{Spectrum Analyser} shows how the \l{QtMultimedia}
-       module can be used to manipulate audio as it is played.
-    \endlist
-
     \section1 Phonon
 
     \list

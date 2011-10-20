@@ -682,7 +682,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QColor menuText(qt_colorref2qrgb(GetSysColor(COLOR_MENUTEXT)));
     BOOL isFlat = false;
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         SystemParametersInfo(SPI_GETFLATMENU, 0, &isFlat, 0);
     QPalette menu(pal);
     // we might need a special color group for the menu.
@@ -697,7 +697,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     menu.setColor(QPalette::Disabled, QPalette::Highlight,
                     QColor(qt_colorref2qrgb(GetSysColor(
                                             (QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                                            && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+                                            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
                                             && isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT))));
     menu.setColor(QPalette::Disabled, QPalette::HighlightedText, disabled);
     menu.setColor(QPalette::Disabled, QPalette::Button,
@@ -719,7 +719,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QApplication::setPalette(menu, "QMenu");
 
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based) && isFlat) {
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) && isFlat) {
         QColor menubar(qt_colorref2qrgb(GetSysColor(COLOR_MENUBAR)));
         menu.setColor(QPalette::Active, QPalette::Button, menubar);
         menu.setColor(QPalette::Disabled, QPalette::Button, menubar);
@@ -999,7 +999,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
         style = CS_DBLCLKS;
         if (w->inherits("QTipLabel") || w->inherits("QAlphaWidget")) {
             if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
+                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
                 style |= CS_DROPSHADOW;
             }
             cname = QLatin1String("QToolTip");
@@ -1017,7 +1017,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
         style |= CS_SAVEBITS;
 #endif
         if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-            && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
             style |= CS_DROPSHADOW;
         icon = false;
     } else {
@@ -4161,7 +4161,8 @@ PtrCloseTouchInputHandle QApplicationPrivate::CloseTouchInputHandle = 0;
 
 void QApplicationPrivate::initializeMultitouch_sys()
 {
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         static const int QT_SM_DIGITIZER = 94;
         int value = GetSystemMetrics(QT_SM_DIGITIZER);
         static const int QT_NID_INTEGRATED_TOUCH = 0x01;

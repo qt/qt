@@ -482,8 +482,8 @@ static QSizeF closestAcceptableSize(const QSizeF &proposed,
             minw = maxw;
             minh = maxh;
         }
-        middlew = minw + (maxw - minw)/2.0;
-        middleh = minh + (maxh - minh)/2.0;
+        middlew = minw + (maxw - minw)/qreal(2.0);
+        middleh = minh + (maxh - minh)/qreal(2.0);
 
         min_hfw = minimumHeightForWidth(middlew, minh, maxh, widget);
 

@@ -4879,4 +4879,9 @@ EXPORTS
 	?languageId@QLocalePrivate@@QBEGXZ @ 4878 NONAME ; unsigned short QLocalePrivate::languageId(void) const
 	?started@QFutureWatcherBase@@IAEXXZ @ 4879 NONAME ; void QFutureWatcherBase::started(void)
 	?staticMetaObjectExtraData@QAbstractState@@0UQMetaObjectExtraData@@B @ 4880 NONAME ; struct QMetaObjectExtraData const QAbstractState::staticMetaObjectExtraData
+	?rebuildInstallLibraryPaths@QCoreApplicationPrivate@@SAXXZ @ 4881 NONAME ; void QCoreApplicationPrivate::rebuildInstallLibraryPaths(void)
+	?connectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 4882 NONAME ; void QFutureWatcherBase::connectNotify(char const *)
+	?event@QFutureWatcherBase@@UAE_NPAVQEvent@@@Z @ 4883 NONAME ; bool QFutureWatcherBase::event(class QEvent *)
+	?updateDir@QFactoryLoader@@QAEXABVQString@@AAVQSettings@@@Z @ 4884 NONAME ; void QFactoryLoader::updateDir(class QString const &, class QSettings &)
+	?disconnectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 4885 NONAME ; void QFutureWatcherBase::disconnectNotify(char const *)
 
