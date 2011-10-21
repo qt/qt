@@ -128,7 +128,9 @@ private slots:
     void noThread_data();
     void noThread();
 
+    void constructionNative();
     void uncontendedNative();
+    void constructionQMutex();
     void uncontendedQMutex();
     void uncontendedQMutexLocker();
 
@@ -205,6 +207,15 @@ void tst_QMutex::noThread()
     QCOMPARE(int(count), N);
 }
 
+void tst_QMutex::constructionNative()
+{
+    QBENCHMARK {
+        NativeMutexType mutex;
+        NativeMutexInitialize(&mutex);
+        NativeMutexDestroy(&mutex);
+    }
+}
+
 void tst_QMutex::uncontendedNative()
 {
     NativeMutexType mutex;
@@ -214,6 +225,14 @@ void tst_QMutex::uncontendedNative()
         NativeMutexUnlock(&mutex);
     }
     NativeMutexDestroy(&mutex);
+}
+
+void tst_QMutex::constructionQMutex()
+{
+    QBENCHMARK {
+        QMutex mutex;
+        Q_UNUSED(mutex);
+    }
 }
 
 void tst_QMutex::uncontendedQMutex()
