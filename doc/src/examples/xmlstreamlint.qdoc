@@ -29,7 +29,7 @@
     \example xml/xmlstreamlint
     \title XML Stream Lint Example
 
-    The XML Stream Lint example provides a simple command line utility that
+    \brief The XML Stream Lint example provides a simple command line utility that
     accepts a file name as its single argument and writes it to the standard
     output file.
 

@@ -29,7 +29,7 @@
     \page demos-browser.html
     \title Web Browser
 
-    The Web Browser demonstration shows Qt's WebKit module in action,
+    \brief The Web Browser demonstration shows Qt's WebKit module in action,
     providing a little Web browser application.
 
     \image browser-demo.png

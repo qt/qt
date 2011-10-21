@@ -29,7 +29,7 @@
     \example tools/customtypesending
     \title Custom Type Sending Example
 
-    The Custom Type Sending example shows how to use a custom type with signals
+    \brief The Custom Type Sending example shows how to use a custom type with signals
     and slots.
 
     \image customtypesending-example.png

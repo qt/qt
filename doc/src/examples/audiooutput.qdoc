@@ -29,7 +29,7 @@
     \example multimedia/audiooutput
     \title Audio Output Example
 
-    The Audio Output example demonstrates the basic use of the QAudioOutput class
+    \brief The Audio Output example demonstrates the basic use of the QAudioOutput class
     provided with Qt.
 
     \image audiooutput-example.png

@@ -29,7 +29,7 @@
     \title RSS News
     \example demos/declarative/rssnews
 
-    This demo shows how to write a RSS news reader in QML.
+    \brief The Qt Quick RSS News demo shows how to write a RSS news reader in QML.
 
     \image qml-rssnews-demo.png
 */

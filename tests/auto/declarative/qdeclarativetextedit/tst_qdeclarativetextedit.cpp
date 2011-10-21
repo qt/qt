@@ -156,6 +156,7 @@ private slots:
     void inputContextMouseHandler();
     void inputMethodComposing();
     void cursorRectangleSize();
+    void deselect();
 
 private:
     void simulateKey(QDeclarativeView *, int key, Qt::KeyboardModifiers modifiers = 0);
@@ -2698,6 +2699,120 @@ void tst_qdeclarativetextedit::cursorRectangleSize()
 
     QCOMPARE(microFocusFromScene.size(), cursorRect.size());
     QCOMPARE(microFocusFromApp.size(), cursorRect.size());
+}
+
+void tst_qdeclarativetextedit::deselect()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/CursorRect.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEdit != 0);
+
+    textEdit->setText("Select");
+
+    QSignalSpy selectionStartSpy(textEdit, SIGNAL(selectionStartChanged()));
+    QSignalSpy selectionEndSpy(textEdit, SIGNAL(selectionEndChanged()));
+    QSignalSpy selectionSpy(textEdit, SIGNAL(selectionChanged()));
+
+    textEdit->select(5, 6);
+
+    QCOMPARE(selectionStartSpy.count(), 1);
+    QCOMPARE(selectionEndSpy.count(), 1);
+    QCOMPARE(selectionSpy.count(), 1);
+    QCOMPARE(textEdit->selectionStart(), 5);
+    QCOMPARE(textEdit->selectionEnd(), 6);
+    QCOMPARE(textEdit->selectedText(), QLatin1String("t"));
+    QCOMPARE(textEdit->cursorPosition(), 6);
+
+    textEdit->deselect();
+
+    QCOMPARE(selectionStartSpy.count(), 2);
+    QCOMPARE(selectionEndSpy.count(), 1);
+    QCOMPARE(selectionSpy.count(), 2);
+    QCOMPARE(textEdit->selectionStart(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectionEnd(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectedText(), QLatin1String(""));
+    QCOMPARE(textEdit->cursorPosition(), 6);
+
+    textEdit->select(5, 6);
+
+    QCOMPARE(selectionStartSpy.count(), 3);
+    QCOMPARE(selectionEndSpy.count(), 1);
+    QCOMPARE(selectionSpy.count(), 3);
+    QCOMPARE(textEdit->selectionStart(), 5);
+    QCOMPARE(textEdit->selectionEnd(), 6);
+    QCOMPARE(textEdit->selectedText(), QLatin1String("t"));
+    QCOMPARE(textEdit->cursorPosition(), 6);
+
+    QKeyEvent leftArrowPress(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+    QKeyEvent leftArrowRelese(QEvent::KeyRelease, Qt::Key_Left, Qt::NoModifier);
+    QApplication::sendEvent(canvas, &leftArrowPress);
+    QApplication::sendEvent(canvas, &leftArrowRelese);
+
+    QCOMPARE(selectionStartSpy.count(), 3);
+    QCOMPARE(selectionEndSpy.count(), 2);
+    QCOMPARE(selectionSpy.count(), 4);
+    QCOMPARE(textEdit->selectionStart(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectionEnd(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectedText(), QLatin1String(""));
+    QCOMPARE(textEdit->cursorPosition(), 5);
+
+    textEdit->select(5, 6);
+
+    QCOMPARE(selectionStartSpy.count(), 3);
+    QCOMPARE(selectionEndSpy.count(), 3);
+    QCOMPARE(selectionSpy.count(), 5);
+    QCOMPARE(textEdit->selectionStart(), 5);
+    QCOMPARE(textEdit->selectionEnd(), 6);
+    QCOMPARE(textEdit->selectedText(), QLatin1String("t"));
+    QCOMPARE(textEdit->cursorPosition(), 6);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 0, 0, QVariant());
+    QInputMethodEvent event(QLatin1String(""), attributes);
+    QApplication::sendEvent(canvas, &event);
+
+    QCOMPARE(selectionStartSpy.count(), 4);
+    QCOMPARE(selectionEndSpy.count(), 4);
+    QCOMPARE(selectionSpy.count(), 6);
+    QCOMPARE(textEdit->selectionStart(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectionEnd(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectedText(), QLatin1String(""));
+    QCOMPARE(textEdit->cursorPosition(), 0);
+
+    textEdit->setCursorPosition(1);
+
+    QCOMPARE(selectionStartSpy.count(), 5);
+    QCOMPARE(selectionEndSpy.count(), 5);
+    QCOMPARE(selectionSpy.count(), 6);
+
+    QKeyEvent leftArrowShiftPress(QEvent::KeyPress, Qt::Key_Left, Qt::ShiftModifier);
+    QKeyEvent leftArrowShiftRelese(QEvent::KeyRelease, Qt::Key_Left, Qt::ShiftModifier);
+    QApplication::sendEvent(canvas, &leftArrowShiftPress);
+    QApplication::sendEvent(canvas, &leftArrowShiftRelese);
+
+    QCOMPARE(selectionStartSpy.count(), 6);
+    QCOMPARE(selectionEndSpy.count(), 5);
+    QCOMPARE(selectionSpy.count(), 7);
+    QCOMPARE(textEdit->selectionStart(), 0);
+    QCOMPARE(textEdit->selectionEnd(), 1);
+    QCOMPARE(textEdit->selectedText(), QLatin1String("S"));
+    QCOMPARE(textEdit->cursorPosition(), 0);
+
+    QApplication::sendEvent(canvas, &event);
+
+    QCOMPARE(selectionStartSpy.count(), 6);
+    QCOMPARE(selectionEndSpy.count(), 6);
+    QCOMPARE(selectionSpy.count(), 8);
+    QCOMPARE(textEdit->selectionStart(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectionEnd(), textEdit->cursorPosition());
+    QCOMPARE(textEdit->selectedText(), QLatin1String(""));
+    QCOMPARE(textEdit->cursorPosition(), 0);
 }
 QTEST_MAIN(tst_qdeclarativetextedit)
 

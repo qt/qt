@@ -407,7 +407,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>反射遅延 (ms)</translation>
     </message>
     <message>
@@ -422,7 +422,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>リバーブ レベル (mB)</translation>
     </message>
     <message>
@@ -480,8 +480,12 @@ libgstreamer-plugins-base はインストールされていますか。</transla
         <translation>音量: %1%</translation>
     </message>
     <message>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
+        <translation>スライダを用いて音量を調整してください。左端が0%です。右端が%1%になります</translation>
+    </message>
+    <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation>スライダを用いて音量を指定してください。左端が0%、右端が%1%になります</translation>
+        <translation type="obsolete">スライダを用いて音量を指定してください。左端が0%、右端が%1%になります</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -3724,6 +3728,10 @@ Do you want to delete it anyway?</source>
         <source>Actions</source>
         <translation>アクション</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>コーナーツールバー</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -6481,6 +6489,10 @@ Please choose a different file name.</source>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
+        <translation type="obsolete">OK</translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
@@ -6722,6 +6734,72 @@ Please choose a different file name.</source>
     <message>
         <source>Unknown error</source>
         <translation>未知のエラー</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>無効なオプション: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>データベースのオープン時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>POLICY_DB_DEFAULT は他の POLICY 定義の利用前に定義されなければなりません</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>トランザクションを開始できません</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>トランザクションをコミットできません</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>トランザクションをロールバックできません</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>カラム数の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>カラム名の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>カラムの型の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>レコードをフェッチできません</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>ステートメントを実行できません</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>ステートメントがプリペアではありません</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>ステートメントをリセットできません</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>パラメータをバインドできません</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>パラメータの数が合っていません</translation>
     </message>
 </context>
 <context>
@@ -7048,6 +7126,10 @@ Please choose a different file name.</source>
     <name>QWebFrame</name>
     <message>
         <source>Request cancelled</source>
+        <translation>リクエストはキャンセルされました</translation>
+    </message>
+    <message>
+        <source>Request canceled</source>
         <translation>リクエストはキャンセルされました</translation>
     </message>
     <message>
@@ -8298,7 +8380,7 @@ Please choose a different file name.</source>
     <name>QmlJSDebugger::ToolBox</name>
     <message>
         <source>Qt Quick Toolbox</source>
-        <translation>Qt Quick ツールボックス</translation>
+        <translation type="obsolete">Qt Quick ツールボックス</translation>
     </message>
 </context>
 <context>
@@ -8776,7 +8858,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>ユーザ定義の関数の名前空間は、空であってはなりません。(すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
+        <translation type="obsolete">ユーザ定義の関数の名前空間は、空であってはなりません。(すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>ユーザ定義の関数の名前空間は、空であってはなりません。(今回の場合、すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
     </message>
     <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
@@ -9620,6 +9706,10 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <translation type="obsolete">複合型 %1 のコンテンツモデルは %2 要素を含んでいますが非 empty 型を派生した拡張にする事はできません。</translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation>複合型 %1 のコンテンツモデルは %2 要素を含んでいますが非 empty 型を派生した拡張にする事はできません。</translation>
     </message>
     <message>
@@ -10027,8 +10117,12 @@ Please choose a different file name.</source>
         <translation>要素 %1 はテキストを含む事を許可されていません。</translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
         <translation>要素 %1 は固定値を持った他の要素を含む事はできません。</translation>
+    </message>
+    <message>
+        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <translation type="obsolete">要素 %1 は固定値を持った他の要素を含む事はできません。</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>

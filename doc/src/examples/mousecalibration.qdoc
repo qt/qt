@@ -29,7 +29,7 @@
     \example qws/mousecalibration
     \title Mouse Calibration Example
 
-    The Mouse Calibration example demonstrates how to write a simple
+    \brief The Mouse Calibration example demonstrates how to write a simple
     program using the mechanisms provided by the QWSMouseHandler class
     to calibrate the mouse handler in \l{Qt for Embedded Linux}. 
 

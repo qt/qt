@@ -29,7 +29,7 @@
     \example draganddrop/delayedencoding
     \title Delayed Encoding Example
 
-    The Delayed Encoding example shows how to delay preparing of data
+    \brief The Delayed Encoding example shows how to delay preparing of data
     for drag and drop operations until a drop target is found.
 
     \image delayedecoding-example.png

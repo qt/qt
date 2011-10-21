@@ -222,6 +222,11 @@ void tst_XmlPatternsValidator::xsdSupport_data() const
         << (QStringList() << QLatin1String("files/dateTime-with-microseconds.xml")
                           << QLatin1String("files/dateTime-with-microseconds.xsd"))
         << QString();
+
+    QTest::newRow("QTBUG-21375 A schema with a xs:double based simple type with non-numeric restrictions")
+        << 0
+        << (QStringList() << QLatin1String("files/schema-with-restrictions.xsd"))
+        << QString();
 }
 
 QTEST_MAIN(tst_XmlPatternsValidator)

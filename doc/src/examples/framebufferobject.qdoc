@@ -29,7 +29,7 @@
     \example opengl/framebufferobject
     \title Framebuffer Object Example
 
-    The Framebuffer Object example demonstrates how to use the
+    \brief The Framebuffer Object example demonstrates how to use the
     QGLFramebufferObject class to render into an off-screen buffer and
     use the contents as a texture in a QGLWidget.
 

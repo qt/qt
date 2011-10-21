@@ -8868,7 +8868,7 @@ QPainterPath QGraphicsEllipseItem::shape() const
         return path;
     if (d->spanAngle != 360 * 16) {
         path.moveTo(d->rect.center());
-        path.arcTo(d->rect, d->startAngle / 16.0, d->spanAngle / 16.0);
+        path.arcTo(d->rect, d->startAngle / qreal(16.0), d->spanAngle / qreal(16.0));
     } else {
         path.addEllipse(d->rect);
     }

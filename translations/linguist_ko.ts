@@ -84,6 +84,10 @@
 <context>
     <name>DataModel</name>
     <message>
+        <source>The translation file &apos;%1&apos; will not be loaded because it is empty.</source>
+        <translation>번역 파일 &apos;%1&apos;이(가) 비어 있으므로 불러올 수 없습니다.</translation>
+    </message>
+    <message>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
         <translation>&lt;qt&gt;&apos;%1&apos;에 중복된 메시지가 있음:</translation>
     </message>
@@ -1109,7 +1113,11 @@ Java, JavaScript/QtScript 원본 코드에서 번역 가능한 문자열을 추�
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation>잘못된 탈출 문자</translation>
+        <translation type="obsolete">잘못된 탈출 문자</translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
+        <translation>잘못된 탈출 시퀀스</translation>
     </message>
     <message>
         <source>Illegal unicode escape sequence</source>
@@ -1942,8 +1950,12 @@ All files (*)</source>
         <translation>버전 %1</translation>
     </message>
     <message>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist는 Qt 프로그램을 번역하는 도구입니다.&lt;/p&gt;&lt;p&gt;저작권자 (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</translation>
+    </message>
+    <message>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist는 Qt 프로그램을 번역하는 도구입니다.&lt;/p&gt;&lt;p&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
+        <translation type="obsolete">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist는 Qt 프로그램을 번역하는 도구입니다.&lt;/p&gt;&lt;p&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>

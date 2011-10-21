@@ -29,5 +29,7 @@
     \example demos/embedded/embeddedsvgviewer
     \title Embedded SVG Viewer Demonstration
 
+    \brief The Embedded SVG Viewer demo shows Graphics View SVG rendering in an embedded context.
+
     \image embeddedsvgviewer-demo.png
 */

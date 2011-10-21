@@ -30,7 +30,9 @@
 \title FolderListModel - a C++ model plugin
 \example src/imports/folderlistmodel
 
-This plugin shows how to make a C++ model available to QML. It presents
+\brief The FolderListModel plugin example shows how to make a C++ model available to QML.
+
+It presents
 a simple file list for a single folder (directory) and allows the presented
 folder to be changed.
 

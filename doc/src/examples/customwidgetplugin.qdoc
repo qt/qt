@@ -29,7 +29,7 @@
     \example designer/customwidgetplugin
     \title Custom Widget Plugin Example
 
-    The Custom Widget example shows how to create a custom widget plugin for \QD.
+    \brief The Custom Widget example shows how to create a custom widget plugin for \QD.
 
     \image customwidgetplugin-example.png
 

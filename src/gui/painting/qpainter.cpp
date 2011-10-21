@@ -403,8 +403,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
                 QPainterPath stroke = stroker.createStroke(originalPath);
                 strokeBounds = (stroke * state->matrix).boundingRect();
             } else {
-                strokeOffsetX = qAbs(penWidth * state->matrix.m11() / 2.0);
-                strokeOffsetY = qAbs(penWidth * state->matrix.m22() / 2.0);
+                strokeOffsetX = qAbs(penWidth * state->matrix.m11() / qreal(2.0));
+                strokeOffsetY = qAbs(penWidth * state->matrix.m22() / qreal(2.0));
             }
         }
     }
@@ -4460,8 +4460,8 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    path.arcMoveTo(rect, a/qreal(16.0));
+    path.arcTo(rect, a/qreal(16.0), alen/qreal(16.0));
     strokePath(path, d->state->pen);
 }
 
@@ -4531,7 +4531,7 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
 
     QPainterPath path;
     path.moveTo(rect.center());
-    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a/16.0, alen/16.0);
+    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a/qreal(16.0), alen/qreal(16.0));
     path.closeSubpath();
     drawPath(path);
 
@@ -4592,8 +4592,8 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    path.arcMoveTo(rect, a/qreal(16.0));
+    path.arcTo(rect, a/qreal(16.0), alen/qreal(16.0));
     path.closeSubpath();
     drawPath(path);
 }
@@ -9242,7 +9242,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
             qreal h = fragments[i].scaleY * fragments[i].height;
             QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
                               fragments[i].width, fragments[i].height);
-            drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, sourceRect);
+            drawPixmap(QRectF(qreal(-0.5) * w + xOffset, qreal(-0.5) * h + yOffset, w, h), pixmap, sourceRect);
         }
 
         setOpacity(oldOpacity);
