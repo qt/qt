@@ -374,7 +374,7 @@
     \code
 25        Notepad::Notepad()
 26        {
-27            saveAction = new QAction(tr("&Open"), this);
+27            openAction = new QAction(tr("&Open"), this);
 28            saveAction = new QAction(tr("&Save"), this);
 29            exitAction = new QAction(tr("E&xit"), this);
 30
