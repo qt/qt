@@ -121,18 +121,17 @@ public:
         TInt err = iFs.CreatePrivatePath(sysdrive);
         if (err != KErrNone && err != KErrAlreadyExists)
             qWarning("Failed to create private path on system drive.");
-        //BC with 4.7: set working directory to same drive as application
         TFileName pfn = RProcess().FileName();
         TInt drive;
         if (pfn.Length() > 0 && iFs.CharToDrive(pfn[0], drive) == KErrNone) {
-            // for system drive or rom based apps, leave the path on system drive
+            //BC with 4.7: create private path on application drive (except rom or system drive which is done above)
             if (drive != sysdrive && drive != EDriveZ) {
                 err = iFs.CreatePrivatePath(drive);
-                if (err == KErrNone || err == KErrAlreadyExists)
-                    iFs.SetSessionToPrivate(drive);
-                else
+                if (err != KErrNone && err != KErrAlreadyExists)
                     qWarning("Failed to create private path on application drive.");
             }
+            //BC with 4.7: set working directory to same drive as application
+            iFs.SetSessionToPrivate(drive);
         }
     }
 

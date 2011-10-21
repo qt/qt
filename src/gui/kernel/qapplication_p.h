@@ -561,6 +561,7 @@ public:
     int symbianProcessWsEvent(const QSymbianEvent *symbianEvent);
     int symbianHandleCommand(const QSymbianEvent *symbianEvent);
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
+    void symbianHandleLiteModeStartup();
 
     void _q_aboutToQuit();
 #endif
