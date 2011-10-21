@@ -95,8 +95,8 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <private/qgltexturepool_p.h>
+#include <private/qeglcontext_p.h>
 #endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -1715,6 +1715,8 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
+
+    workaround_brokenScissor = false;
 
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
@@ -3426,8 +3428,25 @@ void QGLContext::setInitialized(bool on)
 const QGLContext* QGLContext::currentContext()
 {
     QGLThreadContext *threadContext = qgl_context_storage.localData();
-    if (threadContext)
+    if (threadContext) {
+#ifdef Q_OS_SYMBIAN
+        // Query the current context and return null if it is different.
+        // This is needed to support mixed VG-GL rendering.
+        // QtOpenVG is free to make a QEglContext current at any time and
+        // QGLContext gets no notification that its underlying QEglContext is
+        // not current anymore. We query directly from EGL to be thread-safe.
+        // QEglContext does not store all the contexts per-thread.
+        if (threadContext->context) {
+            QEglContext *eglcontext = threadContext->context->d_func()->eglContext;
+            if (eglcontext) {
+                EGLContext ctx = eglcontext->context();
+                if (ctx != eglGetCurrentContext())
+                    return 0;
+            }
+        }
+#endif
         return threadContext->context;
+    }
     return 0;
 }
 
@@ -4280,7 +4299,7 @@ bool QGLWidget::event(QEvent *e)
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
-            makeCurrent();
+            makeCurrent(); // Shouldn't happen but keep it here just for sure
 
         if (testAttribute(Qt::WA_TranslucentBackground))
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
@@ -4288,8 +4307,11 @@ bool QGLWidget::event(QEvent *e)
 
     // A re-parent is likely to destroy the Symbian window and re-create it. It is important
     // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
-    if (e->type() == QEvent::ParentAboutToChange)
+    if (e->type() == QEvent::ParentAboutToChange) {
+        if (d->glcx == QGLContext::currentContext())
+            d->glcx->doneCurrent();
         d->glcx->d_func()->destroyEglSurfaceForDevice();
+    }
 
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL

@@ -192,7 +192,9 @@ void QGLContext::makeCurrent()
         if (!d->workaroundsCached) {
             d->workaroundsCached = true;
             const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-            if (renderer && (strstr(renderer, "SGX") || strstr(renderer, "MBX"))) {
+            if (!renderer)
+                return;
+            if ((strstr(renderer, "SGX") || strstr(renderer, "MBX"))) {
                 // PowerVR MBX/SGX chips needs to clear all buffers when starting to render
                 // a new frame, otherwise there will be a performance penalty to pay for
                 // each frame.
@@ -229,6 +231,13 @@ void QGLContext::makeCurrent()
                         d->workaround_brokenFBOReadBack = true;
                     }
                 }
+            } else if (strstr(renderer, "VideoCore III")) {
+                // Some versions of VideoCore III drivers seem to pollute and use
+                // stencil buffer when using glScissors even if stencil test is disabled.
+                // Workaround is to clear stencil buffer before disabling scissoring.
+
+                // qDebug() << "Found VideoCore III driver, enabling brokenDisableScissorTest"; 
+                d->workaround_brokenScissor = true;
             }
         }
     }

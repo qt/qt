@@ -6328,11 +6328,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Touroku</source>
-        <translation type="unfinished"></translation>
+        <translation>단어 등록</translation>
     </message>
     <message>
         <source>Massyo</source>
-        <translation type="unfinished"></translation>
+        <translation>단어 지움</translation>
     </message>
     <message>
         <source>Kana Lock</source>
@@ -6344,11 +6344,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Eisu Shift</source>
-        <translation type="unfinished"></translation>
+        <translation>한자 Shift</translation>
     </message>
     <message>
         <source>Eisu toggle</source>
-        <translation type="unfinished"></translation>
+        <translation>한자 반전</translation>
     </message>
     <message>
         <source>Code input</source>

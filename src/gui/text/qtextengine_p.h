@@ -614,6 +614,7 @@ public:
     QFixed leadingSpaceWidth(const QScriptLine &line);
 
     int positionInLigature(const QScriptItem *si, int end, QFixed x, QFixed edge, int glyph_pos, bool cursorOnCharacter);
+    void resetFontEngineCache();
 
 private:
     void setBoundary(int strPos) const;
