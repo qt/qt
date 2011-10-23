@@ -1234,6 +1234,59 @@ void QAbstractSocketPrivate::resumeSocketNotifiers(QAbstractSocket *socket)
     socketEngine->setExceptionNotificationEnabled(socket->d_func()->prePauseExceptionSocketNotifierState);
 }
 
+bool QAbstractSocketPrivate::bind(QAbstractSocket *socket, const QHostAddress &address,
+                                  quint16 port, BindMode mode)
+{
+    QAbstractSocketPrivate *d = socket->d_func();
+
+    // now check if the socket engine is initialized and to the right type
+    if (!d->socketEngine || !d->socketEngine->isValid()) {
+        QHostAddress nullAddress;
+        d->resolveProxy(nullAddress.toString(), port);
+
+        QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
+        if (protocol == QAbstractSocket::UnknownNetworkLayerProtocol)
+            protocol = nullAddress.protocol();
+
+        if (!d->initSocketLayer(protocol))
+            return false;
+    }
+
+#ifdef Q_OS_UNIX
+    if ((mode & ShareAddress) || (mode & ReuseAddressHint))
+        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+    else
+        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+#endif
+#ifdef Q_OS_WIN
+    if (mode & ReuseAddressHint)
+        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+    else
+        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+    if (mode & DontShareAddress)
+        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 1);
+    else
+        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
+#endif
+    bool result = d->socketEngine->bind(address, port);
+    d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
+
+    if (!result) {
+        d->socketError = d->socketEngine->error();
+        socket->setErrorString(d->socketEngine->errorString());
+        emit socket->error(d->socketError);
+        return false;
+    }
+
+    d->state = QAbstractSocket::BoundState;
+    d->localAddress = d->socketEngine->localAddress();
+    d->localPort = d->socketEngine->localPort();
+
+    emit socket->stateChanged(d->state);
+    d->socketEngine->setReadNotificationEnabled(true);
+    return true;
+}
+
 QAbstractSocketEngine* QAbstractSocketPrivate::getSocketEngine(QAbstractSocket *socket)
 {
     return socket->d_func()->socketEngine;

@@ -161,8 +161,23 @@ public:
     bool prePauseExceptionSocketNotifierState;
     static void pauseSocketNotifiers(QAbstractSocket*);
     static void resumeSocketNotifiers(QAbstractSocket*);
+
+    enum BindFlag {
+        DefaultForPlatform = 0x0,
+        ShareAddress = 0x1,
+        DontShareAddress = 0x2,
+        ReuseAddressHint = 0x4
+    };
+    Q_DECLARE_FLAGS(BindMode, BindFlag)
+
+    Q_AUTOTEST_EXPORT static bool bind(QAbstractSocket *socket, const QHostAddress &address,
+                     quint16 port = 0, BindMode mode = DefaultForPlatform);
+    // we don't need the other overload for now
+
     static QAbstractSocketEngine* getSocketEngine(QAbstractSocket*);
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocketPrivate::BindMode)
 
 QT_END_NAMESPACE
 
