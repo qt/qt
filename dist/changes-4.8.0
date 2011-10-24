@@ -208,6 +208,9 @@ Qt for Linux/X11
  - Added experimental support for armCC
  - Experimental support for associating Wayland clients with PID or a token,
    to facilitate window management.
+ - Added plugin system for menubars, making it possible to provide
+   alternative menubar implementations. (eg, appmenu:
+   https://launchpad.net/appmenu-qt)
 
 Qt for Windows
 --------------
