@@ -12198,6 +12198,7 @@ EXPORTS
 	_ZNK11QPixmapData15toVolatileImageEv @ 12197 NONAME
 	_ZNK14QVolatileImage13constImageRefEv @ 12198 NONAME
 	_Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12199 NONAME
+<<<<<<< HEAD
 	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12200 NONAME
 	_Z22qt_fontdata_from_indexi @ 12201 NONAME
 	_Z27qt_isExtendedRadialGradientRK6QBrush @ 12202 NONAME
@@ -12799,4 +12800,10 @@ EXPORTS
 	_ZN11QTextEngine20resetFontEngineCacheEv @ 12798 NONAME
 	_ZN14QWidgetPrivate16_q_cleanupWinIdsEv @ 12799 NONAME
 	_ZN19QApplicationPrivate28symbianHandleLiteModeStartupEv @ 12800 NONAME
+=======
+	_ZN12QApplication22aboutToUseGpuResourcesEv @ 12200 NONAME
+	_ZN12QApplication26aboutToReleaseGpuResourcesEv @ 12201 NONAME
+	_ZN19QApplicationPrivate26emitAboutToUseGpuResourcesEv @ 12202 NONAME
+	_ZN19QApplicationPrivate30emitAboutToReleaseGpuResourcesEv @ 12203 NONAME
+>>>>>>> origin/4.7
 
