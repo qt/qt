@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qdbustype
+QT = core testlib
 contains(QT_CONFIG,dbus): {
         SOURCES += tst_qdbustype.cpp
         QT += dbus

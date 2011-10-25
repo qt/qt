@@ -1,2 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qwsembedwidget
+QT += widgets testlib
 SOURCES += tst_qwsembedwidget.cpp
