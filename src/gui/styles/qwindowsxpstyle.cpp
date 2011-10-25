@@ -343,7 +343,6 @@ bool QWindowsXPStylePrivate::resolveSymbols()
 {
     static bool tried = false;
     if (!tried) {
-        tried = true;
         QSystemLibrary themeLib(QLatin1String("uxtheme"));
         pIsAppThemed = (PtrIsAppThemed)themeLib.resolve("IsAppThemed");
         if (pIsAppThemed) {
@@ -372,6 +371,7 @@ bool QWindowsXPStylePrivate::resolveSymbols()
             pGetThemeDocumentationProperty         = (PtrGetThemeDocumentationProperty        )themeLib.resolve("GetThemeDocumentationProperty");
             pIsThemeBackgroundPartiallyTransparent = (PtrIsThemeBackgroundPartiallyTransparent)themeLib.resolve("IsThemeBackgroundPartiallyTransparent");
         }
+        tried = true;
     }
 
     return pIsAppThemed != 0;
