@@ -2268,6 +2268,8 @@ void QGL2PaintEngineExPrivate::updateClipScissorTest()
     currentScissorBounds = bounds;
 
     if (bounds == QRect(0, 0, width, height)) {
+        if (ctx->d_func()->workaround_brokenScissor)
+            clearClip(0);
         glDisable(GL_SCISSOR_TEST);
     } else {
         glEnable(GL_SCISSOR_TEST);

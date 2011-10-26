@@ -23,8 +23,8 @@ symbian:{
     isEmpty(DESTDIR):importFiles.files = qmlparticlesplugin$${QT_LIBINFIX}.dll qmldir
     else:importFiles.files = $$DESTDIR/qmlparticlesplugin$${QT_LIBINFIX}.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
-    
-    DEPLOYMENT = importFiles
+
+    DEPLOYMENT += importFiles
 }
 
 INSTALLS += target qmldir

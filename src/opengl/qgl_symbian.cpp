@@ -259,7 +259,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
     return true;
 }
 
-void QGLWidget::resizeEvent(QResizeEvent *)
+void QGLWidget::resizeEvent(QResizeEvent *e)
 {
     Q_D(QGLWidget);
     if (!isValid())
@@ -270,17 +270,18 @@ void QGLWidget::resizeEvent(QResizeEvent *)
     if (this == qt_gl_share_widget())
         return;
 
-    if (QGLContext::currentContext())
-        doneCurrent();
-
-    // Symbian needs to recreate the surface on resize.
-    d->recreateEglSurface();
+    if (!d->surfaceSizeInitialized || e->oldSize() != e->size()) {
+        // On Symbian we need to recreate the surface on resize.
+        d->recreateEglSurface();
+        d->surfaceSizeInitialized = true;
+    }
 
     makeCurrent();
+
     if (!d->glcx->initialized())
         glInit();
+
     resizeGL(width(), height());
-    //handle overlay
 }
 
 const QGLContext* QGLWidget::overlayContext() const
@@ -363,6 +364,9 @@ void QGLWidgetPrivate::recreateEglSurface()
     WId currentId = q->winId();
 
     if (glcx->d_func()->eglSurface != EGL_NO_SURFACE) {
+        if (glcx == QGLContext::currentContext())
+            glcx->doneCurrent();
+
         eglDestroySurface(glcx->d_func()->eglContext->display(),
                                                 glcx->d_func()->eglSurface);
     }
