@@ -129,6 +129,7 @@ QtGui
  - QUndoView: Allow different text for undo actions and items
  - QCommonStyle: Fix overrides from the proxy style [QTBUG-20849]
  - QWindowsVistaStyle: Draw CE_ProgressBarGroove correctly with PP_TRANSPARENTBAR.
+ - Removed obsolete -qt-gif configure option.
 
 QtNetwork
 ---------
@@ -176,6 +177,11 @@ QtWebKit
 QtSql
 -----
  - Update sqlite to 3.7.7.1
+ - QSqlField now initializes the type of its QVariant value to its own type.
+ - QSqlField's generated flag now controls generation of SQL insert/update/delete
+   in QSqlDriver::sqlStatement(). QSqlTableModel initializes the flag to false in
+   new edit records and sets it to true when a value is set. Applications can still
+   manipulate generated flags directly to control SQL generation. [QTBUG-13211]
 
 QtSvg
 -----
@@ -227,6 +233,7 @@ Qt for Windows
  - The small 16x16 version of the default window icon is now being loaded
    correctly from the IDI_ICON1 resource.
  - Fixed version checking for untested versions of Windows. (QTBUG-20480)
+ - Qt libs on MinGW now come with pkg-config .pc files.
 
 Qt for Mac OS X
 ---------------
