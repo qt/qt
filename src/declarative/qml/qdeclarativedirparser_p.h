@@ -73,11 +73,14 @@ public:
     QString source() const;
     void setSource(const QString &source);
 
+    QString fileSource() const;
+    void setFileSource(const QString &filePath);
+
     bool isParsed() const;
     bool parse();
 
     bool hasError() const;
-    QList<QDeclarativeError> errors() const;
+    QList<QDeclarativeError> errors(const QString &uri) const;
 
     struct Plugin
     {
@@ -129,6 +132,7 @@ private:
     QList<QDeclarativeError> _errors;
     QUrl _url;
     QString _source;
+    QString _filePathSouce;
     QList<Component> _components;
     QList<Plugin> _plugins;
 #ifdef QT_CREATOR

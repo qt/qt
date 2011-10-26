@@ -1326,10 +1326,20 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             tempPosition -= bias;
         }
         FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
+        if (!topItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            topItem = currentItem;
+        }
         FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
+        if (!bottomItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            bottomItem = currentItem;
+        }
         qreal pos;
         bool isInBounds = -position() > maxExtent && -position() <= minExtent;
-        if (topItem && isInBounds) {
+        if (topItem && (isInBounds || strictHighlightRange)) {
             if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2 && !strictHighlightRange) {
                 pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
             } else {
@@ -2754,7 +2764,7 @@ qreal QDeclarativeListView::minXExtent() const
                 d->minExtent += d->header->size();
         }
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-            d->minExtent += highlightStart;
+            d->minExtent += d->isRightToLeft() ? -highlightStart : highlightStart;
             d->minExtent = qMax(d->minExtent, -(endPositionFirstItem - highlightEnd + 1));
         }
         d->minExtentDirty = false;
