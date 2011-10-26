@@ -239,9 +239,22 @@ defineReplace(CORE_TOOLS_LAYER_IBY_EXPORT_PATH) {
 defineReplace(CORE_ADAPT_LAYER_IBY_EXPORT_PATH) {
     return(/epoc32/rom/include/$$1)
 }
+
+defineReplace(LANGUAGE_APP_LAYER_IBY_EXPORT_PATH) {
+    return(/epoc32/rom/include/language/app/$$1)
+}
+defineReplace(LANGUAGE_MW_LAYER_IBY_EXPORT_PATH) {
+    return(/epoc32/rom/include/language/mw/$$1)
+}
+defineReplace(LANGUAGE_OS_LAYER_IBY_EXPORT_PATH) {
+    return(/epoc32/rom/include/language/os/$$1)
+}
+
 defineReplace(CUSTOMER_VARIANT_APP_LAYER_IBY_EXPORT_PATH) {
     return(/epoc32/rom/include/customervariant/app/$$1)
 }
+
+
 
 # You need to define the following in pro-file, if you are using the stllib:
 # QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS

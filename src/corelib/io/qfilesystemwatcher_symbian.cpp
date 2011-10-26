@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 QNotifyChangeEvent::QNotifyChangeEvent(RFs &fs, const TDesC &file,
-                                       QSymbianFileSystemWatcherEngine *e, bool aIsDir,
+                                       QSymbianFileSystemWatcherInterface *e, bool aIsDir,
 									   TInt aPriority) :
         CActive(aPriority),
         isDir(aIsDir),
@@ -96,9 +96,9 @@ void QNotifyChangeEvent::RunL()
 
         if (!failureCount) {
             int err;
-            QT_TRYCATCH_ERROR(err, engine->emitPathChanged(this));
+            QT_TRYCATCH_ERROR(err, engine->handlePathChanged(this));
             if (err != KErrNone)
-                qWarning("QNotifyChangeEvent::RunL() - emitPathChanged threw exception (Converted error code: %d)", err);
+                qWarning("QNotifyChangeEvent::RunL() - handlePathChanged threw exception (Converted error code: %d)", err);
         }
     }
 }
@@ -203,7 +203,7 @@ QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &path
     return p;
 }
 
-void QSymbianFileSystemWatcherEngine::emitPathChanged(QNotifyChangeEvent *e)
+void QSymbianFileSystemWatcherEngine::handlePathChanged(QNotifyChangeEvent *e)
 {
     QMutexLocker locker(&mutex);
 
@@ -255,7 +255,7 @@ void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directory
     QMutexLocker locker(&mutex);
     QString nativeDir(QDir::toNativeSeparators(directoryPath));
     TPtrC ptr(qt_QString2TPtrC(nativeDir));
-    currentAddEvent = new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
+    currentAddEvent = q_check_ptr(new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'))));
     syncCondition.wakeOne();
 }
 

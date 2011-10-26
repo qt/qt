@@ -410,7 +410,7 @@
     </message>
     <message>
         <source>page</source>
-        <translation>쪽</translation>
+        <translation type="obsolete">쪽</translation>
     </message>
     <message>
         <source>Insert Subwindow</source>
@@ -418,7 +418,7 @@
     </message>
     <message>
         <source>subwindow</source>
-        <translation>subwindow</translation>
+        <translation type="obsolete">subwindow</translation>
     </message>
     <message>
         <source>Subwindow</source>
@@ -459,6 +459,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>&apos;%1&apos;의 레이아웃을 %2에서 %3(으)로 변경</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>레이아웃 정렬 변경</translation>
     </message>
     <message>
         <source>Set action text</source>
@@ -1813,7 +1817,11 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <source>Edit</source>
-        <translation>편집</translation>
+        <translation type="obsolete">편집</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>편집(&amp;E)</translation>
     </message>
     <message>
         <source>F&amp;orm</source>
@@ -3248,8 +3256,12 @@ Do you want overwrite the template?</source>
         <translation>&lt;br/&gt;Qt Designer는 Qt 프로그램의 그래픽 사용자 인터페이스 디자이너입니다.&lt;br/&gt;</translation>
     </message>
     <message>
+        <source>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;저작권자 (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</translation>
+    </message>
+    <message>
         <source>%1&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
+        <translation type="obsolete">%1&lt;br/&gt;저작권자 (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
     </message>
 </context>
 <context>
@@ -3725,12 +3737,20 @@ Do you want overwrite the template?</source>
         <translation>상속됨</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[테마] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>수평</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>수직</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>테마</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4317,6 +4337,17 @@ Do you want overwrite the template?</source>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>테마에서 아이콘 선택하기</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>현재 테마의 아이콘 이름을 입력하십시오:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Items List</source>
@@ -4467,19 +4498,35 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Shortcut:</source>
-        <translation>단축키:</translation>
+        <translation type="obsolete">단축키:</translation>
     </message>
     <message>
         <source>Checkable:</source>
-        <translation>선택 가능:</translation>
+        <translation type="obsolete">선택 가능:</translation>
     </message>
     <message>
         <source>ToolTip:</source>
-        <translation>풍선 도움말:</translation>
+        <translation type="obsolete">풍선 도움말:</translation>
     </message>
     <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>풍선 도움말:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>아이콘 테마(&amp;E):</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>선택 가능(&amp;C):</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>단축키(&amp;S):</translation>
     </message>
 </context>
 <context>
@@ -4730,6 +4777,10 @@ Please select another name.</source>
         <translation>파일 선택...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>테마에서 아이콘 선택...</translation>
+    </message>
+    <message>
         <source>Copy Path</source>
         <translation>경로 복사</translation>
     </message>
@@ -4740,6 +4791,10 @@ Please select another name.</source>
     <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[테마] %1</translation>
     </message>
 </context>
 <context>
@@ -5064,6 +5119,42 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::QDesignerTaskMenu</name>
     <message>
+        <source>Layout Alignment</source>
+        <translation>레이아웃 정렬</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>수평 정렬 없음</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>왼쪽</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>수평 가운데</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>오른쪽</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>수직 정렬 없음</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>위</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>수직 가운데</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>아래</translation>
+    </message>
+    <message>
         <source>Change objectName...</source>
         <translation>objectName 바꾸기...</translation>
     </message>
@@ -5328,6 +5419,10 @@ Class: %2</source>
     <message>
         <source>Insert &amp;Image</source>
         <translation>그림 삽입(&amp;I)</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>서식있는 텍스트 단순화</translation>
     </message>
 </context>
 <context>

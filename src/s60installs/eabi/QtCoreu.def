@@ -4162,4 +4162,6 @@ EXPORTS
 	inflateReset2 @ 4161 NONAME
 	inflateUndermine @ 4162 NONAME
 	zlibCompileFlags @ 4163 NONAME
+	_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings @ 4164 NONAME
+	_ZN23QCoreApplicationPrivate26rebuildInstallLibraryPathsEv @ 4165 NONAME
 

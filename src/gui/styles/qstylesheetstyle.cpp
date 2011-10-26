@@ -1247,20 +1247,20 @@ QPainterPath QRenderRule::borderClip(QRect r)
     const QRectF rect(r);
     const int *borders = border()->borders;
     QPainterPath path;
-    qreal curY = rect.y() + borders[TopEdge]/2.0;
+    qreal curY = rect.y() + borders[TopEdge]/qreal(2.0);
     path.moveTo(rect.x() + tlr.width(), curY);
     path.lineTo(rect.right() - trr.width(), curY);
-    qreal curX = rect.right() - borders[RightEdge]/2.0;
+    qreal curX = rect.right() - borders[RightEdge]/qreal(2.0);
     path.arcTo(curX - 2*trr.width() + borders[RightEdge], curY,
                trr.width()*2 - borders[RightEdge], trr.height()*2 - borders[TopEdge], 90, -90);
 
     path.lineTo(curX, rect.bottom() - brr.height());
-    curY = rect.bottom() - borders[BottomEdge]/2.0;
+    curY = rect.bottom() - borders[BottomEdge]/qreal(2.0);
     path.arcTo(curX - 2*brr.width() + borders[RightEdge], curY - 2*brr.height() + borders[BottomEdge],
                brr.width()*2 - borders[RightEdge], brr.height()*2 - borders[BottomEdge], 0, -90);
 
     path.lineTo(rect.x() + blr.width(), curY);
-    curX = rect.left() + borders[LeftEdge]/2.0;
+    curX = rect.left() + borders[LeftEdge]/qreal(2.0);
     path.arcTo(curX, rect.bottom() - 2*blr.height() + borders[BottomEdge]/2,
                blr.width()*2 - borders[LeftEdge], blr.height()*2 - borders[BottomEdge], 270, -90);
 
@@ -3810,7 +3810,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (inverted)
                     reverse = !reverse;
                 const bool indeterminate = pb->minimum == pb->maximum;
-                qreal fillRatio = indeterminate ? 0.50 : qreal(progress - minimum)/(maximum - minimum);
+                qreal fillRatio = indeterminate ? qreal(0.50) : qreal(progress - minimum)/(maximum - minimum);
                 int fillWidth = int(rect.width() * fillRatio);
                 int chunkWidth = fillWidth;
                 if (subRule.hasContentsSize()) {

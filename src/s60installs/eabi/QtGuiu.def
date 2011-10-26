@@ -12796,4 +12796,7 @@ EXPORTS
 	_ZTV20QBlittablePixmapData @ 12795 NONAME
 	_Zls6QDebugPK13QSymbianEvent @ 12796 NONAME
 	_ZN12QApplication22queryKeyboardModifiersEv @ 12797 NONAME
+	_ZN11QTextEngine20resetFontEngineCacheEv @ 12798 NONAME
+	_ZN14QWidgetPrivate16_q_cleanupWinIdsEv @ 12799 NONAME
+	_ZN19QApplicationPrivate28symbianHandleLiteModeStartupEv @ 12800 NONAME
 

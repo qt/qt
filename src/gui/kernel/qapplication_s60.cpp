@@ -201,6 +201,32 @@ bool QS60Data::setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStat
 }
 #endif
 
+void QS60Data::createStatusPaneAndCBA()
+{
+    CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
+    MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
+    QT_TRAP_THROWING(
+        factory->CreateResourceIndependentFurnitureL(ui);
+        CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
+            CEikButtonGroupContainer::EHorizontal, ui, R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+        CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
+        Q_ASSERT(!oldCba);
+        S60->setButtonGroupContainer(cba);
+        CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
+        menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
+        menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
+        S60->appUi()->AddToStackL(menuBar, ECoeStackPriorityMenu, ECoeStackFlagRefusesFocus);
+        CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
+        Q_ASSERT(!oldMenu);
+    )
+    if (S60->statusPane()) {
+        // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
+        // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
+        QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
+        S60->statusPane()->SetObserver(desktopControl);
+    }
+}
+
 void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
 {
     if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control)) {
@@ -1493,12 +1519,15 @@ void QSymbianControl::handleClientAreaChange()
     }
 }
 
-bool QSymbianControl::isSplitViewWidget(QWidget *widget) {
+bool QSymbianControl::isSplitViewWidget(QWidget *widget)
+{
     bool returnValue = true;
-    //Ignore events sent to non-active windows, not visible widgets and not parents of input widget.
+    // Ignore events sent to non-active windows, not visible widgets and not parents of input widget
+    // and non-Qt dialogs.
     if (!qwidget->isActiveWindow()
         || !qwidget->isVisible()
-        || !qwidget->isAncestorOf(widget)) {
+        || !qwidget->isAncestorOf(widget)
+        || CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
 
         returnValue = false;
     }
@@ -2575,6 +2604,24 @@ int QApplicationPrivate::symbianResourceChange(const QSymbianEvent *symbianEvent
     }
 
     return ret;
+}
+
+void QApplicationPrivate::symbianHandleLiteModeStartup()
+{
+    if (QCoreApplication::arguments().contains(QLatin1String("--startup-lite"))) {
+        if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+                && !S60->buttonGroupContainer() && !S60->statusPane()) {
+            // hide and force this app to the background before creating screen furniture to avoid flickers
+            CAknAppUi *appui = static_cast<CAknAppUi*>(CCoeEnv::Static()->AppUi());
+            if (appui)
+                appui->HideApplicationFromFSW(ETrue);
+            CCoeEnv::Static()->RootWin().SetOrdinalPosition(-1);
+            S60->createStatusPaneAndCBA();
+            if (S60->statusPane()) {
+                S60->setStatusPaneAndButtonGroupVisibility(false, false);
+            }
+        }
+    }
 }
 
 #ifndef QT_NO_WHEELEVENT

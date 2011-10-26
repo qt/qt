@@ -248,12 +248,14 @@ void QVolatileImage::copyFrom(QVolatileImage *source, const QRect &rect)
     const uchar *sptr = srcImgRef.constBits() + r.y() * srcbpl;
     beginDataAccess();
     QImage &dstImgRef(imageRef());
-    int dstbpl = dstImgRef.bytesPerLine();
-    uchar *dptr = dstImgRef.bits();
-    for (int y = 0; y < r.height(); ++y) {
-        qMemCopy(dptr, sptr + r.x() * srcbpp, r.width() * srcbpp);
-        sptr += srcbpl;
-        dptr += dstbpl;
+    if (!dstImgRef.isNull()) {
+        int dstbpl = dstImgRef.bytesPerLine();
+        uchar *dptr = dstImgRef.bits();
+        for (int y = 0; y < r.height(); ++y) {
+            qMemCopy(dptr, sptr + r.x() * srcbpp, r.width() * srcbpp);
+            sptr += srcbpl;
+            dptr += dstbpl;
+        }
     }
     endDataAccess();
     source->endDataAccess(true);

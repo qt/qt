@@ -167,6 +167,7 @@ private Q_SLOTS:
     void setFocusQString() const;
     void setFocusQStringFailure() const;
     void setFocusQStringSignature() const;
+    void setFocusQStringFailureAfterSucces() const;
     void recompilationWithEvaluateToResultFailing() const;
     void secondEvaluationWithEvaluateToResultFailing() const;
     void recompilationWithEvaluateToReceiver() const;
@@ -1974,6 +1975,25 @@ void tst_QXmlQuery::setFocusQStringSignature() const
 
     /* We should return a bool. */
     static_cast<bool>(query.setFocus(QString()));
+}
+
+void tst_QXmlQuery::setFocusQStringFailureAfterSucces() const
+{
+    /* Test for QTBUG-18050. First call setFocus with a valid string,
+     * and then with an invalid string. evaluateTo should not crash. */
+    QXmlQuery query;
+    MessageSilencer silencer;
+    query.setMessageHandler(&silencer);
+
+    QVERIFY(query.setFocus(QLatin1String("<test>valid-input</test>")));
+    QVERIFY(!query.setFocus(QLatin1String("invalid-input")));
+
+    query.setQuery("/query");
+
+    QString output;
+    /* Last setFocus was with an invalid string, so evaluateTo should return
+     * false */
+    QVERIFY(!query.evaluateTo(&output));
 }
 
 void tst_QXmlQuery::setFocusQIODeviceTriggerWarnings() const
