@@ -465,6 +465,8 @@
         \o \l{Platform and Compiler Notes - Symbian}{Platform Notes - Symbian}
         - Platform specific notes.
         \o \l{Getting Started Guides}{Getting started}
+        \o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian}
+        - provides a QML component set for the Symbian^3 platform
     \endlist
 
     \section1 Key Features for Symbian Development
@@ -480,6 +482,9 @@
     applications can also be easily customized in a fraction of the
     time and lines of code required for traditional UI styling with
     Qt Style Sheets.
+
+    The \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian 1.1}
+    provides a native QML component set.
 
     \section2 Graphics Features
 
