@@ -127,7 +127,8 @@ QtGui
  - QTextCursor optimization
  - QUndoGroup, QUndoStack: Allow using not only prefixes for undo command text [QTBUG-14442]
  - QUndoView: Allow different text for undo actions and items
- - QCommonStyle: Fix overrides from the proxy style [QTBUG-20849]
+ - QCommonStyle: Fix overrides from the proxy style [QTBUG-20849]
+ - QWindowsVistaStyle: Draw CE_ProgressBarGroove correctly with PP_TRANSPARENTBAR.
 
 QtNetwork
 ---------
@@ -209,6 +210,9 @@ Qt for Linux/X11
  - Added experimental support for armCC
  - Experimental support for associating Wayland clients with PID or a token,
    to facilitate window management.
+ - Added plugin system for menubars, making it possible to provide
+   alternative menubar implementations. (eg, appmenu:
+   https://launchpad.net/appmenu-qt)
 
 Qt for Windows
 --------------
@@ -218,6 +222,11 @@ Qt for Windows
  - MSVC runtime is bound to the runtime you're building with. This makes
    deployment on Windows easier. (QTBUG-8215)
  - QLocalSocket::isValid() has been fixed. (QTBUG-18204)
+ - qFadeEffect() issue fixed. The QSystemTrayIcon's popup menu no longer
+   stays transparent in rare circumstances after the animation has completed.
+ - The small 16x16 version of the default window icon is now being loaded
+   correctly from the IDI_ICON1 resource.
+ - Fixed version checking for untested versions of Windows. (QTBUG-20480)
 
 Qt for Mac OS X
 ---------------
@@ -341,6 +350,8 @@ Qt for Windows CE
     * Implemented "aux" template that allows making use of the INSTALLS variable
       without building anything. Needed for projects with QML entry point.
     * MSVC now link with /DYNAMICBASE /NXCOMPAT in order to increase security.
+    * Add comctl32 v6 assembly dependency to both /SUBSYSTEM:WINDOWS and
+      /SUBSYSTEM:CONSOLE applications to get consistent look and behaviour.
     * Fix the language settings in generated Windows resource files. (QTBUG-12249)
     * Write and install pkg-config files for MinGW
     * Make PKGCONFIG referencing missing packages fatal; add packagesExist() for

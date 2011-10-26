@@ -909,6 +909,10 @@ bool QDialog::symbianAdjustedPosition()
             AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
         } else {
             AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, statusPaneRect);
+            // In some native layouts, StaCon is not used. Try to fetch the status pane
+            // height from StatusPane component.
+            if (statusPaneRect.IsEmpty())
+                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
         }
 
         p.setX(0);

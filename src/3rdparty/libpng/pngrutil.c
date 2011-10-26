@@ -1037,12 +1037,14 @@ png_handle_cHRM(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
           */
          png_uint_32 w = y_red + y_green + y_blue;
 
-         png_ptr->rgb_to_gray_red_coeff   = (png_uint_16)(((png_uint_32)y_red *
-            32768)/w);
-         png_ptr->rgb_to_gray_green_coeff = (png_uint_16)(((png_uint_32)y_green
-            * 32768)/w);
-         png_ptr->rgb_to_gray_blue_coeff  = (png_uint_16)(((png_uint_32)y_blue *
-            32768)/w);
+         if (w != 0) {
+            png_ptr->rgb_to_gray_red_coeff   = (png_uint_16)(((png_uint_32)y_red *
+               32768)/w);
+            png_ptr->rgb_to_gray_green_coeff = (png_uint_16)(((png_uint_32)y_green
+               * 32768)/w);
+            png_ptr->rgb_to_gray_blue_coeff  = (png_uint_16)(((png_uint_32)y_blue *
+               32768)/w);
+         }
       }
    }
 #endif

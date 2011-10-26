@@ -163,6 +163,7 @@ public:
     int partial_keyboardAutoTranslation : 1;
     int partialKeyboardOpen : 1;
     int handleStatusPaneResizeNotifications : 1;
+    int screenFurnitureFullyCreated : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -198,6 +199,7 @@ public:
     static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
     static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
+    static void createStatusPaneAndCBA();
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
     static TRect clientRect();
@@ -365,6 +367,7 @@ inline QS60Data::QS60Data()
   partial_keyboardAutoTranslation(1),
   partialKeyboardOpen(0),
   handleStatusPaneResizeNotifications(1),
+  screenFurnitureFullyCreated(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

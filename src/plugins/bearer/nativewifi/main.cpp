@@ -42,13 +42,9 @@
 #include "qnativewifiengine.h"
 #include "platformdefs.h"
 
-#include <QtCore/qmutex.h>
-#include <QtCore/private/qmutexpool_p.h>
-#include <QtCore/qlibrary.h>
+#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <QtNetwork/private/qbearerplugin_p.h>
-
-#include <QtCore/qdebug.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
@@ -56,37 +52,32 @@ QT_BEGIN_NAMESPACE
 
 static void resolveLibrary()
 {
-    static volatile bool triedResolve = false;
-
+    static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_WlanOpenHandle));
-#endif
-
-        if (!triedResolve) {
+        QSystemLibrary wlanapi(QLatin1String("wlanapi"));
+        if (wlanapi.load()) {
             local_WlanOpenHandle = (WlanOpenHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanOpenHandle");
+                wlanapi.resolve("WlanOpenHandle");
             local_WlanRegisterNotification = (WlanRegisterNotificationProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanRegisterNotification");
+                wlanapi.resolve("WlanRegisterNotification");
             local_WlanEnumInterfaces = (WlanEnumInterfacesProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanEnumInterfaces");
+                wlanapi.resolve("WlanEnumInterfaces");
             local_WlanGetAvailableNetworkList = (WlanGetAvailableNetworkListProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanGetAvailableNetworkList");
+                wlanapi.resolve("WlanGetAvailableNetworkList");
             local_WlanQueryInterface = (WlanQueryInterfaceProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanQueryInterface");
+                wlanapi.resolve("WlanQueryInterface");
             local_WlanConnect = (WlanConnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanConnect");
+                wlanapi.resolve("WlanConnect");
             local_WlanDisconnect = (WlanDisconnectProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanDisconnect");
+                wlanapi.resolve("WlanDisconnect");
             local_WlanScan = (WlanScanProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanScan");
+                wlanapi.resolve("WlanScan");
             local_WlanFreeMemory = (WlanFreeMemoryProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanFreeMemory");
+                wlanapi.resolve("WlanFreeMemory");
             local_WlanCloseHandle = (WlanCloseHandleProto)
-                QLibrary::resolve(QLatin1String("wlanapi.dll"), "WlanCloseHandle");
-
-            triedResolve = true;
+                wlanapi.resolve("WlanCloseHandle");
         }
+        triedResolve = true;
     }
 }
 
