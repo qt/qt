@@ -164,7 +164,7 @@ void QCoeFepInputContext::reset()
     // text.
     if (m_cachedPreeditString.isEmpty() && !(currentHints & Qt::ImhNoPredictiveText)) {
         m_cachedPreeditString = m_preeditString;
-        if (focusWidget()) {
+        if (focusWidget() && !m_cachedPreeditString.isEmpty()) {
             int cursor = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
             int anchor = focusWidget()->inputMethodQuery(Qt::ImAnchorPosition).toInt();
             if (cursor == anchor)
