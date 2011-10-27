@@ -2694,8 +2694,17 @@ void QWidgetPrivate::setConstraints_sys()
 #ifdef ALIEN_DEBUG
     qDebug() << "QWidgetPrivate::setConstraints_sys START" << q;
 #endif
-    if (q->testAttribute(Qt::WA_WState_Created))
+    if (q->testAttribute(Qt::WA_WState_Created)) {
         do_size_hints(q, extra);
+        QtMWMHints mwmHints = GetMWMHints(X11->display, q->internalWinId());
+        const bool wasFuncResize = mwmHints.functions & MWM_FUNC_RESIZE;
+        if (q->minimumSize() == q->maximumSize())
+            mwmHints.functions &= ~MWM_FUNC_RESIZE;
+        else
+            mwmHints.functions |= MWM_FUNC_RESIZE;
+        if (wasFuncResize != (mwmHints.functions & MWM_FUNC_RESIZE))
+            SetMWMHints(X11->display, q->internalWinId(), mwmHints);
+    }
 #ifdef ALIEN_DEBUG
     qDebug() << "QWidgetPrivate::setConstraints_sys END" << q;
 #endif
