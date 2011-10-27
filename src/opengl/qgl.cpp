@@ -5726,6 +5726,11 @@ void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
     }
 }
 
+void QGLContextGroupResourceBase::contextDeleted(const QGLContext *ctx)
+{
+    Q_UNUSED(ctx);
+}
+
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -5741,12 +5746,16 @@ void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 
 void QGLContextGroup::cleanupResources(const QGLContext *context)
 {
+    // Notify all resources that a context has been deleted
+    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->contextDeleted(context);
+
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;
 
     // Iterate over all resources and free each in turn.
-    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
     for (it = m_resources.begin(); it != m_resources.end(); ++it)
         it.key()->cleanup(context, it.value());
 }
