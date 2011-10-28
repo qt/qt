@@ -60,7 +60,7 @@
 #endif
 
 #ifdef Q_OS_SYMBIAN
-#include "qt_s60_p.h"
+#include "private/qt_s60_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE

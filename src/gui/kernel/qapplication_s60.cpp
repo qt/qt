@@ -590,7 +590,11 @@ QSymbianControl::~QSymbianControl()
 {
     // Ensure backing store is deleted before the top-level
     // window is destroyed
-    qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    QT_TRY {
+        qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    } QT_CATCH(const std::exception&) {
+        // ignore exceptions, nothing can be done
+    }
 
     if (S60->curWin == this)
         S60->curWin = 0;
