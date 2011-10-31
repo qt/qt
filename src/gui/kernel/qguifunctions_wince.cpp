@@ -125,17 +125,16 @@ static AygInitDialog ptrAygInitDialog = 0;
 static AygFullScreen ptrAygFullScreen = 0;
 static AygSHSipInfo  ptrAygSHSipInfo  = 0;
 static AygSHDoneButton ptrAygSHDoneButton = 0;
-static bool aygResolved = false;
-
 static void resolveAygLibs()
 {
+    static bool aygResolved = false;
     if (!aygResolved) {
-        aygResolved = true;
         QLibrary ayglib(QLatin1String("aygshell"));
         ptrAygInitDialog = (AygInitDialog) ayglib.resolve("SHInitDialog");
         ptrAygFullScreen = (AygFullScreen) ayglib.resolve("SHFullScreen");
         ptrAygSHSipInfo  = (AygSHSipInfo)  ayglib.resolve("SHSipInfo");
         ptrAygSHDoneButton = (AygSHDoneButton) ayglib.resolve("SHDoneButton");
+        aygResolved = true;
     }
 }
 

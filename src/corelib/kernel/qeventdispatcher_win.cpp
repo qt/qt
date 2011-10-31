@@ -53,7 +53,6 @@
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -322,19 +321,17 @@ static void resolveTimerAPI()
 {
     static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve)
-            return;
-#endif
-        triedResolve = true;
-#if !defined(Q_OS_WINCE)
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
+#ifndef Q_OS_WINCE
+        QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
+        QSystemLibrary library(QLatin1String("winmm"));
 #endif
+        if (library.load()) {
+            qtimeSetEvent = (ptimeSetEvent)library.resolve("timeSetEvent");
+            qtimeKillEvent = (ptimeKillEvent)library.resolve("timeKillEvent");
+        }
+
+        triedResolve = true;
     }
 }
 

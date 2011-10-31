@@ -361,7 +361,7 @@
     See \c src/3rdparty/sha1/sha1.cpp for more information about the terms and
     conditions under which the code is supplied.
 
-    \section1 SQLite (\c sqlite) version 3.5.9
+    \section1 SQLite (\c sqlite) version 3.7.7.1
 
     \e{SQLite is a small C library that implements a
     self-contained, embeddable, zero-configuration SQL database engine.}
