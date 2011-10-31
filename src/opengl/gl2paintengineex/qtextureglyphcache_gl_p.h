@@ -144,6 +144,10 @@ public:
 
     void clear();
 
+    void contextDeleted(const QGLContext *context) {
+        if (ctx == context)
+            ctx = 0;
+    }
     void freeResource(void *) { ctx = 0; }
 
 private:

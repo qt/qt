@@ -1743,6 +1743,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenTextureFromPixmap = false;
     workaround_brokenTextureFromPixmap_init = false;
 
+    workaround_brokenScissor = false;
     workaround_brokenAlphaTexSubImage = false;
     workaround_brokenAlphaTexSubImage_init = false;
 
@@ -4381,7 +4382,7 @@ bool QGLWidget::event(QEvent *e)
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
-            makeCurrent();
+            makeCurrent(); // Shouldn't happen but keep it here just for sure
 
         if (testAttribute(Qt::WA_TranslucentBackground))
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
@@ -4389,8 +4390,11 @@ bool QGLWidget::event(QEvent *e)
 
     // A re-parent is likely to destroy the Symbian window and re-create it. It is important
     // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
-    if (e->type() == QEvent::ParentAboutToChange)
+    if (e->type() == QEvent::ParentAboutToChange) {
+        if (d->glcx == QGLContext::currentContext())
+            d->glcx->doneCurrent();
         d->glcx->d_func()->destroyEglSurfaceForDevice();
+    }
 
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
@@ -5722,6 +5726,11 @@ void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
     }
 }
 
+void QGLContextGroupResourceBase::contextDeleted(const QGLContext *ctx)
+{
+    Q_UNUSED(ctx);
+}
+
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -5737,12 +5746,16 @@ void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 
 void QGLContextGroup::cleanupResources(const QGLContext *context)
 {
+    // Notify all resources that a context has been deleted
+    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->contextDeleted(context);
+
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;
 
     // Iterate over all resources and free each in turn.
-    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
     for (it = m_resources.begin(); it != m_resources.end(); ++it)
         it.key()->cleanup(context, it.value());
 }

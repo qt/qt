@@ -235,6 +235,9 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
         if (QTLWExtra *topData = qt_widget_private(window)->maybeTopData()) {
             QWidgetBackingStoreTracker &backingStore = topData->backingStore;
             if (visible) {
+                QApplicationPrivate *d = QApplicationPrivate::instance();
+                d->emitAboutToUseGpuResources();
+
                 if (backingStore.data()) {
                     backingStore.registerWidget(widget);
                 } else {
@@ -244,6 +247,9 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                     widget->repaint();
                 }
             } else {
+                QApplicationPrivate *d = QApplicationPrivate::instance();
+                d->emitAboutToReleaseGpuResources();
+
                 // In certain special scenarios we may get an ENotVisible event
                 // without a previous EPartiallyVisible. The backingstore must
                 // still be destroyed, hence the registerWidget() call below.
@@ -584,7 +590,11 @@ QSymbianControl::~QSymbianControl()
 {
     // Ensure backing store is deleted before the top-level
     // window is destroyed
-    qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    QT_TRY {
+        qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    } QT_CATCH(const std::exception&) {
+        // ignore exceptions, nothing can be done
+    }
 
     if (S60->curWin == this)
         S60->curWin = 0;
@@ -2792,6 +2802,24 @@ void QApplicationPrivate::_q_aboutToQuit()
 #ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     // Send the shutdown tfx command
     S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
+#endif
+}
+
+void QApplicationPrivate::emitAboutToReleaseGpuResources()
+{
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    Q_Q(QApplication);
+    QPointer<QApplication> guard(q);
+    emit q->aboutToReleaseGpuResources();
+#endif
+}
+
+void QApplicationPrivate::emitAboutToUseGpuResources()
+{
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    Q_Q(QApplication);
+    QPointer<QApplication> guard(q);
+    emit q->aboutToUseGpuResources();
 #endif
 }
 

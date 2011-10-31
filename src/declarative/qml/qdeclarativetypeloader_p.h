@@ -198,14 +198,23 @@ public:
 
     QDeclarativeScriptData *getScript(const QUrl &);
     QDeclarativeQmldirData *getQmldir(const QUrl &);
+
+    QString absoluteFilePath(const QString &path);
+    const QDeclarativeDirParser *qmlDirParser(const QString &absoluteFilePath);
+
 private:
     typedef QHash<QUrl, QDeclarativeTypeData *> TypeCache;
     typedef QHash<QUrl, QDeclarativeScriptData *> ScriptCache;
     typedef QHash<QUrl, QDeclarativeQmldirData *> QmldirCache;
+    typedef QSet<QString> StringSet;
+    typedef QHash<QString, StringSet*> ImportDirCache;
+    typedef QHash<QString, QDeclarativeDirParser*> ImportQmlDirCache;
 
     TypeCache m_typeCache;
     ScriptCache m_scriptCache;
     QmldirCache m_qmldirCache;
+    ImportDirCache m_importDirCache;
+    ImportQmlDirCache m_importQmlDirCache;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeTypeLoader::Options)

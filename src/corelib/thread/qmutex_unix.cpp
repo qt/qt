@@ -65,7 +65,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_LINUX)
+#if !defined(Q_OS_LINUX)
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -77,11 +77,7 @@ static void report_error(int code, const char *where, const char *what)
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
     : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
 {
-#if defined(Q_OS_MAC)
-    kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);
-    if (r != KERN_SUCCESS)
-        qWarning("QMutex: failed to create semaphore, error %d", r);
-#elif !defined(Q_OS_LINUX)
+#if !defined(Q_OS_LINUX)
     wakeup = false;
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
@@ -90,47 +86,13 @@ QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
 
 QMutexPrivate::~QMutexPrivate()
 {
-#if defined(Q_OS_MAC)
-    kern_return_t r = semaphore_destroy(mach_task_self(), mach_semaphore);
-    if (r != KERN_SUCCESS)
-        qWarning("QMutex: failed to destroy semaphore, error %d", r);
-#elif !defined(Q_OS_LINUX)
+#if !defined(Q_OS_LINUX)
     report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
     report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
 #endif
 }
 
-#if defined(Q_OS_MAC)
-
-bool QMutexPrivate::wait(int timeout)
-{
-    if (contenders.fetchAndAddAcquire(1) == 0) {
-        // lock acquired without waiting
-        return true;
-    }
-    kern_return_t r;
-    if (timeout < 0) {
-        do {
-            r = semaphore_wait(mach_semaphore);
-        } while (r == KERN_ABORTED);
-	if (r != KERN_SUCCESS)
-            qWarning("QMutex: infinite wait failed, error %d", r);
-    } else {
-        mach_timespec_t ts;
-        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
-        ts.tv_sec = (timeout / 1000);
-        r = semaphore_timedwait(mach_semaphore, ts);
-    }
-    contenders.deref();
-    return r == KERN_SUCCESS;
-}
-
-void QMutexPrivate::wakeUp()
-{
-    semaphore_signal(mach_semaphore);
-}
-
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 
 static inline int _q_futex(volatile int *addr, int op, int val, const struct timespec *timeout, int *addr2, int val2)
 {
@@ -174,7 +136,7 @@ void QMutexPrivate::wakeUp()
     (void) _q_futex(&contenders._q_value, FUTEX_WAKE, 1, 0, 0, 0);
 }
 
-#else // !Q_OS_MAC && !Q_OS_LINUX
+#else // !Q_OS_LINUX
 
 bool QMutexPrivate::wait(int timeout)
 {
@@ -221,7 +183,7 @@ void QMutexPrivate::wakeUp()
     report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
 }
 
-#endif // !Q_OS_MAC && !Q_OS_LINUX
+#endif // !Q_OS_LINUX
 
 QT_END_NAMESPACE
 
