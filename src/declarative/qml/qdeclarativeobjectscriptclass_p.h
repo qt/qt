@@ -65,7 +65,7 @@ class QDeclarativeEngine;
 class QScriptContext;
 class QScriptEngine;
 class QDeclarativeContextData;
-class MethodData;
+struct MethodData;
 
 class Q_AUTOTEST_EXPORT QDeclarativeObjectMethodScriptClass : public QScriptDeclarativeClass
 {
