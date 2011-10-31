@@ -1270,7 +1270,6 @@ bool QDeclarativeTextInput::event(QEvent* ev)
 void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
-    Q_D(QDeclarativeTextInput);
     if (newGeometry.width() != oldGeometry.width()) {
         updateSize();
         updateCursorRectangle();

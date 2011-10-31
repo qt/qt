@@ -286,7 +286,6 @@ public:
     }
 
     void mirrorChange() {
-        Q_Q(QDeclarativeListView);
         regenerate();
     }
 
