@@ -478,7 +478,7 @@ void QNetworkDiskCache::updateMetaData(const QNetworkCacheMetaData &metaData)
 }
 
 /*!
-    Returns the current maximum size for the disk cache.
+    Returns the current maximum size in bytes for the disk cache.
 
     \sa setMaximumCacheSize()
  */
@@ -489,7 +489,7 @@ qint64 QNetworkDiskCache::maximumCacheSize() const
 }
 
 /*!
-    Sets the maximum size of the disk cache to be \a size.
+    Sets the maximum size of the disk cache to be \a size in bytes.
 
     If the new size is smaller then the current cache size then the cache will call expire().
 
