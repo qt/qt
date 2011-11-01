@@ -13113,6 +13113,7 @@ EXPORTS
 	?hasBCM2727@QSymbianGraphicsSystemEx@@SA_NXZ @ 13112 NONAME ; bool QSymbianGraphicsSystemEx::hasBCM2727(void)
 	?constImageRef@QVolatileImage@@QBEABVQImage@@XZ @ 13113 NONAME ; class QImage const & QVolatileImage::constImageRef(void) const
 	?toVolatileImage@QPixmapData@@UBE?AVQVolatileImage@@XZ @ 13114 NONAME ; class QVolatileImage QPixmapData::toVolatileImage(void) const
+<<<<<<< HEAD
 	?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 13115 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)
 	png_access_version_number @ 13116 NONAME
 	png_benign_error @ 13117 NONAME
@@ -13986,4 +13987,11 @@ EXPORTS
 	?resetFontEngineCache@QTextEngine@@QAEXXZ @ 13985 NONAME ; void QTextEngine::resetFontEngineCache(void)
 	?symbianHandleLiteModeStartup@QApplicationPrivate@@QAEXXZ @ 13986 NONAME ; void QApplicationPrivate::symbianHandleLiteModeStartup(void)
 	?_q_cleanupWinIds@QWidgetPrivate@@QAEXXZ @ 13987 NONAME ; void QWidgetPrivate::_q_cleanupWinIds(void)
+=======
+	?qt_s60_setPartialScreenAutomaticTranslation@@YAX_N@Z @ 13115 NONAME ; void qt_s60_setPartialScreenAutomaticTranslation(bool)		
+	?aboutToUseGpuResources@QApplication@@IAEXXZ @ 13116 NONAME ; void QApplication::aboutToUseGpuResources(void)
+	?aboutToReleaseGpuResources@QApplication@@IAEXXZ @ 13117 NONAME ; void QApplication::aboutToReleaseGpuResources(void)
+	?emitAboutToUseGpuResources@QApplicationPrivate@@QAEXXZ @ 13118 NONAME ; void QApplicationPrivate::emitAboutToUseGpuResources(void)
+	?emitAboutToReleaseGpuResources@QApplicationPrivate@@QAEXXZ @ 13119 NONAME ; void QApplicationPrivate::emitAboutToReleaseGpuResources(void)
+>>>>>>> origin/4.7
 

@@ -3205,7 +3205,7 @@ void QTableView::selectionChanged(const QItemSelection &selected,
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
 #ifdef Q_WS_X11
-            int entry = d->accessibleTable2Index(sel);
+            int entry = d->accessibleTable2Index(desel);
             QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
 #else
             int entry = visualIndex(sel);

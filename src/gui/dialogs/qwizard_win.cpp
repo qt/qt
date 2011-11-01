@@ -705,7 +705,6 @@ bool QVistaHelper::resolveSymbols()
 {
     static bool tried = false;
     if (!tried) {
-        tried = true;
         QSystemLibrary dwmLib(L"dwmapi");
         pDwmIsCompositionEnabled =
             (PtrDwmIsCompositionEnabled)dwmLib.resolve("DwmIsCompositionEnabled");
@@ -727,6 +726,7 @@ bool QVistaHelper::resolveSymbols()
             pDrawThemeTextEx = (PtrDrawThemeTextEx)themeLib.resolve("DrawThemeTextEx");
             pSetWindowThemeAttribute = (PtrSetWindowThemeAttribute)themeLib.resolve("SetWindowThemeAttribute");
         }
+        tried = true;
     }
 
     return (

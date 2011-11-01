@@ -218,9 +218,9 @@ static bool aygResolved = false;
 static void resolveAygLibs()
 {
     if (!aygResolved) {
-        aygResolved = true;
         QSystemLibrary ayglib(QLatin1String("aygshell"));
         ptrRecognizeGesture = (AygRecognizeGesture) ayglib.resolve("SHRecognizeGesture");
+        aygResolved = true;
     }
 }
 #endif // QT_NO_GESTURES
@@ -854,19 +854,15 @@ void qt_init(QApplicationPrivate *priv, int)
     qt_win_initialize_directdraw();
 
 #ifndef Q_OS_WINCE
-    ptrUpdateLayeredWindowIndirect =
-        (PtrUpdateLayeredWindowIndirect) QSystemLibrary::resolve(QLatin1String("user32"),
-                                                           "UpdateLayeredWindowIndirect");
-    ptrUpdateLayeredWindow =
-        (PtrUpdateLayeredWindow) QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "UpdateLayeredWindow");
+    QSystemLibrary user32(QLatin1String("user32"));
+    ptrUpdateLayeredWindowIndirect = (PtrUpdateLayeredWindowIndirect)user32.resolve("UpdateLayeredWindowIndirect");
+    ptrUpdateLayeredWindow = (PtrUpdateLayeredWindow)user32.resolve("UpdateLayeredWindow");
 
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
 
     // Notify Vista and Windows 7 that we support highter DPI settings
-    ptrSetProcessDPIAware = (PtrSetProcessDPIAware)
-        QSystemLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware");
+    ptrSetProcessDPIAware = (PtrSetProcessDPIAware)user32.resolve("SetProcessDPIAware");
     if (ptrSetProcessDPIAware)
         ptrSetProcessDPIAware();
 #endif
@@ -886,29 +882,16 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
 #elif !defined(Q_WS_WINCE)
   #if !defined(QT_NO_NATIVE_GESTURES)
-    priv->GetGestureInfo =
-            (PtrGetGestureInfo)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                 "GetGestureInfo");
-    priv->GetGestureExtraArgs =
-            (PtrGetGestureExtraArgs)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                      "GetGestureExtraArgs");
-    priv->CloseGestureInfoHandle =
-            (PtrCloseGestureInfoHandle)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                         "CloseGestureInfoHandle");
-    priv->SetGestureConfig =
-            (PtrSetGestureConfig)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "SetGestureConfig");
-    priv->GetGestureConfig =
-            (PtrGetGestureConfig)QSystemLibrary::resolve(QLatin1String("user32"),
-                                                   "GetGestureConfig");
+    priv->GetGestureInfo = (PtrGetGestureInfo)user32.resolve("GetGestureInfo");
+    priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs)user32.resolve("GetGestureExtraArgs");
+    priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle)user32.resolve("CloseGestureInfoHandle");
+    priv->SetGestureConfig = (PtrSetGestureConfig)user32.resolve("SetGestureConfig");
+    priv->GetGestureConfig = (PtrGetGestureConfig)user32.resolve("GetGestureConfig");
   #endif // QT_NO_NATIVE_GESTURES
     QSystemLibrary libTheme(QLatin1String("uxtheme"));
-    priv->BeginPanningFeedback =
-            (PtrBeginPanningFeedback)libTheme.resolve("BeginPanningFeedback");
-    priv->UpdatePanningFeedback =
-            (PtrUpdatePanningFeedback)libTheme.resolve("UpdatePanningFeedback");
-    priv->EndPanningFeedback =
-        (PtrEndPanningFeedback)libTheme.resolve("EndPanningFeedback");
+    priv->BeginPanningFeedback = (PtrBeginPanningFeedback)libTheme.resolve("BeginPanningFeedback");
+    priv->UpdatePanningFeedback = (PtrUpdatePanningFeedback)libTheme.resolve("UpdatePanningFeedback");
+    priv->EndPanningFeedback = (PtrEndPanningFeedback)libTheme.resolve("EndPanningFeedback");
 #endif
 #endif // QT_NO_GESTURES
 }
@@ -2388,15 +2371,14 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     break;
                 }
 
+#if !defined(Q_OS_WINCE)
                 typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
                 static PtrLresultFromObject ptrLresultFromObject = 0;
                 static bool oleaccChecked = false;
-
                 if (!oleaccChecked) {
+                    QSystemLibrary oleacclib(QLatin1String("oleacc"));
+                    ptrLresultFromObject = (PtrLresultFromObject)oleacclib.resolve("LresultFromObject");
                     oleaccChecked = true;
-#if !defined(Q_OS_WINCE)
-                    ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
-#endif
                 }
                 if (ptrLresultFromObject) {
                     QAccessibleInterface *acc = QAccessible::queryAccessibleInterface(widget);
@@ -2413,6 +2395,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     if (res > 0)
                         RETURN(res);
                 }
+#endif
             }
             result = false;
             break;
@@ -3198,8 +3181,8 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
 
             if (curWin != 0) {
                 if (!trackMouseEventLookup) {
-                    trackMouseEventLookup = true;
                     ptrTrackMouseEvent = (PtrTrackMouseEvent)QSystemLibrary::resolve(QLatin1String("comctl32"), "_TrackMouseEvent");
+                    trackMouseEventLookup = true;
                 }
                 if (ptrTrackMouseEvent && !qApp->d_func()->inPopupMode()) {
                     // We always have to set the tracking, since

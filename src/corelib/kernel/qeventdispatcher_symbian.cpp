@@ -60,6 +60,24 @@ QT_BEGIN_NAMESPACE
 #define WAKE_UP_PRIORITY CActive::EPriorityStandard
 #define TIMER_PRIORITY CActive::EPriorityHigh
 
+class Incrementer {
+    int &variable;
+public:
+    inline Incrementer(int &variable) : variable(variable)
+    { ++variable; }
+    inline ~Incrementer()
+    { --variable; }
+};
+
+class Decrementer {
+    int &variable;
+public:
+    inline Decrementer(int &variable) : variable(variable)
+    { --variable; }
+    inline ~Decrementer()
+    { ++variable; }
+};
+
 static inline int qt_pipe_write(int socket, const char *data, qint64 len)
 {
 	return ::write(socket, data, len);
@@ -951,6 +969,8 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 #endif
 
         while (1) {
+            //native active object callbacks are logically part of the event loop, so inc nesting level
+            Incrementer inc(d->threadData->loopLevel);
             if (block) {
                 // This is where Qt will spend most of its time.
                 CActiveScheduler::Current()->WaitForAnyRequest();
@@ -1045,6 +1065,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 
 void QEventDispatcherSymbian::timerFired(int timerId)
 {
+    Q_D(QAbstractEventDispatcher);
     QHash<int, SymbianTimerInfoPtr>::iterator i = m_timerList.find(timerId);
     if (i == m_timerList.end()) {
         // The timer has been deleted. Ignore this event.
@@ -1063,6 +1084,8 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     m_insideTimerEvent = true;
 
     QTimerEvent event(timerInfo->timerId);
+    //undo the added nesting level around RunIfReady, since Qt's event system also nests
+    Decrementer dec(d->threadData->loopLevel);
     QCoreApplication::sendEvent(timerInfo->receiver, &event);
 
     m_insideTimerEvent = oldInsideTimerEventValue;
@@ -1073,6 +1096,7 @@ void QEventDispatcherSymbian::timerFired(int timerId)
 
 void QEventDispatcherSymbian::wakeUpWasCalled()
 {
+    Q_D(QAbstractEventDispatcher);
     // The reactivation should happen in RunL, right before the call to this function.
     // This is because m_wakeUpDone is the "signal" that the object can be completed
     // once more.
@@ -1082,6 +1106,8 @@ void QEventDispatcherSymbian::wakeUpWasCalled()
     // the sendPostedEvents was done, but before the object was ready to be completed
     // again. This could deadlock the application if there are no other posted events.
     m_wakeUpDone.fetchAndStoreOrdered(0);
+    //undo the added nesting level around RunIfReady, since Qt's event system also nests
+    Decrementer dec(d->threadData->loopLevel);
     sendPostedEvents();
 }
 
