@@ -481,7 +481,7 @@ QTextEdit { background-position: bottom center }
 
 
 //! [81]
-QDialog { etch-disabled-text: 1 }
+QDialogButtonBox { dialogbuttonbox-buttons-have-icons: 1; }
 //! [81]
 
 
