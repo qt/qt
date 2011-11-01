@@ -85,9 +85,9 @@ public:
         if (!m_handle)
             return 0;
 #ifdef Q_OS_WINCE
-    return (void*)GetProcAddress(m_handle, (const wchar_t*)QString::fromLatin1(symbol).utf16());
+        return (void*)GetProcAddress(m_handle, (const wchar_t*)QString::fromLatin1(symbol).utf16());
 #else
-    return (void*)GetProcAddress(m_handle, symbol);
+        return (void*)GetProcAddress(m_handle, symbol);
 #endif
     }
 
@@ -97,6 +97,7 @@ public:
     }
 
     static Q_CORE_EXPORT HINSTANCE load(const wchar_t *lpFileName, bool onlySystemDirectory = true);
+
 private:
     HINSTANCE m_handle;
     QString m_libraryName;
@@ -105,6 +106,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  //Q_OS_WIN
+#endif // Q_OS_WIN
 
-#endif  //QSYSTEMLIBRARY_P_H
+#endif // QSYSTEMLIBRARY_P_H

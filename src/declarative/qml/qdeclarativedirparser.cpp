@@ -41,8 +41,10 @@
 
 #include "private/qdeclarativedirparser_p.h"
 #include "qdeclarativeerror.h"
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QtCore/QTextStream>
+#include <QtCore/QFile>
 #include <QtCore/QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -64,6 +66,16 @@ QUrl QDeclarativeDirParser::url() const
 void QDeclarativeDirParser::setUrl(const QUrl &url)
 {
     _url = url;
+}
+
+QString QDeclarativeDirParser::fileSource() const
+{
+    return _filePathSouce;
+}
+
+void QDeclarativeDirParser::setFileSource(const QString &filePath)
+{
+    _filePathSouce = filePath;
 }
 
 QString QDeclarativeDirParser::source() const
@@ -91,6 +103,23 @@ bool QDeclarativeDirParser::parse()
     _errors.clear();
     _plugins.clear();
     _components.clear();
+
+    if (_source.isEmpty() && !_filePathSouce.isEmpty()) {
+        QFile file(_filePathSouce);
+        if (!QDeclarative_isFileCaseCorrect(_filePathSouce)) {
+            QDeclarativeError error;
+            error.setDescription(QString::fromUtf8("cannot load module \"$$URI$$\": File name case mismatch for \"%1\"").arg(_filePathSouce));
+            _errors.prepend(error);
+            return false;
+        } else if (file.open(QFile::ReadOnly)) {
+            _source = QString::fromUtf8(file.readAll());
+        } else {
+            QDeclarativeError error;
+            error.setDescription(QString::fromUtf8("module \"$$URI$$\" definition \"%1\" not readable").arg(_filePathSouce));
+            _errors.prepend(error);
+            return false;
+        }
+    }
 
     QTextStream stream(&_source);
     int lineNumber = 0;
@@ -224,9 +253,16 @@ bool QDeclarativeDirParser::hasError() const
     return false;
 }
 
-QList<QDeclarativeError> QDeclarativeDirParser::errors() const
+QList<QDeclarativeError> QDeclarativeDirParser::errors(const QString &uri) const
 {
-    return _errors;
+    QList<QDeclarativeError> errors = _errors;
+    for (int i = 0; i < errors.size(); ++i) {
+        QDeclarativeError &e = errors[i];
+        QString description = e.description();
+        description.replace(QLatin1String("$$URI$$"), uri);
+        e.setDescription(description);
+    }
+    return errors;
 }
 
 QList<QDeclarativeDirParser::Plugin> QDeclarativeDirParser::plugins() const

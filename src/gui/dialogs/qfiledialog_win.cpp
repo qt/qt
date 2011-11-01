@@ -55,10 +55,6 @@
 #include <private/qsystemlibrary_p.h>
 #include "qfiledialog_win_p.h"
 
-#ifndef QT_NO_THREAD
-#  include <private/qmutexpool_p.h>
-#endif
-
 #ifdef Q_WS_WINCE
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
@@ -83,35 +79,23 @@ QT_BEGIN_NAMESPACE
 static void qt_win_resolve_libs()
 {
     static bool triedResolve = false;
-
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        // protect initialization
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-
-        triedResolve = true;
 #if !defined(Q_WS_WINCE)
-        QSystemLibrary lib(L"shell32");
+        QSystemLibrary lib(QLatin1String("shell32"));
         ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");
         ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDListW");
         ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
 #else
         // CE stores them in a different lib and does not use unicode version
-        HINSTANCE handle = LoadLibrary(L"Ceshell");
-        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)GetProcAddress(handle, L"SHBrowseForFolder");
-        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)GetProcAddress(handle, L"SHGetPathFromIDList");
-        ptrSHGetMalloc = (PtrSHGetMalloc)GetProcAddress(handle, L"SHGetMalloc");
+        QSystemLibrary lib(QLatin1String("Ceshell"));
+        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolder");
+        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDList");
+        ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
         if (ptrSHBrowseForFolder && ptrSHGetPathFromIDList && ptrSHGetMalloc)
             qt_priv_ptr_valid = true;
 #endif
+
+        triedResolve = true;
     }
 }
 
