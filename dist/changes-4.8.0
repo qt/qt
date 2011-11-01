@@ -197,6 +197,8 @@ QtTest
 ------
  - Added -random and -seed options to tests, making the test cases within
    a test execute in arbitrary order.
+ - Added -datatags option to list available data tags for each test function.
+   The test case name is also listed.
 
 ****************************************************************************
 *                          Database Drivers                                *
