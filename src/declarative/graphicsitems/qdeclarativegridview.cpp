@@ -2885,6 +2885,10 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
+    QList<QDeclarativeGridViewAttached *> addedItems;
+    for (int j = 0; j < added.count(); ++j)
+        addedItems << added.at(j)->attached;
+
     if (d->itemCount && d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
@@ -2898,8 +2902,8 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     }
 
     // everything is in order now - emit add() signal
-    for (int j = 0; j < added.count(); ++j)
-        added.at(j)->attached->emitAdd();
+    for (int j = 0; j < addedItems.count(); ++j)
+        addedItems.at(j)->emitAdd();
 
     d->itemCount += count;
     emit countChanged();
