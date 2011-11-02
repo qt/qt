@@ -251,7 +251,7 @@ static inline float weightToFloat(unsigned int weight)
     return (weight - 50) / 100.0;
 }
 
-static QFontEngine *loadFromDatabase(const QFontDef &req, const QFontPrivate *d)
+static QFontEngine *loadFromDatabase(QFontDef &req, const QFontPrivate *d)
 {
 #if defined(QT_MAC_USE_COCOA)
     QCFString fontName = NULL;
@@ -302,7 +302,7 @@ found:
         QCFString actualName;
         if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
             req.family = actualName;
-        return new QFontEngineMacMulti(familyRef, req, fontDef, d->kerning);
+        return new QFontEngineMacMulti(familyRef, fontRef, req, d->kerning);
     }
 #endif
     return NULL;

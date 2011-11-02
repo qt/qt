@@ -369,7 +369,7 @@ int QFontEngineMacMulti::fontIndexForFontID(ATSUFontID id) const
 
 bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
-    return stringToCMap(str, len, glyphs, nglyphs, flags, /*logClusters=*/0, /*charAttributes=*/0);
+    return stringToCMap(str, len, glyphs, nglyphs, flags, /*logClusters=*/0, /*charAttributes=*/0, /*si=*/0);
 }
 
 bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
