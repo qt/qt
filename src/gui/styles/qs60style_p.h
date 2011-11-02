@@ -473,8 +473,8 @@ public:
 
 private: //data members
     //TODO: consider changing these to non-pointers as the classes are rather small anyway
-    AnimationData *m_defaultData;
-    AnimationDataV2 *m_currentData;
+    QScopedPointer<AnimationData> m_defaultData;
+    QScopedPointer<AnimationDataV2> m_currentData;
 };
 
 #endif //Q_WS_S60

@@ -183,17 +183,6 @@ var blankRE=/^\s*$/;
 
 function CheckEmptyAndLoadList()
 {
-	/* Start Extracting information for feedback and adding this to the feedback form */
-	var pageUrl = window.location.pathname;
-	var pageVal = $('title').html();
-	$('#pageType').removeClass('red');
-	$('#feedUrl').remove();
-	$('#pageVal').remove();
-	$('.menuAlert').remove();
-	$('#feedform').append('<input id="feedUrl" name="feedUrl" value="'+pageUrl+'" style="display:none;">');
-	$('#feedform').append('<input id="pageVal" name="pageVal" value="'+pageVal+'" style="display:none;">');
-	/* End Extracting information for feedback and adding this to the feedback form */
-
 	/* extracts search query */
 	var value = document.getElementById('pageType').value; 
 	/* if the search is less than three chars long remove class names and remove elements from old search*/

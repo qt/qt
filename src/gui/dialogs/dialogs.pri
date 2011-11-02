@@ -109,11 +109,7 @@ SOURCES += \
         dialogs/qprintpreviewdialog.cpp
 
 symbian:contains(QT_CONFIG, s60) {
-    contains(CONFIG, is_using_gnupoc) {
-        LIBS += -lcommondialogs
-    } else {
-        LIBS += -lCommonDialogs
-    }
+    LIBS += -lcommondialogs
     SOURCES += dialogs/qfiledialog_symbian.cpp \
                dialogs/qcolordialog_symbian.cpp
 }

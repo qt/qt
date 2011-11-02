@@ -179,6 +179,7 @@ public:
 #endif
 #if defined(Q_OS_SYMBIAN)
                        , eglSurfaceWindowId(0)
+                       , surfaceSizeInitialized(false)
 #endif
     {
         isGLWidget = 1;
@@ -224,6 +225,7 @@ public:
 #ifdef Q_OS_SYMBIAN
     void recreateEglSurface();
     WId eglSurfaceWindowId;
+    bool surfaceSizeInitialized : 1;
 #endif
 };
 
@@ -426,6 +428,7 @@ public:
     uint workaround_brokenTextureFromPixmap : 1;
     uint workaround_brokenTextureFromPixmap_init : 1;
 
+    uint workaround_brokenScissor : 1;
     uint workaround_brokenAlphaTexSubImage : 1;
     uint workaround_brokenAlphaTexSubImage_init : 1;
 

@@ -46,7 +46,7 @@
 
 #include <e32property.h>
 
-#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+#if defined(Q_SYMBIAN_SUPPORTS_SURFACES) && !defined (QT_NO_EGL)
 #include "private/qegl_p.h"
 #endif
 
@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 static bool bcm2727Initialized = false;
 static bool bcm2727 = false;
 
-#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+#if defined(Q_SYMBIAN_SUPPORTS_SURFACES) && !defined (QT_NO_EGL)
 typedef EGLBoolean (*NOK_resource_profiling)(EGLDisplay, EGLint, EGLint*, EGLint, EGLint*);
 #define EGL_PROF_TOTAL_MEMORY_NOK 0x3070
 #endif
@@ -69,7 +69,7 @@ bool QSymbianGraphicsSystemEx::hasBCM2727()
     if (bcm2727Initialized)
         return bcm2727;
 
-#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+#if defined(Q_SYMBIAN_SUPPORTS_SURFACES) && !defined (QT_NO_EGL)
     EGLDisplay display = QEgl::display();
 #if 1
     // Hacky but fast ~0ms.
