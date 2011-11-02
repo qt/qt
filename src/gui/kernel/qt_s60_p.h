@@ -102,6 +102,10 @@ class QSymbianTypeFaceExtras;
 typedef QHash<QString, const QSymbianTypeFaceExtras *> QSymbianTypeFaceExtrasHash;
 typedef void (*QThreadLocalReleaseFunc)();
 
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+class CCoeEventData;
+#endif
+
 class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
@@ -308,10 +312,23 @@ private:
             const QPoint &globalPos,
             Qt::MouseButton button,
             Qt::KeyboardModifiers modifiers);
-    void processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure);
+    struct TouchEventParams
+    {
+        TouchEventParams();
+        TouchEventParams(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure);
+        int pointerNumber;
+        TPointerEvent::TType type;
+        QPointF screenPos;
+        qreal pressure;
+    };
+    void processTouchEvents(const QVector<TouchEventParams> &touches);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+    void translateMultiEventPointerEvent(const CCoeEventData &eventData );
+#endif
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
+    TouchEventParams TouchEventFromAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
     bool isSplitViewWidget(QWidget *widget);
     bool hasFocusedAndVisibleChild(QWidget *parentWidget);

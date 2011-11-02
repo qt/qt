@@ -3285,6 +3285,11 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 addedVisible = true;
             }
             FxListItem *item = d->createItem(modelIndex + i);
+            if (!item) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             d->visibleItems.insert(insertionIdx, item);
             pos -= item->size() + d->spacing;
             item->setPosition(pos);
@@ -3315,6 +3320,11 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 addedVisible = true;
             }
             FxListItem *item = d->createItem(modelIndex + i);
+            if (!item) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             d->visibleItems.insert(index, item);
             item->setPosition(pos);
             added.append(item);
@@ -3518,6 +3528,11 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
             FxListItem *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
+            if (!movedItem) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             if (item->index <= firstVisible->index)
                 moveBy -= movedItem->size();
             it = d->visibleItems.insert(it, movedItem);
