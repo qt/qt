@@ -405,7 +405,6 @@ void QTextControlPrivate::createAutoBulletList()
 
 void QTextControlPrivate::init(Qt::TextFormat format, const QString &text, QTextDocument *document)
 {
-    Q_Q(QTextControl);
     setContent(format, text, document);
 
     doc->setUndoRedoEnabled(interactionFlags & Qt::TextEditable);
