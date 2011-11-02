@@ -26,7 +26,9 @@
 #define PNGPRIV_H
 
 #ifdef _MSC_VER
-#  define _CRT_SECURE_NO_DEPRECATE
+#  ifndef _CRT_SECURE_NO_DEPRECATE
+#    define _CRT_SECURE_NO_DEPRECATE
+#  endif
 #endif
 
 /* Feature Test Macros.  The following are defined here to ensure that correctly
