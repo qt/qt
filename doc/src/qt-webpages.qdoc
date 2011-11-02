@@ -531,6 +531,95 @@
 */
 
 /*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_2_hello_world_in_qtcre
+    \title Qt Essentials - Fundamentals of Qt part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_1_your_first_qt_applic
+    \title Qt Essentials - Fundamentals of Qt part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/qt_essentials_widget_edition_application_creation_part_1_mainwindows
+    \title Qt Essentials - Application Creation part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/application_creation_part_2_settings_resources_and_application_deployment
+    \title Qt Essentials - Application Creation part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/application_creation_part_3_translation_for_developers
+    \title Qt Essentials - Application Creation part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_1_common_widgets
+    \title Qt Essentials - Widgets part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_2_layout_management
+    \title Qt Essentials - Widgets part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/widgets_part_3_guidelines_for_custom_widgets
+    \title Qt Essentials - Widgets part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_1_using_graphicsview_classes
+    \title Qt Essentials - Graphics View part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_2_transformations_and_coordinate_systems
+    \title Qt Essentials - Graphics View part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/graphics_view_part_3_creating_custom_items
+    \title Qt Essentials - Graphics View part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_1_model_view_concept
+    \title Qt Essentials - Model/View I part 1
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_2_showing_simple_data
+    \title Qt Essentials - Model/View I part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_3_proxy_models
+    \title Qt Essentials - Model/View I part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_part_4_custom_models
+    \title Qt Essentials - Model/View I part 4
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_1_editing_item_data
+    \title Qt Essentials - Model/View II part 1
+*/
+/*!
+    \externalpage
+    \title Qt Essentials - Model/View II part 2
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_3_data_widget_mapper
+    \title Qt Essentials - Model/View II part 3
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_4_custom_tree_model
+    \title Qt Essentials - Model/View II part 4
+*/
+/*!
+    \externalpage http://developer.qt.nokia.com/elearning/watch/model_view_ii_part_5_drag_and_drop
+    \title Qt Essentials - Model/View II part 5
+*/
+/*!
+    \externalpage http://qt.nokia.com/certification
+    \title Qt Certification
+*/
+/*!
+    \externalpage http://qt.nokia.com/developer/learning/certification/exams/preparation-prerequisites
+    \title Qt Certification Exam Preparation and Prerequisites
+*/
+
+/*!
     \externalpage http://qt.nokia.com/developer/learning/online/training/materials
     \title Download Qt training materials
 */
@@ -553,4 +642,9 @@
 /*!
     \externalpage http://labs.qt.nokia.com/2011/05/03/qt-modules-maturity-level/
     \title Qt Modules' Maturity Level - Description
+*/
+
+/*!
+    \externalpage http://doc.qt.nokia.com/qtquick-components-symbian-1.1/index.html
+    \title Qt Quick Components for Symbian 1.1
 */

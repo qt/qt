@@ -380,6 +380,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_formatRetriever(0),
       m_pointerHandler(0),
       m_hasTempPreeditString(false),
+      m_cachedCursorAndAnchorPosition(-1),
       m_splitViewResizeBy(0),
       m_splitViewPreviousWindowStates(Qt::WindowNoState),
       m_splitViewPreviousFocusItem(0),
@@ -448,9 +449,18 @@ void QCoeFepInputContext::reset()
     }
     // Store a copy of preedit text, if prediction is active and input context is reseted.
     // This is to ensure that we can replace preedit string after losing focus to FEP manager's
-    // internal sub-windows.
-    if (m_cachedPreeditString.isEmpty() && !(currentHints & Qt::ImhNoPredictiveText))
+    // internal sub-windows. Additionally, store the cursor position if there is no selected text.
+    // This allows input context to replace preedit strings if they are not at the end of current
+    // text.
+    if (m_cachedPreeditString.isEmpty() && !(currentHints & Qt::ImhNoPredictiveText)) {
         m_cachedPreeditString = m_preeditString;
+        if (focusWidget() && !m_cachedPreeditString.isEmpty()) {
+            int cursor = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+            int anchor = focusWidget()->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+            if (cursor == anchor)
+                m_cachedCursorAndAnchorPosition = cursor;
+        }
+    }
     commitCurrentString(true);
 
     // QGraphicsScene calls reset() when changing focus item. Unfortunately, the new focus item is
@@ -491,6 +501,7 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
 {
     m_cachedPreeditString.clear();
+    m_cachedCursorAndAnchorPosition = -1;
 
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
@@ -1350,6 +1361,7 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
         return;
 
     m_cachedPreeditString.clear();
+    m_cachedCursorAndAnchorPosition = -1;
 
     commitTemporaryPreeditString();
 
@@ -1408,8 +1420,16 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
     QString newPreeditString = qt_TDesC2QString(aNewInlineText);
     QInputMethodEvent event(newPreeditString, attributes);
     if (!m_cachedPreeditString.isEmpty()) {
-        event.setCommitString(QLatin1String(""), -m_cachedPreeditString.length(), m_cachedPreeditString.length());
+        int cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        // Predicted word is either replaced from the end of the word (normal case),
+        // or from stored location, if the predicted word is either in the beginning of,
+        // or in the middle of already committed word.
+        int diff = cursorPos - m_cachedCursorAndAnchorPosition;
+        int replaceLocation = (diff != m_cachedPreeditString.length()) ? diff : m_cachedPreeditString.length();
+
+        event.setCommitString(QLatin1String(""), -replaceLocation, m_cachedPreeditString.length());
         m_cachedPreeditString.clear();
+        m_cachedCursorAndAnchorPosition = -1;
     } else if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
         // In Symbian world this means "erase last character".
         event.setCommitString(QLatin1String(""), -1, 1);
@@ -1507,6 +1527,10 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
 
     int pos = aCursorSelection.iAnchorPos;
     int length = aCursorSelection.iCursorPos - pos;
+    if (m_cachedCursorAndAnchorPosition != -1) {
+        pos = m_cachedCursorAndAnchorPosition;
+        length = 0;
+    }
 
     QList<QInputMethodEvent::Attribute> attributes;
     attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, length, QVariant());
@@ -1524,6 +1548,13 @@ void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSele
 
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
     int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
+
+    // If the position is stored, use that value, so that word replacement from proposed word
+    // lists are added to the correct position.
+    if (m_cachedCursorAndAnchorPosition != -1) {
+        cursor = m_cachedCursorAndAnchorPosition;
+        anchor = m_cachedCursorAndAnchorPosition;
+    }
     QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
     int combinedSize = text.size() + m_preeditString.size();
     if (combinedSize < anchor || combinedSize < cursor) {

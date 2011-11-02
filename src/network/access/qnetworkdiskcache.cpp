@@ -429,7 +429,7 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
             // ### verify that QFile uses the fd size and not the file name
             qint64 size = file->size() - file->pos();
             const uchar *p = 0;
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_INTEGRITY)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_SYMBIAN)
             p = file->map(file->pos(), size);
 #endif
             if (p) {
@@ -478,7 +478,7 @@ void QNetworkDiskCache::updateMetaData(const QNetworkCacheMetaData &metaData)
 }
 
 /*!
-    Returns the current maximum size for the disk cache.
+    Returns the current maximum size in bytes for the disk cache.
 
     \sa setMaximumCacheSize()
  */
@@ -489,7 +489,7 @@ qint64 QNetworkDiskCache::maximumCacheSize() const
 }
 
 /*!
-    Sets the maximum size of the disk cache to be \a size.
+    Sets the maximum size of the disk cache to be \a size in bytes.
 
     If the new size is smaller then the current cache size then the cache will call expire().
 

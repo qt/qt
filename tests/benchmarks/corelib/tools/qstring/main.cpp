@@ -784,7 +784,7 @@ void tst_QString::equals2_data() const
 
 static void __attribute__((noinline)) equals2_selftest()
 {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     const long pagesize = sysconf(_SC_PAGESIZE);
     void *page1, *page3;
     ushort *page2;
@@ -1341,7 +1341,7 @@ void tst_QString::ucstrncmp() const
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
         const long pagesize = sysconf(_SC_PAGESIZE);
         void *page1, *page3;
         ushort *page2;
