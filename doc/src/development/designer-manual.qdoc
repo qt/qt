@@ -694,8 +694,10 @@
         the object's name with the in-place editor.
 
         Since Qt 4.5, the \gui{Object Inspector} displays the layout state of
-        the containers. The broken layout icon ###ICON is displayed if there is
-        something wrong with the layouts.
+        the containers. The broken layout icon \inlineimage editbreaklayout.png
+        is displayed if there is something wrong (e.g. layout missing from the
+        container) with the layouts.
+		
 
     \endtable
 */
