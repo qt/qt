@@ -205,7 +205,7 @@
     In order to set the application icon for Symbian platform applications, you need
     an SVG-T icon. For information on how to create SVG-T compliant icons,
     please refer to
-    \l{http://wiki.forum.nokia.com/index.php/How_to_create_application_icon(SVG)_in_S60_3rd_edition/}
+    \l{http://wiki.forum.nokia.com/index.php/How_to_create_application_icon(SVG)_in_S60_3rd_edition}
 
     Once the icon is available in the correct format and assuming you are
     using \c qmake to generate your makefiles, you only need to add a single
