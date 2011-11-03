@@ -457,7 +457,7 @@ bool QThread::isFinished() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
-    return d->finished;
+    return d->finished || d->isInFinish;
 }
 
 /*!
@@ -475,7 +475,7 @@ bool QThread::isRunning() const
     if (d->data->symbian_thread_handle.Handle() && d->data->symbian_thread_handle.ExitType() != EExitPending)
         return false;
 #endif
-    return d->running;
+    return d->running && !d->isInFinish;
 }
 
 /*!
