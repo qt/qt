@@ -5541,6 +5541,9 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
         if (srgbCapableFramebuffers)
             glExtensions |= SRGBFrameBuffer;
+        // Clear possible error which is generated if
+        // FRAMEBUFFER_SRGB_CAPABLE_EXT isn't supported.
+        glGetError();
     }
 
     return glExtensions;
