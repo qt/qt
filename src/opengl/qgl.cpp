@@ -5499,7 +5499,8 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= NVFloatBuffer;
     if (extensions.match("GL_ARB_pixel_buffer_object"))
         glExtensions |= PixelBufferObject;
-    if (extensions.match("GL_IMG_texture_format_BGRA8888"))
+    if (extensions.match("GL_IMG_texture_format_BGRA8888")
+        || extensions.match("GL_EXT_texture_format_BGRA8888"))
         glExtensions |= BGRATextureFormat;
 #if defined(QT_OPENGL_ES_2)
     glExtensions |= FramebufferObject;
