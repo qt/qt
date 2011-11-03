@@ -3,5 +3,3 @@ SOURCES  += tst_qvariant.cpp
 QT += network
 
 contains(QT_CONFIG, qt3support): QT += qt3support
-
-CONFIG+=insignificant_test # QTQAINFRA-428
