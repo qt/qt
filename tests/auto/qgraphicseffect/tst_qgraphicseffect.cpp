@@ -68,7 +68,6 @@ private slots:
     void boundingRectFor();
     void boundingRect();
     void boundingRect2();
-    void boundingRect3();
     void draw();
     void opacity();
     void grayscale();
@@ -318,39 +317,6 @@ void tst_QGraphicsEffect::boundingRect2()
 
     child->setGraphicsEffect(0);
     QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
-}
-
-void tst_QGraphicsEffect::boundingRect3()
-{
-    QGraphicsScene scene;
-    QGraphicsRectItem *root = new QGraphicsRectItem;
-    scene.addItem(root);
-    QRectF rootRect(0, 0, 100, 100);
-    root->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
-    root->setRect(rootRect);
-
-    QGraphicsRectItem *child = new QGraphicsRectItem;
-    child->setPos(5,5);
-    child->setParentItem(root);
-    CustomEffect *effect1 = new CustomEffect;
-    child->setGraphicsEffect(effect1);
-
-    QGraphicsRectItem *grandChild = new QGraphicsRectItem;
-    QRectF grandChildRect(0, 0, 50, 50);
-    grandChild->setRect(grandChildRect);
-    grandChild->setPos(10,10);
-    grandChild->setParentItem(child);
-    CustomEffect *effect2 = new CustomEffect;
-    grandChild->setGraphicsEffect(effect2);
-
-    QRectF effectiveBoundingRectGrandChild = effect2->boundingRectFor(grandChildRect);
-    QCOMPARE(effect2->boundingRect(), effectiveBoundingRectGrandChild);
-
-    QRectF effectiveBoundingRectChildAndGrandChild = effect1->boundingRectFor(child->mapRectFromItem(grandChild, effectiveBoundingRectGrandChild));
-    QCOMPARE(effect1->boundingRect(),effectiveBoundingRectChildAndGrandChild);
-
-    // The children bounding rect of the root should be the rectangle of the grandChild enlarged twice by the CustomEffect on the grandChild and the child, but clipped by the root item
-    QCOMPARE(root->childrenBoundingRect(), root->boundingRect().intersected(root->mapRectFromItem(child, effectiveBoundingRectChildAndGrandChild)));
 }
 
 void tst_QGraphicsEffect::draw()

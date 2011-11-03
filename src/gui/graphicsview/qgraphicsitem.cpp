@@ -2845,23 +2845,16 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
     If the item has an effect, the effective rect can be larger than the item's
     bouding rect, depending on the effect.
 
-    \a topMostEffectItem is the top most parent of which a possible QGraphicsEffect
-    should be taken into account (\a topMostEffectItem is inclusive). Any effects
-    of any ancestors of \a topMostEffectItem are not taken into consideration.
-
     \sa boundingRect()
 */
 QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectItem) const
 {
 #ifndef QT_NO_GRAPHICSEFFECT
     Q_Q(const QGraphicsItem);
-    // Take into account the items own effect
     QRectF brect = effectiveBoundingRect(q_ptr->boundingRect());
-
-    if (topMostEffectItem == q)
+    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren || topMostEffectItem == q)
         return brect;
 
-    // Take into account any effects applied to the parents
     const QGraphicsItem *effectParent = parent;
     while (effectParent) {
         QGraphicsEffect *effect = effectParent->d_ptr->graphicsEffect;
@@ -2870,10 +2863,10 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectI
             const QRectF effectRectInParentSpace = effectParent->d_ptr->effectiveBoundingRect(brectInParentSpace);
             brect = effectParent->mapRectToItem(q, effectRectInParentSpace);
         }
-        if (effectParent && (effectParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape))
-            return brect.intersected(q->mapRectFromItem(effectParent, effectParent->boundingRect()));
-        else if (topMostEffectItem == effectParent)
+        if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+            || topMostEffectItem == effectParent) {
             return brect;
+        }
         effectParent = effectParent->d_ptr->parent;
     }
 
