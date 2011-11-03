@@ -1,3 +1,14 @@
+2011-11-03  Zeno Albisser  <zeno.albisser@nokia.com>
+
+        [Qt] Unreviewed: Fix universal binary build on Mac.
+        https://bugreports.qt.nokia.com/browse/QTBUG-20619
+
+        When building a universal binary the debug version
+        exceeds the maximum size of a static library.
+        Therefore we do not allow this configuration.
+
+        * Source/WebKit.pri:
+
 2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
 
         Reviewed by Benjamin Poulain.
