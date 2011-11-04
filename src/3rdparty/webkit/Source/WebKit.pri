@@ -10,6 +10,13 @@ CONFIG(QTDIR_build) {
     # Make sure we compile both debug and release on mac when inside Qt.
     # This line was extracted from qbase.pri instead of including the whole file
     win32|mac:!macx-xcode:CONFIG += debug_and_release
+    # In case we are building a universal binary for Qt, building debug is not
+    # possible because we would exceed the maximum library size for 32bit.
+    mac:CONFIG(QT_CONFIG, x86):CONFIG(QT_CONFIG, x86_64):debug|debug_and_release {
+        message(Building a universal binary with debug symbols is not possible. Building release!)
+        CONFIG -= debug_and_release debug
+        CONFIG += release
+    }
 } else {
     !CONFIG(release, debug|release) {
         OBJECTS_DIR = obj/debug
