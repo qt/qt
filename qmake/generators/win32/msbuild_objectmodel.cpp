@@ -2896,6 +2896,7 @@ XmlOutput &operator<<(XmlOutput &xml, const VCXProjectSingleConfig &tool)
         tempProj.outputFilter(xml, xmlFilter, tempProj.ExtraCompilers.at(x));
     }
 
+    tempProj.outputFilter(xml, xmlFilter, "Root Files");
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
     xml << tag("ImportGroup")
