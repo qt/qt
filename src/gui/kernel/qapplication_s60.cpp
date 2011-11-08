@@ -92,6 +92,10 @@
 #include <graphics/wstfxconst.h>
 #endif
 
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+#include <coeeventdata.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Goom Events through Window Server
@@ -677,71 +681,121 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 }
 
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+void QSymbianControl::translateMultiEventPointerEvent(const CCoeEventData &eventData )
+{
+    TUint count = eventData.Count();
+    QVector<TouchEventParams> touches;
+    touches.reserve(count);
+    for (int i = 0; i < count; i++) {
+        const TPointerEvent *pointerEvent = eventData.Pointer(i);
+        const TAdvancedPointerEvent *advEvent = pointerEvent->AdvancedPointerEvent();
+        if (advEvent)
+            touches.push_back(TouchEventFromAdvancedPointerEvent(advEvent));
+    }
+    if (touches.size())
+        processTouchEvents(touches);
+}
+#endif
+
 void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
+{
+    processTouchEvents(QVector<TouchEventParams>(1, TouchEventFromAdvancedPointerEvent(event)));
+}
+
+QSymbianControl::TouchEventParams QSymbianControl::TouchEventFromAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
     QPointF screenPos = qwidget->mapToGlobal(translatePointForFixedNativeOrientation(event->iPosition));
     qreal pressure;
-    if(d->pressureSupported
+    if (d->pressureSupported
         && event->Pressure() > 0) //workaround for misconfigured HAL
         pressure = event->Pressure() / qreal(d->maxTouchPressure);
     else
         pressure = qreal(1.0);
-    processTouchEvent(event->PointerNumber(), event->iType, screenPos, pressure);
+    return TouchEventParams(event->PointerNumber(), event->iType, screenPos, pressure);
 }
 #endif
 
-void QSymbianControl::processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure)
+QSymbianControl::TouchEventParams::TouchEventParams()
+{}
+
+QSymbianControl::TouchEventParams::TouchEventParams(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure)
+    : pointerNumber(pointerNumber),
+      type(type),
+      screenPos(screenPos),
+      pressure(pressure)
+{}
+
+void QSymbianControl::processTouchEvents(const QVector<TouchEventParams> &touches)
 {
     QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
 
     QApplicationPrivate *d = QApplicationPrivate::instance();
 
+    // get the maximum pointer number
+    int numUpdates = touches.size();
+    int maxPointerNumber = 0;
+    for (int i = 0; i < numUpdates; ++i) {
+        const TouchEventParams &touch = touches[i];
+        maxPointerNumber = qMax(maxPointerNumber, touch.pointerNumber);
+    }
+
+    // ensure there are sufficient touch events in the list,
+    // touch events will be indexed by pointerNumber
     QList<QTouchEvent::TouchPoint> points = d->appAllTouchPoints;
-    while (points.count() <= pointerNumber)
+    while (points.count() <= maxPointerNumber)
         points.append(QTouchEvent::TouchPoint(points.count()));
 
+    // first set all active touch points to stationary
+    for (int i = 0; i < points.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = points[i];
+        if (touchPoint.state() != Qt::TouchPointReleased) {
+            touchPoint.setState(Qt::TouchPointStationary);
+         }
+    }
+
+    // Add all info about moving or state changed touch points
+    for (int i = 0; i < numUpdates; ++i) {
+        const TouchEventParams &touch = touches[i];
+        QTouchEvent::TouchPoint &touchPoint = points[touch.pointerNumber];
+        Qt::TouchPointStates state;
+        switch (touch.type) {
+        case TPointerEvent::EButton1Down:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+        case TPointerEvent::EEnterHighPressure:
+#endif
+            state = Qt::TouchPointPressed;
+            break;
+        case TPointerEvent::EButton1Up:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+        case TPointerEvent::EExitCloseProximity:
+#endif
+            state = Qt::TouchPointReleased;
+            break;
+        case TPointerEvent::EDrag:
+            state = Qt::TouchPointMoved;
+            break;
+        default:
+            // how likely is this to happen?
+            state = Qt::TouchPointStationary;
+            break;
+        }
+        if (touch.pointerNumber == 0)
+            state |= Qt::TouchPointPrimary;
+        touchPoint.setState(state);
+
+        touchPoint.setScreenPos(touch.screenPos);
+        touchPoint.setNormalizedPos(QPointF(touch.screenPos.x() / screenGeometry.width(),
+                                            touch.screenPos.y() / screenGeometry.height()));
+
+        touchPoint.setPressure(touch.pressure);
+    }
+
+    // check the resulting state of all touch points
     Qt::TouchPointStates allStates = 0;
     for (int i = 0; i < points.count(); ++i) {
         QTouchEvent::TouchPoint &touchPoint = points[i];
-
-        if (touchPoint.id() == pointerNumber) {
-            Qt::TouchPointStates state;
-            switch (type) {
-            case TPointerEvent::EButton1Down:
-#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-            case TPointerEvent::EEnterHighPressure:
-#endif
-                state = Qt::TouchPointPressed;
-                break;
-            case TPointerEvent::EButton1Up:
-#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-            case TPointerEvent::EExitCloseProximity:
-#endif
-                state = Qt::TouchPointReleased;
-                break;
-            case TPointerEvent::EDrag:
-                state = Qt::TouchPointMoved;
-                break;
-            default:
-                // how likely is this to happen?
-                state = Qt::TouchPointStationary;
-                break;
-            }
-            if (pointerNumber == 0)
-                state |= Qt::TouchPointPrimary;
-            touchPoint.setState(state);
-
-            touchPoint.setScreenPos(screenPos);
-            touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
-                                                screenPos.y() / screenGeometry.height()));
-
-            touchPoint.setPressure(pressure);
-        } else if (touchPoint.state() != Qt::TouchPointReleased) {
-            // all other active touch points should be marked as stationary
-            touchPoint.setState(Qt::TouchPointStationary);
-        }
-
         allStates |= touchPoint.state();
     }
 
@@ -760,6 +814,28 @@ void QSymbianControl::processTouchEvent(int pointerNumber, TPointerEvent::TType 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+    if (pEvent.iType == TPointerEvent::EDataCCoeEventData) {
+        // only advanced pointers can be data type pointer events
+        const TAdvancedPointerEvent *advEvent = pEvent.AdvancedPointerEvent();
+        if (!advEvent)
+            return;
+        const CCoeEventData& eventData = CCoeEventData::EventData(*advEvent);
+        if (eventData.Type() == CWsEventWithData::EPointerEvent) {
+            QT_TRYCATCH_LEAVING(translateMultiEventPointerEvent(eventData));
+            // pointer 0 events and unnumbered events should also be handled as mouse events
+            for (int i=0; i<eventData.Count(); i++) {
+                const TPointerEvent *pointerEvent = eventData.Pointer(i);
+                const TAdvancedPointerEvent *advEvent = pointerEvent->AdvancedPointerEvent();
+                if (!advEvent || advEvent->PointerNumber() == 0) {
+                    m_longTapDetector->PointerEventL(*pointerEvent);
+                    QT_TRYCATCH_LEAVING(HandlePointerEvent(*pointerEvent));
+                }
+            }
+            return;
+        }
+    }
+#endif
     if (pEvent.IsAdvancedPointerEvent()) {
         const TAdvancedPointerEvent *advancedPointerEvent = pEvent.AdvancedPointerEvent();
         translateAdvancedPointerEvent(advancedPointerEvent);
@@ -833,7 +909,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 //Generate single touch event for S60 5.0 (has touchscreen, does not have advanced pointers)
 #ifndef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     if (S60->hasTouchscreen) {
-        processTouchEvent(0, pEvent.iType, QPointF(globalPos), 1.0);
+        processTouchEvents(QVector<TouchEventParams>(1, TouchEventParams(0, pEvent.iType, QPointF(globalPos), 1.0)));
     }
 #endif
 
