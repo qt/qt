@@ -1,260 +1,260 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE TS>
 
-<TS version="2.0" language="fa">
+<TS version="2.0" language="ko">
     <context>
         <name>QApplication</name>
         <message>
             <source>QT_LAYOUT_DIRECTION</source>
             <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
-            <translation>RTL</translation>
+            <translation>LTR</translation>
         </message>
     </context>
     <context>
         <name>QDialogButtonBox</name>
         <message>
             <source>OK</source>
-            <translation>تایید</translation>
+            <translation>확인</translation>
         </message>
         <message>
             <source>Save</source>
-            <translation>ذخیره</translation>
+            <translation>저장</translation>
         </message>
         <message>
             <source>&amp;Save</source>
-            <translation>&amp;ذخیره</translation>
+            <translation>저장(&amp;S)</translation>
         </message>
         <message>
             <source>Open</source>
-            <translation>باز کردن</translation>
+            <translation>열기</translation>
         </message>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>취소</translation>
         </message>
         <message>
             <source>&amp;Cancel</source>
-            <translation>&amp;لغو</translation>
+            <translation>취소(&amp;C)</translation>
         </message>
         <message>
             <source>Close</source>
-            <translation>بستن</translation>
+            <translation>닫기</translation>
         </message>
         <message>
             <source>&amp;Close</source>
-            <translation>&amp;بستن</translation>
+            <translation>닫기(&amp;C)</translation>
         </message>
         <message>
             <source>Apply</source>
-            <translation>بکار گرفتن</translation>
+            <translation>적용</translation>
         </message>
         <message>
             <source>Reset</source>
-            <translation>بازنشانی</translation>
+            <translation>초기화</translation>
         </message>
         <message>
             <source>Help</source>
-            <translation>دفترچه راهنما</translation>
+            <translation>도움말</translation>
         </message>
         <message>
             <source>Don&apos;t Save</source>
-            <translation>ذخیره نشود</translation>
+            <translation>저장하지 않음</translation>
         </message>
         <message>
             <source>Discard</source>
-            <translation>لغو کردن</translation>
+            <translation>무시</translation>
         </message>
         <message>
             <source>&amp;Yes</source>
-            <translation>&amp;بله</translation>
+            <translation>예(&amp;Y)</translation>
         </message>
         <message>
             <source>Yes to &amp;All</source>
-            <translation>بله به &amp;همه</translation>
+            <translation>모두 예(&amp;A)</translation>
         </message>
         <message>
             <source>&amp;No</source>
-            <translation>&amp;خیر</translation>
+            <translation>아니오(&amp;N)</translation>
         </message>
         <message>
             <source>N&amp;o to All</source>
-            <translation>خیر&amp; به همه</translation>
+            <translation>모두 아니오(&amp;O)</translation>
         </message>
         <message>
             <source>Save All</source>
-            <translation>ذخیره همه</translation>
+            <translation>모두 저장</translation>
         </message>
         <message>
             <source>Abort</source>
-            <translation>لغو</translation>
+            <translation>중단</translation>
         </message>
         <message>
             <source>Retry</source>
-            <translation>تلاش مجدد</translation>
+            <translation>다시 시도</translation>
         </message>
         <message>
             <source>Ignore</source>
-            <translation>نادیده گرفتن</translation>
+            <translation>무시</translation>
         </message>
         <message>
             <source>Restore Defaults</source>
-            <translation>بازنشانی پیش فرض ها</translation>
+            <translation>기본값 복원</translation>
         </message>
         <message>
             <source>Close without Saving</source>
-            <translation>بستن بدون ذخیره کردن</translation>
+            <translation>저장하지 않고 닫기</translation>
         </message>
         <message>
             <source>&amp;OK</source>
-            <translation>&amp;تایید</translation>
+            <translation>확인(&amp;O)</translation>
         </message>
     </context>
     <context>
         <name>QErrorMessage</name>
         <message>
             <source>&amp;Show this message again</source>
-            <translation>&amp;این پیام مجدد نمایش داده شود</translation>
+            <translation>이 메시지를 다시 보이기(&amp;S)</translation>
         </message>
         <message>
             <source>&amp;OK</source>
-            <translation>&amp;تایید</translation>
+            <translation>확인(&amp;O)</translation>
         </message>
         <message>
             <source>Debug Message:</source>
-            <translation>پیام اشکال زدایی:</translation>
+            <translation>디버그 메시지:</translation>
         </message>
         <message>
             <source>Warning:</source>
-            <translation>هشدار:</translation>
+            <translation>경고:</translation>
         </message>
         <message>
             <source>Fatal Error:</source>
-            <translation>خطای مهم:</translation>
+            <translation>치명적 오류:</translation>
         </message>
     </context>
     <context>
         <name>QInputDialog</name>
         <message>
             <source>Enter a value:</source>
-            <translation>یک مقدار وارد کنید:</translation>
+            <translation>값을 입력하십시오:</translation>
         </message>
     </context>
     <context>
         <name>QMenu</name>
         <message>
             <source>Close</source>
-            <translation>بستن</translation>
+            <translation>닫기</translation>
         </message>
         <message>
             <source>Open</source>
-            <translation>باز کردن</translation>
+            <translation>열기</translation>
         </message>
         <message>
             <source>Execute</source>
-            <translation>استفاده</translation>
+            <translation>실행</translation>
         </message>
     </context>
     <context>
         <name>QMenuBar</name>
         <message>
             <source>Actions</source>
-            <translation>اقدامات</translation>
+            <translation>동작</translation>
         </message>
     </context>
     <context>
         <name>QMessageBox</name>
         <message>
             <source>OK</source>
-            <translation>تایید</translation>
+            <translation>확인</translation>
         </message>
         <message>
             <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
-            <translation>&lt;h3&gt;درباره Qt&lt;/h3&gt;&lt;p&gt;این برنامه از نسخه %1 Qt استفاده می کند.&lt;/p&gt;</translation>
+            <translation>&lt;h3&gt;Qt 정보&lt;/h3&gt;&lt;p&gt;이 프로그램은 Qt 버전 %1을(를) 사용합니다.&lt;/p&gt;</translation>
         </message>
         <message>
             <source>About Qt</source>
-            <translation>درباره Qt</translation>
+            <translation>Qt 정보</translation>
         </message>
         <message>
             <source>Help</source>
-            <translation>دفترچه راهنما</translation>
+            <translation>도움말</translation>
         </message>
         <message>
             <source>Show Details...</source>
-            <translation>نمایش جزئیات</translation>
+            <translation>자세한 정보 보기...</translation>
         </message>
         <message>
             <source>Hide Details...</source>
-            <translation>مخفی کردن جزئیات</translation>
+            <translation>자세한 정보 숨기기...</translation>
         </message>
     </context>
     <context>
         <name>QProgressDialog</name>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>취소</translation>
         </message>
     </context>
     <context>
         <name>QSoftKeyManager</name>
         <message>
             <source>Ok</source>
-            <translation>تایید</translation>
+            <translation>확인</translation>
         </message>
         <message>
             <source>Select</source>
-            <translation>انتخاب</translation>
+            <translation>선택</translation>
         </message>
         <message>
             <source>Done</source>
-            <translation>انجام شد</translation>
+            <translation>완료</translation>
         </message>
         <message>
             <source>Options</source>
-            <translation>گزینه ها</translation>
+            <translation>옵션</translation>
         </message>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>취소</translation>
         </message>
         <message>
             <source>Exit</source>
-            <translation>خروج</translation>
+            <translation>끝내기</translation>
         </message>
     </context>
     <context>
         <name>QTextControl</name>
         <message>
             <source>&amp;Undo</source>
-            <translation>&amp;لغو آخرین تغییر</translation>
+            <translation>실행 취소(&amp;U)</translation>
         </message>
         <message>
             <source>&amp;Redo</source>
-            <translation>&amp;انجام مجدد تغییر</translation>
+            <translation>다시 실행(&amp;R)</translation>
         </message>
         <message>
             <source>Cu&amp;t</source>
-            <translation>&amp;بریدن</translation>
+            <translation>잘라내기(&amp;T)</translation>
         </message>
         <message>
             <source>&amp;Copy</source>
-            <translation>&amp;کپی</translation>
+            <translation>복사(&amp;C)</translation>
         </message>
         <message>
             <source>Copy &amp;Link Location</source>
-            <translation>کپی &amp;مکان پیوند</translation>
+            <translation>링크 주소 복사(&amp;L)</translation>
         </message>
         <message>
             <source>&amp;Paste</source>
-            <translation>&amp;چسباندن</translation>
+            <translation>붙여넣기(&amp;P)</translation>
         </message>
         <message>
             <source>Delete</source>
-            <translation>حذف</translation>
+            <translation>삭제</translation>
         </message>
         <message>
             <source>Select All</source>
-            <translation>انتخاب همه</translation>
+            <translation>모두 선택</translation>
         </message>
     </context>
 </TS>
