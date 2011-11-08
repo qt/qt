@@ -359,23 +359,26 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &st
 {
     int pos = 0;
     if (count) {
-        // if styleName for searching first if possible
-        if (!styleName.isEmpty()) {
-            for (; pos < count; pos++) {
-                if (styles[pos]->styleName == styleName)
-                    return styles[pos];
-            }
-        }
         int low = 0;
         int high = count;
+        bool hasStyleName = !styleName.isEmpty(); // search styleName first if available
         pos = count / 2;
         while (high > low) {
-            if (styles[pos]->key == key)
-                return styles[pos];
-            if (styles[pos]->key < key)
-                low = pos + 1;
-            else
-                high = pos;
+            if (hasStyleName) {
+                if (styles[pos]->styleName == styleName)
+                    return styles[pos];
+                if (styles[pos]->styleName < styleName)
+                    low = pos + 1;
+                else
+                    high = pos;
+            } else {
+                if (styles[pos]->key == key)
+                    return styles[pos];
+                if (styles[pos]->key < key)
+                    low = pos + 1;
+                else
+                    high = pos;
+            }
             pos = (high + low) / 2;
         }
         pos = low;
@@ -383,7 +386,7 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &st
     if (!create)
         return 0;
 
-//     qDebug("adding key (weight=%d, style=%d, oblique=%d stretch=%d) at %d", key.weight, key.style, key.oblique, key.stretch, pos);
+    // qDebug("adding key (weight=%d, style=%d, stretch=%d) at %d", key.weight, key.style, key.stretch, pos);
     if (!(count % 8)) {
         QtFontStyle **newStyles = (QtFontStyle **)
                  realloc(styles, (((count+8) >> 3) << 3) * sizeof(QtFontStyle *));
