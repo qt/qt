@@ -438,7 +438,10 @@
 
     Note, that you must use "+=", not "=", or \l{qmake Manual#qmake}{\c qmake}
     will not be able to use Qt's configuration to determine the settings
-    needed for your project.
+    needed for your project. More information about operators can be found in the
+	\l{qmake Advanced Usage#Operators}
+    {Operators} section of the \l{qmake Advanced Usage}
+    chapter.
 
     \section1 Declaring Qt Libraries
 
@@ -464,6 +467,11 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 4
 
+	More information about operators can be found in the
+    \l{qmake Advanced Usage#Operators}
+    {Operators} section of the \l{qmake Advanced Usage}
+    chapter.
+	
     The table below shows the options that can be used with the \c QT variable
     and the features that are associated with each of them:
 

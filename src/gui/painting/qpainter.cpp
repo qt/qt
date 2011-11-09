@@ -9509,7 +9509,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         void *visual = QPaintDevice::x11AppVisual(screen);
     \newcode
-        void *visual = qApp->x11Info(screen).visual();
+        void *visual = widget->x11Info().appVisual(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9521,7 +9521,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         unsigned long colormap = QPaintDevice::x11AppColormap(screen);
     \newcode
-        unsigned long colormap = qApp->x11Info(screen).colormap();
+        unsigned long colormap = widget->x11Info().appColormap(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9533,7 +9533,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         Display *display = QPaintDevice::x11AppDisplay();
     \newcode
-        Display *display = qApp->x11Info().display();
+        Display *display = widget->x11Info().display();
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9545,7 +9545,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int screen = QPaintDevice::x11AppScreen();
     \newcode
-        int screen = qApp->x11Info().screen();
+        int screen = widget->x11Info().appScreen();
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9557,7 +9557,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int depth = QPaintDevice::x11AppDepth(screen);
     \newcode
-        int depth = qApp->x11Info(screen).depth();
+        int depth = widget->x11Info().appDepth(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9569,7 +9569,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int cells = QPaintDevice::x11AppCells(screen);
     \newcode
-        int cells = qApp->x11Info(screen).cells();
+        int cells = widget->x11Info().appCells(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9581,7 +9581,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         unsigned long window = QPaintDevice::x11AppRootWindow(screen);
     \newcode
-        unsigned long window = qApp->x11Info(screen).appRootWindow();
+        unsigned long window = widget->x11Info().appRootWindow(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9593,7 +9593,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDefaultColormap(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).defaultColormap();
+        bool isDefault = widget->x11Info().appDefaultColormap(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9605,7 +9605,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDefaultVisual(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).defaultVisual();
+        bool isDefault = widget->x11Info().appDefaultVisual(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9625,7 +9625,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDpiX(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).appDpiX();
+        bool isDefault = widget->x11Info().appDpiX(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9637,7 +9637,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDpiY(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).appDpiY();
+        bool isDefault = widget->x11Info().appDpiY(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()

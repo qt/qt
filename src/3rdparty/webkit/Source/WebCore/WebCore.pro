@@ -7,6 +7,8 @@ include($$PWD/../WebKit.pri)
 include($$PWD/WebCore.pri)
 include($$PWD/../JavaScriptCore/JavaScriptCore.pri)
 
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+
 TEMPLATE = lib
 TARGET = $$WEBCORE_TARGET
 CONFIG += staticlib
@@ -2973,6 +2975,9 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             platform/mac/WebWindowAnimation.mm
 
         DEFINES+=NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+        contains(CONFIG, "x86") {
+            DEFINES+=NS_BUILD_32_LIKE_64
+        }
 
     } else: contains(DEFINES, WTF_USE_GSTREAMER=1) {
         HEADERS += \

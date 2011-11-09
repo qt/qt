@@ -481,7 +481,7 @@ QTextEdit { background-position: bottom center }
 
 
 //! [81]
-QDialog { etch-disabled-text: 1 }
+QDialogButtonBox { dialogbuttonbox-buttons-have-icons: 1; }
 //! [81]
 
 
@@ -1479,7 +1479,7 @@ QSplitter::handle:vertical {
 }
 
 QSplitter::handle:pressed {
-    url(images/splitter_pressed.png);
+    image: url(images/splitter_pressed.png);
 }
 
 //! [142]
