@@ -1,260 +1,260 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE TS>
 
-<TS version="2.0" language="fa">
+<TS version="2.0" language="it">
     <context>
         <name>QApplication</name>
         <message>
             <source>QT_LAYOUT_DIRECTION</source>
             <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
-            <translation>RTL</translation>
+            <translation>LTR</translation>
         </message>
     </context>
     <context>
         <name>QDialogButtonBox</name>
         <message>
             <source>OK</source>
-            <translation>تایید</translation>
+            <translation>OK</translation>
         </message>
         <message>
             <source>Save</source>
-            <translation>ذخیره</translation>
+            <translation>Salva</translation>
         </message>
         <message>
             <source>&amp;Save</source>
-            <translation>&amp;ذخیره</translation>
+            <translation>&amp;Salva</translation>
         </message>
         <message>
             <source>Open</source>
-            <translation>باز کردن</translation>
+            <translation>Apri</translation>
         </message>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>Annulla</translation>
         </message>
         <message>
             <source>&amp;Cancel</source>
-            <translation>&amp;لغو</translation>
+            <translation>&amp;Annulla</translation>
         </message>
         <message>
             <source>Close</source>
-            <translation>بستن</translation>
+            <translation>Chiudi</translation>
         </message>
         <message>
             <source>&amp;Close</source>
-            <translation>&amp;بستن</translation>
+            <translation>&amp;Chiudi</translation>
         </message>
         <message>
             <source>Apply</source>
-            <translation>بکار گرفتن</translation>
+            <translation>Applica</translation>
         </message>
         <message>
             <source>Reset</source>
-            <translation>بازنشانی</translation>
+            <translation>Reimposta</translation>
         </message>
         <message>
             <source>Help</source>
-            <translation>دفترچه راهنما</translation>
+            <translation>Manuale d&apos;uso</translation>
         </message>
         <message>
             <source>Don&apos;t Save</source>
-            <translation>ذخیره نشود</translation>
+            <translation>Non salvare</translation>
         </message>
         <message>
             <source>Discard</source>
-            <translation>لغو کردن</translation>
+            <translation>Rifiuta</translation>
         </message>
         <message>
             <source>&amp;Yes</source>
-            <translation>&amp;بله</translation>
+            <translation>S&amp;ì</translation>
         </message>
         <message>
             <source>Yes to &amp;All</source>
-            <translation>بله به &amp;همه</translation>
+            <translation>Sì &amp;a tutto</translation>
         </message>
         <message>
             <source>&amp;No</source>
-            <translation>&amp;خیر</translation>
+            <translation>&amp;No</translation>
         </message>
         <message>
             <source>N&amp;o to All</source>
-            <translation>خیر&amp; به همه</translation>
+            <translation>N&amp;o a tutto</translation>
         </message>
         <message>
             <source>Save All</source>
-            <translation>ذخیره همه</translation>
+            <translation>Salva tutto</translation>
         </message>
         <message>
             <source>Abort</source>
-            <translation>لغو</translation>
+            <translation>Annulla</translation>
         </message>
         <message>
             <source>Retry</source>
-            <translation>تلاش مجدد</translation>
+            <translation>Riprova</translation>
         </message>
         <message>
             <source>Ignore</source>
-            <translation>نادیده گرفتن</translation>
+            <translation>Ignora</translation>
         </message>
         <message>
             <source>Restore Defaults</source>
-            <translation>بازنشانی پیش فرض ها</translation>
+            <translation>Ripristina predefinite</translation>
         </message>
         <message>
             <source>Close without Saving</source>
-            <translation>بستن بدون ذخیره کردن</translation>
+            <translation>Chiudi senza salvare</translation>
         </message>
         <message>
             <source>&amp;OK</source>
-            <translation>&amp;تایید</translation>
+            <translation>&amp;OK</translation>
         </message>
     </context>
     <context>
         <name>QErrorMessage</name>
         <message>
             <source>&amp;Show this message again</source>
-            <translation>&amp;این پیام مجدد نمایش داده شود</translation>
+            <translation>Mo&amp;stra di nuovo questo messaggio</translation>
         </message>
         <message>
             <source>&amp;OK</source>
-            <translation>&amp;تایید</translation>
+            <translation>&amp;OK</translation>
         </message>
         <message>
             <source>Debug Message:</source>
-            <translation>پیام اشکال زدایی:</translation>
+            <translation>Messaggio di debug:</translation>
         </message>
         <message>
             <source>Warning:</source>
-            <translation>هشدار:</translation>
+            <translation>Avviso:</translation>
         </message>
         <message>
             <source>Fatal Error:</source>
-            <translation>خطای مهم:</translation>
+            <translation>Errore grave:</translation>
         </message>
     </context>
     <context>
         <name>QInputDialog</name>
         <message>
             <source>Enter a value:</source>
-            <translation>یک مقدار وارد کنید:</translation>
+            <translation>Inserisci un valore:</translation>
         </message>
     </context>
     <context>
         <name>QMenu</name>
         <message>
             <source>Close</source>
-            <translation>بستن</translation>
+            <translation>Chiudi</translation>
         </message>
         <message>
             <source>Open</source>
-            <translation>باز کردن</translation>
+            <translation>Apri</translation>
         </message>
         <message>
             <source>Execute</source>
-            <translation>استفاده</translation>
+            <translation>Usa</translation>
         </message>
     </context>
     <context>
         <name>QMenuBar</name>
         <message>
             <source>Actions</source>
-            <translation>اقدامات</translation>
+            <translation>Azioni</translation>
         </message>
     </context>
     <context>
         <name>QMessageBox</name>
         <message>
             <source>OK</source>
-            <translation>تایید</translation>
+            <translation>OK</translation>
         </message>
         <message>
             <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
-            <translation>&lt;h3&gt;درباره Qt&lt;/h3&gt;&lt;p&gt;این برنامه از نسخه %1 Qt استفاده می کند.&lt;/p&gt;</translation>
+            <translation>&lt;h3&gt;Info su Qt&lt;/h3&gt;&lt;p&gt;Questo programma utilizza la versione %1 di Qt.&lt;/p&gt;</translation>
         </message>
         <message>
             <source>About Qt</source>
-            <translation>درباره Qt</translation>
+            <translation>Info su Qt</translation>
         </message>
         <message>
             <source>Help</source>
-            <translation>دفترچه راهنما</translation>
+            <translation>Manuale d&apos;uso</translation>
         </message>
         <message>
             <source>Show Details...</source>
-            <translation>نمایش جزئیات</translation>
+            <translation>Mostra dettagli</translation>
         </message>
         <message>
             <source>Hide Details...</source>
-            <translation>مخفی کردن جزئیات</translation>
+            <translation>Nascondi dettagli</translation>
         </message>
     </context>
     <context>
         <name>QProgressDialog</name>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>Annulla</translation>
         </message>
     </context>
     <context>
         <name>QSoftKeyManager</name>
         <message>
             <source>Ok</source>
-            <translation>تایید</translation>
+            <translation>OK</translation>
         </message>
         <message>
             <source>Select</source>
-            <translation>انتخاب</translation>
+            <translation>Seleziona</translation>
         </message>
         <message>
             <source>Done</source>
-            <translation>انجام شد</translation>
+            <translation>Fine</translation>
         </message>
         <message>
             <source>Options</source>
-            <translation>گزینه ها</translation>
+            <translation>Opzioni</translation>
         </message>
         <message>
             <source>Cancel</source>
-            <translation>لغو</translation>
+            <translation>Annulla</translation>
         </message>
         <message>
             <source>Exit</source>
-            <translation>خروج</translation>
+            <translation>Esci</translation>
         </message>
     </context>
     <context>
         <name>QTextControl</name>
         <message>
             <source>&amp;Undo</source>
-            <translation>&amp;لغو آخرین تغییر</translation>
+            <translation>Ann&amp;ulla</translation>
         </message>
         <message>
             <source>&amp;Redo</source>
-            <translation>&amp;انجام مجدد تغییر</translation>
+            <translation>&amp;Ripeti</translation>
         </message>
         <message>
             <source>Cu&amp;t</source>
-            <translation>&amp;بریدن</translation>
+            <translation>&amp;Taglia</translation>
         </message>
         <message>
             <source>&amp;Copy</source>
-            <translation>&amp;کپی</translation>
+            <translation>&amp;Copia</translation>
         </message>
         <message>
             <source>Copy &amp;Link Location</source>
-            <translation>کپی &amp;مکان پیوند</translation>
+            <translation>Copia percorso co&amp;llegamento</translation>
         </message>
         <message>
             <source>&amp;Paste</source>
-            <translation>&amp;چسباندن</translation>
+            <translation>&amp;Incolla</translation>
         </message>
         <message>
             <source>Delete</source>
-            <translation>حذف</translation>
+            <translation>Elimina</translation>
         </message>
         <message>
             <source>Select All</source>
-            <translation>انتخاب همه</translation>
+            <translation>Seleziona tutto</translation>
         </message>
     </context>
 </TS>
