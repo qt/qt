@@ -91,6 +91,8 @@ QT_BEGIN_NAMESPACE
 
 bool qt_enable_test_font = false;
 
+static QString styleStringHelper(int weight, QFont::Style style);
+
 Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
 {
     qt_enable_test_font = value;
@@ -358,30 +360,15 @@ struct QtFontFoundry
 QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &styleName, bool create)
 {
     int pos = 0;
-    if (count) {
-        int low = 0;
-        int high = count;
+    for (; pos < count; pos++) {
         bool hasStyleName = !styleName.isEmpty(); // search styleName first if available
-        pos = count / 2;
-        while (high > low) {
-            if (hasStyleName) {
-                if (styles[pos]->styleName == styleName)
-                    return styles[pos];
-                if (styles[pos]->styleName < styleName)
-                    low = pos + 1;
-                else
-                    high = pos;
-            } else {
-                if (styles[pos]->key == key)
-                    return styles[pos];
-                if (styles[pos]->key < key)
-                    low = pos + 1;
-                else
-                    high = pos;
-            }
-            pos = (high + low) / 2;
+        if (hasStyleName && !styles[pos]->styleName.isEmpty()) {
+            if (styles[pos]->styleName == styleName)
+                return styles[pos];
+        } else {
+            if (styles[pos]->key == key)
+                return styles[pos];
         }
-        pos = low;
     }
     if (!create)
         return 0;
@@ -396,12 +383,10 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &st
 
     QtFontStyle *style = new QtFontStyle(key);
     style->styleName = styleName;
-    memmove(styles + pos + 1, styles + pos, (count-pos)*sizeof(QtFontStyle *));
     styles[pos] = style;
     count++;
     return styles[pos];
 }
-
 
 struct  QtFontFamily
 {

@@ -1361,6 +1361,7 @@ static void initializeDb()
 
                 // let's fake one...
                 equiv = foundry->style(key, QString(), true);
+                equiv->styleName = styleStringHelper(key.weight, QFont::Style(key.style));
                 equiv->smoothScalable = true;
 
                 QtFontSize *equiv_size = equiv->pixelSize(SMOOTH_SCALABLE, true);
