@@ -923,10 +923,15 @@ private:
 
     void IdleLoop()
     {
+        // Create cleanup stack. 
+        // Mutex handling may contain cleanupstack usage.
+        CTrapCleanup *cleanup = CTrapCleanup::New();
+        q_check_ptr(cleanup);
         while (!m_stop) {
             m_kick.acquire();
             m_state = STATE_RUN;
         }
+        delete cleanup;
     }
 
     static void StopIdleDetectorThread();
