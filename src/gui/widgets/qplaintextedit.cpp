@@ -1900,7 +1900,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
                 }
             }
 
-            bool drawCursor = (editable
+            bool drawCursor = ((editable || (textInteractionFlags() & Qt::TextSelectableByKeyboard))
                                && context.cursorPosition >= blpos
                                && context.cursorPosition < blpos + bllen);
 
