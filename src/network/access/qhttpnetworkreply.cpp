@@ -442,8 +442,10 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
 
 void QHttpNetworkReplyPrivate::gunzipBodyPartiallyEnd()
 {
-    inflateEnd(&inflateStrm);
-    initInflate = false;
+    if (initInflate) {
+        inflateEnd(&inflateStrm);
+        initInflate = false;
+    }
 }
 
 #endif
