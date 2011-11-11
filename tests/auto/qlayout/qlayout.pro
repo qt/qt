@@ -6,6 +6,7 @@ SOURCES += tst_qlayout.cpp
 
 contains(QT_CONFIG, qt3support): QT += qt3support
 wince*|symbian: {
+   wince*:DEFINES += SRCDIR=\\\"\\\"
    addFiles.files = baseline
    addFiles.path = .
    DEPLOYMENT += addFiles
