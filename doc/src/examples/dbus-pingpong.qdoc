@@ -29,7 +29,7 @@
     \example dbus/pingpong
     \title D-Bus Ping Pong Example
 
-    The D-Bus Ping Pong example provides a basic demonstration of D-Bus
+    \brief The D-Bus Ping Pong example provides a basic demonstration of D-Bus
     interfaces.
 
     \quotefile doc/src/snippets/dbus-pingpong-example.txt

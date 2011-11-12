@@ -175,7 +175,7 @@ static const char* sqlerror[] = {
 static QString qmlsqldatabase_databasesPath(QScriptEngine *engine)
 {
     QDeclarativeScriptEngine *qmlengine = static_cast<QDeclarativeScriptEngine*>(engine);
-    return qmlengine->offlineStoragePath
+    return QDir::toNativeSeparators(qmlengine->offlineStoragePath)
             + QDir::separator() + QLatin1String("Databases");
 }
 

@@ -111,10 +111,10 @@ static AygEnableSoftKey ptrEnableSoftKey = 0;
 static void resolveAygLibs()
 {
     if (!aygResolved) {
-        aygResolved = true;
         QLibrary aygLib(QLatin1String("aygshell"));
         ptrCreateMenuBar = (AygCreateMenuBar) aygLib.resolve("SHCreateMenuBar");
         ptrEnableSoftKey = (AygEnableSoftKey) aygLib.resolve("SHEnableSoftkey");
+        aygResolved = true;
     }
 }
 

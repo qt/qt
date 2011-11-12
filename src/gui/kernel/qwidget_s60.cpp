@@ -505,63 +505,41 @@ void QWidgetPrivate::show_sys()
 #ifdef Q_WS_S60
         // Lazily initialize the S60 screen furniture when the first window is shown.
         if (q->isWindow() && !QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
-                && !S60->buttonGroupContainer() && !S60->statusPane()) {
+            && !q->testAttribute(Qt::WA_DontShowOnScreen) && !S60->screenFurnitureFullyCreated) {
+            // Create the status pane and CBA here if not yet done. These could be created earlier
+            // if application was launched in "App-Lite" version
+            if (!S60->buttonGroupContainer() && !S60->statusPane())
+                S60->createStatusPaneAndCBA();
 
-            if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
+            if (S60->buttonGroupContainer()) {
+                if (isFullscreen && !cbaRequested)
+                    S60->buttonGroupContainer()->MakeVisible(false);
+            }
 
-                // Create the status pane and CBA here
-                CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
-                MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
+            // If the creation of the first widget is delayed, for example by doing it
+            // inside the event loop, S60 somehow "forgets" to set the visibility of the
+            // toolbar (the three middle softkeys) when you flip the phone over, so we
+            // need to do it ourselves to avoid a "hole" in the application, even though
+            // Qt itself does not use the toolbar directly..
+            CAknAppUi *appui = dynamic_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+            if (appui) {
+                CAknToolbar *toolbar = appui->PopupToolbar();
+                if (toolbar && !toolbar->IsVisible())
+                    toolbar->SetToolbarVisibility(ETrue);
+            }
 
-                QT_TRAP_THROWING(
-                    factory->CreateResourceIndependentFurnitureL(ui);
-
-                    CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
-                        CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
-                    if (isFullscreen && !cbaRequested)
-                        cba->MakeVisible(false);
-
-                    CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
-                    Q_ASSERT(!oldCba);
-                    S60->setButtonGroupContainer(cba);
-
-                    // If the creation of the first widget is delayed, for example by doing it
-                    // inside the event loop, S60 somehow "forgets" to set the visibility of the
-                    // toolbar (the three middle softkeys) when you flip the phone over, so we
-                    // need to do it ourselves to avoid a "hole" in the application, even though
-                    // Qt itself does not use the toolbar directly..
-                    CAknAppUi *appui = dynamic_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
-                    if (appui) {
-                        CAknToolbar *toolbar = appui->PopupToolbar();
-                        if (toolbar && !toolbar->IsVisible())
-                            toolbar->SetToolbarVisibility(ETrue);
-                    }
-
-                    CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
-                    menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
-                    menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
-                    S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
-
-                    CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
-                    Q_ASSERT(!oldMenu);
-                )
-
-                if (S60->statusPane()) {
-                    // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
-                    // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
-                    QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
-                    S60->statusPane()->SetObserver(desktopControl);
-                    if (isFullscreen) {
-                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
-                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
-                        if (cbaVisible) {
-                            // Fix window dimensions as without screen furniture they will have
-                            // defaulted to full screen dimensions initially.
-                            id->handleClientAreaChange();
-                        }
+            if (S60->statusPane()) {
+               if (isFullscreen) {
+                    const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                    S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                    if (cbaVisible) {
+                        // Fix window dimensions as without screen furniture they will have
+                        // defaulted to full screen dimensions initially.
+                        id->handleClientAreaChange();
                     }
                 }
             }
+            S60->screenFurnitureFullyCreated = true;
         }
 #endif
 
@@ -804,19 +782,12 @@ void QWidgetPrivate::setConstraints_sys()
 void QWidgetPrivate::s60UpdateIsOpaque()
 {
     Q_Q(QWidget);
-
     if (!q->testAttribute(Qt::WA_WState_Created))
         return;
-
     const bool writeAlpha = extraData()->nativePaintMode == QWExtra::BlitWriteAlpha;
-    if (!q->testAttribute(Qt::WA_TranslucentBackground) && !writeAlpha)
-        return;
     const bool requireAlphaChannel = !isOpaque || writeAlpha;
-
     createTLExtra();
-
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     if (QApplicationPrivate::instance()->useTranslucentEGLSurfaces
             && !extra->topextra->forcedToRaster) {
@@ -825,25 +796,47 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         return;
     }
 #endif
+    const bool recreateBackingStore = extra->topextra->backingStore.data() && (
+                                          QApplicationPrivate::graphics_system_name == QLatin1String("openvg") ||
+                                          QApplicationPrivate::graphics_system_name == QLatin1String("opengl")
+                                      );
     if (requireAlphaChannel) {
-        const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-        if (window->SetTransparencyAlphaChannel() == KErrNone) {
+        window->SetRequiredDisplayMode(EColor16MA);
+        if (window->SetTransparencyAlphaChannel() == KErrNone)
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-            extra->topextra->nativeWindowTransparencyEnabled = 1;
-            if (extra->topextra->backingStore.data() && (
-                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")
-                    || QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))) {
-                // Semi-transparent EGL surfaces aren't supported. We need to
-                // recreate backing store to get translucent surface (raster surface).
-                extra->topextra->backingStore.create(q);
-                extra->topextra->backingStore.registerWidget(q);
-                // FixNativeOrientation() will not work without an EGL surface.
-                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
+    } else {
+        if (recreateBackingStore) {
+            // Clear the UI surface to ensure that the EGL surface content is visible
+            CWsScreenDevice *screenDevice = S60->screenDevice(q);
+            QScopedPointer<CWindowGc> gc(new CWindowGc(screenDevice));
+            const int err = gc->Construct();
+            if (!err) {
+                gc->Activate(*window);
+                window->BeginRedraw();
+                gc->SetDrawMode(CWindowGc::EDrawModeWriteAlpha);
+                gc->SetBrushColor(TRgb(0, 0, 0, 0));
+                gc->Clear(TRect(0, 0, q->width(), q->height()));
+                window->EndRedraw();
             }
         }
-    } else if (extra->topextra->nativeWindowTransparencyEnabled) {
-        window->SetTransparentRegion(TRegionFix<1>());
-        extra->topextra->nativeWindowTransparencyEnabled = 0;
+        if (extra->topextra->nativeWindowTransparencyEnabled)
+            window->SetTransparentRegion(TRegionFix<1>());
+    }
+    extra->topextra->nativeWindowTransparencyEnabled = requireAlphaChannel;
+    if (recreateBackingStore) {
+        extra->topextra->backingStore.create(q);
+        extra->topextra->backingStore.registerWidget(q);
+        bool noSystemRotationDisabled = false;
+        if (requireAlphaChannel) {
+            if (q->testAttribute(Qt::WA_SymbianNoSystemRotation)) {
+                // FixNativeOrientation() will not work without an EGL surface
+                q->setAttribute(Qt::WA_SymbianNoSystemRotation, false);
+                noSystemRotationDisabled = true;
+            }
+        } else {
+            q->setAttribute(Qt::WA_SymbianNoSystemRotation, extra->topextra->noSystemRotationDisabled);
+        }
+        extra->topextra->noSystemRotationDisabled = noSystemRotationDisabled;
     }
 }
 
@@ -1004,6 +997,7 @@ void QWidgetPrivate::createTLSysExtra()
     extra->topextra->inExpose = 0;
     extra->topextra->nativeWindowTransparencyEnabled = 0;
     extra->topextra->forcedToRaster = 0;
+    extra->topextra->noSystemRotationDisabled = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
@@ -1046,8 +1040,12 @@ void QWidgetPrivate::registerTouchWindow()
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
         QSymbianControl *window = static_cast<QSymbianControl *>(q->effectiveWinId());
         //Enabling advanced pointer events for controls that already have active windows causes a panic.
-        if (!window->isControlActive())
+        if (!window->isControlActive()) {
             rwindow->EnableAdvancedPointers();
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+            qt_symbian_throwIfError(window->ConfigureEventData(CCoeControl::EEventDataAllowGroupedPointerEvents));
+#endif
+        }
     }
 #endif
 }

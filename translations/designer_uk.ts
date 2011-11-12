@@ -409,16 +409,8 @@
         <translation>Видалити підвікно</translation>
     </message>
     <message>
-        <source>page</source>
-        <translation>сторінка</translation>
-    </message>
-    <message>
         <source>Insert Subwindow</source>
         <translation>Вставити підвікно</translation>
-    </message>
-    <message>
-        <source>subwindow</source>
-        <translation>підвікно</translation>
     </message>
     <message>
         <source>Subwindow</source>
@@ -459,6 +451,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>Змінити розташування &apos;%1&apos; з %2 на %3</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>Змінити вирівнювання розташування</translation>
     </message>
     <message>
         <source>Set action text</source>
@@ -876,16 +872,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>Неправильне значення розтягування для &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>Неправильне значення мінімального розміру для &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1820,8 +1812,8 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <source>Edit</source>
-        <translation>Правка</translation>
+        <source>&amp;Edit</source>
+        <translation>&amp;Правка</translation>
     </message>
     <message>
         <source>F&amp;orm</source>
@@ -1901,8 +1893,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
-----------
-Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
         <translation>До %1 було передане пусте ім&apos;я класу (ім&apos;я об&apos;єкта: &apos;%2&apos;).</translation>
@@ -3741,12 +3731,20 @@ Do you want overwrite the template?</source>
         <translation>Успадкована</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[Тема] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>Горизонтальне</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>Вертикальне</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Тема</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4337,6 +4335,17 @@ Do you want overwrite the template?</source>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>Встановити піктограму з теми</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>Введіть назву піктограми з поточної теми:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Items List</source>
@@ -4486,20 +4495,24 @@ Do you want overwrite the template?</source>
         <translation>&amp;Значок:</translation>
     </message>
     <message>
-        <source>Shortcut:</source>
-        <translation>Поєднання клавіш:</translation>
-    </message>
-    <message>
-        <source>Checkable:</source>
-        <translation>Прапорець:</translation>
-    </message>
-    <message>
-        <source>ToolTip:</source>
-        <translation>Спливаюча підказка:</translation>
-    </message>
-    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>Спливаюча &amp;підказка:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>Те&amp;ма значків:</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>П&amp;рапорець:</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>Поєднання клаві&amp;ш:</translation>
     </message>
 </context>
 <context>
@@ -4750,6 +4763,10 @@ Please select another name.</source>
         <translation>Оберіть файл...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>Встановити піктограму з теми...</translation>
+    </message>
+    <message>
         <source>Copy Path</source>
         <translation>Копіювати шлях</translation>
     </message>
@@ -4760,6 +4777,10 @@ Please select another name.</source>
     <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[Тема] %1</translation>
     </message>
 </context>
 <context>
@@ -5084,6 +5105,42 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::QDesignerTaskMenu</name>
     <message>
+        <source>Layout Alignment</source>
+        <translation>Вирівнювання розташування</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>Без горизонтального вирівнювання</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Вліво</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>Центрувати горизонтально</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Вправо</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>Без вертикального вирівнювання</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Догори</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>Центрувати вертикально</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Донизу</translation>
+    </message>
+    <message>
         <source>Change objectName...</source>
         <translation>Змінити objectName...</translation>
     </message>
@@ -5350,6 +5407,10 @@ Class: %2</source>
     <message>
         <source>Insert &amp;Image</source>
         <translation>Вставити &amp;зображення</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>Спростити форматований текст</translation>
     </message>
 </context>
 <context>

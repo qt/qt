@@ -175,4 +175,5 @@ symbian: {
     }
 
     BLD_INF_RULES.prj_exports += "$$S60_INSTALLS_SOURCE_DIR/qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "$$S60_INSTALLS_SOURCE_DIR/qt_resources.iby $$LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(qt_resources.iby)"
 }

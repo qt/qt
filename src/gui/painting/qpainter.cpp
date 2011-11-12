@@ -403,8 +403,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
                 QPainterPath stroke = stroker.createStroke(originalPath);
                 strokeBounds = (stroke * state->matrix).boundingRect();
             } else {
-                strokeOffsetX = qAbs(penWidth * state->matrix.m11() / 2.0);
-                strokeOffsetY = qAbs(penWidth * state->matrix.m22() / 2.0);
+                strokeOffsetX = qAbs(penWidth * state->matrix.m11() / qreal(2.0));
+                strokeOffsetY = qAbs(penWidth * state->matrix.m22() / qreal(2.0));
             }
         }
     }
@@ -4460,8 +4460,8 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    path.arcMoveTo(rect, a/qreal(16.0));
+    path.arcTo(rect, a/qreal(16.0), alen/qreal(16.0));
     strokePath(path, d->state->pen);
 }
 
@@ -4531,7 +4531,7 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
 
     QPainterPath path;
     path.moveTo(rect.center());
-    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a/16.0, alen/16.0);
+    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a/qreal(16.0), alen/qreal(16.0));
     path.closeSubpath();
     drawPath(path);
 
@@ -4592,8 +4592,8 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    path.arcMoveTo(rect, a/qreal(16.0));
+    path.arcTo(rect, a/qreal(16.0), alen/qreal(16.0));
     path.closeSubpath();
     drawPath(path);
 }
@@ -9242,7 +9242,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
             qreal h = fragments[i].scaleY * fragments[i].height;
             QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
                               fragments[i].width, fragments[i].height);
-            drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, sourceRect);
+            drawPixmap(QRectF(qreal(-0.5) * w + xOffset, qreal(-0.5) * h + yOffset, w, h), pixmap, sourceRect);
         }
 
         setOpacity(oldOpacity);
@@ -9509,7 +9509,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         void *visual = QPaintDevice::x11AppVisual(screen);
     \newcode
-        void *visual = qApp->x11Info(screen).visual();
+        void *visual = widget->x11Info().appVisual(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9521,7 +9521,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         unsigned long colormap = QPaintDevice::x11AppColormap(screen);
     \newcode
-        unsigned long colormap = qApp->x11Info(screen).colormap();
+        unsigned long colormap = widget->x11Info().appColormap(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9533,7 +9533,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         Display *display = QPaintDevice::x11AppDisplay();
     \newcode
-        Display *display = qApp->x11Info().display();
+        Display *display = widget->x11Info().display();
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9545,7 +9545,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int screen = QPaintDevice::x11AppScreen();
     \newcode
-        int screen = qApp->x11Info().screen();
+        int screen = widget->x11Info().appScreen();
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9557,7 +9557,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int depth = QPaintDevice::x11AppDepth(screen);
     \newcode
-        int depth = qApp->x11Info(screen).depth();
+        int depth = widget->x11Info().appDepth(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9569,7 +9569,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         int cells = QPaintDevice::x11AppCells(screen);
     \newcode
-        int cells = qApp->x11Info(screen).cells();
+        int cells = widget->x11Info().appCells(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9581,7 +9581,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         unsigned long window = QPaintDevice::x11AppRootWindow(screen);
     \newcode
-        unsigned long window = qApp->x11Info(screen).appRootWindow();
+        unsigned long window = widget->x11Info().appRootWindow(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9593,7 +9593,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDefaultColormap(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).defaultColormap();
+        bool isDefault = widget->x11Info().appDefaultColormap(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9605,7 +9605,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDefaultVisual(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).defaultVisual();
+        bool isDefault = widget->x11Info().appDefaultVisual(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9625,7 +9625,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDpiX(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).appDpiX();
+        bool isDefault = widget->x11Info().appDpiX(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()
@@ -9637,7 +9637,7 @@ void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivat
     \oldcode
         bool isDefault = QPaintDevice::x11AppDpiY(screen);
     \newcode
-        bool isDefault = qApp->x11Info(screen).appDpiY();
+        bool isDefault = widget->x11Info().appDpiY(screen);
     \endcode
 
     \sa QWidget::x11Info(), QPixmap::x11Info()

@@ -486,7 +486,7 @@ bool QSimplex::iterate()
     // Normalize Pivot Row
     qreal pivot = valueAt(pivotRow, pivotColumn);
     if (pivot != 1.0)
-        combineRows(pivotRow, pivotRow, (1.0 - pivot) / pivot);
+        combineRows(pivotRow, pivotRow, (qreal(1.0) - pivot) / pivot);
 
     // Update other rows
     for (int row=0; row < rows; ++row) {

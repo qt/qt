@@ -37,9 +37,11 @@
     \example activeqt/wrapper
     \title Wrapper Example (ActiveQt)
 
-    The Wrapper example demonstrates how to export existing QWidget
+    \brief The Wrapper example demonstrates how to export existing QWidget
     classes as ActiveX controls, and the use of QAxFactory together
-    with the \c QAXFACTORY_EXPORT() macro. ActiveX controls in this
+    with the \c QAXFACTORY_EXPORT() macro.
+    
+    ActiveX controls in this
     example are the standard button classes QPushButton, QCheckBox
     and QRadioButton as provided by Qt.
 

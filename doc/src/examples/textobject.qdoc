@@ -29,7 +29,7 @@
     \example richtext/textobject
     \title Text Object Example
     
-    The Text Object example shows how to insert an SVG file into a
+    \brief The Text Object example shows how to insert an SVG file into a
     QTextDocument.
 
     \image textobject-example.png

@@ -1994,7 +1994,7 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * qreal(72.0) / dpi);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }
@@ -2105,7 +2105,7 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * qreal(72.0) / dpi);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }

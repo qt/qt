@@ -138,8 +138,11 @@ static void resolveGetCharWidthI()
 {
     if (resolvedGetCharWidthI)
         return;
+
+    QSystemLibrary gdi32(QLatin1String("gdi32"));
+    ptrGetCharWidthI = (PtrGetCharWidthI)gdi32.resolve("GetCharWidthI");
+
     resolvedGetCharWidthI = true;
-    ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
 #endif // !defined(Q_WS_WINCE)
 

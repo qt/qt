@@ -361,13 +361,6 @@ static const NumerusTableEntry numerusTable[] = {
 
 static const int NumerusTableSize = sizeof(numerusTable) / sizeof(numerusTable[0]);
 
-// magic number for the file
-static const int MagicLength = 16;
-static const uchar magic[MagicLength] = {
-    0x3c, 0xb8, 0x64, 0x18, 0xca, 0xef, 0x9c, 0x95,
-    0xcd, 0x21, 0x1c, 0xbf, 0x60, 0xa1, 0xbd, 0xdd
-};
-
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules)
 {
@@ -399,6 +392,29 @@ bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
         country = QLocale::AnyCountry;
     }
     return false;
+}
+
+QString getNumerusInfoString()
+{
+    QStringList langs;
+
+    for (int i = 0; i < NumerusTableSize; ++i) {
+        const NumerusTableEntry &entry = numerusTable[i];
+        for (int j = 0; entry.languages[j] != EOL; ++j) {
+            QLocale loc(entry.languages[j], entry.countries ? entry.countries[j] : QLocale::AnyCountry);
+            QString lang = QLocale::languageToString(entry.languages[j]);
+            if (loc.language() == QLocale::C)
+                lang += QLatin1String(" (!!!)");
+            else if (entry.countries && entry.countries[j] != QLocale::AnyCountry)
+                lang += QLatin1String(" (") + QLocale::countryToString(loc.country()) + QLatin1Char(')');
+            else
+                lang += QLatin1String(" [") + QLocale::countryToString(loc.country()) + QLatin1Char(']');
+            langs << QString::fromLatin1("%1 %2 %3\n").arg(lang, -40).arg(loc.name(), -8)
+                                .arg(QString::fromLatin1(entry.gettextRules));
+        }
+    }
+    langs.sort();
+    return langs.join(QString());
 }
 
 QT_END_NAMESPACE

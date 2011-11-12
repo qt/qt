@@ -752,7 +752,8 @@ static PtrglReadPixels ptrglReadPixels = 0;
 
 static bool resolveOpenGLSymbols()
 {
-    if (ptrCGLChoosePixelFormat == 0) {
+    static bool triedResolve = false;
+    if (!triedResolve) {
         QLibrary library(QLatin1String("/System/Library/Frameworks/OpenGL.framework/OpenGL"));
         ptrCGLChoosePixelFormat = (PtrCGLChoosePixelFormat)(library.resolve("CGLChoosePixelFormat"));
         ptrCGLClearDrawable = (PtrCGLClearDrawable)(library.resolve("CGLClearDrawable"));
@@ -765,6 +766,7 @@ static bool resolveOpenGLSymbols()
         ptrglPixelStorei = (PtrglPixelStorei)(library.resolve("glPixelStorei"));
         ptrglReadBuffer = (PtrglReadBuffer)(library.resolve("glReadBuffer"));
         ptrglReadPixels = (PtrglReadPixels)(library.resolve("glReadPixels"));
+        triedResolve = true;
     }
     return ptrCGLChoosePixelFormat && ptrCGLClearDrawable && ptrCGLCreateContext
         && ptrCGLDestroyContext && ptrCGLDestroyPixelFormat && ptrCGLSetCurrentContext

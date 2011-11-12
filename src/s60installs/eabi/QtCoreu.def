@@ -1294,7 +1294,7 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian24reactivateSocketNotifierEP15QSocketNotifier @ 1293 NONAME
 	_ZN23QEventDispatcherSymbian24sendDeferredSocketEventsEv @ 1294 NONAME
 	_ZN23QEventDispatcherSymbian24unregisterSocketNotifierEP15QSocketNotifier @ 1295 NONAME
-	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME ABSENT
+	_ZN23QEventDispatcherSymbian31reactivateDeferredActiveObjectsEv @ 1296 NONAME
 	_ZN23QEventDispatcherSymbian5flushEv @ 1297 NONAME
 	_ZN23QEventDispatcherSymbian6wakeUpEv @ 1298 NONAME
 	_ZN23QEventDispatcherSymbian9interruptEv @ 1299 NONAME
@@ -3713,7 +3713,7 @@ EXPORTS
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
-	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME ABSENT
+	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
 	_ZN23QCoreApplicationPrivate18symbianCommandLineEv @ 3716 NONAME
 	_ZNK11QMetaMethod8revisionEv @ 3717 NONAME
 	_ZNK13QMetaProperty8revisionEv @ 3718 NONAME
@@ -4162,4 +4162,7 @@ EXPORTS
 	inflateReset2 @ 4161 NONAME
 	inflateUndermine @ 4162 NONAME
 	zlibCompileFlags @ 4163 NONAME
+	_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings @ 4164 NONAME
+	_ZN23QCoreApplicationPrivate26rebuildInstallLibraryPathsEv @ 4165 NONAME
+	_ZN13QActiveObject18maybeQueueForLaterEv @ 4166 NONAME
 

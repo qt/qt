@@ -29,7 +29,7 @@
     \example phonon/capabilities
     \title Capabilities Example
 
-    The Backend Capabilities example shows how to check which MIME
+    \brief The Backend Capabilities example shows how to check which MIME
     types, audio devices, and audio effects are available.
 
     \image capabilitiesexample.png

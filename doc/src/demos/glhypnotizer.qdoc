@@ -29,7 +29,7 @@
     \example demos/glhypnotizer
     \title GL Hypnotizer
 
-    This demo shows how to use OpenGL from a seperate thread.
+    \brief The GL Hypnotizer demo shows how to use OpenGL from a seperate thread.
 
     \image glhypnotizer-demo.png
 

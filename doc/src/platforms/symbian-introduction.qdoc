@@ -42,7 +42,6 @@
     \o
      \list
         \o \l {Qt for the Symbian platform Requirements}
-        \o \l {Installing Qt for the Symbian platform from a Binary Package}
         \o \l {Installing Qt for the Symbian platform}
         \o \l {The Symbian platform - Introduction to Qt}{Introduction to using Qt}
     \endlist
@@ -94,9 +93,6 @@
     required to use Qt for the Symbian platform.
 
     \section1 Installing Qt and Running Demos
-
-    Follow the instructions found in \l{Installing Qt for the Symbian platform from a Binary Package}
-    to learn how to install Qt using a binary package and how to build and run Qt demos.
 
     Follow the instructions found in \l{Installing Qt for the Symbian platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
@@ -209,7 +205,7 @@
     \table
     \row \o \c QT_SIS_OPTIONS      \o Options accepted by \c .sis creation. See
                                    \l{Supported options for QT_SIS_OPTIONS}{Supported options}
-                                    below. By default no otions are given.
+                                    below. By default no options are given.
     \row \o \c QT_SIS_TARGET       \o Target for which \c .sis file is created.
                                        Accepted values are build targets listed in
                                        previous table. By default last build target.

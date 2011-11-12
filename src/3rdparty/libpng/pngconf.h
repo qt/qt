@@ -286,6 +286,11 @@
 #       endif
 #   endif
 
+/* Avoid exporting libpng symbols from Qt DLL on Windows */
+#   if defined (_MSC_VER) && defined(PNG_IMPEXP)
+#     undef PNG_IMPEXP
+#   endif
+
 #  ifndef PNG_IMPEXP
 #    define PNG_IMPEXP
 #  endif

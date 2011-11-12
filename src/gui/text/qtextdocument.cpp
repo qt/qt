@@ -159,7 +159,7 @@ bool Qt::mightBeRichText(const QString& text)
 QString Qt::escape(const QString& plain)
 {
     QString rich;
-    rich.reserve(int(plain.length() * 1.1));
+    rich.reserve(int(plain.length() * qreal(1.1)));
     for (int i = 0; i < plain.length(); ++i) {
         if (plain.at(i) == QLatin1Char('<'))
             rich += QLatin1String("&lt;");

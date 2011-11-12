@@ -29,7 +29,7 @@
     \example graphicsview/collidingmice
     \title Colliding Mice Example
 
-    The Colliding Mice example shows how to use the Graphics View
+    \brief The Colliding Mice example shows how to use the Graphics View
     framework to implement animated items and detect collision between
     items.
 

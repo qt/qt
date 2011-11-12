@@ -55,10 +55,6 @@
 #include <private/qsystemlibrary_p.h>
 #include "qfiledialog_win_p.h"
 
-#ifndef QT_NO_THREAD
-#  include <private/qmutexpool_p.h>
-#endif
-
 #ifdef Q_WS_WINCE
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
@@ -83,35 +79,23 @@ QT_BEGIN_NAMESPACE
 static void qt_win_resolve_libs()
 {
     static bool triedResolve = false;
-
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        // protect initialization
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        // check triedResolve again, since another thread may have already
-        // done the initialization
-        if (triedResolve) {
-            // another thread did initialize the security function pointers,
-            // so we shouldn't do it again.
-            return;
-        }
-#endif
-
-        triedResolve = true;
 #if !defined(Q_WS_WINCE)
-        QSystemLibrary lib(L"shell32");
+        QSystemLibrary lib(QLatin1String("shell32"));
         ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");
         ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDListW");
         ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
 #else
         // CE stores them in a different lib and does not use unicode version
-        HINSTANCE handle = LoadLibrary(L"Ceshell");
-        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)GetProcAddress(handle, L"SHBrowseForFolder");
-        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)GetProcAddress(handle, L"SHGetPathFromIDList");
-        ptrSHGetMalloc = (PtrSHGetMalloc)GetProcAddress(handle, L"SHGetMalloc");
+        QSystemLibrary lib(QLatin1String("Ceshell"));
+        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolder");
+        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDList");
+        ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
         if (ptrSHBrowseForFolder && ptrSHGetPathFromIDList && ptrSHGetMalloc)
             qt_priv_ptr_valid = true;
 #endif
+
+        triedResolve = true;
     }
 }
 
@@ -670,7 +654,7 @@ QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
     // GetOpenFileName() will return only one folder name for all the files. To retrieve
     // the correct path for all selected files, we have to use Common Item Dialog interfaces.
 #ifndef Q_WS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         return qt_win_CID_get_open_file_names(args, initialDirectory, filterLst, selectedFilter, idx);
 #endif
 
@@ -757,7 +741,7 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
 QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 {
 #ifndef Q_WS_WINCE
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         return qt_win_CID_get_existing_directory(args);
 #endif
 

@@ -44,7 +44,7 @@ wince*|symbian {
     scriptFiles.path = lackey/scripts
     DEPLOYMENT += additionalFiles scriptFiles
     QT += script    # for easy deployment of QtScript
-    
+
     requires(contains(QT_CONFIG,script))
 }
 

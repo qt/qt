@@ -29,6 +29,6 @@
     \example script/qscript
     \title Qt Script Interpreter Example
 
-    The Qt Script Interpreter example shows how to create an interactive
+    \brief The Qt Script Interpreter example shows how to create an interactive
     interpreter for Qt Script.
 */

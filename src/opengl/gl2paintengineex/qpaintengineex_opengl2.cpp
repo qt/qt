@@ -2108,6 +2108,10 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         return false;
 
     d->ctx = d->device->context();
+#ifdef Q_OS_SYMBIAN
+    if (!d->ctx)
+        return false;
+#endif
     d->ctx->d_ptr->active_engine = this;
 
     const QSize sz = d->device->size();
@@ -2268,6 +2272,8 @@ void QGL2PaintEngineExPrivate::updateClipScissorTest()
     currentScissorBounds = bounds;
 
     if (bounds == QRect(0, 0, width, height)) {
+        if (ctx->d_func()->workaround_brokenScissor)
+            clearClip(0);
         glDisable(GL_SCISSOR_TEST);
     } else {
         glEnable(GL_SCISSOR_TEST);

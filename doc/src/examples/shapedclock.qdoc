@@ -29,7 +29,7 @@
     \example widgets/shapedclock
     \title Shaped Clock Example
 
-    The Shaped Clock example shows how to apply a widget mask to a top-level
+    \brief The Shaped Clock example shows how to apply a widget mask to a top-level
     widget to produce a shaped window.
 
     \image shapedclock-example.png

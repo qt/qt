@@ -132,14 +132,12 @@ AnimationDataV2::~AnimationDataV2()
 
 QS60StyleAnimation::QS60StyleAnimation(const QS60StyleEnums::SkinParts part, int frames, int interval)
 {
-    QT_TRAP_THROWING(m_defaultData = new (ELeave) AnimationData(part, frames, interval));
-    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+    m_defaultData.reset(new AnimationData(part, frames, interval));
+    m_currentData.reset(new AnimationDataV2(*m_defaultData));
 }
 
 QS60StyleAnimation::~QS60StyleAnimation()
 {
-    delete m_currentData;
-    delete m_defaultData;
 }
 
 void QS60StyleAnimation::setAnimationObject(CAknBitmapAnimation* animation)
@@ -152,9 +150,7 @@ void QS60StyleAnimation::setAnimationObject(CAknBitmapAnimation* animation)
 
 void QS60StyleAnimation::resetToDefaults()
 {
-    delete m_currentData;
-    m_currentData = 0;
-    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+    m_currentData.reset(new AnimationDataV2(*m_defaultData));
 }
 
 class QS60StyleModeSpecifics
@@ -1351,7 +1347,9 @@ QS60StylePrivate::QS60StylePrivate()
 void QS60StylePrivate::removeAnimations()
 {
     //currently only one animation in the list.
-    m_animations()->removeFirst();
+    if (!m_animations()->isEmpty()) {
+        delete m_animations()->takeFirst();
+    }
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,

@@ -188,10 +188,15 @@ int CodaSignalHandler::run()
     connect(this, SIGNAL(done()), this, SLOT(finished()));
 
     d->codaDevice->sendSerialPing(false);
-    if (d->timeout > 0)
-	QTimer::singleShot(d->timeout, this, SLOT(timeout()));
+    QTimer timer;
+    if (d->timeout > 0) {
+        connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+        timer.setSingleShot(true);
+        timer.start(d->timeout);
+    }
     d->eventLoop = new QEventLoop();
     d->eventLoop->exec();
+    timer.stop();
     int result = d->result;
     reportMessage(tr("Done."));
 
@@ -199,7 +204,6 @@ int CodaSignalHandler::run()
     disconnect(d->codaDevice.data(), 0, this, 0);
     SymbianUtils::SymbianDeviceManager::instance()->releaseCodaDevice(d->codaDevice);
 
-    QCoreApplication::quit();
     return result;
 }
 

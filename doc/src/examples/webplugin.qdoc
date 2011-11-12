@@ -29,7 +29,7 @@
     \example webkit/webplugin
     \title Web Plugin Example
 
-    The Web Plugin example shows how to communicate between a Qt widget
+    \brief The Web Plugin example shows how to communicate between a Qt widget
     embedded in a Web page and the page itself.
 
     \image webkit-webplugin.png A table widget embedded in a Web page.

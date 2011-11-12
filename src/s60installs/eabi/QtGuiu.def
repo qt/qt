@@ -12198,602 +12198,608 @@ EXPORTS
 	_ZNK11QPixmapData15toVolatileImageEv @ 12197 NONAME
 	_ZNK14QVolatileImage13constImageRefEv @ 12198 NONAME
 	_Z43qt_s60_setPartialScreenAutomaticTranslationb @ 12199 NONAME
-	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12200 NONAME
-	_Z22qt_fontdata_from_indexi @ 12201 NONAME
-	_Z27qt_isExtendedRadialGradientRK6QBrush @ 12202 NONAME
-	_Z28qt_painterPathFromVectorPathRK11QVectorPath @ 12203 NONAME
-	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12204 NONAME
-	_ZN10QBlittable4lockEv @ 12205 NONAME
-	_ZN10QBlittable6unlockEv @ 12206 NONAME
-	_ZN10QBlittableC2ERK5QSize6QFlagsINS_10CapabilityEE @ 12207 NONAME
-	_ZN10QBlittableD0Ev @ 12208 NONAME
-	_ZN10QBlittableD1Ev @ 12209 NONAME
-	_ZN10QBlittableD2Ev @ 12210 NONAME
-	_ZN10QBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12211 NONAME
-	_ZN10QBoxLayout25staticMetaObjectExtraDataE @ 12212 NONAME DATA 8
-	_ZN10QClipboard18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12213 NONAME
-	_ZN10QClipboard25staticMetaObjectExtraDataE @ 12214 NONAME DATA 8
-	_ZN10QCompleter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12215 NONAME
-	_ZN10QCompleter25staticMetaObjectExtraDataE @ 12216 NONAME DATA 8
-	_ZN10QLCDNumber18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12217 NONAME
-	_ZN10QLCDNumber25staticMetaObjectExtraDataE @ 12218 NONAME DATA 8
-	_ZN10QScrollBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12219 NONAME
-	_ZN10QScrollBar25staticMetaObjectExtraDataE @ 12220 NONAME DATA 8
-	_ZN10QStatusBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12221 NONAME
-	_ZN10QStatusBar25staticMetaObjectExtraDataE @ 12222 NONAME DATA 8
-	_ZN10QTabWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12223 NONAME
-	_ZN10QTabWidget25staticMetaObjectExtraDataE @ 12224 NONAME DATA 8
-	_ZN10QTableView13doItemsLayoutEv @ 12225 NONAME
-	_ZN10QTableView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12226 NONAME
-	_ZN10QTableView25staticMetaObjectExtraDataE @ 12227 NONAME DATA 8
-	_ZN10QTextFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12228 NONAME
-	_ZN10QTextFrame25staticMetaObjectExtraDataE @ 12229 NONAME DATA 8
-	_ZN10QTextTable18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12230 NONAME
-	_ZN10QTextTable25staticMetaObjectExtraDataE @ 12231 NONAME DATA 8
-	_ZN10QUndoGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12232 NONAME
-	_ZN10QUndoGroup25staticMetaObjectExtraDataE @ 12233 NONAME DATA 8
-	_ZN10QUndoStack18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12234 NONAME
-	_ZN10QUndoStack25staticMetaObjectExtraDataE @ 12235 NONAME DATA 8
-	_ZN10QValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12236 NONAME
-	_ZN10QValidator25staticMetaObjectExtraDataE @ 12237 NONAME DATA 8
-	_ZN10QWorkspace18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12238 NONAME
-	_ZN10QWorkspace25staticMetaObjectExtraDataE @ 12239 NONAME DATA 8
-	_ZN10QZipWriter10addSymLinkERK7QStringS2_ @ 12240 NONAME
-	_ZN10QZipWriter12addDirectoryERK7QString @ 12241 NONAME
-	_ZN10QZipWriter20setCompressionPolicyENS_17CompressionPolicyE @ 12242 NONAME
-	_ZN10QZipWriter22setCreationPermissionsE6QFlagsIN5QFile10PermissionEE @ 12243 NONAME
-	_ZN10QZipWriter5closeEv @ 12244 NONAME
-	_ZN10QZipWriter7addFileERK7QStringP9QIODevice @ 12245 NONAME
-	_ZN10QZipWriter7addFileERK7QStringRK10QByteArray @ 12246 NONAME
-	_ZN10QZipWriterC1EP9QIODevice @ 12247 NONAME
-	_ZN10QZipWriterC1ERK7QString6QFlagsIN9QIODevice12OpenModeFlagEE @ 12248 NONAME
-	_ZN10QZipWriterC2EP9QIODevice @ 12249 NONAME
-	_ZN10QZipWriterC2ERK7QString6QFlagsIN9QIODevice12OpenModeFlagEE @ 12250 NONAME
-	_ZN10QZipWriterD1Ev @ 12251 NONAME
-	_ZN10QZipWriterD2Ev @ 12252 NONAME
-	_ZN11QColumnView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12253 NONAME
-	_ZN11QColumnView25staticMetaObjectExtraDataE @ 12254 NONAME DATA 8
-	_ZN11QDockWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12255 NONAME
-	_ZN11QDockWidget25staticMetaObjectExtraDataE @ 12256 NONAME DATA 8
-	_ZN11QFileDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12257 NONAME
-	_ZN11QFileDialog25staticMetaObjectExtraDataE @ 12258 NONAME DATA 8
-	_ZN11QFocusFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12259 NONAME
-	_ZN11QFocusFrame25staticMetaObjectExtraDataE @ 12260 NONAME DATA 8
-	_ZN11QFontDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12261 NONAME
-	_ZN11QFontDialog25staticMetaObjectExtraDataE @ 12262 NONAME DATA 8
-	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12263 NONAME
-	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12264 NONAME
-	_ZN11QFontEngine19alphaRGBMapForGlyphEj6QFixediRK10QTransform @ 12265 NONAME
-	_ZN11QFormLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12266 NONAME
-	_ZN11QFormLayout25staticMetaObjectExtraDataE @ 12267 NONAME DATA 8
-	_ZN11QGridLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12268 NONAME
-	_ZN11QGridLayout25staticMetaObjectExtraDataE @ 12269 NONAME DATA 8
-	_ZN11QHBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12270 NONAME
-	_ZN11QHBoxLayout25staticMetaObjectExtraDataE @ 12271 NONAME DATA 8
-	_ZN11QHeaderView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12272 NONAME
-	_ZN11QHeaderView25staticMetaObjectExtraDataE @ 12273 NONAME DATA 8
-	_ZN11QListWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12274 NONAME
-	_ZN11QListWidget25staticMetaObjectExtraDataE @ 12275 NONAME DATA 8
-	_ZN11QMainWindow18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12276 NONAME
-	_ZN11QMainWindow25staticMetaObjectExtraDataE @ 12277 NONAME DATA 8
-	_ZN11QMessageBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12278 NONAME
-	_ZN11QMessageBox25staticMetaObjectExtraDataE @ 12279 NONAME DATA 8
-	_ZN11QPanGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12280 NONAME
-	_ZN11QPanGesture25staticMetaObjectExtraDataE @ 12281 NONAME DATA 8
-	_ZN11QProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12282 NONAME
-	_ZN11QProxyModel25staticMetaObjectExtraDataE @ 12283 NONAME DATA 8
-	_ZN11QProxyStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12284 NONAME
-	_ZN11QProxyStyle25staticMetaObjectExtraDataE @ 12285 NONAME DATA 8
-	_ZN11QPushButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12286 NONAME
-	_ZN11QPushButton25staticMetaObjectExtraDataE @ 12287 NONAME DATA 8
-	_ZN11QRubberBand18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12288 NONAME
-	_ZN11QRubberBand25staticMetaObjectExtraDataE @ 12289 NONAME DATA 8
-	_ZN11QScrollArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12290 NONAME
-	_ZN11QScrollArea25staticMetaObjectExtraDataE @ 12291 NONAME DATA 8
-	_ZN11QTapGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12292 NONAME
-	_ZN11QTapGesture25staticMetaObjectExtraDataE @ 12293 NONAME DATA 8
-	_ZN11QTextEngine15beginningOfLineEi @ 12294 NONAME
-	_ZN11QTextEngine16getClusterLengthEPtPK17HB_CharAttributesiiiPi @ 12295 NONAME
-	_ZN11QTextEngine16offsetInLigatureEPK11QScriptItemiii @ 12296 NONAME
-	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12297 NONAME
-	_ZN11QTextEngine22insertionPointsForLineEiR7QVectorIiE @ 12298 NONAME
-	_ZN11QTextEngine25lineNumberForTextPositionEi @ 12299 NONAME
-	_ZN11QTextEngine27positionAfterVisualMovementEiN11QTextCursor13MoveOperationE @ 12300 NONAME
-	_ZN11QTextEngine9alignLineERK11QScriptLine @ 12301 NONAME
-	_ZN11QTextEngine9endOfLineEi @ 12302 NONAME
-	_ZN11QTextLayout18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12303 NONAME
-	_ZN11QTextObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12304 NONAME
-	_ZN11QTextObject25staticMetaObjectExtraDataE @ 12305 NONAME DATA 8
-	_ZN11QToolButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12306 NONAME
-	_ZN11QToolButton25staticMetaObjectExtraDataE @ 12307 NONAME DATA 8
-	_ZN11QTreeWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12308 NONAME
-	_ZN11QTreeWidget25staticMetaObjectExtraDataE @ 12309 NONAME DATA 8
-	_ZN11QVBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12310 NONAME
-	_ZN11QVBoxLayout25staticMetaObjectExtraDataE @ 12311 NONAME DATA 8
-	_ZN11QWizardPage18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12312 NONAME
-	_ZN11QWizardPage25staticMetaObjectExtraDataE @ 12313 NONAME DATA 8
-	_ZN12QActionGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12314 NONAME
-	_ZN12QActionGroup25staticMetaObjectExtraDataE @ 12315 NONAME DATA 8
-	_ZN12QApplication18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12316 NONAME
-	_ZN12QApplication25staticMetaObjectExtraDataE @ 12317 NONAME DATA 8
-	_ZN12QButtonGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12318 NONAME
-	_ZN12QButtonGroup25staticMetaObjectExtraDataE @ 12319 NONAME DATA 8
-	_ZN12QColorDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12320 NONAME
-	_ZN12QColorDialog25staticMetaObjectExtraDataE @ 12321 NONAME DATA 8
-	_ZN12QCommonStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12322 NONAME
-	_ZN12QCommonStyle25staticMetaObjectExtraDataE @ 12323 NONAME DATA 8
-	_ZN12QInputDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12324 NONAME
-	_ZN12QInputDialog25staticMetaObjectExtraDataE @ 12325 NONAME DATA 8
-	_ZN12QInputDialog7getItemEP7QWidgetRK7QStringS4_RK11QStringListibPb6QFlagsIN2Qt10WindowTypeEES9_INSA_15InputMethodHintEE @ 12326 NONAME
-	_ZN12QInputDialog7getTextEP7QWidgetRK7QStringS4_N9QLineEdit8EchoModeES4_Pb6QFlagsIN2Qt10WindowTypeEES8_INS9_15InputMethodHintEE @ 12327 NONAME
-	_ZN12QLineControl18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12328 NONAME
-	_ZN12QLineControl25staticMetaObjectExtraDataE @ 12329 NONAME DATA 8
-	_ZN12QProgressBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12330 NONAME
-	_ZN12QProgressBar25staticMetaObjectExtraDataE @ 12331 NONAME DATA 8
-	_ZN12QRadioButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12332 NONAME
-	_ZN12QRadioButton25staticMetaObjectExtraDataE @ 12333 NONAME DATA 8
-	_ZN12QStylePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12334 NONAME
-	_ZN12QStylePlugin25staticMetaObjectExtraDataE @ 12335 NONAME DATA 8
-	_ZN12QTableWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12336 NONAME
-	_ZN12QTableWidget25staticMetaObjectExtraDataE @ 12337 NONAME DATA 8
-	_ZN12QTextBrowser18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12338 NONAME
-	_ZN12QTextBrowser25staticMetaObjectExtraDataE @ 12339 NONAME DATA 8
-	_ZN12QTextControl18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12340 NONAME
-	_ZN12QTextControl25staticMetaObjectExtraDataE @ 12341 NONAME DATA 8
-	_ZN13QDateTimeEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12342 NONAME
-	_ZN13QDateTimeEdit25staticMetaObjectExtraDataE @ 12343 NONAME DATA 8
-	_ZN13QErrorMessage18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12344 NONAME
-	_ZN13QErrorMessage25staticMetaObjectExtraDataE @ 12345 NONAME DATA 8
-	_ZN13QFontComboBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12346 NONAME
-	_ZN13QFontComboBox25staticMetaObjectExtraDataE @ 12347 NONAME DATA 8
-	_ZN13QFontDatabase22resolveFontFamilyAliasERK7QString @ 12348 NONAME
-	_ZN13QGraphicsView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12349 NONAME
-	_ZN13QGraphicsView25staticMetaObjectExtraDataE @ 12350 NONAME DATA 8
-	_ZN13QInputContext18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12351 NONAME
-	_ZN13QInputContext25staticMetaObjectExtraDataE @ 12352 NONAME DATA 8
-	_ZN13QIntValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12353 NONAME
-	_ZN13QIntValidator25staticMetaObjectExtraDataE @ 12354 NONAME DATA 8
-	_ZN13QItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12355 NONAME
-	_ZN13QItemDelegate25staticMetaObjectExtraDataE @ 12356 NONAME DATA 8
-	_ZN13QMdiSubWindow18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12357 NONAME
-	_ZN13QMdiSubWindow25staticMetaObjectExtraDataE @ 12358 NONAME DATA 8
-	_ZN13QPinchGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12359 NONAME
-	_ZN13QPinchGesture25staticMetaObjectExtraDataE @ 12360 NONAME DATA 8
-	_ZN13QPixmapFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12361 NONAME
-	_ZN13QPixmapFilter25staticMetaObjectExtraDataE @ 12362 NONAME DATA 8
-	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12363 NONAME
-	_ZN13QSplashScreen18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12364 NONAME
-	_ZN13QSplashScreen25staticMetaObjectExtraDataE @ 12365 NONAME DATA 8
-	_ZN13QSwipeGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12366 NONAME
-	_ZN13QSwipeGesture25staticMetaObjectExtraDataE @ 12367 NONAME DATA 8
-	_ZN13QTextDocument18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12368 NONAME
-	_ZN13QTextDocument25setDefaultCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12369 NONAME
-	_ZN13QTextDocument25staticMetaObjectExtraDataE @ 12370 NONAME DATA 8
-	_ZN13QWidgetAction18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12371 NONAME
-	_ZN13QWidgetAction25staticMetaObjectExtraDataE @ 12372 NONAME DATA 8
-	_ZN13QWindowsStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12373 NONAME
-	_ZN13QWindowsStyle25staticMetaObjectExtraDataE @ 12374 NONAME DATA 8
-	_ZN14QDesktopWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12375 NONAME
-	_ZN14QDesktopWidget25staticMetaObjectExtraDataE @ 12376 NONAME DATA 8
-	_ZN14QDoubleSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12377 NONAME
-	_ZN14QDoubleSpinBox25staticMetaObjectExtraDataE @ 12378 NONAME DATA 8
-	_ZN14QFileOpenEventC1ERK5RFile @ 12379 NONAME
-	_ZN14QFileOpenEventC2ERK5RFile @ 12380 NONAME
-	_ZN14QGraphicsScale18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12381 NONAME
-	_ZN14QGraphicsScale25staticMetaObjectExtraDataE @ 12382 NONAME DATA 8
-	_ZN14QGraphicsScene18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12383 NONAME
-	_ZN14QGraphicsScene25staticMetaObjectExtraDataE @ 12384 NONAME DATA 8
-	_ZN14QImageIOPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12385 NONAME
-	_ZN14QImageIOPlugin25staticMetaObjectExtraDataE @ 12386 NONAME DATA 8
-	_ZN14QPaintEngineEx18drawStaticTextItemEP15QStaticTextItem @ 12387 NONAME
-	_ZN14QPaintEngineEx19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsIN8QPainter18PixmapFragmentHintEE @ 12388 NONAME
-	_ZN14QPlainTextEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12389 NONAME
-	_ZN14QPlainTextEdit25staticMetaObjectExtraDataE @ 12390 NONAME DATA 8
-	_ZN14QStackedLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12391 NONAME
-	_ZN14QStackedLayout25staticMetaObjectExtraDataE @ 12392 NONAME DATA 8
-	_ZN14QStackedWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12393 NONAME
-	_ZN14QStackedWidget25staticMetaObjectExtraDataE @ 12394 NONAME DATA 8
-	_ZN14QWindowSurfaceC2EP7QWidgetb @ 12395 NONAME
-	_ZN15QAbstractButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12396 NONAME
-	_ZN15QAbstractButton25staticMetaObjectExtraDataE @ 12397 NONAME DATA 8
-	_ZN15QAbstractSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12398 NONAME
-	_ZN15QAbstractSlider25staticMetaObjectExtraDataE @ 12399 NONAME DATA 8
-	_ZN15QCalendarWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12400 NONAME
-	_ZN15QCalendarWidget25staticMetaObjectExtraDataE @ 12401 NONAME DATA 8
-	_ZN15QGraphicsAnchor18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12402 NONAME
-	_ZN15QGraphicsAnchor25staticMetaObjectExtraDataE @ 12403 NONAME DATA 8
-	_ZN15QGraphicsEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12404 NONAME
-	_ZN15QGraphicsEffect25staticMetaObjectExtraDataE @ 12405 NONAME DATA 8
-	_ZN15QGraphicsObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12406 NONAME
-	_ZN15QGraphicsObject25staticMetaObjectExtraDataE @ 12407 NONAME DATA 8
-	_ZN15QGraphicsWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12408 NONAME
-	_ZN15QGraphicsWidget25staticMetaObjectExtraDataE @ 12409 NONAME DATA 8
-	_ZN15QProgressDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12410 NONAME
-	_ZN15QProgressDialog25staticMetaObjectExtraDataE @ 12411 NONAME DATA 8
-	_ZN15QRadialGradient14setFocalRadiusEf @ 12412 NONAME
-	_ZN15QRadialGradient15setCenterRadiusEf @ 12413 NONAME
-	_ZN15QRadialGradientC1ERK7QPointFfS2_f @ 12414 NONAME
-	_ZN15QRadialGradientC1Effffff @ 12415 NONAME
-	_ZN15QRadialGradientC2ERK7QPointFfS2_f @ 12416 NONAME
-	_ZN15QRadialGradientC2Effffff @ 12417 NONAME
-	_ZN15QSessionManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12418 NONAME
-	_ZN15QSessionManager25staticMetaObjectExtraDataE @ 12419 NONAME DATA 8
-	_ZN15QSplitterHandle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12420 NONAME
-	_ZN15QSplitterHandle25staticMetaObjectExtraDataE @ 12421 NONAME DATA 8
-	_ZN15QTextBlockGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12422 NONAME
-	_ZN15QTextBlockGroup25staticMetaObjectExtraDataE @ 12423 NONAME DATA 8
-	_ZN16QAbstractSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12424 NONAME
-	_ZN16QAbstractSpinBox25staticMetaObjectExtraDataE @ 12425 NONAME DATA 8
-	_ZN16QDialogButtonBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12426 NONAME
-	_ZN16QDialogButtonBox25staticMetaObjectExtraDataE @ 12427 NONAME DATA 8
-	_ZN16QDoubleValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12428 NONAME
-	_ZN16QDoubleValidator25staticMetaObjectExtraDataE @ 12429 NONAME DATA 8
-	_ZN16QFileSystemModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12430 NONAME
-	_ZN16QFileSystemModel25staticMetaObjectExtraDataE @ 12431 NONAME DATA 8
-	_ZN16QRegExpValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12432 NONAME
-	_ZN16QRegExpValidator25staticMetaObjectExtraDataE @ 12433 NONAME DATA 8
-	_ZN16QStringListModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12434 NONAME
-	_ZN16QStringListModel25staticMetaObjectExtraDataE @ 12435 NONAME DATA 8
-	_ZN16QTreeViewPrivate10initializeEv @ 12436 NONAME
-	_ZN16QTreeViewPrivate15insertViewItemsEiiRK13QTreeViewItem @ 12437 NONAME
-	_ZN16QTreeViewPrivate15removeViewItemsEii @ 12438 NONAME
-	_ZN16QTreeViewPrivate16updateScrollBarsEv @ 12439 NONAME
-	_ZN16QTreeViewPrivate17_q_columnsRemovedERK11QModelIndexii @ 12440 NONAME
-	_ZN16QTreeViewPrivate17_q_modelDestroyedEv @ 12441 NONAME
-	_ZN16QTreeViewPrivate22_q_modelAboutToBeResetEv @ 12442 NONAME
-	_ZN16QTreeViewPrivate22beginAnimatedOperationEv @ 12443 NONAME
-	_ZN16QTreeViewPrivate23_q_endAnimatedOperationEv @ 12444 NONAME
-	_ZN16QTreeViewPrivate23_q_sortIndicatorChangedEiN2Qt9SortOrderE @ 12445 NONAME
-	_ZN16QTreeViewPrivate24prepareAnimatedOperationEiN18QAbstractAnimation9DirectionE @ 12446 NONAME
-	_ZN16QTreeViewPrivate25expandOrCollapseItemAtPosERK6QPoint @ 12447 NONAME
-	_ZN16QTreeViewPrivate26_q_columnsAboutToBeRemovedERK11QModelIndexii @ 12448 NONAME
-	_ZN16QTreeViewPrivate6expandEib @ 12449 NONAME
-	_ZN16QTreeViewPrivate6layoutEibb @ 12450 NONAME
-	_ZN16QTreeViewPrivate6selectERK11QModelIndexS2_6QFlagsIN19QItemSelectionModel13SelectionFlagEE @ 12451 NONAME
-	_ZN16QTreeViewPrivate8collapseEib @ 12452 NONAME
-	_ZN17QAbstractItemView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12453 NONAME
-	_ZN17QAbstractItemView25staticMetaObjectExtraDataE @ 12454 NONAME DATA 8
-	_ZN17QDataWidgetMapper18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12455 NONAME
-	_ZN17QDataWidgetMapper25staticMetaObjectExtraDataE @ 12456 NONAME DATA 8
-	_ZN17QDockWidgetLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12457 NONAME
-	_ZN17QDockWidgetLayout25staticMetaObjectExtraDataE @ 12458 NONAME DATA 8
-	_ZN17QGraphicsRotation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12459 NONAME
-	_ZN17QGraphicsRotation25staticMetaObjectExtraDataE @ 12460 NONAME DATA 8
-	_ZN17QGraphicsTextItem18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12461 NONAME
-	_ZN17QGraphicsTextItem25staticMetaObjectExtraDataE @ 12462 NONAME DATA 8
-	_ZN17QIconEnginePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12463 NONAME
-	_ZN17QIconEnginePlugin25staticMetaObjectExtraDataE @ 12464 NONAME DATA 8
-	_ZN17QInternalMimeData11canReadDataERK7QString @ 12465 NONAME
-	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12466 NONAME
-	_ZN17QInternalMimeData11qt_metacastEPKc @ 12467 NONAME
-	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12468 NONAME
-	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12469 NONAME
-	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12470 NONAME
-	_ZN17QInternalMimeData16staticMetaObjectE @ 12471 NONAME DATA 16
-	_ZN17QInternalMimeData18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12472 NONAME
-	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12473 NONAME
-	_ZN17QInternalMimeData25staticMetaObjectExtraDataE @ 12474 NONAME DATA 8
-	_ZN17QInternalMimeDataC2Ev @ 12475 NONAME
-	_ZN17QInternalMimeDataD0Ev @ 12476 NONAME
-	_ZN17QInternalMimeDataD1Ev @ 12477 NONAME
-	_ZN17QInternalMimeDataD2Ev @ 12478 NONAME
-	_ZN17QPixmapBlurFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12479 NONAME
-	_ZN17QPixmapBlurFilter25staticMetaObjectExtraDataE @ 12480 NONAME DATA 8
-	_ZN18QCommandLinkButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12481 NONAME
-	_ZN18QCommandLinkButton25staticMetaObjectExtraDataE @ 12482 NONAME DATA 8
-	_ZN18QGraphicsTransform18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12483 NONAME
-	_ZN18QGraphicsTransform25staticMetaObjectExtraDataE @ 12484 NONAME DATA 8
-	_ZN18QGuiPlatformPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12485 NONAME
-	_ZN18QGuiPlatformPlugin25staticMetaObjectExtraDataE @ 12486 NONAME DATA 8
-	_ZN18QStandardItemModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12487 NONAME
-	_ZN18QStandardItemModel25staticMetaObjectExtraDataE @ 12488 NONAME DATA 8
-	_ZN18QSyntaxHighlighter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12489 NONAME
-	_ZN18QSyntaxHighlighter25staticMetaObjectExtraDataE @ 12490 NONAME DATA 8
-	_ZN18QTapAndHoldGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12491 NONAME
-	_ZN18QTapAndHoldGesture25staticMetaObjectExtraDataE @ 12492 NONAME DATA 8
-	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12493 NONAME
-	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12494 NONAME
-	_ZN19QAbstractProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12495 NONAME
-	_ZN19QAbstractProxyModel25staticMetaObjectExtraDataE @ 12496 NONAME DATA 8
-	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12497 NONAME
-	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12498 NONAME
-	_ZN19QAbstractScrollArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12499 NONAME
-	_ZN19QAbstractScrollArea25staticMetaObjectExtraDataE @ 12500 NONAME DATA 8
-	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12501 NONAME
-	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12502 NONAME
-	_ZN19QBlitterPaintEngine10drawPixmapERK6QRectFRK7QPixmapS2_ @ 12503 NONAME
-	_ZN19QBlitterPaintEngine10penChangedEv @ 12504 NONAME
-	_ZN19QBlitterPaintEngine11drawEllipseERK6QRectF @ 12505 NONAME
-	_ZN19QBlitterPaintEngine12brushChangedEv @ 12506 NONAME
-	_ZN19QBlitterPaintEngine12drawTextItemERK7QPointFRK9QTextItem @ 12507 NONAME
-	_ZN19QBlitterPaintEngine14opacityChangedEv @ 12508 NONAME
-	_ZN19QBlitterPaintEngine16transformChangedEv @ 12509 NONAME
-	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12510 NONAME
-	_ZN19QBlitterPaintEngine18clipEnabledChangedEv @ 12511 NONAME
-	_ZN19QBlitterPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 12512 NONAME
-	_ZN19QBlitterPaintEngine18renderHintsChangedEv @ 12513 NONAME
-	_ZN19QBlitterPaintEngine22compositionModeChangedEv @ 12514 NONAME
-	_ZN19QBlitterPaintEngine3endEv @ 12515 NONAME
-	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12516 NONAME
-	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12517 NONAME
-	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12518 NONAME
-	_ZN19QBlitterPaintEngine4fillERK11QVectorPathRK6QBrush @ 12519 NONAME
-	_ZN19QBlitterPaintEngine5beginEP12QPaintDevice @ 12520 NONAME
-	_ZN19QBlitterPaintEngine6strokeERK11QVectorPathRK4QPen @ 12521 NONAME
-	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QBrush @ 12522 NONAME
-	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QColor @ 12523 NONAME
-	_ZN19QBlitterPaintEngine8setStateEP13QPainterState @ 12524 NONAME
-	_ZN19QBlitterPaintEngine9drawImageERK6QRectFRK6QImageS2_6QFlagsIN2Qt19ImageConversionFlagEE @ 12525 NONAME
-	_ZN19QBlitterPaintEngine9drawRectsEPK5QRecti @ 12526 NONAME
-	_ZN19QBlitterPaintEngine9drawRectsEPK6QRectFi @ 12527 NONAME
-	_ZN19QBlitterPaintEngineC1EP20QBlittablePixmapData @ 12528 NONAME
-	_ZN19QBlitterPaintEngineC2EP20QBlittablePixmapData @ 12529 NONAME
-	_ZN19QBlitterPaintEngineD0Ev @ 12530 NONAME
-	_ZN19QBlitterPaintEngineD1Ev @ 12531 NONAME
-	_ZN19QBlitterPaintEngineD2Ev @ 12532 NONAME
-	_ZN19QEventDispatcherS6018qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12533 NONAME
-	_ZN19QEventDispatcherS6025staticMetaObjectExtraDataE @ 12534 NONAME DATA 8
-	_ZN19QGraphicsBlurEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12535 NONAME
-	_ZN19QGraphicsBlurEffect25staticMetaObjectExtraDataE @ 12536 NONAME DATA 8
-	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12537 NONAME
-	_ZN19QIconEnginePluginV218qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12538 NONAME
-	_ZN19QIconEnginePluginV225staticMetaObjectExtraDataE @ 12539 NONAME DATA 8
-	_ZN19QIdentityProxyModel10insertRowsEiiRK11QModelIndex @ 12540 NONAME
-	_ZN19QIdentityProxyModel10removeRowsEiiRK11QModelIndex @ 12541 NONAME
-	_ZN19QIdentityProxyModel11qt_metacallEN11QMetaObject4CallEiPPv @ 12542 NONAME
-	_ZN19QIdentityProxyModel11qt_metacastEPKc @ 12543 NONAME
-	_ZN19QIdentityProxyModel12dropMimeDataEPK9QMimeDataN2Qt10DropActionEiiRK11QModelIndex @ 12544 NONAME
-	_ZN19QIdentityProxyModel13insertColumnsEiiRK11QModelIndex @ 12545 NONAME
-	_ZN19QIdentityProxyModel13removeColumnsEiiRK11QModelIndex @ 12546 NONAME
-	_ZN19QIdentityProxyModel14setSourceModelEP18QAbstractItemModel @ 12547 NONAME
-	_ZN19QIdentityProxyModel16staticMetaObjectE @ 12548 NONAME DATA 16
-	_ZN19QIdentityProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12549 NONAME
-	_ZN19QIdentityProxyModel19getStaticMetaObjectEv @ 12550 NONAME
-	_ZN19QIdentityProxyModel25staticMetaObjectExtraDataE @ 12551 NONAME DATA 8
-	_ZN19QIdentityProxyModelC1EP7QObject @ 12552 NONAME
-	_ZN19QIdentityProxyModelC1ER26QIdentityProxyModelPrivateP7QObject @ 12553 NONAME
-	_ZN19QIdentityProxyModelC2EP7QObject @ 12554 NONAME
-	_ZN19QIdentityProxyModelC2ER26QIdentityProxyModelPrivateP7QObject @ 12555 NONAME
-	_ZN19QIdentityProxyModelD0Ev @ 12556 NONAME
-	_ZN19QIdentityProxyModelD1Ev @ 12557 NONAME
-	_ZN19QIdentityProxyModelD2Ev @ 12558 NONAME
-	_ZN19QInputContextPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12559 NONAME
-	_ZN19QInputContextPlugin25staticMetaObjectExtraDataE @ 12560 NONAME DATA 8
-	_ZN19QItemSelectionModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12561 NONAME
-	_ZN19QItemSelectionModel25staticMetaObjectExtraDataE @ 12562 NONAME DATA 8
-	_ZN19QKeyEventTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12563 NONAME
-	_ZN19QKeyEventTransition25staticMetaObjectExtraDataE @ 12564 NONAME DATA 8
-	_ZN19QStyledItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12565 NONAME
-	_ZN19QStyledItemDelegate25staticMetaObjectExtraDataE @ 12566 NONAME DATA 8
-	_ZN20QBlittablePixmapData12setBlittableEP10QBlittable @ 12567 NONAME
-	_ZN20QBlittablePixmapData4fillERK6QColor @ 12568 NONAME
-	_ZN20QBlittablePixmapData6bufferEv @ 12569 NONAME
-	_ZN20QBlittablePixmapData6resizeEii @ 12570 NONAME
-	_ZN20QBlittablePixmapData9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 12571 NONAME
-	_ZN20QBlittablePixmapDataC2Ev @ 12572 NONAME
-	_ZN20QBlittablePixmapDataD0Ev @ 12573 NONAME
-	_ZN20QBlittablePixmapDataD1Ev @ 12574 NONAME
-	_ZN20QBlittablePixmapDataD2Ev @ 12575 NONAME
-	_ZN20QGraphicsProxyWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12576 NONAME
-	_ZN20QGraphicsProxyWidget25staticMetaObjectExtraDataE @ 12577 NONAME DATA 8
-	_ZN20QPaintBufferResource18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12578 NONAME
-	_ZN20QPaintBufferResource25staticMetaObjectExtraDataE @ 12579 NONAME DATA 8
-	_ZN20QPictureFormatPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12580 NONAME
-	_ZN20QPictureFormatPlugin25staticMetaObjectExtraDataE @ 12581 NONAME DATA 8
-	_ZN20QRasterWindowSurfaceC1EP7QWidgetb @ 12582 NONAME
-	_ZN20QRasterWindowSurfaceC2EP7QWidgetb @ 12583 NONAME
-	_ZN20QWidgetResizeHandler18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12584 NONAME
-	_ZN20QWidgetResizeHandler25staticMetaObjectExtraDataE @ 12585 NONAME DATA 8
-	_ZN21QAbstractItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12586 NONAME
-	_ZN21QAbstractItemDelegate25staticMetaObjectExtraDataE @ 12587 NONAME DATA 8
-	_ZN21QGraphicsEffectSource18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12588 NONAME
-	_ZN21QGraphicsEffectSource25staticMetaObjectExtraDataE @ 12589 NONAME DATA 8
-	_ZN21QGraphicsSystemPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12590 NONAME
-	_ZN21QGraphicsSystemPlugin25staticMetaObjectExtraDataE @ 12591 NONAME DATA 8
-	_ZN21QMouseEventTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12592 NONAME
-	_ZN21QMouseEventTransition25staticMetaObjectExtraDataE @ 12593 NONAME DATA 8
-	_ZN21QPixmapColorizeFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12594 NONAME
-	_ZN21QPixmapColorizeFilter25staticMetaObjectExtraDataE @ 12595 NONAME DATA 8
-	_ZN21QSortFilterProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12596 NONAME
-	_ZN21QSortFilterProxyModel25staticMetaObjectExtraDataE @ 12597 NONAME DATA 8
-	_ZN22QGraphicsItemAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12598 NONAME
-	_ZN22QGraphicsItemAnimation25staticMetaObjectExtraDataE @ 12599 NONAME DATA 8
-	_ZN22QGraphicsOpacityEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12600 NONAME
-	_ZN22QGraphicsOpacityEffect25staticMetaObjectExtraDataE @ 12601 NONAME DATA 8
-	_ZN23QGraphicsColorizeEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12602 NONAME
-	_ZN23QGraphicsColorizeEffect25staticMetaObjectExtraDataE @ 12603 NONAME DATA 8
-	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 12604 NONAME
-	_ZN23QPaintBufferSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12605 NONAME
-	_ZN23QPaintBufferSignalProxy25staticMetaObjectExtraDataE @ 12606 NONAME DATA 8
-	_ZN23QPixmapDropShadowFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12607 NONAME
-	_ZN23QPixmapDropShadowFilter25staticMetaObjectExtraDataE @ 12608 NONAME DATA 8
-	_ZN24QPixmapConvolutionFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12609 NONAME
-	_ZN24QPixmapConvolutionFilter25staticMetaObjectExtraDataE @ 12610 NONAME DATA 8
-	_ZN24QPlainTextDocumentLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12611 NONAME
-	_ZN24QPlainTextDocumentLayout25staticMetaObjectExtraDataE @ 12612 NONAME DATA 8
-	_ZN25QGraphicsDropShadowEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12613 NONAME
-	_ZN25QGraphicsDropShadowEffect25staticMetaObjectExtraDataE @ 12614 NONAME DATA 8
-	_ZN27QAbstractTextDocumentLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12615 NONAME
-	_ZN27QAbstractTextDocumentLayout25staticMetaObjectExtraDataE @ 12616 NONAME DATA 8
-	_ZN5QDial18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12617 NONAME
-	_ZN5QDial25staticMetaObjectExtraDataE @ 12618 NONAME DATA 8
-	_ZN5QDrag18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12619 NONAME
-	_ZN5QDrag25staticMetaObjectExtraDataE @ 12620 NONAME DATA 8
-	_ZN5QFont12setStyleNameERK7QString @ 12621 NONAME
-	_ZN5QFont20setHintingPreferenceENS_17HintingPreferenceE @ 12622 NONAME
-	_ZN5QMenu18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12623 NONAME
-	_ZN5QMenu25staticMetaObjectExtraDataE @ 12624 NONAME DATA 8
-	_ZN6QFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12625 NONAME
-	_ZN6QFrame25staticMetaObjectExtraDataE @ 12626 NONAME DATA 8
-	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12627 NONAME
-	_ZN6QImage4fillERK6QColor @ 12628 NONAME
-	_ZN6QLabel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12629 NONAME
-	_ZN6QLabel25staticMetaObjectExtraDataE @ 12630 NONAME DATA 8
-	_ZN6QMovie18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12631 NONAME
-	_ZN6QMovie25staticMetaObjectExtraDataE @ 12632 NONAME DATA 8
-	_ZN6QSound18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12633 NONAME
-	_ZN6QSound25staticMetaObjectExtraDataE @ 12634 NONAME DATA 8
-	_ZN6QStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12635 NONAME
-	_ZN6QStyle25staticMetaObjectExtraDataE @ 12636 NONAME DATA 8
-	_ZN7QAction18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12637 NONAME
-	_ZN7QAction25staticMetaObjectExtraDataE @ 12638 NONAME DATA 8
-	_ZN7QDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12639 NONAME
-	_ZN7QDialog25staticMetaObjectExtraDataE @ 12640 NONAME DATA 8
-	_ZN7QLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12641 NONAME
-	_ZN7QLayout25staticMetaObjectExtraDataE @ 12642 NONAME DATA 8
-	_ZN7QSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12643 NONAME
-	_ZN7QSlider25staticMetaObjectExtraDataE @ 12644 NONAME DATA 8
-	_ZN7QTabBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12645 NONAME
-	_ZN7QTabBar25staticMetaObjectExtraDataE @ 12646 NONAME DATA 8
-	_ZN7QWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12647 NONAME
-	_ZN7QWidget25staticMetaObjectExtraDataE @ 12648 NONAME DATA 8
-	_ZN7QWizard18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12649 NONAME
-	_ZN7QWizard25staticMetaObjectExtraDataE @ 12650 NONAME DATA 8
-	_ZN8QGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12651 NONAME
-	_ZN8QGesture25staticMetaObjectExtraDataE @ 12652 NONAME DATA 8
-	_ZN8QMdiArea14setTabsMovableEb @ 12653 NONAME
-	_ZN8QMdiArea15setTabsClosableEb @ 12654 NONAME
-	_ZN8QMdiArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12655 NONAME
-	_ZN8QMdiArea25staticMetaObjectExtraDataE @ 12656 NONAME DATA 8
-	_ZN8QMenuBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12657 NONAME
-	_ZN8QMenuBar25staticMetaObjectExtraDataE @ 12658 NONAME DATA 8
-	_ZN8QPainter19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsINS_18PixmapFragmentHintEE @ 12659 NONAME
-	_ZN8QSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12660 NONAME
-	_ZN8QSpinBox25staticMetaObjectExtraDataE @ 12661 NONAME DATA 8
-	_ZN8QToolBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12662 NONAME
-	_ZN8QToolBar25staticMetaObjectExtraDataE @ 12663 NONAME DATA 8
-	_ZN8QToolBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12664 NONAME
-	_ZN8QToolBox25staticMetaObjectExtraDataE @ 12665 NONAME DATA 8
-	_ZN9QCheckBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12666 NONAME
-	_ZN9QCheckBox25staticMetaObjectExtraDataE @ 12667 NONAME DATA 8
-	_ZN9QComboBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12668 NONAME
-	_ZN9QComboBox25staticMetaObjectExtraDataE @ 12669 NONAME DATA 8
-	_ZN9QDateEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12670 NONAME
-	_ZN9QDateEdit25staticMetaObjectExtraDataE @ 12671 NONAME DATA 8
-	_ZN9QDirModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12672 NONAME
-	_ZN9QDirModel25staticMetaObjectExtraDataE @ 12673 NONAME DATA 8
-	_ZN9QGroupBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12674 NONAME
-	_ZN9QGroupBox25staticMetaObjectExtraDataE @ 12675 NONAME DATA 8
-	_ZN9QLineEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12676 NONAME
-	_ZN9QLineEdit18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12677 NONAME
-	_ZN9QLineEdit25staticMetaObjectExtraDataE @ 12678 NONAME DATA 8
-	_ZN9QListView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12679 NONAME
-	_ZN9QListView25staticMetaObjectExtraDataE @ 12680 NONAME DATA 8
-	_ZN9QS60Style18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12681 NONAME
-	_ZN9QS60Style25staticMetaObjectExtraDataE @ 12682 NONAME DATA 8
-	_ZN9QShortcut18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12683 NONAME
-	_ZN9QShortcut25staticMetaObjectExtraDataE @ 12684 NONAME DATA 8
-	_ZN9QSizeGrip18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12685 NONAME
-	_ZN9QSizeGrip25staticMetaObjectExtraDataE @ 12686 NONAME DATA 8
-	_ZN9QSplitter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12687 NONAME
-	_ZN9QSplitter25staticMetaObjectExtraDataE @ 12688 NONAME DATA 8
-	_ZN9QTextEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12689 NONAME
-	_ZN9QTextEdit25staticMetaObjectExtraDataE @ 12690 NONAME DATA 8
-	_ZN9QTextList18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12691 NONAME
-	_ZN9QTextList25staticMetaObjectExtraDataE @ 12692 NONAME DATA 8
-	_ZN9QTimeEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12693 NONAME
-	_ZN9QTimeEdit25staticMetaObjectExtraDataE @ 12694 NONAME DATA 8
-	_ZN9QTreeView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12695 NONAME
-	_ZN9QTreeView25staticMetaObjectExtraDataE @ 12696 NONAME DATA 8
-	_ZN9QUndoView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12697 NONAME
-	_ZN9QUndoView25staticMetaObjectExtraDataE @ 12698 NONAME DATA 8
-	_ZNK10QBlittable12capabilitiesEv @ 12699 NONAME
-	_ZNK10QBlittable4sizeEv @ 12700 NONAME
-	_ZNK10QTabWidget14heightForWidthEi @ 12701 NONAME
-	_ZNK10QZipWriter10isWritableEv @ 12702 NONAME
-	_ZNK10QZipWriter17compressionPolicyEv @ 12703 NONAME
-	_ZNK10QZipWriter19creationPermissionsEv @ 12704 NONAME
-	_ZNK10QZipWriter6deviceEv @ 12705 NONAME
-	_ZNK10QZipWriter6existsEv @ 12706 NONAME
-	_ZNK10QZipWriter6statusEv @ 12707 NONAME
-	_ZNK11QTextEngine19nextLogicalPositionEi @ 12708 NONAME
-	_ZNK11QTextEngine23previousLogicalPositionEi @ 12709 NONAME
-	_ZNK11QTextLayout15cursorMoveStyleEv @ 12710 NONAME
-	_ZNK11QTextLayout18leftCursorPositionEi @ 12711 NONAME
-	_ZNK11QTextLayout19rightCursorPositionEi @ 12712 NONAME
-	_ZNK12QFontMetrics10inFontUcs4Ej @ 12713 NONAME
-	_ZNK12QRadioButton15minimumSizeHintEv @ 12714 NONAME
-	_ZNK12QUndoCommand10actionTextEv @ 12715 NONAME
-	_ZNK13QFontDatabase9hasFamilyERK7QString @ 12716 NONAME
-	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12717 NONAME
-	_ZNK13QTextDocument22defaultCursorMoveStyleEv @ 12718 NONAME
-	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12719 NONAME
-	_ZNK14QPaintEngineEx23supportsTransformationsEfRK10QTransform @ 12720 NONAME
-	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12721 NONAME
-	_ZNK14QWindowSurface8featuresEv @ 12722 NONAME
-	_ZNK15QRadialGradient11focalRadiusEv @ 12723 NONAME
-	_ZNK15QRadialGradient12centerRadiusEv @ 12724 NONAME
-	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12725 NONAME
-	_ZNK16QTreeViewPrivate10itemHeightEi @ 12726 NONAME
-	_ZNK16QTreeViewPrivate10modelIndexEii @ 12727 NONAME
-	_ZNK16QTreeViewPrivate12columnRangesERK11QModelIndexS2_ @ 12728 NONAME
-	_ZNK16QTreeViewPrivate16firstVisibleItemEPi @ 12729 NONAME
-	_ZNK16QTreeViewPrivate16itemAtCoordinateEi @ 12730 NONAME
-	_ZNK16QTreeViewPrivate16itemDecorationAtERK6QPoint @ 12731 NONAME
-	_ZNK16QTreeViewPrivate17coordinateForItemEi @ 12732 NONAME
-	_ZNK16QTreeViewPrivate18hasVisibleChildrenERK11QModelIndex @ 12733 NONAME
-	_ZNK16QTreeViewPrivate18indentationForItemEi @ 12734 NONAME
-	_ZNK16QTreeViewPrivate18itemDecorationRectERK11QModelIndex @ 12735 NONAME
-	_ZNK16QTreeViewPrivate18startAndEndColumnsERK5QRect @ 12736 NONAME
-	_ZNK16QTreeViewPrivate19draggablePaintPairsERK5QListI11QModelIndexEP5QRect @ 12737 NONAME
-	_ZNK16QTreeViewPrivate21drawAnimatedOperationEP8QPainter @ 12738 NONAME
-	_ZNK16QTreeViewPrivate25paintAlternatingRowColorsEP8QPainterP22QStyleOptionViewItemV4ii @ 12739 NONAME
-	_ZNK16QTreeViewPrivate30renderTreeToPixmapForAnimationERK5QRect @ 12740 NONAME
-	_ZNK16QTreeViewPrivate6pageUpEi @ 12741 NONAME
-	_ZNK16QTreeViewPrivate8columnAtEi @ 12742 NONAME
-	_ZNK16QTreeViewPrivate8pageDownEi @ 12743 NONAME
-	_ZNK16QTreeViewPrivate9viewIndexERK11QModelIndex @ 12744 NONAME
-	_ZNK17QInternalMimeData10metaObjectEv @ 12745 NONAME
-	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12746 NONAME
-	_ZNK17QInternalMimeData7formatsEv @ 12747 NONAME
-	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12748 NONAME
-	_ZNK18QTextureGlyphCache18textureMapForGlyphEj6QFixed @ 12749 NONAME
-	_ZNK18QTextureGlyphCache20subPixelPositionForXE6QFixed @ 12750 NONAME
-	_ZNK18QTextureGlyphCache30calculateSubPixelPositionCountEj @ 12751 NONAME
-	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12752 NONAME
-	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12753 NONAME
-	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12754 NONAME
-	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12755 NONAME
-	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12756 NONAME
-	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12757 NONAME
-	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12758 NONAME
-	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12759 NONAME
-	_ZNK19QIdentityProxyModel10metaObjectEv @ 12760 NONAME
-	_ZNK19QIdentityProxyModel11columnCountERK11QModelIndex @ 12761 NONAME
-	_ZNK19QIdentityProxyModel11mapToSourceERK11QModelIndex @ 12762 NONAME
-	_ZNK19QIdentityProxyModel13mapFromSourceERK11QModelIndex @ 12763 NONAME
-	_ZNK19QIdentityProxyModel20mapSelectionToSourceERK14QItemSelection @ 12764 NONAME
-	_ZNK19QIdentityProxyModel22mapSelectionFromSourceERK14QItemSelection @ 12765 NONAME
-	_ZNK19QIdentityProxyModel5indexEiiRK11QModelIndex @ 12766 NONAME
-	_ZNK19QIdentityProxyModel5matchERK11QModelIndexiRK8QVarianti6QFlagsIN2Qt9MatchFlagEE @ 12767 NONAME
-	_ZNK19QIdentityProxyModel6parentERK11QModelIndex @ 12768 NONAME
-	_ZNK19QIdentityProxyModel8rowCountERK11QModelIndex @ 12769 NONAME
-	_ZNK20QBlittablePixmapData11paintEngineEv @ 12770 NONAME
-	_ZNK20QBlittablePixmapData15hasAlphaChannelEv @ 12771 NONAME
-	_ZNK20QBlittablePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12772 NONAME
-	_ZNK20QBlittablePixmapData7toImageEv @ 12773 NONAME
-	_ZNK20QBlittablePixmapData9blittableEv @ 12774 NONAME
-	_ZNK20QRasterWindowSurface8featuresEv @ 12775 NONAME
-	_ZNK5QFont17hintingPreferenceEv @ 12776 NONAME
-	_ZNK5QFont9styleNameEv @ 12777 NONAME
-	_ZNK8QMdiArea11tabsMovableEv @ 12778 NONAME
-	_ZNK8QMdiArea12tabsClosableEv @ 12779 NONAME
-	_ZNK8QPainter16clipBoundingRectEv @ 12780 NONAME
-	_ZNK9QCheckBox15minimumSizeHintEv @ 12781 NONAME
-	_ZNK9QFontInfo9styleNameEv @ 12782 NONAME
-	_ZNK9QLineEdit15cursorMoveStyleEv @ 12783 NONAME
-	_ZTI10QBlittable @ 12784 NONAME
-	_ZTI16QTreeViewPrivate @ 12785 NONAME
-	_ZTI17QInternalMimeData @ 12786 NONAME
-	_ZTI19QBlitterPaintEngine @ 12787 NONAME
-	_ZTI19QIdentityProxyModel @ 12788 NONAME
-	_ZTI20QBlittablePixmapData @ 12789 NONAME
-	_ZTV10QBlittable @ 12790 NONAME
-	_ZTV16QTreeViewPrivate @ 12791 NONAME
-	_ZTV17QInternalMimeData @ 12792 NONAME
-	_ZTV19QBlitterPaintEngine @ 12793 NONAME
-	_ZTV19QIdentityProxyModel @ 12794 NONAME
-	_ZTV20QBlittablePixmapData @ 12795 NONAME
-	_Zls6QDebugPK13QSymbianEvent @ 12796 NONAME
-	_ZN12QApplication22queryKeyboardModifiersEv @ 12797 NONAME
-
+	_ZN12QApplication22aboutToUseGpuResourcesEv @ 12200 NONAME
+	_ZN12QApplication26aboutToReleaseGpuResourcesEv @ 12201 NONAME
+	_ZN19QApplicationPrivate26emitAboutToUseGpuResourcesEv @ 12202 NONAME
+	_ZN19QApplicationPrivate30emitAboutToReleaseGpuResourcesEv @ 12203 NONAME
+	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12204 NONAME
+	_Z22qt_fontdata_from_indexi @ 12205 NONAME
+	_Z27qt_isExtendedRadialGradientRK6QBrush @ 12206 NONAME
+	_Z28qt_painterPathFromVectorPathRK11QVectorPath @ 12207 NONAME
+	_Z32qGamma_correct_back_to_linear_csP6QImage @ 12208 NONAME
+	_ZN10QBlittable4lockEv @ 12209 NONAME
+	_ZN10QBlittable6unlockEv @ 12210 NONAME
+	_ZN10QBlittableC2ERK5QSize6QFlagsINS_10CapabilityEE @ 12211 NONAME
+	_ZN10QBlittableD0Ev @ 12212 NONAME
+	_ZN10QBlittableD1Ev @ 12213 NONAME
+	_ZN10QBlittableD2Ev @ 12214 NONAME
+	_ZN10QBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12215 NONAME
+	_ZN10QBoxLayout25staticMetaObjectExtraDataE @ 12216 NONAME DATA 8
+	_ZN10QClipboard18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12217 NONAME
+	_ZN10QClipboard25staticMetaObjectExtraDataE @ 12218 NONAME DATA 8
+	_ZN10QCompleter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12219 NONAME
+	_ZN10QCompleter25staticMetaObjectExtraDataE @ 12220 NONAME DATA 8
+	_ZN10QLCDNumber18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12221 NONAME
+	_ZN10QLCDNumber25staticMetaObjectExtraDataE @ 12222 NONAME DATA 8
+	_ZN10QScrollBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12223 NONAME
+	_ZN10QScrollBar25staticMetaObjectExtraDataE @ 12224 NONAME DATA 8
+	_ZN10QStatusBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12225 NONAME
+	_ZN10QStatusBar25staticMetaObjectExtraDataE @ 12226 NONAME DATA 8
+	_ZN10QTabWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12227 NONAME
+	_ZN10QTabWidget25staticMetaObjectExtraDataE @ 12228 NONAME DATA 8
+	_ZN10QTableView13doItemsLayoutEv @ 12229 NONAME
+	_ZN10QTableView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12230 NONAME
+	_ZN10QTableView25staticMetaObjectExtraDataE @ 12231 NONAME DATA 8
+	_ZN10QTextFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12232 NONAME
+	_ZN10QTextFrame25staticMetaObjectExtraDataE @ 12233 NONAME DATA 8
+	_ZN10QTextTable18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12234 NONAME
+	_ZN10QTextTable25staticMetaObjectExtraDataE @ 12235 NONAME DATA 8
+	_ZN10QUndoGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12236 NONAME
+	_ZN10QUndoGroup25staticMetaObjectExtraDataE @ 12237 NONAME DATA 8
+	_ZN10QUndoStack18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12238 NONAME
+	_ZN10QUndoStack25staticMetaObjectExtraDataE @ 12239 NONAME DATA 8
+	_ZN10QValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12240 NONAME
+	_ZN10QValidator25staticMetaObjectExtraDataE @ 12241 NONAME DATA 8
+	_ZN10QWorkspace18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12242 NONAME
+	_ZN10QWorkspace25staticMetaObjectExtraDataE @ 12243 NONAME DATA 8
+	_ZN10QZipWriter10addSymLinkERK7QStringS2_ @ 12244 NONAME
+	_ZN10QZipWriter12addDirectoryERK7QString @ 12245 NONAME
+	_ZN10QZipWriter20setCompressionPolicyENS_17CompressionPolicyE @ 12246 NONAME
+	_ZN10QZipWriter22setCreationPermissionsE6QFlagsIN5QFile10PermissionEE @ 12247 NONAME
+	_ZN10QZipWriter5closeEv @ 12248 NONAME
+	_ZN10QZipWriter7addFileERK7QStringP9QIODevice @ 12249 NONAME
+	_ZN10QZipWriter7addFileERK7QStringRK10QByteArray @ 12250 NONAME
+	_ZN10QZipWriterC1EP9QIODevice @ 12251 NONAME
+	_ZN10QZipWriterC1ERK7QString6QFlagsIN9QIODevice12OpenModeFlagEE @ 12252 NONAME
+	_ZN10QZipWriterC2EP9QIODevice @ 12253 NONAME
+	_ZN10QZipWriterC2ERK7QString6QFlagsIN9QIODevice12OpenModeFlagEE @ 12254 NONAME
+	_ZN10QZipWriterD1Ev @ 12255 NONAME
+	_ZN10QZipWriterD2Ev @ 12256 NONAME
+	_ZN11QColumnView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12257 NONAME
+	_ZN11QColumnView25staticMetaObjectExtraDataE @ 12258 NONAME DATA 8
+	_ZN11QDockWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12259 NONAME
+	_ZN11QDockWidget25staticMetaObjectExtraDataE @ 12260 NONAME DATA 8
+	_ZN11QFileDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12261 NONAME
+	_ZN11QFileDialog25staticMetaObjectExtraDataE @ 12262 NONAME DATA 8
+	_ZN11QFocusFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12263 NONAME
+	_ZN11QFocusFrame25staticMetaObjectExtraDataE @ 12264 NONAME DATA 8
+	_ZN11QFontDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12265 NONAME
+	_ZN11QFontDialog25staticMetaObjectExtraDataE @ 12266 NONAME DATA 8
+	_ZN11QFontEngine16alphaMapForGlyphEj6QFixed @ 12267 NONAME
+	_ZN11QFontEngine16alphaMapForGlyphEj6QFixedRK10QTransform @ 12268 NONAME
+	_ZN11QFontEngine19alphaRGBMapForGlyphEj6QFixediRK10QTransform @ 12269 NONAME
+	_ZN11QFormLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12270 NONAME
+	_ZN11QFormLayout25staticMetaObjectExtraDataE @ 12271 NONAME DATA 8
+	_ZN11QGridLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12272 NONAME
+	_ZN11QGridLayout25staticMetaObjectExtraDataE @ 12273 NONAME DATA 8
+	_ZN11QHBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12274 NONAME
+	_ZN11QHBoxLayout25staticMetaObjectExtraDataE @ 12275 NONAME DATA 8
+	_ZN11QHeaderView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12276 NONAME
+	_ZN11QHeaderView25staticMetaObjectExtraDataE @ 12277 NONAME DATA 8
+	_ZN11QListWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12278 NONAME
+	_ZN11QListWidget25staticMetaObjectExtraDataE @ 12279 NONAME DATA 8
+	_ZN11QMainWindow18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12280 NONAME
+	_ZN11QMainWindow25staticMetaObjectExtraDataE @ 12281 NONAME DATA 8
+	_ZN11QMessageBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12282 NONAME
+	_ZN11QMessageBox25staticMetaObjectExtraDataE @ 12283 NONAME DATA 8
+	_ZN11QPanGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12284 NONAME
+	_ZN11QPanGesture25staticMetaObjectExtraDataE @ 12285 NONAME DATA 8
+	_ZN11QProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12286 NONAME
+	_ZN11QProxyModel25staticMetaObjectExtraDataE @ 12287 NONAME DATA 8
+	_ZN11QProxyStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12288 NONAME
+	_ZN11QProxyStyle25staticMetaObjectExtraDataE @ 12289 NONAME DATA 8
+	_ZN11QPushButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12290 NONAME
+	_ZN11QPushButton25staticMetaObjectExtraDataE @ 12291 NONAME DATA 8
+	_ZN11QRubberBand18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12292 NONAME
+	_ZN11QRubberBand25staticMetaObjectExtraDataE @ 12293 NONAME DATA 8
+	_ZN11QScrollArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12294 NONAME
+	_ZN11QScrollArea25staticMetaObjectExtraDataE @ 12295 NONAME DATA 8
+	_ZN11QTapGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12296 NONAME
+	_ZN11QTapGesture25staticMetaObjectExtraDataE @ 12297 NONAME DATA 8
+	_ZN11QTextEngine15beginningOfLineEi @ 12298 NONAME
+	_ZN11QTextEngine16getClusterLengthEPtPK17HB_CharAttributesiiiPi @ 12299 NONAME
+	_ZN11QTextEngine16offsetInLigatureEPK11QScriptItemiii @ 12300 NONAME
+	_ZN11QTextEngine18positionInLigatureEPK11QScriptItemi6QFixedS3_ib @ 12301 NONAME
+	_ZN11QTextEngine22insertionPointsForLineEiR7QVectorIiE @ 12302 NONAME
+	_ZN11QTextEngine25lineNumberForTextPositionEi @ 12303 NONAME
+	_ZN11QTextEngine27positionAfterVisualMovementEiN11QTextCursor13MoveOperationE @ 12304 NONAME
+	_ZN11QTextEngine9alignLineERK11QScriptLine @ 12305 NONAME
+	_ZN11QTextEngine9endOfLineEi @ 12306 NONAME
+	_ZN11QTextLayout18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12307 NONAME
+	_ZN11QTextObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12308 NONAME
+	_ZN11QTextObject25staticMetaObjectExtraDataE @ 12309 NONAME DATA 8
+	_ZN11QToolButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12310 NONAME
+	_ZN11QToolButton25staticMetaObjectExtraDataE @ 12311 NONAME DATA 8
+	_ZN11QTreeWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12312 NONAME
+	_ZN11QTreeWidget25staticMetaObjectExtraDataE @ 12313 NONAME DATA 8
+	_ZN11QVBoxLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12314 NONAME
+	_ZN11QVBoxLayout25staticMetaObjectExtraDataE @ 12315 NONAME DATA 8
+	_ZN11QWizardPage18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12316 NONAME
+	_ZN11QWizardPage25staticMetaObjectExtraDataE @ 12317 NONAME DATA 8
+	_ZN12QActionGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12318 NONAME
+	_ZN12QActionGroup25staticMetaObjectExtraDataE @ 12319 NONAME DATA 8
+	_ZN12QApplication18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12320 NONAME
+	_ZN12QApplication25staticMetaObjectExtraDataE @ 12321 NONAME DATA 8
+	_ZN12QButtonGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12322 NONAME
+	_ZN12QButtonGroup25staticMetaObjectExtraDataE @ 12323 NONAME DATA 8
+	_ZN12QColorDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12324 NONAME
+	_ZN12QColorDialog25staticMetaObjectExtraDataE @ 12325 NONAME DATA 8
+	_ZN12QCommonStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12326 NONAME
+	_ZN12QCommonStyle25staticMetaObjectExtraDataE @ 12327 NONAME DATA 8
+	_ZN12QInputDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12328 NONAME
+	_ZN12QInputDialog25staticMetaObjectExtraDataE @ 12329 NONAME DATA 8
+	_ZN12QInputDialog7getItemEP7QWidgetRK7QStringS4_RK11QStringListibPb6QFlagsIN2Qt10WindowTypeEES9_INSA_15InputMethodHintEE @ 12330 NONAME
+	_ZN12QInputDialog7getTextEP7QWidgetRK7QStringS4_N9QLineEdit8EchoModeES4_Pb6QFlagsIN2Qt10WindowTypeEES8_INS9_15InputMethodHintEE @ 12331 NONAME
+	_ZN12QLineControl18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12332 NONAME
+	_ZN12QLineControl25staticMetaObjectExtraDataE @ 12333 NONAME DATA 8
+	_ZN12QProgressBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12334 NONAME
+	_ZN12QProgressBar25staticMetaObjectExtraDataE @ 12335 NONAME DATA 8
+	_ZN12QRadioButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12336 NONAME
+	_ZN12QRadioButton25staticMetaObjectExtraDataE @ 12337 NONAME DATA 8
+	_ZN12QStylePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12338 NONAME
+	_ZN12QStylePlugin25staticMetaObjectExtraDataE @ 12339 NONAME DATA 8
+	_ZN12QTableWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12340 NONAME
+	_ZN12QTableWidget25staticMetaObjectExtraDataE @ 12341 NONAME DATA 8
+	_ZN12QTextBrowser18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12342 NONAME
+	_ZN12QTextBrowser25staticMetaObjectExtraDataE @ 12343 NONAME DATA 8
+	_ZN12QTextControl18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12344 NONAME
+	_ZN12QTextControl25staticMetaObjectExtraDataE @ 12345 NONAME DATA 8
+	_ZN13QDateTimeEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12346 NONAME
+	_ZN13QDateTimeEdit25staticMetaObjectExtraDataE @ 12347 NONAME DATA 8
+	_ZN13QErrorMessage18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12348 NONAME
+	_ZN13QErrorMessage25staticMetaObjectExtraDataE @ 12349 NONAME DATA 8
+	_ZN13QFontComboBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12350 NONAME
+	_ZN13QFontComboBox25staticMetaObjectExtraDataE @ 12351 NONAME DATA 8
+	_ZN13QFontDatabase22resolveFontFamilyAliasERK7QString @ 12352 NONAME
+	_ZN13QGraphicsView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12353 NONAME
+	_ZN13QGraphicsView25staticMetaObjectExtraDataE @ 12354 NONAME DATA 8
+	_ZN13QInputContext18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12355 NONAME
+	_ZN13QInputContext25staticMetaObjectExtraDataE @ 12356 NONAME DATA 8
+	_ZN13QIntValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12357 NONAME
+	_ZN13QIntValidator25staticMetaObjectExtraDataE @ 12358 NONAME DATA 8
+	_ZN13QItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12359 NONAME
+	_ZN13QItemDelegate25staticMetaObjectExtraDataE @ 12360 NONAME DATA 8
+	_ZN13QMdiSubWindow18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12361 NONAME
+	_ZN13QMdiSubWindow25staticMetaObjectExtraDataE @ 12362 NONAME DATA 8
+	_ZN13QPinchGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12363 NONAME
+	_ZN13QPinchGesture25staticMetaObjectExtraDataE @ 12364 NONAME DATA 8
+	_ZN13QPixmapFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12365 NONAME
+	_ZN13QPixmapFilter25staticMetaObjectExtraDataE @ 12366 NONAME DATA 8
+	_ZN13QS60MainAppUi25ProcessCommandParametersLE11TApaCommandR4TBufILi256EERK6TDesC8 @ 12367 NONAME
+	_ZN13QSplashScreen18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12368 NONAME
+	_ZN13QSplashScreen25staticMetaObjectExtraDataE @ 12369 NONAME DATA 8
+	_ZN13QSwipeGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12370 NONAME
+	_ZN13QSwipeGesture25staticMetaObjectExtraDataE @ 12371 NONAME DATA 8
+	_ZN13QTextDocument18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12372 NONAME
+	_ZN13QTextDocument25setDefaultCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12373 NONAME
+	_ZN13QTextDocument25staticMetaObjectExtraDataE @ 12374 NONAME DATA 8
+	_ZN13QWidgetAction18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12375 NONAME
+	_ZN13QWidgetAction25staticMetaObjectExtraDataE @ 12376 NONAME DATA 8
+	_ZN13QWindowsStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12377 NONAME
+	_ZN13QWindowsStyle25staticMetaObjectExtraDataE @ 12378 NONAME DATA 8
+	_ZN14QDesktopWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12379 NONAME
+	_ZN14QDesktopWidget25staticMetaObjectExtraDataE @ 12380 NONAME DATA 8
+	_ZN14QDoubleSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12381 NONAME
+	_ZN14QDoubleSpinBox25staticMetaObjectExtraDataE @ 12382 NONAME DATA 8
+	_ZN14QFileOpenEventC1ERK5RFile @ 12383 NONAME
+	_ZN14QFileOpenEventC2ERK5RFile @ 12384 NONAME
+	_ZN14QGraphicsScale18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12385 NONAME
+	_ZN14QGraphicsScale25staticMetaObjectExtraDataE @ 12386 NONAME DATA 8
+	_ZN14QGraphicsScene18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12387 NONAME
+	_ZN14QGraphicsScene25staticMetaObjectExtraDataE @ 12388 NONAME DATA 8
+	_ZN14QImageIOPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12389 NONAME
+	_ZN14QImageIOPlugin25staticMetaObjectExtraDataE @ 12390 NONAME DATA 8
+	_ZN14QPaintEngineEx18drawStaticTextItemEP15QStaticTextItem @ 12391 NONAME
+	_ZN14QPaintEngineEx19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsIN8QPainter18PixmapFragmentHintEE @ 12392 NONAME
+	_ZN14QPlainTextEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12393 NONAME
+	_ZN14QPlainTextEdit25staticMetaObjectExtraDataE @ 12394 NONAME DATA 8
+	_ZN14QStackedLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12395 NONAME
+	_ZN14QStackedLayout25staticMetaObjectExtraDataE @ 12396 NONAME DATA 8
+	_ZN14QStackedWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12397 NONAME
+	_ZN14QStackedWidget25staticMetaObjectExtraDataE @ 12398 NONAME DATA 8
+	_ZN14QWindowSurfaceC2EP7QWidgetb @ 12399 NONAME
+	_ZN15QAbstractButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12400 NONAME
+	_ZN15QAbstractButton25staticMetaObjectExtraDataE @ 12401 NONAME DATA 8
+	_ZN15QAbstractSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12402 NONAME
+	_ZN15QAbstractSlider25staticMetaObjectExtraDataE @ 12403 NONAME DATA 8
+	_ZN15QCalendarWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12404 NONAME
+	_ZN15QCalendarWidget25staticMetaObjectExtraDataE @ 12405 NONAME DATA 8
+	_ZN15QGraphicsAnchor18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12406 NONAME
+	_ZN15QGraphicsAnchor25staticMetaObjectExtraDataE @ 12407 NONAME DATA 8
+	_ZN15QGraphicsEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12408 NONAME
+	_ZN15QGraphicsEffect25staticMetaObjectExtraDataE @ 12409 NONAME DATA 8
+	_ZN15QGraphicsObject18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12410 NONAME
+	_ZN15QGraphicsObject25staticMetaObjectExtraDataE @ 12411 NONAME DATA 8
+	_ZN15QGraphicsWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12412 NONAME
+	_ZN15QGraphicsWidget25staticMetaObjectExtraDataE @ 12413 NONAME DATA 8
+	_ZN15QProgressDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12414 NONAME
+	_ZN15QProgressDialog25staticMetaObjectExtraDataE @ 12415 NONAME DATA 8
+	_ZN15QRadialGradient14setFocalRadiusEf @ 12416 NONAME
+	_ZN15QRadialGradient15setCenterRadiusEf @ 12417 NONAME
+	_ZN15QRadialGradientC1ERK7QPointFfS2_f @ 12418 NONAME
+	_ZN15QRadialGradientC1Effffff @ 12419 NONAME
+	_ZN15QRadialGradientC2ERK7QPointFfS2_f @ 12420 NONAME
+	_ZN15QRadialGradientC2Effffff @ 12421 NONAME
+	_ZN15QSessionManager18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12422 NONAME
+	_ZN15QSessionManager25staticMetaObjectExtraDataE @ 12423 NONAME DATA 8
+	_ZN15QSplitterHandle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12424 NONAME
+	_ZN15QSplitterHandle25staticMetaObjectExtraDataE @ 12425 NONAME DATA 8
+	_ZN15QTextBlockGroup18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12426 NONAME
+	_ZN15QTextBlockGroup25staticMetaObjectExtraDataE @ 12427 NONAME DATA 8
+	_ZN16QAbstractSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12428 NONAME
+	_ZN16QAbstractSpinBox25staticMetaObjectExtraDataE @ 12429 NONAME DATA 8
+	_ZN16QDialogButtonBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12430 NONAME
+	_ZN16QDialogButtonBox25staticMetaObjectExtraDataE @ 12431 NONAME DATA 8
+	_ZN16QDoubleValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12432 NONAME
+	_ZN16QDoubleValidator25staticMetaObjectExtraDataE @ 12433 NONAME DATA 8
+	_ZN16QFileSystemModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12434 NONAME
+	_ZN16QFileSystemModel25staticMetaObjectExtraDataE @ 12435 NONAME DATA 8
+	_ZN16QRegExpValidator18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12436 NONAME
+	_ZN16QRegExpValidator25staticMetaObjectExtraDataE @ 12437 NONAME DATA 8
+	_ZN16QStringListModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12438 NONAME
+	_ZN16QStringListModel25staticMetaObjectExtraDataE @ 12439 NONAME DATA 8
+	_ZN16QTreeViewPrivate10initializeEv @ 12440 NONAME
+	_ZN16QTreeViewPrivate15insertViewItemsEiiRK13QTreeViewItem @ 12441 NONAME
+	_ZN16QTreeViewPrivate15removeViewItemsEii @ 12442 NONAME
+	_ZN16QTreeViewPrivate16updateScrollBarsEv @ 12443 NONAME
+	_ZN16QTreeViewPrivate17_q_columnsRemovedERK11QModelIndexii @ 12444 NONAME
+	_ZN16QTreeViewPrivate17_q_modelDestroyedEv @ 12445 NONAME
+	_ZN16QTreeViewPrivate22_q_modelAboutToBeResetEv @ 12446 NONAME
+	_ZN16QTreeViewPrivate22beginAnimatedOperationEv @ 12447 NONAME
+	_ZN16QTreeViewPrivate23_q_endAnimatedOperationEv @ 12448 NONAME
+	_ZN16QTreeViewPrivate23_q_sortIndicatorChangedEiN2Qt9SortOrderE @ 12449 NONAME
+	_ZN16QTreeViewPrivate24prepareAnimatedOperationEiN18QAbstractAnimation9DirectionE @ 12450 NONAME
+	_ZN16QTreeViewPrivate25expandOrCollapseItemAtPosERK6QPoint @ 12451 NONAME
+	_ZN16QTreeViewPrivate26_q_columnsAboutToBeRemovedERK11QModelIndexii @ 12452 NONAME
+	_ZN16QTreeViewPrivate6expandEib @ 12453 NONAME
+	_ZN16QTreeViewPrivate6layoutEibb @ 12454 NONAME
+	_ZN16QTreeViewPrivate6selectERK11QModelIndexS2_6QFlagsIN19QItemSelectionModel13SelectionFlagEE @ 12455 NONAME
+	_ZN16QTreeViewPrivate8collapseEib @ 12456 NONAME
+	_ZN17QAbstractItemView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12457 NONAME
+	_ZN17QAbstractItemView25staticMetaObjectExtraDataE @ 12458 NONAME DATA 8
+	_ZN17QDataWidgetMapper18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12459 NONAME
+	_ZN17QDataWidgetMapper25staticMetaObjectExtraDataE @ 12460 NONAME DATA 8
+	_ZN17QDockWidgetLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12461 NONAME
+	_ZN17QDockWidgetLayout25staticMetaObjectExtraDataE @ 12462 NONAME DATA 8
+	_ZN17QGraphicsRotation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12463 NONAME
+	_ZN17QGraphicsRotation25staticMetaObjectExtraDataE @ 12464 NONAME DATA 8
+	_ZN17QGraphicsTextItem18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12465 NONAME
+	_ZN17QGraphicsTextItem25staticMetaObjectExtraDataE @ 12466 NONAME DATA 8
+	_ZN17QIconEnginePlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12467 NONAME
+	_ZN17QIconEnginePlugin25staticMetaObjectExtraDataE @ 12468 NONAME DATA 8
+	_ZN17QInternalMimeData11canReadDataERK7QString @ 12469 NONAME
+	_ZN17QInternalMimeData11qt_metacallEN11QMetaObject4CallEiPPv @ 12470 NONAME
+	_ZN17QInternalMimeData11qt_metacastEPKc @ 12471 NONAME
+	_ZN17QInternalMimeData13formatsHelperEPK9QMimeData @ 12472 NONAME
+	_ZN17QInternalMimeData15hasFormatHelperERK7QStringPK9QMimeData @ 12473 NONAME
+	_ZN17QInternalMimeData16renderDataHelperERK7QStringPK9QMimeData @ 12474 NONAME
+	_ZN17QInternalMimeData16staticMetaObjectE @ 12475 NONAME DATA 16
+	_ZN17QInternalMimeData18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12476 NONAME
+	_ZN17QInternalMimeData19getStaticMetaObjectEv @ 12477 NONAME
+	_ZN17QInternalMimeData25staticMetaObjectExtraDataE @ 12478 NONAME DATA 8
+	_ZN17QInternalMimeDataC2Ev @ 12479 NONAME
+	_ZN17QInternalMimeDataD0Ev @ 12480 NONAME
+	_ZN17QInternalMimeDataD1Ev @ 12481 NONAME
+	_ZN17QInternalMimeDataD2Ev @ 12482 NONAME
+	_ZN17QPixmapBlurFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12483 NONAME
+	_ZN17QPixmapBlurFilter25staticMetaObjectExtraDataE @ 12484 NONAME DATA 8
+	_ZN18QCommandLinkButton18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12485 NONAME
+	_ZN18QCommandLinkButton25staticMetaObjectExtraDataE @ 12486 NONAME DATA 8
+	_ZN18QGraphicsTransform18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12487 NONAME
+	_ZN18QGraphicsTransform25staticMetaObjectExtraDataE @ 12488 NONAME DATA 8
+	_ZN18QGuiPlatformPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12489 NONAME
+	_ZN18QGuiPlatformPlugin25staticMetaObjectExtraDataE @ 12490 NONAME DATA 8
+	_ZN18QStandardItemModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12491 NONAME
+	_ZN18QStandardItemModel25staticMetaObjectExtraDataE @ 12492 NONAME DATA 8
+	_ZN18QSyntaxHighlighter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12493 NONAME
+	_ZN18QSyntaxHighlighter25staticMetaObjectExtraDataE @ 12494 NONAME DATA 8
+	_ZN18QTapAndHoldGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12495 NONAME
+	_ZN18QTapAndHoldGesture25staticMetaObjectExtraDataE @ 12496 NONAME DATA 8
+	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12497 NONAME
+	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12498 NONAME
+	_ZN19QAbstractProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12499 NONAME
+	_ZN19QAbstractProxyModel25staticMetaObjectExtraDataE @ 12500 NONAME DATA 8
+	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12501 NONAME
+	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12502 NONAME
+	_ZN19QAbstractScrollArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12503 NONAME
+	_ZN19QAbstractScrollArea25staticMetaObjectExtraDataE @ 12504 NONAME DATA 8
+	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12505 NONAME
+	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12506 NONAME
+	_ZN19QBlitterPaintEngine10drawPixmapERK6QRectFRK7QPixmapS2_ @ 12507 NONAME
+	_ZN19QBlitterPaintEngine10penChangedEv @ 12508 NONAME
+	_ZN19QBlitterPaintEngine11drawEllipseERK6QRectF @ 12509 NONAME
+	_ZN19QBlitterPaintEngine12brushChangedEv @ 12510 NONAME
+	_ZN19QBlitterPaintEngine12drawTextItemERK7QPointFRK9QTextItem @ 12511 NONAME
+	_ZN19QBlitterPaintEngine14opacityChangedEv @ 12512 NONAME
+	_ZN19QBlitterPaintEngine16transformChangedEv @ 12513 NONAME
+	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12514 NONAME
+	_ZN19QBlitterPaintEngine18clipEnabledChangedEv @ 12515 NONAME
+	_ZN19QBlitterPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 12516 NONAME
+	_ZN19QBlitterPaintEngine18renderHintsChangedEv @ 12517 NONAME
+	_ZN19QBlitterPaintEngine22compositionModeChangedEv @ 12518 NONAME
+	_ZN19QBlitterPaintEngine3endEv @ 12519 NONAME
+	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12520 NONAME
+	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12521 NONAME
+	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12522 NONAME
+	_ZN19QBlitterPaintEngine4fillERK11QVectorPathRK6QBrush @ 12523 NONAME
+	_ZN19QBlitterPaintEngine5beginEP12QPaintDevice @ 12524 NONAME
+	_ZN19QBlitterPaintEngine6strokeERK11QVectorPathRK4QPen @ 12525 NONAME
+	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QBrush @ 12526 NONAME
+	_ZN19QBlitterPaintEngine8fillRectERK6QRectFRK6QColor @ 12527 NONAME
+	_ZN19QBlitterPaintEngine8setStateEP13QPainterState @ 12528 NONAME
+	_ZN19QBlitterPaintEngine9drawImageERK6QRectFRK6QImageS2_6QFlagsIN2Qt19ImageConversionFlagEE @ 12529 NONAME
+	_ZN19QBlitterPaintEngine9drawRectsEPK5QRecti @ 12530 NONAME
+	_ZN19QBlitterPaintEngine9drawRectsEPK6QRectFi @ 12531 NONAME
+	_ZN19QBlitterPaintEngineC1EP20QBlittablePixmapData @ 12532 NONAME
+	_ZN19QBlitterPaintEngineC2EP20QBlittablePixmapData @ 12533 NONAME
+	_ZN19QBlitterPaintEngineD0Ev @ 12534 NONAME
+	_ZN19QBlitterPaintEngineD1Ev @ 12535 NONAME
+	_ZN19QBlitterPaintEngineD2Ev @ 12536 NONAME
+	_ZN19QEventDispatcherS6018qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12537 NONAME
+	_ZN19QEventDispatcherS6025staticMetaObjectExtraDataE @ 12538 NONAME DATA 8
+	_ZN19QGraphicsBlurEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12539 NONAME
+	_ZN19QGraphicsBlurEffect25staticMetaObjectExtraDataE @ 12540 NONAME DATA 8
+	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12541 NONAME
+	_ZN19QIconEnginePluginV218qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12542 NONAME
+	_ZN19QIconEnginePluginV225staticMetaObjectExtraDataE @ 12543 NONAME DATA 8
+	_ZN19QIdentityProxyModel10insertRowsEiiRK11QModelIndex @ 12544 NONAME
+	_ZN19QIdentityProxyModel10removeRowsEiiRK11QModelIndex @ 12545 NONAME
+	_ZN19QIdentityProxyModel11qt_metacallEN11QMetaObject4CallEiPPv @ 12546 NONAME
+	_ZN19QIdentityProxyModel11qt_metacastEPKc @ 12547 NONAME
+	_ZN19QIdentityProxyModel12dropMimeDataEPK9QMimeDataN2Qt10DropActionEiiRK11QModelIndex @ 12548 NONAME
+	_ZN19QIdentityProxyModel13insertColumnsEiiRK11QModelIndex @ 12549 NONAME
+	_ZN19QIdentityProxyModel13removeColumnsEiiRK11QModelIndex @ 12550 NONAME
+	_ZN19QIdentityProxyModel14setSourceModelEP18QAbstractItemModel @ 12551 NONAME
+	_ZN19QIdentityProxyModel16staticMetaObjectE @ 12552 NONAME DATA 16
+	_ZN19QIdentityProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12553 NONAME
+	_ZN19QIdentityProxyModel19getStaticMetaObjectEv @ 12554 NONAME
+	_ZN19QIdentityProxyModel25staticMetaObjectExtraDataE @ 12555 NONAME DATA 8
+	_ZN19QIdentityProxyModelC1EP7QObject @ 12556 NONAME
+	_ZN19QIdentityProxyModelC1ER26QIdentityProxyModelPrivateP7QObject @ 12557 NONAME
+	_ZN19QIdentityProxyModelC2EP7QObject @ 12558 NONAME
+	_ZN19QIdentityProxyModelC2ER26QIdentityProxyModelPrivateP7QObject @ 12559 NONAME
+	_ZN19QIdentityProxyModelD0Ev @ 12560 NONAME
+	_ZN19QIdentityProxyModelD1Ev @ 12561 NONAME
+	_ZN19QIdentityProxyModelD2Ev @ 12562 NONAME
+	_ZN19QInputContextPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12563 NONAME
+	_ZN19QInputContextPlugin25staticMetaObjectExtraDataE @ 12564 NONAME DATA 8
+	_ZN19QItemSelectionModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12565 NONAME
+	_ZN19QItemSelectionModel25staticMetaObjectExtraDataE @ 12566 NONAME DATA 8
+	_ZN19QKeyEventTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12567 NONAME
+	_ZN19QKeyEventTransition25staticMetaObjectExtraDataE @ 12568 NONAME DATA 8
+	_ZN19QStyledItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12569 NONAME
+	_ZN19QStyledItemDelegate25staticMetaObjectExtraDataE @ 12570 NONAME DATA 8
+	_ZN20QBlittablePixmapData12setBlittableEP10QBlittable @ 12571 NONAME
+	_ZN20QBlittablePixmapData4fillERK6QColor @ 12572 NONAME
+	_ZN20QBlittablePixmapData6bufferEv @ 12573 NONAME
+	_ZN20QBlittablePixmapData6resizeEii @ 12574 NONAME
+	_ZN20QBlittablePixmapData9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 12575 NONAME
+	_ZN20QBlittablePixmapDataC2Ev @ 12576 NONAME
+	_ZN20QBlittablePixmapDataD0Ev @ 12577 NONAME
+	_ZN20QBlittablePixmapDataD1Ev @ 12578 NONAME
+	_ZN20QBlittablePixmapDataD2Ev @ 12579 NONAME
+	_ZN20QGraphicsProxyWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12580 NONAME
+	_ZN20QGraphicsProxyWidget25staticMetaObjectExtraDataE @ 12581 NONAME DATA 8
+	_ZN20QPaintBufferResource18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12582 NONAME
+	_ZN20QPaintBufferResource25staticMetaObjectExtraDataE @ 12583 NONAME DATA 8
+	_ZN20QPictureFormatPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12584 NONAME
+	_ZN20QPictureFormatPlugin25staticMetaObjectExtraDataE @ 12585 NONAME DATA 8
+	_ZN20QRasterWindowSurfaceC1EP7QWidgetb @ 12586 NONAME
+	_ZN20QRasterWindowSurfaceC2EP7QWidgetb @ 12587 NONAME
+	_ZN20QWidgetResizeHandler18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12588 NONAME
+	_ZN20QWidgetResizeHandler25staticMetaObjectExtraDataE @ 12589 NONAME DATA 8
+	_ZN21QAbstractItemDelegate18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12590 NONAME
+	_ZN21QAbstractItemDelegate25staticMetaObjectExtraDataE @ 12591 NONAME DATA 8
+	_ZN21QGraphicsEffectSource18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12592 NONAME
+	_ZN21QGraphicsEffectSource25staticMetaObjectExtraDataE @ 12593 NONAME DATA 8
+	_ZN21QGraphicsSystemPlugin18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12594 NONAME
+	_ZN21QGraphicsSystemPlugin25staticMetaObjectExtraDataE @ 12595 NONAME DATA 8
+	_ZN21QMouseEventTransition18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12596 NONAME
+	_ZN21QMouseEventTransition25staticMetaObjectExtraDataE @ 12597 NONAME DATA 8
+	_ZN21QPixmapColorizeFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12598 NONAME
+	_ZN21QPixmapColorizeFilter25staticMetaObjectExtraDataE @ 12599 NONAME DATA 8
+	_ZN21QSortFilterProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12600 NONAME
+	_ZN21QSortFilterProxyModel25staticMetaObjectExtraDataE @ 12601 NONAME DATA 8
+	_ZN22QGraphicsItemAnimation18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12602 NONAME
+	_ZN22QGraphicsItemAnimation25staticMetaObjectExtraDataE @ 12603 NONAME DATA 8
+	_ZN22QGraphicsOpacityEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12604 NONAME
+	_ZN22QGraphicsOpacityEffect25staticMetaObjectExtraDataE @ 12605 NONAME DATA 8
+	_ZN23QGraphicsColorizeEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12606 NONAME
+	_ZN23QGraphicsColorizeEffect25staticMetaObjectExtraDataE @ 12607 NONAME DATA 8
+	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 12608 NONAME
+	_ZN23QPaintBufferSignalProxy18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12609 NONAME
+	_ZN23QPaintBufferSignalProxy25staticMetaObjectExtraDataE @ 12610 NONAME DATA 8
+	_ZN23QPixmapDropShadowFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12611 NONAME
+	_ZN23QPixmapDropShadowFilter25staticMetaObjectExtraDataE @ 12612 NONAME DATA 8
+	_ZN24QPixmapConvolutionFilter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12613 NONAME
+	_ZN24QPixmapConvolutionFilter25staticMetaObjectExtraDataE @ 12614 NONAME DATA 8
+	_ZN24QPlainTextDocumentLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12615 NONAME
+	_ZN24QPlainTextDocumentLayout25staticMetaObjectExtraDataE @ 12616 NONAME DATA 8
+	_ZN25QGraphicsDropShadowEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12617 NONAME
+	_ZN25QGraphicsDropShadowEffect25staticMetaObjectExtraDataE @ 12618 NONAME DATA 8
+	_ZN27QAbstractTextDocumentLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12619 NONAME
+	_ZN27QAbstractTextDocumentLayout25staticMetaObjectExtraDataE @ 12620 NONAME DATA 8
+	_ZN5QDial18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12621 NONAME
+	_ZN5QDial25staticMetaObjectExtraDataE @ 12622 NONAME DATA 8
+	_ZN5QDrag18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12623 NONAME
+	_ZN5QDrag25staticMetaObjectExtraDataE @ 12624 NONAME DATA 8
+	_ZN5QFont12setStyleNameERK7QString @ 12625 NONAME
+	_ZN5QFont20setHintingPreferenceENS_17HintingPreferenceE @ 12626 NONAME
+	_ZN5QMenu18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12627 NONAME
+	_ZN5QMenu25staticMetaObjectExtraDataE @ 12628 NONAME DATA 8
+	_ZN6QFrame18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12629 NONAME
+	_ZN6QFrame25staticMetaObjectExtraDataE @ 12630 NONAME DATA 8
+	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12631 NONAME
+	_ZN6QImage4fillERK6QColor @ 12632 NONAME
+	_ZN6QLabel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12633 NONAME
+	_ZN6QLabel25staticMetaObjectExtraDataE @ 12634 NONAME DATA 8
+	_ZN6QMovie18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12635 NONAME
+	_ZN6QMovie25staticMetaObjectExtraDataE @ 12636 NONAME DATA 8
+	_ZN6QSound18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12637 NONAME
+	_ZN6QSound25staticMetaObjectExtraDataE @ 12638 NONAME DATA 8
+	_ZN6QStyle18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12639 NONAME
+	_ZN6QStyle25staticMetaObjectExtraDataE @ 12640 NONAME DATA 8
+	_ZN7QAction18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12641 NONAME
+	_ZN7QAction25staticMetaObjectExtraDataE @ 12642 NONAME DATA 8
+	_ZN7QDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12643 NONAME
+	_ZN7QDialog25staticMetaObjectExtraDataE @ 12644 NONAME DATA 8
+	_ZN7QLayout18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12645 NONAME
+	_ZN7QLayout25staticMetaObjectExtraDataE @ 12646 NONAME DATA 8
+	_ZN7QSlider18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12647 NONAME
+	_ZN7QSlider25staticMetaObjectExtraDataE @ 12648 NONAME DATA 8
+	_ZN7QTabBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12649 NONAME
+	_ZN7QTabBar25staticMetaObjectExtraDataE @ 12650 NONAME DATA 8
+	_ZN7QWidget18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12651 NONAME
+	_ZN7QWidget25staticMetaObjectExtraDataE @ 12652 NONAME DATA 8
+	_ZN7QWizard18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12653 NONAME
+	_ZN7QWizard25staticMetaObjectExtraDataE @ 12654 NONAME DATA 8
+	_ZN8QGesture18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12655 NONAME
+	_ZN8QGesture25staticMetaObjectExtraDataE @ 12656 NONAME DATA 8
+	_ZN8QMdiArea14setTabsMovableEb @ 12657 NONAME
+	_ZN8QMdiArea15setTabsClosableEb @ 12658 NONAME
+	_ZN8QMdiArea18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12659 NONAME
+	_ZN8QMdiArea25staticMetaObjectExtraDataE @ 12660 NONAME DATA 8
+	_ZN8QMenuBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12661 NONAME
+	_ZN8QMenuBar25staticMetaObjectExtraDataE @ 12662 NONAME DATA 8
+	_ZN8QPainter19drawPixmapFragmentsEPK6QRectFS2_iRK7QPixmap6QFlagsINS_18PixmapFragmentHintEE @ 12663 NONAME
+	_ZN8QSpinBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12664 NONAME
+	_ZN8QSpinBox25staticMetaObjectExtraDataE @ 12665 NONAME DATA 8
+	_ZN8QToolBar18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12666 NONAME
+	_ZN8QToolBar25staticMetaObjectExtraDataE @ 12667 NONAME DATA 8
+	_ZN8QToolBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12668 NONAME
+	_ZN8QToolBox25staticMetaObjectExtraDataE @ 12669 NONAME DATA 8
+	_ZN9QCheckBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12670 NONAME
+	_ZN9QCheckBox25staticMetaObjectExtraDataE @ 12671 NONAME DATA 8
+	_ZN9QComboBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12672 NONAME
+	_ZN9QComboBox25staticMetaObjectExtraDataE @ 12673 NONAME DATA 8
+	_ZN9QDateEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12674 NONAME
+	_ZN9QDateEdit25staticMetaObjectExtraDataE @ 12675 NONAME DATA 8
+	_ZN9QDirModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12676 NONAME
+	_ZN9QDirModel25staticMetaObjectExtraDataE @ 12677 NONAME DATA 8
+	_ZN9QGroupBox18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12678 NONAME
+	_ZN9QGroupBox25staticMetaObjectExtraDataE @ 12679 NONAME DATA 8
+	_ZN9QLineEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12680 NONAME
+	_ZN9QLineEdit18setCursorMoveStyleEN2Qt15CursorMoveStyleE @ 12681 NONAME
+	_ZN9QLineEdit25staticMetaObjectExtraDataE @ 12682 NONAME DATA 8
+	_ZN9QListView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12683 NONAME
+	_ZN9QListView25staticMetaObjectExtraDataE @ 12684 NONAME DATA 8
+	_ZN9QS60Style18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12685 NONAME
+	_ZN9QS60Style25staticMetaObjectExtraDataE @ 12686 NONAME DATA 8
+	_ZN9QShortcut18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12687 NONAME
+	_ZN9QShortcut25staticMetaObjectExtraDataE @ 12688 NONAME DATA 8
+	_ZN9QSizeGrip18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12689 NONAME
+	_ZN9QSizeGrip25staticMetaObjectExtraDataE @ 12690 NONAME DATA 8
+	_ZN9QSplitter18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12691 NONAME
+	_ZN9QSplitter25staticMetaObjectExtraDataE @ 12692 NONAME DATA 8
+	_ZN9QTextEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12693 NONAME
+	_ZN9QTextEdit25staticMetaObjectExtraDataE @ 12694 NONAME DATA 8
+	_ZN9QTextList18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12695 NONAME
+	_ZN9QTextList25staticMetaObjectExtraDataE @ 12696 NONAME DATA 8
+	_ZN9QTimeEdit18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12697 NONAME
+	_ZN9QTimeEdit25staticMetaObjectExtraDataE @ 12698 NONAME DATA 8
+	_ZN9QTreeView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12699 NONAME
+	_ZN9QTreeView25staticMetaObjectExtraDataE @ 12700 NONAME DATA 8
+	_ZN9QUndoView18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12701 NONAME
+	_ZN9QUndoView25staticMetaObjectExtraDataE @ 12702 NONAME DATA 8
+	_ZNK10QBlittable12capabilitiesEv @ 12703 NONAME
+	_ZNK10QBlittable4sizeEv @ 12704 NONAME
+	_ZNK10QTabWidget14heightForWidthEi @ 12705 NONAME
+	_ZNK10QZipWriter10isWritableEv @ 12706 NONAME
+	_ZNK10QZipWriter17compressionPolicyEv @ 12707 NONAME
+	_ZNK10QZipWriter19creationPermissionsEv @ 12708 NONAME
+	_ZNK10QZipWriter6deviceEv @ 12709 NONAME
+	_ZNK10QZipWriter6existsEv @ 12710 NONAME
+	_ZNK10QZipWriter6statusEv @ 12711 NONAME
+	_ZNK11QTextEngine19nextLogicalPositionEi @ 12712 NONAME
+	_ZNK11QTextEngine23previousLogicalPositionEi @ 12713 NONAME
+	_ZNK11QTextLayout15cursorMoveStyleEv @ 12714 NONAME
+	_ZNK11QTextLayout18leftCursorPositionEi @ 12715 NONAME
+	_ZNK11QTextLayout19rightCursorPositionEi @ 12716 NONAME
+	_ZNK12QFontMetrics10inFontUcs4Ej @ 12717 NONAME
+	_ZNK12QRadioButton15minimumSizeHintEv @ 12718 NONAME
+	_ZNK12QUndoCommand10actionTextEv @ 12719 NONAME
+	_ZNK13QFontDatabase9hasFamilyERK7QString @ 12720 NONAME
+	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12721 NONAME
+	_ZNK13QTextDocument22defaultCursorMoveStyleEv @ 12722 NONAME
+	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12723 NONAME
+	_ZNK14QPaintEngineEx23supportsTransformationsEfRK10QTransform @ 12724 NONAME
+	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12725 NONAME
+	_ZNK14QWindowSurface8featuresEv @ 12726 NONAME
+	_ZNK15QRadialGradient11focalRadiusEv @ 12727 NONAME
+	_ZNK15QRadialGradient12centerRadiusEv @ 12728 NONAME
+	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12729 NONAME
+	_ZNK16QTreeViewPrivate10itemHeightEi @ 12730 NONAME
+	_ZNK16QTreeViewPrivate10modelIndexEii @ 12731 NONAME
+	_ZNK16QTreeViewPrivate12columnRangesERK11QModelIndexS2_ @ 12732 NONAME
+	_ZNK16QTreeViewPrivate16firstVisibleItemEPi @ 12733 NONAME
+	_ZNK16QTreeViewPrivate16itemAtCoordinateEi @ 12734 NONAME
+	_ZNK16QTreeViewPrivate16itemDecorationAtERK6QPoint @ 12735 NONAME
+	_ZNK16QTreeViewPrivate17coordinateForItemEi @ 12736 NONAME
+	_ZNK16QTreeViewPrivate18hasVisibleChildrenERK11QModelIndex @ 12737 NONAME
+	_ZNK16QTreeViewPrivate18indentationForItemEi @ 12738 NONAME
+	_ZNK16QTreeViewPrivate18itemDecorationRectERK11QModelIndex @ 12739 NONAME
+	_ZNK16QTreeViewPrivate18startAndEndColumnsERK5QRect @ 12740 NONAME
+	_ZNK16QTreeViewPrivate19draggablePaintPairsERK5QListI11QModelIndexEP5QRect @ 12741 NONAME
+	_ZNK16QTreeViewPrivate21drawAnimatedOperationEP8QPainter @ 12742 NONAME
+	_ZNK16QTreeViewPrivate25paintAlternatingRowColorsEP8QPainterP22QStyleOptionViewItemV4ii @ 12743 NONAME
+	_ZNK16QTreeViewPrivate30renderTreeToPixmapForAnimationERK5QRect @ 12744 NONAME
+	_ZNK16QTreeViewPrivate6pageUpEi @ 12745 NONAME
+	_ZNK16QTreeViewPrivate8columnAtEi @ 12746 NONAME
+	_ZNK16QTreeViewPrivate8pageDownEi @ 12747 NONAME
+	_ZNK16QTreeViewPrivate9viewIndexERK11QModelIndex @ 12748 NONAME
+	_ZNK17QInternalMimeData10metaObjectEv @ 12749 NONAME
+	_ZNK17QInternalMimeData12retrieveDataERK7QStringN8QVariant4TypeE @ 12750 NONAME
+	_ZNK17QInternalMimeData7formatsEv @ 12751 NONAME
+	_ZNK17QInternalMimeData9hasFormatERK7QString @ 12752 NONAME
+	_ZNK18QTextureGlyphCache18textureMapForGlyphEj6QFixed @ 12753 NONAME
+	_ZNK18QTextureGlyphCache20subPixelPositionForXE6QFixed @ 12754 NONAME
+	_ZNK18QTextureGlyphCache30calculateSubPixelPositionCountEj @ 12755 NONAME
+	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12756 NONAME
+	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12757 NONAME
+	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12758 NONAME
+	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12759 NONAME
+	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12760 NONAME
+	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12761 NONAME
+	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12762 NONAME
+	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12763 NONAME
+	_ZNK19QIdentityProxyModel10metaObjectEv @ 12764 NONAME
+	_ZNK19QIdentityProxyModel11columnCountERK11QModelIndex @ 12765 NONAME
+	_ZNK19QIdentityProxyModel11mapToSourceERK11QModelIndex @ 12766 NONAME
+	_ZNK19QIdentityProxyModel13mapFromSourceERK11QModelIndex @ 12767 NONAME
+	_ZNK19QIdentityProxyModel20mapSelectionToSourceERK14QItemSelection @ 12768 NONAME
+	_ZNK19QIdentityProxyModel22mapSelectionFromSourceERK14QItemSelection @ 12769 NONAME
+	_ZNK19QIdentityProxyModel5indexEiiRK11QModelIndex @ 12770 NONAME
+	_ZNK19QIdentityProxyModel5matchERK11QModelIndexiRK8QVarianti6QFlagsIN2Qt9MatchFlagEE @ 12771 NONAME
+	_ZNK19QIdentityProxyModel6parentERK11QModelIndex @ 12772 NONAME
+	_ZNK19QIdentityProxyModel8rowCountERK11QModelIndex @ 12773 NONAME
+	_ZNK20QBlittablePixmapData11paintEngineEv @ 12774 NONAME
+	_ZNK20QBlittablePixmapData15hasAlphaChannelEv @ 12775 NONAME
+	_ZNK20QBlittablePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12776 NONAME
+	_ZNK20QBlittablePixmapData7toImageEv @ 12777 NONAME
+	_ZNK20QBlittablePixmapData9blittableEv @ 12778 NONAME
+	_ZNK20QRasterWindowSurface8featuresEv @ 12779 NONAME
+	_ZNK5QFont17hintingPreferenceEv @ 12780 NONAME
+	_ZNK5QFont9styleNameEv @ 12781 NONAME
+	_ZNK8QMdiArea11tabsMovableEv @ 12782 NONAME
+	_ZNK8QMdiArea12tabsClosableEv @ 12783 NONAME
+	_ZNK8QPainter16clipBoundingRectEv @ 12784 NONAME
+	_ZNK9QCheckBox15minimumSizeHintEv @ 12785 NONAME
+	_ZNK9QFontInfo9styleNameEv @ 12786 NONAME
+	_ZNK9QLineEdit15cursorMoveStyleEv @ 12787 NONAME
+	_ZTI10QBlittable @ 12788 NONAME
+	_ZTI16QTreeViewPrivate @ 12789 NONAME
+	_ZTI17QInternalMimeData @ 12790 NONAME
+	_ZTI19QBlitterPaintEngine @ 12791 NONAME
+	_ZTI19QIdentityProxyModel @ 12792 NONAME
+	_ZTI20QBlittablePixmapData @ 12793 NONAME
+	_ZTV10QBlittable @ 12794 NONAME
+	_ZTV16QTreeViewPrivate @ 12795 NONAME
+	_ZTV17QInternalMimeData @ 12796 NONAME
+	_ZTV19QBlitterPaintEngine @ 12797 NONAME
+	_ZTV19QIdentityProxyModel @ 12798 NONAME
+	_ZTV20QBlittablePixmapData @ 12799 NONAME
+	_Zls6QDebugPK13QSymbianEvent @ 12800 NONAME
+	_ZN12QApplication22queryKeyboardModifiersEv @ 12801 NONAME
+	_ZN11QTextEngine20resetFontEngineCacheEv @ 12802 NONAME
+	_ZN14QWidgetPrivate16_q_cleanupWinIdsEv @ 12803 NONAME
+	_ZN19QApplicationPrivate28symbianHandleLiteModeStartupEv @ 12804 NONAME

@@ -51,8 +51,8 @@
 QT_BEGIN_NAMESPACE
 
 typedef int Q16Dot16;
-#define Q16Dot16ToFloat(i) ((i)/65536.)
-#define FloatToQ16Dot16(i) (int)((i) * 65536.)
+#define Q16Dot16ToFloat(i) ((i)/qreal(65536.))
+#define FloatToQ16Dot16(i) (int)((i) * qreal(65536.))
 #define IntToQ16Dot16(i) ((i) << 16)
 #define Q16Dot16ToInt(i) ((i) >> 16)
 #define Q16Dot16Factor 65536
@@ -701,7 +701,7 @@ static Q16Dot16 intersectPixelFP(int x, Q16Dot16 top, Q16Dot16 bottom, Q16Dot16 
 
 static inline bool q26Dot6Compare(qreal p1, qreal p2)
 {
-    return int((p2  - p1) * 64.) == 0;
+    return int((p2  - p1) * qreal(64.)) == 0;
 }
 
 static inline qreal qFloorF(qreal v)
@@ -1210,8 +1210,8 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
 
     QRectF bounds = path.controlPointRect();
 
-    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
-    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
+    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + qreal(0.5) + (COORD_OFFSET - COORD_ROUNDING)/qreal(64.)));
+    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - qreal(0.5) + (COORD_OFFSET - COORD_ROUNDING)/qreal(64.)));
 
     if (iTopBound > iBottomBound)
         return;

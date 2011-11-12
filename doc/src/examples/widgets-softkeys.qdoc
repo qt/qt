@@ -29,5 +29,5 @@
     \example widgets/softkeys
     \title Soft Keys Example
 
-    The Soft Keys example shows how to use soft key input on the Symbian platform.
+    \brief The Soft Keys example shows how to use soft key input on the Symbian platform.
 */

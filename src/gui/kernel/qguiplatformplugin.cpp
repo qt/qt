@@ -137,10 +137,10 @@ QString QGuiPlatformPlugin::styleName()
         return QLatin1String("WindowsCE");
 #elif defined(Q_WS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         return QLatin1String("WindowsVista");
     else if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         return QLatin1String("WindowsXP");
     else
         return QLatin1String("Windows");                // default styles for Windows
