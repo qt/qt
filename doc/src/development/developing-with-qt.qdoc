@@ -75,39 +75,37 @@
 	
     \table
     \row
-    \o
-     \list
         \o \l {Calling Qt Functions From Unix Signal Handlers}
-        \o \l {Compiler Notes}
+        \o  Workaround for using Unix signal handlers.
+    \row
         \o \l {Developing Qt Applications for Mac OS X}
-        \o \l {Known Issues}
-        \o \l {Platform and Compiler Notes}
-        \o \l {Platform and Compiler Notes - Symbian}
-        \o \l {ActiveX in Qt}
-        \o \l {Qt for Embedded Linux Classes}
-        \o \l {Qt for Embedded Platforms}
-        \o \l {Qt for Mac OS X - Specific Issues}
-        \o \l {Qt is Mac OS X Native}
-        \o \l {Supported Platforms}
-        \o \l {The qtmain Library}
-        \o \l {Window System Specific Notes}
-     \endlist
-    \o
-    \list
-        \o  Workaround to make it work.
-        \o  Information about the C++ compilers and tools used to build Qt.
         \o  Information for developing Qt applications for Mac OS X
+    \row
+        \o \l {Known Issues}
         \o  A summary of known issues in this Qt version at the time of release.
-        \o  Information about the platforms on which Qt can be used.
-        \o  Information about the state of support for the Symbian platform.
+    \row
+        \o \l {ActiveX in Qt}
         \o  Qt API's for using ActiveX controls, servers, and COM.
+    \row
+        \o \l {Qt for Embedded Linux Classes}
         \o  Classes that are specific to Qt for Embedded Linux.
+    \row
+        \o \l {Qt for Embedded Platforms}
         \o  Documents related to Qt for Embedded Platforms.
+    \row
+        \o \l {Qt for Mac OS X - Specific Issues}
         \o  A description of issues with Qt that are specific to Mac OS X.
+    \row
+        \o \l {Qt is Mac OS X Native}
         \o  An explanation of Qt's native features on Mac OS X.
+    \row
+        \o \l {Supported Platforms}
         \o  The platforms supported by Nokia for Qt.
+    \row
+        \o \l {The qtmain Library}
         \o  Describes the use and license of the qtmain helper library.
+    \row
+        \o \l {Window System Specific Notes}
         \o  Collections of notes about Qt implementations on different window systems.
-    \endlist
     \endtable
 */
