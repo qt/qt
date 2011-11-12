@@ -5117,14 +5117,17 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
 fi
 
 # check IPC support
-if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_sysv "ipc_sysv" $L_FLAGS $I_FLAGS $l_FLAGS ; then
-    # SYSV IPC is not supported - check POSIX IPC
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_posix "ipc_posix" $L_FLAGS $I_FLAGS $l_FLAGS ; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
-    else
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
-        if [ "$PLATFORM_QWS" = "yes" ]; then
-            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SEMAPHORE QT_NO_QWS_MULTIPROCESS QT_NO_QWS_SHARE_FONTS"
+if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
+    # Raptor does not support configure tests.
+    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_sysv "ipc_sysv" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+        # SYSV IPC is not supported - check POSIX IPC
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipc_posix "ipc_posix" $L_FLAGS $I_FLAGS $l_FLAGS ; then
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_POSIX_IPC"
+        else
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SYSTEMSEMAPHORE QT_NO_SHAREDMEMORY"
+            if [ "$PLATFORM_QWS" = "yes" ]; then
+                QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SEMAPHORE QT_NO_QWS_MULTIPROCESS QT_NO_QWS_SHARE_FONTS"
+            fi
         fi
     fi
 fi
@@ -5859,13 +5862,16 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIA
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 2.0 functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
-            echo " ${XQMAKESPEC}."
-            exit 1
+        if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
+            # Raptor does not support configure tests.
+            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+            if [ $? != "0" ]; then
+                echo "The OpenGL ES 2.0 functionality test failed!"
+                echo " You might need to modify the include and library search paths by editing"
+                echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
+                echo " ${XQMAKESPEC}."
+                exit 1
+            fi
         fi
     elif [ "$CFG_OPENGL" = "desktop" ]; then
         # Desktop OpenGL support
@@ -7243,7 +7249,6 @@ if [ "$CFG_GUI" = "auto" ]; then
 fi
 if [ "$CFG_GUI" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-gui"
-else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GUI"
 fi
 
@@ -8092,7 +8097,8 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 # define QT_POINTER_SIZE 4
 #endif
 EOF
-else
+elif [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
+    # Raptor does not support configure tests.
     "$unixtests/ptrsize.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
     echo "#define QT_POINTER_SIZE $?" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
@@ -8201,45 +8207,61 @@ if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
 fi
 
 # X11/Unix/Mac only configs
-[ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
-[ "$CFG_GSTREAMER" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GSTREAMER"
 [ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
-[ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
-[ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
-[ "$CFG_GETADDRINFO" = "no" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETADDRINFO"
-[ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
-[ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
-[ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
-[ "$CFG_NAS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NAS"
-[ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
-[ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL"
-[ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
+if [ "$XPLATFORM_SYMBIAN" = "no" ]; then
+    # Do not apply following negative X11/Unix/Mac only flags on Symbian, so that
+    # configuration matches with the one generated by configure executable tool
+    [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
+    [ "$CFG_GSTREAMER" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GSTREAMER"
+    [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
+    [ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
+    [ "$CFG_GETADDRINFO" = "no" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETADDRINFO"
+    [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
+    [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
+    [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
+    [ "$CFG_NAS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NAS"
+    [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
+    [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL"
+    [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
 
-[ "$CFG_SM" = "no" ]         && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SESSIONMANAGER"
-[ "$CFG_XCURSOR" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XCURSOR"
-[ "$CFG_XFIXES" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XFIXES"
-[ "$CFG_FONTCONFIG" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FONTCONFIG"
-[ "$CFG_XINERAMA" = "no" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINERAMA"
-[ "$CFG_XKB" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XKB"
-[ "$CFG_XRANDR" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRANDR"
-[ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
-[ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
-[ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
-[ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
-[ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
-[ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
+    [ "$CFG_SM" = "no" ]         && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SESSIONMANAGER"
+    [ "$CFG_XCURSOR" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XCURSOR"
+    [ "$CFG_XFIXES" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XFIXES"
+    [ "$CFG_FONTCONFIG" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FONTCONFIG"
+    [ "$CFG_XINERAMA" = "no" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINERAMA"
+    [ "$CFG_XKB" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XKB"
+    [ "$CFG_XRANDR" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRANDR"
+    [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
+    [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
+    [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
+    [ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
+    [ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
+    [ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
-[ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
-[ "$CFG_XINERAMA" = "runtime" ]  && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINERAMA"
-[ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
-[ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
-[ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
-[ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
-[ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
-[ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
-[ "$CFG_ICD" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
+    [ "$CFG_XCURSOR" = "runtime" ]   && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XCURSOR"
+    [ "$CFG_XINERAMA" = "runtime" ]  && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINERAMA"
+    [ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
+    [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
+    [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
+    [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
+    [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
+    [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
+    [ "$CFG_ICD" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
+fi
+
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
+    # Disable styles not applicable on Symbian
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_CDE"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_CLEANLOOKS"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_MOTIF"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_PLASTIQUE"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_WINDOWSCE"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_WINDOWSMOBILE"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_WINDOWSVISTA"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_WINDOWSXP"
+fi
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
