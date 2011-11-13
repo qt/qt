@@ -285,7 +285,6 @@ void tst_QFontDatabase::localizedFonts()
     QFontDatabase db;
 
     QVERIFY(db.hasFamily(QString::fromUtf8("ヒラギノ明朝 Pro")));
-    QVERIFY(db.hasFamily(QString::fromUtf8("华文宋体")));
     QVERIFY(!db.hasFamily(QString::fromUtf8("NotValidFont")));
 }
 #endif
