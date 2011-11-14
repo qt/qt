@@ -2360,6 +2360,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
 #ifndef QT_NO_ACCESSIBILITY
         case WM_GETOBJECT:
             {
+#if !defined(Q_OS_WINCE)
                 /* On Win64, lParam can be 0x00000000fffffffc or 0xfffffffffffffffc (!),
                    but MSDN says that lParam should be converted to a DWORD
                    before its compared against OBJID_CLIENT
@@ -2371,7 +2372,6 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     break;
                 }
 
-#if !defined(Q_OS_WINCE)
                 typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
                 static PtrLresultFromObject ptrLresultFromObject = 0;
                 static bool oleaccChecked = false;
