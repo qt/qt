@@ -590,17 +590,17 @@ void tst_QImageReader::imageFormat()
 #ifndef QTEST_HAVE_JPEG
             return;
 #endif // !QTEST_HAVE_JPEG
-		}
+        }
         if (QByteArray("gif") == format) {
 #ifndef QTEST_HAVE_GIF
             return;
 #endif // !QTEST_HAVE_GIF
-		}
+        }
         if (QByteArray("mng") == format) {
 #ifndef QTEST_HAVE_MNG
             return;
 #endif // !QTEST_HAVE_MNG
-		}
+        }
         if (QByteArray("svg") == format || QByteArray("svgz") == format) {
 #ifndef QTEST_HAVE_SVG
             return;
@@ -1736,8 +1736,8 @@ void tst_QImageReader::tiffGrayscale()
 #if defined QTEST_HAVE_TGA
 void tst_QImageReader::tgaTestImages()
 {
-	QImage tgaTest(prefix + "test-flag.tga");
-	
+    QImage tgaTest(prefix + "test-flag.tga");
+
     // Test image is 400x400 of a "flag" with a blue circle in the middle
     // and a green square top left, and red rectangle on the bottom so
     // so we test for pixels in those areas to ensure the image is not
@@ -1745,8 +1745,8 @@ void tst_QImageReader::tgaTestImages()
     QVERIFY(!tgaTest.isNull());
     QCOMPARE(tgaTest.size().width(), 400);
     QCOMPARE(tgaTest.size().height(), 400);
-	QRgb pixel = tgaTest.pixel(200,200);
-	QCOMPARE(qRgb(0, 0, 255), pixel);
+    QRgb pixel = tgaTest.pixel(200,200);
+    QCOMPARE(qRgb(0, 0, 255), pixel);
     pixel = tgaTest.pixel(0, 0);
     QCOMPARE(qRgb(0, 255, 0), pixel);
     pixel = tgaTest.pixel(0, 399);
