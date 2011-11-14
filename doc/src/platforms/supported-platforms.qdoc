@@ -416,9 +416,11 @@
                                      \o Compilers
     \row    \o Ubuntu Linux 10.04 (32-bit)
                                      \o As provided by Ubuntu
+    \row    \o Microsoft Windows XP SP3 (32-bit)
+                                     \o MSVC 2008
     \row    \o Microsoft Windows 7 (32-bit)
                                      \o MSVC 2008
-    \row    \o Microsoft Windows 7 (64-bit)
+    \row    \o Microsoft Windows 7 (32-bit)
                                      \o MSVC 2010 SP1
     \row    \o Apple Mac OS X 10.6 "Snow Leopard" (64-bit)
                                      \o As provided by Apple
@@ -440,6 +442,8 @@
                                      \o As provided by Ubuntu
     \row    \o Ubuntu Linux 10.04 (32-bit)
                                      \o Intel Compiler [version 12]
+    \row    \o Apple Mac OS X 10.6 "Snow Leopard" Cocoa (32-bit)
+                                     \o As provided by Apple
     \endtable
 
     \section1 Tier 3 Platforms (Not Supported by Nokia)
