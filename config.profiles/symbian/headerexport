@@ -60,7 +60,7 @@ my %moduleheaders = ( # restrict the module headers to those found in relative p
 #$modules{"QtCore"} .= ";$basedir/mkspecs/" . $ENV{"MKSPEC"} if defined $ENV{"MKSPEC"};
 
 # global variables (modified by options)
-my $what = 0;
+my $what = "";
 my @whatArray;
 my $force_win = 0;
 my $check_includes = 0;
@@ -83,7 +83,7 @@ sub showUsage
     print "$0 usage:\n";
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
-    print "  -what                 Output what files would be synced  (default: " . ($what ? "yes" : "no") . ")\n";
+    print "  -what <whatlog file>  Output what files were synced      (default: $what)\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -310,12 +310,7 @@ sub syncHeader {
     my ($header, $iheader, $copy) = @_;
     $iheader =~ s=\\=/=g;
     $header =~ s=\\=/=g;
-
-    if ($what) {
-        push(@whatArray, $header);
-        return 1;
-    }
-
+    push(@whatArray, $header);
     return copyFile($iheader, $header) if($copy);
 
     unless(-e $header) {
@@ -512,8 +507,11 @@ while ( @ARGV ) {
     } elsif($arg eq "-o" || $arg eq "-outdir") {
         $var = "output";
         $val = shift @ARGV;
+    } elsif($arg eq "-what") {
+        $var = "what";
+        $val = shift @ARGV;
     } elsif($arg eq "-showonly" || $arg eq "-remove-stale" || $arg eq "-windows" ||
-            $arg eq "-relative" || $arg eq "-check-includes" || $arg eq "-what") {
+            $arg eq "-relative" || $arg eq "-check-includes") {
         $var = substr($arg, 1);
         $val = "yes";
     } elsif($arg =~ /^-no-(.*)$/) {
@@ -534,11 +532,7 @@ while ( @ARGV ) {
         print "Unknown option: $arg\n\n" if(!$var);
         showUsage();
     } elsif ($var eq "what") {
-        if ($val eq "yes") {
-            $what++;
-        } elsif ($what) {
-            $what--;
-        }
+        $what = $val;
     } elsif ($var eq "check-includes") {
         if($val eq "yes") {
             $check_includes++;
@@ -568,11 +562,9 @@ while ( @ARGV ) {
 
 $isunix = checkUnix; #cache checkUnix
 
-if (!$what) {
-    # create path
-    mkpath "$out_basedir/include";
-    mkpath "$out_basedir/mw/Qt";
-}
+# create path
+mkpath "$out_basedir/include";
+mkpath "$out_basedir/mw/Qt";
 
 my @ignore_headers = ();
 my $class_lib_map_contents = "";
@@ -716,31 +708,27 @@ foreach my $lib (@modules_to_sync) {
                         # write forwarding headers to include/Qt
                         if ($lib ne "phonon" && $subdir =~ /^$basedir\/src/) {
                             my $file_name = "$out_basedir/mw/Qt/$header";
-                            if ($what) {
-                                push(@whatArray, $file_name);
+                            push(@whatArray, $file_name);
+                            my $file_op = '>';
+                            my $header_content = '';
+                            if (exists $colliding_headers{$file_name}) {
+                                $file_op = '>>';
                             } else {
-                                my $file_op = '>';
-                                my $header_content = '';
-                                if (exists $colliding_headers{$file_name}) {
-                                    $file_op = '>>';
-                                } else {
-                                    $colliding_headers{$file_name} = 1;
-                                    my $warning_msg = 'Inclusion of header files from include/Qt is deprecated.';
-                                    $header_content = "#ifndef QT_NO_QT_INCLUDE_WARN\n" .
-                                                      "    #if defined(__GNUC__)\n" .
-                                                      "        #warning \"$warning_msg\"\n" .
-                                                      "    #elif defined(_MSC_VER)\n" .
-                                                      "        #pragma message(\"WARNING: $warning_msg\")\n" .
-                                                      "    #endif\n".
-                                                      "#endif\n\n";
-                                }
-                                $header_content .= '#include "' . "../$lib/$header" . "\"\n";
-                                open HEADERFILE, $file_op, $file_name or die "unable to open '$file_name' : $!\n";
-                                print HEADERFILE $header_content;
-                                close HEADERFILE;
+                                $colliding_headers{$file_name} = 1;
+                                my $warning_msg = 'Inclusion of header files from include/Qt is deprecated.';
+                                $header_content = "#ifndef QT_NO_QT_INCLUDE_WARN\n" .
+                                                  "    #if defined(__GNUC__)\n" .
+                                                  "        #warning \"$warning_msg\"\n" .
+                                                  "    #elif defined(_MSC_VER)\n" .
+                                                  "        #pragma message(\"WARNING: $warning_msg\")\n" .
+                                                  "    #endif\n".
+                                                  "#endif\n\n";
                             }
+                            $header_content .= '#include "' . "../$lib/$header" . "\"\n";
+                            open HEADERFILE, $file_op, $file_name or die "unable to open '$file_name' : $!\n";
+                            print HEADERFILE $header_content;
+                            close HEADERFILE;
                         }
-
                         foreach my $full_class (@classes) {
                             my $header_base = basename($header);
                             # Strip namespaces:
@@ -789,7 +777,7 @@ foreach my $lib (@modules_to_sync) {
                         my $pri_install_iheader = fixPaths($iheader, $current_dir);
                         $pri_install_pfiles.= "$pri_install_iheader ";;
                     }
-                    print "header created for $iheader ($header_copies)\n" if($header_copies > 0 && !$what);
+                    print "header created for $iheader ($header_copies)\n" if($header_copies > 0);
                 }
             }
         }
@@ -805,6 +793,7 @@ foreach my $lib (@modules_to_sync) {
         #generate the "master" include file
         my @tmp = split(/;/,$modules{$lib});
         $pri_install_files .= fixPaths($master_include, $tmp[0]) . " "; #get the master file installed too
+        push(@whatArray, $master_include) if ($master_contents);
         if($master_include && -e $master_include) {
             open MASTERINCLUDE, "<$master_include";
             local $/;
@@ -812,19 +801,15 @@ foreach my $lib (@modules_to_sync) {
             my $oldmaster = <MASTERINCLUDE>;
             close MASTERINCLUDE;
             $oldmaster =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-            $master_include = 0 if($oldmaster eq $master_contents && !$what);
+            $master_include = 0 if($oldmaster eq $master_contents);
         }
         if($master_include && $master_contents) {
-            if ($what) {
-                push(@whatArray, $master_include);
-            } else {
-                my $master_dir = dirname($master_include);
-                mkpath $master_dir;
-                print "header (master) created for $lib\n";
-                open MASTERINCLUDE, ">$master_include";
-                print MASTERINCLUDE $master_contents;
-                close MASTERINCLUDE;
-            }
+            my $master_dir = dirname($master_include);
+            mkpath $master_dir;
+            print "header (master) created for $lib\n";
+            open MASTERINCLUDE, ">$master_include";
+            print MASTERINCLUDE $master_contents;
+            close MASTERINCLUDE;
         }
     }
 
@@ -834,6 +819,7 @@ foreach my $lib (@modules_to_sync) {
     $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
     $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
     my $headers_pri_file = "$out_basedir/mw/$lib/headers.pri";
+    push(@whatArray, $headers_pri_file) if ($master_contents);
     if(-e $headers_pri_file) {
         open HEADERS_PRI_FILE, "<$headers_pri_file";
         local $/;
@@ -841,23 +827,20 @@ foreach my $lib (@modules_to_sync) {
         my $old_headers_pri_contents = <HEADERS_PRI_FILE>;
         close HEADERS_PRI_FILE;
         $old_headers_pri_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-        $headers_pri_file = 0 if($old_headers_pri_contents eq $headers_pri_contents && !$what);
+        $headers_pri_file = 0 if($old_headers_pri_contents eq $headers_pri_contents);
     }
     if($headers_pri_file && $master_contents) {
-        if ($what) {
-            push(@whatArray, $headers_pri_file);
-        } else {
-            my $headers_pri_dir = dirname($headers_pri_file);
-            mkpath $headers_pri_dir;
-            print "headers.pri file created for $lib\n";
-            open HEADERS_PRI_FILE, ">$headers_pri_file";
-            print HEADERS_PRI_FILE $headers_pri_contents;
-            close HEADERS_PRI_FILE;
-        }
+        my $headers_pri_dir = dirname($headers_pri_file);
+        mkpath $headers_pri_dir;
+        print "headers.pri file created for $lib\n";
+        open HEADERS_PRI_FILE, ">$headers_pri_file";
+        print HEADERS_PRI_FILE $headers_pri_contents;
+        close HEADERS_PRI_FILE;
     }
 }
 unless(!$create_uic_class_map) {
     my $class_lib_map = "$out_basedir/src/tools/uic/qclass_lib_map.h";
+    push(@whatArray, $class_lib_map);
     if(-e $class_lib_map) {
         open CLASS_LIB_MAP, "<$class_lib_map";
         local $/;
@@ -865,18 +848,14 @@ unless(!$create_uic_class_map) {
         my $old_class_lib_map_contents = <CLASS_LIB_MAP>;
         close CLASS_LIB_MAP;
         $old_class_lib_map_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-        $class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents && !$what);
+        $class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents);
     }
     if($class_lib_map) {
-        if ($what) {
-            push(@whatArray, $class_lib_map);
-        } else {
-            my $class_lib_map_dir = dirname($class_lib_map);
-            mkpath $class_lib_map_dir;
-            open CLASS_LIB_MAP, ">$class_lib_map";
-            print CLASS_LIB_MAP $class_lib_map_contents;
-            close CLASS_LIB_MAP;
-        }
+        my $class_lib_map_dir = dirname($class_lib_map);
+        mkpath $class_lib_map_dir;
+        open CLASS_LIB_MAP, ">$class_lib_map";
+        print CLASS_LIB_MAP $class_lib_map_contents;
+        close CLASS_LIB_MAP;
     }
 }
 
@@ -1012,12 +991,15 @@ if ($what) {
     my @sortedWhat = sort(@whatArray);
     my $whatItem;
     my $previousWhatItem = "";
-    foreach $whatItem (@sortedWhat) {
-        if ($previousWhatItem ne $whatItem) {
-            $previousWhatItem = $whatItem;
-            $whatItem =~ s=//=/=g;
-            print "$whatItem\n" ;
+    if (open(OUTPUT, ">$what")) {
+        foreach $whatItem (@sortedWhat) {
+            if ($previousWhatItem ne $whatItem) {
+                $previousWhatItem = $whatItem;
+                $whatItem =~ s=//=/=g;
+                print OUTPUT "$whatItem\n" ;
+            }
         }
+        close(OUTPUT);
     }
 }
 

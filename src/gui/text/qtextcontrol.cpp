@@ -2029,10 +2029,7 @@ void QTextControlPrivate::focusEvent(QFocusEvent *e)
 #endif
             ))) {
 #endif
-        cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);
-        if (interactionFlags & Qt::TextEditable) {
-            setBlinkingCursorEnabled(true);
-        }
+            setBlinkingCursorEnabled(interactionFlags & (Qt::TextEditable | Qt::TextSelectableByKeyboard));
 #ifdef QT_KEYPAD_NAVIGATION
         }
 #endif
@@ -2808,7 +2805,7 @@ void QTextControl::setTextInteractionFlags(Qt::TextInteractionFlags flags)
     d->interactionFlags = flags;
 
     if (d->hasFocus)
-        d->setBlinkingCursorEnabled(flags & Qt::TextEditable);
+        d->setBlinkingCursorEnabled(flags & (Qt::TextEditable | Qt::TextSelectableByKeyboard));
 }
 
 Qt::TextInteractionFlags QTextControl::textInteractionFlags() const

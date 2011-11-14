@@ -65,6 +65,7 @@
 #ifdef QT_GRAPHICSSYSTEM_RUNTIME
 #include "private/qgraphicssystem_runtime_p.h"
 #endif
+#include "private/qcursor_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
@@ -2097,6 +2098,10 @@ void qt_cleanup()
 
     // Call EndFullScreen() to prevent confusing the system effect state machine.
     qt_endFullScreenEffect();
+
+#ifndef QT_NO_CURSOR
+    QCursorData::cleanup();
+#endif
 
     if (S60->qtOwnsS60Environment) {
         // Restore the S60 framework trap handler. See qt_init().

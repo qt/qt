@@ -1816,14 +1816,6 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
-        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation>невозможно загрузить модуль «%1»: Регистр имени файла не соответствует «%2»</translation>
-    </message>
-    <message>
-        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>невозможно прочитать определение «%2» модуля «%1»</translation>
-    </message>
-    <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
         <translation>не удалось загрузить плагин для модуля «%1»: %2</translation>
     </message>
@@ -1876,8 +1868,8 @@ to
         <translation>не является типом</translation>
     </message>
     <message>
-        <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation>Регистр имени файла не соответствует «%2»</translation>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>Регистр имени файла не соответствует «%1»</translation>
     </message>
 </context>
 <context>
@@ -4977,7 +4969,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>bad lookahead syntax</source>
-        <translation>неправильный предварительный синтаксис</translation>
+        <translation>неправильный синтаксис lookahead</translation>
+    </message>
+    <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>lookbehind не поддерживается, см. QTBUG-2371</translation>
     </message>
     <message>
         <source>bad repetition syntax</source>
