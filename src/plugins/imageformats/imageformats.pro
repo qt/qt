@@ -6,3 +6,4 @@ TEMPLATE = subdirs
 contains(QT_CONFIG, svg):SUBDIRS += svg
 !contains(QT_CONFIG, no-tiff):!contains(QT_CONFIG, tiff):SUBDIRS += tiff
 !contains(QT_CONFIG, no-ico):SUBDIRS += ico
+!contains(QT_CONFIG, no-tga):SUBDIRS += tga
