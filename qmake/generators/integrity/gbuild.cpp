@@ -153,7 +153,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
         Option::output.setFileName(filename);
         MakefileGenerator::openOutput(Option::output, QString());
     } else if ((project->first("TEMPLATE") == "lib")
-            && project->isActiveConfig("shared")) {
+            && project->isActiveConfig("dll")) {
         QString gpjname(strtarget);
         gpjname += "_shared";
         gpjname += projectSuffix();
