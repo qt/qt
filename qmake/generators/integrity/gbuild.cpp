@@ -379,8 +379,9 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
 QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove)
 {
     QString s("");
+    QString origfilename(filename);
     s += filename.remove(pathtoremove);
-    if (filename.endsWith(Option::h_ext.first())) {
+    if (filename.endsWith(Option::h_ext.first()) && mocable(origfilename)) {
         QString corename(filename.section(QDir::separator(), -1));
         corename.remove(Option::h_ext.first());
         corename.append(Option::cpp_ext.first());
@@ -396,7 +397,7 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += tmpstr;
         s += ".qrc";
         s += "\n";
-    } else if (filename.endsWith(Option::cpp_ext.first())) {
+    } else if (filename.endsWith(Option::cpp_ext.first()) && mocable(origfilename)) {
         QString tmpstr(filename.section("/", -1));
         QString filepath(pathtoremove);
         if (!project->values("QT_SOURCE_TREE").isEmpty()) {
