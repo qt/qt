@@ -83,7 +83,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
     Option::output.setFileName(outname);
     MakefileGenerator::openOutput(Option::output, QString());
 
-    if (strtarget != fileInfo(project->projectFile()).baseName()) {
+    if (strtarget != fileInfo(project->projectFile()).baseName().section('.', -2, -2)) {
         QString gpjname(strtarget);
         QString outputName(qmake_getpwd());
         outputName += QDir::separator();
