@@ -273,7 +273,8 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
     }
     t << "\n";
 
-    t << varGlue("DEFINES", "\t-D", "\n\t-D", "\n");
+    if (project->first("TEMPLATE") != "project")
+        t << varGlue("DEFINES", "\t-D", "\n\t-D", "\n");
 
     t << "\t-I.\n\t-I" << specdir() << "\n";
     t << varGlue("INCLUDEPATH", "\t-I", "\n\t-I", "\n");
