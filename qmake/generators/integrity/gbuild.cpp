@@ -141,6 +141,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
         ti << "\tHeapSize\t0x00D00000" << "\n";
         ti << "\tTask\tInitial" << "\n";
         ti << "\t\tStackSize\t0x30000" << "\n";
+        ti << "\t\tStartIt\tTrue" << "\n";
         ti << "\tEndTask" << "\n";
         ti << "EndAddressSpace" << "\n";
         ti.flush();
