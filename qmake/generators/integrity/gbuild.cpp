@@ -389,6 +389,8 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += "\t[MOC/Qt Header]\n";
         s += "\t-o ";
         s += "work/";
+        s += pathtoremove;
+        s += QDir::separator();
         s += corename;
         s += "\n";
     } else if (filename.section(QDir::separator(), -1).startsWith("qrc_")) {
@@ -413,6 +415,8 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += " -o ";
         tmpstr.replace(Option::cpp_ext.first(), Option::cpp_moc_ext);
         s += "work/";
+        s += pathtoremove;
+        s += QDir::separator();
         s += tmpstr;
         s += "\n";
     } else
