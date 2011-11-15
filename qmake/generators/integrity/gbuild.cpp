@@ -259,6 +259,8 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
     t << "\t:sourceDir=." << "\n";
 
     t << "\t:outputDir=work" << relpath << "\n";
+    t << "\t-I${%expand_path(.)}/work" << relpath << "\n";
+    t << "\t--cxx_include_directory ${%expand_path(.)}/work" << relpath << "\n";
     if (filename.endsWith("projects.gpj")) {
         t << "\t:sourceDir=work\n";
         t << "\t-Iwork\n";
@@ -336,7 +338,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
             t << "\t-name " << tmpstr << "\n";
             tmpstr.insert(tmpstr.lastIndexOf(QDir::separator()) + 1, "qrc_");
             tmpstr.append(".cpp");
-            t << "\t-o work/" << tmpstr << "\n";
+            t << "\t-o work/" << relpath << QDir::separator() << tmpstr << "\n";
         }
     }
     {
@@ -348,7 +350,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
             tmpstr.insert(tmpstr.lastIndexOf(QDir::separator()) + 1, "ui_");
             tmpstr.remove(".ui");
             tmpstr.append(".h");
-            t << "\t-o work/" << tmpstr << "\n";
+            t << "\t-o work/" << relpath << QDir::separator() << tmpstr << "\n";
         }
     }
 
@@ -371,7 +373,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
     {
         QStringList &l = project->values("GENERATED_SOURCES");
         for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            t << "work/" << (*it).section(QDir::separator(), -1) << "\n";
+            t << "work/" << relpath << QDir::separator() << (*it).section(QDir::separator(), -1) << "\n";
         }
     }
 
