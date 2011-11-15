@@ -869,6 +869,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     if (!path.startsWith(QLatin1Char('~')))
         return path;
     QString ret = path;
+#if defined(Q_OS_INTEGRITY)
     QStringList tokens = ret.split(QDir::separator());
     if (tokens.first() == QLatin1String("~")) {
         ret.replace(0, 1, QDir::homePath());
@@ -899,6 +900,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     }
     if (expanded != 0)
         *expanded = true;
+#endif
     return ret;
 }
 #endif
