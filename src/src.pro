@@ -8,7 +8,7 @@ SRC_SUBDIRS += src_corelib src_xml src_network src_sql src_testlib
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
-!wince*:!symbian:!vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+!wince*:!symbian:!vxworks:!integrity:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
 
 !wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
 win32:!win32-g++*:SRC_SUBDIRS += src_activeqt
