@@ -66,6 +66,10 @@ protected:
 private slots:
     void load();
     void load2();
+    void loadSubdir();
+    void loadSubdir2();
+    void loadSubdir3();
+    void loadSubdir4();
     void threadLoad();
     void testLanguageChange();
     void plural();
@@ -120,6 +124,38 @@ void tst_QTranslator::load2()
     file.open(QFile::ReadOnly);
     QByteArray data = file.readAll();
     tor.load((const uchar *)data.constData(), data.length());
+    QVERIFY(!tor.isEmpty());
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+}
+
+void tst_QTranslator::loadSubdir()
+{
+    QTranslator tor( 0 );
+    tor.load("hellotr_en_GB", "i18n");
+    QVERIFY(!tor.isEmpty());
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+}
+
+void tst_QTranslator::loadSubdir2()
+{
+    QTranslator tor( 0 );
+    tor.load("i18n/hellotr_en_GB");
+    QVERIFY(!tor.isEmpty());
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+}
+
+void tst_QTranslator::loadSubdir3()
+{
+    QTranslator tor( 0 );
+    tor.load(QString(QLatin1String("i18n%1hellotr_en_GB")).arg(QDir::separator()));
+    QVERIFY(!tor.isEmpty());
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+}
+
+void tst_QTranslator::loadSubdir4()
+{
+    QTranslator tor( 0 );
+    tor.load("./hellotr_en_GB", "i18n");
     QVERIFY(!tor.isEmpty());
     QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
 }
@@ -249,10 +285,10 @@ void tst_QTranslator::loadFromResource()
 
 void tst_QTranslator::loadDirectory()
 {
-    QVERIFY(QFileInfo("../qtranslator").isDir());
+    QVERIFY(QFileInfo("i18n").isDir());
 
     QTranslator tor;
-    tor.load("qtranslator", "..");
+    tor.load("qtranslator", "i18n");
     QVERIFY(tor.isEmpty());
 }
 
