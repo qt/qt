@@ -218,7 +218,9 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
 
     warn_msg(WarnParser, Option::output.fileName().toAscii());
     QTextStream t(&Option::output);
-    QString primaryTarget(project->values("QMAKE_CXX").at(0));
+    QString primaryTarget;
+    if (!project->values("QMAKE_CXX").isEmpty())
+        primaryTarget = project->values("QMAKE_CXX").at(0);
 
     pathtoremove += QDir::separator();
     filename.remove(qmake_getpwd());
