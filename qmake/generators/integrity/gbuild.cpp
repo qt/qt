@@ -310,9 +310,11 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
                 continue;
             if (!project->first((*it) + ".subdir").isEmpty())
                 gpjname = project->first((*it) + ".subdir");
+            /* some SUBDIRS are not actually subdirs, instead .pro files */
+            if (gpjname.endsWith(".pro"))
+                gpjname.chop(4);
             else
-                gpjname.replace("_", QDir::separator());
-            gpjname += QDir::separator() + gpjname.section(QDir::separator(), -1);
+                gpjname += QDir::separator() + gpjname.section(QDir::separator(), -1);
             gpjname += projectSuffix();
             /* make relative */
             if (!project->values("QT_SOURCE_TREE").isEmpty()) {
