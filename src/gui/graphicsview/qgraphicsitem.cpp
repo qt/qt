@@ -1157,7 +1157,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
             if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
                 parentFocusScopeItem = fsi;
                 p->d_ptr->focusScopeItem = 0;
-                fsi->d_ptr->focusScopeItemChange(false);
             }
             break;
         }
@@ -1258,6 +1257,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     dirtySceneTransform = 1;
     if (!inDestructor && (transformData || (newParent && newParent->d_ptr->transformData)))
         transformChanged();
+
+    // Reparenting is finished, now safe to notify the previous focusScopeItem about changes
+    if (parentFocusScopeItem)
+      parentFocusScopeItem->d_ptr->focusScopeItemChange(false);
 
     // Restore the sub focus chain.
     if (subFocusItem) {
