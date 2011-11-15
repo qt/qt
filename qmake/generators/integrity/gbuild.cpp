@@ -64,7 +64,7 @@ GBuildMakefileGenerator::GBuildMakefileGenerator() : MakefileGenerator()
 }
 
 bool
-GBuildMakefileGenerator::write()
+GBuildMakefileGenerator::writeMakefile(QTextStream &text)
 {
     QStringList tmp;
     QString filename(Option::output.fileName());
