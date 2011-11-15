@@ -77,7 +77,7 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
     /* correct output for non-prl, non-recursive case */
     QString outname(qmake_getpwd());
     outname += QDir::separator();
-    outname += fileInfo(Option::output.fileName()).baseName();
+    outname += strtarget;
     outname += projectSuffix();
     Option::output.close();
     Option::output.setFileName(outname);
@@ -148,9 +148,9 @@ GBuildMakefileGenerator::writeMakefile(QTextStream &text)
 
         /* change current project file to <projectname>_app.gpj and continue
          * generation */
-        filename.insert(filename.lastIndexOf("."), "_app");
+        outname.insert(outname.lastIndexOf("."), "_app");
         Option::output.close();
-        Option::output.setFileName(filename);
+        Option::output.setFileName(outname);
         MakefileGenerator::openOutput(Option::output, QString());
     } else if ((project->first("TEMPLATE") == "lib")
             && project->isActiveConfig("dll")) {
