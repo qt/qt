@@ -15,6 +15,11 @@ qdoc_bootstrapped {
     CONFIG -= debug_and_release_target
 }
 
+# Increase the stack size on MSVC to 4M to avoid a stack overflow 
+win32-msvc*:{ 
+    QMAKE_LFLAGS += /STACK:\"4194304\" 
+} 
+ 
 !isEmpty(QT_BUILD_TREE):DESTDIR = $$QT_BUILD_TREE/bin
 #CONFIG += debug
 build_all:!build_pass {

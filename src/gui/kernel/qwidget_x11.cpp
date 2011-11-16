@@ -1336,40 +1336,12 @@ QPoint QWidgetPrivate::mapFromGlobal(const QPoint &pos) const
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos + offset;
-
     return d->mapToGlobal(pos);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    QPoint offset = data->crect.topLeft();
-    const QWidget *w = this;
-    const QWidget *p = w->parentWidget();
-    while (!w->isWindow() && p) {
-        w = p;
-        p = p->parentWidget();
-        offset += w->data->crect.topLeft();
-    }
-
-    const QWidgetPrivate *wd = w->d_func();
-    QTLWExtra *tlw = wd->topData();
-    if (!tlw->embedded)
-        return pos - offset;
-
     return d->mapFromGlobal(pos);
 }
 
