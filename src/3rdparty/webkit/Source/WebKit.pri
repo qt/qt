@@ -12,10 +12,12 @@ CONFIG(QTDIR_build) {
     win32|mac:!macx-xcode:CONFIG += debug_and_release
     # In case we are building a universal binary for Qt, building debug is not
     # possible because we would exceed the maximum library size for 32bit.
-    mac:CONFIG(QT_CONFIG, x86):CONFIG(QT_CONFIG, x86_64):debug|debug_and_release {
-        message(Building a universal binary with debug symbols is not possible. Building release!)
-        CONFIG -= debug_and_release debug
-        CONFIG += release
+    mac:contains(QT_CONFIG, x86):contains(QT_CONFIG, x86_64) {
+        CONFIG(debug_and_release)|CONFIG(debug, debug|release) {
+            message(Building a universal binary with debug symbols is not possible. Building release!)
+            CONFIG -= debug_and_release debug
+            CONFIG += release
+        }
     }
 } else {
     !CONFIG(release, debug|release) {
