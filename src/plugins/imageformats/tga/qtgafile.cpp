@@ -41,9 +41,9 @@
 
 #include "qtgafile.h"
 
-#include <QtCore/qiodevice.h>
-#include <QtCore/qdebug.h>
-#include <QtCore/qdatetime.h>
+#include <QtCore/QIODevice>
+#include <QtCore/QDebug>
+#include <QtCore/QDateTime>
 
 struct TgaReader
 {

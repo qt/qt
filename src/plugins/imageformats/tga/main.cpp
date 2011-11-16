@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <qimageiohandler.h>
-#include <qdebug.h>
+#include <QtGui/QImageIOHandler>
+#include <QtCore/QDebug>
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
