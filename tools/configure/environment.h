@@ -49,6 +49,7 @@ enum Compiler {
     CC_UNKNOWN = 0,
     CC_BORLAND = 0x01,
     CC_MINGW   = 0x02,
+    CC_MINGW_44 = 0x21,
     CC_INTEL   = 0x03,
     CC_NET2003 = 0x71,
     CC_NET2005 = 0x80,
@@ -63,6 +64,8 @@ public:
     static Compiler detectCompiler();
     static QString detectQMakeSpec();
     static bool detectExecutable(const QString &executable);
+    static int detectGPlusPlusVersion(const QString &executable, bool *is64bit);
+    static QString readProcessStandardOutput(const QString &commandLine);
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
     static bool cpdir(const QString &srcDir,
