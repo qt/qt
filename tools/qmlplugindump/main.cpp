@@ -147,6 +147,31 @@ QByteArray convertToId(const QByteArray &cppName)
     return cppToId.value(cppName, cppName);
 }
 
+QByteArray convertToId(const QMetaObject *mo)
+{
+    QByteArray className(mo->className());
+    if (!className.isEmpty())
+        return convertToId(className);
+
+    // likely a metaobject generated for an extended qml object
+    if (mo->superClass()) {
+        className = convertToId(mo->superClass());
+        className.append("_extended");
+        return className;
+    }
+
+    static QHash<const QMetaObject *, QByteArray> generatedNames;
+    className = generatedNames.value(mo);
+    if (!className.isEmpty())
+        return className;
+
+    qWarning() << "Found a QMetaObject without a className, generating a random name";
+    className = QByteArray("error-unknown-name-");
+    className.append(QByteArray::number(generatedNames.size()));
+    generatedNames.insert(mo, className);
+    return className;
+}
+
 QSet<const QMetaObject *> collectReachableMetaObjects(const QList<QDeclarativeType *> &skip = QList<QDeclarativeType *>())
 {
     QSet<const QMetaObject *> metas;
@@ -241,7 +266,7 @@ public:
     {
         qml->writeStartObject("Component");
 
-        QByteArray id = convertToId(meta->className());
+        QByteArray id = convertToId(meta);
         qml->writeScriptBinding(QLatin1String("name"), enquote(id));
 
         for (int index = meta->classInfoCount() - 1 ; index >= 0 ; --index) {
@@ -253,7 +278,7 @@ public:
         }
 
         if (meta->superClass())
-            qml->writeScriptBinding(QLatin1String("prototype"), enquote(convertToId(meta->superClass()->className())));
+            qml->writeScriptBinding(QLatin1String("prototype"), enquote(convertToId(meta->superClass())));
 
         QSet<const QDeclarativeType *> qmlTypes = qmlTypesByCppName.value(meta->className());
         if (!qmlTypes.isEmpty()) {
@@ -284,7 +309,7 @@ public:
 
             if (const QMetaObject *attachedType = (*qmlTypes.begin())->attachedPropertiesType()) {
                 qml->writeScriptBinding(QLatin1String("attachedType"), enquote(
-                                            convertToId(attachedType->className())));
+                                            convertToId(attachedType)));
             }
         }
 
@@ -624,7 +649,7 @@ int main(int argc, char *argv[])
     // put the metaobjects into a map so they are always dumped in the same order
     QMap<QString, const QMetaObject *> nameToMeta;
     foreach (const QMetaObject *meta, metas)
-        nameToMeta.insert(convertToId(meta->className()), meta);
+        nameToMeta.insert(convertToId(meta), meta);
 
     Dumper dumper(&qml);
     if (relocatable)
