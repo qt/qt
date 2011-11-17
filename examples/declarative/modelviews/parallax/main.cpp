@@ -38,41 +38,17 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
-import "../../toys/clocks/content"  // for loading the Clock element
-import "qml"
+#include "qmlapplicationviewer.h"
+#include <QtGui/QApplication>
 
-Rectangle {
-    width: 320; height: 480
+Q_DECL_EXPORT int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-    ParallaxView {
-        id: parallax
-        anchors.fill: parent
-        background: "pics/background.jpg"
+    QmlApplicationViewer viewer;
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
+    viewer.setMainQmlFile(QLatin1String("qml/parallax/parallax.qml"));
+    viewer.showExpanded();
 
-        Item {
-            property url icon: "pics/yast-wol.png"
-            width: 320; height: 480
-            Clock { anchors.centerIn: parent }
-        }
-
-        Item {
-            property url icon: "pics/home-page.svg"
-            width: 320; height: 480
-            Smiley { }
-        }
-
-        Item {
-            property url icon: "pics/yast-joystick.png"
-            width: 320; height: 480
-
-            Loader {
-                anchors { top: parent.top; topMargin: 10; horizontalCenter: parent.horizontalCenter }
-                width: 300; height: 400
-                clip: true; 
-                source: "../../../../demos/declarative/samegame/samegame.qml"
-                Component.onCompleted: item.inAnotherDemo = true;
-            }
-        }
-    }
+    return app.exec();
 }

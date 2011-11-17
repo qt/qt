@@ -39,46 +39,40 @@
 ****************************************************************************/
 
 import QtQuick 1.0
+import "../../../../toys/clocks/content"  // for loading the Clock element
+//import "qml"
 
-// This is taken from the declarative animation/basics/property-animation.qml
-// example
-
-Item {
-    id: window
+Rectangle {
     width: 320; height: 480
 
-    Image {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: smiley.minHeight + 58
-        source: "../pics/shadow.png"
+    ParallaxView {
+        id: parallax
+        anchors.fill: parent
+        background: "pics/background.jpg"
 
-        scale: smiley.y * 0.5 / (smiley.minHeight - smiley.maxHeight)
-    }
+        Item {
+            property url icon: "pics/yast-wol.png"
+            width: 320; height: 480
+            Clock { anchors.centerIn: parent }
+        }
 
-    Image {
-        id: smiley
-        property int maxHeight: window.height / 3
-        property int minHeight: 2 * window.height / 3
+        Item {
+            property url icon: "pics/home-page.svg"
+            width: 320; height: 480
+            Smiley { }
+        }
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: minHeight
-        source: "../pics/face-smile.png"
+        Item {
+            property url icon: "pics/yast-joystick.png"
+            width: 320; height: 480
 
-        SequentialAnimation on y {
-            loops: Animation.Infinite
-
-            NumberAnimation {
-                from: smiley.minHeight; to: smiley.maxHeight
-                easing.type: Easing.OutExpo; duration: 300
+            Loader {
+                anchors { top: parent.top; topMargin: 10; horizontalCenter: parent.horizontalCenter }
+                width: 300; height: 400
+                clip: true; 
+                source: "../../../../../../demos/declarative/samegame/samegame.qml"
+                Component.onCompleted: item.inAnotherDemo = true;
             }
-
-            NumberAnimation {
-                from: smiley.maxHeight; to: smiley.minHeight
-                easing.type: Easing.OutBounce; duration: 1000
-            }
-
-            PauseAnimation { duration: 500 }
         }
     }
 }
-
