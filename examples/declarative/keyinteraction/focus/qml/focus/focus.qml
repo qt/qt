@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,67 +39,73 @@
 ****************************************************************************/
 
 import QtQuick 1.0
+import "FocusCore"
 
-FocusScope {
-    property alias interactive: gridView.interactive
+Rectangle {
+    id: window
+    
+    width: 800; height: 480
+    color: "#3E606F"
 
-    onActiveFocusChanged: {
-        if (activeFocus) 
-            mainView.state = ""
+    FocusScope {
+        id: mainView
+
+        width: parent.width; height: parent.height
+        focus: true
+
+        GridMenu {
+            id: gridMenu
+            width: parent.width; height: 320
+
+            focus: true
+            interactive: parent.activeFocus
+        }
+
+        ListMenu {
+            id: listMenu
+            y: 320; width: parent.width; height: 320
+        }
+
+        Rectangle { 
+            id: shade
+            anchors.fill: parent
+            color: "black"
+            opacity: 0 
+        }
+
+        states: State {
+            name: "showListViews"
+            PropertyChanges { target: gridMenu; y: -160 }
+            PropertyChanges { target: listMenu; y: 160 }
+        }
+
+        transitions: Transition {
+            NumberAnimation { properties: "y"; duration: 600; easing.type: Easing.OutQuint }
+        }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        clip: true
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#193441" }
-            GradientStop { position: 1.0; color: Qt.darker("#193441") }
+    Image {
+        source: "FocusCore/images/arrow.png"
+        rotation: 90
+        anchors.verticalCenter: parent.verticalCenter
+
+        MouseArea {
+            anchors.fill: parent; anchors.margins: -10
+            onClicked: window.state = "contextMenuOpen"
         }
+    }
 
-        GridView {
-            id: gridView
-            anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
-            cellWidth: 152; cellHeight: 152
-            focus: true
-            model: 12
+    ContextMenu { id: contextMenu; x: -265; width: 260; height: parent.height }
 
-            KeyNavigation.down: listMenu
-            KeyNavigation.left: contextMenu
+    states: State {
+        name: "contextMenuOpen"
+        when: !mainView.activeFocus
+        PropertyChanges { target: contextMenu; x: 0; open: true }
+        PropertyChanges { target: mainView; x: 130 }
+        PropertyChanges { target: shade; opacity: 0.25 }
+    }
 
-            delegate: Item {
-                id: container
-                width: GridView.view.cellWidth; height: GridView.view.cellHeight
-
-                Rectangle {
-                    id: content
-                    color: "transparent"
-                    smooth: true
-                    anchors.fill: parent; anchors.margins: 20; radius: 10
-
-                    Rectangle { color: "#91AA9D"; anchors.fill: parent; anchors.margins: 3; radius: 8; smooth: true }
-                    Image { source: "images/qt-logo.png"; anchors.centerIn: parent; smooth: true }
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        container.GridView.view.currentIndex = index
-                        container.forceActiveFocus()
-                    }
-                }
-
-                states: State {
-                    name: "active"; when: container.activeFocus
-                    PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
-                }
-
-                transitions: Transition {
-                    NumberAnimation { properties: "scale"; duration: 100 }
-                }
-            }
-        }
+    transitions: Transition {
+        NumberAnimation { properties: "x,opacity"; duration: 600; easing.type: Easing.OutQuint }
     }
 }
