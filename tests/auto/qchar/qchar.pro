@@ -10,6 +10,8 @@ DEPLOYMENT += deploy
 
 symbian: {
     DEFINES += SRCDIR=""
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

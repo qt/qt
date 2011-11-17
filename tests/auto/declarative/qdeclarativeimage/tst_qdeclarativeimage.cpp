@@ -94,6 +94,7 @@ private slots:
     void resetSourceSize();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void readerCrash_QTBUG_22125();
 
 private:
     template<typename T>
@@ -760,6 +761,46 @@ void tst_qdeclarativeimage::testQtQuick11Attributes_data()
     QTest::newRow("cache") << "cache: true"
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"Image.cache\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_qdeclarativeimage::readerCrash_QTBUG_22125()
+{
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        server.serveDirectory(SRCDIR "/data/", TestHTTPServer::Delay);
+
+        {
+            QDeclarativeView view(QUrl::fromLocalFile(SRCDIR "/data/qtbug_22125.qml"));
+            view.show();
+            qApp->processEvents();
+            qApp->processEvents();
+            // shouldn't crash when the view drops out of scope due to
+            // QDeclarativePixmapData attempting to dereference a pointer to
+            // the destroyed reader.
+        }
+
+        // shouldn't crash when deleting cancelled QDeclarativePixmapReplys.
+        QTest::qWait(1000);
+        qApp->processEvents(QEventLoop::DeferredDeletion);
+    }
+
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        server.serveDirectory(SRCDIR "/data/");
+
+        {
+            QDeclarativeView view(QUrl::fromLocalFile(SRCDIR "/data/qtbug_22125.qml"));
+            view.show();
+            qApp->processEvents();
+            QTest::qWait(1000);
+            qApp->processEvents();
+            // shouldn't crash when the view drops out of scope due to
+            // the reader thread accessing self-deleted QDeclarativePixmapReplys.
+        }
+        qApp->processEvents();
+    }
 }
 
 /*

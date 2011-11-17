@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 class GBuildMakefileGenerator : public MakefileGenerator
 {
-    virtual bool write();
+    virtual bool writeMakefile(QTextStream &text);
 
     QString projectSuffix() const { return QString(".gpj"); };
     QString writeOne(QString filename, QString pathtoremove = "");

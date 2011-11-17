@@ -1347,7 +1347,9 @@ QS60StylePrivate::QS60StylePrivate()
 void QS60StylePrivate::removeAnimations()
 {
     //currently only one animation in the list.
-    m_animations()->removeFirst();
+    if (!m_animations()->isEmpty()) {
+        delete m_animations()->takeFirst();
+    }
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
