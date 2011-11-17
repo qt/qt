@@ -80,6 +80,7 @@ Item {
             source: "images/moon.png"; y: parent.height - 74; anchors.horizontalCenter: parent.horizontalCenter
             rotation: -parent.rotation
         }
+
         Particles {
             x: 0; y: parent.height/2; width: parent.width; height: parent.height/2
             source: "images/star.png"; angleDeviation: 360; velocity: 0
@@ -90,6 +91,7 @@ Item {
                 NumberAnimation { from: 1; to: 0; duration: 5000 }
             }
         }
+
     }
 
     // ...and the ground.
