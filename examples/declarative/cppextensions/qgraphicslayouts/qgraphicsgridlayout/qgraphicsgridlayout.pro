@@ -1,20 +1,3 @@
-#TEMPLATE = app
-#TARGET  = qgraphicsgridlayout
-#QT += declarative
-
-#SOURCES += \
-#    gridlayout.cpp \
-#    main.cpp
-
-#HEADERS += \
-#    gridlayout.h
-
-#RESOURCES += \
-#    gridlayout.qrc
-
-
-
-
 # Add more folders to ship with the application, here
 folder_01.source = qml/qgraphicsgridlayout
 folder_01.target = qml

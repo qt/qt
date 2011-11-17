@@ -1,17 +1,3 @@
-#TEMPLATE = app
-#TARGET  = qgraphicslinearlayout
-#QT += declarative
-
-#SOURCES += \
-#    linearlayout.cpp \
-#    main.cpp
-
-#HEADERS += \
-#    linearlayout.h
-
-#RESOURCES += \
-#    linearlayout.qrc
-
 # Add more folders to ship with the application, here
 folder_01.source = qml/qgraphicslinearlayout
 folder_01.target = qml
