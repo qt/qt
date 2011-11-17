@@ -41,11 +41,9 @@
 #include <QApplication>
 #include <QNetworkAccessManager>
 #include <QNetworkProxy>
-
 #include <QDeclarativeEngine>
 #include <QDeclarativeNetworkAccessManagerFactory>
-#include <QDeclarativeView>
-
+#include "qmlapplicationviewer.h"
 
 /*
    This example illustrates using a QDeclarativeNetworkAccessManagerFactory to
@@ -78,9 +76,10 @@ QNetworkAccessManager *MyNetworkAccessManagerFactory::create(QObject *parent)
 
 int main(int argc, char ** argv)
 {
-    QUrl source("qrc:view.qml");
+    QUrl source("qml/networkaccessmanagerfactory/view.qml");
 
     QApplication app(argc, argv);
+    QmlApplicationViewer viewer;
 
     for (int i = 1; i < argc; ++i) {
         QString arg(argv[i]);
@@ -97,11 +96,10 @@ int main(int argc, char ** argv)
         }
     }
 
-    QDeclarativeView view;
-    view.engine()->setNetworkAccessManagerFactory(new MyNetworkAccessManagerFactory);
-
-    view.setSource(source);
-    view.show();
+    viewer.engine()->setNetworkAccessManagerFactory(new MyNetworkAccessManagerFactory);
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
+    viewer.setMainQmlFile(source.toString());
+    viewer.showExpanded();
 
     return app.exec();
 }
