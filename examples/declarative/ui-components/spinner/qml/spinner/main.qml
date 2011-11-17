@@ -39,32 +39,23 @@
 ****************************************************************************/
 
 import QtQuick 1.0
+import "../../content"
 
-Image {
-    property alias model: view.model
-    property alias delegate: view.delegate
-    property alias currentIndex: view.currentIndex
-    property real itemHeight: 30
+Rectangle {
+    width: 240; height: 320
 
-    source: "spinner-bg.png"
-    clip: true
+    Column {
+        y: 20; x: 20; spacing: 20
 
-    PathView {
-        id: view
-        anchors.fill: parent
-
-        pathItemCount: height/itemHeight
-        preferredHighlightBegin: 0.5
-        preferredHighlightEnd: 0.5
-        highlight: Image { source: "spinner-select.png"; width: view.width; height: itemHeight+4 }
-        dragMargin: view.width/2
-
-        path: Path {
-            startX: view.width/2; startY: -itemHeight/2
-            PathLine { x: view.width/2; y: view.pathItemCount*itemHeight + itemHeight }
+        Spinner {
+            id: spinner
+            width: 200; height: 240
+            focus: true
+            model: 20
+            itemHeight: 30
+            delegate: Text { font.pixelSize: 25; text: index; height: 30 }
         }
-    }
 
-    Keys.onDownPressed: view.incrementCurrentIndex()
-    Keys.onUpPressed: view.decrementCurrentIndex()
+        Text { text: "Current item index: " + spinner.currentIndex }
+    }
 }
