@@ -3,13 +3,13 @@ import QmlProject 1.0
 Project {
     /* Include .qml, .js, and image files from current directory and subdirectories */
     QmlFiles {
-        directory: "."
+        directory: "qml/dialcontrol"
     }
     JavaScriptFiles {
-        directory: "."
+        directory: "qml/dialcontrol"
     }
     ImageFiles {
-        directory: "."
+        directory: "qml/dialcontrol"
     }
     /* List of plugin directories passed to QML runtime */
     // importPaths: [ " ../exampleplugin " ]
