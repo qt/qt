@@ -38,19 +38,17 @@
 **
 ****************************************************************************/
 
-import QmlProject 1.0
+#include "qmlapplicationviewer.h"
+#include <QtGui/QApplication>
 
-Project {
-    /* Include .qml, .js, and image files from current directory and subdirectories */
-    QmlFiles {
-        directory: "qml/threadedlistmodel"
-    }
-    JavaScriptFiles {
-        directory: "qml/threadedlistmodel"
-    }
-    ImageFiles {
-        directory: "qml/threadedlistmodel"
-    }
-    /* List of plugin directories passed to QML runtime */
-    // importPaths: [ " ../exampleplugin " ]
+Q_DECL_EXPORT int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    QmlApplicationViewer viewer;
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+    viewer.setMainQmlFile(QLatin1String("qml/threadedlistmodel/timedisplay.qml"));
+    viewer.showExpanded();
+
+    return app.exec();
 }
