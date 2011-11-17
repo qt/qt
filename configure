@@ -816,6 +816,7 @@ l_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "symbian-gcce"
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
+XPLATFORM_INTEGRITY=no  # Whether target platform is INTEGRITY (*integrity*)
 XPLATFORM_SYMBIAN=no    # Whether target platform is SYMBIAN (*symbian*)
 XPLATFORM_SYMBIAN_SBSV2=no # Whether target platform is SYMBIAN_SBSV2 (symbian-sbsv2)
 PLATFORM=$QMAKESPEC
@@ -1596,6 +1597,7 @@ while [ "$#" -gt 0 ]; do
     xplatform)
         XPLATFORM="$VAL"
         case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
+        case "$XPLATFORM" in *integrity*) XPLATFORM_INTEGRITY=yes;; esac
         case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
         case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
         ;;
@@ -2899,6 +2901,7 @@ fi
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
+case "$XPLATFORM" in *integrity*) XPLATFORM_INTEGRITY=yes;; esac
 case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
 case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
 
@@ -3179,6 +3182,8 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     esac
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     [ -z "$CFG_ARCH" ] && CFG_ARCH="windows"
+elif [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    CFG_ARCH=integrity
 elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     CFG_ARCH=symbian
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
@@ -3531,6 +3536,19 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     [ -z "$QT_INSTALL_SETTINGS" ] && QT_INSTALL_SETTINGS=
     [ -z "$QT_INSTALL_EXAMPLES" ] && QT_INSTALL_EXAMPLES=
     [ -z "$QT_INSTALL_DEMOS" ] && QT_INSTALL_DEMOS=
+elif [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    [ -z "$QT_HOST_PREFIX" ] && QT_HOST_PREFIX="$QT_INSTALL_PREFIX"
+    [ -z "$QT_INSTALL_DOCS" ] && QT_INSTALL_DOCS="$QT_INSTALL_PREFIX/doc"
+    [ -z "$QT_INSTALL_HEADERS" ] && QT_INSTALL_HEADERS="$QT_INSTALL_PREFIX/include"
+    [ -z "$QT_INSTALL_LIBS" ] && QT_INSTALL_LIBS="$QT_INSTALL_PREFIX/lib"
+    [ -z "$QT_INSTALL_BINS" ] && QT_INSTALL_BINS="$QT_INSTALL_PREFIX/bin"
+    [ -z "$QT_INSTALL_PLUGINS" ] && QT_INSTALL_PLUGINS="$QT_INSTALL_PREFIX/plugins"
+    [ -z "$QT_INSTALL_IMPORTS" ] && QT_INSTALL_IMPORTS="$QT_INSTALL_PREFIX/imports"
+    [ -z "$QT_INSTALL_DATA" ] && QT_INSTALL_DATA="$QT_INSTALL_PREFIX"
+    [ -z "$QT_INSTALL_TRANSLATIONS" ] && QT_INSTALL_TRANSLATIONS="$QT_INSTALL_PREFIX/translations"
+    [ -z "$QT_INSTALL_SETTINGS" ] && QT_INSTALL_SETTINGS="$QT_INSTALL_PREFIX"
+    [ -z "$QT_INSTALL_EXAMPLES" ] && QT_INSTALL_EXAMPLES="$QT_INSTALL_PREFIX/examples"
+    [ -z "$QT_INSTALL_DEMOS" ] && QT_INSTALL_DEMOS="$QT_INSTALL_PREFIX/demos"
 else
     #docs
     if [ -z "$QT_INSTALL_DOCS" ]; then #default
@@ -4422,6 +4440,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_QPA" = "yes" ]; then
     Platform="Qt Lighthouse"
+elif [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    Platform="Qt for INTEGRITY"
 elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     Platform="Qt for Symbian"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
@@ -5114,6 +5134,26 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
             exit 1;
         fi
     fi
+fi
+# Adjust all variables for INTEGRITY
+if [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    QMakeVar set gfx-drivers "integrityfb"
+    QMakeVar set kbd-drivers "integrity"
+    QMakeVar set mouse-drivers "integrity"
+    CFG_TIFF="no"
+    CFG_KBD_ON="integrity"
+    CFG_MOUSE_ON="integrity"
+    CFG_GFX_ON="integrityfb"
+    CFG_LARGEFILE="no"
+    CFG_STL="yes"
+    CFG_OPENSSL="no"
+    CFG_GLIB="no"
+    CFG_SHARED="no"
+    if [ "$CFG_SCRIPT" != "yes" ]; then
+      CFG_SCRIPT="no"
+    fi
+    CFG_BUILD_PARTS="libs examples demos"
+    CFG_GIF="no"
 fi
 
 # check IPC support
@@ -6584,7 +6624,7 @@ if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
 fi
 
 HAVE_STL=no
-if [ "$XPLATFORM_SYMBIAN" = "yes" ] || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
+if [ "$XPLATFORM_SYMBIAN" = "yes" ] || [ "$XPLATFORM_INTEGRITY" = "yes" ] || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
 fi
 
@@ -6980,9 +7020,9 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	;;
 esac
 
-# disable Qt 3 support on VxWorks and Symbian
+# disable Qt 3 support on VxWorks, Symbian and INTEGRITY
 case "$XPLATFORM" in
-    unsupported/vxworks*|symbian*)
+    unsupported/vxworks*|symbian*|unsupported/integrity*)
 	CFG_QT3SUPPORT="no"
     ;;
 esac
@@ -7122,10 +7162,17 @@ if [ "$XPLATFORM_MINGW" != "yes" ]; then
     # debug and release precompiled headers are kept separate.
     QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
 fi
-QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
-QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
-QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
-QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
+if [ "$XPLATFORM_INTEGRITY" = "yes" ]; then
+    QMakeVar set OBJECTS_DIR "$PWD/work"
+    QMakeVar set MOC_DIR "$PWD/work"
+    QMakeVar set RCC_DIR "$PWD/work"
+    QMakeVar set UI_DIR "$PWD/work"
+else
+    QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
+    QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
+    QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
+    QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
+fi
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
 fi

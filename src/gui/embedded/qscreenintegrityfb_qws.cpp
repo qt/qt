@@ -64,7 +64,8 @@ public:
     ~QIntfbScreenPrivate();
 
     FBHandle handle;
-    struct FBInfoStruct fbinfo;
+    FBInfo fbinfo;
+    FBDriver *fbdrv;
 
     QWSMouseHandler *mouse;
 #ifndef QT_NO_QWS_KEYBOARD
@@ -172,15 +173,14 @@ static QIntfbScreen *connected = 0;
 
 bool QIntfbScreen::connect(const QString &displaySpec)
 {
-    FBDriver *fbdev;
-
-    CheckSuccess(gh_FB_get_driver(0, &fbdev));
-    CheckSuccess(gh_FB_init_device(fbdev, 0, &d_ptr->handle));
+    CheckSuccess(gh_FB_get_driver(0, &d_ptr->fbdrv));
+    CheckSuccess(gh_FB_check_info(d_ptr->fbdrv, &d_ptr->fbinfo));
+    CheckSuccess(gh_FB_open(d_ptr->fbdrv, &d_ptr->fbinfo, &d_ptr->handle));
     CheckSuccess(gh_FB_get_info(d_ptr->handle, &d_ptr->fbinfo));
 
-    data = (uchar *)d_ptr->fbinfo.start;
+    data = (uchar *)d_ptr->fbinfo.Start;
 
-    d = d_ptr->fbinfo.bitsperpixel;
+    d = d_ptr->fbinfo.BitsPerPixel;
     switch (d) {
     case 1:
         setPixelFormat(QImage::Format_Mono);
@@ -205,24 +205,24 @@ bool QIntfbScreen::connect(const QString &displaySpec)
 #ifdef QT_QWS_DEPTH_GENERIC
 #if Q_BYTE_ORDER != Q_BIG_ENDIAN
             qt_set_generic_blit(this, 24,
-                    d_ptr->fbinfo.redbits,
-                    d_ptr->fbinfo.greenbits,
-                    d_ptr->fbinfo.bluebits,
-                    d_ptr->fbinfo.alphabits,
-                    d_ptr->fbinfo.redoffset,
-                    d_ptr->fbinfo.greenoffset,
-                    d_ptr->fbinfo.blueoffset,
-                    d_ptr->fbinfo.alphaoffset);
+                    d_ptr->fbinfo.Red.Bits,
+                    d_ptr->fbinfo.Green.Bits,
+                    d_ptr->fbinfo.Blue.Bits,
+                    d_ptr->fbinfo.Alpha.Bits,
+                    d_ptr->fbinfo.Red.Offset,
+                    d_ptr->fbinfo.Green.Offset,
+                    d_ptr->fbinfo.Blue.Offset,
+                    d_ptr->fbinfo.Alpha.Offset);
 #else
             qt_set_generic_blit(this, 24,
-                    d_ptr->fbinfo.redbits,
-                    d_ptr->fbinfo.greenbits,
-                    d_ptr->fbinfo.bluebits,
-                    d_ptr->fbinfo.alphabits,
-                    16 - d_ptr->fbinfo.redoffset,
-                    16 - d_ptr->fbinfo.greenoffset,
-                    16 - d_ptr->fbinfo.blueoffset,
-                    d_ptr->fbinfo.alphaoffset);
+                    d_ptr->fbinfo.Red.Bits,
+                    d_ptr->fbinfo.Green.Bits,
+                    d_ptr->fbinfo.Blue.Bits,
+                    d_ptr->fbinfo.Alpha.Bits,
+                    16 - d_ptr->fbinfo.Red.Offset,
+                    16 - d_ptr->fbinfo.Green.Offset,
+                    16 - d_ptr->fbinfo.Blue.Offset,
+                    16 - d_ptr->fbinfo.Alpha.Offset);
 #endif
 #endif
         break;
@@ -231,31 +231,31 @@ bool QIntfbScreen::connect(const QString &displaySpec)
 #ifdef QT_QWS_DEPTH_GENERIC
 #if Q_BYTE_ORDER != Q_BIG_ENDIAN
             qt_set_generic_blit(this, 32,
-                    d_ptr->fbinfo.redbits,
-                    d_ptr->fbinfo.greenbits,
-                    d_ptr->fbinfo.bluebits,
-                    d_ptr->fbinfo.alphabits,
-                    d_ptr->fbinfo.redoffset,
-                    d_ptr->fbinfo.greenoffset,
-                    d_ptr->fbinfo.blueoffset,
-                    d_ptr->fbinfo.alphaoffset);
+                    d_ptr->fbinfo.Red.Bits,
+                    d_ptr->fbinfo.Green.Bits,
+                    d_ptr->fbinfo.Blue.Bits,
+                    d_ptr->fbinfo.Alpha.Bits,
+                    d_ptr->fbinfo.Red.Offset,
+                    d_ptr->fbinfo.Green.Offset,
+                    d_ptr->fbinfo.Blue.Offset,
+                    d_ptr->fbinfo.Alpha.Offset);
 #else
             qt_set_generic_blit(this, 32,
-                    d_ptr->fbinfo.redbits,
-                    d_ptr->fbinfo.greenbits,
-                    d_ptr->fbinfo.bluebits,
-                    d_ptr->fbinfo.alphabits,
-                    24 - d_ptr->fbinfo.redoffset,
-                    24 - d_ptr->fbinfo.greenoffset,
-                    24 - d_ptr->fbinfo.blueoffset,
-                    d_ptr->fbinfo.alphaoffset ? 24 - d_ptr->fbinfo.alphaoffset : 0);
+                    d_ptr->fbinfo.Red.Bits,
+                    d_ptr->fbinfo.Green.Bits,
+                    d_ptr->fbinfo.Blue.Bits,
+                    d_ptr->fbinfo.Alpha.Bits,
+                    24 - d_ptr->fbinfo.Red.Offset,
+                    24 - d_ptr->fbinfo.Green.Offset,
+                    24 - d_ptr->fbinfo.Blue.Offset,
+                    24 - d_ptr->fbinfo.Alpha.Offset);
 #endif
 #endif
         break;
     }
 
-    dw = w = d_ptr->fbinfo.width;
-    dh = h = d_ptr->fbinfo.height;
+    dw = w = d_ptr->fbinfo.Width;
+    dh = h = d_ptr->fbinfo.Height;
 
     /* assumes no padding */
     lstep = w * ((d + 7) >> 3);
@@ -286,72 +286,6 @@ void QIntfbScreen::disconnect()
 
 bool QIntfbScreen::initDevice()
 {
-
-    CheckSuccess(gh_FB_set_info(d_ptr->handle, &d_ptr->fbinfo, false));
-    CheckSuccess(gh_FB_get_info(d_ptr->handle, &d_ptr->fbinfo));
-    data = (uchar *)d_ptr->fbinfo.start;
-    d = d_ptr->fbinfo.bitsperpixel;
-    dw = w = d_ptr->fbinfo.width;
-    dh = h = d_ptr->fbinfo.height;
-    mapsize = d_ptr->fbinfo.length;
-    /* assumes no padding */
-    lstep = w * ((d + 7) >> 3);
-
-    mapsize = size =  h * lstep;
-
-    data = (uchar *)d_ptr->fbinfo.start;
-
-    d = d_ptr->fbinfo.bitsperpixel;
-    switch (d) {
-    case 1:
-        setPixelFormat(QImage::Format_Mono);
-        break;
-    case 8:
-        setPixelFormat(QImage::Format_Indexed8);
-        break;
-    case 12:
-        setPixelFormat(QImage::Format_RGB444);
-        break;
-    case 15:
-        setPixelFormat(QImage::Format_RGB555);
-        break;
-    case 16:
-        setPixelFormat(QImage::Format_RGB16);
-        break;
-    case 18:
-        setPixelFormat(QImage::Format_RGB666);
-        break;
-    case 24:
-        setPixelFormat(QImage::Format_RGB888);
-        break;
-    case 32:
-        setPixelFormat(QImage::Format_ARGB32_Premultiplied);
-        break;
-    }
-#ifdef QT_QWS_DEPTH_GENERIC
-#if defined(__BIG_ENDIAN__)
-       qt_set_generic_blit(this, d,
-               d_ptr->fbinfo.redbits,
-               d_ptr->fbinfo.greenbits,
-               d_ptr->fbinfo.bluebits,
-               d_ptr->fbinfo.alphabits,
-               24 - d_ptr->fbinfo.redoffset,
-               24 - d_ptr->fbinfo.greenoffset,
-               24 - d_ptr->fbinfo.blueoffset,
-               d_ptr->fbinfo.alphaoffset ? 24 - d_ptr->fbinfo.alphaoffset : 0);
-#else
-       qt_set_generic_blit(this, d,
-               d_ptr->fbinfo.redbits,
-               d_ptr->fbinfo.greenbits,
-               d_ptr->fbinfo.bluebits,
-               d_ptr->fbinfo.alphabits,
-               d_ptr->fbinfo.redoffset,
-               d_ptr->fbinfo.greenoffset,
-               d_ptr->fbinfo.blueoffset,
-               d_ptr->fbinfo.alphaoffset);
-#endif
-#endif
-
 #ifndef QT_NO_QWS_CURSOR
     QScreenCursor::initSoftwareCursor();
 #endif
@@ -384,9 +318,9 @@ void QIntfbScreen::setDirty(const QRect& rect)
     FBRect fbrect;
     fbrect.dx = rect.x();
     fbrect.dy = rect.y();
-    fbrect.width = rect.width();
-    fbrect.height = rect.height();
-    gh_FB_expose(d_ptr->handle, &fbrect);
+    fbrect.Width = rect.width();
+    fbrect.Height = rect.height();
+    gh_FB_expose(d_ptr->handle, &fbrect, 0);
 }
 
 void QIntfbScreen::setBrightness(int b)
