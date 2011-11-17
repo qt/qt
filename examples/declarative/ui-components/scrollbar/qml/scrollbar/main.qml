@@ -53,7 +53,7 @@ Rectangle {
 
         Image {
             id: picture
-            source: "pics/niagara_falls.jpg"
+            source: "niagara_falls.jpg"
             asynchronous: true
         }
 
