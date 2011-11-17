@@ -91,4 +91,5 @@ Item  {
             NumberAnimation { target: img; property: "opacity"; duration: 100 }
         }
     ]
+
 }

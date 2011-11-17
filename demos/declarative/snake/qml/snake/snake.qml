@@ -76,7 +76,7 @@ Rectangle {
     Timer {
         id: heartbeat;
         interval: heartbeatInterval;
-        running: activeGame && runtime.isActiveWindow
+        running: activeGame //&& runtime.isActiveWindow
         repeat: true
         onTriggered: { Logic.move() }
     }
