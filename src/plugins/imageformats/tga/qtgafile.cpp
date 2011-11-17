@@ -158,6 +158,33 @@ QTgaFile::QTgaFile(QIODevice *device)
         mErrorMessage = QObject::tr("Image type not supported");
         return;
     }
+    int bitsPerPixel = mHeader[PixelDepth];
+    bool validDepth = (bitsPerPixel == 16 || bitsPerPixel == 24 || bitsPerPixel == 32);
+    if (!validDepth)
+    {
+        mErrorMessage = QObject::tr("Image dpeth not valid");
+    }
+    int curPos = mDevice->pos();
+    int fileBytes = mDevice->size();
+    if (!mDevice->seek(fileBytes - FooterSize))
+    {
+        mErrorMessage = QObject::tr("Could not seek to image read footer");
+        return;
+    }
+    char footer[FooterSize];
+    bytes = mDevice->read((char*)footer, FooterSize);
+    if (bytes != FooterSize)
+    {
+        mErrorMessage = QObject::tr("Could not read footer");
+    }
+    if (qstrncmp(&footer[SignatureOffset], "TRUEVISION-XFILE", 16) != 0)
+    {
+        mErrorMessage = QObject::tr("Image type (non-TrueVision 2.0) not supported");
+    }
+    if (!mDevice->seek(curPos))
+    {
+        mErrorMessage = QObject::tr("Could not reset to read data");
+    }
 }
 
 /*!

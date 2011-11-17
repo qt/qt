@@ -73,6 +73,13 @@ public:
         HeaderSize = 18
     };
 
+    enum FooterOffset {
+        ExtensionOffset = 0,
+        DeveloperOffset = 4,
+        SignatureOffset = 8,
+        FooterSize = 26
+    };
+
     QTgaFile(QIODevice *);
     ~QTgaFile();
 
