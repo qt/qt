@@ -1,5 +1,5 @@
 # Add more folders to ship with the application, here
-folder_01.source = qml
+folder_01.source = qml/pathview-example
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
@@ -35,5 +35,5 @@ symbian:TARGET.UID3 = 0xE51EA833
 SOURCES += main.cpp
 
 # Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
+include(../../../tools/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
