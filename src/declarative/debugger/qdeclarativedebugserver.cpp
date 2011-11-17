@@ -95,7 +95,7 @@ public:
 private:
     // private slot
     void _q_deliverMessage(const QString &serviceName, const QByteArray &message);
-    static QDeclarativeDebugServerConnection *loadConnectionPlugin(const QString &pluginName);
+    static QDeclarativeDebugServerConnection *loadConnectionPlugin(QPluginLoader *loader, const QString &pluginName);
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
@@ -118,7 +118,7 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
 }
 
 QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin(
-    const QString &pluginName)
+        QPluginLoader *loader, const QString &pluginName)
 {
 #ifndef QT_NO_LIBRARY
     QStringList pluginCandidates;
@@ -135,17 +135,17 @@ QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectio
     }
 
     foreach (const QString &pluginPath, pluginCandidates) {
-        QPluginLoader loader(pluginPath);
-        if (!loader.load()) {
+        loader->setFileName(pluginPath);
+        if (!loader->load()) {
             continue;
         }
         QDeclarativeDebugServerConnection *connection = 0;
-        if (QObject *instance = loader.instance())
+        if (QObject *instance = loader->instance())
             connection = qobject_cast<QDeclarativeDebugServerConnection*>(instance);
 
         if (connection)
             return connection;
-        loader.unload();
+        loader->unload();
     }
 #endif
     return 0;
@@ -200,8 +200,9 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
             if (ok) {
                 server = new QDeclarativeDebugServer();
 
+                QPluginLoader *loader = new QPluginLoader(server);
                 QDeclarativeDebugServerConnection *connection
-                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(pluginName);
+                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(loader, pluginName);
                 if (connection) {
                     server->d_func()->connection = connection;
 
