@@ -3,13 +3,13 @@ import QmlProject 1.0
 Project {
     /* Include .qml, .js, and image files from current directory and subdirectories */
     QmlFiles {
-        directory: "."
+        directory: "qml/xmlhttprequest-example"
     }
     JavaScriptFiles {
-        directory: "."
+        directory: "qml/xmlhttprequest-example"
     }
     ImageFiles {
-        directory: "."
+        directory: "qml/xmlhttprequest-example"
     }
     /* List of plugin directories passed to QML runtime */
     // importPaths: [ " ../exampleplugin " ]
