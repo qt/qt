@@ -40,7 +40,6 @@
 
 import QtQuick 1.0
 import Qt.labs.particles 1.0
-import "qml"
 
 Item {
     id: window
