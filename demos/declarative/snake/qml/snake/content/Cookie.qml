@@ -67,7 +67,6 @@ Item  {
         }
     }
 
-
     Particles { id: particles
         width:1; height:1; anchors.centerIn: parent;
         emissionRate: 0;
@@ -91,5 +90,4 @@ Item  {
             NumberAnimation { target: img; property: "opacity"; duration: 100 }
         }
     ]
-
 }
