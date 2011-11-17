@@ -62,5 +62,4 @@ Item {
     states: State { name: "exploding"; when: explode
         StateChangeScript {script: particles.burst(200); }
     }
-
 }
