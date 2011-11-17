@@ -442,6 +442,12 @@
                                      \o As provided by Ubuntu
     \row    \o Ubuntu Linux 10.04 (32-bit)
                                      \o Intel Compiler [version 12]
+    \row    \o Ubuntu Linux 10.04 (64-bit)
+                                     \o As provided by Ubuntu
+    \row    \o Microsoft Windows XP SP3 (32-bit)
+                                     \o GCC 4.4 (MinGW)
+    \row    \o Microsoft Windows 7 (64-bit)
+                                     \o MSVC 2010 SP1
     \row    \o Apple Mac OS X 10.6 "Snow Leopard" Cocoa (32-bit)
                                      \o As provided by Apple
     \endtable
