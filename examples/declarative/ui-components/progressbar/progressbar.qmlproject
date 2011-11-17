@@ -3,13 +3,13 @@ import QmlProject 1.0
 Project {
     /* Include .qml, .js, and image files from current directory and subdirectories */
     QmlFiles {
-        directory: "."
+        directory: "qml/progressbar"
     }
     JavaScriptFiles {
-        directory: "."
+        directory: "qml/progressbar"
     }
     ImageFiles {
-        directory: "."
+        directory: "qml/progressbar"
     }
     /* List of plugin directories passed to QML runtime */
     // importPaths: [ " ../exampleplugin " ]
