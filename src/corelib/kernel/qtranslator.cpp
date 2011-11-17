@@ -408,13 +408,26 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     Q_D(QTranslator);
     d->clear();
 
+    QString fname = filename;
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
 #ifdef Q_OS_SYMBIAN
-        if (directory.isEmpty())
+        //TFindFile doesn't like path in the filename
+        QString dir(directory);
+        int slash = filename.lastIndexOf(QLatin1Char('/'));
+        slash = qMax(slash, filename.lastIndexOf(QLatin1Char('\\')));
+        if (slash >=0) {
+            //so move the path component into the directory prefix
+            if (dir.isEmpty())
+                dir = filename.left(slash + 1);
+            else
+                dir = dir + QLatin1Char('/') + filename.left(slash + 1);
+            fname = fname.mid(slash + 1);
+        }
+        if (dir.isEmpty())
             prefix = QCoreApplication::applicationDirPath();
         else
-            prefix = QFileInfo(directory).absoluteFilePath(); //TFindFile doesn't like dirty paths
+            prefix = QFileInfo(dir).absoluteFilePath(); //TFindFile doesn't like dirty paths
         if (prefix.length() > 2 && prefix.at(1) == QLatin1Char(':') && prefix.at(0).isLetter())
             prefix[0] = QLatin1Char('Y');
 #else
@@ -428,7 +441,6 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString nativePrefix = QDir::toNativeSeparators(prefix);
 #endif
 
-    QString fname = filename;
     QString realname;
     QString delims;
     delims = search_delimiters.isNull() ? QString::fromLatin1("_.") : search_delimiters;

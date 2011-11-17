@@ -217,6 +217,10 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     headerStyles = config.getString(HtmlGenerator::format() +
                                        Config::dot +
                                        CONFIG_HEADERSTYLES);
+    
+    QString prefix = CONFIG_QHP + Config::dot + "Qt" + Config::dot;
+    manifestDir = "qthelp://" + config.getString(prefix + "namespace");
+    manifestDir += "/" + config.getString(prefix + "virtualFolder") + "/";
 }
 
 void HtmlGenerator::terminateGenerator()
@@ -4398,7 +4402,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         writer.writeStartElement(element);
         writer.writeAttribute("name", en->title());
         //QString docUrl = projectUrl + "/" + en->fileBase() + ".html";
-        QString docUrl = "%REPLACEME%/" + en->fileBase() + ".html";
+        QString docUrl = manifestDir + en->fileBase() + ".html";
         writer.writeAttribute("docUrl", docUrl);
         foreach (const Node* child, en->childNodes()) {
             if (child->subType() == Node::File) {
@@ -4412,7 +4416,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
             }
         }
         //writer.writeAttribute("imageUrl", projectUrl + "/" + en->imageFileName());
-        writer.writeAttribute("imageUrl", "%REPLACEME%/" + en->imageFileName());
+        writer.writeAttribute("imageUrl", manifestDir + en->imageFileName());
         writer.writeStartElement("description");
         Text brief = en->doc().briefText();
         if (!brief.isEmpty())
