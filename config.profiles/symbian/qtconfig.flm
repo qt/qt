@@ -60,18 +60,29 @@ $(SOURCEDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
 	$(call endrule,qtconf)
 	$(call startrule,headerexport) \
 	cd $(EXTENSION_ROOT)/$(QT_ROOT)/config.profiles/symbian && \
-	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/ -what $(SOURCEDIR)/qtconfig_what.log
+	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/ -what $(EPOCBLD)/qtconfig_what.log
 	$(call endrule,headerexport)
 	$(call startrule,mkspecexport) \
-	$(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
+	$(GNUCP) -R -L $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
 	$(GNUFIND) $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs -type f | \
-	$(GNUSED) 's!$(EXTENSION_ROOT)/$(QT_ROOT)/!$(MKSPECDIR)/!' >> $(SOURCEDIR)/qtconfig_what.log \
+	$(GNUSED) 's!$(EXTENSION_ROOT)/$(QT_ROOT)/!$(MKSPECDIR)/!' >> $(EPOCBLD)/qtconfig_what.log \
 	$(call endrule,mkspecexport)
-
-FINAL WHAT:: $(SOURCEDIR)/qmake$(DOTEXE)
 	$(call startrawoutput) \
 	echo "$(call whatLogOpen)"; \
-	$(GNUCAT) $(SOURCEDIR)/qtconfig_what.log | \
+	$(GNUCAT) $(EPOCBLD)/qtconfig_what.log | \
+		(read -r LINE; \
+		while [ $$$$? -eq 0 ]; do \
+			echo "$(call whatLogItem,,$$$$LINE)"; \
+			read -r LINE; \
+		done; \
+		); \
+	echo "$(call whatLogClose)" \
+	$(call endrawoutput)
+
+WHAT::
+	$(call startrawoutput) \
+	echo "$(call whatLogOpen)"; \
+	$(GNUCAT) $(EPOCBLD)/qtconfig_what.log | \
 		(read -r LINE; \
 		while [ $$$$? -eq 0 ]; do \
 			echo "$(call whatLogItem,,$$$$LINE)"; \
