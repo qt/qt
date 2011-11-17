@@ -50,7 +50,7 @@ Package {
         width: 200; height: 25
         color: 'lightsteelblue'
 
-        Text { text: display; anchors.centerIn: parent }
+        //Text { text: display; anchors.centerIn: parent }
         MouseArea {
             anchors.fill: parent
             onClicked: {
