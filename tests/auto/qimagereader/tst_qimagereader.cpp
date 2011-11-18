@@ -1107,9 +1107,6 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg");
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz");
 #endif
-#if defined QTEST_HAVE_TGA
-    QTest::newRow("tga") << QString("test-flag.tga") << QByteArray("tga");
-#endif
 }
 
 void tst_QImageReader::readFromDevice()
