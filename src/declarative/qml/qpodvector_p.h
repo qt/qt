@@ -89,7 +89,7 @@ public:
     void insert(int idx, const T &v) {
         if (m_count == m_capacity) {
             m_capacity += Increment;
-            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+            m_data = (T *)q_check_ptr(realloc(m_data, m_capacity * sizeof(T)));
         }
         int moveCount = m_count - idx;
         if (moveCount)
@@ -101,7 +101,7 @@ public:
     void reserve(int count) {
         if (count >= m_capacity) {
             m_capacity = (count + (Increment-1)) & (0xFFFFFFFF - Increment + 1);
-            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+            m_data = (T *)q_check_ptr(realloc(m_data, m_capacity * sizeof(T)));
         }
     }
 

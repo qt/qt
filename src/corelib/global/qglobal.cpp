@@ -2207,16 +2207,13 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
 #elif defined(Q_OS_SYMBIAN)
         // RDebug::Print has a cap of 256 characters so break it up
-        _LIT(format, "[Qt Message] %S");
-        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
+        char format[] = "[Qt Message] %S";
+        const int maxBlockSize = 256 - sizeof(format);
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = HBufC::New(qMin(maxBlockSize, ptr.Length()));
-        Q_CHECK_PTR(hbuffer);
-        for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
-            hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
-            RDebug::Print(format, hbuffer);
+        for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
+            TPtrC8 part(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
+            RDebug::Printf(format, &part);
         }
-        delete hbuffer;
 #else
         fprintf(stderr, "%s\n", buf);
         fflush(stderr);
