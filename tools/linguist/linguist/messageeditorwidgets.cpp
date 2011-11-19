@@ -362,9 +362,11 @@ void FormMultiWidget::setTranslation(const QString &text, bool userAction)
     QStringList texts = text.split(QChar(Translator::BinaryVariantSeparator), QString::KeepEmptyParts);
 
     while (m_editors.count() > texts.count()) {
+        FormatTextEdit *editor = m_editors.takeLast();
+        emit editorDeleted(editor);
         delete m_minusButtons.takeLast();
         delete m_plusButtons.takeLast();
-        delete m_editors.takeLast();
+        delete editor;
     }
     while (m_editors.count() < texts.count())
         addEditor(m_editors.count());
