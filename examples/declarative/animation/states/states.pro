@@ -35,5 +35,6 @@ symbian:TARGET.UID3 = 0xE9200E0A
 SOURCES += main.cpp
 
 # Please do not modify the following two lines. Required for deployment.
-include(../../../tools/qmlapplicationviewer/qmlapplicationviewer.pri)
+desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/animation/states
+include(../../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()

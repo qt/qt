@@ -44,5 +44,6 @@ SOURCES += main.cpp minehunt.cpp
 RESOURCES = minehunt.qrc
 
 # Please do not modify the following two lines. Required for deployment.
-include(../../../examples/tools/qmlapplicationviewer/qmlapplicationviewer.pri)
+desktopInstallPrefix=$$[QT_INSTALL_DEMOS]/declarative/minehunt
+include(../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()

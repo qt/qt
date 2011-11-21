@@ -33,5 +33,6 @@ symbian:TARGET.CAPABILITY += NetworkServices
 SOURCES += main.cpp
 
 # Please do not modify the following two lines. Required for deployment.
-include(../../../examples/tools/qmlapplicationviewer/qmlapplicationviewer.pri)
+desktopInstallPrefix=$$[QT_INSTALL_DEMOS]/declarative/calculator
+include(../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
