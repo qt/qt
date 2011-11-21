@@ -167,6 +167,7 @@ class Node
     void setTemplateStuff(const QString &templateStuff) { tpl = templateStuff; }
     void setPageType(PageType t) { pageTyp = t; }
     void setPageType(const QString& t);
+    virtual void addDependency(const QString& ) { }
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
@@ -409,12 +410,15 @@ class ExampleNode : public FakeNode
     virtual ~ExampleNode() { }
     virtual QString imageFileName() const { return imageFileName_; }
     virtual void setImageFileName(const QString& ifn) { imageFileName_ = ifn; }
+    virtual void addDependency(const QString& arg) { dependencies_.append(arg); }
+    const QStringList& dependencies() const { return dependencies_; }
 
  public:
     static ExampleNodeMap exampleNodeMap;
 
  private:
     QString imageFileName_;
+    QStringList dependencies_;
 };
 
 class QmlClassNode : public FakeNode
