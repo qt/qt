@@ -4485,10 +4485,15 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         }
         if (!en->dependencies().isEmpty()) {
             for (int idx=0; idx<en->dependencies().size(); ++idx) {
-                writer.writeStartElement("depends");
-                QString file = "../../" + en->dependencies()[idx];
+                writer.writeStartElement("dependency");
+                QString file = "$QTDIR/";
+                if (demos)
+                    file += "demos/";
+                else
+                    file += "examples/";
+                file += en->dependencies()[idx];
                 writer.writeCharacters(file);
-                writer.writeEndElement(); // depends
+                writer.writeEndElement(); // dependency
             }
         }
         writer.writeEndElement(); // example
