@@ -4406,12 +4406,11 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         QString docUrl = manifestDir + en->fileBase() + ".html";
         writer.writeAttribute("docUrl", docUrl);
 
-
         QDir installDir(QLibraryInfo::location(QLibraryInfo::DataPath));
         QDir buildDir(QString::fromLocal8Bit(qgetenv("QT_BUILD_TREE")));
         QDir sourceDir(QString::fromLocal8Bit(qgetenv("QT_SOURCE_TREE")));
 
-
+        QString relativePath;
         if (buildDir.exists() && sourceDir.exists()
             // shadow build, but no prefix build
             && installDir == buildDir && buildDir != sourceDir) {
