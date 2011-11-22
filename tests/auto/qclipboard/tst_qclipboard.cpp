@@ -73,6 +73,7 @@ private slots:
 #ifdef Q_OS_SYMBIAN
     void pasteCopySymbian();
     void copyPasteSymbian();
+    void copyCopyPasteSymbian();
 #endif
 
 private:
@@ -347,17 +348,17 @@ void tst_QClipboard::clearBeforeSetText()
     QCOMPARE(QApplication::clipboard()->text(), text);
 }
 
+#ifdef Q_OS_SYMBIAN
 /*
     Test that text copied from qt application
     can be pasted with symbian clipboard
 */
-#ifdef Q_OS_SYMBIAN
 // ### This test case only makes sense in symbian
 void tst_QClipboard::pasteCopySymbian()
 {
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup", SkipAll);
-    const QString string("Test string symbian.");
+    const QString string("Test string qt->symbian.");
     QApplication::clipboard()->setText(string);
 
     const TInt KPlainTextBegin = 0;
@@ -381,19 +382,9 @@ void tst_QClipboard::pasteCopySymbian()
 
     QCOMPARE(string, storeString);
 }
-#endif
 
-/*
-    Test that text copied to symbian clipboard
-    can be pasted to qt clipboard
-*/
-#ifdef Q_OS_SYMBIAN
-// ### This test case only makes sense in symbian
-void tst_QClipboard::copyPasteSymbian()
+static void nativeCopyHelper(const QString &string)
 {
-    if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
-    const QString string("Test string symbian.");
     const TInt KPlainTextBegin = 0;
 
     RFs fs = qt_s60GetRFs();
@@ -412,8 +403,55 @@ void tst_QClipboard::copyPasteSymbian()
     (cb->StreamDictionary()).AssignL(KClipboardUidTypePlainText, symbianStId);
     cb->CommitL();
     CleanupStack::PopAndDestroy(2, cb);
+}
+
+/*
+    Test that text copied to symbian clipboard
+    can be pasted to qt clipboard
+*/
+// ### This test case only makes sense in symbian
+void tst_QClipboard::copyPasteSymbian()
+{
+    if (!nativeClipboardWorking())
+        QSKIP("Native clipboard not working in this setup", SkipAll);
+    const QString string("Test string symbian->qt.");
+
+    nativeCopyHelper(string);
 
     QCOMPARE(QApplication::clipboard()->text(), string);
+}
+
+/*
+    Test that text copied to symbian clipboard
+    can be pasted to qt clipboard, even if Qt
+    clipboard already had copied formatted text
+*/
+// ### This test case only makes sense in symbian
+void tst_QClipboard::copyCopyPasteSymbian()
+{
+    if (!nativeClipboardWorking())
+        QSKIP("Native clipboard not working in this setup", SkipAll);
+
+    //first copy some mime data with text/html and text/plain representations
+    QMimeData *mimeData = new QMimeData;
+    const QString preCopy(QLatin1String("qt_symbian"));
+    mimeData->setText(preCopy);
+    mimeData->setHtml(preCopy);
+    QApplication::clipboard()->setMimeData(mimeData);
+
+    //check both representations are pastable
+    QCOMPARE(QApplication::clipboard()->mimeData()->html(), preCopy);
+    QCOMPARE(QApplication::clipboard()->mimeData()->text(), preCopy);
+
+    //native copy some plain text
+    const QString string("symbian_qt");
+    nativeCopyHelper(string);
+
+    //check text/plain is pastable
+    QCOMPARE(QApplication::clipboard()->text(), string);
+    QCOMPARE(QApplication::clipboard()->mimeData()->text(), string);
+    //check text/html is cleared
+    QVERIFY(QApplication::clipboard()->mimeData()->html().isEmpty());
 }
 #endif
 
