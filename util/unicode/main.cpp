@@ -2722,8 +2722,8 @@ int main(int, char **)
             "#define QUNICODETABLES_P_H\n\n"
             "#include <QtCore/qchar.h>\n\n"
             "QT_BEGIN_NAMESPACE\n\n");
-    f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
-    f.write("#define UNICODE_LAST_CODEPOINT "LAST_CODEPOINT_STR"\n\n");
+    f.write("#define UNICODE_DATA_VERSION " DATA_VERSION_STR "\n\n");
+    f.write("#define UNICODE_LAST_CODEPOINT " LAST_CODEPOINT_STR "\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write("\n");
