@@ -46,6 +46,7 @@
 /* This is required for the definition of abort(), used as a last ditch
  * error handler when all else fails.
  */
+
 #include <stdlib.h>
 
 #define PNGLIB_BUILD
@@ -63,10 +64,12 @@
 #include "pnginfo.h"
 #include "pngstruct.h"
 
+namespace PrivatePng {
 /* This is used for 16 bit gamma tables - only the top level pointers are const,
  * this could be changed:
  */
 typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
+} // namespace PrivatePng
 
 /* Added at libpng-1.2.9 */
 /* Moved to pngpriv.h at libpng-1.5.0 */
@@ -429,6 +432,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
  * NOTE: by default this is off - the macro is not used - because the
  * function call saves a lot of code.
  */
+namespace PrivatePng {
 #ifdef PNG_FIXED_POINT_MACRO_SUPPORTED
 #define png_fixed(png_ptr, fp, s) ((fp) <= 21474 && (fp) >= -21474 ?\
     ((png_fixed_point)(100000 * (fp))) : (png_fixed_error(png_ptr, s),0))
@@ -437,6 +441,7 @@ PNG_EXTERN png_fixed_point png_fixed PNGARG((png_structp png_ptr, double fp,
    png_const_charp text));
 #endif
 #endif
+} // namespace PrivatePng
 
 /* Constant strings for known chunk types.  If you need to add a chunk,
  * define the name here, and add an invocation of the macro wherever it's
@@ -470,17 +475,13 @@ PNG_EXTERN png_fixed_point png_fixed PNGARG((png_structp png_ptr, double fp,
 #define PNG_GAMMA_MAC_INVERSE 65909
 #define PNG_GAMMA_sRGB_INVERSE 45455
 
-
-/* Inhibit C++ name-mangling for libpng functions but not for system calls. */
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /* These functions are used internally in the code.  They generally
  * shouldn't be used unless you are writing code to add or replace some
  * functionality in libpng.  More information about most functions can
  * be found in the files where the functions are located.
  */
+
+namespace PrivatePng {
 
 /* Check the user version string for compatibility, returns false if the version
  * numbers aren't compatible.
@@ -1355,10 +1356,8 @@ PNG_EXTERN void png_build_gamma_table PNGARG((png_structp png_ptr,
 /* Maintainer: Put new private prototypes here ^ and in libpngpf.3 */
 
 
-#include "pngdebug.h"
+} // PrivatePng
 
-#ifdef __cplusplus
-}
-#endif
+#include "pngdebug.h"
 
 #endif /* PNGPRIV_H */

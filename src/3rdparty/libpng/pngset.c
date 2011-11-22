@@ -18,6 +18,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 #ifdef PNG_bKGD_SUPPORTED
@@ -1224,3 +1226,4 @@ png_set_benign_errors(png_structp png_ptr, int allowed)
 }
 #endif /* PNG_BENIGN_ERRORS_SUPPORTED */
 #endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng

@@ -53,6 +53,7 @@
 #ifndef PNGINFO_H
 #define PNGINFO_H
 
+namespace PrivatePng {
 struct png_info_def
 {
    /* the following are necessary for every PNG file */
@@ -266,4 +267,6 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
 #endif
 
 };
+
+} // namespace PrivatePng
 #endif /* PNGINFO_H */
