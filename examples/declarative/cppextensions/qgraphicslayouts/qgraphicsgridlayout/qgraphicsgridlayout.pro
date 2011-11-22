@@ -43,6 +43,7 @@ RESOURCES += \
 
 # Please do not modify the following two lines. Required for deployment.
 desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout
-include(../../../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
+exists(qmlapplicationviewer/qmlapplicationviewer.pri):include(qmlapplicationviewer/qmlapplicationviewer.pri)
+else:include(../../../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
 
