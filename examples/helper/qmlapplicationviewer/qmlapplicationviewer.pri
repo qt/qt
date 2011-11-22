@@ -75,19 +75,26 @@ symbian {
 } else:unix {
     maemo5 {
         installPrefix = /opt/$${TARGET}
+        target.path = $${installPrefix}/bin
         desktopfile.files = $${TARGET}.desktop
         desktopfile.path = /usr/share/applications/hildon
         icon.files = $${TARGET}64.png
         icon.path = /usr/share/icons/hicolor/64x64/apps
     } else:!isEmpty(MEEGO_VERSION_MAJOR) {
         installPrefix = /opt/$${TARGET}
+        target.path = $${installPrefix}/bin
         desktopfile.files = $${TARGET}_harmattan.desktop
         desktopfile.path = /usr/share/applications
         icon.files = $${TARGET}80.png
         icon.path = /usr/share/icons/hicolor/80x80/apps
     } else { # Assumed to be a Desktop Unix
-        isEmpty(desktopInstallPrefix):installPrefix = $$[QT_INSTALL_DEMOS]/$${TARGET}
-        else:installPrefix = $$desktopInstallPrefix
+        installPrefix = $$desktopInstallPrefix
+        target.path = $${installPrefix}
+        sources.files = *.cpp *.h *.desktop *.png *.pro *.qml *.qmlproject *.svg
+        sources.path = $$desktopInstallPrefix
+        export(sources.files)
+        export(sources.path)
+        INSTALLS += sources
         copyCommand =
         for(deploymentfolder, DEPLOYMENTFOLDERS) {
             source = $$MAINPROFILEPWD/$$eval($${deploymentfolder}.source)
@@ -135,10 +142,7 @@ symbian {
         INSTALLS += icon desktopfile
     }
 
-    target.path = $${installPrefix}/bin
     export(target.path)
-    message($$target)
-    message($$installPrefix)
     INSTALLS += target
 }
 
