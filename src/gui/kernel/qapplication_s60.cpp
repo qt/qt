@@ -1534,53 +1534,57 @@ bool QSymbianControl::hasFocusedAndVisibleChild(QWidget *parentWidget)
 
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
-    if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
-        return;
+    QT_TRY {
+        if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
+            return;
 
 #ifdef Q_WS_S60
-    if (S60->splitViewLastWidget)
-        return;
+        if (S60->splitViewLastWidget)
+            return;
 #endif
 
-    // Popups never get focused, but still receive the FocusChanged when they are hidden.
-    if (QApplicationPrivate::popupWidgets != 0
-            || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
-        return;
+        // Popups never get focused, but still receive the FocusChanged when they are hidden.
+        if (QApplicationPrivate::popupWidgets != 0
+                || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
+            return;
 
-    if (IsFocused() && IsVisible()) {
-        if (m_symbianPopupIsOpen) {
-            QWidget *fw = QApplication::focusWidget();
-            if (fw) {
-                QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
-                QCoreApplication::sendEvent(fw, &event);
-            }
-            m_symbianPopupIsOpen = false;
-        }
-
-        QApplication::setActiveWindow(qwidget->window());
-        qwidget->d_func()->setWindowIcon_sys(true);
-        qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
-#ifdef Q_WS_S60
-        if (qwidget->isWindow())
-            S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
-#endif
-    } else {
-        QWidget *parentWindow = qwidget->window();
-        if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
-            if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+        if (IsFocused() && IsVisible()) {
+            if (m_symbianPopupIsOpen) {
                 QWidget *fw = QApplication::focusWidget();
                 if (fw) {
-                    QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                    QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
                     QCoreApplication::sendEvent(fw, &event);
                 }
-                m_symbianPopupIsOpen = true;
-                return;
+                m_symbianPopupIsOpen = false;
             }
 
-            QApplication::setActiveWindow(0);
+            QApplication::setActiveWindow(qwidget->window());
+            qwidget->d_func()->setWindowIcon_sys(true);
+            qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
+#ifdef Q_WS_S60
+            if (qwidget->isWindow())
+                S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
+#endif
+        } else {
+            QWidget *parentWindow = qwidget->window();
+            if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
+                if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+                    QWidget *fw = QApplication::focusWidget();
+                    if (fw) {
+                        QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                        QCoreApplication::sendEvent(fw, &event);
+                    }
+                    m_symbianPopupIsOpen = true;
+                    return;
+                }
+
+                QApplication::setActiveWindow(0);
+            }
         }
+        // else { We don't touch the active window unless we were explicitly activated or deactivated }
+    } QT_CATCH(const std::exception&) {
+        // ignore errors
     }
-    // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
 void QSymbianControl::handleClientAreaChange()
@@ -2377,18 +2381,24 @@ int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 
     QScopedLoopLevelCounter counter(d->threadData);
 
-    if (d->eventDispatcher->filterEvent(const_cast<QSymbianEvent *>(event)))
-        return 1;
-
-    QWidget *w = qApp ? qApp->focusWidget() : 0;
-    if (w) {
-        QInputContext *ic = w->inputContext();
-        if (ic && ic->symbianFilterEvent(w, event))
+    QT_TRY {
+        if (d->eventDispatcher->filterEvent(const_cast<QSymbianEvent *>(event)))
             return 1;
-    }
 
-    if (symbianEventFilter(event))
-        return 1;
+        QWidget *w = qApp ? qApp->focusWidget() : 0;
+        if (w) {
+            QInputContext *ic = w->inputContext();
+            if (ic && ic->symbianFilterEvent(w, event))
+                return 1;
+        }
+
+        if (symbianEventFilter(event))
+            return 1;
+    } QT_CATCH(const std::exception& ex) {
+        // don't allow an exception to stop exit command handling
+        if (event->type() != QSymbianEvent::CommandEvent || event->command() != EEikCmdExit)
+            QT_RETHROW;
+    }
 
     switch (event->type()) {
     case QSymbianEvent::WindowServerEvent:

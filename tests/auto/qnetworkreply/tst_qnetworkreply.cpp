@@ -168,6 +168,7 @@ public Q_SLOTS:
     void gotError();
     void authenticationRequired(QNetworkReply*,QAuthenticator*);
     void proxyAuthenticationRequired(const QNetworkProxy &,QAuthenticator*);
+    void pipeliningHelperSlot();
 
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &);
@@ -368,6 +369,7 @@ private Q_SLOTS:
     void qtbug15311doubleContentLength();
 
     void qtbug18232gzipContentLengthZero();
+    void nb279420gzipNoContentLengthEmptyContentDisconnect();
 
     void synchronousRequest_data();
     void synchronousRequest();
@@ -378,6 +380,8 @@ private Q_SLOTS:
     void httpAbort();
 
     void dontInsertPartialContentIntoTheCache();
+    void synchronousAuthenticationCache();
+    void pipelining();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -499,6 +503,14 @@ protected:
         client->setParent(this);
         ++totalConnections;
     }
+
+    virtual void reply() {
+        // we need to emulate the bytesWrittenSlot call if the data is empty.
+        if (dataToTransmit.size() == 0)
+            QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
+        else
+            client->write(dataToTransmit);
+    }
 private:
     void connectSocketSignals()
     {
@@ -532,11 +544,7 @@ public slots:
             if (multiple)
                 receivedData.remove(0, doubleEndlPos+4);
 
-            // we need to emulate the bytesWrittenSlot call if the data is empty.
-            if (dataToTransmit.size() == 0)
-                QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
-            else
-                client->write(dataToTransmit);
+            reply();
         }
     }
 
@@ -6134,6 +6142,28 @@ void tst_QNetworkReply::qtbug18232gzipContentLengthZero()
     QCOMPARE(reply->readAll(), QByteArray());
 }
 
+// Reproduced a crash in QHttpNetworkReplyPrivate::gunzipBodyPartiallyEnd
+// where zlib inflateEnd was called for uninitialized zlib stream
+void tst_QNetworkReply::nb279420gzipNoContentLengthEmptyContentDisconnect()
+{
+    // Response with no Content-Length in header and empty content
+    QByteArray response("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\n\r\n");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(0));
+    QVERIFY(!reply->header(QNetworkRequest::ContentLengthHeader).isValid());
+    QCOMPARE(reply->readAll(), QByteArray());
+}
+
 void tst_QNetworkReply::synchronousRequest_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -6342,6 +6372,117 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
     QVERIFY(server.totalConnections > 0);
     QCOMPARE(reply->readAll().constData(), "load");
     QCOMPARE(memoryCache->m_insertedUrls.count(), 0);
+}
+
+void tst_QNetworkReply::synchronousAuthenticationCache()
+{
+    class MiniAuthServer : public MiniHttpServer {
+    public:
+        MiniAuthServer(QThread *thread) : MiniHttpServer(QByteArray(), false, thread) {};
+        virtual void reply() {
+
+            dataToTransmit =
+                "HTTP/1.0 401 Unauthorized\r\n"
+                "WWW-Authenticate: Basic realm=\"QNetworkAccessManager Test Realm\"\r\n"
+                "Content-Length: 4\r\n"
+                "Connection: close\r\n"
+                "Content-Type: text/plain\r\n"
+                "\r\n"
+                "auth";
+            QRegExp rx("Authorization: Basic ([^\r\n]*)\r\n");
+            if (rx.indexIn(receivedData) > 0) {
+                if (QByteArray::fromBase64(rx.cap(1).toLatin1()) == "login:password") {
+                    dataToTransmit =
+                          "HTTP/1.0 200 OK\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "Content-Length: 2\r\n"
+                          "\r\n"
+                          "OK";
+                }
+            }
+            receivedData.clear();
+            MiniHttpServer::reply();
+        }
+    };
+
+    // when using synchronous commands, we need a different event loop for
+    // the server thread, because the client is never returning to the
+    // event loop
+    QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
+    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> server(new MiniAuthServer(serverThread.data()));
+    server->doClose = true;
+
+    //1)  URL without credentials, we are not authenticated
+    {
+        QUrl url = "http://localhost:" + QString::number(server->serverPort()) + "/path";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    }
+
+    //2)  URL with credentials, we are authenticated
+    {
+        QUrl url = "http://login:password@localhost:" + QString::number(server->serverPort()) + "/path2";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->readAll().constData(), "OK");
+    }
+
+    //3)  URL without credentials, we are authenticated because they are cached
+    {
+        QUrl url = "http://localhost:" + QString::number(server->serverPort()) + "/path3";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->readAll().constData(), "OK");
+    }
+}
+
+void tst_QNetworkReply::pipelining()
+{
+    QString urlString("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/echo.cgi?");
+    QList<QNetworkReplyPtr> replies;
+    for (int a = 0; a < 20; a++) {
+        QNetworkRequest request(urlString + QString::number(a));
+        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, QVariant(true));
+        replies.append(manager.get(request));
+        connect(replies.at(a), SIGNAL(finished()), this, SLOT(pipeliningHelperSlot()));
+    }
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
+void tst_QNetworkReply::pipeliningHelperSlot() {
+    static int a = 0;
+
+    // check that pipelining was used in at least one of the replies
+    static bool pipeliningWasUsed = false;
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    bool pipeliningWasUsedInReply = reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool();
+    if (pipeliningWasUsedInReply)
+        pipeliningWasUsed = true;
+
+    // check that the contents match (the response to echo.cgi?3 should return 3 etc.)
+    QString urlQueryString = reply->url().queryItems().at(0).first;
+    QString content = reply->readAll();
+    QVERIFY2(urlQueryString == content, "data corruption with pipelining detected");
+
+    a++;
+
+    if (a == 20) { // all replies have finished
+        QTestEventLoop::instance().exitLoop();
+        QVERIFY2(pipeliningWasUsed, "pipelining was not used in any of the replies when trying to test pipelining");
+    }
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

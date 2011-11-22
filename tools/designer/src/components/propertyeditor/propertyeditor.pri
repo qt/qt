@@ -4,8 +4,13 @@
 
 INCLUDEPATH += $$PWD
 
-include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
-include(../../../../shared/qtgradienteditor/qtcolorbutton.pri)
+contains(CONFIG, static) { # see shared.pri
+    INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtpropertybrowser
+    INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtgradienteditor
+} else {
+    include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
+    include(../../../../shared/qtgradienteditor/qtcolorbutton.pri)
+}
 
 FORMS += $$PWD/paletteeditor.ui \
     $$PWD/stringlisteditor.ui \

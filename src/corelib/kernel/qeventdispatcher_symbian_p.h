@@ -264,6 +264,8 @@ public:
     static void RequestComplete(TRequestStatus *&status, TInt reason);
     static void RequestComplete(RThread &threadHandle, TRequestStatus *&status, TInt reason);
 
+    void activeObjectError(int error);
+
 private:
     bool sendPostedEvents();
     bool sendDeferredSocketEvents();
@@ -294,6 +296,8 @@ private:
     int m_delay;
     int m_avgEventTime;
     QElapsedTimer m_lastIdleRequestTimer;
+    int m_oomErrorCount;
+    QElapsedTimer m_oomErrorTimer;
 };
 
 #ifdef QT_DEBUG

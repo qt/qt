@@ -40,6 +40,8 @@ wince*|symbian:{
     testsub2.path = testqrc/test/test
     DEPLOYMENT += deploy test alias other search1 search2 sub testsub testsub2
     !symbian:DEFINES += SRCDIR=\\\"\\\"
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
