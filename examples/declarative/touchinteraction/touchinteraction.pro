@@ -1,4 +1,4 @@
 TEMPLATE      = subdirs
-SUBDIRS       = gestures \
-                mousearea \
+SUBDIRS       = gestures/experimental-gestures \
+                mousearea/mousearea-example \
                 pincharea
