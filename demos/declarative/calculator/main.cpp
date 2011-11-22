@@ -40,10 +40,16 @@
 
 #include "qmlapplicationviewer.h"
 #include <QtGui/QApplication>
+#include <QtCore/QDebug>
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    qDebug() << "NOTE: The runtime property and the Orientation enum are only available"
+             << "through qmlviewer and are not available in the complied version.\n"
+             << "Run 'qmlviewer calculator.qmlproject' or load 'calculator.qmlproject'"
+             << "in Qt Creator and run the project.";
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
