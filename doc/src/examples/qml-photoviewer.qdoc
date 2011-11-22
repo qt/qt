@@ -31,5 +31,7 @@
 
     \brief The Qt Quick Photo Viewer demo shows how to write a Flickr photo viewer application in QML.
 
+    \depends helper/qmlapplicationviewer
+
     \image qml-photoviewer-demo.png
 */
