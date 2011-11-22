@@ -8,13 +8,13 @@ TARGET  = qmlimageproviderplugin
 SOURCES += imageprovider.cpp
 
 sources.files = $$SOURCES imageprovider.qml imageprovider.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovider
+sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/imageprovider
 
-target.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovider/ImageProviderCore
+target.path = $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/imageprovider/ImageProviderCore
 
 ImageProviderCore_sources.files = \
     ImageProviderCore/qmldir 
-ImageProviderCore_sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovider/ImageProviderCore
+ImageProviderCore_sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/imageprovider/ImageProviderCore
 
 INSTALLS = sources ImageProviderCore_sources target
 

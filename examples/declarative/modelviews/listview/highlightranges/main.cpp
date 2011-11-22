@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/highlightranges.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/highlightranges/highlightranges.qml"));
     viewer.showExpanded();
 
     return app.exec();

@@ -1,5 +1,5 @@
 # Add more folders to ship with the application, here
-folder_01.source = qml
+folder_01.source = qml/property-animation
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
@@ -35,5 +35,7 @@ symbian:TARGET.UID3 = 0xE4032BC6
 SOURCES += main.cpp
 
 # Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
+desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/animation/basics/property-animation
+exists(qmlapplicationviewer/qmlapplicationviewer.pri):include(qmlapplicationviewer/qmlapplicationviewer.pri)
+else:include(../../../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()

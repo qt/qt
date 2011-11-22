@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Name=tabwidget
+Exec=/usr/bin/single-instance /opt/tabwidget/bin/tabwidget
+Icon=/usr/share/icons/hicolor/80x80/apps/tabwidget80.png
+X-Window-Icon=
+X-HildonDesk-ShowInToolbar=true
+X-Osso-Type=application/x-executable

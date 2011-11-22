@@ -31,5 +31,7 @@
 
     \brief The Qt Quick Calculator demo shows how to write a simple calculator application in QML and JavaScript.
 
+    \depends helper/qmlapplicationviewer
+
     \image qml-calculator-example.png
 */
