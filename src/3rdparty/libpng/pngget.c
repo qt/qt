@@ -14,6 +14,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 png_uint_32 PNGAPI
@@ -1030,3 +1032,4 @@ png_get_io_chunk_name (png_structp png_ptr)
 #endif /* ?PNG_IO_STATE_SUPPORTED */
 
 #endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng
