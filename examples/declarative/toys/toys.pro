@@ -4,5 +4,5 @@ SUBDIRS += \
     clocks \
     corkboards \
     dynamicscene \
-    tic-tac-toe \
+    tic-tac-toe/tictactoe.pro \
     tvtennis
