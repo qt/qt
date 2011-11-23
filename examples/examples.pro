@@ -45,6 +45,8 @@ symbian: SUBDIRS = \
                 gestures \
                 xml
 
+contains(DEFINES, QT_NO_GESTURES): SUBDIRS -= gestures
+
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, multimedia) {
     SUBDIRS += multimedia
 }
