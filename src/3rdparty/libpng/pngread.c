@@ -16,6 +16,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #ifdef PNG_READ_SUPPORTED
 
 /* Create a PNG structure for reading, and allocate any memory needed. */
@@ -1452,3 +1454,4 @@ png_read_png(png_structp png_ptr, png_infop info_ptr,
 #endif /* PNG_INFO_IMAGE_SUPPORTED */
 #endif /* PNG_SEQUENTIAL_READ_SUPPORTED */
 #endif /* PNG_READ_SUPPORTED */
+} // namespace PrivatePng

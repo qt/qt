@@ -13,6 +13,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #ifdef PNG_WRITE_SUPPORTED
 
 #ifdef PNG_WRITE_INT_FUNCTIONS_SUPPORTED
@@ -3177,3 +3179,4 @@ png_write_filtered_row(png_structp png_ptr, png_bytep filtered_row)
 #endif
 }
 #endif /* PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng
