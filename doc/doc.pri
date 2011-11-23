@@ -19,6 +19,8 @@ COPYWEBKITTARGB = $$QT_BUILD_TREE/doc/html
 
 EXAMPLESMANIFEST = $$QT_BUILD_TREE/doc/html/examples-manifest.xml
 DEMOSMANIFEST = $$QT_BUILD_TREE/doc/html/demos-manifest.xml
+EXAMPLESMANIFESTTARGET = $$QT_BUILD_TREE/examples
+DEMOSMANIFESTTARGET = $$QT_BUILD_TREE/demos
 
 $$unixstyle {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QT_BUILD_TREE/bin/qdoc3 $$DOCS_GENERATION_DEFINES
@@ -28,14 +30,18 @@ $$unixstyle {
     COPYWEBKITGUIDE = $$replace(COPYWEBKITGUIDE, "/", "\\")
     COPYWEBKITTARGA = $$replace(COPYWEBKITTARGA, "/", "\\")
     COPYWEBKITTARGB = $$replace(COPYWEBKITTARGB, "/", "\\")
+    EXAMPLESMANIFEST = $$replace(EXAMPLESMANIFEST,  "/", "\\"))
+    DEMOSMANIFEST  = $$replace(DEMOSMANIFEST,  "/", "\\"))
+    EXAMPLESMANIFESTTARGET = $$replace(EXAMPLESMANIFESTTARGET,  "/", "\\"))
+    DEMOSMANIFESTTARGET = $$replace(DEMOSMANIFESTTARGET,  "/", "\\"))
 }
 ADP_DOCS_QDOCCONF_FILE = qt-build-docs-online.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
                     linguist.qdocconf qmake.qdocconf qdeclarative.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
                     $$QMAKE_COPY_DIR $$COPYWEBKITGUIDE $$COPYWEBKITTARGA && \
-                    $$QMAKE_COPY $$EXAMPLESMANIFEST $$QT_BUILD_TREE/examples && \
-                    $$QMAKE_COPY $$DEMOSMANIFEST $$QT_BUILD_TREE/demos && \
+                    $$QMAKE_COPY $$EXAMPLESMANIFEST $$EXAMPLESMANIFESTTARGET && \
+                    $$QMAKE_COPY $$DEMOSMANIFEST $$DEMOSMANIFESTTARGET && \
                     $$GENERATOR doc-build/html-qt/qt.qhp -o doc/qch/qt.qch && \
                     $$GENERATOR doc-build/html-assistant/assistant.qhp -o doc/qch/assistant.qch && \
                     $$GENERATOR doc-build/html-designer/designer.qhp -o doc/qch/designer.qch && \
