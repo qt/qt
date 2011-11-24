@@ -66,6 +66,15 @@
 */
 
 /*!
+    \title Animation: Wiggly Text Example
+    \example declarative/animation/behaviors/wigglytext
+    \depends helper/qmlapplicationviewer
+
+    \brief This example shows how to animate text.
+
+*/
+
+/*!
     \title Animation: Easing Example
     \example declarative/animation/easing
     \depends helper/qmlapplicationviewer
