@@ -392,6 +392,19 @@
 
 /*!
     \title Models and Views: ListView Example
+    \page qml-listview-examples.html
+
+    \l Models and Views: ListView Example
+    \l Models and Views: Expanding Delegate ListView Example
+    \l Models and Views: Highlight ListView Example
+    \l Models and Views: Highlight Ranges ListView Example
+    \l Models and Views: Sections ListView Example
+
+    
+*/
+
+/*!
+    \title Models and Views: ListView Example
     \example declarative/modelviews/listview
     \depends helper/qmlapplicationviewer
 
@@ -535,8 +548,21 @@
 
 /*!
     \title Models and Views: WebView Example
+    \page qml-webview-examples.html
+
+    \l Models and Views: Alert WebView Example
+    \l Models and Views: Autosize WebView Example
+    \l Models and Views: GoogleMaps WebView Example
+    \l Models and Views: Inline HTML WebView Example
+    \l Models and Views: New Windows WebView Example
+
+    
+*/
+/*!
+    \title Models and Views: Alert WebView Example
     \example declarative/modelviews/webview
-    \depends helper/qmlapplicationviewer
+
+\depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
 
