@@ -391,15 +391,16 @@
 */
 
 /*!
-    \title Models and Views: ListView Example
+    \title Models and Views: ListView Examples
     \page qml-listview-examples.html
 
-    \l Models and Views: ListView Example
-    \l Models and Views: Expanding Delegate ListView Example
-    \l Models and Views: Highlight ListView Example
-    \l Models and Views: Highlight Ranges ListView Example
-    \l Models and Views: Sections ListView Example
-
+	\list
+   \o \l {Models and Views: ListView Example}
+   \o \l {Models and Views: Expanding Delegate ListView Example}
+   \o \l {Models and Views: Highlight ListView Example}
+   \o \l {Models and Views: Highlight Ranges ListView Example}
+   \o  \l {Models and Views: Sections ListView Example}
+	\endlist
     
 */
 
@@ -549,12 +550,14 @@
 /*!
     \title Models and Views: WebView Example
     \page qml-webview-examples.html
-
-    \l Models and Views: Alert WebView Example
-    \l Models and Views: Autosize WebView Example
-    \l Models and Views: GoogleMaps WebView Example
-    \l Models and Views: Inline HTML WebView Example
-    \l Models and Views: New Windows WebView Example
+    
+   \list
+   \o \l {Models and Views: Alert WebView Example}
+   \o \l {Models and Views: Autosize WebView Example}
+   \o \l {Models and Views: GoogleMaps WebView Example}
+   \o \l {Models and Views: Inline HTML WebView Example}
+   \o  \l {Models and Views: New Windows WebView Example}
+	\endlist
 
     
 */
