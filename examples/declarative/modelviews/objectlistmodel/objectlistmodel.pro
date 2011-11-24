@@ -33,7 +33,6 @@ symbian:TARGET.CAPABILITY += NetworkServices
 SOURCES += main.cpp \
            dataobject.cpp
 HEADERS += dataobject.h
-RESOURCES += objectlistmodel.qrc
 
 # Please do not modify the following two lines. Required for deployment.
 desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/modelviews/objectlistmodel
