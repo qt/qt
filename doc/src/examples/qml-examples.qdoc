@@ -583,7 +583,7 @@
     \example declarative/modelviews/webview/autosize
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example show how to use autosizing in the WebView element.
 
     \table
     \row
@@ -598,7 +598,7 @@
     \example declarative/modelviews/webview/googlemaps
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example shows how to use a web service API and the WebView element.
 
     \table
     \row
