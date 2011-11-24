@@ -77,7 +77,7 @@
     \title Animation: States Example
     \example declarative/animation/states
 
-    \brief These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+    \brief These examples show how to use states and transitions.
 
     \depends helper/qmlapplicationviewer
 
@@ -116,6 +116,7 @@
     \row
     \o borderimage.qml
     \endtable
+*/
 
 /*!
     \title Image Elements: Shadows Image Example
@@ -404,6 +405,7 @@
     \row
     \o dynamiclist.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Expanding Delegate ListView Example
@@ -419,6 +421,7 @@
     \row
     \o expandingdelegates.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Highlight ListView Example
@@ -435,6 +438,7 @@
     \row
     \o highlight.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Highlight Ranges ListView Example
@@ -451,6 +455,7 @@
     \row
     \o highlightranges.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Sections ListView Example
@@ -541,6 +546,7 @@
     \row
     \o alert.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Autosize WebView Example
@@ -555,6 +561,7 @@
     \row
     \o autosize.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: GoogleMaps WebView Example
@@ -569,6 +576,7 @@
     \row
     \o googlemaps.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: Inline HTML WebView Example
@@ -583,6 +591,7 @@
     \row
     \o inlinehtml.qml
     \endtable
+*/
 
 /*!
     \title Models and Views: New Windows WebView Example
@@ -598,7 +607,6 @@
     \o newwindows.qml
     \endtable
 */
-
 
 /*!
     \title Screen Orientation
@@ -629,6 +637,7 @@
     \row
     \o availableFonts.qml
     \endtable
+*/
 
 /*!
     \title Text: Banner Fonts Example
@@ -643,6 +652,7 @@
     \row
     \o banner.qml
     \endtable
+*/
 
 /*!
     \title Text: Fonts Example
@@ -657,6 +667,7 @@
     \row
     \o fonts.qml
     \endtable
+*/
 
 /*!
     \title Text: Hello Fonts Example
