@@ -936,50 +936,37 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
 void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state)
 {
     if (state->completePending) {
-
-        for (int ii = 0; ii < state->bindValues.count(); ++ii) {
-            QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> bv = 
-                state->bindValues.at(ii);
-            for (int jj = 0; jj < bv.count; ++jj) {
-                if(bv.at(jj)) {
-                    // XXX akennedy
-                    bv.at(jj)->m_mePtr = 0;
-                    bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor | 
-                                                QDeclarativePropertyPrivate::DontRemoveBinding);
+        QT_TRY {
+            for (int ii = 0; ii < state->bindValues.count(); ++ii) {
+                QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> bv = 
+                    state->bindValues.at(ii);
+                for (int jj = 0; jj < bv.count; ++jj) {
+                    if(bv.at(jj)) {
+                        // XXX akennedy
+                        bv.at(jj)->m_mePtr = 0;
+                        bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor | 
+                                                    QDeclarativePropertyPrivate::DontRemoveBinding);
+                    }
                 }
+                QDeclarativeEnginePrivate::clear(bv);
             }
-            QDeclarativeEnginePrivate::clear(bv);
-        }
 
-        for (int ii = 0; ii < state->parserStatus.count(); ++ii) {
-            QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> ps = 
-                state->parserStatus.at(ii);
+            for (int ii = 0; ii < state->parserStatus.count(); ++ii) {
+                QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> ps = 
+                    state->parserStatus.at(ii);
 
-            for (int jj = ps.count - 1; jj >= 0; --jj) {
-                QDeclarativeParserStatus *status = ps.at(jj);
-                if (status && status->d) {
-                    status->d = 0;
-                    status->componentComplete();
+                for (int jj = ps.count - 1; jj >= 0; --jj) {
+                    QDeclarativeParserStatus *status = ps.at(jj);
+                    if (status && status->d) {
+                        status->d = 0;
+                        status->componentComplete();
+                    }
                 }
+                QDeclarativeEnginePrivate::clear(ps);
             }
-            QDeclarativeEnginePrivate::clear(ps);
-        }
 
-        for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
-            QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
-            QObject *obj = status.first;
-            if (obj) {
-                void *args[] = { 0 };
-                QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
-                                      status.second, args);
-            }
-        }
-
-        //componentComplete() can register additional finalization objects
-        //that are then never handled. Handle them manually here.
-        if (1 == enginePriv->inProgressCreations) {
-            for (int ii = 0; ii < enginePriv->finalizedParserStatus.count(); ++ii) {
-                QPair<QDeclarativeGuard<QObject>, int> status = enginePriv->finalizedParserStatus.at(ii);
+            for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
+                QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
                 QObject *obj = status.first;
                 if (obj) {
                     void *args[] = { 0 };
@@ -987,17 +974,38 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
                                           status.second, args);
                 }
             }
-            enginePriv->finalizedParserStatus.clear();
-        }
 
-        while (state->componentAttached) {
-            QDeclarativeComponentAttached *a = state->componentAttached;
-            a->rem();
-            QDeclarativeData *d = QDeclarativeData::get(a->parent());
-            Q_ASSERT(d);
-            Q_ASSERT(d->context);
-            a->add(&d->context->componentAttached);
-            emit a->completed();
+            //componentComplete() can register additional finalization objects
+            //that are then never handled. Handle them manually here.
+            if (1 == enginePriv->inProgressCreations) {
+                for (int ii = 0; ii < enginePriv->finalizedParserStatus.count(); ++ii) {
+                    QPair<QDeclarativeGuard<QObject>, int> status = enginePriv->finalizedParserStatus.at(ii);
+                    QObject *obj = status.first;
+                    if (obj) {
+                        void *args[] = { 0 };
+                        QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
+                                              status.second, args);
+                    }
+                }
+                enginePriv->finalizedParserStatus.clear();
+            }
+
+            while (state->componentAttached) {
+                QDeclarativeComponentAttached *a = state->componentAttached;
+                a->rem();
+                QDeclarativeData *d = QDeclarativeData::get(a->parent());
+                Q_ASSERT(d);
+                Q_ASSERT(d->context);
+                a->add(&d->context->componentAttached);
+                emit a->completed();
+            }
+        } QT_CATCH(const std::exception&) {
+            state->bindValues.clear();
+            state->parserStatus.clear();
+            state->finalizedParserStatus.clear();
+            state->completePending = false;
+            enginePriv->inProgressCreations--;
+            QT_RETHROW;
         }
 
         state->bindValues.clear();
