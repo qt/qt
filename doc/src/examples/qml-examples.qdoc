@@ -548,15 +548,17 @@
 */
 
 /*!
-    \title Models and Views: WebView Example
+    \title Models and Views: WebView Examples
     \page qml-webview-examples.html
     
-   \list
-   \o \l {Models and Views: Alert WebView Example}
-   \o \l {Models and Views: Autosize WebView Example}
-   \o \l {Models and Views: GoogleMaps WebView Example}
-   \o \l {Models and Views: Inline HTML WebView Example}
-   \o  \l {Models and Views: New Windows WebView Example}
+    \brief These examples show how to use the WebView element.
+   
+    \list
+    \o \l {Models and Views: Alert WebView Example}
+    \o \l {Models and Views: Autosize WebView Example}
+    \o \l {Models and Views: GoogleMaps WebView Example}
+    \o \l {Models and Views: Inline HTML WebView Example}
+    \o  \l {Models and Views: New Windows WebView Example}
 	\endlist
 
     
@@ -564,8 +566,7 @@
 /*!
     \title Models and Views: Alert WebView Example
     \example declarative/modelviews/webview
-
-\depends helper/qmlapplicationviewer
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
 
