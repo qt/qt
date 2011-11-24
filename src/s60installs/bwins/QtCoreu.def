@@ -4885,5 +4885,8 @@ EXPORTS
 	?updateDir@QFactoryLoader@@QAEXABVQString@@AAVQSettings@@@Z @ 4884 NONAME ; void QFactoryLoader::updateDir(class QString const &, class QSettings &)
 	?disconnectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 4885 NONAME ; void QFutureWatcherBase::disconnectNotify(char const *)
 	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4886 NONAME ; bool QActiveObject::maybeQueueForLater(void)
-	?activeObjectError@QEventDispatcherSymbian@@QAEXH@Z @ 4887 NONAME ; void QEventDispatcherSymbian::activeObjectError(int)
+	?activeConnections@QSymbianSocketManager@@QBE?AV?$QList@K@@XZ @ 4887 NONAME ; class QList<unsigned long> QSymbianSocketManager::activeConnections(void) const
+	?removeActiveConnection@QSymbianSocketManager@@QAEXK@Z @ 4888 NONAME ; void QSymbianSocketManager::removeActiveConnection(unsigned long)
+	?addActiveConnection@QSymbianSocketManager@@QAEXK@Z @ 4889 NONAME ; void QSymbianSocketManager::addActiveConnection(unsigned long)
+	?activeObjectError@QEventDispatcherSymbian@@QAEXH@Z @ 4890 NONAME ; void QEventDispatcherSymbian::activeObjectError(int)
 
