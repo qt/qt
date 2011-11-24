@@ -4,10 +4,11 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativepincharea.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.sources = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

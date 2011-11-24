@@ -5,10 +5,11 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_qdeclarativetextedit.cpp ../shared/testhttpserver.cpp
 HEADERS += ../shared/testhttpserver.h
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

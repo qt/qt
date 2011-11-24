@@ -3,7 +3,9 @@ contains(QT_CONFIG,declarative): QT += declarative
 SOURCES += tst_qdeclarativecontext.cpp
 macx:CONFIG -= app_bundle
 
-!symbian: {
+wince*: {
+    DEFINES += SRCDIR=\\\".\\\"
+} else:!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

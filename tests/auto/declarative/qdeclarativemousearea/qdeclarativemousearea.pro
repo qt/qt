@@ -5,10 +5,11 @@ macx:CONFIG -= app_bundle
 HEADERS += ../shared/testhttpserver.h
 SOURCES += tst_qdeclarativemousearea.cpp ../shared/testhttpserver.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

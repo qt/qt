@@ -11,10 +11,11 @@ INCLUDEPATH += ../shared/
 HEADERS += ../shared/testhttpserver.h
 SOURCES += ../shared/testhttpserver.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

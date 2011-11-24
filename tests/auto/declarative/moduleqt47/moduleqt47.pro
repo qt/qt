@@ -4,10 +4,11 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_moduleqt47.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

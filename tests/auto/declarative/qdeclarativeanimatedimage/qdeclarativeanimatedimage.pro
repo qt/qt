@@ -4,10 +4,11 @@ HEADERS += ../shared/testhttpserver.h
 SOURCES += tst_qdeclarativeanimatedimage.cpp ../shared/testhttpserver.cpp
 macx:CONFIG -= app_bundle
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

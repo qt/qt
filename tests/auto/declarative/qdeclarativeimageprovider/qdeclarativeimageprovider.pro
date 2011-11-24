@@ -8,7 +8,9 @@ SOURCES += tst_qdeclarativeimageprovider.cpp
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
-!symbian: {
+wince*: {
+    DEFINES += SRCDIR=\\\".\\\"
+} else:!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

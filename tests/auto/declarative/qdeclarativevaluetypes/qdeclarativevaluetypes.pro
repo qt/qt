@@ -7,10 +7,11 @@ HEADERS += testtypes.h
 SOURCES += tst_qdeclarativevaluetypes.cpp \
            testtypes.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

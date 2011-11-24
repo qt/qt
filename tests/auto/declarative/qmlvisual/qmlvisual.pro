@@ -4,7 +4,7 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qmlvisual.cpp
 
-symbian: {
+wince*|symbian: {
     importFiles.path = .
     importFiles.files = animation \
     fillmode \
@@ -28,6 +28,7 @@ symbian: {
     selftest_noimages \
     webview
     DEPLOYMENT += importFiles
+    wince*: DEFINES += QT_TEST_SOURCE_DIR=\\\".\\\"
 } else {
     DEFINES += QT_TEST_SOURCE_DIR=\"\\\"$$PWD\\\"\"
 }
