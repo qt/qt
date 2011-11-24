@@ -32,7 +32,6 @@ symbian:TARGET.CAPABILITY += NetworkServices
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES = main.cpp model.cpp
 HEADERS = model.h
-RESOURCES += abstractitemmodel.qrc
 
 # Please do not modify the following two lines. Required for deployment.
 desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/modelviews/abstractitemmodel
