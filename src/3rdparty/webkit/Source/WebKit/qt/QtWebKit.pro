@@ -123,7 +123,7 @@ symbian {
     webkitlibs.pkg_prerules = vendorinfo
 
     webkitbackup.sources = symbian/backup_registration.xml
-    webkitbackup.path = /private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+    webkitbackup.path = /private/10202d56/import/packages/$$replace(TARGET.UID3, 0x,)
 
     contains(QT_CONFIG, declarative) {
          declarativeImport.sources = $$QT_BUILD_TREE/imports/QtWebKit/qmlwebkitplugin$${QT_LIBINFIX}.dll
