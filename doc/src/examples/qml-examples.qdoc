@@ -27,7 +27,7 @@
 
 /*!
     \title Animation: Basics Example
-    \example declarative/animation/basics
+    \example declarative/animation/basics/color-animation
 
     \brief This example shows how to create and combine \l{QML Animation}{animations} in QML.
 
@@ -37,6 +37,8 @@
     \row
     \o color-animation.qml
     \endtable
+    
+*/    
 
 /*!
     \title Animation: Basics Property Animation Example
