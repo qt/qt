@@ -121,7 +121,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \o \l{declarative/animation/easing}{Easing}
 \o \l{declarative/animation/basics/property-animation}{Property Animation}
 \o \l{declarative/animation/states}{States}
-\o \l{declarative/animation/wigglytext/wigglytext}{Wiggly Text}
+\o \l{declarative/animation/wigglytext/wigglytext}{Wiggly Text Example}
 \endlist
 
 \section2 Image Elements
