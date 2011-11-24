@@ -31,8 +31,6 @@
 
     \brief This example shows how to create and combine \l{QML Animation}{animations} in QML.
 
-    \depends helper/qmlapplicationviewer
-
     \table
     \row
     \o \image qml-coloranim-example.png
@@ -43,10 +41,9 @@
 /*!
     \title Animation: Basics Property Animation Example
     \example declarative/animation/basics/property-animation
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create and combine \l{QML Animation}{animations} in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -57,12 +54,11 @@
 */
 
 /*!
-    \title Animation: Behavior Examples
-    \example declarative/animation/behaviors
-
-    \brief This example shows how to use QML behaviors. 
-
+    \title Animation: Behavior Example
+    \example declarative/animation/behaviors/behavior-example
     \depends helper/qmlapplicationviewer
+
+    \brief This example shows how to use QML behaviors.
 
     \image qml-behaviors-example.png
 */
@@ -70,10 +66,9 @@
 /*!
     \title Animation: Easing Example
     \example declarative/animation/easing
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows the different easing modes available for \l{QML Animation}{animations}.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-easing-example.png
 */
@@ -88,6 +83,9 @@
 
     The \c states.qml example shows how an item can change between states, and \c transitions.qml
     shows how these state changes can be animated.
+
+    \note Due to deployment configurations transitions.qml is opened by default when running this example.
+    states.qml can be opened by editing the main.cpp file.
 
     \table
     \row
@@ -122,10 +120,9 @@
 /*!
     \title Image Elements: Shadows Image Example
     \example declarative/imageelements/shadows
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the BorderImage element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -138,10 +135,10 @@
 /*!
     \title Image Elements: Image Example
     \example declarative/imageelements/image
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the \l Image element and its \l{Image::fillMode}{fillModes}.
 
-    \depends helper/qmlapplicationviewer
 
     \image qml-image-example.png
 */
@@ -261,10 +258,9 @@
     \title Internationalization Example
     \example declarative/i18n
     \ingroup internationalization
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to enable text translation in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-i18n-example.png
 
@@ -303,6 +299,7 @@
 /*!
     \title Right-to-left User Interfaces: Text Alignment Example
     \example declarative/righttoleft/textalignment
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how the horizontal alignment of \l Text,
     \l TextInput and \l TextEdit is affected by the reading direction
@@ -312,14 +309,13 @@
     shown at the bottom of the example to toggle between different
     horizontal alignment options.
 
-    \depends helper/qmlapplicationviewer
-
     \sa {QML Right-to-left User Interfaces}
 */
 
 /*!
     \title Right-to-left User Interfaces: Layout Direction Example
     \example declarative/righttoleft/layoutdirection
+    \depends helper/qmlapplicationviewer
 
     \ brief This example shows how to control the horizontal layout direction of
     \l Row, \l Grid and \l Flow positioners, and \l ListView and \l GridView
@@ -327,8 +323,6 @@
 
     Click on the gray buttons shown at the bottom of the example
     to toggle the layout direction of the shown elements.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-righttoleft-layoutdirection-example.png
 
@@ -339,6 +333,7 @@
 /*!
     \title Right-to-left User Interfaces: Layout Mirroring Example
     \example declarative/righttoleft/layoutmirroring
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to mirror the application layouts
     using \l LayoutMirroring attached property.
@@ -356,11 +351,10 @@
 /*!
     \title Positioners Example
     \example declarative/positioners
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use positioner elements such as \l Row, \l Column,
     \l Grid and \l Flow.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-positioners-example.png
 */
@@ -368,10 +362,9 @@
 /*!
     \title Key Interaction: Focus Example
     \example declarative/keyinteraction/focus
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to handle keyboard input and focus in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-focus-example.png
 */
@@ -379,10 +372,9 @@
 /*!
     \title Models and Views: AbstractItemModel Example
     \example declarative/modelviews/abstractitemmodel
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use a QAbstractItemModel subclass as a model in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-abstractitemmodel-example.png
 */
@@ -390,10 +382,9 @@
 /*!
     \title Models and Views: GridView Example
     \example declarative/modelviews/gridview
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the GridView element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-gridview-example.png
 */
@@ -401,12 +392,11 @@
 /*!
     \title Models and Views: ListView Example
     \example declarative/modelviews/listview
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how items can be dynamically added to
     and removed from a ListModel, and how these list
     modifications can be animated.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -418,12 +408,10 @@
 /*!
     \title Models and Views: Expanding Delegate ListView Example
     \example declarative/modelviews/listview/expandingdelegates
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a dynamic delegate, which
     expands when selected.
-
-    \depends helper/qmlapplicationviewer
-
 
     \table
     \row
@@ -435,11 +423,11 @@
 /*!
     \title Models and Views: Highlight ListView Example
     \example declarative/modelviews/listview/highlight
+    \depends helper/qmlapplicationviewer
+
 
     \brief This example shows how to highlight one item
     inside a ListView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -451,11 +439,11 @@
 /*!
     \title Models and Views: Highlight Ranges ListView Example
     \example declarative/modelviews/listview/highlightranges
+    \depends helper/qmlapplicationviewer
+
 
     \brief This example shows how to highlight ranges within a
     ListView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -467,10 +455,10 @@
 /*!
     \title Models and Views: Sections ListView Example
     \example declarative/modelviews/listview/sections
+    \depends helper/qmlapplicationviewer
+
 
     \brief This example shows how to use the ListView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -483,10 +471,9 @@
 /*!
     \title Models and Views: PathView Example
     \example declarative/modelviews/pathview
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the PathView element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-pathview-example.png
 */
@@ -494,10 +481,9 @@
 /*!
     \title Models and Views: Object ListModel Example
     \example declarative/modelviews/objectlistmodel
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use a QList<QObject*> as a model in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-objectlistmodel-example.png
 */
@@ -505,10 +491,9 @@
 /*!
     \title Models and Views: Package Example
     \example declarative/modelviews/package
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the \l Package element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-package-example.png
 */
@@ -516,10 +501,9 @@
 /*!
     \title Models and Views: Parallax Example
     \example declarative/modelviews/parallax
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to combine and switch between views.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-parallax-example.png
 */
@@ -527,10 +511,9 @@
 /*!
     \title Models and Views: String ListModel Example
     \example declarative/modelviews/stringlistmodel
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use a QStringList as a model in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-stringlistmodel-example.png
 */
@@ -538,10 +521,9 @@
 /*!
     \title Models and Views: VisualItemModel Example
     \example declarative/modelviews/visualitemmodel
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the VisualItemModel element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-visualitemmodel-example.png
 */
@@ -549,10 +531,9 @@
 /*!
     \title Models and Views: WebView Example
     \example declarative/modelviews/webview
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -564,10 +545,9 @@
 /*!
     \title Models and Views: Autosize WebView Example
     \example declarative/modelviews/webview/autosize
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -579,10 +559,9 @@
 /*!
     \title Models and Views: GoogleMaps WebView Example
     \example declarative/modelviews/webview/googlemaps
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -594,10 +573,9 @@
 /*!
     \title Models and Views: Inline HTML WebView Example
     \example declarative/modelviews/webview/inlinehtml
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -609,10 +587,9 @@
 /*!
     \title Models and Views: New Windows WebView Example
     \example declarative/modelviews/webview/newwindows
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -626,28 +603,25 @@
 /*!
     \title Screen Orientation
     \example declarative/screenorientation
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to implement screen orientation support for your application.
-
-    \depends helper/qmlapplicationviewer
 */
 
 /*!
     \title SQL Local Storage Example
     \example declarative/sqllocalstorage
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the SQL Local Storage API in QML.
-
-    \depends helper/qmlapplicationviewer
 */
 
 /*!
     \title Text: Fonts Example
     \example declarative/text/fonts
+    \depends helper/qmlapplicationviewer
 
     \brief These examples show how to discover available fonts from QML.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -659,10 +633,9 @@
 /*!
     \title Text: Banner Fonts Example
     \example declarative/text/fonts/banner
+    \depends helper/qmlapplicationviewer
 
     \brief These example shows how to manipulate text in various ways.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -674,10 +647,9 @@
 /*!
     \title Text: Fonts Example
     \example declarative/text/fonts/fonts
+    \depends helper/qmlapplicationviewer
 
     \brief These examples shows how to display a text with multiple fonts.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -689,10 +661,9 @@
 /*!
     \title Text: Hello Fonts Example
     \example declarative/text/fonts/hello
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to manipulate text in various ways.
-
-    \depends helper/qmlapplicationviewer
 
     \table
     \row
@@ -705,11 +676,10 @@
 /*!
     \title Text: Text Selection Example
     \example declarative/text/textselection
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how text selection, copy and paste operations
     can be implemented on top of the TextEdit element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-textselection-example.png
 */
@@ -717,29 +687,26 @@
 /*!
     \title Threading: Threaded ListModel Example
     \example declarative/threading/threadedlistmodel
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use a ListModel from multiple threads using
     WorkerScript.
-
-    \depends helper/qmlapplicationviewer
 */
 
 /*!
     \title Threading: WorkerScript Example
     \example declarative/threading/workerscript
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the WorkerScript element for threading in QML.
-
-    \depends helper/qmlapplicationviewer
 */
 
 /*!
     \title Toys: Clocks Example
     \example declarative/toys/clocks
+    \depends helper/qmlapplicationviewer
 
     \brief This example displays a set of clocks with different times for different cities.
-
-    \depends helper/qmlapplicationviewer
     
     Each clock is created by combining \l Image elements with \l Rotation transforms 
     and \l SpringAnimation behaviors.
@@ -750,12 +717,11 @@
 /*!
     \title Toys: Corkboards Example
     \example declarative/toys/corkboards
+    \depends helper/qmlapplicationviewer
 
     \brief This example presents a flickable set of interactive corkboards. It is created
     through a combination of elements like \l ListModel, \l Repeater and \l TextEdit
     together with rotation and scaling transforms, animation and mouse interaction.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-corkboards-example.png
 */
@@ -763,12 +729,11 @@
 /*!
     \title Toys: Dynamic Scene Example
     \example declarative/toys/dynamicscene
+    \depends helper/qmlapplicationviewer
 
     \brief This example presents an interactive drag-and-drop scene. It demonstrates
     how to use QML's \l{Dynamic Object Creation} support to dynamically create and
     destroy objects.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-dynamicscene-example.png
 */
@@ -776,10 +741,9 @@
 /*!
     \title Toys: Tic-Tac-Toe Example
     \example declarative/toys/tic-tac-toe
+    \depends helper/qmlapplicationviewer
 
     \brief This example presents a simple implementation of Tic Tac Toe.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-tic-tac-toe-example.png
 */
@@ -787,11 +751,10 @@
 /*!
     \title Toys: TV Tennis Example
     \example declarative/toys/tvtennis
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use animation components such as \l SpringAnimation,
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-tvtennis-example.png
 */
@@ -799,20 +762,18 @@
 /*!
     \title Touch Interaction: Gestures Example
     \example declarative/touchinteraction/gestures
-
-    \brief This example shows how to use the GestureArea element.
     \depends helper/qmlapplicationviewer
 
+    \brief This example shows how to use the GestureArea element.
 */
 
 /*!
     \title Touch Interaction: MouseArea Example
     \example declarative/touchinteraction/mousearea
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the MouseArea element to access information
     about mouse input.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-mousearea-example.png
 */
@@ -820,12 +781,11 @@
 /*!
     \title UI Components: Dial Control Example
     \example declarative/ui-components/dialcontrol
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a dial-type control. It combines
     \l Image elements with \l Rotation transforms and \l SpringAnimation behaviors
     to produce an interactive speedometer-type dial.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-dialcontrol-example.png
 */
@@ -838,18 +798,15 @@
 
     \brief This example shows how to use the \l Flipable element.
 
-    \depends helper/qmlapplicationviewer
-
     \image qml-flipable-example.png
 */
 
 /*!
     \title UI Components: Progress Bars Example
     \example declarative/ui-components/progressbar
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a progress bar.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-progressbar-example.png
 */
@@ -857,12 +814,11 @@
 /*!
     \title UI Components: Scroll Bar Example
     \example declarative/ui-components/scrollbar
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create scroll bars for a \l Flickable element
     using the \l {Flickable::visibleArea.xPosition}{Flickable::visibleArea}
     properties.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-scrollbar-example.png
 */
@@ -870,11 +826,10 @@
 /*!
     \title UI Components: Search Box Example
     \example declarative/ui-components/searchbox
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to combine TextInput, FocusScope and BorderImage
     elements to display multiple text input fields.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-searchbox-example.png
 */
@@ -882,10 +837,9 @@
 /*!
     \title UI Components: Slide Switch Example
     \example declarative/ui-components/slideswitch
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a slide switch control.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-slideswitch-example.png
 */
@@ -893,10 +847,9 @@
 /*!
     \title UI Components: Spinner Example
     \example declarative/ui-components/spinner
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a spinner-type component using the PathView element.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-spinner-example.png
 */
@@ -904,13 +857,12 @@
 /*!
     \title UI Components: Tab Widget Example
     \example declarative/ui-components/tabwidget
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create a tab widget. It also demonstrates how
     \l {Property aliases}{property aliases} and
     \l {Introduction to the QML Language#Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-tabwidget-example.png
 */
@@ -918,10 +870,9 @@
 /*!
     \title XML: XMLHttpRequest Example
     \example declarative/xml/xmlhttprequest
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to use the \l XmlHttpRequest API in QML.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-xmlhttprequest-example.png
 */
@@ -929,10 +880,9 @@
 /*!
     \title Labs: Shader Effects
     \example declarative/shadereffects
+    \depends helper/qmlapplicationviewer
 
     \brief This example shows how to create visual effects by using OpenGL shading language together with QML using \l ShaderEffectItem and \l ShaderEffectSource APIs.
-
-    \depends helper/qmlapplicationviewer
 
     \image qml-shadereffects-example.png
 */
