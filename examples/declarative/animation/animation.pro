@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    basics/property-animation/propertyanimation.pro \
-    basics/color-animation/coloranimation.pro \
+    basics/property-animation \
+    basics/color-animation \
     easing \
-    behaviors/behavior-example/behaviorexample.pro \
+    behaviors/behavior-example \
     states
