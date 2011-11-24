@@ -355,6 +355,93 @@
 
 */
 /*!
+    \page symbian-support.html
+    \title Support for Symbian
+    \brief Platform support for Symbian.
+    \ingroup platform-specific
+    \ingroup platform-details
+
+    \section1 Qt on Symbian
+
+    Qt provides support for the Symbian platform with integration
+    to the S60 framework. If you are developing apps for the Symbian,
+    Maemo or MeeGo platforms in most cases, you can use Qt under the
+    free LGPL licensing option. Qt is cross-platform, and that means
+    that you can use the code from one single code-base and rebuild
+    for all \l{Supported Platforms}{supported platforms}.
+
+     \section1 Getting Started on Symbian
+
+    \list
+        \o \l{Supported Platforms}{Supported platform}
+        - Details on the Qt support for Symbian.
+        \o \l{Qt for the Symbian platform Requirements}{Qt for the
+        Symbian platform Requirements} - Software required to run Qt
+        on Symbian.
+        \o \l{Installing Qt for the Symbian platform}{Installing Qt
+        for the Symbian platform} - Build Qt for Symbian development.
+        \o \l{Platform and Compiler Notes - Symbian}{Platform Notes - Symbian}
+        - Platform specific notes.
+        \o \l{Getting Started Guides}{Getting started}
+        \o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian}
+        - provides a QML component set for the Symbian^3 platform
+    \endlist
+
+    \section1 Key Features for Symbian Development
+
+    On top of all the tools and the API and class libraries that Qt
+    offers, Qt provides you with added functionality for an optimized
+    Symbian development experience.
+
+    \section2 Native Look and Feel
+
+    Qt will detect which theme the phone is running and applies the
+    style at runtime to your Qt application. The look and feel of your
+    applications can also be easily customized in a fraction of the
+    time and lines of code required for traditional UI styling with
+    Qt Style Sheets.
+
+    The \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian 1.1}
+    provides a native QML component set.
+
+    \section2 Graphics Features
+
+    Qt for Symbian contains a powerful paint engine that provides
+    features such as anti, aliasing, gradients, curves and transparency.
+    It also has animation support with timelines and easing curves. It
+    is already targeting future device technology by supporting hardware
+    acceleration using OpenVG.
+
+    \section2 Device Configurations
+
+    Using Qt for Symbian all supported Symbian devices provides automatic
+    support for swiching between landscape and portrait mode, different
+    screen resolutions as well as touch screen and key pad input.
+
+    \section2 Cross-Platform Development using Qt Creator
+
+    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    a complete Cross-platform IDE included in the Qt SDK. The IDE allows
+    programmers to create, build, debug and run Qt applications accross all
+    supported platforms.
+
+    \section3 Licensing
+
+    Qt for Symbian is available under the Qt Commercial License, the LGPL
+    v. 2.1 "LGPL") and the GPL v. 3.0.  Symbian currently licenses their
+    software products under either the Symbian Foundation License or the
+    Eclipse Public License ("EPL"). While the LGPL and the EPL are not
+    compatible and may not be combined on a file-by-file basis, they may
+    be used in a common environment provided that the interaction between
+    Qt and Symbian is limited to:  dynamic linking, inter-process
+    communication and data exchange. Therefore, most Symbian developers
+    can use Qt for Symbian under the LGPL.
+
+    Additional \l{Cross-Platform and Platform-Specific Development}
+    information.
+
+*/
+/*!
     \page supported-platforms.html
     \title Supported Platforms
     \brief The platforms supported by Nokia for Qt.
@@ -373,12 +460,13 @@
     \o {2,1} Qt Cross Platform Support
     \header
     \o {1,1} Desktop
-    \o {1,1} Embedded
+    \o {1,1} Embedded/Mobile
     \row
     \o \l{Support for Windows}{Windows}
     \o \l{Support for Embedded Linux}{Embedded Linux}
     \row
     \o \l{Support for Linux/X11}{Linux/X11}
+    \o \l{Support for Symbian}{Symbian}
     \row
     \o \l{Support for Mac OS X}{Mac OS X}
     \endtable
@@ -442,6 +530,12 @@
                                      \o As provided by Ubuntu
     \row    \o Ubuntu Linux 10.04 (32-bit)
                                      \o Intel Compiler [version 12]
+    \row    \o Ubuntu Linux 10.04 (64-bit)
+                                     \o As provided by Ubuntu
+    \row    \o Microsoft Windows XP SP3 (32-bit)
+                                     \o GCC 4.4 (MinGW)
+    \row    \o Microsoft Windows 7 (64-bit)
+                                     \o MSVC 2010 SP1
     \row    \o Apple Mac OS X 10.6 "Snow Leopard" Cocoa (32-bit)
                                      \o As provided by Apple
     \endtable

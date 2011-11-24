@@ -11,7 +11,7 @@ SOURCES += main.cpp \
 HEADERS += person.h \
            birthdayparty.h
 RESOURCES += default.qrc
-target.path = $$[QT_INSTALL_EXAMPLES]/declarative/extending/default
+target.path = $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/referenceexamples/default
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS default.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/extending/default
+sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/referenceexamples/default
 INSTALLS += target sources

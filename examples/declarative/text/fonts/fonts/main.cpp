@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/fonts.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/fonts-qml/fonts.qml"));
     viewer.showExpanded();
 
     return app.exec();

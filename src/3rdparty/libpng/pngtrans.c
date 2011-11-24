@@ -13,6 +13,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 #if defined(PNG_READ_BGR_SUPPORTED) || defined(PNG_WRITE_BGR_SUPPORTED)
@@ -676,3 +678,4 @@ png_get_current_pass_number(png_const_structp png_ptr)
 #endif /* PNG_READ_USER_TRANSFORM_SUPPORTED ||
           PNG_WRITE_USER_TRANSFORM_SUPPORTED */
 #endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng

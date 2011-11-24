@@ -32,5 +32,7 @@
     \brief The Qt Quick Twitter Mobile demo shows how to write a mobile Twitter search client in QML. Use it to
     see what people think about Qt Quick!
 
+    \depends helper/qmlapplicationviewer
+
     \image qml-twitter-demo.png
 */

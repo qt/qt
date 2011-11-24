@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/banner.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/banner/banner.qml"));
     viewer.showExpanded();
 
     return app.exec();

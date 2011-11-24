@@ -33,6 +33,8 @@
     WebView element with other components including scroll bars, 
     \l Flickable views and TextInput fields.
 
+    \depends helper/qmlapplicationviewer
+
     \image qml-webbrowser-demo.png
 */
 

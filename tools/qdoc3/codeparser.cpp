@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 #define COMMAND_COMPAT                  Doc::alias(QLatin1String("compat"))
+#define COMMAND_DEPENDS                 Doc::alias(QLatin1String("depends"))
 #define COMMAND_DEPRECATED              Doc::alias(QLatin1String("deprecated")) // ### don't document
 #define COMMAND_INGROUP                 Doc::alias(QLatin1String("ingroup"))
 #define COMMAND_INMODULE                Doc::alias(QLatin1String("inmodule"))  // ### don't document
@@ -200,6 +201,7 @@ CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
 QSet<QString> CodeParser::commonMetaCommands()
 {
     return QSet<QString>() << COMMAND_COMPAT
+                           << COMMAND_DEPENDS
                            << COMMAND_DEPRECATED
                            << COMMAND_INGROUP
                            << COMMAND_INMODULE
@@ -230,6 +232,9 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 {
     if (command == COMMAND_COMPAT) {
         node->setStatus(Node::Compat);
+    }
+    else if (command == COMMAND_DEPENDS) {
+	node->addDependency(arg);
     }
     else if (command == COMMAND_DEPRECATED) {
 	node->setStatus(Node::Deprecated);

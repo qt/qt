@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/clocks.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/clocks/clocks.qml"));
     viewer.showExpanded();
 
     return app.exec();

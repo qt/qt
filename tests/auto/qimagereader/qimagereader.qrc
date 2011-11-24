@@ -67,5 +67,7 @@
         <file>images/corrupt.svgz</file>
         <file>images/qtbug13653-no_eoi.jpg</file>
         <file>images/txts.png</file>
+        <file>images/test-flag.tga</file>
+        <file>images/test-flag-rle.tga</file>
     </qresource>
 </RCC>

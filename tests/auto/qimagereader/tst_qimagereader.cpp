@@ -168,6 +168,10 @@ private slots:
     void tiffGrayscale();
 #endif
 
+#if defined QTEST_HAVE_TGA
+    void tgaTestImages();
+#endif
+
     void autoDetectImageFormat();
     void fileNameProbing();
 
@@ -569,6 +573,10 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("mng-2") << QString("fire.mng") << QByteArray("mng") << QImage::Format_Invalid;
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz") << QImage::Format_ARGB32_Premultiplied;
+#if defined QTEST_HAVE_TGA
+    QTest::newRow("tga") << QString("test-flag.tga") << QByteArray("tga") << QImage::Format_ARGB32;
+    QTest::newRow("tga-rle") << QString("test-flag-rle.tga") << QByteArray("tga") << QImage::Format_ARGB32;
+#endif
 }
 
 void tst_QImageReader::imageFormat()
@@ -578,22 +586,31 @@ void tst_QImageReader::imageFormat()
     QFETCH(QImage::Format, imageFormat);
 
     if (QImageReader::imageFormat(prefix + fileName).isEmpty()) {
-        if (QByteArray("jpeg") == format)
+        if (QByteArray("jpeg") == format) {
 #ifndef QTEST_HAVE_JPEG
             return;
 #endif // !QTEST_HAVE_JPEG
-        if (QByteArray("gif") == format)
+        }
+        if (QByteArray("gif") == format) {
 #ifndef QTEST_HAVE_GIF
             return;
 #endif // !QTEST_HAVE_GIF
-        if (QByteArray("mng") == format)
+        }
+        if (QByteArray("mng") == format) {
 #ifndef QTEST_HAVE_MNG
             return;
 #endif // !QTEST_HAVE_MNG
-        if (QByteArray("svg") == format || QByteArray("svgz") == format)
+        }
+        if (QByteArray("svg") == format || QByteArray("svgz") == format) {
 #ifndef QTEST_HAVE_SVG
             return;
 #endif // !QTEST_HAVE_SVG
+        }
+        if (QByteArray("tga") == format) {
+#ifndef QTEST_HAVE_TGA
+            return;
+#endif // !QTEST_HAVE_TGA
+        }
         QSKIP(("Qt does not support the " + format + " format.").constData(), SkipSingle);
     } else {
         QCOMPARE(QImageReader::imageFormat(prefix + fileName), format);
@@ -734,6 +751,11 @@ void tst_QImageReader::sizeBeforeRead()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
+
+    if (fileName == QLatin1String("test-flag-rle.tga")) {
+        QSKIP("Qt does not support reading RLE compressed TGA files", SkipSingle);
+    }
+
     QImageReader reader(prefix + fileName);
     QVERIFY(reader.canRead());
     if (format == "mng") {
@@ -1708,6 +1730,27 @@ void tst_QImageReader::tiffGrayscale()
     QImage expectedImage(prefix + "grayscale-ref.tif");
 
     QCOMPARE(expectedImage, actualImage.convertToFormat(expectedImage.format()));
+}
+#endif
+
+#if defined QTEST_HAVE_TGA
+void tst_QImageReader::tgaTestImages()
+{
+    QImage tgaTest(prefix + "test-flag.tga");
+
+    // Test image is 400x400 of a "flag" with a blue circle in the middle
+    // and a green square top left, and red rectangle on the bottom so
+    // so we test for pixels in those areas to ensure the image is not
+    // inverted or the palette is not messed up.
+    QVERIFY(!tgaTest.isNull());
+    QCOMPARE(tgaTest.size().width(), 400);
+    QCOMPARE(tgaTest.size().height(), 400);
+    QRgb pixel = tgaTest.pixel(200,200);
+    QCOMPARE(qRgb(0, 0, 255), pixel);
+    pixel = tgaTest.pixel(0, 0);
+    QCOMPARE(qRgb(0, 255, 0), pixel);
+    pixel = tgaTest.pixel(0, 399);
+    QCOMPARE(qRgb(255, 0, 0), pixel);
 }
 #endif
 
