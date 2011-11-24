@@ -173,7 +173,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \section2 Models and Views
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
-\o \l{declarative/modelviews/listview}{ListView}
+\o \l{Models and Views: ListView Examples}{ListView}
 \o \l{declarative/modelviews/pathview}{PathView}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
@@ -183,7 +183,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
 \o \l{declarative/modelviews/abstractitemmodel}{AbstractItemModel}
 
-\o \l{declarative/modelviews/webview}{WebView}
+\o \l{Models and Views: WebView Examples}{WebView}
 \endlist
 
 \section2 XML
