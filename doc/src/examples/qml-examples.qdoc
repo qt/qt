@@ -566,7 +566,7 @@
     \example declarative/modelviews/webview/alerts
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example shows how to create an alert in the WebView element.
 
     \table
     \row
@@ -581,7 +581,7 @@
     \example declarative/modelviews/webview/autosize
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example show how to use autosizing in the WebView element.
 
     \table
     \row
@@ -596,7 +596,7 @@
     \example declarative/modelviews/webview/googlemaps
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example shows how to use a web service API and the WebView element.
 
     \table
     \row
@@ -611,7 +611,7 @@
     \example declarative/modelviews/webview/inlinehtml
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief This example shows how to use inline HTML with the WebView element.
 
     \table
     \row
@@ -626,7 +626,7 @@
     \example declarative/modelviews/webview/newwindows
     \depends helper/qmlapplicationviewer
 
-    \brief These examples show how to use the WebView element.
+    \brief These examples show how to create new windows in the WebView element.
 
     \table
     \row
