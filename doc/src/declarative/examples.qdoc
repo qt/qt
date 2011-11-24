@@ -117,7 +117,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \section2 Animation
 \list
 \o \l{declarative/animation/basics}{Basics}
-\o \l{declarative/animation/behaviors}{Behaviors}
+\o \l{declarative/animation/behaviors/behavior-example}{Behaviors}
 \o \l{declarative/animation/easing}{Easing}
 \o \l{declarative/animation/states}{States}
 \endlist
