@@ -28,17 +28,17 @@
 /*!
     \title Animation: Basics Example
     \example declarative/animation/basics/color-animation
-
-    \brief This example shows how to create and combine \l{QML Animation}{animations} in QML.
+	 \depends helper/qmlapplicationviewer
+    
+	 \brief This example shows how to create and combine \l{QML Animation}{animations} in QML.
 
     \table
     \row
     \o \image qml-coloranim-example.png
     \row
     \o color-animation.qml
-    \endtable
-    
-*/    
+    \endtable  
+*/
 
 /*!
     \title Animation: Basics Property Animation Example
