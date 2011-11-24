@@ -342,8 +342,6 @@
     Click on the grey button shown at the bottom of the example to
     enable or disable the layout mirroring.
 
-    \depends helper/qmlapplicationviewer
-
     \image qml-righttoleft-layoutmirroring-example.png
 
     \sa {QML Right-to-left User Interfaces}
@@ -395,7 +393,7 @@
     \page qml-listview-examples.html
 
 	\list
-   \o \l {Models and Views: ListView Example}
+   \o \l {Models and Views: Dynamic List ListView Example}
    \o \l {Models and Views: Expanding Delegate ListView Example}
    \o \l {Models and Views: Highlight ListView Example}
    \o \l {Models and Views: Highlight Ranges ListView Example}
@@ -405,8 +403,8 @@
 */
 
 /*!
-    \title Models and Views: ListView Example
-    \example declarative/modelviews/listview
+    \title Models and Views: Dynamic List ListView Example
+    \example declarative/modelviews/listview/dynamiclist
     \depends helper/qmlapplicationviewer
 
     \brief This example shows how items can be dynamically added to
@@ -565,7 +563,7 @@
 */
 /*!
     \title Models and Views: Alert WebView Example
-    \example declarative/modelviews/webview
+    \example declarative/modelviews/webview/alerts
     \depends helper/qmlapplicationviewer
 
     \brief These examples show how to use the WebView element.
