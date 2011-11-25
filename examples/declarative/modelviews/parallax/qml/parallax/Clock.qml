@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,20 +38,17 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include "qmlapplicationviewer.h"
+import QtQuick 1.1
 
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
+Text {
+    Timer {
+        triggeredOnStart: true
+        onTriggered: parent.text = Qt.formatTime(new Date())
+        interval: 1000; running: visible; repeat: true;
+    }
 
-    QmlApplicationViewer viewer;
-    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-
-    //Uncomment the following line to open the states.qml example and comment the transitions.qml line.
-    //viewer.setMainQmlFile(QLatin1String("qml/states/states.qml"));
-    viewer.setMainQmlFile(QLatin1String("qml/states/transitions.qml"));
-    viewer.showExpanded();
-
-    return app.exec();
+    font.pixelSize: 32
+    font.family: "sans-serif"
+    font.bold: true
+    color: "white"
 }

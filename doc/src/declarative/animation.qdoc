@@ -141,7 +141,7 @@ There are several methods of assigning behavior animations to properties. The
 \c{Behavior on <property>} declaration is a convenient way of assigning a
 behavior animation onto a property.
 
-See the \l {declarative/animation/behaviors}{Behaviors example} for a
+See the \l {declarative/animation/behaviors/behavior-example}{Behaviors example} for a
 demonstration of behavioral animations.
 
 \section1 Playing Animations in Parallel or in Sequence

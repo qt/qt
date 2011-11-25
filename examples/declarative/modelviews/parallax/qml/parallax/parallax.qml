@@ -39,8 +39,6 @@
 ****************************************************************************/
 
 import QtQuick 1.0
-import "../../../../toys/clocks/content"  // for loading the Clock element
-//import "qml"
 
 Rectangle {
     width: 320; height: 480
@@ -65,14 +63,7 @@ Rectangle {
         Item {
             property url icon: "pics/yast-joystick.png"
             width: 320; height: 480
-
-            Loader {
-                anchors { top: parent.top; topMargin: 10; horizontalCenter: parent.horizontalCenter }
-                width: 300; height: 400
-                clip: true; 
-                source: "../../../../../../demos/declarative/samegame/samegame.qml"
-                Component.onCompleted: item.inAnotherDemo = true;
-            }
+            Image { anchors.centerIn: parent; source: "pics/samegame.png" }
         }
     }
 }

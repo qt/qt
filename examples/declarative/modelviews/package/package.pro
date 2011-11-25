@@ -1,12 +1,12 @@
 # Add more folders to ship with the application, here
-folder_01.source = qml/objectlistmodel
+folder_01.source = qml/package
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
-symbian:TARGET.UID3 = 0xE6A5F859
+symbian:TARGET.UID3 = 0xE4E8295C
 
 # Smart Installer package's UID
 # This UID is from the protected range and therefore the package will
@@ -29,13 +29,11 @@ symbian:TARGET.CAPABILITY += NetworkServices
 # Add dependency to Symbian components
 # CONFIG += qt-components
 
-# input
-SOURCES += main.cpp \
-           dataobject.cpp
-HEADERS += dataobject.h
+# The .cpp file which was generated for your project. Feel free to hack it.
+SOURCES += main.cpp
 
 # Please do not modify the following two lines. Required for deployment.
-desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/modelviews/objectlistmodel
+desktopInstallPrefix=$$[QT_INSTALL_EXAMPLES]/declarative/modelviews/package
 exists(qmlapplicationviewer/qmlapplicationviewer.pri):include(qmlapplicationviewer/qmlapplicationviewer.pri)
 else:include(../../../helper/qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
