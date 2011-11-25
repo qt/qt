@@ -225,6 +225,7 @@ private:
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
 Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable);
+Q_GUI_EXPORT void qt_s60_setEditorFlags(int flags);
 
 QT_END_NAMESPACE
 

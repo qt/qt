@@ -367,6 +367,11 @@ Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable)
     S60->partial_keyboardAutoTranslation = enable;
 }
 
+Q_GUI_EXPORT void qt_s60_setEditorFlags(int flags)
+{
+    S60->editorFlags |= flags;
+}
+
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     : QInputContext(parent),
       m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
@@ -1160,6 +1165,11 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
+    
+   if ((hints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) && (S60->editorFlags & EAknEditorFlagLatinInputModesOnly)){
+        flags |= EAknEditorFlagLatinInputModesOnly;
+    }
+   
     if (needsCharMap)
         flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);

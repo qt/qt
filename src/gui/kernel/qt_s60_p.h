@@ -230,6 +230,7 @@ public:
 
     int beginFullScreenCalled : 1;
     int endFullScreenCalled : 1;
+    int editorFlags;
 };
 
 Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
@@ -390,7 +391,8 @@ inline QS60Data::QS60Data()
   ,s60InstalledTrapHandler(0)
 #endif
   ,beginFullScreenCalled(0),
-  endFullScreenCalled(0)
+  endFullScreenCalled(0),
+  editorFlags(0)
 {
 }
 
