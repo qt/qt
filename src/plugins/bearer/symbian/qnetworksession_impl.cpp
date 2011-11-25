@@ -97,7 +97,6 @@ void QNetworkSessionPrivateImpl::closeHandles()
 
     QSymbianSocketManager::instance().setDefaultConnection(0);
 
-    iConnectionMonitor.Close();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this)
              << " - handles closed";
@@ -111,6 +110,7 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     isOpening = false;
 
     closeHandles();
+    iConnectionMonitor.Close();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this)
              << " - destroyed";
