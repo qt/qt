@@ -318,7 +318,7 @@ void QPrintPreviewWidgetPrivate::init()
     graphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
     graphicsView->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     QObject::connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                     q, SLOT(_q_updateCurrentPage()));
+                     q, SLOT(_q_updateCurrentPage()), Qt::QueuedConnection);
     QObject::connect(graphicsView, SIGNAL(resized()), q, SLOT(_q_fit()));
 
     scene = new QGraphicsScene(graphicsView);
