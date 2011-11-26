@@ -41,3 +41,5 @@ symbian: {
         DEPLOYMENT += imagePlugins
     }
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

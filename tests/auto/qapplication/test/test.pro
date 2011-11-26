@@ -24,9 +24,9 @@ symbian: {
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qapplication
-} else {
+  } else {
     TARGET = ../../release/tst_qapplication
   }
 }
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428

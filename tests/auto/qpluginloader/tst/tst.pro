@@ -7,7 +7,7 @@ HEADERS += ../theplugin/plugininterface.h
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qpluginloader
-} else {
+  } else {
     TARGET = ../../release/tst_qpluginloader
   }
 }
@@ -29,3 +29,5 @@ symbian: {
 }
 
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
+
+CONFIG+=insignificant_test # QTQAINFRA-428

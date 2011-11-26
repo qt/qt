@@ -4,4 +4,3 @@ SUBDIRS = test \
           modal \
       wincmdline
 
-
