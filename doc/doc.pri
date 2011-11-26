@@ -30,10 +30,10 @@ $$unixstyle {
     COPYWEBKITGUIDE = $$replace(COPYWEBKITGUIDE, "/", "\\")
     COPYWEBKITTARGA = $$replace(COPYWEBKITTARGA, "/", "\\")
     COPYWEBKITTARGB = $$replace(COPYWEBKITTARGB, "/", "\\")
-    EXAMPLESMANIFEST = $$replace(EXAMPLESMANIFEST,  "/", "\\"))
-    DEMOSMANIFEST  = $$replace(DEMOSMANIFEST,  "/", "\\"))
-    EXAMPLESMANIFESTTARGET = $$replace(EXAMPLESMANIFESTTARGET,  "/", "\\"))
-    DEMOSMANIFESTTARGET = $$replace(DEMOSMANIFESTTARGET,  "/", "\\"))
+    EXAMPLESMANIFEST = $$replace(EXAMPLESMANIFEST,  "/", "\\")
+    DEMOSMANIFEST  = $$replace(DEMOSMANIFEST,  "/", "\\")
+    EXAMPLESMANIFESTTARGET = $$replace(EXAMPLESMANIFESTTARGET,  "/", "\\")
+    DEMOSMANIFESTTARGET = $$replace(DEMOSMANIFESTTARGET,  "/", "\\")
 }
 ADP_DOCS_QDOCCONF_FILE = qt-build-docs-online.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \

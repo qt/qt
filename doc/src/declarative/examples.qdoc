@@ -116,10 +116,12 @@ The examples can be found in Qt's \c examples/declarative directory.
 
 \section2 Animation
 \list
-\o \l{declarative/animation/basics}{Basics}
-\o \l{declarative/animation/behaviors}{Behaviors}
+\o \l{declarative/animation/basics/color-animation}{Color Animation}
+\o \l{declarative/animation/behaviors/behavior-example}{Behaviors}
 \o \l{declarative/animation/easing}{Easing}
+\o \l{declarative/animation/basics/property-animation}{Property Animation}
 \o \l{declarative/animation/states}{States}
+\o \l{declarative/animation/behaviors/wigglytext}{Wiggly Text}
 \endlist
 
 \section2 Image Elements
@@ -173,7 +175,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \section2 Models and Views
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
-\o \l{declarative/modelviews/listview}{ListView}
+\o \l{Models and Views: ListView Examples}{ListView}
 \o \l{declarative/modelviews/pathview}{PathView}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
@@ -183,7 +185,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
 \o \l{declarative/modelviews/abstractitemmodel}{AbstractItemModel}
 
-\o \l{declarative/modelviews/webview}{WebView}
+\o \l{Models and Views: WebView Examples}{WebView}
 \endlist
 
 \section2 XML
