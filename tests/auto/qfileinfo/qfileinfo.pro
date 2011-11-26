@@ -35,3 +35,5 @@ wince* {
 contains(QT_CONFIG, qt3support): QT += qt3support
 
 CONFIG += parallel_test
+
+CONFIG+=insignificant_test # QTQAINFRA-428

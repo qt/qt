@@ -14,3 +14,5 @@ symbian: TARGET.CAPABILITY = NetworkServices
 symbian: {
   INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

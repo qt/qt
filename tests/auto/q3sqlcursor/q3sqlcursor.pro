@@ -7,4 +7,4 @@ requires(contains(QT_CONFIG,qt3support))
 win32:LIBS += -lws2_32
 
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428

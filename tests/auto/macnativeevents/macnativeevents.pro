@@ -14,3 +14,5 @@ SOURCES += expectedeventlist.cpp nativeeventlist.cpp
 SOURCES += tst_macnativeevents.cpp
 
 requires(mac)
+
+CONFIG+=insignificant_test # QTQAINFRA-428

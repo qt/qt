@@ -21,11 +21,11 @@ TARGET = tst_qtcpsocket
 win32 {
   CONFIG(debug, debug|release) {
     DESTDIR = ../debug
-} else {
+  } else {
     DESTDIR = ../release
   }
 } else {
     DESTDIR = ../
 }
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428
