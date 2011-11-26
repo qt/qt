@@ -423,6 +423,8 @@ QIODevice::~QIODevice()
     seeking backwards and forwards in the data stream. Regular files
     are non-sequential.
 
+    The QIODevice implementation returns false.
+
     \sa bytesAvailable()
 */
 bool QIODevice::isSequential() const
@@ -466,11 +468,17 @@ void QIODevice::setOpenMode(OpenMode openMode)
     otherwise the \l Text flag is removed. This feature is useful for classes
     that provide custom end-of-line handling on a QIODevice.
 
+    The IO device should be opened before calling this function.
+
     \sa open(), setOpenMode()
  */
 void QIODevice::setTextModeEnabled(bool enabled)
 {
     Q_D(QIODevice);
+    if (!isOpen()) {
+        qWarning("QIODevice::setTextModeEnabled: The device is not open");
+        return;
+    }
     if (enabled)
         d->openMode |= Text;
     else

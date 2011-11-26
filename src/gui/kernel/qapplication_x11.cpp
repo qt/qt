@@ -1896,6 +1896,12 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->defaultScreen = DefaultScreen(X11->display);
         X11->screenCount = ScreenCount(X11->display);
 
+        int formatCount = 0;
+        XPixmapFormatValues *values = XListPixmapFormats(X11->display, &formatCount);
+        for (int i = 0; i < formatCount; ++i)
+            X11->bppForDepth[values[i].depth] = values[i].bits_per_pixel;
+        XFree(values);
+
         X11->screens = new QX11InfoData[X11->screenCount];
         X11->argbVisuals = new Visual *[X11->screenCount];
         X11->argbColormaps = new Colormap[X11->screenCount];
@@ -3056,6 +3062,21 @@ void QApplicationPrivate::_q_alertTimeOut()
             ++it;
         }
     }
+}
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    Window root;
+    Window child;
+    int root_x, root_y, win_x, win_y;
+    uint keybstate;
+    for (int i = 0; i < ScreenCount(X11->display); ++i) {
+        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
+                          &root_x, &root_y, &win_x, &win_y, &keybstate))
+            return X11->translateModifiers(keybstate & 0x00ff);
+    }
+    return 0;
+
 }
 
 /*****************************************************************************

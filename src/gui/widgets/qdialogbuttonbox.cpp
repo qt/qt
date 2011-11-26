@@ -94,6 +94,7 @@ QT_BEGIN_NAMESPACE
     specifying their role.
 
     \snippet examples/dialogs/extension/finddialog.cpp 1
+    \snippet examples/dialogs/extension/finddialog.cpp 6
 
     Alternatively, QDialogButtonBox provides several standard buttons (e.g. OK, Cancel, Save)
     that you can use. They exist as flags so you can OR them together in the constructor.

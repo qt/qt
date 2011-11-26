@@ -893,7 +893,7 @@ void QTessellatorPrivate::processIntersections()
             QDEBUG() << "    adding edge on left";
             --min;
         }
-        while (max < scanline.size - 1 && scanline.edges[max + 1]->positionAt(y) <=  xmax) {
+        while (max + 1 < scanline.size && scanline.edges[max + 1]->positionAt(y) <=  xmax) {
             QDEBUG() << "    adding edge on right";
             ++max;
         }
@@ -1400,7 +1400,7 @@ void QTessellator::tessellateRect(const QPointF &a_, const QPointF &b_, qreal wi
     if (delta.x == 0 && delta.y == 0)
         return;
 
-    qreal hw = 0.5 * width;
+    qreal hw = qreal(0.5) * width;
 
     if (delta.x == 0) {
         Q27Dot5 halfWidth = FloatToQ27Dot5(hw);

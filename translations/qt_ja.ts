@@ -10,9 +10,20 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[配列長 %1]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;未定義&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
-        <source>Fake error !</source>
+        <source>Fake error!</source>
         <translation>疑似エラー!</translation>
     </message>
     <message>
@@ -171,7 +182,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Not found</source>
-        <translation>見つかりませんでした</translation>
+        <translation>見つかりません</translation>
     </message>
     <message>
         <source>Out of memory</source>
@@ -396,7 +407,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>反射遅延 (ms)</translation>
     </message>
     <message>
@@ -411,7 +422,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>リバーブ レベル (mB)</translation>
     </message>
     <message>
@@ -469,8 +480,12 @@ libgstreamer-plugins-base はインストールされていますか。</transla
         <translation>音量: %1%</translation>
     </message>
     <message>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
+        <translation>スライダを用いて音量を調整してください。左端が0%です。右端が%1%になります</translation>
+    </message>
+    <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation>スライダを用いて音量を指定してください。左端が0%、右端が%1%になります</translation>
+        <translation type="obsolete">スライダを用いて音量を指定してください。左端が0%、右端が%1%になります</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -762,7 +777,7 @@ libgstreamer-plugins-base はインストールされていますか。</transla
 File not found.
 Check path and filename.</source>
         <translation>%1
-ファイルが見つかりませんでした。
+ファイルが見つかりません。
 パスおよびファイル名を確認してください。</translation>
     </message>
 </context>
@@ -1017,7 +1032,7 @@ to
     <name>QAbstractSocket</name>
     <message>
         <source>Host not found</source>
-        <translation>ホストが見つかりませんでした</translation>
+        <translation>ホストが見つかりません</translation>
     </message>
     <message>
         <source>Connection refused</source>
@@ -1062,6 +1077,14 @@ to
 </context>
 <context>
     <name>QAccessibleButton</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>選択解除</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>選択</translation>
+    </message>
     <message>
         <source>Press</source>
         <translation>押す</translation>
@@ -1722,10 +1745,6 @@ to
         <translation>エイリアスプロパティがエイリアスの境界を越えています</translation>
     </message>
     <message>
-        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="obsolete">無効なエイリアスの参照です。エイリアスの参照先は &lt;ID&gt; もしくは &lt;ID&gt;.&lt;プロパティ&gt; でなくてはいけません</translation>
-    </message>
-    <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
         <translation>無効なエイリアスの参照です。ID &quot;%1&quot; が見つかりません</translation>
     </message>
@@ -1739,25 +1758,6 @@ to
     <message>
         <source>createObject: value is not an object</source>
         <translation>createObject: 値がオブジェクトではありません</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeCompositeTypeManager</name>
-    <message>
-        <source>Resource %1 unavailable</source>
-        <translation type="obsolete">リソース %1 が利用できません</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation type="obsolete">名前空間 %1 を型として使用することはできません</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation type="obsolete">%1 %2</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation type="obsolete">型 %1 が利用できません</translation>
     </message>
 </context>
 <context>
@@ -2160,25 +2160,6 @@ to
     </message>
 </context>
 <context>
-    <name>QDeclarativeTypeData</name>
-    <message>
-        <source>Script %1 unavailable</source>
-        <translation type="obsolete">スクリプト %1 が利用できません</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation type="obsolete">型 %1 が利用できません</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation type="obsolete">名前空間 %1 を型として使用することはできません</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation type="obsolete">%1 %2</translation>
-    </message>
-</context>
-<context>
     <name>QDeclarativeTypeLoader</name>
     <message>
         <source>Script %1 unavailable</source>
@@ -2492,6 +2473,10 @@ to
     <message>
         <source>Cannot create %1 for output</source>
         <translation>コピー先として %1 を作成できません</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>ファイルエンジンが見つからないか、UnMapExtension をサポートしていません</translation>
     </message>
 </context>
 <context>
@@ -2985,7 +2970,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Host %1 not found</source>
-        <translation>ホスト %1 が見つかりませんでした</translation>
+        <translation>ホスト %1 が見つかりません</translation>
     </message>
     <message>
         <source>Connection refused to host %1</source>
@@ -3156,7 +3141,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Host %1 not found</source>
-        <translation>ホスト %1 が見つかりませんでした</translation>
+        <translation>ホスト %1 が見つかりません</translation>
     </message>
     <message>
         <source>HTTP request failed</source>
@@ -3416,16 +3401,8 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QLibrary</name>
     <message>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">&apos;%1&apos; をメモリにマッピングできませんでした: %2</translation>
-    </message>
-    <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation>&apos;%1&apos; でプラグイン検証データが一致しません</translation>
-    </message>
-    <message>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">&apos;%1&apos; のマッピングを解除できませんでした: %2</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
@@ -3462,6 +3439,18 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>&apos;%2&apos;に含まれる識別子 &quot;%1&quot; を解決できません: %3</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos; は ELF オブジェクトではありません(%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos; は ELF オブジェクトではありません</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos; は無効な ELF オブジェクトです(%2)</translation>
     </message>
 </context>
 <context>
@@ -3559,6 +3548,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: 未知のエラー %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: アクセスできません</translation>
     </message>
 </context>
 <context>
@@ -3735,6 +3728,10 @@ Do you want to delete it anyway?</source>
         <source>Actions</source>
         <translation>アクション</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>コーナーツールバー</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3902,10 +3899,6 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessDataBackend</name>
     <message>
-        <source>Operation not supported on %1</source>
-        <translation>%1 ではこの操作はサポートされていません</translation>
-    </message>
-    <message>
         <source>Invalid URI: %1</source>
         <translation>無効なURIです: %1</translation>
     </message>
@@ -3998,6 +3991,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Network session error.</source>
         <translation>ネットワークセッションエラー。</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>バックエンド開始時のエラー。</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -4191,6 +4188,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
         <translation>無効なクエリー: &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>ホストが見つかりません</translation>
     </message>
 </context>
 <context>
@@ -5500,17 +5501,16 @@ Please choose a different file name.</source>
         <translation>%1: 指定されたサイズはシステムにより拒否されました</translation>
     </message>
     <message>
+        <source>%1: bad name</source>
+        <translation>%1: 無効な名前です</translation>
+    </message>
+    <message>
         <source>%1: not attached</source>
         <translation>%1: アタッチしていません</translation>
     </message>
     <message>
         <source>%1: invalid size</source>
         <translation>%1: 無効なサイズです</translation>
-    </message>
-    <message>
-        <source>%1: key error</source>
-        <translatorcomment>safekey.isEmpty()==true</translatorcomment>
-        <translation>%1: キーかありません</translation>
     </message>
     <message>
         <source>%1: size query failed</source>
@@ -6489,6 +6489,10 @@ Please choose a different file name.</source>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
+        <translation type="obsolete">OK</translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
@@ -6733,6 +6737,187 @@ Please choose a different file name.</source>
     </message>
 </context>
 <context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>無効なオプション: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>データベースのオープン時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>POLICY_DB_DEFAULT は他の POLICY 定義の利用前に定義されなければなりません</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>トランザクションを開始できません</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>トランザクションをコミットできません</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>トランザクションをロールバックできません</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>カラム数の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>カラム名の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>カラムの型の取得時にエラーが発生しました</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>レコードをフェッチできません</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>ステートメントを実行できません</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>ステートメントがプリペアではありません</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>ステートメントをリセットできません</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>パラメータをバインドできません</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>パラメータの数が合っていません</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>非ブロック型ソケットを初期化できません</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>ブロードキャストソケットを初期化できません</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>IPv6 がサポートされていないプラットフォームで IPv6 ソケットを使用しようとしています</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>リモートホストは接続を閉じました</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>ネットワーク操作がタイムアウトしました</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>リソースが足りません</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>サポートされていないソケット操作です</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>プロトコル型がサポートされていません</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>無効なソケット記述子です</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>ホストへ到達できません</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>ネットワークへ到達できません</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>許可されていません</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>接続がタイムアウトしました</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>接続が拒否されました</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>バインドアドレスは既に使われています</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>そのアドレスは使用できません</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>そのアドレスへのアクセス権がありません</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>データグラムが大き過ぎて送信できませんでした</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>メッセージを送信できません</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>メッセージを受信できません</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>書き込みができません</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>ネットワークエラー</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>別のソケットが同じポートで既に待ち受けています</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>非ソケットに対する操作です</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>このプロキシーは、この操作に対応していません</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>この操作には無効なアドレスです</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>指定されたネットワークセッションは開いていません</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>未知のエラー</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: out of resources</source>
@@ -6751,6 +6936,10 @@ Please choose a different file name.</source>
         <translation>%1: 存在しません</translation>
     </message>
     <message>
+        <source>%1: name error</source>
+        <translation>%1: 名前の解決に失敗</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
         <translation>%1: 未知のエラーです %2</translation>
     </message>
@@ -6759,7 +6948,7 @@ Please choose a different file name.</source>
     <name>QTDSDriver</name>
     <message>
         <source>Unable to open connection</source>
-        <translation>接続をオープンできません</translation>
+        <translation>接続を開けません</translation>
     </message>
     <message>
         <source>Unable to use database</source>
@@ -6840,11 +7029,21 @@ Please choose a different file name.</source>
 <context>
     <name>QUndoGroup</name>
     <message>
+        <source>Undo %1</source>
+        <translation>%1 を元に戻す</translation>
+    </message>
+    <message>
         <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>元に戻す</translation>
     </message>
     <message>
+        <source>Redo %1</source>
+        <translation>%1 をやり直す</translation>
+    </message>
+    <message>
         <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>やり直す</translation>
     </message>
 </context>
@@ -6858,11 +7057,21 @@ Please choose a different file name.</source>
 <context>
     <name>QUndoStack</name>
     <message>
+        <source>Undo %1</source>
+        <translation>%1 を元に戻す</translation>
+    </message>
+    <message>
         <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>元に戻す</translation>
     </message>
     <message>
+        <source>Redo %1</source>
+        <translation>%1 をやり直す</translation>
+    </message>
+    <message>
         <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>やり直す</translation>
     </message>
 </context>
@@ -6920,6 +7129,10 @@ Please choose a different file name.</source>
         <translation>リクエストはキャンセルされました</translation>
     </message>
     <message>
+        <source>Request canceled</source>
+        <translation>リクエストはキャンセルされました</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
         <translation>リクエストはブロックされました</translation>
     </message>
@@ -6939,16 +7152,16 @@ Please choose a different file name.</source>
         <source>File does not exist</source>
         <translation>ファイルが存在しません</translation>
     </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>メディアエンジンで読み込みを行います</translation>
+    </message>
 </context>
 <context>
     <name>QWebPage</name>
     <message>
         <source>Redirection limit reached</source>
         <translation>リダイレクトの上限に達しました</translation>
-    </message>
-    <message>
-        <source>Bad HTTP request</source>
-        <translation>誤った HTTP のリクエストです</translation>
     </message>
     <message>
         <source>Submit</source>
@@ -6981,6 +7194,11 @@ Please choose a different file name.</source>
         <translation>ファイルが選択されていません</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>詳細</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>新しいウィンドウで開く</translation>
@@ -7009,6 +7227,61 @@ Please choose a different file name.</source>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
         <translation>画像をコピー</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>画像のアドレスをコピー</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>ビデオを開く</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>オーディオを開く</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>ビデオをコピー</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>オーディオをコピー</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>コントロールの表示の切替</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>ループのオン/オフの切替</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>フルスクリーン表示</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>再生</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>一時停止</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>ミュート</translation>
     </message>
     <message>
         <source>Open Frame</source>
@@ -7049,6 +7322,11 @@ Please choose a different file name.</source>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>貼り付け</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>すべてを選択</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
@@ -7527,10 +7805,6 @@ Please choose a different file name.</source>
     <message>
         <source>Move the cursor to the end of the document</source>
         <translation>文章の末尾にカーソルを移動</translation>
-    </message>
-    <message>
-        <source>Select all</source>
-        <translation>すべてを選択</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -8030,6 +8304,101 @@ Please choose a different file name.</source>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>アイテム</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>インスペクタモード</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>アニメーションの再生/一時停止</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>選択</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation type="unfinished">セレクト (Marquee)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>ズーム</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>カラーピッカー</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>変更を QML Viewer へ適用する</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>変更をドキュメントへ適用する</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>ツール</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1倍</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>0.5倍</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>0.25倍</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>0.125倍</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>0.1倍</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>色をコピー</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBox</name>
+    <message>
+        <source>Qt Quick Toolbox</source>
+        <translation type="obsolete">Qt Quick ツールボックス</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>&amp;100% 表示</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>拡大</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>縮小</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
@@ -8489,7 +8858,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>ユーザ定義の関数の名前空間は、空であってはなりません。(すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
+        <translation type="obsolete">ユーザ定義の関数の名前空間は、空であってはなりません。(すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>ユーザ定義の関数の名前空間は、空であってはなりません。(今回の場合、すでに定義されているプレフィックス &apos;%1&apos; が使用できます)</translation>
     </message>
     <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
@@ -8913,7 +9286,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Complex type %1 cannot be derived from base type %2%3.</source>
-        <translation>複合型 %1 は基底型 %2 から派生する事はできません %3。</translation>
+        <translation>複合型 %1 は基底型 %2%3 から派生する事はできません。</translation>
     </message>
     <message>
         <source>Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.</source>
@@ -9333,6 +9706,10 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <translation type="obsolete">複合型 %1 のコンテンツモデルは %2 要素を含んでいますが非 empty 型を派生した拡張にする事はできません。</translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation>複合型 %1 のコンテンツモデルは %2 要素を含んでいますが非 empty 型を派生した拡張にする事はできません。</translation>
     </message>
     <message>
@@ -9740,8 +10117,12 @@ Please choose a different file name.</source>
         <translation>要素 %1 はテキストを含む事を許可されていません。</translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
         <translation>要素 %1 は固定値を持った他の要素を含む事はできません。</translation>
+    </message>
+    <message>
+        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <translation type="obsolete">要素 %1 は固定値を持った他の要素を含む事はできません。</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>

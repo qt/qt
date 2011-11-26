@@ -198,7 +198,7 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
 
     QString absoluteName;
     if (fileEngine.isNull()) {
-        if (!dirEntry.isRelative()) {
+        if (!dirEntry.isRelative() && dirEntry.isClean()) {
             absoluteDirEntry = dirEntry;
             return;
         }
@@ -802,14 +802,23 @@ QString QDir::convertSeparators(const QString &pathName)
 */
 QString QDir::toNativeSeparators(const QString &pathName)
 {
-    QString n(pathName);
 #if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
-    for (int i = 0; i < (int)n.length(); ++i) {
-        if (n[i] == QLatin1Char('/'))
-            n[i] = QLatin1Char('\\');
+    int i = pathName.indexOf(QLatin1Char('/'));
+    if (i != -1) {
+        QString n(pathName);
+
+        QChar * const data = n.data();
+        data[i++] = QLatin1Char('\\');
+
+        for (; i < n.length(); ++i) {
+            if (data[i] == QLatin1Char('/'))
+                data[i] = QLatin1Char('\\');
+        }
+
+        return n;
     }
 #endif
-    return n;
+    return pathName;
 }
 
 /*!
@@ -826,14 +835,23 @@ QString QDir::toNativeSeparators(const QString &pathName)
 */
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
-    QString n(pathName);
 #if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
-    for (int i = 0; i < (int)n.length(); ++i) {
-        if (n[i] == QLatin1Char('\\'))
-            n[i] = QLatin1Char('/');
+    int i = pathName.indexOf(QLatin1Char('\\'));
+    if (i != -1) {
+        QString n(pathName);
+
+        QChar * const data = n.data();
+        data[i++] = QLatin1Char('/');
+
+        for (; i < n.length(); ++i) {
+            if (data[i] == QLatin1Char('\\'))
+                data[i] = QLatin1Char('/');
+        }
+
+        return n;
     }
 #endif
-    return n;
+    return pathName;
 }
 
 /*!
@@ -1615,9 +1633,24 @@ bool QDir::operator==(const QDir &dir) const
     if (d->filters == other->filters
        && d->sort == other->sort
        && d->nameFilters == other->nameFilters) {
-        d->resolveAbsoluteEntry();
-        other->resolveAbsoluteEntry();
-        return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+
+        // Assume directories are the same if path is the same
+        if (d->dirEntry.filePath() == other->dirEntry.filePath())
+            return true;
+
+        if (exists()) {
+            if (!dir.exists())
+                return false; //can't be equal if only one exists
+            // Both exist, fallback to expensive canonical path computation
+            return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+        } else {
+            if (dir.exists())
+                return false; //can't be equal if only one exists
+            // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
+            d->resolveAbsoluteEntry();
+            other->resolveAbsoluteEntry();
+            return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+        }
     }
     return false;
 }
@@ -1839,7 +1872,10 @@ QString QDir::currentPath()
 
     Under non-Windows operating systems the \c HOME environment
     variable is used if it exists, otherwise the path returned by the
-    rootPath(). On Symbian always the same as the path returned by the rootPath().
+    rootPath().
+
+    On Symbian this typically returns "c:/data",
+    i.e. the same as native PathInfo::PhoneMemoryRootPath().
 
     \sa home(), currentPath(), rootPath(), tempPath()
 */
@@ -1903,9 +1939,8 @@ QString QDir::tempPath()
 /*!
     Returns the absolute path of the root directory.
 
-    For Unix operating systems this returns "/". For Windows file
-    systems this normally returns "c:/". On Symbian this typically returns
-    "c:/data", i.e. the same as native PathInfo::PhoneMemoryRootPath().
+    For Unix operating systems this returns "/". For Windows and Symbian file
+    systems this normally returns "c:/". I.E. the root of the system drive.
 
     \sa root(), drives(), currentPath(), homePath(), tempPath()
 */
@@ -1986,7 +2021,7 @@ QString QDir::cleanPath(const QString &path)
     const QChar *p = name.unicode();
     for (int i = 0, last = -1, iwrite = 0; i < len; ++i) {
         if (p[i] == QLatin1Char('/')) {
-            while (i < len-1 && p[i+1] == QLatin1Char('/')) {
+            while (i+1 < len && p[i+1] == QLatin1Char('/')) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) //allow unc paths
                 if (!i)
                     break;
@@ -1994,9 +2029,9 @@ QString QDir::cleanPath(const QString &path)
                 i++;
             }
             bool eaten = false;
-            if (i < len - 1 && p[i+1] == QLatin1Char('.')) {
+            if (i+1 < len && p[i+1] == QLatin1Char('.')) {
                 int dotcount = 1;
-                if (i < len - 2 && p[i+2] == QLatin1Char('.'))
+                if (i+2 < len && p[i+2] == QLatin1Char('.'))
                     dotcount++;
                 if (i == len - dotcount - 1) {
                     if (dotcount == 1) {

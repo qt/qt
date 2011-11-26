@@ -353,8 +353,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
     static bool resolvedNWE = false;
     if (!resolvedNWE) {
-        resolvedNWE = true;
         ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
+        resolvedNWE = true;
     }
     if (!ptrNotifyWinEvent)
         return;
@@ -600,6 +600,35 @@ HRESULT STDMETHODCALLTYPE QWindowsEnumerate::Skip(unsigned long celt)
     return S_OK;
 }
 
+struct AccessibleElement {
+    AccessibleElement(int entryId, QAccessibleInterface *accessible) {
+        if (entryId < 0) {
+            QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entryId);
+            iface = QAccessible::queryAccessibleInterface(ref.first);
+            entry = ref.second;
+            cleanupInterface = true;
+        } else {
+            iface = accessible;
+            entry = entryId;
+            cleanupInterface = false;
+        }
+    }
+
+    QString text(QAccessible::Text t) const {
+        return iface ? iface->text(t, entry) : QString();
+    }
+
+    ~AccessibleElement() {
+        if (cleanupInterface)
+            delete iface;
+    }
+
+    QAccessibleInterface *iface;
+    int entry;
+private:
+    bool cleanupInterface;
+};
+
 /*
 */
 class QWindowsAccessible : public IAccessible, IOleWindow, QAccessible
@@ -662,14 +691,7 @@ private:
 
 static inline BSTR QStringToBSTR(const QString &str)
 {
-    BSTR bstrVal;
-
-    int wlen = str.length()+1;
-    bstrVal = SysAllocStringByteLen(0, wlen*2);
-    memcpy(bstrVal, str.unicode(), sizeof(QChar)*(wlen));
-    bstrVal[wlen] = 0;
-
-    return bstrVal;
+    return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
 }
 
 /*
@@ -998,7 +1020,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *py
     if (!accessible->isValid())
         return E_FAIL;
 
-    QRect rect = accessible->rect(varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QRect rect = elem.iface ? elem.iface->rect(elem.entry) : QRect();
     if (rect.isValid()) {
         *pxLeft = rect.x();
         *pyTop = rect.y();
@@ -1101,25 +1124,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
     int childIndex = varChildID.lVal;
     QAccessibleInterface *acc = 0;
 
-    if (childIndex < 0) {
-        const int entry = childIndex;
-        QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entry);
-        if (ref.first) {
-            acc = queryAccessibleInterface(ref.first);
-            if (acc && ref.second) {
-                if (ref.second) {
-                    QAccessibleInterface *res;
-                    int index = acc->navigate(Child, ref.second, &res);
-                    delete acc;
-                    if (index == -1)
-                        return E_INVALIDARG;
-                    acc = res;
-                }
-            }
-        }
-    } else {
-        RelationFlag rel = childIndex ? Child : Self;
-        accessible->navigate(rel, childIndex, &acc);
+    AccessibleElement elem(childIndex, accessible);
+    if (elem.iface) {
+        RelationFlag rel = elem.entry ? Child : Self;
+        int index = elem.iface->navigate(rel, elem.entry, &acc);
+        if (index == -1)
+            return E_INVALIDARG;
     }
 
     if (acc) {
@@ -1171,7 +1181,9 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accDoDefaultAction(VARIANT varID)
     if (!accessible->isValid())
         return E_FAIL;
 
-    return accessible->doAction(DefaultAction, varID.lVal, QVariantList()) ? S_OK : S_FALSE;
+    AccessibleElement elem(varID.lVal, accessible);
+    const bool res = elem.iface ? elem.iface->doAction(DefaultAction, elem.entry, QVariantList()) : false;
+    return res ? S_OK : S_FALSE;
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDefaultAction(VARIANT varID, BSTR* pszDefaultAction)
@@ -1180,7 +1192,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDefaultAction(VARIANT varID
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString def = accessible->actionText(DefaultAction, Name, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString def = elem.iface ? elem.iface->actionText(DefaultAction, Name, elem.entry) : QString();
     if (def.isEmpty()) {
         *pszDefaultAction = 0;
         return S_FALSE;
@@ -1196,7 +1209,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, 
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString descr = accessible->text(Description, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString descr = elem.text(Description);
     if (descr.size()) {
         *pszDescription = QStringToBSTR(descr);
         return S_OK;
@@ -1212,7 +1226,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelp(VARIANT varID, BSTR *p
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString help = accessible->text(Help, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString help = elem.text(Help);
     if (help.size()) {
         *pszHelp = QStringToBSTR(help);
         return S_OK;
@@ -1233,7 +1248,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString sc = accessible->text(Accelerator, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString sc = elem.text(Accelerator);
     if (sc.size()) {
         *pszKeyboardShortcut = QStringToBSTR(sc);
         return S_OK;
@@ -1249,7 +1265,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString n = accessible->text(Name, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString n = elem.text(Name);
     if (n.size()) {
         *pszName = QStringToBSTR(n);
         return S_OK;
@@ -1271,7 +1288,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
     if (!accessible->isValid())
         return E_FAIL;
 
-    Role role = accessible->role(varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    Role role = elem.iface ? elem.iface->role(elem.entry) : NoRole;
     if (role != NoRole) {
         if (role == LayeredPane)
             role = QAccessible::Pane;
@@ -1290,7 +1308,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
         return E_FAIL;
 
     (*pvarState).vt = VT_I4;
-    (*pvarState).lVal = accessible->state(varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    (*pvarState).lVal = elem.iface ? elem.iface->state(elem.entry) : State(Normal);
     return S_OK;
 }
 
@@ -1300,7 +1319,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* 
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString value = accessible->text(Value, varID.lVal);
+    AccessibleElement elem(varID.lVal, accessible);
+    QString value = elem.text(Value);
     if (!value.isNull()) {
         *pszValue = QStringToBSTR(value);
         return S_OK;
@@ -1324,19 +1344,23 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
 
     bool res = false;
 
-    if (flagsSelect & SELFLAG_TAKEFOCUS)
-        res = accessible->doAction(SetFocus, varID.lVal, QVariantList());
-    if (flagsSelect & SELFLAG_TAKESELECTION) {
-        accessible->doAction(ClearSelection, 0, QVariantList());
-        res = accessible->doAction(AddToSelection, varID.lVal, QVariantList());
+    AccessibleElement elem(varID.lVal, accessible);
+    QAccessibleInterface *acc = elem.iface;
+    if (acc) {
+        const int entry = elem.entry;
+        if (flagsSelect & SELFLAG_TAKEFOCUS)
+            res = acc->doAction(SetFocus, entry, QVariantList());
+        if (flagsSelect & SELFLAG_TAKESELECTION) {
+            acc->doAction(ClearSelection, 0, QVariantList());   //### bug, 0 should be entry??
+            res = acc->doAction(AddToSelection, entry, QVariantList());
+        }
+        if (flagsSelect & SELFLAG_EXTENDSELECTION)
+            res = acc->doAction(ExtendSelection, entry, QVariantList());
+        if (flagsSelect & SELFLAG_ADDSELECTION)
+            res = acc->doAction(AddToSelection, entry, QVariantList());
+        if (flagsSelect & SELFLAG_REMOVESELECTION)
+            res = acc->doAction(RemoveSelection, entry, QVariantList());
     }
-    if (flagsSelect & SELFLAG_EXTENDSELECTION)
-        res = accessible->doAction(ExtendSelection, varID.lVal, QVariantList());
-    if (flagsSelect & SELFLAG_ADDSELECTION)
-        res = accessible->doAction(AddToSelection, varID.lVal, QVariantList());
-    if (flagsSelect & SELFLAG_REMOVESELECTION)
-        res = accessible->doAction(RemoveSelection, varID.lVal, QVariantList());
-
     return res ? S_OK : S_FALSE;
 }
 

@@ -51,7 +51,7 @@
 #include "qdeclarativecomponent.h"
 #include "private/qdeclarativebinding_p_p.h"
 #include "private/qdeclarativevme_p.h"
-#include "private/qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativeenginedebugservice_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativexmlhttprequest_p.h"
 #include "private/qdeclarativesqldatabase_p.h"
@@ -581,9 +581,9 @@ void QDeclarativeEnginePrivate::init()
     scriptEngine.globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
-        QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
+        QDeclarativeEngineDebugService::isDebuggingEnabled()) {
         isDebugging = true;
-        QDeclarativeEngineDebugServer::instance()->addEngine(q);
+        QDeclarativeEngineDebugService::instance()->addEngine(q);
         QJSDebugService::instance()->addEngine(q);
     }
 }
@@ -648,7 +648,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 {
     Q_D(QDeclarativeEngine);
     if (d->isDebugging) {
-        QDeclarativeEngineDebugServer::instance()->remEngine(this);
+        QDeclarativeEngineDebugService::instance()->remEngine(this);
         QJSDebugService::instance()->removeEngine(this);
     }
 }
@@ -1154,7 +1154,7 @@ void QDeclarativeData::destroyed(QObject *object)
         context->destroy();
 
     while (guards) {
-        QDeclarativeGuard<QObject> *guard = guards;
+        QDeclarativeGuard<QObject> *guard = static_cast<QDeclarativeGuard<QObject> *>(guards);
         *guard = (QObject *)0;
         guard->objectDestroyed(object);
     }

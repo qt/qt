@@ -48,6 +48,7 @@
 #include <private/qauthenticator_p.h>
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
+#include <qcoreapplication.h>
 
 #include <qbuffer.h>
 #include <qpair.h>
@@ -386,6 +387,11 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 // send any pending requests
                 copyCredentials(i,  auth, isProxy);
             }
+        } else if (priv->phase == QAuthenticatorPrivate::Start) {
+            // If the url's authenticator has a 'user' set we will end up here (phase is only set to 'Done' by
+            // parseHttpResponse above if 'user' is empty). So if credentials were supplied with the request,
+            // such as in the case of an XMLHttpRequest, this is our only opportunity to cache them.
+            emit reply->cacheCredentials(reply->request(), auth);
         }
         // - Changing values in QAuthenticator will reset the 'phase'. Therefore if it is still "Done"
         //   then nothing was filled in by the user or the cache
@@ -665,32 +671,31 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
     QString errorString;
     switch (errorCode) {
     case QNetworkReply::HostNotFoundError:
-        errorString = QString::fromLatin1(QT_TRANSLATE_NOOP("QHttp", "Host %1 not found"))
-                              .arg(socket->peerName());
+        errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(socket->peerName());
         break;
     case QNetworkReply::ConnectionRefusedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Connection refused"));
+        errorString = QCoreApplication::translate("QHttp", "Connection refused");
         break;
     case QNetworkReply::RemoteHostClosedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Connection closed"));
+        errorString = QCoreApplication::translate("QHttp", "Connection closed");
         break;
     case QNetworkReply::TimeoutError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QAbstractSocket", "Socket operation timed out"));
+        errorString = QCoreApplication::translate("QAbstractSocket", "Socket operation timed out");
         break;
     case QNetworkReply::ProxyAuthenticationRequiredError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Proxy requires authentication"));
+        errorString = QCoreApplication::translate("QHttp", "Proxy requires authentication");
         break;
     case QNetworkReply::AuthenticationRequiredError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Host requires authentication"));
+        errorString = QCoreApplication::translate("QHttp", "Host requires authentication");
         break;
     case QNetworkReply::ProtocolFailure:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Data corrupted"));
+        errorString = QCoreApplication::translate("QHttp", "Data corrupted");
         break;
     case QNetworkReply::ProtocolUnknownError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Unknown protocol specified"));
+        errorString = QCoreApplication::translate("QHttp", "Unknown protocol specified");
         break;
     case QNetworkReply::SslHandshakeFailedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "SSL handshake failed"));
+        errorString = QCoreApplication::translate("QHttp", "SSL handshake failed");
         break;
     default:
         // all other errors are treated as QNetworkReply::UnknownNetworkError

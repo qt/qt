@@ -1,5 +1,4 @@
 QT += sql \
-    xml \
     network
 TEMPLATE = lib
 TARGET = QtHelp

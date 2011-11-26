@@ -1066,6 +1066,8 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         highlightEnd = highlightRangeEnd;
     }
 
+    bool strictHighlightRange = haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange;
+
     if (snapMode != QDeclarativeGridView::NoSnap) {
         qreal tempPosition = isRightToLeftTopToBottom() ? -position()-size() : position();
         if (snapMode == QDeclarativeGridView::SnapOneRow && moveReason == Mouse) {
@@ -1081,25 +1083,29 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             tempPosition -= bias;
         }
         FxGridItem *topItem = snapItemAt(tempPosition+highlightStart);
+        if (!topItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            topItem = currentItem;
+        }
         FxGridItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
+        if (!bottomItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            bottomItem = currentItem;
+        }
         qreal pos;
-        if (topItem && bottomItem && haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
-            qreal topPos = qMin(topItem->rowPos() - highlightStart, -maxExtent);
-            qreal bottomPos = qMax(bottomItem->rowPos() - highlightEnd, -minExtent);
-            pos = qAbs(data.move + topPos) < qAbs(data.move + bottomPos) ? topPos : bottomPos;
-        } else if (topItem) {
-            qreal headerPos = 0;
-            if (header)
-                headerPos = isRightToLeftTopToBottom() ? header->rowPos() + cellWidth - headerSize() : header->rowPos();
-            if (topItem->index == 0 && header && tempPosition+highlightStart < headerPos+headerSize()/2) {
-                pos = isRightToLeftTopToBottom() ? - headerPos + highlightStart - size() : headerPos - highlightStart;
+        bool isInBounds = -position() > maxExtent && -position() <= minExtent;
+        if (topItem && (isInBounds || strictHighlightRange)) {
+            if (topItem->index == 0 && header && tempPosition+highlightStart < header->rowPos()+headerSize()/2 && !strictHighlightRange) {
+                pos = isRightToLeftTopToBottom() ? - header->rowPos() + highlightStart - size() : header->rowPos() - highlightStart;
             } else {
                 if (isRightToLeftTopToBottom())
                     pos = qMax(qMin(-topItem->rowPos() + highlightStart - size(), -maxExtent), -minExtent);
                 else
                     pos = qMax(qMin(topItem->rowPos() - highlightStart, -maxExtent), -minExtent);
             }
-        } else if (bottomItem) {
+        } else if (bottomItem && isInBounds) {
             if (isRightToLeftTopToBottom())
                 pos = qMax(qMin(-bottomItem->rowPos() + highlightEnd - size(), -maxExtent), -minExtent);
             else
@@ -1210,10 +1216,10 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         }
         qreal accel = deceleration;
         qreal v2 = v * v;
-        qreal overshootDist = 0.0;
-        if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeGridView::SnapOneRow) {
+        qreal overshootDist = qreal(0.0);
+        if ((maxDistance > qreal(0.0) && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeGridView::SnapOneRow) {
             // + rowSize()/4 to encourage moving at least one item in the flick direction
-            qreal dist = v2 / (accel * 2.0) + rowSize()/4;
+            qreal dist = v2 / (accel * qreal(2.0)) + rowSize()/4;
             dist = qMin(dist, maxDistance);
             if (v > 0)
                 dist = -dist;
@@ -2245,9 +2251,10 @@ qreal QDeclarativeGridView::minXExtent() const
     qreal extent = -d->startPosition();
     qreal highlightStart;
     qreal highlightEnd;
-    qreal endPositionFirstItem;
+    qreal endPositionFirstItem = 0;
     if (d->isRightToLeftTopToBottom()) {
-        endPositionFirstItem = d->rowPosAt(d->model->count()-1);
+        if (d->model && d->model->count())
+            endPositionFirstItem = d->rowPosAt(d->model->count()-1);
         highlightStart = d->highlightRangeStartValid
                 ? d->highlightRangeStart - (d->lastPosition()-endPositionFirstItem)
                 : d->size() - (d->lastPosition()-endPositionFirstItem);
@@ -2262,7 +2269,7 @@ qreal QDeclarativeGridView::minXExtent() const
             extent += d->header->item->width();
     }
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-        extent += highlightStart;
+        extent += d->isRightToLeftTopToBottom() ? -highlightStart : highlightStart;
         extent = qMax(extent, -(endPositionFirstItem - highlightEnd));
     }
     return extent;
@@ -2848,6 +2855,11 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
             addedVisible = true;
         }
         FxGridItem *item = d->createItem(modelIndex + i);
+        if (!item) {
+            // broken or no delegate
+            d->clear();
+            return;
+        }
         d->visibleItems.insert(index, item);
         item->setPosition(colPos, rowPos);
         added.append(item);
@@ -3038,6 +3050,11 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
             FxGridItem *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
+            if (!movedItem) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             it = d->visibleItems.insert(it, movedItem);
             if (it == d->visibleItems.begin() && firstItem)
                 movedItem->setPosition(firstItem->colPos(), firstItem->rowPos());

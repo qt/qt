@@ -854,7 +854,7 @@ void XsdSchemaResolver::resolveComplexContentComplexTypes(const XsdComplexType::
                 group->setCompositor(XsdModelGroup::SequenceCompositor);
 
                 if (effectiveContent && effectiveContent->term()->isModelGroup() && XsdModelGroup::Ptr(effectiveContent->term())->compositor() == XsdModelGroup::AllCompositor) {
-                    m_context->error(QtXmlPatterns::tr("Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.")
+                    m_context->error(QtXmlPatterns::tr("Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.")
                                                       .arg(formatType(m_namePool, complexType)).arg(formatKeyword("all")), XsdSchemaContext::XSDError, sourceLocation(complexType));
                     return;
                 }

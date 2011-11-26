@@ -1393,6 +1393,7 @@ void QDeclarativeViewer::appAboutToQuit()
     loggerWindow = 0;
     delete tester;
     tester = 0;
+    close();
 }
 
 void QDeclarativeViewer::autoStartRecording()

@@ -192,6 +192,14 @@ public:
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
             widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
+#ifdef Q_OS_SYMBIAN
+            if (!widget->context()->isValid()) {
+                delete widget;
+                widget = 0;
+                initializing = false;
+                return 0;
+            }
+#endif
             widget->resize(1, 1);
 
             // We don't need this internal widget to appear in QApplication::topLevelWidgets()
@@ -369,7 +377,7 @@ QGLWindowSurface::~QGLWindowSurface()
 
 #ifdef Q_OS_SYMBIAN
     // Destroy the context if necessary.
-    if (!qt_gl_share_widget()->context()->isSharing())
+    if (qt_gl_share_widget() && !qt_gl_share_context()->isSharing())
         qt_destroy_gl_share_widget();
 #endif
 }
@@ -420,7 +428,12 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         ctx = new QGLContext(surfaceFormat, widget);
 
     ctx->create(qt_gl_share_context());
-
+#ifdef Q_OS_SYMBIAN
+    if (!ctx->isValid()) {
+        delete ctx;
+        return;
+    }
+#endif
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
     static bool haveNOKSwapRegion = false;
@@ -468,6 +481,10 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 {
     updateGeometry();
 
+#ifdef Q_OS_SYMBIAN
+    // On symbian we always return glDevice, even if it's invalid
+    return &d_ptr->glDevice;
+#else
     if (d_ptr->pb)
         return d_ptr->pb;
 
@@ -479,6 +496,7 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 
     Q_ASSERT(d_ptr->fbo);
     return d_ptr->fbo;
+#endif
 }
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &src = QRectF());
@@ -693,6 +711,10 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     QGLContext *previous_ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
+#ifdef Q_OS_SYMBIAN
+    if (!ctx)
+        return;
+#endif
 
     // QPainter::end() should have unbound the fbo, otherwise something is very wrong...
     Q_ASSERT(!d_ptr->fbo || !d_ptr->fbo->isBound());
@@ -892,7 +914,10 @@ void QGLWindowSurface::updateGeometry() {
         hijackWindow(window());
 
     QGLContext *ctx = reinterpret_cast<QGLContext *>(wd->extraData()->glContext);
-
+#ifdef Q_OS_SYMBIAN
+    if (!ctx)
+        return;
+#endif
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif

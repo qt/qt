@@ -329,7 +329,27 @@ void SymbianEngine::updateConfigurationsL()
             cpPriv->connectionId = 0;
             cpPriv->state = QNetworkConfiguration::Defined;
             cpPriv->type = QNetworkConfiguration::ServiceNetwork;
-            cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
+
+            // determine purpose of this SNAP
+            TUint32 purpose = CMManager::ESnapPurposeUnknown;
+            TRAP_IGNORE(purpose = destination.MetadataL(CMManager::ESnapMetadataPurpose));
+            switch (purpose) {
+            case CMManager::ESnapPurposeInternet:
+                cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
+                break;
+            case CMManager::ESnapPurposeIntranet:
+                cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+                break;
+            case CMManager::ESnapPurposeMMS:
+            case CMManager::ESnapPurposeOperator:
+                cpPriv->purpose = QNetworkConfiguration::ServiceSpecificPurpose;
+                break;
+            case CMManager::ESnapPurposeUnknown:
+            default:
+                cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
+                break;
+            }
+
             cpPriv->roamingSupported = false;
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
@@ -482,7 +502,37 @@ void SymbianEngine::updateConfigurationsL()
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     updateStatesToSnaps();
+    updatePurposeToIaps();
 #endif
+}
+
+//copy purpose from SNAP to child IAPs, unless child is contained in more than one SNAP with conflicting purposes.
+void SymbianEngine::updatePurposeToIaps()
+{
+    QMutexLocker lock(&mutex);
+    QHash<QString,int> purposes;
+    foreach (QNetworkConfigurationPrivatePointer snap, snapConfigurations.values()) {
+        QMutexLocker snaplock(&snap->mutex);
+        foreach (QNetworkConfigurationPrivatePointer iap, snap->serviceNetworkMembers.values()) {
+            QMutexLocker iaplock(&iap->mutex);
+            QString id = iap->id;
+            if (purposes.contains(id) && purposes.value(id) != snap->purpose)
+                purposes[id] = -1; //conflict detected
+            else
+                purposes[id] = snap->purpose;
+        }
+    }
+
+    for (QHash<QString,int>::const_iterator it = purposes.constBegin(); it != purposes.constEnd(); ++it) {
+        if (accessPointConfigurations.contains(it.key())) {
+            QNetworkConfigurationPrivatePointer iap = accessPointConfigurations.value(it.key());
+            QMutexLocker iaplock(&iap->mutex);
+            int purpose = it.value();
+            if (purpose == -1) //resolve conflicts as unknown
+                purpose = QNetworkConfiguration::UnknownPurpose;
+            iap->purpose = (QNetworkConfiguration::Purpose)purpose;
+        }
+    }
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -505,8 +555,33 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case KCommDbBearerWcdma:
-        cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA;
-        break;
+        {
+            //This is ambiguous, check the network status to find out what the expected connection will be
+            TUint mode;
+            TRequestStatus status;
+            iConnectionMonitor.GetUintAttribute(0, 0, KMobilePhoneNetworkMode, mode, status);
+            User::WaitForRequest(status);
+            if (status != KErrNone)
+                cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
+            else switch (mode) {
+            case EConnMonNetworkModeCdma2000:
+                cpPriv->bearerType = QNetworkConfiguration::BearerCDMA2000;
+                break;
+            case EConnMonNetworkModeWcdma:
+            case EConnMonNetworkModeTdcdma:
+                cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA; //includes HSDPA, as this API can't detect it
+                break;
+            case EConnMonNetworkModeGsm:
+            case EConnMonNetworkModeAmps:
+            case EConnMonNetworkModeCdma95:
+                cpPriv->bearerType = QNetworkConfiguration::Bearer2G; //includes GPRS and EDGE, Qt API treats them both as 2G
+                break;
+            default:
+                cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
+                break;
+            }
+            break;
+        }
     case KCommDbBearerLAN:
         cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
@@ -1122,6 +1197,13 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                     }
                 );
             }
+
+            //update bearer type for 2G/3G connections
+            TInt bearer;
+            iConnectionMonitor.GetIntAttribute(connectionId, 0, KBearerInfo, bearer, status);
+            User::WaitForRequest(status);
+            if (status == KErrNone)
+                updateMobileBearerToConfigs(TConnMonBearerInfo(bearer));
         } else if (connectionStatus == KConfigDaemonStartingDeregistration) {
             TUint connectionId = realEvent->ConnectionId();
             QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);

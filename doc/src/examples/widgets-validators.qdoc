@@ -29,5 +29,5 @@
     \example widgets/validators
     \title Validators Example
 
-    The Validators example shows the signal emission behavior of input validators.
+    \brief The Validators example shows the signal emission behavior of input validators.
 */

@@ -169,5 +169,6 @@ EXPORTS
 	?current@QBenchmarkTestMethodData@@2PAV1@A @ 168 NONAME ; class QBenchmarkTestMethodData * QBenchmarkTestMethodData::current
 	?qt_static_metacall@QTestEventLoop@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 169 NONAME ; void QTestEventLoop::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?startLogging@QTestLog@@SAXI@Z @ 170 NONAME ; void QTestLog::startLogging(unsigned int)
-	?staticMetaObjectExtraData@QTestEventLoop@@0UQMetaObjectExtraData@@B @ 171 NONAME ; struct QMetaObjectExtraData const QTestEventLoop::staticMetaObjectExtraData
+	?printAvailableTags@QTest@@3_NA @ 171 NONAME ; bool QTest::printAvailableTags
+	?staticMetaObjectExtraData@QTestEventLoop@@0UQMetaObjectExtraData@@B @ 172 NONAME ; struct QMetaObjectExtraData const QTestEventLoop::staticMetaObjectExtraData
 

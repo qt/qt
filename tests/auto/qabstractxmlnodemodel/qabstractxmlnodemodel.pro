@@ -6,7 +6,7 @@ HEADERS += TestNodeModel.h LoadingModel.h
 
 include (../xmlpatterns.pri)
 
-wince*: {
+wince*|symbian: {
    addFiles.files = tree.xml
    addFiles.path    = .
 

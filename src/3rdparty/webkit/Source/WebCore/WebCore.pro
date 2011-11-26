@@ -7,6 +7,8 @@ include($$PWD/../WebKit.pri)
 include($$PWD/WebCore.pri)
 include($$PWD/../JavaScriptCore/JavaScriptCore.pri)
 
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+
 TEMPLATE = lib
 TARGET = $$WEBCORE_TARGET
 CONFIG += staticlib
@@ -222,7 +224,8 @@ v8 {
         bindings/v8/custom/V8NotificationCenterCustom.cpp \
         bindings/v8/custom/V8ConsoleCustom.cpp \
         bindings/v8/custom/V8SQLTransactionSyncCustom.cpp \
-        bindings/v8/V8WorkerContextErrorHandler.cpp
+        bindings/v8/V8WorkerContextErrorHandler.cpp \
+        testing/v8/WebCoreTestSupport.cpp
 } else {
     SOURCES += \
         bindings/ScriptControllerBase.cpp \
@@ -374,7 +377,8 @@ v8 {
         bridge/runtime_array.cpp \
         bridge/runtime_method.cpp \
         bridge/runtime_object.cpp \
-        bridge/runtime_root.cpp
+        bridge/runtime_root.cpp \
+        testing/js/WebCoreTestSupport.cpp
 }
 
 SOURCES += \
@@ -1173,6 +1177,7 @@ SOURCES += \
     rendering/style/StyleSurroundData.cpp \
     rendering/style/StyleTransformData.cpp \
     rendering/style/StyleVisualData.cpp \
+    testing/Internals.cpp \
     xml/DOMParser.cpp \
     xml/XMLHttpRequest.cpp \
     xml/XMLHttpRequestProgressEventThrottle.cpp \
@@ -2420,6 +2425,7 @@ HEADERS += \
     svg/SVGVKernElement.h \
     svg/SVGZoomAndPan.h \
     svg/SVGZoomEvent.h \
+    testing/Internals.h \
     workers/AbstractWorker.h \
     workers/DedicatedWorkerContext.h \
     workers/DedicatedWorkerThread.h \
@@ -2934,31 +2940,46 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             bindings/js/JSAudioConstructor.cpp
     }
 
-    contains(DEFINES, USE_QTKIT=1) {
+    contains(DEFINES, WTF_USE_QTKIT=1) {
+        INCLUDEPATH += \
+            $$SOURCE_DIR/../WebKitLibraries/
+
         HEADERS += \
             platform/graphics/mac/MediaPlayerPrivateQTKit.h \
             platform/mac/WebCoreObjCExtras.h \
             platform/qt/WebCoreSystemInterface.h \
             platform/mac/BlockExceptions.h \
-            platform/mac/WebCoreObjCExtras.h
+            platform/mac/WebCoreObjCExtras.h \
+            platform/mac/WebVideoFullscreenController.h \
+            platform/mac/WebVideoFullscreenHUDWindowController.h \
+            platform/mac/WebWindowAnimation.h
+
         SOURCES += \
+            platform/graphics/cg/IntRectCG.cpp \
+            platform/graphics/cg/FloatSizeCG.cpp \
+            platform/cf/SharedBufferCF.cpp \
+            platform/cf/KURLCFNet.cpp
+
+         OBJECTIVE_SOURCES += \
+            platform/qt/WebCoreSystemInterface.mm \
+            platform/mac/BlockExceptions.mm \
+            platform/mac/WebCoreObjCExtras.mm \
             platform/graphics/mac/MediaPlayerPrivateQTKit.mm \
             platform/mac/SharedBufferMac.mm \
             platform/mac/KURLMac.mm \
             platform/text/mac/StringMac.mm \
             platform/graphics/mac/FloatSizeMac.mm \
             platform/graphics/mac/IntRectMac.mm \
-            platform/graphics/cg/IntRectCG.cpp \
-            platform/graphics/cg/FloatSizeCG.cpp \
-            platform/cf/SharedBufferCF.cpp \
-            platform/cf/KURLCFNet.cpp \
-            platform/qt/WebCoreSystemInterface.mm \
-            platform/mac/BlockExceptions.mm \
-            platform/mac/WebCoreObjCExtras.mm
+            platform/mac/WebVideoFullscreenController.mm \
+            platform/mac/WebVideoFullscreenHUDWindowController.mm \
+            platform/mac/WebWindowAnimation.mm
 
         DEFINES+=NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+        contains(CONFIG, "x86") {
+            DEFINES+=NS_BUILD_32_LIKE_64
+        }
 
-    } else: contains(DEFINES, USE_GSTREAMER=1) {
+    } else: contains(DEFINES, WTF_USE_GSTREAMER=1) {
         HEADERS += \
             platform/graphics/gstreamer/GOwnPtrGStreamer.h \
             platform/graphics/gstreamer/GRefPtrGStreamer.h \
@@ -2979,7 +3000,7 @@ contains(DEFINES, ENABLE_VIDEO=1) {
             platform/graphics/gstreamer/PlatformVideoWindowQt.cpp \
             platform/graphics/gstreamer/ImageGStreamerQt.cpp
 
-    } else:contains(MOBILITY_CONFIG, multimedia) {
+    } else:contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += \ 
             platform/graphics/qt/MediaPlayerPrivateQt.h
 

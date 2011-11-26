@@ -45,6 +45,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
+#include <private/qabstractitemview_p.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -112,6 +113,8 @@ struct PublicView : public QTreeView
 
     inline QStyleOptionViewItem viewOptions() const { return QTreeView::viewOptions(); }
     inline int sizeHintForColumn(int column) const { return QTreeView::sizeHintForColumn(column); }
+    inline void startDrag(Qt::DropActions supportedActions) { QTreeView::startDrag(supportedActions); }
+    QAbstractItemViewPrivate* aiv_priv() { return static_cast<QAbstractItemViewPrivate*>(d_ptr.data()); }
 };
 
 class tst_QTreeView : public QObject
@@ -2384,6 +2387,14 @@ void tst_QTreeView::extendedSelection()
     QTreeView view(&topLevel);
     view.resize(qMax(mousePressPos.x() * 2, 200), qMax(mousePressPos.y() * 2, 200));
     view.setModel(&model);
+
+    //ensure that mousePressPos is below the last row if we want to unselect
+    if (!selectedCount) {
+        int minimumHeight = model.rowCount() * view.visualRect(model.index(0,0)).size().height();
+        if (mousePressPos.y() < minimumHeight)
+            mousePressPos.setY(minimumHeight + 10);
+    }
+
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     topLevel.show();
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, mousePressPos);
@@ -2939,7 +2950,7 @@ void tst_QTreeView::styleOptionViewItem()
             bool allCollapsed;
     };
 
-    QTreeView view;
+    PublicView view;
     QStandardItemModel model;
     view.setModel(&model);
     MyDelegate delegate;
@@ -2998,6 +3009,12 @@ void tst_QTreeView::styleOptionViewItem()
     QApplication::processEvents();
     QTRY_VERIFY(delegate.count >= 4);
 
+    // test that the rendering of drag pixmap sets the correct options too (QTBUG-15834)
+    delegate.count = 0;
+    QItemSelection sel(model.index(0,0), model.index(0,3));
+    QRect rect;
+    view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+    QTRY_VERIFY(delegate.count >= 4);
 
     //test dynamic models
     {

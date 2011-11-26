@@ -406,10 +406,6 @@
         <translation>Страница</translation>
     </message>
     <message>
-        <source>page</source>
-        <translation>страница</translation>
-    </message>
-    <message>
         <source>Insert Page</source>
         <translation>Вставить страницу</translation>
     </message>
@@ -462,10 +458,6 @@
         <translation>Вставить дочернее окно</translation>
     </message>
     <message>
-        <source>subwindow</source>
-        <translation>дочернее окно</translation>
-    </message>
-    <message>
         <source>Subwindow</source>
         <translation>Дочернее окно</translation>
     </message>
@@ -504,6 +496,10 @@
     <message>
         <source>Change layout of &apos;%1&apos; from %2 to %3</source>
         <translation>Изменить компоновку &apos;%1&apos; с %2 на %3</translation>
+    </message>
+    <message>
+        <source>Change layout alignment</source>
+        <translation>Изменить выравнивание компоновщика</translation>
     </message>
     <message>
         <source>Set action text</source>
@@ -876,16 +872,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>Некорректный коэффициент растяжения для &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>Некорректный минимальный размер для &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1822,7 +1814,7 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <source>F&amp;orm</source>
-        <translation>Ф&amp;орма</translation>
+        <translation>Фор&amp;ма</translation>
     </message>
     <message>
         <source>Preview in</source>
@@ -1835,10 +1827,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation>Правка</translation>
     </message>
     <message>
         <source>Toolbars</source>
@@ -1861,6 +1849,10 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>&amp;Вид</translation>
     </message>
     <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Правка</translation>
+    </message>
+    <message>
         <source>&amp;Settings</source>
         <translation>&amp;Настройки</translation>
     </message>
@@ -1870,7 +1862,7 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <source>If you do not review your documents, all your changes will be lost.</source>
-        <translation type="unfinished">Если не просматривать изменения, все изменения будут потеряны.</translation>
+        <translation>Если не просматривать изменения, все они будут потеряны.</translation>
     </message>
     <message>
         <source>Discard Changes</source>
@@ -1902,8 +1894,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
-----------
-Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
         <translation>Методу %1 (объекта &apos;%2&apos;) было передано пустое имя класса.</translation>
@@ -3743,12 +3733,20 @@ Do you want overwrite the template?</source>
         <translation>Унаследованная</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[Тема] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>Горизонтальное</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>Вертикальное</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Тема</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -3973,15 +3971,15 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Key Move</source>
-        <translation type="unfinished">Перемещение клавишей</translation>
+        <translation>Перемещение клавишей</translation>
     </message>
     <message>
         <source>Key Resize</source>
-        <translation type="unfinished">Изменение размера клавишей</translation>
+        <translation>Изменение размера клавишей</translation>
     </message>
     <message numerus="yes">
         <source>Paste %n action(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Вставлено %n действие</numerusform>
             <numerusform>Вставлено %n действия</numerusform>
             <numerusform>Вставлено %n действий</numerusform>
@@ -3989,7 +3987,7 @@ Do you want overwrite the template?</source>
     </message>
     <message numerus="yes">
         <source>Paste %n widget(s)</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Вставлен %n виджет</numerusform>
             <numerusform>Вставлено %n виджета</numerusform>
             <numerusform>Вставлено %n виджета</numerusform>
@@ -3997,7 +3995,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Paste (%1 widgets, %2 actions)</source>
-        <translation type="unfinished">Вставлено (%1 виджетов, %2 действий)</translation>
+        <translation>Вставлено (%1 виджетов, %2 действий)</translation>
     </message>
     <message>
         <source>Cannot paste widgets. Designer could not find a container without a layout to paste into.</source>
@@ -4029,7 +4027,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Drop widget</source>
-        <translation type="unfinished">Вставка виджета</translation>
+        <translation>Вставка виджета</translation>
     </message>
     <message>
         <source>A QMainWindow-based form does not contain a central widget.</source>
@@ -4339,6 +4337,17 @@ Do you want overwrite the template?</source>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>Установить значок из темы</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>Имя исходного значка из текущей темы:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -4488,20 +4497,24 @@ Do you want overwrite the template?</source>
         <translation>&amp;Значок:</translation>
     </message>
     <message>
-        <source>Shortcut:</source>
-        <translation>Горячая клавиша:</translation>
-    </message>
-    <message>
-        <source>Checkable:</source>
-        <translation>Триггерное:</translation>
-    </message>
-    <message>
-        <source>ToolTip:</source>
-        <translation>Подсказка:</translation>
-    </message>
-    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>Подска&amp;зка:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>Тема зна&amp;чков:</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>Т&amp;риггерное:</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>&amp;Горячая клавиша:</translation>
     </message>
 </context>
 <context>
@@ -4631,7 +4644,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>Global include</source>
-        <translation type="unfinished">Глобальное включение</translation>
+        <translation>Глобальное включение</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -4688,15 +4701,15 @@ Please select another name.</source>
     </message>
     <message>
         <source>Show Details</source>
-        <translation type="unfinished">Показывать детали</translation>
+        <translation>Показывать детали</translation>
     </message>
     <message>
         <source>Compute Details</source>
-        <translation type="unfinished">Рассчитывать детали</translation>
+        <translation>Рассчитывать детали</translation>
     </message>
     <message>
         <source>Quick</source>
-        <translation type="unfinished">Быстрый</translation>
+        <translation>Быстрый</translation>
     </message>
     <message>
         <source>Preview</source>
@@ -4752,6 +4765,10 @@ Please select another name.</source>
         <translation>Выбрать файл...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>Установить значок из темы...</translation>
+    </message>
+    <message>
         <source>Copy Path</source>
         <translation>Скопировать путь</translation>
     </message>
@@ -4762,6 +4779,10 @@ Please select another name.</source>
     <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[Тема] %1</translation>
     </message>
 </context>
 <context>
@@ -4954,7 +4975,7 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <source>Global include</source>
-        <translation type="unfinished">Глобальное включение</translation>
+        <translation>Глобальное включение</translation>
     </message>
     <message>
         <source>Usage</source>
@@ -5000,7 +5021,7 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <source>Color Groups</source>
-        <translation type="unfinished">Цветовые группы</translation>
+        <translation>Цветовые группы</translation>
     </message>
     <message>
         <source>Tree View</source>
@@ -5008,7 +5029,7 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <source>Drop Down Button View</source>
-        <translation type="unfinished">Вид выпадающего списка</translation>
+        <translation>Вид выпадающего списка</translation>
     </message>
     <message>
         <source>String...</source>
@@ -5084,6 +5105,42 @@ Class: %2</source>
 </context>
 <context>
     <name>qdesigner_internal::QDesignerTaskMenu</name>
+    <message>
+        <source>Layout Alignment</source>
+        <translation>Выравнивание компоновщика</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>Без горизонтального выравнивания</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>По левому краю</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>По горизонтальному центру</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>По правому краю</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>Без вертикального выравнивания</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>По верхнему краю</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>По вертикальному центру</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>По нижнему краю</translation>
+    </message>
     <message>
         <source>Change objectName...</source>
         <translation>Изменить objectName...</translation>
@@ -5351,6 +5408,10 @@ Class: %2</source>
     <message>
         <source>Insert &amp;Image</source>
         <translation>Вставить &amp;изображение</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>Упростить форматирование</translation>
     </message>
 </context>
 <context>

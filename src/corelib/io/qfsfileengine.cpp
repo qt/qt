@@ -120,8 +120,11 @@ void QFSFileEnginePrivate::init()
     openMode = QIODevice::NotOpen;
     fd = -1;
     fh = 0;
-#if defined (Q_OS_SYMBIAN) && !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
+#if defined (Q_OS_SYMBIAN)
+    symbianFilePos = 0;
+#if !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
     fileHandleForMaps = -1;
+#endif
 #endif
     lastIOCommand = IOFlushCommand;
     lastFlushFailed = false;
@@ -233,6 +236,14 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
     return open(openMode, fh, QFile::DontCloseHandle);
 }
 
+/*!
+    Opens the file handle \a fh in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);
@@ -294,6 +305,14 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
     return open(openMode, fd, QFile::DontCloseHandle);
 }
 
+/*!
+    Opens the file descriptor \a fd in \a openMode mode. Returns true
+    on success; otherwise returns false.
+
+    The \a handleFlags argument specifies whether the file handle will be
+    closed by Qt. See the QFile::FileHandleFlags documentation for more
+    information.
+*/
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandleFlags handleFlags)
 {
     Q_D(QFSFileEngine);

@@ -140,7 +140,7 @@ bool QWindowsVistaStylePrivate::useVista()
 {
     return (QWindowsVistaStylePrivate::useXP() &&
             (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-             QSysInfo::WindowsVersion < QSysInfo::WV_NT_based));
+             (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)));
 }
 
 /*!
@@ -2586,7 +2586,6 @@ bool QWindowsVistaStylePrivate::resolveSymbols()
 {
     static bool tried = false;
     if (!tried) {
-        tried = true;
         QSystemLibrary themeLib(QLatin1String("uxtheme"));
         pSetWindowTheme         = (PtrSetWindowTheme        )themeLib.resolve("SetWindowTheme");
         pIsThemePartDefined     = (PtrIsThemePartDefined    )themeLib.resolve("IsThemePartDefined");
@@ -2611,6 +2610,7 @@ bool QWindowsVistaStylePrivate::resolveSymbols()
         pGetThemeString         = (PtrGetThemeString        )themeLib.resolve("GetThemeString");
         pGetThemeTransitionDuration = (PtrGetThemeTransitionDuration)themeLib.resolve("GetThemeTransitionDuration");
         pGetThemePropertyOrigin = (PtrGetThemePropertyOrigin)themeLib.resolve("GetThemePropertyOrigin");
+        tried = true;
     }
     return pGetThemeTransitionDuration != 0;
 }

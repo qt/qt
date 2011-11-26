@@ -58,10 +58,6 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmutex.h>
 
-#if defined(Q_OS_MAC)
-# include <mach/semaphore.h>
-#endif
-
 #if defined(Q_OS_SYMBIAN)
 # include <e32std.h>
 #endif
@@ -83,9 +79,7 @@ public:
     Qt::HANDLE owner;
     uint count;
 
-#if defined(Q_OS_MAC)
-    semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;

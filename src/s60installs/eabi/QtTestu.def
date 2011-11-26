@@ -163,7 +163,8 @@ EXPORTS
 	_ZNK10QTestTable7isEmptyEv @ 162 NONAME
 	_ZNK10QTestTable8testDataEi @ 163 NONAME
 	_ZNK10QTestTable9dataCountEv @ 164 NONAME
-	_ZN8QTestLog12startLoggingEj @ 165 NONAME
-	_ZN14QTestEventLoop18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 166 NONAME
-	_ZN14QTestEventLoop25staticMetaObjectExtraDataE @ 167 NONAME DATA 8
+	_ZN14QTestEventLoop18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 165 NONAME
+	_ZN14QTestEventLoop25staticMetaObjectExtraDataE @ 166 NONAME DATA 8
+	_ZN5QTest18printAvailableTagsE @ 167 NONAME DATA 1
+	_ZN8QTestLog12startLoggingEj @ 168 NONAME
 

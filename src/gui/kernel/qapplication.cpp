@@ -874,6 +874,10 @@ void QApplicationPrivate::construct(
     if (qt_is_gui_used)
         qt_guiPlatformPlugin();
 #endif
+
+#ifdef Q_OS_SYMBIAN
+    symbianHandleLiteModeStartup();
+#endif
 }
 
 #if defined(Q_WS_X11)
@@ -3321,13 +3325,32 @@ bool QApplication::desktopSettingsAware()
     one of the above events. If no keys are being held Qt::NoModifier is
     returned.
 
-    \sa mouseButtons()
+    \sa mouseButtons(), queryKeyboardModifiers()
 */
 
 Qt::KeyboardModifiers QApplication::keyboardModifiers()
 {
     return QApplicationPrivate::modifier_buttons;
 }
+
+/*!
+    \fn Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+
+    Queries and returns the state of the modifier keys on the keyboard.
+    Unlike keyboardModifiers, this method returns the actual keys held
+    on the input device at the time of calling the method.
+
+    It does not rely on the keypress events having been received by this
+    process, which makes it possible to check the modifiers while moving
+    a window, for instance. Note that in most cases, you should use
+    keyboardModifiers(), which is faster and more accurate since it contains
+    the state of the modifiers as they were when the currently processed
+    event was received.
+
+    \sa keyboardModifiers()
+
+    \since 4.8
+*/
 
 /*!
     Returns the current state of the buttons on the mouse. The current state is
@@ -3403,7 +3426,35 @@ QString QApplication::sessionKey() const
 }
 #endif
 
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToReleaseGpuResources()
 
+    This signal is emitted when application is about to release all
+    GPU resources associated to contexts owned by application.
+
+    The signal is particularly useful if your application has allocated
+    GPU resources directly apart from Qt and needs to do some last-second
+    cleanup.
+
+    \warning This signal is only emitted on Symbian.
+
+    \sa aboutToUseGpuResources()
+*/
+
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToUseGpuResources()
+
+    This signal is emitted when application is about to use GPU resources.
+
+    The signal is particularly useful if your application needs to know
+    when GPU resources are be available.
+
+   \warning This signal is only emitted on Symbian.
+
+   \sa aboutToFreeGpuResources()
+*/
 
 /*!
     \since 4.2

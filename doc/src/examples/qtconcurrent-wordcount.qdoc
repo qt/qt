@@ -29,7 +29,7 @@
     \example qtconcurrent/wordcount
     \title QtConcurrent Word Count Example
 
-    The QtConcurrent Word Count example demonstrates the use of the map-reduce
+    \brief The QtConcurrent Word Count example demonstrates the use of the map-reduce
     algorithm when applied to the problem of counting words in a collection
     of files.
 */

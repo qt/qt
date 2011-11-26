@@ -183,7 +183,7 @@ void Worker::threadFinished()
     const int totPass       = count(m_result, TestResult::Pass);
     const int total         = resultCount;
     const int notTested     = m_notTested.count();
-    const int percentage    = int((static_cast<double>(totPass) / total) * 100);
+    const int percentage    = total==0 ? 0 : int((static_cast<double>(totPass) / total) * 100);
 
     Q_ASSERT_X(percentage >= 0 && percentage <= 100, Q_FUNC_INFO,
                qPrintable(QString(QLatin1String("Percentage was: %1")).arg(percentage)));

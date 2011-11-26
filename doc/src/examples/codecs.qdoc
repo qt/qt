@@ -29,7 +29,7 @@
     \example tools/codecs
     \title Codecs Example
 
-    The Codecs example demonstrates the principles behind importing and exporting text
+    \brief The Codecs example demonstrates the principles behind importing and exporting text
     using codecs to ensure that characters are encoded properly, avoiding loss of data
     and retaining the correct symbols used in various scripts.
 

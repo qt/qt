@@ -29,7 +29,7 @@
   \example xmlpatterns/qobjectxmlmodel
   \title QObject XML Model Example
 
-  This example shows how to use QtXmlPatterns to query QObject trees
+  \brief The XML Model example shows how to use QtXmlPatterns to query QObject trees
   by modeling the non-XML data structure of a QObject tree to look
   like XML.
 

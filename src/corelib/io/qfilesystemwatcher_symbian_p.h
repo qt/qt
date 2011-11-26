@@ -66,29 +66,35 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSymbianFileSystemWatcherEngine;
+class QSymbianFileSystemWatcherInterface;
 
 class QNotifyChangeEvent : public CActive
 {
 public:
-    QNotifyChangeEvent(RFs &fsSession, const TDesC &file, QSymbianFileSystemWatcherEngine *engine,
+    QNotifyChangeEvent(RFs &fsSession, const TDesC &file, QSymbianFileSystemWatcherInterface *engine,
                        bool aIsDir, TInt aPriority = EPriorityStandard);
     ~QNotifyChangeEvent();
 
     bool isDir;
+    TPath watchedPath;
 
 private:
     void RunL();
     void DoCancel();
 
     RFs &fsSession;
-    TPath watchedPath;
-    QSymbianFileSystemWatcherEngine *engine;
+    QSymbianFileSystemWatcherInterface *engine;
 
     int failureCount;
 };
 
-class QSymbianFileSystemWatcherEngine : public QFileSystemWatcherEngine
+class QSymbianFileSystemWatcherInterface
+{
+public:
+    virtual void handlePathChanged(QNotifyChangeEvent *e) = 0;
+};
+
+class QSymbianFileSystemWatcherEngine : public QFileSystemWatcherEngine, public QSymbianFileSystemWatcherInterface
 {
     Q_OBJECT
 
@@ -111,7 +117,7 @@ public Q_SLOTS:
 
 private:
     friend class QNotifyChangeEvent;
-    void emitPathChanged(QNotifyChangeEvent *e);
+    void handlePathChanged(QNotifyChangeEvent *e);
 
     void startWatcher();
 

@@ -233,6 +233,7 @@ struct QTLWExtra {
     uint inExpose : 1; // Prevents drawing recursion
     uint nativeWindowTransparencyEnabled : 1; // Tracks native window transparency
     uint forcedToRaster : 1;
+    uint noSystemRotationDisabled : 1;
 #elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
     QPlatformWindowFormat platformWindowFormat;
@@ -419,7 +420,7 @@ public:
 #ifdef Q_OS_SYMBIAN
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
     void activateSymbianWindow(WId wid = 0);
-    void _q_delayedDestroy(WId winId);
+    void _q_cleanupWinIds();
 #endif
 
     void raise_sys();
@@ -914,6 +915,7 @@ public:
     void s60UpdateIsOpaque();
     void reparentChildren();
     void registerTouchWindow();
+    QList<WId> widCleanupList;
 #endif
 
 };

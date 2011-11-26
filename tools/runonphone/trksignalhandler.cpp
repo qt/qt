@@ -106,7 +106,7 @@ void TrkSignalHandler::canNotCloseFile(const QString &filename, const QString &e
 void TrkSignalHandler::installingStarted(const QString &packageName)
 {
     if (d->loglevel > 0)
-        d->out << "Installing" << packageName << "..." << endl;
+        d->out << "Installing " << packageName << "..." << endl;
 }
 
 void TrkSignalHandler::canNotInstall(const QString &packageFilename, const QString &errorMessage)

@@ -29,5 +29,7 @@
     \example demos/embedded/desktopservices
     \title Embedded Desktop Services Demonstration
 
+    \brief The Embedded Desktop Services demo shows the Qt Desktop Services API.
+
     \image embeddeddesktopservices-demo.png
 */

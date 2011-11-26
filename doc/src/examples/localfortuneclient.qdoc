@@ -29,8 +29,10 @@
     \example ipc/localfortuneclient
     \title Local Fortune Client Example
 
-    The Local Fortune Client example shows how to create a client for a simple
-    local service using QLocalSocket. It is intended to be run alongside the
+    \brief The Local Fortune Client example shows how to create a client for a simple
+    local service using QLocalSocket.
+    
+    The example is intended to be run alongside the
     \l{ipc/localfortuneserver}{Local Fortune Server} example.
 
     \image localfortuneclient-example.png Screenshot of the Local Fortune Client example

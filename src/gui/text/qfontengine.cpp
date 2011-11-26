@@ -280,6 +280,8 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
         int i = glyphs.numGlyphs;
         int totalKashidas = 0;
         while(i--) {
+            if (glyphs.attributes[i].dontPrint)
+                continue;
             xpos += glyphs.advances_x[i] + QFixed::fromFixed(glyphs.justifications[i].space_18d6);
             ypos += glyphs.advances_y[i];
             totalKashidas += glyphs.justifications[i].nKashidas;
@@ -379,9 +381,9 @@ void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rig
     glyph_metrics_t gi = boundingBox(glyph);
     bool isValid = gi.isValid();
     if (leftBearing != 0)
-        *leftBearing = isValid ? gi.x.toReal() : 0.0;
+        *leftBearing = isValid ? gi.x.toReal() : qreal(0.0);
     if (rightBearing != 0)
-        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : 0.0;
+        *rightBearing = isValid ? (gi.xoff - gi.x - gi.width).toReal() : qreal(0.0);
 }
 
 glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)
@@ -1335,8 +1337,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     int glyph_pos = 0;
     for (int i = 0; i < len; ++i) {
-        bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
-                          && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
+        bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
 
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
             QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);

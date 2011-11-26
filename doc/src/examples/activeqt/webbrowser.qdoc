@@ -29,7 +29,7 @@
     \example activeqt/webbrowser
     \title Web Browser Example (ActiveQt)
 
-    The Web Browser example uses the Microsoft Web Browser
+    \brief The Web Browser example uses the Microsoft Web Browser
     ActiveX control to implement a fully functional Web Browser
     application. The user interface has been developed using the Qt
     Designer integration of the QAxWidget class.

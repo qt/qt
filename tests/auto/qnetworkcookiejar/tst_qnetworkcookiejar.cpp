@@ -417,6 +417,12 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("yes7") << "org.ws" << true;
     QTest::newRow("yes8") << "co.uk" << true;
     QTest::newRow("yes9") << "wallonie.museum" << true;
+    QTest::newRow("yes10") << "dyndns-at-home.com" << true;
+    QTest::newRow("yes11") << "forgot.her.name" << true;
+    QTest::newRow("yes12") << "is-a-llama.com" << true;
+    QTest::newRow("yes13") << "gov.uk" << true;
+    QTest::newRow("yes14") << "manchester.museum" << true;
+    QTest::newRow("yes15") << "gov.ir" << true;
 
     QTest::newRow("no1") << "anything.com" << false;
     QTest::newRow("no2") << "anything.de" << false;

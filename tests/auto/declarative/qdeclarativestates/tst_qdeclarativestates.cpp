@@ -113,6 +113,7 @@ private slots:
     void signalOverride();
     void signalOverrideCrash();
     void signalOverrideCrash2();
+    void signalOverrideCrash3();
     void parentChange();
     void parentChangeErrors();
     void anchorChanges();
@@ -516,6 +517,22 @@ void tst_qdeclarativestates::signalOverrideCrash2()
     QDeclarativeItemPrivate::get(rect)->setState("state1");
     QDeclarativeItemPrivate::get(rect)->setState("state2");
     QDeclarativeItemPrivate::get(rect)->setState("state1");
+
+    delete rect;
+}
+
+void tst_qdeclarativestates::signalOverrideCrash3()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/signalOverrideCrash3.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItemPrivate::get(rect)->setState("state1");
+    QDeclarativeItemPrivate::get(rect)->setState("");
+    QDeclarativeItemPrivate::get(rect)->setState("state2");
+    QDeclarativeItemPrivate::get(rect)->setState("");
 
     delete rect;
 }

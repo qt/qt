@@ -1,3 +1,27 @@
+2011-11-03  Zeno Albisser  <zeno.albisser@nokia.com>
+
+        [Qt] Unreviewed: Fix universal binary build on Mac.
+        https://bugreports.qt.nokia.com/browse/QTBUG-20619
+
+        When building a universal binary the debug version
+        exceeds the maximum size of a static library.
+        Therefore we do not allow this configuration.
+
+        * Source/WebKit.pri:
+
+2011-08-06  Aron Rosenberg  <arosenberg@logitech.com>
+
+        Reviewed by Benjamin Poulain.
+
+        [Qt] Fix build with Intel compiler on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=65088
+
+        Disable Intel Compiler warning 873 - function "" has no corresponding operator
+        delete (to be called if an exception is thrown during initialization of an
+        allocated object).
+
+        * Source/WebKit.pri:
+
 2011-06-27  Alexis Menard  <alexis.menard@openbossa.org>
 
         Reviewed by Kenneth Rohde Christiansen.

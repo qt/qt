@@ -50,9 +50,36 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qdiriterator.h>
 #include <QtCore/qfile.h>
 
 QT_BEGIN_NAMESPACE
+
+/*
+Returns the set of QML files in path (qmldir, *.qml, *.js).  The caller
+is responsible for deleting the returned data.
+*/
+static QSet<QString> *qmlFilesInDirectory(const QString &path)
+{
+    QDirIterator dir(path, QDir::Files);
+    if (!dir.hasNext())
+        return 0;
+    QSet<QString> *files = new QSet<QString>;
+    while (dir.hasNext()) {
+        dir.next();
+        QString fileName = dir.fileName();
+        if (fileName == QLatin1String("qmldir")
+                || fileName.endsWith(QLatin1String(".qml"))
+                || fileName.endsWith(QLatin1String(".js"))) {
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_DARWIN) || defined(Q_OS_SYMBIAN)
+            fileName = fileName.toLower();
+#endif
+            files->insert(fileName);
+        }
+    }
+    return files;
+}
+
 
 /*!
 \class QDeclarativeDataBlob
@@ -62,6 +89,11 @@ QT_BEGIN_NAMESPACE
 QDeclarativeDataBlob's are loaded by a QDeclarativeDataLoader.  The user creates the QDeclarativeDataBlob
 and then calls QDeclarativeDataLoader::load() or QDeclarativeDataLoader::loadWithStaticData() to load it.
 The QDeclarativeDataLoader invokes callbacks on the QDeclarativeDataBlob as data becomes available.
+*/
+
+/*!
+    \class QDeclarativeTypeLoader
+    \internal
 */
 
 /*!
@@ -722,6 +754,67 @@ QDeclarativeQmldirData *QDeclarativeTypeLoader::getQmldir(const QUrl &url)
 }
 
 /*!
+Returns the absolute filename of path via a directory cache for files named
+"qmldir", "*.qml", "*.js"
+Returns a empty string if the path does not exist.
+*/
+QString QDeclarativeTypeLoader::absoluteFilePath(const QString &path)
+{
+    if (path.isEmpty())
+        return QString();
+    if (path.at(0) == QLatin1Char(':')) {
+        // qrc resource
+        QFileInfo fileInfo(path);
+        return fileInfo.isFile() ? fileInfo.absoluteFilePath() : QString();
+    }
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_DARWIN) || defined(Q_OS_SYMBIAN)
+    QString lowPath(path.toLower());
+#else
+    QString lowPath(path);
+#endif
+    int lastSlash = lowPath.lastIndexOf(QLatin1Char('/'));
+    QString dirPath = lowPath.left(lastSlash);
+
+    StringSet *fileSet = 0;
+    QHash<QString,StringSet*>::const_iterator it = m_importDirCache.find(dirPath);
+    if (it == m_importDirCache.end()) {
+        StringSet *files = qmlFilesInDirectory(path.left(lastSlash));
+        m_importDirCache.insert(dirPath, files);
+        fileSet = files;
+    } else {
+        fileSet = *it;
+    }
+    if (!fileSet)
+        return QString();
+
+    QString absoluteFilePath = fileSet->contains(QString(lowPath.constData()+lastSlash+1, lowPath.length()-lastSlash-1)) ? path : QString();
+    if (absoluteFilePath.length() > 2 && absoluteFilePath.at(0) != QLatin1Char('/') && absoluteFilePath.at(1) != QLatin1Char(':'))
+        absoluteFilePath = QFileInfo(absoluteFilePath).absoluteFilePath();
+
+    return absoluteFilePath;
+}
+
+/*!
+Return a QDeclarativeDirParser for absoluteFilePath.  The QDeclarativeDirParser may be cached.
+*/
+const QDeclarativeDirParser *QDeclarativeTypeLoader::qmlDirParser(const QString &absoluteFilePath)
+{
+    QDeclarativeDirParser *qmldirParser;
+    QHash<QString,QDeclarativeDirParser*>::const_iterator it = m_importQmlDirCache.find(absoluteFilePath);
+    if (it == m_importQmlDirCache.end()) {
+        qmldirParser = new QDeclarativeDirParser;
+        qmldirParser->setFileSource(absoluteFilePath);
+        qmldirParser->setUrl(QUrl::fromLocalFile(absoluteFilePath));
+        qmldirParser->parse();
+        m_importQmlDirCache.insert(absoluteFilePath, qmldirParser);
+    } else {
+        qmldirParser = *it;
+    }
+
+    return qmldirParser;
+}
+
+/*
 Clears cached information about loaded files, including any type data, scripts
 and qmldir information.
 */
@@ -733,16 +826,20 @@ void QDeclarativeTypeLoader::clearCache()
         (*iter)->release();
     for (QmldirCache::Iterator iter = m_qmldirCache.begin(); iter != m_qmldirCache.end(); ++iter) 
         (*iter)->release();
+    qDeleteAll(m_importDirCache);
+    qDeleteAll(m_importQmlDirCache);
 
     m_typeCache.clear();
     m_scriptCache.clear();
     m_qmldirCache.clear();
+    m_importDirCache.clear();
+    m_importQmlDirCache.clear();
 }
 
 
 QDeclarativeTypeData::QDeclarativeTypeData(const QUrl &url, QDeclarativeTypeLoader::Options options, 
                                            QDeclarativeTypeLoader *manager)
-: QDeclarativeDataBlob(url, QmlFile), m_options(options), m_typesResolved(false), 
+: QDeclarativeDataBlob(url, QmlFile), m_options(options), m_imports(manager), m_typesResolved(false),
   m_compiledData(0), m_typeLoader(manager)
 {
 }

@@ -653,7 +653,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
                 << valueTagT(tool.SingleProjects.at(i).Configuration.linker.IgnoreImportLibrary);
         }
 
-        if ( tool.SingleProjects.at(i).Configuration.linker.LinkIncremental != unset) {
+        if ( tool.SingleProjects.at(i).Configuration.linker.LinkIncremental != linkIncrementalDefault) {
             const triState ts = (tool.SingleProjects.at(i).Configuration.linker.LinkIncremental == linkIncrementalYes ? _True : _False);
             xml << tag("LinkIncremental")
                 << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
@@ -1524,8 +1524,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
 {
     xml
         << tag(tool.EventName)
-        << attrTagS(_Command, tool.CommandLine.join(vcxCommandSeparator()))
-        << attrTagS(_Message, tool.Description)
+            << tag(_Command) << valueTag(tool.CommandLine.join(vcxCommandSeparator()))
+            << tag(_Message) << valueTag(tool.Description)
         << closetag(tool.EventName);
 }
 

@@ -10,6 +10,13 @@ CONFIG(QTDIR_build) {
     # Make sure we compile both debug and release on mac when inside Qt.
     # This line was extracted from qbase.pri instead of including the whole file
     win32|mac:!macx-xcode:CONFIG += debug_and_release
+    # In case we are building a universal binary for Qt, building debug is not
+    # possible because we would exceed the maximum library size for 32bit.
+    mac:CONFIG(QT_CONFIG, x86):CONFIG(QT_CONFIG, x86_64):debug|debug_and_release {
+        message(Building a universal binary with debug symbols is not possible. Building release!)
+        CONFIG -= debug_and_release debug
+        CONFIG += release
+    }
 } else {
     !CONFIG(release, debug|release) {
         OBJECTS_DIR = obj/debug
@@ -71,6 +78,7 @@ CONFIG(release, debug|release) {
 
 INCLUDEPATH += \
     $$PWD \
+    $$PWD/../include \
     $$OUTPUT_DIR/include/QtWebKit \
     $$OUTPUT_DIR/include \
     $$QT.script.includes
@@ -157,6 +165,7 @@ disable_uitools: DEFINES *= QT_NO_UITOOLS
 # Disable a few warnings on Windows. The warnings are also
 # disabled in WebKitLibraries/win/tools/vsprops/common.vsprops
 win32-msvc*|wince*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4396 -wd4503 -wd4800 -wd4819 -wd4996
+win32-icc: QMAKE_CXXFLAGS += -wd873
 
 CONFIG(qt_minimal) {
     DEFINES *= QT_NO_ANIMATION

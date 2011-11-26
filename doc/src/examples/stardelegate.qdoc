@@ -29,7 +29,7 @@
     \example itemviews/stardelegate
     \title Star Delegate Example
 
-    The Star Delegate example shows how to create a delegate that
+    \brief The Star Delegate example shows how to create a delegate that
     can paint itself and that supports editing.
 
     \image stardelegate.png The Star Delegate Example
@@ -42,12 +42,12 @@
     editing takes place.
 
     Delegates are subclasses of QAbstractItemDelegate. Qt provides
-    QItemDelegate, which inherits QAbstractItemDelegate and handles
-    the most common data types (notably \c int and QString). If we
-    need to support custom data types, or want to customize the
+    QStyledItemDelegate, which inherits QAbstractItemDelegate and
+    handles the most common data types (notably \c int and QString).
+    If we need to support custom data types, or want to customize the
     rendering or the editing for existing data types, we can subclass
-    QAbstractItemDelegate or QItemDelegate. See \l{Delegate Classes}
-    for more information about delegates, and \l{Model/View
+    QAbstractItemDelegate or QStyledItemDelegate. See \l{Delegate
+    Classes} for more information about delegates, and \l{Model/View
     Programming} if you need a high-level introduction to Qt's
     model/view architecture (including delegates).
 
@@ -62,9 +62,9 @@
        expressed as stars, such as "2 out of 5 stars" or "5 out of
        6 stars".
 
-    \o \c StarDelegate inherits QItemDelegate and provides support
+    \o \c StarDelegate inherits QStyledItemDelegate and provides support
        for \c StarRating (in addition to the data types already
-       handled by QItemDelegate).
+       handled by QStyledItemDelegate).
 
     \o \c StarEditor inherits QWidget and is used by \c StarDelegate
        to let the user edit a star rating using the mouse.
@@ -80,20 +80,20 @@
     \snippet examples/itemviews/stardelegate/stardelegate.h 0
 
     All public functions are reimplemented virtual functions from
-    QItemDelegate to provide custom rendering and editing.
+    QStyledItemDelegate to provide custom rendering and editing.
 
     \section1 StarDelegate Class Implementation
 
-    The \l{QAbstractItemDelegate::}{paint()} function is
-    reimplemented from QItemDelegate and is called whenever the view
-    needs to repaint an item:
+    The \l{QAbstractItemDelegate::}{paint()} function is reimplemented
+    from QStyledItemDelegate and is called whenever the view needs to
+    repaint an item:
 
     \snippet examples/itemviews/stardelegate/stardelegate.cpp 0
 
     The function is invoked once for each item, represented by a
     QModelIndex object from the model. If the data stored in the item
     is a \c StarRating, we paint it ourselves; otherwise, we let
-    QItemDelegate paint it for us. This ensures that the \c
+    QStyledItemDelegate paint it for us. This ensures that the \c
     StarDelegate can handle the most common data types.
 
     In the case where the item is a \c StarRating, we draw the

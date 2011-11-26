@@ -29,7 +29,7 @@
     \example widgets/sliders
     \title Sliders Example
 
-    Qt provides three types of slider-like widgets: QSlider,
+    \brief Qt provides three types of slider-like widgets: QSlider,
     QScrollBar and QDial. They all inherit most of their
     functionality from QAbstractSlider, and can in theory replace
     each other in an application since the differences only concern

@@ -29,5 +29,7 @@
     \example demos/embedded/anomaly
     \title Anomaly Demonstration
 
+    \brief The anomaly demo shows a QtWebKit browser for mobile devices.
+
     \image anomaly-demo.png
 */

@@ -126,6 +126,9 @@ public:
     void symbianInit();
 #  endif
     static CApaCommandLine* symbianCommandLine();
+#ifndef QT_NO_LIBRARY
+    static void rebuildInstallLibraryPaths();
+#endif
 #endif
 
     static bool isTranslatorInstalled(QTranslator *translator);

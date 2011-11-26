@@ -84,7 +84,7 @@ static qreal fixedDescent(qreal descent, qreal ascent, qreal targetSize)
     Q_ASSERT(targetSize >= ascent + descent);
 
     qreal extra = targetSize - (ascent + descent);
-    return descent + (extra / 2.0);
+    return descent + (extra / qreal(2.0));
 }
 
 static qreal compare(const QGridLayoutBox &box1, const QGridLayoutBox &box2, int which)
@@ -292,9 +292,9 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     int stretch = stretches[start + i];
                     if (sumStretches == 0) {
                         if (hasIgnoreFlag) {
-                            factors[i] = (stretch < 0) ? 1.0 : 0.0;
+                            factors[i] = (stretch < 0) ? qreal(1.0) : qreal(0.0);
                         } else {
-                            factors[i] = (stretch < 0) ? sizes[i] : 0.0;
+                            factors[i] = (stretch < 0) ? sizes[i] : qreal(0.0);
                         }
                     } else if (stretch == sumStretches) {
                         factors[i] = 1.0;
@@ -373,7 +373,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
 
             for (int i = 0; i < n; ++i) {
                 if (newSizes[i] < 0.0) {
-                    qreal delta = (sumFactors == 0.0) ? 0.0
+                    qreal delta = (sumFactors == 0.0) ? qreal(0.0)
                                                       : sumCurrentAvailable * factors[i] / sumFactors;
                     newSizes[i] = sizes[i] + delta;
                 }

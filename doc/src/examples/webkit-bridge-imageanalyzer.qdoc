@@ -30,12 +30,13 @@
     \startpage {index.html}{Qt Reference Documentation}
     \title The Webkit Bridge Tutorial - Hybrid Client Application
 
-    In this example, we will show how to write a hybrid application using
+    \brief In this example, we will show how to write a hybrid application using
 \l{The QtWebKit Bridge}{QtWebKit Bridge}, which distinguishes itself from a
 thin client in that it performs heavy calculations on the client side in C++,
 like a native application, but presents nothing more than a \c QWebView for its
-user interface, displaying web content written in HTML/JavaScript. The
-application uses QtConcurrent to distribute its work across as many CPU cores as
+user interface, displaying web content written in HTML/JavaScript.
+
+The application uses QtConcurrent to distribute its work across as many CPU cores as
 are available from the system, so it can process each image in parallel.
 
 For the full reference documentation of QtWebKit hybrid development, see 

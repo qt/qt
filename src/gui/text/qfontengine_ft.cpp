@@ -78,6 +78,10 @@
 #include FT_ERRORS_H
 #endif
 
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -373,7 +377,7 @@ void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize,
                 *xsize = *ysize = 0;
         }
     } else {
-        *outline_drawing = (*xsize > (64<<6) || *ysize > (64<<6));
+        *outline_drawing = (*xsize > (QT_MAX_CACHED_GLYPH_SIZE<<6) || *ysize > (QT_MAX_CACHED_GLYPH_SIZE<<6));
     }
 }
 
@@ -797,7 +801,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || set->outline_drawing)
+    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || (set && set->outline_drawing))
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;
@@ -1317,7 +1321,7 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
 
     if (!gs) {
         // don't try to load huge fonts
-        bool draw_as_outline = fontDef.pixelSize * qSqrt(qAbs(matrix.det())) >= 64;
+        bool draw_as_outline = fontDef.pixelSize * qSqrt(qAbs(matrix.det())) >= QT_MAX_CACHED_GLYPH_SIZE;
         if (draw_as_outline)
             return 0;
 
@@ -1418,15 +1422,12 @@ void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_me
 
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
-        uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
-            ++i;
-        }
+    uint ucs4 = str[i].unicode();
+    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
+        ++i;
+        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
     }
-    return uc;
+    return ucs4;
 }
 
 bool QFontEngineFT::canRender(const QChar *string, int len)

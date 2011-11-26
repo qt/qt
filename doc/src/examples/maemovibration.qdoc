@@ -30,7 +30,7 @@
     \group all-examples
     \title Maemo Vibration Example
 
-    The Maemo Vibration example shows how to tell the Maemo Mode Control Entity
+    \brief The Maemo Vibration example shows how to tell the Maemo Mode Control Entity
     (MCE) to vibrate a maemo device.
 
     The MCE is a system service on Maemo that, among other things, provides an

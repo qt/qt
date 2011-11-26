@@ -407,6 +407,12 @@ namespace WebCore {
         void setAllowRunningOfInsecureContent(bool flag) { m_allowRunningOfInsecureContent = flag; }
         bool allowRunningOfInsecureContent() const { return m_allowRunningOfInsecureContent; }
 
+        void setPasswordEchoEnabled(bool flag) { m_passwordEchoEnabled = flag; }
+        bool passwordEchoEnabled() const { return m_passwordEchoEnabled; }
+
+        void setPasswordEchoDurationInSeconds(double durationInSeconds) { m_passwordEchoDurationInSeconds = durationInSeconds; }
+        double passwordEchoDurationInSeconds() const { return m_passwordEchoDurationInSeconds; }
+
     private:
         Page* m_page;
 
@@ -422,6 +428,7 @@ namespace WebCore {
         AtomicString m_fantasyFontFamily;
         EditableLinkBehavior m_editableLinkBehavior;
         TextDirectionSubmenuInclusionBehavior m_textDirectionSubmenuInclusionBehavior;
+        double m_passwordEchoDurationInSeconds;
         int m_minimumFontSize;
         int m_minimumLogicalFontSize;
         int m_defaultFontSize;
@@ -513,6 +520,7 @@ namespace WebCore {
         bool m_shouldInjectUserScriptsInInitialEmptyDocument : 1;
         bool m_allowDisplayOfInsecureContent : 1;
         bool m_allowRunningOfInsecureContent : 1;
+        bool m_passwordEchoEnabled : 1;
 
 #if USE(AVFOUNDATION)
         static bool gAVFoundationEnabled;

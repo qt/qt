@@ -438,7 +438,10 @@
 
     Note, that you must use "+=", not "=", or \l{qmake Manual#qmake}{\c qmake}
     will not be able to use Qt's configuration to determine the settings
-    needed for your project.
+    needed for your project. More information about operators can be found in the
+	\l{qmake Advanced Usage#Operators}
+    {Operators} section of the \l{qmake Advanced Usage}
+    chapter.
 
     \section1 Declaring Qt Libraries
 
@@ -464,6 +467,11 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 4
 
+	More information about operators can be found in the
+    \l{qmake Advanced Usage#Operators}
+    {Operators} section of the \l{qmake Advanced Usage}
+    chapter.
+	
     The table below shows the options that can be used with the \c QT variable
     and the features that are associated with each of them:
 
@@ -1184,6 +1192,10 @@
     Any rules you define will be added after automatically generated
     rules in each section.
 
+    \note Content specified using \c BLD_INF_RULES is inserted as-is into the \c bld.inf
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
+
     \target CONFIG
     \section1 CONFIG
 
@@ -1520,6 +1532,10 @@
     attention that also other statements stay valid. For example if you
     override languages statement, you must override also package-header
     statement and all other statements which are language specific.
+
+    \note Custom deployments specified using \c pkg_postrules are inserted
+    as-is into the \c PKG file, so any rules that specify host side paths may not
+    work correctly when doing a shadow build.
 
     On the Symbian platform, three separate PKG files are generated:
 
@@ -1910,6 +1926,10 @@
     explicitly supported by their own variables, such as
     \c TARGET.EPOCSTACKSIZE.
     Doing so could result in duplicate statements in the MMP file.
+
+    \note Content specified using \c MMP_RULES is inserted as-is into the \c MMP
+    file, so any rules that specify host side paths may not work correctly when doing
+    a shadow build.
 
     \target MOC_DIR
     \section1 MOC_DIR
@@ -3116,6 +3136,23 @@
     platform application shell. In addition it will make the application to
     be launched in background.
 
+    From S60 version 5.4 onwards, you can specify \c graphics_memory value using \c RSS_RULES
+    to specify the graphics memory quota for the application. The value is in kilobytes and
+    defaults to 24576 (i.e. 24MB) for applications that link against QtGui. The default for all
+    other applications is zero.
+
+    The graphics memory quota tells the operating system how much graphics memory the
+    application is likely to need so that it can free up enough graphics memory prior to
+    application launch. If the value is too small, it can cause random slowdowns later when
+    the memory is freed on on-demand basis. On the other hand, too large values can delay
+    the application launch unnecessarily.
+
+    For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 159
+
+    This example sets the graphics memory quota to 12MB.
+
     For detailed list of possible \c APP_REGISTRATION_INFO statements, please refer to the
     Symbian platform help.
 
@@ -3233,6 +3270,29 @@
     For example, define a subdirectory that is only build for emulator builds in Qt for Symbian:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 150
+
+    \section2 Ordered Targets and Visual Studio Solution Files
+
+    The \c ordered option is not supported for Visual Studio. The following list describes how
+    you can get around without it--dependencies are generated automatically if:
+
+    \list
+        \o 1a) There is a Lib/DLL project of which TARGET (the .lib is used and not the .dll)
+        is used on the link line of another project in your solution (you can modify the link
+        line with LIBS).
+
+        \o 1b) There is an Exe project of which TARGET is used in a custom
+        build-step of another project in your solution.
+
+        \o 2) You don't use paths in the TARGET variable (use DESTDIR/DLLDESTDIR for that),
+        e.g, TARGET=$(SOME_VARIABLE)/myLib, won't work.
+
+        \o 3) If you have a special location for your libs, you specify the -Lmy/library/path and
+        LIBS += mylib, instead of just using LIBS += my/library/path/mylib
+
+        \o 4) The leaf projects are created before you generate the solution file. (You can use the
+        recursive flag for qmake to do this, like "qmake -tp vc -r [yourproject.pro]" 
+    \endlist
 
     \target SYMBIAN_VERSION
     \section1 SYMBIAN_VERSION

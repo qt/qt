@@ -163,14 +163,15 @@ QObjectPrivate::~QObjectPrivate()
 {
     if (pendTimer) {
         // unregister pending timers
-        if (threadData->eventDispatcher)
+        if (threadData && threadData->eventDispatcher)
             threadData->eventDispatcher->unregisterTimers(q_ptr);
     }
 
     if (postedEvents)
         QCoreApplication::removePostedEvents(q_ptr, 0);
 
-    threadData->deref();
+    if (threadData)
+        threadData->deref();
 
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
 #ifdef QT_JAMBI_BUILD
@@ -3002,7 +3003,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
         const void *cbdata[] = { sender, signal.mobj ? signalSignature.constData() : 0,
                                  receiver, method.mobj ? methodSignature.constData() : 0 };
-        if (QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata))
+        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata))
             return true;
     }
 

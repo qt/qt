@@ -42,7 +42,6 @@
 #include "abstractviewinspector.h"
 
 #include "abstracttool.h"
-#include "editor/qmltoolbar.h"
 #include "qdeclarativeinspectorprotocol.h"
 
 #include <QtDeclarative/QDeclarativeEngine>
@@ -52,55 +51,12 @@
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QMouseEvent>
-#include <QtCore/QSettings>
-
-static inline void initEditorResource() { Q_INIT_RESOURCE(editor); }
+#include <QtGui/QWidget>
 
 namespace QmlJSDebugger {
 
-const char * const KEY_TOOLBOX_GEOMETRY = "toolBox/geometry";
-
-
-class ToolBox : public QWidget
-{
-    Q_OBJECT
-
-public:
-    ToolBox(QWidget *parent = 0);
-    ~ToolBox();
-
-    QmlToolBar *toolBar() const { return m_toolBar; }
-
-private:
-    QSettings m_settings;
-    QmlToolBar *m_toolBar;
-};
-
-ToolBox::ToolBox(QWidget *parent)
-    : QWidget(parent, Qt::Tool)
-    , m_settings(QLatin1String("Nokia"), QLatin1String("QmlInspector"), this)
-    , m_toolBar(new QmlToolBar)
-{
-    setWindowFlags((windowFlags() & ~Qt::WindowCloseButtonHint) | Qt::CustomizeWindowHint);
-    setWindowTitle(tr("Qt Quick Toolbox"));
-
-    QVBoxLayout *verticalLayout = new QVBoxLayout;
-    verticalLayout->setMargin(0);
-    verticalLayout->addWidget(m_toolBar);
-    setLayout(verticalLayout);
-
-    restoreGeometry(m_settings.value(QLatin1String(KEY_TOOLBOX_GEOMETRY)).toByteArray());
-}
-
-ToolBox::~ToolBox()
-{
-    m_settings.setValue(QLatin1String(KEY_TOOLBOX_GEOMETRY), saveGeometry());
-}
-
-
 AbstractViewInspector::AbstractViewInspector(QObject *parent) :
     QObject(parent),
-    m_toolBox(0),
     m_currentTool(0),
     m_showAppOnTop(false),
     m_designModeBehavior(false),
@@ -108,8 +64,6 @@ AbstractViewInspector::AbstractViewInspector(QObject *parent) :
     m_slowDownFactor(1.0),
     m_debugService(0)
 {
-    initEditorResource();
-
     m_debugService = QDeclarativeInspectorService::instance();
     connect(m_debugService, SIGNAL(gotMessage(QByteArray)),
             this, SLOT(handleMessage(QByteArray)));
@@ -212,59 +166,6 @@ void AbstractViewInspector::setShowAppOnTop(bool appOnTop)
     sendShowAppOnTop(appOnTop);
 
     emit showAppOnTopChanged(appOnTop);
-}
-
-void AbstractViewInspector::setToolBoxVisible(bool visible)
-{
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
-    if (!m_toolBox && visible)
-        createToolBox();
-    if (m_toolBox)
-        m_toolBox->setVisible(visible);
-#else
-    Q_UNUSED(visible)
-#endif
-}
-
-void AbstractViewInspector::createToolBox()
-{
-    m_toolBox = new ToolBox(viewWidget());
-
-    QmlToolBar *toolBar = m_toolBox->toolBar();
-
-    QObject::connect(this, SIGNAL(selectedColorChanged(QColor)),
-                     toolBar, SLOT(setColorBoxColor(QColor)));
-
-    QObject::connect(this, SIGNAL(designModeBehaviorChanged(bool)),
-                     toolBar, SLOT(setDesignModeBehavior(bool)));
-
-    QObject::connect(toolBar, SIGNAL(designModeBehaviorChanged(bool)),
-                     this, SLOT(setDesignModeBehavior(bool)));
-    QObject::connect(toolBar, SIGNAL(animationSpeedChanged(qreal)), this, SLOT(setAnimationSpeed(qreal)));
-    QObject::connect(toolBar, SIGNAL(animationPausedChanged(bool)), this, SLOT(setAnimationPaused(bool)));
-    QObject::connect(toolBar, SIGNAL(colorPickerSelected()), this, SLOT(changeToColorPickerTool()));
-    QObject::connect(toolBar, SIGNAL(zoomToolSelected()), this, SLOT(changeToZoomTool()));
-    QObject::connect(toolBar, SIGNAL(selectToolSelected()), this, SLOT(changeToSingleSelectTool()));
-    QObject::connect(toolBar, SIGNAL(marqueeSelectToolSelected()),
-                     this, SLOT(changeToMarqueeSelectTool()));
-
-    QObject::connect(toolBar, SIGNAL(applyChangesFromQmlFileSelected()),
-                     this, SLOT(applyChangesFromClient()));
-
-    QObject::connect(this, SIGNAL(animationSpeedChanged(qreal)), toolBar, SLOT(setAnimationSpeed(qreal)));
-    QObject::connect(this, SIGNAL(animationPausedChanged(bool)), toolBar, SLOT(setAnimationPaused(bool)));
-
-    QObject::connect(this, SIGNAL(selectToolActivated()), toolBar, SLOT(activateSelectTool()));
-
-    // disabled features
-    //connect(d->m_toolBar, SIGNAL(applyChangesToQmlFileSelected()), SLOT(applyChangesToClient()));
-    //connect(q, SIGNAL(resizeToolActivated()), d->m_toolBar, SLOT(activateSelectTool()));
-    //connect(q, SIGNAL(moveToolActivated()),   d->m_toolBar, SLOT(activateSelectTool()));
-
-    QObject::connect(this, SIGNAL(colorPickerActivated()), toolBar, SLOT(activateColorPicker()));
-    QObject::connect(this, SIGNAL(zoomToolActivated()), toolBar, SLOT(activateZoom()));
-    QObject::connect(this, SIGNAL(marqueeSelectToolActivated()),
-                     toolBar, SLOT(activateMarqueeSelectTool()));
 }
 
 void AbstractViewInspector::changeToColorPickerTool()
@@ -608,4 +509,3 @@ QString AbstractViewInspector::idStringForObject(QObject *obj) const
 
 } // namespace QmlJSDebugger
 
-#include "abstractviewinspector.moc"

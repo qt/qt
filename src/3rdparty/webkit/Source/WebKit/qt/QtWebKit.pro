@@ -42,10 +42,6 @@ win32*:!win32-msvc* {
     contains(DEFINES, ENABLE_WEBGL=1)|contains(CONFIG, texmap): LIBS += $$QMAKE_LIBS_OPENGL
 }
 
-moduleFile=$$PWD/qt_webkit_version.pri
-isEmpty(QT_BUILD_TREE):include($$moduleFile)
-VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
-
 include_webinspector: RESOURCES += $$SOURCE_DIR/WebCore/inspector/front-end/WebKit.qrc $$WC_GENERATED_SOURCES_DIR/InspectorBackendStub.qrc
 
 # Extract sources to build from the generator definitions
@@ -87,6 +83,9 @@ CONFIG(QTDIR_build) {
     symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
 
+moduleFile=$$PWD/qt_webkit_version.pri
+isEmpty(QT_BUILD_TREE):include($$moduleFile)
+VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 symbian {
     TARGET.EPOCALLOWDLLDATA=1
@@ -218,31 +217,42 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
 }
 
 contains(DEFINES, ENABLE_VIDEO=1) {
-    !contains(DEFINES, USE_QTKIT=1):!contains(DEFINES, USE_GSTREAMER=1):contains(MOBILITY_CONFIG, multimedia) {
+    !contains(DEFINES, WTF_USE_QTKIT=1):!contains(DEFINES, WTF_USE_GSTREAMER=1):contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += $$PWD/WebCoreSupport/FullScreenVideoWidget.h
         SOURCES += $$PWD/WebCoreSupport/FullScreenVideoWidget.cpp
     }
 
-    contains(DEFINES, USE_GSTREAMER=1) | contains(MOBILITY_CONFIG, multimedia) {
+    contains(DEFINES, WTF_USE_QTKIT=1) | contains(DEFINES, WTF_USE_GSTREAMER=1) | contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += $$PWD/WebCoreSupport/FullScreenVideoQt.h
         SOURCES += $$PWD/WebCoreSupport/FullScreenVideoQt.cpp
     }
 
-    contains(DEFINES, USE_QTKIT=1) {
-        INCLUDEPATH += $$SOURCE_DIR/WebCore/platform/qt/
-        INCLUDEPATH += $$SOURCE_DIR/../WebKitLibraries/
+    contains(DEFINES, WTF_USE_QTKIT=1) {
+        INCLUDEPATH += $$SOURCE_DIR/WebCore/platform/qt/ \
+                       $$SOURCE_DIR/WebCore/platform/mac/ \
+                       $$SOURCE_DIR/../WebKitLibraries/
+
         DEFINES+=NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-        HEADERS += $$PWD/WebCoreSupport/WebSystemInterface.h
-        SOURCES += $$PWD/WebCoreSupport/WebSystemInterface.mm
+        contains(CONFIG, "x86") {
+            DEFINES+=NS_BUILD_32_LIKE_64
+        }
+
+        HEADERS += $$PWD/WebCoreSupport/WebSystemInterface.h \
+                   $$PWD/WebCoreSupport/QTKitFullScreenVideoHandler.h
+
+        OBJECTIVE_SOURCES += $$PWD/WebCoreSupport/WebSystemInterface.mm \
+                   $$PWD/WebCoreSupport/QTKitFullScreenVideoHandler.mm
+
+        LIBS+= -framework Security -framework IOKit
         # We can know the Mac OS version by using the Darwin major version
         DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
         DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
-        equals(DARWIN_MAJOR_VERSION, "10") {
-            LIBS+= $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a -framework Security
-        } else {
-            equals(DARWIN_MAJOR_VERSION, "9") {
-                LIBS+= $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a -framework Security
-            }
+        equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.5.sdk") {
+            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
+        } else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
+            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a
+        } else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.7.sdk") {
+            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLion.a
         }
     }
 }
