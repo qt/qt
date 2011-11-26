@@ -2,6 +2,15 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     objectlistmodel \
-    stringlistmodel
-
+    stringlistmodel \
+    abstractitemmodel \
+    gridview \
+    listview \
+    objectlistmodel \
+    package \
+    parallax \
+    pathview \
+    stringlistmodel \
+    visualitemmodel \
+    webview
 

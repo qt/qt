@@ -200,10 +200,12 @@ symbian {
         SOURCES += \
 		painting/qpaintengine_raster_symbian.cpp \
                 painting/qregion_s60.cpp \
-                painting/qcolormap_s60.cpp
+                painting/qcolormap_s60.cpp \
+                painting/qgraphicssystemhelper_symbian.cpp
 
         HEADERS += \
-                painting/qpaintengine_raster_symbian_p.h
+                painting/qpaintengine_raster_symbian_p.h \
+                painting/qgraphicssystemhelper_symbian.h
 }
 
 x11|embedded|qpa {

@@ -39,10 +39,9 @@
 ****************************************************************************/
 
 #include "gridlayout.h"
-
+#include "qmlapplicationviewer.h"
 #include <qdeclarative.h>
 #include <QDeclarativeView>
-
 #include <QApplication>
 
 int main(int argc, char* argv[])
@@ -53,11 +52,12 @@ int main(int argc, char* argv[])
     qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
     qmlRegisterType<GraphicsGridLayoutObject>("GridLayouts", 4, 7, "GraphicsGridLayout");
 
-    QDeclarativeView view;
-    view.setSource(QUrl(":qgraphicsgridlayout.qml"));
-    view.show();
+    QmlApplicationViewer viewer;
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+    viewer.setMainQmlFile("qml/qgraphicsgridlayout/qgraphicsgridlayout.qml");
+    viewer.showExpanded();
 
     return app.exec();
-};
+}
 
 

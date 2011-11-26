@@ -29,6 +29,7 @@
 
 \title FolderListModel - a C++ model plugin
 \example src/imports/folderlistmodel
+\depends helper/qmlapplicationviewer
 
 \brief The FolderListModel plugin example shows how to make a C++ model available to QML.
 

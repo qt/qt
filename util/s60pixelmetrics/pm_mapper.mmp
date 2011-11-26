@@ -82,10 +82,10 @@ LIBRARY    fbscli.lib
 LIBRARY    eikdlg.lib
 LIBRARY    aknskins.lib
 LIBRARY    gdi.lib
-LIBRARY    CentralRepository.lib
+LIBRARY    centralrepository.lib
 LIBRARY    efsrv.lib
 LIBRARY    cdlengine.lib
-LIBRARY    AknLayout2.lib
-LIBRARY    AknLayout2Scalable.lib
+LIBRARY    aknlayout2.lib
+LIBRARY    aknlayout2scalable.lib
 
 // End of File

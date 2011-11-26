@@ -28,6 +28,7 @@
 /*!
     \title Same Game
     \example demos/declarative/samegame
+    \depends helper/qmlapplicationviewer
 
     \brief The Qt Quick Same Game demo shows how to write a 'Same Game' game in QML, using Javascript
     for all the game logic.

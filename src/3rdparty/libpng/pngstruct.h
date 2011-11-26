@@ -26,6 +26,7 @@
  */
 #include "zlib.h"
 
+namespace PrivatePng {
 struct png_struct_def
 {
 #ifdef PNG_SETJMP_SUPPORTED
@@ -334,4 +335,5 @@ struct png_struct_def
    png_uint_32 io_state;
 #endif
 };
+} // namespace PrivatePng
 #endif /* PNGSTRUCT_H */

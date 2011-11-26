@@ -262,6 +262,7 @@ void MessageEditor::addPluralForm(int model, const QString &label, bool writable
 {
     FormMultiWidget *transEditor = new FormMultiWidget(label);
     connect(transEditor, SIGNAL(editorCreated(QTextEdit*)), SLOT(editorCreated(QTextEdit*)));
+    connect(transEditor, SIGNAL(editorDeleted(QTextEdit*)), SLOT(editorDeleted(QTextEdit*)));
     transEditor->setEditingEnabled(writable);
     transEditor->setHideWhenEmpty(!writable);
     if (!m_editors[model].transTexts.isEmpty())
@@ -296,6 +297,12 @@ void MessageEditor::editorCreated(QTextEdit *te)
             return;
         }
     }
+}
+
+void MessageEditor::editorDeleted(QTextEdit *te)
+{
+    if (m_selectionHolder == te)
+        resetSelection();
 }
 
 void MessageEditor::fixTabOrder()

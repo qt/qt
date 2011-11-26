@@ -330,11 +330,15 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
 {
     QApplicationPrivate::runtime_graphics_system = true;
 
+    if (!qgetenv("QT_DEFAULT_RUNTIME_SYSTEM").isEmpty()) {
+        m_graphicsSystemName = QString::fromLocal8Bit(qgetenv("QT_DEFAULT_RUNTIME_SYSTEM"));
+    } else {
 #ifdef QT_DEFAULT_RUNTIME_SYSTEM
-    m_graphicsSystemName = QLatin1String(QT_DEFAULT_RUNTIME_SYSTEM);
-    if (m_graphicsSystemName.isNull())
+        m_graphicsSystemName = QLatin1String(QT_DEFAULT_RUNTIME_SYSTEM);
+        if (m_graphicsSystemName.isNull())
 #endif
-        m_graphicsSystemName = QLatin1String("raster");
+            m_graphicsSystemName = QLatin1String("raster");
+    }
 
 #ifdef Q_OS_SYMBIAN
     m_windowSurfaceDestroyPolicy = DestroyAfterFirstFlush;
