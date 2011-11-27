@@ -197,7 +197,7 @@ const char *__stdcall eglQueryString(EGLDisplay dpy, EGLint name)
           case EGL_VENDOR:
             return success("TransGaming Inc.");
           case EGL_VERSION:
-            return success("1.4 (git-devel "__DATE__" " __TIME__")");
+            return success("1.4 (git-devel " __DATE__ " "  __TIME__ ")");
         }
 
         return error(EGL_BAD_PARAMETER, (const char*)NULL);

@@ -162,6 +162,8 @@ private:
     void enableSymbianCcpuSupport();
     void changeCBA(bool showCopyAndOrPaste);
     void copyOrCutTextToClipboard(const char *operation);
+    void getScreenCoordinatesForFepX(TPoint& aLeftSideOfBaseLine, TInt& aHeight, TInt& aAscent,
+            TInt aDocumentPosition) const;
 
     //From MEikCcpuEditor interface
 public:

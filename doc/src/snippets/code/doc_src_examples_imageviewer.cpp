@@ -45,7 +45,7 @@ imageLabel->resize(imageLabel->pixmap()->size());
 
 //! [1]
 if (!imageLabel->pixmap())
-     qFatal("ASSERT: "imageLabel->pixmap()" in file ...");
+     qFatal("ASSERT: " imageLabel->pixmap() " in file ...");
 //! [1]
 
 

@@ -38,14 +38,9 @@
 **
 ****************************************************************************/
 
+#include "qmlapplicationviewer.h"
 #include <QApplication>
-
-#include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
-#include <qdeclarative.h>
-#include <qdeclarativeitem.h>
-#include <qdeclarativeview.h>
-
 
 /*
    This example illustrates exposing a QStringList as a
@@ -55,6 +50,7 @@
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
+    QmlApplicationViewer viewer;
 
 //![0]
     QStringList dataList;
@@ -63,13 +59,13 @@ int main(int argc, char ** argv)
     dataList.append("Item 3");
     dataList.append("Item 4");
 
-    QDeclarativeView view;
-    QDeclarativeContext *ctxt = view.rootContext();
+    QDeclarativeContext *ctxt = viewer.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 //![0]
 
-    view.setSource(QUrl("qrc:view.qml"));
-    view.show();
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockLandscape);
+    viewer.setMainQmlFile(QLatin1String("qml/stringlistmodel/view.qml"));
+    viewer.showExpanded();
 
     return app.exec();
 }

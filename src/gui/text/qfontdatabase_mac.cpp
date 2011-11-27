@@ -104,9 +104,8 @@ if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
     const int numFonts = CFArrayGetCount(fonts);
     for(int i = 0; i < numFonts; ++i) {
         CTFontDescriptorRef font = (CTFontDescriptorRef)CFArrayGetValueAtIndex(fonts, i);
-
-        QCFString family_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
-        QCFString style_name = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute);
+        QCFString family_name = (CFStringRef)CTFontDescriptorCopyLocalizedAttribute(font, kCTFontFamilyNameAttribute, NULL);
+        QCFString style_name = (CFStringRef)CTFontDescriptorCopyLocalizedAttribute(font, kCTFontStyleNameAttribute, NULL);
         QtFontFamily *family = db->family(family_name, true);
         for(int ws = 1; ws < QFontDatabase::WritingSystemsCount; ++ws)
             family->writingSystems[ws] = QtFontFamily::Supported;
@@ -487,6 +486,27 @@ bool QFontDatabase::removeAllApplicationFonts()
 bool QFontDatabase::supportsThreadedFontRendering()
 {
     return true;
+}
+
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+    QCFString expectedFamily = QCFString(family);
+
+    QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(NULL, 0,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, expectedFamily);
+    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithAttributes(attributes);
+
+    QCFType<CFMutableSetRef> mandatoryAttributes = CFSetCreateMutable(NULL, 0, &kCFTypeSetCallBacks);
+    CFSetAddValue(mandatoryAttributes, kCTFontFamilyNameAttribute);
+
+    QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(descriptor, 0.0, NULL);
+    QCFType<CTFontDescriptorRef> matched = CTFontDescriptorCreateMatchingFontDescriptor(descriptor, mandatoryAttributes);
+    if (!matched)
+        return family;
+
+    QCFString familyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(matched, kCTFontFamilyNameAttribute, NULL);
+    return familyName;
 }
 
 QT_END_NAMESPACE

@@ -8,8 +8,8 @@ TARGET = qmlqwidgetsplugin
 SOURCES += qwidgets.cpp
 
 sources.files += qwidgets.pro qwidgets.cpp qwidgets.qml
-sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
-target.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
+sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins
+target.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins
 
 INSTALLS += sources target
 

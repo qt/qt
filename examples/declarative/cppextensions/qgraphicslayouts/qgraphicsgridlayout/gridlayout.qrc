@@ -1,6 +1,5 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>qgraphicsgridlayout.qml</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>qml/qgraphicsgridlayout/qgraphicsgridlayout.qml</file>
+    </qresource>
 </RCC>
-
