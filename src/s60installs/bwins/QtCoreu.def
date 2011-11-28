@@ -4885,4 +4885,5 @@ EXPORTS
 	?updateDir@QFactoryLoader@@QAEXABVQString@@AAVQSettings@@@Z @ 4884 NONAME ; void QFactoryLoader::updateDir(class QString const &, class QSettings &)
 	?disconnectNotify@QFutureWatcherBase@@MAEXPBD@Z @ 4885 NONAME ; void QFutureWatcherBase::disconnectNotify(char const *)
 	?maybeQueueForLater@QActiveObject@@QAE_NXZ @ 4886 NONAME ; bool QActiveObject::maybeQueueForLater(void)
+	?activeObjectError@QEventDispatcherSymbian@@QAEXH@Z @ 4887 NONAME ; void QEventDispatcherSymbian::activeObjectError(int)
 
