@@ -48,28 +48,70 @@ class Window2 : public QWidget
 {
     Q_OBJECT
 
-public slots:
+public:
+
 //![0]
+    void startRecording()
+    {
+        outputFile.setFileName("/tmp/test.raw");
+        outputFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
+
+        QAudioFormat format;
+        // set up the format you want, eg.
+        format.setFrequency(8000);
+        format.setChannels(1);
+        format.setSampleSize(8);
+        format.setCodec("audio/pcm");
+        format.setByteOrder(QAudioFormat::LittleEndian);
+        format.setSampleType(QAudioFormat::UnSignedInt);
+
+        QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
+        if (!info.isFormatSupported(format)) {
+            qWarning()<<"default format not supported try to use nearest";
+            format = info.nearestFormat(format);
+        }
+
+        audioInput = new QAudioInput(format, this);
+        QTimer::singleShot(3000, this, SLOT(stopRecording()));
+        audioInput->start(&outputFile);
+        // Records audio for 3000ms
+    }
+//![0]
+
+//![1]
+    void stopRecording()
+    {
+        audioInput->stop();
+        outputFile.close();
+        delete audioInput;
+    }
+//![1]
+
+public slots:
+//![2]
     void stateChanged(QAudio::State newState)
     {
         switch(newState) {
-            case QAudio::StopState:
-            if (input->error() != QAudio::NoError) {
-                // Error handling
+            case QAudio::StoppedState:
+            if (audioInput->error() != QAudio::NoError) {
+                 // Perform error handling
             } else {
 
             }
             break;
-//![0]
+//![2]
         default:
             ;
         }
     }
 
 private:
-    QAudioInput *input;
-
+//![3]
+    QFile outputFile;         // class member.
+    QAudioInput *audioInput;  // class member.
+//![3]
 };
+
 
 class Window : public QWidget
 {
@@ -78,45 +120,86 @@ class Window : public QWidget
 public:
     Window()
     {
-        output = new QAudioOutput;
-        connect(output, SIGNAL(stateChanged(QAudio::State)),
+        audioOutput = new QAudioOutput;
+        connect(audioOutput, SIGNAL(stateChanged(QAudio::State)),
             this, SLOT(stateChanged(QAudio::State)));
     }
 
+public:
+
+//![4]
+    void startPlaying()
+    {
+        inputFile.setFileName("/tmp/test.raw");
+        inputFile.open(QIODevice::ReadOnly);
+
+        QAudioFormat format;
+        // Set up the format, eg.
+        format.setFrequency(8000);
+        format.setChannels(1);
+        format.setSampleSize(8);
+        format.setCodec("audio/pcm");
+        format.setByteOrder(QAudioFormat::LittleEndian);
+        format.setSampleType(QAudioFormat::UnSignedInt);
+
+        QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+        if (!info.isFormatSupported(format)) {
+            qWarning()<<"raw audio format not supported by backend, cannot play audio.";
+            return;
+        }
+
+        audioOutput = new QAudioOutput(format, this);
+        connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
+        audioOutput->start(&inputFile);
+    }
+//![4]
+
+//![5]
+    void finishedPlaying(QAudio::State state)
+    {
+        if (state == QAudio::IdleState) {
+            audioOutput->stop();
+            inputFile.close();
+            delete audioOutput;
+        }
+    }
+//![5]
+
 private:
+
     void setupFormat()
     {
-//![1]
+//![6]
         QAudioFormat format;
         format.setFrequency(44100);
-//![1]
+//![6]
         format.setChannels(2);
         format.setSampleSize(16);
         format.setCodec("audio/pcm");
         format.setByteOrder(QAudioFormat::LittleEndian);
-//![2]
+//![7]
         format.setSampleType(QAudioFormat::SignedInt);
 
         QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
 
         if (!info.isFormatSupported(format))
             format = info.nearestFormat(format);
-//![2]
+//![7]
     }
 
 public slots:
-//![3]
+//![8]
     void stateChanged(QAudio::State newState)
     {
         switch (newState) {
-            case QAudio::StopState:
-                if (output->error() != QAudio::NoError) {
+            case QAudio::StoppedState:
+                if (audioOutput->error() != QAudio::NoError) {
                     // Perform error handling
                 } else {
                     // Normal stop
                 }
                 break;
-//![3]
+//![8]
 
             // Handle 
             case QAudio::ActiveState:
@@ -129,7 +212,11 @@ public slots:
     }
 
 private:
-    QAudioOutput *output;
+
+//![9]
+    QFile inputFile;           // class member.
+    QAudioOutput *audioOutput; // class member.
+//![9]
 };
 
 int main(int argv, char **args)

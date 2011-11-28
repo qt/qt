@@ -4190,6 +4190,7 @@ QString QUrlPrivate::createErrorString()
     Constructs a URL by parsing \a url. \a url is assumed to be in human
     readable representation, with no percent encoding. QUrl will automatically
     percent encode all characters that are not allowed in a URL.
+    The default parsing mode is TolerantMode.
 
     Example:
 
@@ -4211,6 +4212,7 @@ QUrl::QUrl(const QString &url) : d(0)
     \overload
 
     Parses the \a url using the parser mode \a parsingMode.
+    The default parsing mode is TolerantMode.
 
     \sa setUrl()
 */
