@@ -13,6 +13,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 /* Generate a compiler error if there is an old png.h in the search path. */
 typedef png_libpng_version_1_5_4 Your_png_h_is_not_version_1_5_4;
 
@@ -2420,3 +2422,4 @@ png_build_gamma_table(png_structp png_ptr, int bit_depth)
 }
 #endif /* READ_GAMMA */
 #endif /* defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED) */
+} // namespace PrivatePng

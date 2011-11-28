@@ -15,11 +15,11 @@ qdeclarativesources.files += \
     com/nokia/TimeExample/hour.png \
     com/nokia/TimeExample/minute.png
 
-qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
+qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/com/nokia/TimeExample
 
 sources.files += plugins.pro plugin.cpp plugins.qml README
-sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
-target.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
+sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins
+target.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/com/nokia/TimeExample
 
 INSTALLS += qdeclarativesources sources target
 

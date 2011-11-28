@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockPortrait);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/highlight.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/highlight/highlight.qml"));
     viewer.showExpanded();
 
     return app.exec();

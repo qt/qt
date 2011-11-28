@@ -1824,7 +1824,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #elif defined(_MSC_VER)
 #  define Q_FUNC_INFO __FUNCSIG__
 #else
-#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN)
+#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN) || defined(Q_OS_INTEGRITY)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
 #   else
         /* These two macros makes it possible to turn the builtin line expander into a

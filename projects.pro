@@ -8,7 +8,7 @@ TEMPLATE = subdirs
 cross_compile: CONFIG += nostrip
 
 isEmpty(QT_BUILD_PARTS) { #defaults
-    symbian {
+    symbian|integrity {
        QT_BUILD_PARTS = libs tools examples demos
     } else {
        QT_BUILD_PARTS = libs tools examples demos docs translations

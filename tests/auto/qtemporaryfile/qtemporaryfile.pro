@@ -7,6 +7,8 @@ symbian {
     testData.files = tst_qtemporaryfile.cpp
     testData.path = .
     DEPLOYMENT += testData
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 }else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

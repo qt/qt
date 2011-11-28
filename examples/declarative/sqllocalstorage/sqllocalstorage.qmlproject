@@ -3,13 +3,13 @@ import QmlProject 1.0
 Project {
     /* Include .qml, .js, and image files from current directory and subdirectories */
     QmlFiles {
-        directory: "."
+        directory: "qml/sqllocalstorage"
     }
     JavaScriptFiles {
-        directory: "."
+        directory: "qml/sqllocalstorage"
     }
     ImageFiles {
-        directory: "."
+        directory: "qml/sqllocalstorage"
     }
     /* List of plugin directories passed to QML runtime */
     // importPaths: [ " ../exampleplugin " ]

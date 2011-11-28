@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qmlapplicationviewer.h"
 #include <QtGui/QApplication>
 #include <QtOpenGL>
 #include <QDeclarativeView>
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
-    QDeclarativeView view;
+    QmlApplicationViewer viewer;
 
 #ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
     QGLFormat format = QGLFormat::defaultFormat();
@@ -61,16 +62,16 @@ int main(int argc, char *argv[])
     format.setSwapInterval(1);
     QGLWidget* glWidget = new QGLWidget(format);
     glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
+    viewer.setViewport(glWidget);
 #endif
 
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
+    viewer.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    viewer.setAttribute(Qt::WA_OpaquePaintEvent);
+    viewer.setAttribute(Qt::WA_NoSystemBackground);
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+    viewer.setMainQmlFile(QLatin1String("qml/shadereffects/main.qml"));
+    QObject::connect(viewer.engine(), SIGNAL(quit()), &viewer, SLOT(close()));
+    viewer.showExpanded();
 
     return app.exec();
 }

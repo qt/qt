@@ -272,7 +272,7 @@ private:
     functionality to set up a proper search queries list that get's passed to the search engines
     search() function.
 
-    After the list of querys has been passed to the search engine, the signal searchingStarted()
+    After the list of queries have been passed to the search engine, the signal searchingStarted()
     is emitted and after the search has finished the searchingFinished() signal is emitted. The
     search process can be stopped by calling cancelSearching().
 

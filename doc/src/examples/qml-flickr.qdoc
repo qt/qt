@@ -31,5 +31,7 @@
 
     \brief The Qt Quick Flickr Mobile demo shows how to write a mobile Flickr browser application in QML.
 
+    \depends helper/qmlapplicationviewer
+
     \image qml-flickr-demo.png
 */

@@ -16,6 +16,7 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
 #ifdef PNG_READ_SUPPORTED
 
 #define png_strtod(p,a,b) strtod(a,b)
@@ -458,7 +459,7 @@ png_decompress_chunk(png_structp png_ptr, int comp_type,
       {
          /* Success (maybe) - really uncompress the chunk. */
          png_size_t new_size = 0;
-         png_charp text = png_malloc_warn(png_ptr,
+         png_charp text = (png_charp) png_malloc_warn(png_ptr,
              prefix_size + expanded_size + 1);
 
          if (text != NULL)
@@ -501,7 +502,7 @@ png_decompress_chunk(png_structp png_ptr, int comp_type,
     * amount of compressed data.
     */
    {
-      png_charp text = png_malloc_warn(png_ptr, prefix_size + 1);
+      png_charp text = (png_charp) png_malloc_warn(png_ptr, prefix_size + 1);
 
       if (text != NULL)
       {
@@ -3666,3 +3667,4 @@ defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
    png_ptr->flags |= PNG_FLAG_ROW_INIT;
 }
 #endif /* PNG_READ_SUPPORTED */
+} // namespace PrivatePng

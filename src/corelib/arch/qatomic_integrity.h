@@ -203,7 +203,7 @@ inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
 {
-    return TestAndSet((Address*)&_q_value, qt_addr(expectedValue), qt_addr(newValue)) == Success;
+    return TestAndSet(reinterpret_cast<Address *>(const_cast<T **>(&_q_value)), qt_addr(expectedValue), qt_addr(newValue)) == Success;
 }
 
 template <typename T>
@@ -231,7 +231,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 {
     Address old_val;
     do {
-        old_val = *reinterpret_cast<Address *>(const_cast<T *>(newValue));
+        old_val = *reinterpret_cast<Address *>(const_cast<T *>(_q_value));
     } while (TestAndSet(reinterpret_cast<Address *>(const_cast<T **>(&_q_value)), old_val, qt_addr(newValue)) != Success);
     return reinterpret_cast<T *>(old_val);
 }
@@ -259,7 +259,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
 {
-    AtomicModify(qt_p2addr(&_q_value), qt_addr(_q_value), qt_addr(_q_value) + valueToAdd * sizeof(T));
+    Address old_value;
+    AtomicModify(reinterpret_cast<volatile Address*>(&_q_value), &old_value, 0, valueToAdd * sizeof(T));
     return _q_value;
 }
 

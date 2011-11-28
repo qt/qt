@@ -120,6 +120,9 @@ QString Environment::detectQMakeSpec()
         spec = "win32-icc";
         break;
     case CC_MINGW:
+        spec = "win32-g++-4.6";
+        break;
+    case CC_MINGW_44:
         spec = "win32-g++";
         break;
     case CC_BORLAND:
@@ -173,6 +176,12 @@ Compiler Environment::detectCompiler()
             if (executable.length() && Environment::detectExecutable(executable)) {
                 ++installed;
                 detectedCompiler = compiler_info[i].compiler;
+                if (detectedCompiler == CC_MINGW) {
+                    bool is64bit;
+                    const int version = detectGPlusPlusVersion(executable, &is64bit);
+                    if (version < 0x040600)
+                        detectedCompiler = CC_MINGW_44;
+                }
                 break;
             }
         }
@@ -184,7 +193,7 @@ Compiler Environment::detectCompiler()
     }
     return detectedCompiler;
 #endif
-};
+}
 
 /*!
     Returns true if the \a executable could be loaded, else false.
@@ -211,6 +220,81 @@ bool Environment::detectExecutable(const QString &executable)
         CloseHandle(procInfo.hProcess);
     }
     return couldExecute;
+}
+
+/*!
+  Determine the g++ version.
+*/
+
+int Environment::detectGPlusPlusVersion(const QString &executable,
+                                        bool *is64bit)
+{
+    QRegExp regexp(QLatin1String("[gG]\\+\\+[\\.exEX]{0,4} ([^\\s]+) (\\d+)\\.(\\d+)\\.(\\d+)"));
+    QString stdOut = readProcessStandardOutput(executable + QLatin1String(" --version"));
+    if (regexp.indexIn(stdOut) != -1) {
+        const QString compiler = regexp.cap(1);
+        // Check for "tdm64-1"
+        *is64bit = compiler.contains(QLatin1String("64"));
+        const int major = regexp.cap(2).toInt();
+        const int minor = regexp.cap(3).toInt();
+        const int patch = regexp.cap(4).toInt();
+        return (major << 16) + (minor << 8) + patch;
+    }
+    *is64bit = false;
+    return 0;
+}
+
+/*!
+    Run a process and return its standard output.
+*/
+
+QString Environment::readProcessStandardOutput(const QString &commandLine)
+{
+    QString stdOut;
+    TCHAR tempFileName[MAX_PATH];
+    TCHAR tempPathBuffer[MAX_PATH];
+    if (!GetTempPath(MAX_PATH, tempPathBuffer)
+        || !GetTempFileName(tempPathBuffer, TEXT("qtconfigure"), 0, tempFileName))
+        return stdOut;
+
+    STARTUPINFO startInfo;
+    memset(&startInfo, 0, sizeof(startInfo));
+    startInfo.cb = sizeof(startInfo);
+    startInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+    SECURITY_ATTRIBUTES securityAttributes;
+    securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+    securityAttributes.bInheritHandle = TRUE;
+    securityAttributes.lpSecurityDescriptor = NULL;
+
+    startInfo.hStdOutput = CreateFile(tempFileName, GENERIC_WRITE, 0, &securityAttributes, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (startInfo.hStdOutput == INVALID_HANDLE_VALUE)
+        return stdOut;
+
+    PROCESS_INFORMATION procInfo;
+    memset(&procInfo, 0, sizeof(procInfo));
+
+    if (!CreateProcess(0, (wchar_t*)commandLine.utf16(),
+                       0, 0, TRUE,
+                       0,
+                       0, 0, &startInfo, &procInfo)) {
+        CloseHandle(startInfo.hStdOutput);
+        DeleteFile(tempFileName);
+        return stdOut;
+    }
+
+    WaitForSingleObject(procInfo.hProcess, INFINITE);
+    CloseHandle(procInfo.hThread);
+    CloseHandle(procInfo.hProcess);
+    CloseHandle(startInfo.hStdOutput);
+    QFile file(QString::fromWCharArray(tempFileName));
+
+    if (file.open(QIODevice::Text| QIODevice::ReadOnly)) {
+        stdOut = QString::fromLocal8Bit(file.readAll());
+        file.close();
+    }
+    DeleteFile(tempFileName);
+    return stdOut;
 }
 
 /*!

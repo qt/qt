@@ -120,14 +120,14 @@ void QXmlTestLogger::startLogging()
        QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
-                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
                 "    <RandomSeed>%d</RandomSeed>\n"
                 "</Environment>\n", qVersion(), randomSeed);
     } else {
        QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
-                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
                 "</Environment>\n", qVersion());
     }
     outputString(buf.constData());

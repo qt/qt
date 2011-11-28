@@ -28,6 +28,7 @@
 /*!
     \title Calculator
     \example demos/declarative/calculator
+    \depends helper/qmlapplicationviewer
 
     \brief The Qt Quick Calculator demo shows how to write a simple calculator application in QML and JavaScript.
 

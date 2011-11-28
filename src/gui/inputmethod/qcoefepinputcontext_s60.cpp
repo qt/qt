@@ -1465,40 +1465,49 @@ void QCoeFepInputContext::CancelFepInlineEdit()
 
     m_pendingTransactionCancel = true;
 
-    QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(QLatin1String(""), 0, 0);
-    m_preeditString.clear();
-    m_inlinePosition = 0;
-    sendEvent(event);
+    QT_TRY {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event(QLatin1String(""), attributes);
+        event.setCommitString(QLatin1String(""), 0, 0);
+        m_preeditString.clear();
+        m_inlinePosition = 0;
+        sendEvent(event);
 
-    // Sync with native side editor state. Native side can then do various operations
-    // based on editor state, such as removing 'exact word bubble'.
-    if (!m_pendingInputCapabilitiesChanged)
-        ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+        // Sync with native side editor state. Native side can then do various operations
+        // based on editor state, such as removing 'exact word bubble'.
+        if (!m_pendingInputCapabilitiesChanged)
+            ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
+    } QT_CATCH(const std::exception&) {
+        m_preeditString.clear();
+        m_inlinePosition = 0;
+    }
 
     m_pendingTransactionCancel = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
 {
-    QWidget *w = focusWidget();
-    if (!w)
+    QT_TRY {
+        QWidget *w = focusWidget();
+        if (!w)
+            return 0;
+
+        QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
+
+        int size = variant.value<QString>().size() + m_preeditString.size();
+
+        // To fix an issue with backspaces not being generated if document size is zero,
+        // fake document length to be at least one always, except when dealing with
+        // hidden text widgets, where this faking would generate extra asterisk. Since the
+        // primary use of hidden text widgets is password fields, they are unlikely to
+        // support multiple lines anyway.
+        if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
+            size = 1;
+
+        return size;
+    } QT_CATCH(const std::exception&) {
         return 0;
-
-    QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
-
-    int size = variant.value<QString>().size() + m_preeditString.size();
-
-    // To fix an issue with backspaces not being generated if document size is zero,
-    // fake document length to be at least one always, except when dealing with
-    // hidden text widgets, where this faking would generate extra asterisk. Since the
-    // primary use of hidden text widgets is password fields, they are unlikely to
-    // support multiple lines anyway.
-    if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
-        size = 1;
-
-    return size;
+    }
 }
 
 TInt QCoeFepInputContext::DocumentMaximumLengthForFep() const
@@ -1540,42 +1549,46 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
 
 void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSelection) const
 {
-    QWidget *w = focusWidget();
-    if (!w) {
+    QT_TRY {
+        QWidget *w = focusWidget();
+        if (!w) {
+            aCursorSelection.SetSelection(0,0);
+            return;
+        }
+
+        int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
+        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
+
+        // If the position is stored, use that value, so that word replacement from proposed word
+        // lists are added to the correct position.
+        if (m_cachedCursorAndAnchorPosition != -1) {
+            cursor = m_cachedCursorAndAnchorPosition;
+            anchor = m_cachedCursorAndAnchorPosition;
+        }
+        QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
+        int combinedSize = text.size() + m_preeditString.size();
+        if (combinedSize < anchor || combinedSize < cursor) {
+            // ### TODO! FIXME! QTBUG-5050
+            // This is a hack to prevent crashing in 4.6 with QLineEdits that use input masks.
+            // The root problem is that cursor position is relative to displayed text instead of the
+            // actual text we get.
+            //
+            // To properly fix this we would need to know the displayText of QLineEdits instead
+            // of just the text, which on itself should be a trivial change. The difficulties start
+            // when we need to commit the changes back to the QLineEdit, which would have to be somehow
+            // able to handle displayText, too.
+            //
+            // Until properly fixed, the cursor and anchor positions will not reflect correct positions
+            // for masked QLineEdits, unless all the masked positions are filled in order so that
+            // cursor position relative to the displayed text matches position relative to actual text.
+            aCursorSelection.iAnchorPos = combinedSize;
+            aCursorSelection.iCursorPos = combinedSize;
+        } else {
+            aCursorSelection.iAnchorPos = anchor;
+            aCursorSelection.iCursorPos = cursor;
+        }
+    } QT_CATCH(const std::exception&) {
         aCursorSelection.SetSelection(0,0);
-        return;
-    }
-
-    int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
-    int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
-
-    // If the position is stored, use that value, so that word replacement from proposed word
-    // lists are added to the correct position.
-    if (m_cachedCursorAndAnchorPosition != -1) {
-        cursor = m_cachedCursorAndAnchorPosition;
-        anchor = m_cachedCursorAndAnchorPosition;
-    }
-    QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
-    int combinedSize = text.size() + m_preeditString.size();
-    if (combinedSize < anchor || combinedSize < cursor) {
-        // ### TODO! FIXME! QTBUG-5050
-        // This is a hack to prevent crashing in 4.6 with QLineEdits that use input masks.
-        // The root problem is that cursor position is relative to displayed text instead of the
-        // actual text we get.
-        //
-        // To properly fix this we would need to know the displayText of QLineEdits instead
-        // of just the text, which on itself should be a trivial change. The difficulties start
-        // when we need to commit the changes back to the QLineEdit, which would have to be somehow
-        // able to handle displayText, too.
-        //
-        // Until properly fixed, the cursor and anchor positions will not reflect correct positions
-        // for masked QLineEdits, unless all the masked positions are filled in order so that
-        // cursor position relative to the displayed text matches position relative to actual text.
-        aCursorSelection.iAnchorPos = combinedSize;
-        aCursorSelection.iCursorPos = combinedSize;
-    } else {
-        aCursorSelection.iAnchorPos = anchor;
-        aCursorSelection.iCursorPos = cursor;
     }
 }
 
@@ -1618,6 +1631,12 @@ void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt /* aDocumen
 }
 
 void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLine, TInt& aHeight,
+        TInt& aAscent, TInt aDocumentPosition) const
+{
+    QT_TRYCATCH_LEAVING(getScreenCoordinatesForFepX(aLeftSideOfBaseLine, aHeight, aAscent, aDocumentPosition));
+}
+
+void QCoeFepInputContext::getScreenCoordinatesForFepX(TPoint& aLeftSideOfBaseLine, TInt& aHeight,
         TInt& aAscent, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
@@ -1774,36 +1793,40 @@ TBool QCoeFepInputContext::CcpuIsFocused() const
 
 TBool QCoeFepInputContext::CcpuCanCut() const
 {
-    bool retval = false;
-    if (m_inDestruction)
-        return retval;
-    QWidget *w = focusWidget();
-    QObject *focusObject = 0;
-    if (!w) {
-        w = m_lastFocusedEditor;
-        focusObject = m_lastFocusedObject;
-    } else {
-        w = getQWidgetFromQGraphicsView(w, &focusObject);
-    }
-    if (w) {
-        QRect microFocus = w->inputMethodQuery(Qt::ImMicroFocus).toRect();
-        if (microFocus.isNull()) {
-            // For some reason, the editor does not have microfocus. Most probably,
-            // it is due to using native fullscreen editing mode with QML apps.
-            // Try accessing "selectedText" directly.
-            QObject *invokeTarget = w;
-            if (focusObject)
-                invokeTarget = focusObject;
-
-            QString selectedText = invokeTarget->property("selectedText").toString();
-            retval = !selectedText.isNull();
+    QT_TRY {
+        bool retval = false;
+        if (m_inDestruction)
+            return retval;
+        QWidget *w = focusWidget();
+        QObject *focusObject = 0;
+        if (!w) {
+            w = m_lastFocusedEditor;
+            focusObject = m_lastFocusedObject;
         } else {
-            int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-            int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-            retval = cursor != anchor;
+            w = getQWidgetFromQGraphicsView(w, &focusObject);
         }
+        if (w) {
+            QRect microFocus = w->inputMethodQuery(Qt::ImMicroFocus).toRect();
+            if (microFocus.isNull()) {
+                // For some reason, the editor does not have microfocus. Most probably,
+                // it is due to using native fullscreen editing mode with QML apps.
+                // Try accessing "selectedText" directly.
+                QObject *invokeTarget = w;
+                if (focusObject)
+                    invokeTarget = focusObject;
+
+                QString selectedText = invokeTarget->property("selectedText").toString();
+                retval = !selectedText.isNull();
+            } else {
+                int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+                int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
+                retval = cursor != anchor;
+            }
+        }
+        return retval;
+    } QT_CATCH(const std::exception&) {
+        return EFalse;
     }
-    return retval;
 }
 
 void QCoeFepInputContext::CcpuCutL()

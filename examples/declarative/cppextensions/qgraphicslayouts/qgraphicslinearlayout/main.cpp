@@ -39,10 +39,9 @@
 ****************************************************************************/
 
 #include "linearlayout.h"
-
+#include "qmlapplicationviewer.h"
 #include <qdeclarative.h>
 #include <QDeclarativeView>
-
 #include <QApplication>
 
 int main(int argc, char* argv[])
@@ -54,11 +53,12 @@ int main(int argc, char* argv[])
     qmlRegisterType<GraphicsLinearLayoutStretchItemObject>("LinearLayouts", 4, 7, "GraphicsLinearLayoutStretchItem");
     qmlRegisterType<GraphicsLinearLayoutObject>("LinearLayouts", 4, 7, "GraphicsLinearLayout");
 
-    QDeclarativeView view;
-    view.setSource(QUrl(":qgraphicslinearlayout.qml"));
-    view.show();
+    QmlApplicationViewer viewer;
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+    viewer.setMainQmlFile("qml/qgraphicslinearlayout/qgraphicslinearlayout.qml");
+    viewer.showExpanded();
 
     return app.exec();
-};
+}
 
 

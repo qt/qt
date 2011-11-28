@@ -18,6 +18,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 static PNG_FUNCTION(void, png_default_error,PNGARG((png_structp png_ptr,
@@ -670,3 +672,5 @@ png_set_strip_error_numbers(png_structp png_ptr, png_uint_32 strip_mode)
 }
 #endif
 #endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng
+

@@ -10,12 +10,16 @@
 QT_ROOT:= ../..
 TARGETDIR:=$(EPOCROOT)/$(INSTALLPATH)
 MKSPECDIR:=$(EPOCROOT)/$(INSTALLPATH)/qt
-SOURCEDIR:=$(EXTENSION_ROOT)/$(QT_ROOT)/bin
+TOOLSBINDIR:=$(EXTENSION_ROOT)/$(QT_ROOT)/bin
 TOOLSSRCDIR:=$(EXTENSION_ROOT)/$(QT_ROOT)/src/tools
 LANGUAGETOOLDIR:=$(EXTENSION_ROOT)/$(QT_ROOT)/tools/linguist
 CONFIGURE_APP:=configure$(DOTEXE)
+BOOTSTRAP_LIB:=$(TOOLSSRCDIR)/bootstrap/libbootstrap.a
 
 $(call makepath,$(TARGETDIR))
+
+WHATTARGETS:=
+CLEANTARGETS:=
 
 ifneq ($(filter linux,$(HOSTPLATFORM)),)
 PLATFORM:=$(PLATFORM.LINUX)
@@ -23,55 +27,73 @@ else
 PLATFORM:=$(PLATFORM.WIN32)
 endif
 
-TARGET_TOOLS:=$(TARGETDIR)/qmake$(DOTEXE) $(TARGETDIR)/moc$(DOTEXE) $(TARGETDIR)/rcc$(DOTEXE) $(TARGETDIR)/uic$(DOTEXE) $(TARGETDIR)/lrelease$(DOTEXE)
-QT_TOOLS:= $(TOOLSSRCDIR)/uic $(TOOLSSRCDIR)/moc $(TOOLSSRCDIR)/rcc $(LANGUAGETOOLDIR)/lrelease
-SOURCE_TOOLS:=$(SOURCEDIR)/qmake$(DOTEXE) $(SOURCEDIR)/moc$(DOTEXE) $(SOURCEDIR)/rcc$(DOTEXE) $(SOURCEDIR)/uic$(DOTEXE) $(SOURCEDIR)/lrelease$(DOTEXE)
+QT_TOOLS:=uic moc rcc
 
-define QtConfiguration
-ifneq ($(filter linux,$(HOSTPLATFORM)),)
-$(TARGET_TOOLS): $(QT_TOOLS)
-else
-$(TARGET_TOOLS): $(SOURCEDIR)/qmake$(DOTEXE)
-endif
+# Build every tool with it's own target
+define qt_tool
+
+TARGET:: $(TARGETDIR)/$1$(DOTEXE)
+
+WHATTARGETS:=$$(WHATTARGETS) $(TARGETDIR)/$1$(DOTEXE) $(TOOLSBINDIR)/$1$(DOTEXE)
+CLEANTARGETS:=$$(CLEANTARGETS) $(TARGETDIR)/$1$(DOTEXE) $(TOOLSBINDIR)/$1$(DOTEXE)
+
+$(TARGETDIR)/$1$(DOTEXE): $(TOOLSBINDIR)/$1$(DOTEXE)
 	$(call startrule,qtconf_deploy) \
-	$(GNUCP) $(SOURCEDIR)/$$(notdir $$@) $$@ \
+	$(GNUCP) $$^ $$@ \
 	$(call endrule,qtconf_deploy)
 
 ifneq ($(filter linux,$(HOSTPLATFORM)),)
-$(QT_TOOLS): $(TOOLSSRCDIR)/bootstrap
+# On linux, the tools are built separately
+$(TOOLSBINDIR)/$1$(DOTEXE): $(BOOTSTRAP_LIB)
 	$(call startrule,qtconf_tools_build) \
-	cd $$@; \
-	$(GNUMAKE38); \
-	cd .. \
+	cd $(TOOLSSRCDIR)/$1 && $(GNUMAKE38) \
 	$(call endrule,qtconf_tools_build)
-
-$(TOOLSSRCDIR)/bootstrap:$(SOURCEDIR)/qmake$(DOTEXE)
-	$(call startrule,qtconf_bootstrap_build) \
-	cd $(TOOLSSRCDIR)/bootstrap; \
-	$(GNUMAKE38); \
-	cd .. \
-	$(call endrule,qtconf_bootstrap_build)
+else
+# On windows, the tools are built by configure.exe (building of qmake)
+$(TOOLSBINDIR)/$1$(DOTEXE): $(TARGETDIR)/qmake$(DOTEXE)
 endif
 
+endef
 
-$(SOURCEDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
+define qt_bootstrap
+$(BOOTSTRAP_LIB): $(TOOLSBINDIR)/qmake$(DOTEXE)
+	$(call startrule,qtconf_bootstrap_build) \
+	cd $(TOOLSSRCDIR)/bootstrap && $(GNUMAKE38) && $(GNUTOUCH) $$@ \
+	$(call endrule,qtconf_bootstrap_build)
+
+CLEANTARGETS:=$$(CLEANTARGETS) $(BOOTSTRAP_LIB)
+endef
+
+
+define qt_qmake
+
+TARGET:: $(TARGETDIR)/qmake$(DOTEXE)
+
+WHATTARGETS:=$$(WHATTARGETS) $(TARGETDIR)/qmake$(DOTEXE) $(TOOLSBINDIR)/qmake$(DOTEXE)
+CLEANTARGETS:=$$(CLEANTARGETS) $(TARGETDIR)/qmake$(DOTEXE) $(TOOLSBINDIR)/qmake$(DOTEXE)
+
+$(TARGETDIR)/qmake$(DOTEXE): $(TOOLSBINDIR)/qmake$(DOTEXE)
+	$(call startrule,qmake_deploy) \
+	$(GNUCP) $$^ $$@ \
+	$(call endrule,qmake_deploy)
+
+$(TOOLSBINDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
 	$(call startrule,qtconf) \
+	$(GNUCHMOD) a+x  $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP) $(EXTENSION_ROOT)/$(QT_ROOT)/config.tests/unix/* && \
 	cd $(EXTENSION_ROOT)/$(QT_ROOT) && unset INCLUDE && unset LIB && $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP) -platform $(PLATFORM) -xplatform $(XPLATFORM) $(OPTIONS) \
 	$(call endrule,qtconf)
 	$(call startrule,headerexport) \
 	cd $(EXTENSION_ROOT)/$(QT_ROOT)/config.profiles/symbian && \
-	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/ -what $(SOURCEDIR)/qtconfig_what.log
+	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -outdir $(EPOCROOT)/epoc32/include/ -what $(EPOCBLD)/qtconfig_what.log
 	$(call endrule,headerexport)
 	$(call startrule,mkspecexport) \
-	$(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
+	$(GNUCP) -R -L $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
 	$(GNUFIND) $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs -type f | \
-	$(GNUSED) 's!$(EXTENSION_ROOT)/$(QT_ROOT)/!$(MKSPECDIR)/!' >> $(SOURCEDIR)/qtconfig_what.log \
+	$(GNUSED) 's!$(EXTENSION_ROOT)/$(QT_ROOT)/!$(MKSPECDIR)/!' >> $(EPOCBLD)/qtconfig_what.log \
 	$(call endrule,mkspecexport)
-
-FINAL WHAT:: $(SOURCEDIR)/qmake$(DOTEXE)
 	$(call startrawoutput) \
 	echo "$(call whatLogOpen)"; \
-	$(GNUCAT) $(SOURCEDIR)/qtconfig_what.log | \
+	$(GNUCAT) $(EPOCBLD)/qtconfig_what.log | \
 		(read -r LINE; \
 		while [ $$$$? -eq 0 ]; do \
 			echo "$(call whatLogItem,,$$$$LINE)"; \
@@ -80,25 +102,43 @@ FINAL WHAT:: $(SOURCEDIR)/qmake$(DOTEXE)
 		); \
 	echo "$(call whatLogClose)" \
 	$(call endrawoutput)
-endef
+
+WHAT::
+	$(call startrawoutput) \
+	echo "$(call whatLogOpen)"; \
+	$(GNUCAT) $(EPOCBLD)/qtconfig_what.log | \
+		(read -r LINE; \
+		while [ $$$$? -eq 0 ]; do \
+			echo "$(call whatLogItem,,$$$$LINE)"; \
+			read -r LINE; \
+		done; \
+		); \
+	echo "$(call whatLogClose)" \
+	$(call endrawoutput)
+
+endef 
+
 
 # Here a variable named "done_<sanitised $SISFILE>" gets created
 GUARD:=done_$(call sanitise,$(TARGETDIR)/qmake$(DOTEXE))
 # If variable "done_..." not set, set it to 1, so that
-# UREL and UDEB do not execute makesis twice on the same target
+# UREL and UDEB do not execute makesis twice on the same target 
 ifeq ($($(GUARD)),)
 $(GUARD):=1
+
+$(eval $(qt_qmake))
+
+# Bootstrap is needed only on Linux
 ifneq ($(filter linux,$(HOSTPLATFORM)),)
-EXPORT:: $(QT_TOOLS) $(TARGET_TOOLS)
-else
-EXPORT:: $(TARGET_TOOLS)
+$(eval $(qt_bootstrap))
 endif
-$(eval $(call QtConfiguration))
-ifeq ($(OSTYPE),unix)
-$(eval $(call whatmacro,$(QT_TOOLS) $(TARGET_TOOLS)))
-$(eval $(call GenerateStandardCleanTarget,$(QT_TOOLS) $(TARGET_TOOLS) $(SOURCE_TOOLS),$(TARGETDIR)))
-else
-$(eval $(call whatmacro,$(TARGET_TOOLS)))
-$(eval $(call GenerateStandardCleanTarget,$(TARGET_TOOLS) $(SOURCE_TOOLS),$(TARGETDIR)))
-endif
+
+$(eval $(foreach TOOL,$(QT_TOOLS),$(call qt_tool,$(TOOL))))
+
+TOOLSSRCDIR:=$(LANGUAGETOOLDIR)
+$(eval $(call qt_tool,lrelease))
+
+$(eval $(call whatmacro,$(WHATTARGETS)))
+$(eval $(call GenerateStandardCleanTarget,$(CLEANTARGETS),$(TARGETDIR)))
+
 endif

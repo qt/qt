@@ -749,7 +749,7 @@ public:
         ObjectRun,
         ObjectDelayed
     };
-    static RunResult RunMarkedIfReady(TInt &runPriority, TInt minimumPriority);
+    static RunResult RunMarkedIfReady(TInt &runPriority, TInt minimumPriority, QEventDispatcherSymbian *dispatcher);
     static bool UseRRActiveScheduler();
 
 private:
@@ -808,7 +808,7 @@ void QtRRActiveScheduler::MarkReadyToRun()
     }
 }
 
-QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPriority, TInt minimumPriority)
+QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPriority, TInt minimumPriority, QEventDispatcherSymbian *dispatcher)
 {
     RunResult result = NothingFound;
     TInt error=KErrNone;
@@ -824,12 +824,12 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
                     runPriority = active->Priority();
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
-                    TRAP(error, active->RunL());
+                    TRAP(error, QT_TRYCATCH_ERROR(error, active->RunL()));
                     if (error!=KErrNone)
                         error=active->RunError(error);
                     if (error) {
                         qWarning("Active object (ptr=0x%08x, vptr=0x%08x) leave: %i\n", active, vptr, error);
-                        pS->Error(error);
+                        dispatcher->activeObjectError(error);
                     }
                     return ObjectRun;
                 }
@@ -966,13 +966,15 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_wakeUpDone(0),
       m_iterationCount(0),
       m_insideTimerEvent(false),
-      m_noSocketEvents(false)
+      m_noSocketEvents(false),
+      m_oomErrorCount(0)
 {
 #ifdef QT_SYMBIAN_PRIORITY_DROP
     m_delay = baseDelay;
     m_avgEventTime = 0;
     idleDetectorThread();
 #endif
+    m_oomErrorTimer.start();
 }
 
 QEventDispatcherSymbian::~QEventDispatcherSymbian()
@@ -1098,7 +1100,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 // Standard or above priority AOs are scheduled round robin.
                 // Lower priority AOs can only run if nothing higher priority has run.
                 int runPriority = minPriority;
-                handledSymbianEvent = QtRRActiveScheduler::RunMarkedIfReady(runPriority, minPriority);
+                handledSymbianEvent = QtRRActiveScheduler::RunMarkedIfReady(runPriority, minPriority, this);
                 minPriority = qMin(runPriority, int(CActive::EPriorityStandard));
             } else {
                 TInt error;
@@ -1394,6 +1396,19 @@ QList<QEventDispatcherSymbian::TimerInfo> QEventDispatcherSymbian::registeredTim
     }
 
     return list;
+}
+
+void QEventDispatcherSymbian::activeObjectError(int error)
+{
+    if (error == KErrNoMemory) {
+        // limit the number of reported out of memory errors, as the disappearance of the warning
+        // dialog can trigger further OOM errors causing a loop.
+        if (m_oomErrorTimer.restart() > 60000)  // 1 minute
+            m_oomErrorCount = 0;
+        if (m_oomErrorCount++ >= 5)
+            return;
+    }
+    CActiveScheduler::Current()->Error(error);
 }
 
 /*
