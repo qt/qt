@@ -281,7 +281,7 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
             iter.value()->statusChanged(newStatus);
         }
 
-        qWarning("QDeclarativeDebugServer: Connection established");
+        qDebug("QDeclarativeDebugServer: Connection established");
     } else {
 
         QString debugServer(QLatin1String("QDeclarativeDebugServer"));
