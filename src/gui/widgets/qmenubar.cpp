@@ -2037,6 +2037,8 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     The default is to follow whether the Qt::AA_DontUseNativeMenuBar attribute
     is set for the application. Explicitly settings this property overrides
     the presence (or abscence) of the attribute.
+
+    \sa void-qt-mac-set-native-menubar-bool-enable
 */
 
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
@@ -2144,6 +2146,8 @@ QAction *QMenuBar::defaultAction() const
     This signal is emitted when an action in a menu belonging to this menubar
     is triggered as a result of a mouse click; \a action is the action that
     caused the signal to be emitted.
+
+    \note QMenuBar has to have ownership of the QMenu in order this signal to work.
 
     Normally, you connect each menu action to a single slot using
     QAction::triggered(), but sometimes you will want to connect

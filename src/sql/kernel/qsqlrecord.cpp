@@ -273,8 +273,9 @@ const QSqlField* QSqlRecord::fieldPtr(const QString& name) const
 #endif //QT3_SUPPORT
 
 /*!
-    Returns the field at position \a index. If the position is out of
-    range, an empty field is returned.
+    Returns the field at position \a index. If the \a index
+    is out of range, function returns
+    a \l{default-constructed value}.
  */
 QSqlField QSqlRecord::field(int index) const
 {

@@ -85,7 +85,7 @@
     be excessively large. However, with the release of Xcode 2.3 it is
     now possible to use Dwarf symbols which take up a significantly
     smaller amount of space.  To enable this feature when configuring
-    Qt, pass the \c{-dwarf-2} option to the configure script.
+    Qt, pass the \c{-dwarf2} option to the configure script.
 
     This is not enabled by default because previous versions of Xcode
     will not work with the compiler flag used to implement this
