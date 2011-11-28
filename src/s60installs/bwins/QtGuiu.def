@@ -13990,3 +13990,4 @@ EXPORTS
 	?resetFontEngineCache@QTextEngine@@QAEXXZ @ 13989 NONAME ; void QTextEngine::resetFontEngineCache(void)
 	?symbianHandleLiteModeStartup@QApplicationPrivate@@QAEXXZ @ 13990 NONAME ; void QApplicationPrivate::symbianHandleLiteModeStartup(void)
 	?_q_cleanupWinIds@QWidgetPrivate@@QAEXXZ @ 13991 NONAME ; void QWidgetPrivate::_q_cleanupWinIds(void)
+	?qt_s60_setEditorFlags@@YAXH@Z @ 13992 NONAME ; void qt_s60_setEditorFlags(int)	
