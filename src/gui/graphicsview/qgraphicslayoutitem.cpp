@@ -133,14 +133,80 @@ void QGraphicsLayoutItemPrivate::init()
 
 /*!
     \internal
+
+    effectiveSizeHint has a quirky behavior, one of the quirkinesses is when the hfw function is
+    combined with user-specified min/max sizes. The input to hfw function (e.g width) must be within
+    the min/max width constraint, and the output must be within the min/max height. This sets up a
+    loose dependency between minimum width and maximum height (or minimum height, depending on the
+    type of hfw function). Note that its only the concrete subclass that implements that hfw
+    function that knows if this dependency means that the height will increase or decrease when the
+    width is increased.
+
+    The application should try to ensure that the user-defined sizes are within the range so that
+    they don't conflict with the hfw function.
+
+    Suppose, for instance that the hfw function is:
+
+        height = 2000/width
+
+    and the item has these user-defined sizes:
+
+        min  ( 5,  5)
+        pref(100, 10)
+        max (500,100)
+
+    what is the return value if one calls item->effectiveSizeHint(Qt::MinimumSize, QSizeF(10, -1)); ?
+    The sizeHint() function would return QSizeF(10, 200), but it would be bounded down to 100 due
+    to the max value, so it would return (10, 100). This is not what the item expects, since it
+    really wants that its hfw is respected. If this is a label with wrapped text, this would most
+    likely lead to that some text is clipped. This is certainly not what the app developer wants.
+    Now, it would be better if the user changed those constraints to match the hfw function:
+
+        min ( 20,  5)
+        pref(100, 10)
+        max (500,100)
+
+    here, it says that the width cannot be smaller than 20. This is because if it becomes smaller
+    than 20 the result of the hfw function would violate the max height (100).
+
+    However, there is a similar problem if the width passed to the hfw function reaches *max* width:
+
+    the sizeHint() function would now return QSizeF(500, 4), but 4 is smaller than the minimum
+    height (5), so effectiveSizeHint() would return (500, 5), which would leave too much space.
+    In this case, setting the max width to 400 fixes the problem:
+
+        min ( 20,  5)
+        pref(100, 10)
+        max (400,100)
+
+
+    The implementor of a hfw widget must be aware of this when sizeHint() is reimplemented, so that
+    the default min and max sizes works sensible. (unfortunately the implementor does not have the
+    control over user-set values).
+
 */
 QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint) const
 {
     Q_Q(const QGraphicsLayoutItem);
     QSizeF *sizeHintCache;
     const bool hasConstraint = constraint.width() >= 0 || constraint.height() >= 0;
+    QSizeF adjustedConstraint = constraint;
     if (hasConstraint) {
         if (!sizeHintWithConstraintCacheDirty && constraint == cachedConstraint)
+            return cachedSizeHintsWithConstraints;
+
+        const QSizeF *hintsWithoutConstraint = effectiveSizeHints(QSizeF(-1,-1));
+
+        if (adjustedConstraint.width() >= 0)
+            adjustedConstraint.setWidth( qBound( hintsWithoutConstraint[Qt::MinimumSize].width(),
+                                                 adjustedConstraint.width(),
+                                                 hintsWithoutConstraint[Qt::MaximumSize].width()));
+        if (adjustedConstraint.height() >= 0)
+            adjustedConstraint.setHeight( qBound( hintsWithoutConstraint[Qt::MinimumSize].height(),
+                                                  adjustedConstraint.height(),
+                                                  hintsWithoutConstraint[Qt::MaximumSize].height()));
+
+        if (!sizeHintWithConstraintCacheDirty && adjustedConstraint == cachedConstraint)
             return cachedSizeHintsWithConstraints;
         sizeHintCache = cachedSizeHintsWithConstraints;
     } else {
@@ -150,7 +216,7 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
     }
 
     for (int i = 0; i < Qt::NSizeHints; ++i) {
-        sizeHintCache[i] = constraint;
+        sizeHintCache[i] = adjustedConstraint;
         if (userSizeHints)
             combineSize(sizeHintCache[i], userSizeHints[i]);
     }
@@ -185,7 +251,7 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
     // COMBINE_SIZE(descentS, q->sizeHint(Qt::MinimumDescent, constraint));
 
     if (hasConstraint) {
-        cachedConstraint = constraint;
+        cachedConstraint = adjustedConstraint;
         sizeHintWithConstraintCacheDirty = false;
     } else {
         sizeHintCacheDirty = false;
