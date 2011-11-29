@@ -29,7 +29,7 @@
     \example widgets/tablet
     \title Tablet Example
 
-    This example shows how to use a Wacom tablet in Qt applications.
+    \brief The Tablet example shows how to use a Wacom tablet in Qt applications.
 
     \image tabletexample.png
 

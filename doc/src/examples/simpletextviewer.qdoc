@@ -29,7 +29,7 @@
     \example help/simpletextviewer
     \title Simple Text Viewer Example
 
-    The Simple Text Viewer example shows how to use \QA as a customized
+    \brief The Simple Text Viewer example shows how to use \QA as a customized
     help viewer for your application.
 
     This is done in two stages. Firstly, documentation is created and \QA

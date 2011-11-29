@@ -9,13 +9,15 @@ include(symbianutils/symbianutils.pri)
 SOURCES += main.cpp \
     trksignalhandler.cpp \
     ossignalconverter.cpp \
-    codasignalhandler.cpp
+    codasignalhandler.cpp \
+    texttracehandler.cpp
 
 HEADERS += trksignalhandler.h \
     serenum.h \
     ossignalconverter.h \
     ossignalconverter_p.h \
-    codasignalhandler.h
+    codasignalhandler.h \
+    texttracehandler.h
 
 DEFINES += SYMBIANUTILS_INCLUDE_PRI
 

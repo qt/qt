@@ -1893,66 +1893,75 @@ EXPORTS
 	?setLayoutMirror@QDeclarativeItemPrivate@@QAEX_N@Z @ 1892 NONAME ; void QDeclarativeItemPrivate::setLayoutMirror(bool)
 	?setImplicitLayoutMirror@QDeclarativeItemPrivate@@QAEX_N0@Z @ 1893 NONAME ; void QDeclarativeItemPrivate::setImplicitLayoutMirror(bool, bool)
 	?isMirrored@QDeclarativeItemPrivate@@QBE_NXZ @ 1894 NONAME ; bool QDeclarativeItemPrivate::isMirrored(void) const
-	?qt_static_metacall@QDeclarativeExtensionPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1895 NONAME ; void QDeclarativeExtensionPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeEngine@@0UQMetaObjectExtraData@@B @ 1896 NONAME ; struct QMetaObjectExtraData const QDeclarativeEngine::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeComponent@@0UQMetaObjectExtraData@@B @ 1897 NONAME ; struct QMetaObjectExtraData const QDeclarativeComponent::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeState@@0UQMetaObjectExtraData@@B @ 1898 NONAME ; struct QMetaObjectExtraData const QDeclarativeState::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QPacketProtocol@@0UQMetaObjectExtraData@@B @ 1899 NONAME ; struct QMetaObjectExtraData const QPacketProtocol::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeExtensionPlugin@@0UQMetaObjectExtraData@@B @ 1900 NONAME ; struct QMetaObjectExtraData const QDeclarativeExtensionPlugin::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeContext@@0UQMetaObjectExtraData@@B @ 1901 NONAME ; struct QMetaObjectExtraData const QDeclarativeContext::staticMetaObjectExtraData
-	?qt_static_metacall@QPacketProtocol@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1902 NONAME ; void QPacketProtocol::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeDebugServer@@0UQMetaObjectExtraData@@B @ 1903 NONAME ; struct QMetaObjectExtraData const QDeclarativeDebugServer::staticMetaObjectExtraData
-	?qt_static_metacall@QDeclarativeStateOperation@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1904 NONAME ; void QDeclarativeStateOperation::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??_EQDeclarativeListReference@@QAE@I@Z @ 1895 NONAME ABSENT ; QDeclarativeListReference::~QDeclarativeListReference(unsigned int)
+	??_EVariant@QDeclarativeParser@@QAE@I@Z @ 1896 NONAME ABSENT ; QDeclarativeParser::Variant::~Variant(unsigned int)
+	??_EQDeclarativeProperty@@QAE@I@Z @ 1897 NONAME ABSENT ; QDeclarativeProperty::~QDeclarativeProperty(unsigned int)
+	??_EQDeclarativeError@@QAE@I@Z @ 1898 NONAME ABSENT ; QDeclarativeError::~QDeclarativeError(unsigned int)
+	??_EQDeclarativeCustomParserProperty@@QAE@I@Z @ 1899 NONAME ABSENT ; QDeclarativeCustomParserProperty::~QDeclarativeCustomParserProperty(unsigned int)
+	??0QDeclarativeExtensionInterface@@QAE@XZ @ 1900 NONAME ABSENT ; QDeclarativeExtensionInterface::QDeclarativeExtensionInterface(void)
+	??_EQDeclarativeScriptString@@QAE@I@Z @ 1901 NONAME ABSENT ; QDeclarativeScriptString::~QDeclarativeScriptString(unsigned int)
+	??_EQDeclarativeCustomParserNode@@QAE@I@Z @ 1902 NONAME ABSENT ; QDeclarativeCustomParserNode::~QDeclarativeCustomParserNode(unsigned int)
+	??_EQDeclarativePixmap@@QAE@I@Z @ 1903 NONAME ABSENT ; QDeclarativePixmap::~QDeclarativePixmap(unsigned int)
+	?instance@QDeclarativeInspectorService@@SAPAV1@XZ @ 1904 NONAME ; class QDeclarativeInspectorService * QDeclarativeInspectorService::instance(void)
 	?qt_static_metacall@QDeclarativeComponent@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1905 NONAME ; void QDeclarativeComponent::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeTransition@@0UQMetaObjectExtraData@@B @ 1906 NONAME ; struct QMetaObjectExtraData const QDeclarativeTransition::staticMetaObjectExtraData
-	?qt_static_metacall@QDeclarativePropertyMap@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1907 NONAME ; void QDeclarativePropertyMap::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeDebugService@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1908 NONAME ; void QDeclarativeDebugService::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeContext@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1909 NONAME ; void QDeclarativeContext::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeItem@@0UQMetaObjectExtraData@@B @ 1910 NONAME ; struct QMetaObjectExtraData const QDeclarativeItem::staticMetaObjectExtraData
+	?qt_static_metacall@QDeclarativeStateGroup@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1906 NONAME ; void QDeclarativeStateGroup::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QDeclarativeDebugService@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1907 NONAME ; void QDeclarativeDebugService::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QDeclarativeItem@@0UQMetaObjectExtraData@@B @ 1908 NONAME ; struct QMetaObjectExtraData const QDeclarativeItem::staticMetaObjectExtraData
+	??_EQDeclarativeInspectorInterface@@UAE@I@Z @ 1909 NONAME ; QDeclarativeInspectorInterface::~QDeclarativeInspectorInterface(unsigned int)
+	?qt_static_metacall@QDeclarativeInspectorService@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1910 NONAME ; void QDeclarativeInspectorService::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QDeclarativeState@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1911 NONAME ; void QDeclarativeState::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeDebugService@@0UQMetaObjectExtraData@@B @ 1912 NONAME ; struct QMetaObjectExtraData const QDeclarativeDebugService::staticMetaObjectExtraData
-	?qt_static_metacall@QDeclarativeItem@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1913 NONAME ; void QDeclarativeItem::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeStateOperation@@0UQMetaObjectExtraData@@B @ 1914 NONAME ; struct QMetaObjectExtraData const QDeclarativeStateOperation::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativePropertyMap@@0UQMetaObjectExtraData@@B @ 1915 NONAME ; struct QMetaObjectExtraData const QDeclarativePropertyMap::staticMetaObjectExtraData
-	?qt_static_metacall@QDeclarativeDebugServer@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1916 NONAME ; void QDeclarativeDebugServer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeExpression@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1917 NONAME ; void QDeclarativeExpression::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeView@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1918 NONAME ; void QDeclarativeView::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeTransition@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1919 NONAME ; void QDeclarativeTransition::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?qt_static_metacall@QDeclarativeStateGroup@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1920 NONAME ; void QDeclarativeStateGroup::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?staticMetaObjectExtraData@QDeclarativeExpression@@0UQMetaObjectExtraData@@B @ 1921 NONAME ; struct QMetaObjectExtraData const QDeclarativeExpression::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeStateGroup@@0UQMetaObjectExtraData@@B @ 1922 NONAME ; struct QMetaObjectExtraData const QDeclarativeStateGroup::staticMetaObjectExtraData
-	?staticMetaObjectExtraData@QDeclarativeView@@0UQMetaObjectExtraData@@B @ 1923 NONAME ; struct QMetaObjectExtraData const QDeclarativeView::staticMetaObjectExtraData
-	?qt_static_metacall@QDeclarativeEngine@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1924 NONAME ; void QDeclarativeEngine::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?instance@QDeclarativeInspectorService@@SAPAV1@XZ @ 1925 NONAME ; class QDeclarativeInspectorService * QDeclarativeInspectorService::instance(void)
-	??_EQDeclarativeInspectorInterface@@UAE@I@Z @ 1926 NONAME ; QDeclarativeInspectorInterface::~QDeclarativeInspectorInterface(unsigned int)
-	?qt_static_metacall@QDeclarativeInspectorService@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1927 NONAME ; void QDeclarativeInspectorService::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
-	?flushCache@QDeclarativePixmap@@SAXXZ @ 1928 NONAME ; void QDeclarativePixmap::flushCache(void)
-	??0QDeclarativeDebuggingEnabler@@QAE@XZ @ 1929 NONAME ; QDeclarativeDebuggingEnabler::QDeclarativeDebuggingEnabler(void)
-	?addView@QDeclarativeInspectorService@@QAEXPAVQDeclarativeView@@@Z @ 1930 NONAME ; void QDeclarativeInspectorService::addView(class QDeclarativeView *)
-	?tr@QDeclarativeInspectorService@@SA?AVQString@@PBD0@Z @ 1931 NONAME ; class QString QDeclarativeInspectorService::tr(char const *, char const *)
-	?statusChanged@QDeclarativeInspectorService@@MAEXW4Status@QDeclarativeDebugService@@@Z @ 1932 NONAME ; void QDeclarativeInspectorService::statusChanged(enum QDeclarativeDebugService::Status)
-	?waitForReadyRead@QPacketProtocol@@QAE_NH@Z @ 1933 NONAME ; bool QPacketProtocol::waitForReadyRead(int)
-	?waitForMessage@QDeclarativeDebugService@@QAE_NXZ @ 1934 NONAME ; bool QDeclarativeDebugService::waitForMessage(void)
-	?staticMetaObject@QDeclarativeInspectorService@@2UQMetaObject@@B @ 1935 NONAME ; struct QMetaObject const QDeclarativeInspectorService::staticMetaObject
-	?qt_metacast@QDeclarativeInspectorService@@UAEPAXPBD@Z @ 1936 NONAME ; void * QDeclarativeInspectorService::qt_metacast(char const *)
-	?waitForMessage@QDeclarativeDebugServer@@QAE_NPAVQDeclarativeDebugService@@@Z @ 1937 NONAME ; bool QDeclarativeDebugServer::waitForMessage(class QDeclarativeDebugService *)
-	?sendMessage@QDeclarativeInspectorService@@QAEXABVQByteArray@@@Z @ 1938 NONAME ; void QDeclarativeInspectorService::sendMessage(class QByteArray const &)
-	??_EQDeclarativeInspectorService@@UAE@I@Z @ 1939 NONAME ; QDeclarativeInspectorService::~QDeclarativeInspectorService(unsigned int)
-	??1QDeclarativeInspectorService@@UAE@XZ @ 1940 NONAME ; QDeclarativeInspectorService::~QDeclarativeInspectorService(void)
-	?gotMessage@QDeclarativeInspectorService@@IAEXABVQByteArray@@@Z @ 1941 NONAME ; void QDeclarativeInspectorService::gotMessage(class QByteArray const &)
-	?loadInspectorPlugin@QDeclarativeInspectorService@@CAPAVQDeclarativeInspectorInterface@@XZ @ 1942 NONAME ; class QDeclarativeInspectorInterface * QDeclarativeInspectorService::loadInspectorPlugin(void)
-	?removeView@QDeclarativeInspectorService@@QAEXPAVQDeclarativeView@@@Z @ 1943 NONAME ; void QDeclarativeInspectorService::removeView(class QDeclarativeView *)
-	?trUtf8@QDeclarativeInspectorService@@SA?AVQString@@PBD0@Z @ 1944 NONAME ; class QString QDeclarativeInspectorService::trUtf8(char const *, char const *)
-	?metaObject@QDeclarativeInspectorService@@UBEPBUQMetaObject@@XZ @ 1945 NONAME ; struct QMetaObject const * QDeclarativeInspectorService::metaObject(void) const
-	?tr@QDeclarativeInspectorService@@SA?AVQString@@PBD0H@Z @ 1946 NONAME ; class QString QDeclarativeInspectorService::tr(char const *, char const *, int)
+	?flushCache@QDeclarativePixmap@@SAXXZ @ 1912 NONAME ; void QDeclarativePixmap::flushCache(void)
+	?staticMetaObjectExtraData@QDeclarativePropertyMap@@0UQMetaObjectExtraData@@B @ 1913 NONAME ; struct QMetaObjectExtraData const QDeclarativePropertyMap::staticMetaObjectExtraData
+	?qt_static_metacall@QDeclarativeExtensionPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1914 NONAME ; void QDeclarativeExtensionPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??0QDeclarativeDebuggingEnabler@@QAE@XZ @ 1915 NONAME ; QDeclarativeDebuggingEnabler::QDeclarativeDebuggingEnabler(void)
+	?addView@QDeclarativeInspectorService@@QAEXPAVQDeclarativeView@@@Z @ 1916 NONAME ; void QDeclarativeInspectorService::addView(class QDeclarativeView *)
+	?qt_static_metacall@QDeclarativeView@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1917 NONAME ; void QDeclarativeView::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QDeclarativeItem@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1918 NONAME ; void QDeclarativeItem::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?tr@QDeclarativeInspectorService@@SA?AVQString@@PBD0@Z @ 1919 NONAME ; class QString QDeclarativeInspectorService::tr(char const *, char const *)
+	?staticMetaObjectExtraData@QDeclarativeEngine@@0UQMetaObjectExtraData@@B @ 1920 NONAME ; struct QMetaObjectExtraData const QDeclarativeEngine::staticMetaObjectExtraData
+	?qt_static_metacall@QDeclarativeExpression@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1921 NONAME ; void QDeclarativeExpression::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QDeclarativeEngine@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1922 NONAME ; void QDeclarativeEngine::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?statusChanged@QDeclarativeInspectorService@@MAEXW4Status@QDeclarativeDebugService@@@Z @ 1923 NONAME ; void QDeclarativeInspectorService::statusChanged(enum QDeclarativeDebugService::Status)
+	?waitForReadyRead@QPacketProtocol@@QAE_NH@Z @ 1924 NONAME ; bool QPacketProtocol::waitForReadyRead(int)
+	?staticMetaObjectExtraData@QDeclarativeExtensionPlugin@@0UQMetaObjectExtraData@@B @ 1925 NONAME ; struct QMetaObjectExtraData const QDeclarativeExtensionPlugin::staticMetaObjectExtraData
+	?waitForMessage@QDeclarativeDebugService@@QAE_NXZ @ 1926 NONAME ; bool QDeclarativeDebugService::waitForMessage(void)
+	?staticMetaObjectExtraData@QPacketProtocol@@0UQMetaObjectExtraData@@B @ 1927 NONAME ; struct QMetaObjectExtraData const QPacketProtocol::staticMetaObjectExtraData
+	?staticMetaObject@QDeclarativeInspectorService@@2UQMetaObject@@B @ 1928 NONAME ; struct QMetaObject const QDeclarativeInspectorService::staticMetaObject
+	?qt_metacast@QDeclarativeInspectorService@@UAEPAXPBD@Z @ 1929 NONAME ; void * QDeclarativeInspectorService::qt_metacast(char const *)
+	?waitForMessage@QDeclarativeDebugServer@@QAE_NPAVQDeclarativeDebugService@@@Z @ 1930 NONAME ; bool QDeclarativeDebugServer::waitForMessage(class QDeclarativeDebugService *)
+	?qt_static_metacall@QDeclarativeContext@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1931 NONAME ; void QDeclarativeContext::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QDeclarativeExpression@@0UQMetaObjectExtraData@@B @ 1932 NONAME ; struct QMetaObjectExtraData const QDeclarativeExpression::staticMetaObjectExtraData
+	?sendMessage@QDeclarativeInspectorService@@QAEXABVQByteArray@@@Z @ 1933 NONAME ; void QDeclarativeInspectorService::sendMessage(class QByteArray const &)
+	??_EQDeclarativeInspectorService@@UAE@I@Z @ 1934 NONAME ; QDeclarativeInspectorService::~QDeclarativeInspectorService(unsigned int)
+	?qt_static_metacall@QDeclarativePropertyMap@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1935 NONAME ; void QDeclarativePropertyMap::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??1QDeclarativeInspectorService@@UAE@XZ @ 1936 NONAME ; QDeclarativeInspectorService::~QDeclarativeInspectorService(void)
+	?staticMetaObjectExtraData@QDeclarativeDebugServer@@0UQMetaObjectExtraData@@B @ 1937 NONAME ; struct QMetaObjectExtraData const QDeclarativeDebugServer::staticMetaObjectExtraData
+	?gotMessage@QDeclarativeInspectorService@@IAEXABVQByteArray@@@Z @ 1938 NONAME ; void QDeclarativeInspectorService::gotMessage(class QByteArray const &)
+	?loadInspectorPlugin@QDeclarativeInspectorService@@CAPAVQDeclarativeInspectorInterface@@XZ @ 1939 NONAME ; class QDeclarativeInspectorInterface * QDeclarativeInspectorService::loadInspectorPlugin(void)
+	?removeView@QDeclarativeInspectorService@@QAEXPAVQDeclarativeView@@@Z @ 1940 NONAME ; void QDeclarativeInspectorService::removeView(class QDeclarativeView *)
+	?trUtf8@QDeclarativeInspectorService@@SA?AVQString@@PBD0@Z @ 1941 NONAME ; class QString QDeclarativeInspectorService::trUtf8(char const *, char const *)
+	?metaObject@QDeclarativeInspectorService@@UBEPBUQMetaObject@@XZ @ 1942 NONAME ; struct QMetaObject const * QDeclarativeInspectorService::metaObject(void) const
+	?tr@QDeclarativeInspectorService@@SA?AVQString@@PBD0H@Z @ 1943 NONAME ; class QString QDeclarativeInspectorService::tr(char const *, char const *, int)
+	?qt_static_metacall@QPacketProtocol@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1944 NONAME ; void QPacketProtocol::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QDeclarativeContext@@0UQMetaObjectExtraData@@B @ 1945 NONAME ; struct QMetaObjectExtraData const QDeclarativeContext::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QDeclarativeState@@0UQMetaObjectExtraData@@B @ 1946 NONAME ; struct QMetaObjectExtraData const QDeclarativeState::staticMetaObjectExtraData
 	?views@QDeclarativeInspectorService@@QBE?AV?$QList@PAVQDeclarativeView@@@@XZ @ 1947 NONAME ; class QList<class QDeclarativeView *> QDeclarativeInspectorService::views(void) const
 	??0QDeclarativeInspectorService@@QAE@XZ @ 1948 NONAME ; QDeclarativeInspectorService::QDeclarativeInspectorService(void)
-	?getStaticMetaObject@QDeclarativeInspectorService@@SAABUQMetaObject@@XZ @ 1949 NONAME ; struct QMetaObject const & QDeclarativeInspectorService::getStaticMetaObject(void)
-	?staticMetaObjectExtraData@QDeclarativeInspectorService@@0UQMetaObjectExtraData@@B @ 1950 NONAME ; struct QMetaObjectExtraData const QDeclarativeInspectorService::staticMetaObjectExtraData
-	??0QDeclarativeInspectorInterface@@QAE@XZ @ 1951 NONAME ; QDeclarativeInspectorInterface::QDeclarativeInspectorInterface(void)
-	?messageReceived@QDeclarativeInspectorService@@MAEXABVQByteArray@@@Z @ 1952 NONAME ; void QDeclarativeInspectorService::messageReceived(class QByteArray const &)
-	?trUtf8@QDeclarativeInspectorService@@SA?AVQString@@PBD0H@Z @ 1953 NONAME ; class QString QDeclarativeInspectorService::trUtf8(char const *, char const *, int)
-	??1QDeclarativeInspectorInterface@@UAE@XZ @ 1954 NONAME ; QDeclarativeInspectorInterface::~QDeclarativeInspectorInterface(void)
-	?qt_metacall@QDeclarativeInspectorService@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1955 NONAME ; int QDeclarativeInspectorService::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?updateStatus@QDeclarativeInspectorService@@AAEXXZ @ 1956 NONAME ; void QDeclarativeInspectorService::updateStatus(void)
+	?updateStatus@QDeclarativeInspectorService@@AAEXXZ @ 1949 NONAME ; void QDeclarativeInspectorService::updateStatus(void)
+	?getStaticMetaObject@QDeclarativeInspectorService@@SAABUQMetaObject@@XZ @ 1950 NONAME ; struct QMetaObject const & QDeclarativeInspectorService::getStaticMetaObject(void)
+	?staticMetaObjectExtraData@QDeclarativeInspectorService@@0UQMetaObjectExtraData@@B @ 1951 NONAME ; struct QMetaObjectExtraData const QDeclarativeInspectorService::staticMetaObjectExtraData
+	?qt_static_metacall@QDeclarativeTransition@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1952 NONAME ; void QDeclarativeTransition::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??0QDeclarativeInspectorInterface@@QAE@XZ @ 1953 NONAME ; QDeclarativeInspectorInterface::QDeclarativeInspectorInterface(void)
+	?messageReceived@QDeclarativeInspectorService@@MAEXABVQByteArray@@@Z @ 1954 NONAME ; void QDeclarativeInspectorService::messageReceived(class QByteArray const &)
+	?staticMetaObjectExtraData@QDeclarativeDebugService@@0UQMetaObjectExtraData@@B @ 1955 NONAME ; struct QMetaObjectExtraData const QDeclarativeDebugService::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QDeclarativeView@@0UQMetaObjectExtraData@@B @ 1956 NONAME ; struct QMetaObjectExtraData const QDeclarativeView::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QDeclarativeTransition@@0UQMetaObjectExtraData@@B @ 1957 NONAME ; struct QMetaObjectExtraData const QDeclarativeTransition::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QDeclarativeComponent@@0UQMetaObjectExtraData@@B @ 1958 NONAME ; struct QMetaObjectExtraData const QDeclarativeComponent::staticMetaObjectExtraData
+	?trUtf8@QDeclarativeInspectorService@@SA?AVQString@@PBD0H@Z @ 1959 NONAME ; class QString QDeclarativeInspectorService::trUtf8(char const *, char const *, int)
+	?qt_static_metacall@QDeclarativeDebugServer@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1960 NONAME ; void QDeclarativeDebugServer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??1QDeclarativeInspectorInterface@@UAE@XZ @ 1961 NONAME ; QDeclarativeInspectorInterface::~QDeclarativeInspectorInterface(void)
+	?staticMetaObjectExtraData@QDeclarativeStateOperation@@0UQMetaObjectExtraData@@B @ 1962 NONAME ; struct QMetaObjectExtraData const QDeclarativeStateOperation::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QDeclarativeStateGroup@@0UQMetaObjectExtraData@@B @ 1963 NONAME ; struct QMetaObjectExtraData const QDeclarativeStateGroup::staticMetaObjectExtraData
+	?qt_static_metacall@QDeclarativeStateOperation@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1964 NONAME ; void QDeclarativeStateOperation::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QDeclarativeInspectorService@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1965 NONAME ; int QDeclarativeInspectorService::qt_metacall(enum QMetaObject::Call, int, void * *)
 

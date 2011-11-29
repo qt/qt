@@ -29,6 +29,6 @@
     \example help/remotecontrol
     \title Remote Control Example
 
-    This example shows how to use and control Qt Assistant
+    \brief The Remote Control example shows how to use and control Qt Assistant
     as a help viewer.
 */

@@ -9,9 +9,24 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[길이가 %1인 배열]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;정의되지 않음&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
         <source>Fake error !</source>
+        <translation type="obsolete">가짜 오류!</translation>
+    </message>
+    <message>
+        <source>Fake error!</source>
         <translation>가짜 오류!</translation>
     </message>
     <message>
@@ -421,7 +436,7 @@ libgstreamer-plugins-base 패키지의 설치 상태를 확인해 보십시오.<
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>반사 지연 시간 (ms)</translation>
     </message>
     <message>
@@ -436,7 +451,7 @@ libgstreamer-plugins-base 패키지의 설치 상태를 확인해 보십시오.<
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>리버브 레벨 (mB)</translation>
     </message>
     <message>
@@ -468,6 +483,10 @@ libgstreamer-plugins-base 패키지의 설치 상태를 확인해 보십시오.<
         <source>Error opening source: media type could not be determined</source>
         <translation>원본 열기 오류: 미디어 형식을 결정할 수 없음</translation>
     </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>요청한 IAP를 설정할 수 없음</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::StereoWidening</name>
@@ -490,8 +509,12 @@ libgstreamer-plugins-base 패키지의 설치 상태를 확인해 보십시오.<
         <translation>음량: %1%</translation>
     </message>
     <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>이 슬라이더를 사용하여 음량을 조정하십시오. 맨 왼쪽은 0%, 맨 오른쪽은 %1%입니다</translation>
+    </message>
+    <message>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <translation type="obsolete">이 슬라이더를 사용하여 음량을 조정하십시오. 맨 왼쪽은 0%, 맨 오른쪽은 %1%입니다</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -1082,6 +1105,14 @@ to
 <context>
     <name>QAccessibleButton</name>
     <message>
+        <source>Uncheck</source>
+        <translation>선택 해제</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>선택</translation>
+    </message>
+    <message>
         <source>Press</source>
         <translation>누름</translation>
     </message>
@@ -1226,6 +1257,11 @@ to
         <source>%1: out of resources</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: 자원 부족</translation>
+    </message>
+    <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: 권한이 거부됨</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -1394,6 +1430,13 @@ to
     </message>
 </context>
 <context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>Application은 추상 클래스임</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
@@ -1519,6 +1562,14 @@ to
     <message>
         <source>Cannot create empty component specification</source>
         <translation>비어 있는 컴포넌트 정의를 만들 수 없음</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>&quot;%1.%2&quot;은(는) %3 %4.%5에서 사용할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>&quot;%1.%2&quot;은(는) 구성 요소 버전 때문에 사용할 수 없습니다.</translation>
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
@@ -1731,6 +1782,10 @@ to
         <source>Invalid empty URL</source>
         <translation>잘못된 빈 URL</translation>
     </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: 값이 객체가 아님</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
@@ -1871,6 +1926,17 @@ to
     </message>
 </context>
 <context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>연결된 속성 LayoutDirection은 Item에서만 동작함</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring은 연결된 속성으로만 사용할 수 있음</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeListModel</name>
     <message>
         <source>remove: index %1 out of range</source>
@@ -1970,6 +2036,10 @@ to
     </message>
     <message>
         <source>Illegal escape squence</source>
+        <translation type="obsolete">잘못된 탈출 시퀀스</translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
         <translation>잘못된 탈출 시퀀스</translation>
     </message>
     <message>
@@ -2434,6 +2504,10 @@ to
     <message>
         <source>Cannot create %1 for output</source>
         <translation>%1에 쓰기 위하여 열 수 없음</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>파일 엔진을 사용할 수 없거나 파일 엔진이 UnMapExtension을 지원하지 않음</translation>
     </message>
 </context>
 <context>
@@ -3422,6 +3496,18 @@ Do you want to delete it anyway?</source>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>%2의 심볼 &quot;%1&quot;을(를) 불러올 수 없음: %3</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos;은(는) ELF 객체가 아님 (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos;은(는) ELF 객체가 아님</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos;은(는) 잘못된 ELF 객체임 (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3518,6 +3604,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: 알 수 없는 오류 %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: 접근이 거부됨</translation>
     </message>
 </context>
 <context>
@@ -3693,6 +3783,10 @@ Do you want to delete it anyway?</source>
         <source>Actions</source>
         <translation>동작</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>모서리 도구 모음</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3717,8 +3811,12 @@ Do you want to delete it anyway?</source>
         <translation>&lt;h3&gt;Qt 정보&lt;/h3&gt;&lt;p&gt;이 프로그램은 Qt 버전 %1을(를) 사용합니다.&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Qt는 크로스 플랫폼 프로그램 개발을 위한 C++ 툴킷입니다.&lt;/p&gt;&lt;p&gt;Qt는 MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, 리눅스, 여러 상용 유닉스 간 소스 호환성을 제공합니다. Qt는 Qt for Embedded Linux, Qt for Windows CE와 같은 임베디드 장치도 지원합니다.&lt;/p&gt;&lt;p&gt;Qt는 여러 사용자의 조건에 맞는 세 가지 조건으로 라이선스됩니다.&lt;/p&gt;&lt;p&gt;Qt의 상용 라이선스는 제 3자와 코드를 공유할 수 없거나, GNU LGPL 2.1, GNU GPL 3.0의 조건을 따를 수 없는 독점/상용 소프트웨어 개발에 사용할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU LGPL 2.1 라이선스는 GNU LGPL 2.1의 조건을 따르는 독점 및 오픈소스 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU GPL 3.0 라이선스는 GNU GPL 3.0의 조건을 적용받거나 GNU GPL 3.0으로 라이선싱할 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt 라이선싱 조건을 알아 보려면 &lt;a href=&quot;http://qt.nokia.con/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; 페이지를 참고하십시오.&lt;/p&gt;&lt;p&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt는 노키아의 제품입니다. 더 많은 정보를 보려면 &lt;a href=&quot;http://qt.nokia.com&quot;&gt;qt.nokia.com&lt;/a&gt;을 참조하십시오.&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Qt는 크로스 플랫폼 프로그램 개발을 위한 C++ 툴킷입니다.&lt;/p&gt;&lt;p&gt;Qt는 마이크로소프트&amp;nbsp;윈도, Mac&amp;nbsp;OS&amp;nbsp;X, 리눅스, 여러 상용 유닉스 간 소스 호환성을 제공합니다. Qt는 Qt for Embedded Linux, Qt for Windows CE와 같은 임베디드 장치도 지원합니다.&lt;/p&gt;&lt;p&gt;Qt는 여러 사용자의 조건에 맞는 세 가지 조건으로 라이선스됩니다.&lt;/p&gt;&lt;p&gt;Qt의 상용 라이선스는 제 3자와 코드를 공유할 수 없거나, GNU LGPL 2.1, GNU GPL 3.0의 조건을 따를 수 없는 독점/상용 소프트웨어 개발에 사용할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU LGPL 2.1 라이선스는 GNU LGPL 2.1의 조건을 따르는 독점 및 오픈소스 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU GPL 3.0 라이선스는 GNU GPL 3.0의 조건을 적용받거나 GNU GPL 3.0으로 라이선싱할 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt 라이선싱 조건을 알아 보려면 &lt;a href=&quot;http://qt.nokia.con/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; 페이지를 참고하십시오.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt는 노키아의 제품입니다. 더 많은 정보를 보려면 &lt;a href=&quot;http://qt.nokia.com&quot;&gt;qt.nokia.com&lt;/a&gt;을 참조하십시오.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;Qt는 크로스 플랫폼 프로그램 개발을 위한 C++ 툴킷입니다.&lt;/p&gt;&lt;p&gt;Qt는 마이크로소프트&amp;nbsp;윈도, Mac&amp;nbsp;OS&amp;nbsp;X, 리눅스, 여러 상용 유닉스 간 소스 호환성을 제공합니다. Qt는 Qt for Embedded Linux, Qt for Windows CE와 같은 임베디드 장치도 지원합니다.&lt;/p&gt;&lt;p&gt;Qt는 여러 사용자의 조건에 맞는 세 가지 조건으로 라이선스됩니다.&lt;/p&gt;&lt;p&gt;Qt의 상용 라이선스는 제 3자와 코드를 공유할 수 없거나, GNU LGPL 2.1, GNU GPL 3.0의 조건을 따를 수 없는 독점/상용 소프트웨어 개발에 사용할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU LGPL 2.1 라이선스는 GNU LGPL 2.1의 조건을 따르는 독점 및 오픈소스 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt의 GNU GPL 3.0 라이선스는 GNU GPL 3.0의 조건을 적용받거나 GNU GPL 3.0으로 라이선싱할 Qt 프로그램을 개발할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt 라이선싱 조건을 알아 보려면 &lt;a href=&quot;http://qt.nokia.con/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; 페이지를 참고하십시오.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt는 노키아의 제품입니다. 더 많은 정보를 보려면 &lt;a href=&quot;http://qt.nokia.com&quot;&gt;qt.nokia.com&lt;/a&gt;을 참조하십시오.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About Qt</source>
@@ -3861,7 +3959,7 @@ Do you want to delete it anyway?</source>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>%1에는 작업이 지원되지 않음</translation>
+        <translation type="obsolete">%1에는 작업이 지원되지 않음</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
@@ -3956,6 +4054,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Network session error.</source>
         <translation>네트워크 세션 오류.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>백엔드 시작 오류.</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -4149,6 +4251,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
         <translation>잘못된 쿼리: &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>호스트를 찾을 수 없음</translation>
     </message>
 </context>
 <context>
@@ -5460,7 +5566,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1: key error</source>
-        <translation>%1: 키 오류</translation>
+        <translation type="obsolete">%1: 키 오류</translation>
     </message>
     <message>
         <source>%1: unable to make key</source>
@@ -5501,6 +5607,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: system-imposed size restrictions</source>
         <translation>%1: 시스템에서 크게를 제한함</translation>
+    </message>
+    <message>
+        <source>%1: bad name</source>
+        <translation>%1: 잘못된 이름</translation>
     </message>
     <message>
         <source>%1: not attached</source>
@@ -6328,11 +6438,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Touroku</source>
-        <translation type="unfinished"></translation>
+        <translation>단어 등록</translation>
     </message>
     <message>
         <source>Massyo</source>
-        <translation type="unfinished"></translation>
+        <translation>단어 지움</translation>
     </message>
     <message>
         <source>Kana Lock</source>
@@ -6344,11 +6454,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Eisu Shift</source>
-        <translation type="unfinished"></translation>
+        <translation>한자 Shift</translation>
     </message>
     <message>
         <source>Eisu toggle</source>
-        <translation type="unfinished"></translation>
+        <translation>한자 반전</translation>
     </message>
     <message>
         <source>Code input</source>
@@ -6517,6 +6627,10 @@ Do you want to overwrite it?</source>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
+        <translation type="obsolete">확인</translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation>확인</translation>
     </message>
     <message>
@@ -6685,6 +6799,10 @@ Do you want to overwrite it?</source>
         <translation>호스트 이름이 이 인증서에서 지정한 유효한 호스트 중 아무 것도 일치하지 않음</translation>
     </message>
     <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>동료 인증서가 블랙리스트에 포함됨</translation>
+    </message>
+    <message>
         <source>Unknown error</source>
         <translation>알 수 없는 오류</translation>
     </message>
@@ -6757,6 +6875,187 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>잘못된 옵션:</translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>데이터베이스를 여는 중 오류 발생</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>다른 POLICY 선언을 사용하기 전에 POLICY_DB_DEFAULT가 정의되어야 함</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>트랜잭션을 시작할 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>트랜잭션을 커밋할 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>트랜잭션을 되돌릴 수 없음</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>행 개수를 가져올 수 없음</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>행 이름을 가져올 수 없음</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>행 종류를 가져올 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>열을 가져올 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>구문을 실행할 수 없음</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>구문이 준비되지 않았음</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>구문을 초기화할 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>인자를 바인딩할 수 없음</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>인자 수가 일치하지 않음</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>논블러킹 소켓을 초기화할 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>브로드캐스트 소켓을 초기화할 수 없음</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>IPv6을 지원하지 않는 플랫폼에서 IPv6 소켓을 사용하려고 시도함</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>원격 호스트에서 연결을 닫음</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>네트워크 작업 시간 초과</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>자원 부족</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>지원하지 않는 소켓 작업</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>지원하지 않는 프로토콜 형식</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>잘못된 소켓 설명자</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>호스트에 접근할 수 없음</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>네트워크에 접근할 수 없음</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>권한이 거부됨</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>연결 시간 초과됨</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>연결이 거부됨</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>지정한 주소가 이미 사용 중</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>주소를 사용할 수 없음</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>주소가 보호되어 있음</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>한 번에 보낼 데이터그램이 너무 큼</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>메시지를 보낼 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>메시지를 받을 수 없음</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>쓸 수 없음</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>네트워크 오류</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>다른 소켓이 지정한 포트에서 듣고 있음</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>비 소켓에서 작업 실행됨</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>이 작업에 사용할 프록시 형식이 잘못됨</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>이 작업에 사용할 주소가 잘못됨</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>지정한 네트워크 세션이 열려 있지 않음</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>알 수 없는 오류</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: permission denied</source>
@@ -6798,6 +7097,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: out of resources</source>
         <translation>%1: 자원 부족</translation>
+    </message>
+    <message>
+        <source>%1: name error</source>
+        <translation>%1: 이름 오류</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -6890,10 +7193,28 @@ Do you want to overwrite it?</source>
     <name>QUndoGroup</name>
     <message>
         <source>Undo</source>
-        <translation>실행 취소</translation>
+        <translation type="obsolete">실행 취소</translation>
     </message>
     <message>
         <source>Redo</source>
+        <translation type="obsolete">다시 실행</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>%1 실행 취소</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>실행 취소</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>%1 다시 실행</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>다시 실행</translation>
     </message>
 </context>
@@ -6908,10 +7229,28 @@ Do you want to overwrite it?</source>
     <name>QUndoStack</name>
     <message>
         <source>Undo</source>
-        <translation>실행 취소</translation>
+        <translation type="obsolete">실행 취소</translation>
     </message>
     <message>
         <source>Redo</source>
+        <translation type="obsolete">다시 실행</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>%1 실행 취소</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>실행 취소</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>%1 다시 실행</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>다시 실행</translation>
     </message>
 </context>
@@ -6969,6 +7308,10 @@ Do you want to overwrite it?</source>
         <translation>요청 취소됨</translation>
     </message>
     <message>
+        <source>Request canceled</source>
+        <translation>요청 취소됨</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
         <translation>요청 거부됨</translation>
     </message>
@@ -6988,6 +7331,10 @@ Do you want to overwrite it?</source>
         <source>File does not exist</source>
         <translation>파일이 존재하지 않음</translation>
     </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>미디어 엔진에서 불러오기 작업이 처리됨</translation>
+    </message>
 </context>
 <context>
     <name>QWebPage</name>
@@ -6997,7 +7344,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Bad HTTP request</source>
-        <translation>잘못된 HTTP 요청</translation>
+        <translation type="obsolete">잘못된 HTTP 요청</translation>
     </message>
     <message numerus="yes">
         <source>%n file(s)</source>
@@ -7294,9 +7641,74 @@ Do you want to overwrite it?</source>
         <translation>초기화</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>자세히</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>그림 주소 복사</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>비디오 열기</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>오디오 열기</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>비디오 복사</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>오디오 복사</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>컨트롤 보이기/숨기기</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>반복/반복 해제</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>전체 화면</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>재생</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>일시 정지</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>음소거</translation>
+    </message>
+    <message>
         <source>Stop</source>
         <comment>Stop context menu item</comment>
         <translation>정지</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>모두 선택</translation>
     </message>
     <message>
         <source>Ignore</source>
@@ -7610,7 +8022,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Select all</source>
-        <translation>모두 선택</translation>
+        <translation type="obsolete">모두 선택</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -8111,6 +8523,94 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>항목</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>들여다보기 모드</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>애니메이션 재생/일시 정지</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>선택 (Marquee)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>확대/축소</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>색상 선택기</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>QML 뷰어에 변경 사항 적용하기</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>문서에 변경 사항 적용하기</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>도구</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>0.5x</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>0.25x</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>0.125x</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>0.1x</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>색 복사</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>원본 크기(&amp;1)</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>확대</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>축소</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
@@ -8570,6 +9070,10 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
+        <translation type="obsolete">사용자 정의 함수의 네임스페이스는 비어 있을 수 없습니다. (이러한 경우에 사용할 수 있는 미리 정의된 접두사 %1을(를) 사용하십시오)</translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
         <translation>사용자 정의 함수의 네임스페이스는 비어 있을 수 없습니다. (이러한 경우에 사용할 수 있는 미리 정의된 접두사 %1을(를) 사용하십시오)</translation>
     </message>
     <message>
@@ -9419,6 +9923,10 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <translation type="obsolete">복합 형식 %1의 내용 모델은 %2 원소를 포함하므로 비어 있지 않은 형식의 확장으로 파생될 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation>복합 형식 %1의 내용 모델은 %2 원소를 포함하므로 비어 있지 않은 형식의 확장으로 파생될 수 없습니다.</translation>
     </message>
     <message>
@@ -9826,8 +10334,12 @@ Do you want to overwrite it?</source>
         <translation>원소 %1에 허용되지 않은 텍스트 내용이 포함되어 있습니다.</translation>
     </message>
     <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation>원소 %1은(는) 고정된 내용을 가지고 있으므로 다른 원소를 포함할 수 없습니다.</translation>
+    </message>
+    <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation>원소 %1의 내용은 고정되어 있으므로 다른 원소를 포함할 수 없습니다.</translation>
+        <translation type="obsolete">원소 %1의 내용은 고정되어 있으므로 다른 원소를 포함할 수 없습니다.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>

@@ -101,12 +101,9 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,2,-1,7,12,22,15,15,7,198,-909,-909,-909,20,13,2,0,0,21,7,18,30,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1,106,30,30},
-{5,0,-909,0,0,1,0,2,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,28,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1,106,30,30},
-{7,0,-909,0,0,2,0,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,11,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,3,3,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
-{7,0,-909,0,0,2,0,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,13,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,3,3,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
-{7,0,-909,0,0,2,0,2,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,30,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1,106,30,30},
-{9,0,-909,0,0,2,0,5,-1,30,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,2,2,9,1,25,-909,9,101,24,9,0,7,7,7,16,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184,30,30}
+{7,0,-909,0,0,2,5,5,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,11,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,3,3,6,8,19,-909,7,74,19,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
+{7,0,-909,0,0,2,5,5,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,13,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,3,3,6,8,19,-909,7,74,22,7,0,5,5,8,5,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135,30,30},
+{9,0,-909,0,0,2,5,5,-1,30,99,76,51,51,25,352,-909,-909,-909,29,25,7,0,0,43,34,42,76,7,7,2,-909,-909,0,9,14,0,23,39,30,30,37,37,9,391,40,0,-909,-909,-909,-909,0,0,29,2,-909,0,0,-909,29,-909,-909,-909,-909,115,37,96,48,96,2,2,9,1,25,-909,9,101,24,9,0,7,7,7,7,7,7,-909,3,-909,-909,-909,-909,9,9,3,1,184,30,30}
 // *** End of generated data ***
 };
 
@@ -845,6 +842,7 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette)
     webPalette.setColor(QPalette::WindowText, Qt::black);
     webPalette.setColor(QPalette::Text, Qt::black);
     webPalette.setBrush(QPalette::Base, Qt::white);
+    webPalette.setBrush(QPalette::Window, Qt::white);
 
     QApplication::setPalette(webPalette, "QWebView");
     QApplication::setPalette(webPalette, "QGraphicsWebView");
@@ -1520,9 +1518,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (tabOverlap > borderThickness)
                     tabOverlap -= borderThickness;
 
-                const bool usesScrollButtons = 
+                const bool usesScrollButtons =
                     (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
-                const int roomForScrollButton = 
+                const int roomForScrollButton =
                     usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
                 // adjust for overlapping tabs and scrollbuttons, if necessary
@@ -1563,9 +1561,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             int tabOverlap = pixelMetric(PM_TabBarTabOverlap);
             if (tabOverlap > borderThickness)
                 tabOverlap -= borderThickness;
-            const bool usesScrollButtons = 
+            const bool usesScrollButtons =
                 (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
-            const int roomForScrollButton = 
+            const int roomForScrollButton =
                 usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
             switch (tab->shape) {
@@ -1681,7 +1679,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWaitAnim,
                         painter, progressRect, flags | orientationFlag | QS60StylePrivate::SF_Animation );
             } else {
-                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? qreal(1.0)
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 if (optionProgressBar->orientation == Qt::Horizontal) {
@@ -1771,7 +1769,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             //highlight and then it needs one to separate it whatever is shown after it (text/icon/both).
             const int moveByX = optionCheckBox.rect.width() + 2 * vSpacing;
             optionCheckBox.rect.moveCenter(QPoint(
-                    optionCheckBox.rect.center().x() + moveByX >> 1, 
+                    optionCheckBox.rect.center().x() + moveByX >> 1,
                     menuItem->rect.center().y()));
 
             if (optionMenuItem.direction != Qt::LeftToRight)
@@ -1785,11 +1783,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 const int end = optionMenuItem.rect.right() - spacing;
                 //-1 adjustment to avoid highlight being on top of possible separator item
                 const QRect highlightRect = QRect(
-                        QPoint(start, option->rect.top()), 
+                        QPoint(start, option->rect.top()),
                         QPoint(end, option->rect.bottom() - 1));
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
             }
-            
+
             if (checkable && !ignoreCheckMark)
                 drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
 
@@ -2012,7 +2010,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 1 : 0.75; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 1 : qreal(0.75); // Trial and error factors. Feel free to improve.
 #else
             const qreal opacity = 0.85;
 #endif
@@ -2072,8 +2070,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
                         QS60StylePrivate::drawSkinElement(
-                            QS60StylePrivate::isWidgetPressed(widget) ? 
-                                QS60StylePrivate::SE_ListItemPressed : 
+                            QS60StylePrivate::isWidgetPressed(widget) ?
+                                QS60StylePrivate::SE_ListItemPressed :
                                 QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
             } else {
                 commonStyleDraws = true;
@@ -2150,8 +2148,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorRadioButton: {
             QRect buttonRect = option->rect;
             //there is empty (a. 33%) space in svg graphics for radiobutton
-            const qreal reduceWidth = (qreal)buttonRect.width() / 3.0;
-            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : 1.0;
+            const qreal reduceWidth = (qreal)buttonRect.width() / qreal(3.0);
+            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : qreal(1.0);
             // Try to occupy the full area
             const qreal scaler = 1 + (reduceWidth/rectWidth);
             buttonRect.setWidth((int)((buttonRect.width()-reduceWidth) * scaler));
@@ -2506,11 +2504,13 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
 
-    if (widget && (metric == PM_LayoutTopMargin || metric == PM_LayoutLeftMargin || metric == PM_LayoutRightMargin))
-        if (widget->windowType() == Qt::Dialog)
-            //double the layout margins (except bottom) for dialogs, it is very close to real value
+    if (widget && (metric == PM_LayoutTopMargin || metric == PM_LayoutBottomMargin
+                   || metric == PM_LayoutRightMargin || metric == PM_LayoutLeftMargin))
+        if (widget->windowType() == Qt::Dialog) {
+            //double the layout margins for dialogs, it is very close to real value
             //without having to define custom pixel metric
             metricValue *= 2;
+        }
 
 #if defined(Q_WS_S60)
     if (metric == PM_TabBarTabOverlap && (QSysInfo::s60Version() > QSysInfo::SV_S60_5_2))
@@ -2537,13 +2537,17 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             //Make toolbuttons in toolbar stretch the whole screen area
             if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
                 const QToolBar *tb = qobject_cast<const QToolBar *>(widget->parentWidget());
-                const bool parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed ||
-                        tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum) && tb->orientation() == Qt::Horizontal;
+                bool parentCanGrowHorizontally = false;
+                if (tb) {
+                    parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed
+                       || tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum)
+                       && tb->orientation() == Qt::Horizontal;
+                }
 
                 if (parentCanGrowHorizontally) {
                     int buttons = 0;
                     //Make the auto-stretch to happen only for horizontal orientation
-                    if (tb && tb->orientation() == Qt::Horizontal) {
+                    if (tb->orientation() == Qt::Horizontal) {
                         QList<QAction*> actionList =  tb->actions();
                         for (int i = 0; i < actionList.count(); i++) {
                             buttons++;
@@ -2603,7 +2607,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
-                sz += QSize(2 * f->lineWidth, 4 * f->lineWidth);
+                sz += QSize(2 * f->lineWidth, 4 * f->lineWidth + 2 * pixelMetric(PM_FocusFrameHMargin));
             break;
         case CT_TabBarTab: {
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
@@ -2646,6 +2650,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
                         boundedTo(desktopContentSize);
             }
+            break;
+#endif
+#ifndef QT_NO_SPINBOX
+        case CT_SpinBox:
+            // Add margin to the spinbox height
+            sz.setHeight(sz.height() + 2 * pixelMetric(PM_SpinBoxFrameWidth));
             break;
 #endif
         default:
@@ -2821,7 +2831,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // Thus, side-by-side buttons would take half of the total width.
             const int maxSize = qMax(spinbox->rect.width() / 4, buttonContentWidth);
             QSize buttonSize;
-            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - frameThickness)));
+            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - 2 * frameThickness)));
             //width should at least be equal to height
             buttonSize.setWidth(qMax(buttonSize.height(), buttonContentWidth));
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
@@ -2829,9 +2839,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // Normally spinbuttons should be side-by-side, but if spinbox grows very big
             // and spinbuttons reach their maximum size, they can be deployed one top of the other.
             const bool sideBySide = (buttonSize.height() * 2 < spinbox->rect.height()) ? false : true;
-            const int y = frameThickness + spinbox->rect.y() +  
+            const int y = spinbox->rect.y() +
                           (spinbox->rect.height() - (sideBySide ? 1 : 2) * buttonSize.height()) / 2;
-            const int x = spinbox->rect.x() + 
+            const int x = spinbox->rect.x() +
                           spinbox->rect.width() - frameThickness - (sideBySide ? 2 : 1) * buttonSize.width();
 
             switch (scontrol) {
@@ -2843,8 +2853,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_SpinBoxDown:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0), 
-                                y + (sideBySide ? 0 : buttonSize.height()), 
+                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0),
+                                y + (sideBySide ? 0 : buttonSize.height()),
                                 buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxEditField:
@@ -3778,7 +3788,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
     const QS60StylePrivate::SkinElementFlags flags = adjustedFlags;
     const int iconDimension = QS60StylePrivate::pixelMetric(metric);
-    const QRect iconSize = (!option) ? 
+    const QRect iconSize = (!option) ?
         QRect(0, 0, iconDimension * iconWidthMultiplier, iconDimension * iconHeightMultiplier) : option->rect;
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));
     return cachedPixMap.isNull() ?

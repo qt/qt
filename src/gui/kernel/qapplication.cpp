@@ -874,6 +874,10 @@ void QApplicationPrivate::construct(
     if (qt_is_gui_used)
         qt_guiPlatformPlugin();
 #endif
+
+#ifdef Q_OS_SYMBIAN
+    symbianHandleLiteModeStartup();
+#endif
 }
 
 #if defined(Q_WS_X11)
@@ -3422,7 +3426,35 @@ QString QApplication::sessionKey() const
 }
 #endif
 
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToReleaseGpuResources()
 
+    This signal is emitted when application is about to release all
+    GPU resources associated to contexts owned by application.
+
+    The signal is particularly useful if your application has allocated
+    GPU resources directly apart from Qt and needs to do some last-second
+    cleanup.
+
+    \warning This signal is only emitted on Symbian.
+
+    \sa aboutToUseGpuResources()
+*/
+
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToUseGpuResources()
+
+    This signal is emitted when application is about to use GPU resources.
+
+    The signal is particularly useful if your application needs to know
+    when GPU resources are be available.
+
+   \warning This signal is only emitted on Symbian.
+
+   \sa aboutToFreeGpuResources()
+*/
 
 /*!
     \since 4.2

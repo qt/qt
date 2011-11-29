@@ -29,7 +29,7 @@
     \example network/bearercloud
     \title Bearer Cloud Example
 
-    The Bearer Cloud example shows how to use the Bearer Management API to monitor the
+    \brief The Bearer Cloud example shows how to use the Bearer Management API to monitor the
     connectivity state of the local device.
 
     \image bearercloud-example.png Screenshot of the Bearer Cloud example

@@ -153,7 +153,12 @@ QImage::Format QNativeImage::systemFormat()
 QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* isTextBuffer */, QWidget *widget)
     : xshmimg(0), xshmpm(0)
 {
-    if (!X11->use_mitshm) {
+    QX11Info info = widget->x11Info();
+
+    int dd = info.depth();
+    Visual *vis = (Visual*) info.visual();
+
+    if (!X11->use_mitshm || format != QImage::Format_RGB16 && X11->bppForDepth.value(dd) != 32) {
         image = QImage(width, height, format);
         // follow good coding practice and set xshminfo attributes, though values not used in this case
         xshminfo.readOnly = true;
@@ -162,11 +167,6 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
         xshminfo.shmseg = 0;
         return;
     }
-
-    QX11Info info = widget->x11Info();
-
-    int dd = info.depth();
-    Visual *vis = (Visual*) info.visual();
 
     xshmimg = XShmCreateImage(X11->display, vis, dd, ZPixmap, 0, &xshminfo, width, height);
     if (!xshmimg) {

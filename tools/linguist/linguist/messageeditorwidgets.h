@@ -150,6 +150,7 @@ public:
 
 signals:
     void editorCreated(QTextEdit *);
+    void editorDeleted(QTextEdit *);
     void textChanged(QTextEdit *);
     void selectionChanged(QTextEdit *);
     void cursorPositionChanged();

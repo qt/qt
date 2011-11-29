@@ -110,7 +110,7 @@ typedef struct {
     TDrawType drawType; // Determines which native drawing routine is used to draw this item.
     int supportInfo;    // Defines the S60 versions that use the default graphics.
     // These two, define new graphics that are used in releases other than partMapEntry.supportInfo defined releases.
-    // In general, these are given in numeric form to allow style compilation in earlier 
+    // In general, these are given in numeric form to allow style compilation in earlier
     // native releases that do not contain the new graphics.
     int newMajorSkinId;
     int newMinorSkinId;
@@ -132,14 +132,12 @@ AnimationDataV2::~AnimationDataV2()
 
 QS60StyleAnimation::QS60StyleAnimation(const QS60StyleEnums::SkinParts part, int frames, int interval)
 {
-    QT_TRAP_THROWING(m_defaultData = new (ELeave) AnimationData(part, frames, interval));
-    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+    m_defaultData.reset(new AnimationData(part, frames, interval));
+    m_currentData.reset(new AnimationDataV2(*m_defaultData));
 }
 
 QS60StyleAnimation::~QS60StyleAnimation()
 {
-    delete m_currentData;
-    delete m_defaultData;
 }
 
 void QS60StyleAnimation::setAnimationObject(CAknBitmapAnimation* animation)
@@ -152,9 +150,7 @@ void QS60StyleAnimation::setAnimationObject(CAknBitmapAnimation* animation)
 
 void QS60StyleAnimation::resetToDefaults()
 {
-    delete m_currentData;
-    m_currentData = 0;
-    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+    m_currentData.reset(new AnimationDataV2(*m_defaultData));
 }
 
 class QS60StyleModeSpecifics
@@ -929,6 +925,16 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 fallbackGraphicID ,
                 fallbackGraphicsMaskID);
 
+            // If drawing fails, re-try without a mask.
+            if (!icon) {
+                AknsUtils::CreateIconL(
+                    skinInstance,
+                    skinId,
+                    icon,
+                    (fallbackGraphicID != KErrNotFound ? AknIconUtils::AvkonIconFileName() : KNullDesC),
+                    fallbackGraphicID);
+            }
+
             result = fromFbsBitmap(icon, iconMask, flags, targetSize);
             delete icon;
             delete iconMask;
@@ -961,17 +967,22 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
                 targetSize,
                 drawParam);
 
-            if (drawn)
+            if (drawn) {
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
-            // if drawing fails in skin server, just ignore the background (probably OOM case)
+            } else {
+                // if drawing fails in skin server, draw background as white
+                QPixmap defaultBg = QPixmap(targetSize.iWidth, targetSize.iHeight);
+                defaultBg.fill(Qt::white);
+                result = defaultBg;
+            }
 
             CleanupStack::PopAndDestroy(4, background); //background, dev, gc, bgContext
     //        QS60WindowSurface::lockBitmapHeap();
             break;
         }
         case EDrawAnimation: {
-            CFbsBitmap* animationFrame;
-            CFbsBitmap* frameMask;
+            CFbsBitmap* animationFrame = 0;
+            CFbsBitmap* frameMask = 0;
             CAknBitmapAnimation* aknAnimation = 0;
             TBool constructedFromTheme = ETrue;
 
@@ -1225,6 +1236,9 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
 
 bool QS60StyleModeSpecifics::checkSupport(const int supportedRelease)
 {
+    if (supportedRelease == ES60_All)
+        return true;
+
     const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
     return ( (currentRelease == QSysInfo::SV_S60_3_1 && supportedRelease & ES60_3_1) ||
              (currentRelease == QSysInfo::SV_S60_3_2 && supportedRelease & ES60_3_2) ||
@@ -1333,7 +1347,9 @@ QS60StylePrivate::QS60StylePrivate()
 void QS60StylePrivate::removeAnimations()
 {
     //currently only one animation in the list.
-    m_animations()->removeFirst();
+    if (!m_animations()->isEmpty()) {
+        delete m_animations()->takeFirst();
+    }
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,

@@ -228,9 +228,9 @@ void QDeclarativeFlipablePrivate::updateSceneTransformFromParent()
         if (current == QDeclarativeFlipable::Back && back)
             setBackTransform();
         if (front)
-            front->setOpacity((current==QDeclarativeFlipable::Front)?1.:0.);
+            front->setOpacity((current==QDeclarativeFlipable::Front)?qreal(1.):qreal(0.));
         if (back)
-            back->setOpacity((current==QDeclarativeFlipable::Back)?1.:0.);
+            back->setOpacity((current==QDeclarativeFlipable::Back)?qreal(1.):qreal(0.));
         emit q->sideChanged();
     }
 }

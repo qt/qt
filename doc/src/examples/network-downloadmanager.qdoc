@@ -29,7 +29,7 @@
     \example network/downloadmanager
     \title Network Download Manager Example
 
-    The Network Download example shows how to implement a queue for multiple
+    \brief The Network Download example shows how to implement a queue for multiple
     downloads using the QNetworkAccessManager class.
 
     This example is designed to be run from the command line.

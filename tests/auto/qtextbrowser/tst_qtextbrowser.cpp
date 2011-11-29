@@ -146,7 +146,7 @@ void tst_QTextBrowser::cleanup()
 
 void tst_QTextBrowser::noReloadOnAnchorJump()
 {
-    QUrl url("anchor.html");
+    QUrl url("file:anchor.html");
 
     browser->htmlLoadAttempts = 0;
     browser->setSource(url);
@@ -162,7 +162,7 @@ void tst_QTextBrowser::noReloadOnAnchorJump()
 
 void tst_QTextBrowser::bgColorOnSourceChange()
 {
-    browser->setSource(QUrl("pagewithbg.html"));
+    browser->setSource(QUrl("file:pagewithbg.html"));
     QVERIFY(browser->document()->rootFrame()->frameFormat().hasProperty(QTextFormat::BackgroundBrush));
     QVERIFY(browser->document()->rootFrame()->frameFormat().background().color() == Qt::blue);
 
@@ -179,7 +179,7 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(browser->historyTitle(0).isEmpty());
     QVERIFY(browser->historyTitle(1).isEmpty());
 
-    browser->setSource(QUrl("pagewithbg.html"));
+    browser->setSource(QUrl("file:pagewithbg.html"));
 
     QVERIFY(!forwardEmissions.isEmpty());
     QVariant val = forwardEmissions.takeLast()[0];
@@ -192,7 +192,7 @@ void tst_QTextBrowser::forwardButton()
     QVERIFY(val.toBool() == false);
 
     QVERIFY(browser->historyTitle(-1).isEmpty());
-    QCOMPARE(browser->historyUrl(0), QUrl("pagewithbg.html"));
+    QCOMPARE(browser->historyUrl(0), QUrl("file:pagewithbg.html"));
     QCOMPARE(browser->documentTitle(), QString("Page With BG"));
     QCOMPARE(browser->historyTitle(0), QString("Page With BG"));
     QVERIFY(browser->historyTitle(1).isEmpty());
@@ -244,7 +244,7 @@ void tst_QTextBrowser::forwardButton()
 
 void tst_QTextBrowser::viewportPositionInHistory()
 {
-    browser->setSource(QUrl("bigpage.html"));
+    browser->setSource(QUrl("file:bigpage.html"));
     browser->scrollToAnchor("bottom");
     QVERIFY(browser->verticalScrollBar()->value() > 0);
 
@@ -283,7 +283,7 @@ void tst_QTextBrowser::relativeLinks()
 
 void tst_QTextBrowser::anchors()
 {
-    browser->setSource(QUrl("bigpage.html"));
+    browser->setSource(QUrl("file:bigpage.html"));
     browser->setSource(QUrl("#bottom"));
     QVERIFY(browser->verticalScrollBar()->value() > 0);
 
@@ -306,7 +306,7 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
 
-    browser->setSource(QUrl("anchor.html"));
+    browser->setSource(QUrl("file:anchor.html"));
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
     QCOMPARE(backwardSpy.count(), 1);
@@ -406,7 +406,7 @@ void tst_QTextBrowser::clearHistory()
     backwardSpy.clear();
     forwardSpy.clear();
 
-    browser->setSource(QUrl("anchor.html"));
+    browser->setSource(QUrl("file:anchor.html"));
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
     QCOMPARE(backwardSpy.count(), 1);
@@ -447,7 +447,7 @@ void tst_QTextBrowser::clearHistory()
 
 void tst_QTextBrowser::sourceInsideLoadResource()
 {
-    QUrl url("pagewithimage.html");
+    QUrl url("file:pagewithimage.html");
     browser->setSource(url);
     QCOMPARE(browser->lastResource.toString(), QUrl::fromLocalFile(QDir::current().filePath("foobar.png")).toString());
     QEXPECT_FAIL("", "This is currently not supported", Continue);
@@ -532,7 +532,7 @@ void tst_QTextBrowser::adjacentAnchors()
 
 void tst_QTextBrowser::loadResourceOnRelativeLocalFiles()
 {
-    browser->setSource(QUrl("subdir/index.html"));
+    browser->setSource(QUrl("file:subdir/index.html"));
     QVERIFY(!browser->toPlainText().isEmpty());
     QVariant v = browser->loadResource(QTextDocument::HtmlResource, QUrl("../anchor.html"));
     QVERIFY(v.isValid());
@@ -543,7 +543,7 @@ void tst_QTextBrowser::loadResourceOnRelativeLocalFiles()
 void tst_QTextBrowser::focusIndicator()
 {
     HackBrowser *browser = new HackBrowser;
-    browser->setSource(QUrl("firstpage.html"));
+    browser->setSource(QUrl("file:firstpage.html"));
     QVERIFY(!browser->textCursor().hasSelection());
 
     browser->focusTheNextChild();
@@ -595,7 +595,7 @@ void tst_QTextBrowser::focusIndicator()
 void tst_QTextBrowser::focusHistory()
 {
     HackBrowser *browser = new HackBrowser;
-    browser->setSource(QUrl("firstpage.html"));
+    browser->setSource(QUrl("file:firstpage.html"));
     QVERIFY(!browser->textCursor().hasSelection());
 
     browser->focusTheNextChild();

@@ -64,6 +64,7 @@
 #  endif
 #endif
 
+namespace PrivatePng {
 /* COMPILER SPECIFIC OPTIONS.
  *
  * These options are provided so that a variety of difficult compilers
@@ -284,6 +285,11 @@
 #       if defined(QT_VISIBILITY_AVAILABLE)
 #           define PNG_IMPEXP __attribute__((visibility("default")))
 #       endif
+#   endif
+
+/* Avoid exporting libpng symbols from Qt DLL on Windows */
+#   if defined (_MSC_VER) && defined(PNG_IMPEXP)
+#     undef PNG_IMPEXP
 #   endif
 
 #  ifndef PNG_IMPEXP
@@ -622,5 +628,5 @@ typedef char            FAR * FAR * FAR * png_charppp;
 #    endif
 #  endif
 #endif
-
+} // namespace PrivatePng
 #endif /* PNGCONF_H */

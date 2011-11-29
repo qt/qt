@@ -408,7 +408,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>Затухание отражений (мс)</translation>
     </message>
     <message>
@@ -423,7 +423,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>Уровень эха (мБар)</translation>
     </message>
     <message>
@@ -481,7 +481,7 @@ have libgstreamer-plugins-base installed.</source>
         <translation>Громкость: %1%</translation>
     </message>
     <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>Используйте данный регулятор для настройки громкости. Крайнее левое положение соответствует 0%, крайнее правое - %1%</translation>
     </message>
     <message>
@@ -1264,7 +1264,7 @@ to
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
     <message>
         <source>Unable to set autocommit</source>
@@ -1816,14 +1816,6 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
-        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation>невозможно загрузить модуль «%1»: Регистр имени файла не соответствует «%2»</translation>
-    </message>
-    <message>
-        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>невозможно прочитать определение «%2» модуля «%1»</translation>
-    </message>
-    <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
         <translation>не удалось загрузить плагин для модуля «%1»: %2</translation>
     </message>
@@ -1876,8 +1868,8 @@ to
         <translation>не является типом</translation>
     </message>
     <message>
-        <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation>Регистр имени файла не соответствует «%2»</translation>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>Регистр имени файла не соответствует «%1»</translation>
     </message>
 </context>
 <context>
@@ -3262,7 +3254,7 @@ Please verify the correct directory name was given.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -3569,7 +3561,7 @@ Please verify the correct directory name was given.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -3721,6 +3713,10 @@ Please verify the correct directory name was given.</source>
     <message>
         <source>Actions</source>
         <translation>Действия</translation>
+    </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>Угловая панель</translation>
     </message>
 </context>
 <context>
@@ -4062,7 +4058,7 @@ Please verify the correct directory name was given.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -4116,7 +4112,7 @@ Please verify the correct directory name was given.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
     <message>
         <source>Unable to enable autocommit</source>
@@ -4212,7 +4208,7 @@ Please verify the correct directory name was given.</source>
     </message>
     <message>
         <source>Could not rollback transaction</source>
-        <translation>Не удалось отозвать транзакцию</translation>
+        <translation>Не удалось откатить транзакцию</translation>
     </message>
     <message>
         <source>Unable to subscribe</source>
@@ -4973,7 +4969,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>bad lookahead syntax</source>
-        <translation>неправильный предварительный синтаксис</translation>
+        <translation>неправильный синтаксис lookahead</translation>
+    </message>
+    <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>lookbehind не поддерживается, см. QTBUG-2371</translation>
     </message>
     <message>
         <source>bad repetition syntax</source>
@@ -5020,7 +5020,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -5054,7 +5054,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Невозможно отозвать транзакцию</translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -5510,15 +5510,15 @@ Please choose a different file name.</source>
     <message>
         <source>Space</source>
         <extracomment>This and all following &quot;incomprehensible&quot; strings in QShortcut context are key names. Please use the localized names appearing on actual keyboards or whatever is commonly used.</extracomment>
-        <translation type="unfinished">Пробел</translation>
+        <translation>Пробел</translation>
     </message>
     <message>
         <source>Esc</source>
-        <translation type="unfinished">Esc</translation>
+        <translation>Esc</translation>
     </message>
     <message>
         <source>Tab</source>
-        <translation type="unfinished">Tab</translation>
+        <translation>Tab</translation>
     </message>
     <message>
         <source>Backtab</source>
@@ -5538,67 +5538,67 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Ins</source>
-        <translation type="unfinished">Ins</translation>
+        <translation>Ins</translation>
     </message>
     <message>
         <source>Del</source>
-        <translation type="unfinished">Del</translation>
+        <translation>Del</translation>
     </message>
     <message>
         <source>Pause</source>
-        <translation type="unfinished">Pause</translation>
+        <translation>Pause</translation>
     </message>
     <message>
         <source>Print</source>
-        <translation type="unfinished">Print</translation>
+        <translation>Print</translation>
     </message>
     <message>
         <source>SysReq</source>
-        <translation type="unfinished">SysReq</translation>
+        <translation>SysReq</translation>
     </message>
     <message>
         <source>Home</source>
-        <translation type="unfinished">Home</translation>
+        <translation>Home</translation>
     </message>
     <message>
         <source>End</source>
-        <translation type="unfinished">End</translation>
+        <translation>End</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="unfinished">Влево</translation>
+        <translation>Влево</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="unfinished">Вверх</translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="unfinished">Вправо</translation>
+        <translation>Вправо</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="unfinished">Вниз</translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <source>PgUp</source>
-        <translation type="unfinished">PgUp</translation>
+        <translation>PgUp</translation>
     </message>
     <message>
         <source>PgDown</source>
-        <translation type="unfinished">PgDown</translation>
+        <translation>PgDown</translation>
     </message>
     <message>
         <source>CapsLock</source>
-        <translation type="unfinished">CapsLock</translation>
+        <translation>CapsLock</translation>
     </message>
     <message>
         <source>NumLock</source>
-        <translation type="unfinished">NumLock</translation>
+        <translation>NumLock</translation>
     </message>
     <message>
         <source>ScrollLock</source>
-        <translation type="unfinished">ScrollLock</translation>
+        <translation>ScrollLock</translation>
     </message>
     <message>
         <source>Menu</source>
@@ -5626,15 +5626,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Volume Down</source>
-        <translation type="unfinished">Тише</translation>
+        <translation>Тише</translation>
     </message>
     <message>
         <source>Volume Mute</source>
-        <translation type="unfinished">Выключить звук</translation>
+        <translation>Выключить звук</translation>
     </message>
     <message>
         <source>Volume Up</source>
-        <translation type="unfinished">Громче</translation>
+        <translation>Громче</translation>
     </message>
     <message>
         <source>Bass Boost</source>
@@ -5696,7 +5696,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Standby</source>
-        <translation type="unfinished">Режим ожидания</translation>
+        <translation>Режим ожидания</translation>
     </message>
     <message>
         <source>Open URL</source>
@@ -5776,31 +5776,31 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Monitor Brightness Up</source>
-        <translation type="unfinished">Увеличить яркость монитора</translation>
+        <translation>Увеличить яркость монитора</translation>
     </message>
     <message>
         <source>Monitor Brightness Down</source>
-        <translation type="unfinished">Уменьшить яркость монитора</translation>
+        <translation>Уменьшить яркость монитора</translation>
     </message>
     <message>
         <source>Keyboard Light On/Off</source>
-        <translation type="unfinished">Вкл./Откл. подсветку клавиатуры</translation>
+        <translation>Вкл./Откл. подсветку клавиатуры</translation>
     </message>
     <message>
         <source>Keyboard Brightness Up</source>
-        <translation type="unfinished">Увеличить яркость подсветки клавиатуры</translation>
+        <translation>Увеличить яркость подсветки клавиатуры</translation>
     </message>
     <message>
         <source>Keyboard Brightness Down</source>
-        <translation type="unfinished">Уменьшить яркость подсветки клавиатуры</translation>
+        <translation>Уменьшить яркость подсветки клавиатуры</translation>
     </message>
     <message>
         <source>Power Off</source>
-        <translation type="unfinished">Отключение питания</translation>
+        <translation>Отключение питания</translation>
     </message>
     <message>
         <source>Wake Up</source>
-        <translation type="unfinished">Пробуждение</translation>
+        <translation>Пробуждение</translation>
     </message>
     <message>
         <source>Eject</source>
@@ -5856,7 +5856,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Back Forward</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Назад/вперёд</translation>
     </message>
     <message>
         <source>Application Left</source>
@@ -5900,7 +5900,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Display</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отобразить</translation>
     </message>
     <message>
         <source>DOS</source>
@@ -6355,7 +6355,7 @@ Please choose a different file name.</source>
     <message>
         <source>Hangup</source>
         <extracomment>Button to end a call (note: a separate button is used to start the call)</extracomment>
-        <translation type="unfinished">Положить трубку</translation>
+        <translation type="unfinished">Отбой</translation>
     </message>
     <message>
         <source>Flip</source>
@@ -6363,23 +6363,23 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Ctrl</source>
-        <translation></translation>
+        <translation>Ctrl</translation>
     </message>
     <message>
         <source>Shift</source>
-        <translation></translation>
+        <translation>Shift</translation>
     </message>
     <message>
         <source>Alt</source>
-        <translation></translation>
+        <translation>Alt</translation>
     </message>
     <message>
         <source>Meta</source>
-        <translation></translation>
+        <translation>Meta</translation>
     </message>
     <message>
         <source>+</source>
-        <translation></translation>
+        <translation>+</translation>
     </message>
     <message>
         <source>F%1</source>
@@ -6475,8 +6475,8 @@ Please choose a different file name.</source>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <source>Ok</source>
-        <translation>ОК</translation>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Select</source>
@@ -6717,6 +6717,72 @@ Please choose a different file name.</source>
     <message>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>Неверный параметр: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>Ошибка открытия базы данных</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>POLICY_DB_DEFAULT должна быть задана до начала использования других определений POLICY</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>Невозможно начать транзакцию</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>Невозможно завершить транзакцию</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>Невозможно откатить транзакцию</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>Ошибка получения количества колонок</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>Ошибка получения названия колонки</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>Ошибка получения типа колонки</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>Невозможно получить строку</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>Невозможно выполнить выражение</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>Выражение не подготовлено</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>Невозможно сбросить выражение</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>Невозможно привязать параметр</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>Количество параметров не совпадает</translation>
     </message>
 </context>
 <context>
@@ -7043,6 +7109,10 @@ Please choose a different file name.</source>
     <name>QWebFrame</name>
     <message>
         <source>Request cancelled</source>
+        <translation>Запрос отменён</translation>
+    </message>
+    <message>
+        <source>Request canceled</source>
         <translation>Запрос отменён</translation>
     </message>
     <message>
@@ -7409,12 +7479,12 @@ Please choose a different file name.</source>
     <message>
         <source>Toggle Controls</source>
         <comment>Toggle Media Controls</comment>
-        <translation type="unfinished">Вкл/выкл управление</translation>
+        <translation>Вкл/выкл управление</translation>
     </message>
     <message>
         <source>Toggle Loop</source>
         <comment>Toggle Media Loop Playback</comment>
-        <translation type="unfinished">Вкл/выкл зацикленность</translation>
+        <translation>Вкл/выкл зацикленность</translation>
     </message>
     <message>
         <source>Enter Fullscreen</source>
@@ -8289,13 +8359,6 @@ Please choose a different file name.</source>
     </message>
 </context>
 <context>
-    <name>QmlJSDebugger::ToolBox</name>
-    <message>
-        <source>Qt Quick Toolbox</source>
-        <translation>Инструментарий Qt Quick</translation>
-    </message>
-</context>
-<context>
     <name>QmlJSDebugger::ZoomTool</name>
     <message>
         <source>Zoom to &amp;100%</source>
@@ -8729,6 +8792,10 @@ Please choose a different file name.</source>
         <translation>Функция стилей должна иметь имя с префиксом.</translation>
     </message>
     <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>Пространство имён для функции пользователя не может быть пустым (попробуйте предопределённый префикс %1, созданный для подобных случаев)</translation>
+    </message>
+    <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
         <translation>Пространтсво имён %1 зарезервировано, поэтому пользовательские функции не могут его использовать. Попробуйте предопределённый префикс %2, который существует для подобных ситуаций.</translation>
     </message>
@@ -8883,10 +8950,6 @@ Please choose a different file name.</source>
     <message>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
         <translation>Корневой узел второго аргумента функции %1 должен быть документом. %2 не является документом.</translation>
-    </message>
-    <message>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>Пространство имён для пользовательских функций не может быть пустым (попробуйте предопределённый префикс %1, который существует для подобных ситуаций)</translation>
     </message>
     <message>
         <source>A default namespace declaration must occur before function, variable, and option declarations.</source>
@@ -9449,7 +9512,7 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10037,10 +10100,6 @@ Please choose a different file name.</source>
         <translation>Для обнуляемых элементов недопустимо ограничение фиксированным значением.</translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation type="unfinished">Элемент %1 не может содержать другие элементы, т.к. имеет статическое содержимое.</translation>
-    </message>
-    <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
         <translation>Указанный тип %1 не может быть корректно замещён элементом типа %2.</translation>
     </message>
@@ -10071,6 +10130,10 @@ Please choose a different file name.</source>
     <message>
         <source>Element %1 contains not allowed text content.</source>
         <translation>Элемент %1 содержит недопустимое текстовое содержимое.</translation>
+    </message>
+    <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation>Элемент %1 не может содержать другие элементы, так как у него фиксированное содержимое.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
@@ -10110,11 +10173,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Key constraint %1 contains absent fields.</source>
-        <translation type="unfinished">Ограничение на ключ %1 содержит недостающие поля.</translation>
+        <translation>Ограничение на ключ %1 содержит недостающие поля.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ограничение на ключ %1 содержит ссылки на обнуляемый элемент %2.</translation>
     </message>
     <message>
         <source>No referenced value found for key reference %1.</source>
@@ -10134,7 +10197,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
-        <translation type="unfinished">Атрибут `%1` имеет некорректное содержимое QName: %2.</translation>
+        <translation>Атрибут «%1» имеет некорректное содержимое QName: %2.</translation>
     </message>
 </context>
 </TS>

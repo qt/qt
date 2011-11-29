@@ -302,10 +302,15 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 #endif // QT_NO_DATASTREAM
 
+inline static qreal q_deg2rad(qreal x)
+{
+    return x * qreal(0.01745329251994329576923690768489);    /* pi/180 */
+}
 
-#ifndef M_2PI
-#define M_2PI 6.28318530717958647692528676655900576
-#endif
+inline static qreal q_rad2deg(qreal x)
+{
+    return x * qreal(57.295779513082320876798154814105);    /* 180/pi */
+}
 
 /*!
     \class QLineF
@@ -483,7 +488,8 @@ bool QLineF::isNull() const
 /*!
     \fn qreal QLineF::dx() const
 
-    Returns the horizontal component of the line's vector.
+    Returns the horizontal component of the line's vector. 
+	Return value is positive if x2() >= x1() and negative if x2() < x1().
 
     \sa dy(), pointAt()
 */
@@ -492,6 +498,7 @@ bool QLineF::isNull() const
     \fn qreal QLineF::dy() const
 
     Returns the vertical component of the line's vector.
+	Return value is positive if y2() >= y1() and negative if y2() < y1().
 
     \sa dx(), pointAt()
 */
@@ -501,7 +508,8 @@ bool QLineF::isNull() const
 
     Sets the length of the line to the given \a length. QLineF will
     move the end point - p2() - of the line to give the line its new length.
-    
+    If the given \a length is negative the angle() is also changed.
+	
     If the line is a null line, the length will remain zero regardless
     of the length specified. 
 
@@ -575,7 +583,7 @@ qreal QLineF::angle() const
     const qreal dx = pt2.x() - pt1.x();
     const qreal dy = pt2.y() - pt1.y();
 
-    const qreal theta = qAtan2(-dy, dx) * 360.0 / M_2PI;
+    const qreal theta = q_rad2deg(qAtan2(-dy, dx));
 
     const qreal theta_normalized = theta < 0 ? theta + 360 : theta;
 
@@ -599,7 +607,7 @@ qreal QLineF::angle() const
 */
 void QLineF::setAngle(qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
+    const qreal angleR = q_deg2rad(angle);
     const qreal l = length();
 
     const qreal dx = qCos(angleR) * l;
@@ -621,7 +629,7 @@ void QLineF::setAngle(qreal angle)
 */
 QLineF QLineF::fromPolar(qreal length, qreal angle)
 {
-    const qreal angleR = angle * M_2PI / 360.0;
+    const qreal angleR = q_deg2rad(angle);
     return QLineF(0, 0, qCos(angleR) * length, -qSin(angleR) * length);
 }
 
@@ -757,7 +765,7 @@ QLineF::IntersectType QLineF::intersect(const QLineF &l, QPointF *intersectionPo
 
   \since 4.4
 
-  Returns the angle (in degrees) from this line to the given \a
+  Returns the angle (in positive degrees) from this line to the given \a
   line, taking the direction of the lines into account. If the lines
   do not intersect within their range, it is the intersection point of
   the extended lines that serves as origin (see
@@ -815,8 +823,8 @@ qreal QLineF::angle(const QLineF &l) const
     qreal cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
     qreal rad = 0;
     // only accept cos_line in the range [-1,1], if it is outside, use 0 (we return 0 rather than PI for those cases)
-    if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );
-    return rad * 360 / M_2PI;
+    if (cos_line >= qreal(-1.0) && cos_line <= qreal(1.0)) rad = qAcos( cos_line );
+    return q_rad2deg(rad);
 }
 
 

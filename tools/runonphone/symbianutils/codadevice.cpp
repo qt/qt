@@ -71,6 +71,7 @@ static const int maxSerialMessageLength = 0x10000; // given chunking scheme
 static const char validProtocolIdStart = (char)0x90;
 static const char validProtocolIdEnd = (char)0x95;
 static const char codaProtocolId = (char)0x92;
+static const char textTraceProtocolId = (char)0x02;
 static const unsigned char serialChunkingStart = 0xfe;
 static const unsigned char serialChunkingContinuation = 0x0;
 enum { SerialChunkHeaderSize = 2 };
@@ -495,7 +496,9 @@ QPair<int, int> CodaDevice::findSerialHeader(QByteArray &in)
             // Good packet
             const int length = trk::extractShort(in.constData() + 2);
             return QPair<int, int>(4, length);
-        } else if (in.at(0) == header1 && in.at(1) >= validProtocolIdStart && in.at(1) <= validProtocolIdEnd) {
+        } else if (in.at(0) == header1
+                    && (in.at(1) == textTraceProtocolId
+                        || (in.at(1) >= validProtocolIdStart && in.at(1) <= validProtocolIdEnd))) {
             // We recognise it but it's not a TCF message - emit it for any interested party to handle
             const int length = trk::extractShort(in.constData() + 2);
             if (4 + length <= in.size()) {

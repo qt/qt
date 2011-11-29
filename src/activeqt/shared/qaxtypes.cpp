@@ -665,9 +665,9 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
             static PGetRecordInfoFromTypeInfo pGetRecordInfoFromTypeInfo = 0;
             static bool resolved = false;
             if (!resolved) {
+                QSystemLibrary oleaut32(QLatin1String("oleaut32"));
+                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)oleaut32.resolve("GetRecordInfoFromTypeInfo");
                 resolved = true;
-                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QSystemLibrary::resolve(QLatin1String("oleaut32"),
-                                              "GetRecordInfoFromTypeInfo");
             }
             if (!pGetRecordInfoFromTypeInfo)
                 break;

@@ -29,7 +29,7 @@
     \example multimedia/audioinput
     \title AudioInput Example
 
-    The Audio Input example demonstrates the basic use of QAudioInput class
+    \brief The Audio Input example demonstrates the basic use of QAudioInput class
     provided with Qt.
 
     \image audioinput-example.png

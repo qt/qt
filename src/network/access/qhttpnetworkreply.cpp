@@ -472,8 +472,10 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
 
 void QHttpNetworkReplyPrivate::gunzipBodyPartiallyEnd()
 {
-    inflateEnd(&inflateStrm);
-    initInflate = false;
+    if (initInflate) {
+        inflateEnd(&inflateStrm);
+        initInflate = false;
+    }
 }
 
 #endif
@@ -891,7 +893,7 @@ bool QHttpNetworkReplyPrivate::expectContent()
         || statusCode == 204 || statusCode == 304)
         return false;
     if (request.operation() == QHttpNetworkRequest::Head)
-        return !shouldEmitSignals();
+        return false; // no body expected for HEAD request
     qint64 expectedContentLength = contentLength();
     if (expectedContentLength == 0)
         return false;

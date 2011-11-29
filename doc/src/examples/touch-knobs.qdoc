@@ -29,7 +29,7 @@
     \example touch/knobs
     \title Touch Knobs Example
 
-    The Touch Knobs example shows how to create custom controls that
+    \brief The Touch Knobs example shows how to create custom controls that
     accept touch input.
 
     \image touch-knobs-example.png

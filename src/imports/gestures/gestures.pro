@@ -19,8 +19,8 @@ symbian:{
     isEmpty(DESTDIR):importFiles.files = qmlgesturesplugin$${QT_LIBINFIX}.dll qmldir
     else:importFiles.files = $$DESTDIR/qmlgesturesplugin$${QT_LIBINFIX}.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
-    
-    DEPLOYMENT = importFiles
+
+    DEPLOYMENT += importFiles
 }
 
 INSTALLS += target qmldir

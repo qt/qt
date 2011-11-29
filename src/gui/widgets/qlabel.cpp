@@ -59,6 +59,10 @@
 #include <qaccessible.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qt_s60_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -698,7 +702,11 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 
             bool tryWidth = (w < 0) && (align & Qt::TextWordWrap);
             if (tryWidth)
+#ifdef Q_OS_SYMBIAN
+                w = qMin(S60->clientRect().Width(), q->maximumSize().width());
+#else
                 w = qMin(fm.averageCharWidth() * 80, q->maximumSize().width());
+#endif
             else if (w < 0)
                 w = 2000;
             w -= (hextra + contentsMargin.width());

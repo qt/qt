@@ -67,9 +67,11 @@ void printUsage(QTextStream& outstream, QString exeName)
             << "-q, --quiet                              hide progress messages" << endl
             << "-u, --upload <local file> <remote file>  upload file to phone" << endl
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
+            << "-T, --tempfile <remote file>             specify temporary sis file name" << endl
             << "--nocrashlog                             Don't capture call stack if test crashes" << endl
             << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
-            << "--coda                                   Use CODA instead of TRK (default agent)" << endl
+            << "--coda                                   Use CODA instead of detecting the debug agent" << endl
+            << "--trk                                    Use TRK instead of detecting the debug agent" << endl
             << endl
             << "USB COM ports can usually be autodetected, use -p or -f to force a specific port." << endl
             << "TRK is the default debugging agent, use --coda option when using CODA instead of TRK." << endl
@@ -94,10 +96,11 @@ int main(int argc, char *argv[])
     QString uploadRemoteFile;
     QString downloadRemoteFile;
     QString downloadLocalFile;
+    QString dstName = "c:\\data\\testtemp.sis";
     int loglevel=1;
     int timeout=0;
     bool crashlog = true;
-    bool coda = false;
+    enum {AgentUnknown, AgentCoda, AgentTRK} debugAgent = AgentUnknown;
     QString crashlogpath;
     QListIterator<QString> it(args);
     it.next(); //skip name of program
@@ -152,7 +155,13 @@ int main(int argc, char *argv[])
                 }
             }
             else if (arg == "--coda")
-                coda = true;
+                debugAgent = AgentCoda;
+            else if (arg == "--trk")
+                debugAgent = AgentTRK;
+            else if (arg == "--tempfile" || arg == "-T") {
+                CHECK_PARAMETER_EXISTS
+                dstName = it.next();
+            }
             else if (arg == "--verbose" || arg == "-v")
                 loglevel=2;
             else if (arg == "--quiet" || arg == "-q")
@@ -219,13 +228,29 @@ int main(int argc, char *argv[])
     QFileInfo info(exeFile);
     QFileInfo uploadInfo(uploadLocalFile);
 
-    if (coda) {
+    if (debugAgent == AgentUnknown) {
+        outstream << "detecting debug agent..." << endl;
+        CodaSignalHandler codaDetector;
+        //auto detect agent
+        codaDetector.setSerialPortName(serialPortName);
+        codaDetector.setLogLevel(loglevel);
+        codaDetector.setActionType(ActionPingOnly);
+        codaDetector.setTimeout(1000);
+        if (!codaDetector.run()) {
+            debugAgent = AgentCoda;
+            outstream << " - Coda is found" << endl;
+        } else {
+            debugAgent = AgentTRK;
+            outstream << " - Coda is not found, defaulting to TRK" << endl;
+        }
+    }
+
+    if (debugAgent == AgentCoda) {
         codaHandler.setSerialPortName(serialPortName);
         codaHandler.setLogLevel(loglevel);
 
         if (!sisFile.isEmpty()) {
             codaHandler.setActionType(ActionCopyInstall);
-            QString dstName = "c:\\data\\testtemp.sis";
             codaHandler.setCopyFileName(sisFile, dstName);
         }
         else if (!uploadLocalFile.isEmpty() && uploadInfo.exists()) {
@@ -252,12 +277,12 @@ int main(int argc, char *argv[])
         return codaHandler.run();
 
     } else {
-        launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly));
+        launcher.reset(new trk::Launcher(trk::Launcher::ActionPingOnly,
+            SymbianUtils::SymbianDeviceManager::instance()->acquireDevice(serialPortName)));
         QStringList srcNames, dstNames;
         if (!sisFile.isEmpty()) {
             launcher->addStartupActions(trk::Launcher::ActionCopyInstall);
             srcNames.append(sisFile);
-            QLatin1String dstName("c:\\data\\testtemp.sis");
             dstNames.append(dstName);
             launcher->setInstallFileNames(QStringList(dstName));
         }

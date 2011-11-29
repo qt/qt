@@ -64,7 +64,7 @@ GBuildMakefileGenerator::GBuildMakefileGenerator() : MakefileGenerator()
 }
 
 bool
-GBuildMakefileGenerator::write()
+GBuildMakefileGenerator::writeMakefile(QTextStream &text)
 {
     QStringList tmp;
     QString filename(Option::output.fileName());
@@ -77,13 +77,13 @@ GBuildMakefileGenerator::write()
     /* correct output for non-prl, non-recursive case */
     QString outname(qmake_getpwd());
     outname += QDir::separator();
-    outname += fileInfo(Option::output.fileName()).baseName();
+    outname += strtarget;
     outname += projectSuffix();
     Option::output.close();
     Option::output.setFileName(outname);
     MakefileGenerator::openOutput(Option::output, QString());
 
-    if (strtarget != fileInfo(project->projectFile()).baseName()) {
+    if (strtarget != fileInfo(project->projectFile()).baseName().section('.', -2, -2)) {
         QString gpjname(strtarget);
         QString outputName(qmake_getpwd());
         outputName += QDir::separator();
@@ -141,18 +141,19 @@ GBuildMakefileGenerator::write()
         ti << "\tHeapSize\t0x00D00000" << "\n";
         ti << "\tTask\tInitial" << "\n";
         ti << "\t\tStackSize\t0x30000" << "\n";
+        ti << "\t\tStartIt\tTrue" << "\n";
         ti << "\tEndTask" << "\n";
         ti << "EndAddressSpace" << "\n";
         ti.flush();
 
         /* change current project file to <projectname>_app.gpj and continue
          * generation */
-        filename.insert(filename.lastIndexOf("."), "_app");
+        outname.insert(outname.lastIndexOf("."), "_app");
         Option::output.close();
-        Option::output.setFileName(filename);
+        Option::output.setFileName(outname);
         MakefileGenerator::openOutput(Option::output, QString());
     } else if ((project->first("TEMPLATE") == "lib")
-            && project->isActiveConfig("shared")) {
+            && project->isActiveConfig("dll")) {
         QString gpjname(strtarget);
         gpjname += "_shared";
         gpjname += projectSuffix();
@@ -188,26 +189,28 @@ GBuildMakefileGenerator::write()
         tl << "}\n"
              "-sec\n"
              "{\n"
-             "  .picbase __INTEGRITY_LibCBaseAddress :\n"
+             "        .picbase __INTEGRITY_LibCBaseAddress :\n"
              "        .text :\n"
-             "  .syscall :\n"
+             "        .syscall :\n"
              "        .intercall :\n"
              "        .interfunc :\n"
-             "  .secinfo :\n"
-             "  .rodata align(16) :\n"
-             "  .fixaddr :\n"
-             "  .fixtype :\n"
+             "        .secinfo :\n"
+             "        .rodata align(16) :\n"
+             "        .fixaddr :\n"
+             "        .fixtype :\n"
              "        .rombeg :\n"
              "        .textchecksum :\n"
              "        // The above sections may be large. Leave a bigger gap for large pages.\n"
-             "  .pidbase align(__INTEGRITY_MaxPageAlign) :\n"
+             "        .pidbase align(__INTEGRITY_MaxPageAlign) :\n"
              "        .sdabase :\n"
              "        .data :\n"
              "        .toc :\n"
              "        .opd :\n"
              "        .datachecksum :\n"
-             "  .bss align(__INTEGRITY_MinPageAlign) :\n"
-             "        .heap :\n"
+             "        .sbss : \n"
+             "        .bss align(__INTEGRITY_MinPageAlign) :\n"
+             "        .argsection(__INTEGRITY_MaxPageAlign) :\n"
+             "        .heap : \n"
              "}\n";
         tl.flush();
         dllbase += DLLOFFSET;
@@ -215,7 +218,9 @@ GBuildMakefileGenerator::write()
 
     warn_msg(WarnParser, Option::output.fileName().toAscii());
     QTextStream t(&Option::output);
-    QString primaryTarget(project->values("QMAKE_CXX").at(0));
+    QString primaryTarget;
+    if (!project->values("QMAKE_CXX").isEmpty())
+        primaryTarget = project->values("QMAKE_CXX").at(0);
 
     pathtoremove += QDir::separator();
     filename.remove(qmake_getpwd());
@@ -254,6 +259,8 @@ GBuildMakefileGenerator::write()
     t << "\t:sourceDir=." << "\n";
 
     t << "\t:outputDir=work" << relpath << "\n";
+    t << "\t-I${%expand_path(.)}/work" << relpath << "\n";
+    t << "\t--cxx_include_directory ${%expand_path(.)}/work" << relpath << "\n";
     if (filename.endsWith("projects.gpj")) {
         t << "\t:sourceDir=work\n";
         t << "\t-Iwork\n";
@@ -270,7 +277,8 @@ GBuildMakefileGenerator::write()
     }
     t << "\n";
 
-    t << varGlue("DEFINES", "\t-D", "\n\t-D", "\n");
+    if (project->first("TEMPLATE") != "project")
+        t << varGlue("DEFINES", "\t-D", "\n\t-D", "\n");
 
     t << "\t-I.\n\t-I" << specdir() << "\n";
     t << varGlue("INCLUDEPATH", "\t-I", "\n\t-I", "\n");
@@ -306,9 +314,11 @@ GBuildMakefileGenerator::write()
                 continue;
             if (!project->first((*it) + ".subdir").isEmpty())
                 gpjname = project->first((*it) + ".subdir");
+            /* some SUBDIRS are not actually subdirs, instead .pro files */
+            if (gpjname.endsWith(".pro"))
+                gpjname.chop(4);
             else
-                gpjname.replace("_", QDir::separator());
-            gpjname += QDir::separator() + gpjname.section(QDir::separator(), -1);
+                gpjname += QDir::separator() + gpjname.section(QDir::separator(), -1);
             gpjname += projectSuffix();
             /* make relative */
             if (!project->values("QT_SOURCE_TREE").isEmpty()) {
@@ -328,7 +338,7 @@ GBuildMakefileGenerator::write()
             t << "\t-name " << tmpstr << "\n";
             tmpstr.insert(tmpstr.lastIndexOf(QDir::separator()) + 1, "qrc_");
             tmpstr.append(".cpp");
-            t << "\t-o work/" << tmpstr << "\n";
+            t << "\t-o work/" << relpath << QDir::separator() << tmpstr << "\n";
         }
     }
     {
@@ -340,7 +350,7 @@ GBuildMakefileGenerator::write()
             tmpstr.insert(tmpstr.lastIndexOf(QDir::separator()) + 1, "ui_");
             tmpstr.remove(".ui");
             tmpstr.append(".h");
-            t << "\t-o work/" << tmpstr << "\n";
+            t << "\t-o work/" << relpath << QDir::separator() << tmpstr << "\n";
         }
     }
 
@@ -363,7 +373,7 @@ GBuildMakefileGenerator::write()
     {
         QStringList &l = project->values("GENERATED_SOURCES");
         for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            t << "work/" << (*it).section(QDir::separator(), -1) << "\n";
+            t << "work/" << relpath << QDir::separator() << (*it).section(QDir::separator(), -1) << "\n";
         }
     }
 
@@ -373,8 +383,9 @@ GBuildMakefileGenerator::write()
 QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove)
 {
     QString s("");
+    QString origfilename(filename);
     s += filename.remove(pathtoremove);
-    if (filename.endsWith(Option::h_ext.first())) {
+    if (filename.endsWith(Option::h_ext.first()) && mocable(origfilename)) {
         QString corename(filename.section(QDir::separator(), -1));
         corename.remove(Option::h_ext.first());
         corename.append(Option::cpp_ext.first());
@@ -382,6 +393,8 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += "\t[MOC/Qt Header]\n";
         s += "\t-o ";
         s += "work/";
+        s += pathtoremove;
+        s += QDir::separator();
         s += corename;
         s += "\n";
     } else if (filename.section(QDir::separator(), -1).startsWith("qrc_")) {
@@ -390,21 +403,15 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += tmpstr;
         s += ".qrc";
         s += "\n";
-    } else if (filename.endsWith(Option::cpp_ext.first())) {
+    } else if (filename.endsWith(Option::cpp_ext.first()) && mocable(origfilename)) {
         QString tmpstr(filename.section("/", -1));
-//        QString moctool(project->values("QMAKE_MOC").first());
         QString filepath(pathtoremove);
         if (!project->values("QT_SOURCE_TREE").isEmpty()) {
             filepath.remove(project->values("QT_SOURCE_TREE").first());
             filepath.remove(0, 1);
         }
-//        if (!project->values("QT_BUILD_TREE").isEmpty()) {
-//            moctool.remove(project->values("QT_BUILD_TREE").first());
-//            moctool.remove(0, 1);
-//        }
         s += "\n\t:preexecShellSafe='${QT_BUILD_DIR}/bin/moc ";
-//        s += moctool;
-//        s += " ";
+        s += "-nn ";
         s += varGlue("DEFINES", "-D", " -D", " ");
         s += varGlue("INCLUDEPATH", "-I", " -I", " ");
         s += filepath;
@@ -412,6 +419,8 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += " -o ";
         tmpstr.replace(Option::cpp_ext.first(), Option::cpp_moc_ext);
         s += "work/";
+        s += pathtoremove;
+        s += QDir::separator();
         s += tmpstr;
         s += "\n";
     } else

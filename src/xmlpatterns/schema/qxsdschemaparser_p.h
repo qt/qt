@@ -704,12 +704,12 @@ namespace QPatternist
              */
             inline bool isSchemaTag(XsdSchemaToken::NodeName tag, XsdSchemaToken::NodeName token, XsdSchemaToken::NodeName namespaceToken) const;
 
-            XsdSchemaContext::Ptr                                                m_context;
-            XsdSchemaParserContext::Ptr                                          m_parserContext;
-            NamePool::Ptr                                                        m_namePool;
+            XsdSchemaContext                                                     *m_context;
+            XsdSchemaParserContext                                               *m_parserContext;
+            NamePool                                                             *m_namePool;
             NamespaceSupport                                                     m_namespaceSupport;
-            XsdSchemaResolver::Ptr                                               m_schemaResolver;
-            XsdSchema::Ptr                                                       m_schema;
+            XsdSchemaResolver                                                    *m_schemaResolver;
+            XsdSchema                                                            *m_schema;
 
             QString                                                              m_targetNamespace;
             QString                                                              m_attributeFormDefault;

@@ -235,6 +235,7 @@ public:
     void run(Binding *, QDeclarativePropertyPrivate::WriteFlags flags);
 
     const char *programData;
+    QDeclarativeRefCount *dataRef;
     Binding *m_bindings;
     quint32 *m_signalTable;
 
@@ -267,7 +268,7 @@ public:
 };
 
 QDeclarativeCompiledBindingsPrivate::QDeclarativeCompiledBindingsPrivate()
-: subscriptions(0), identifiers(0)
+: subscriptions(0), identifiers(0), programData(0), dataRef(0), m_bindings(0), m_signalTable(0)
 {
 }
 
@@ -275,11 +276,16 @@ QDeclarativeCompiledBindingsPrivate::~QDeclarativeCompiledBindingsPrivate()
 {
     delete [] subscriptions; subscriptions = 0;
     delete [] identifiers; identifiers = 0;
+    if (dataRef) { 
+        dataRef->release(); 
+        dataRef = 0; 
+    }
 }
 
 int QDeclarativeCompiledBindingsPrivate::methodCount = -1;
 
-QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context)
+QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context, 
+                                                           QDeclarativeRefCount *dataRef)
 : QObject(*(new QDeclarativeCompiledBindingsPrivate))
 {
     Q_D(QDeclarativeCompiledBindings);
@@ -288,6 +294,8 @@ QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, 
         d->methodCount = QDeclarativeCompiledBindings::staticMetaObject.methodCount();
 
     d->programData = program;
+    d->dataRef = dataRef;
+    if (d->dataRef) d->dataRef->addref();
 
     d->init();
 

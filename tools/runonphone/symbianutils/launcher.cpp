@@ -440,7 +440,7 @@ void Launcher::handleResult(const TrkResult &result)
             quint64 timestamp = extractInt64(result.data) & 0x0FFFFFFFFFFFFFFFULL;
             quint64 secs = timestamp / 1000000000;
             quint64 ns = timestamp % 1000000000;
-            msg = QString("[%1.%2] %3").arg(secs).arg(ns).arg(QString(result.data.mid(8)));
+            msg = QString("[%1.%2] %3").arg(secs).arg(ns,9,10,QLatin1Char('0')).arg(QString(result.data.mid(8)));
             logMessage("TEXT TRACE: " + msg);
             }
         } else {

@@ -19,13 +19,15 @@ symbian {
     TARGET.CAPABILITY=AllFiles
     LIBS *= -lefsrv
     INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
-    }
+}
 
 # support for running test from shadow build directory
 wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
     # do not define SRCDIR at all
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

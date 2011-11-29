@@ -29,7 +29,7 @@
     \example widgets/tooltips
     \title Tool Tips Example
 
-    The Tool Tips example shows how to provide static and dynamic tool
+    \brief The Tool Tips example shows how to provide static and dynamic tool
     tips for an application's widgets.
 
     The simplest and most common way to set a widget's tool tip is by

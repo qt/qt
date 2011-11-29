@@ -36,7 +36,7 @@
     \example activeqt/hierarchy
     \title Hierarchy Example (ActiveQt)
 
-    The Hierarchy example is shows how to write an in-process ActiveX
+    \brief The Hierarchy example is shows how to write an in-process ActiveX
     control. The control is a QWidget subclass with child widgets
     that are accessible as sub-types.
 

@@ -1649,8 +1649,8 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
-                    QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*0.5, p.y()),
-                                                       QPointF(p.x() + width*0.5, p.y())));
+                    QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*qreal(0.5), p.y()),
+                                                       QPointF(p.x() + width*qreal(0.5), p.y())));
                     d->rasterizer->rasterizeLine(line.p1(), line.p2(), 1);
                 }
                 continue;
@@ -5117,7 +5117,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
 {
     const qreal a = qreal(rect.width()) / 2;
     const qreal b = qreal(rect.height()) / 2;
-    qreal d = b*b - (a*a*b) + 0.25*a*a;
+    qreal d = b*b - (a*a*b) + qreal(0.25)*a*a;
 
     int x = 0;
     int y = (rect.height() + 1) / 2;
@@ -5140,7 +5140,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
                       pen_func, brush_func, pen_data, brush_data);
 
     // region 2
-    d = b*b*(x + 0.5)*(x + 0.5) + a*a*((y - 1)*(y - 1) - b*b);
+    d = b*b*(x + qreal(0.5))*(x + qreal(0.5)) + a*a*((y - 1)*(y - 1) - b*b);
     const int miny = rect.height() & 0x1;
     while (y > miny) {
         if (d < 0) { // select SE

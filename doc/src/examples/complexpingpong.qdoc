@@ -29,7 +29,7 @@
     \example dbus/complexpingpong
     \title Complex Ping Pong Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
+    \brief The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
     a more useful demonstration of D-Bus interfaces.
 
     \quotefile doc/src/snippets/complexpingpong-example.txt

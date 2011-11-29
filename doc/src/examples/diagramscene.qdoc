@@ -29,12 +29,12 @@
     \example graphicsview/diagramscene
     \title Diagram Scene Example
     
-    This example shows use of Qt's graphics framework. 
+    \brief The Diagram Scene example is an application in which you can
+    create a flowchart diagram using the graphics view framework.
 
     \image diagramscene.png
 
-    The Diagram Scene example is an application in which you can
-    create a flowchart diagram. It is possible to add flowchart shapes
+    In this example it is possible to add flowchart shapes
     and text and connect the shapes by arrows as shown in the image
     above.  The shapes, arrows, and text can be given different
     colors, and it is possible to change the font, style, and
@@ -149,11 +149,11 @@
     Example}{application example} if you need a high-level
     introduction to actions.
 
-    The is the \c createMenus() function:
+    Here is the \c createMenus() function:
 
     \snippet examples/graphicsview/diagramscene/mainwindow.cpp 24
 
-    We create the three menus' of the example.
+    We create the three menus of the example.
 
     The \c createToolbars() function sets up the examples tool
     bars.  The three \l{QToolButton}s in the \c colorToolBar, the \c
@@ -199,7 +199,7 @@
     each button; we store the diagram's type, i.e., the
     DiagramItem::DiagramType enum. We use the stored diagram type when
     we create new diagram items for the scene.  The widgets created
-    with this function is used in the tool box.
+    with this function are used in the tool box.
 
     Here is the \c createColorMenu() function:
     
@@ -443,7 +443,7 @@
     
     In the \c DiagramScene a mouse click can give three different
     actions: the item under the mouse can be moved, an item may be
-    inserted, or an arrow may be connected between to diagram items.
+    inserted, or an arrow may be connected between two diagram items.
     Which action a mouse click has depends on the mode, given by the
     Mode enum, the scene is in. The mode is set with the \c setMode()
     function.
@@ -456,7 +456,7 @@
     inserted is set with the \c setItemType() slot.
     
     The \c MainWindow and \c DiagramScene share responsibility for
-    the examples functionality. \c MainWindow handles the following
+    the example's functionality. \c MainWindow handles the following
     tasks: the deletion of items, text, and arrows; moving diagram
     items to the back and front; and setting the scale of the scene. 
 
@@ -624,7 +624,7 @@
 
     \snippet examples/graphicsview/diagramscene/diagramitem.cpp 0
 
-    In the constructor we create the items polygon according to
+    In the constructor we create the item's polygon according to
     \a diagramType. \l{QGraphicsItem}s are not movable or selectable
     by default, so we must set these properties.
 

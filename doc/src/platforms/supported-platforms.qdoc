@@ -49,8 +49,6 @@
         - Requirements for developing with Qt on Windows.
         \o \l{Installing Qt for Windows}{Installing Qt for Windows}
         - Build Qt for Windows development.
-        \o \l{Platform and Compiler Notes - Windows}{Platform and Compiler Notes - Windows}
-        - Windows platform specific notes.
         \o \l{Getting Started Guides}{Getting started} - Getting started developing for Windows
     \endlist
 
@@ -135,8 +133,6 @@
         - Software required to run Qt on Linux/X11.
         \o \l{Installing Qt for X11 Platforms}{Installing Qt for X11 Platforms}
         - Build Qt for Linux/X11 development.
-        \o \l{Platform and Compiler Notes - X11}{Platform and Compiler Notes - X11}
-        - Platform specific notes.
         \o \l{Getting Started Guides}{Getting started}
     \endlist
 
@@ -223,8 +219,6 @@
         - Software required to run Qt on Mac OS X.
         \o \l{Installing Qt for X11 Platforms}{Installing Qt for X11 Platforms}
         - Build Qt for Mac OS X development.
-        \o \l{Platform and Compiler Notes - Mac OS X}{Platform and Compiler Notes - Mac OS X}
-        - Platform specific notes.
         \o \l{Getting Started Guides}{Getting started}
     \endlist
 
@@ -285,82 +279,6 @@
     \note Qt also provides support for 64-bit applications on top of Cocoa APIs.
 */
 /*!
-    \page windowsCE-Mobile-support.html
-    \title Support for Windows CE and Windows Mobile
-    \brief Platform support for Windows CE and Windows Mobile.
-    \ingroup platform-specific
-    \ingroup platform-details
-
-    \section1 Qt on Windows CE and Windows Mobile
-
-    Qt is a C++ application and UI framework. You can use Qt to write
-    rich and high performance applications using an intuitive API
-    available for a wide range of devices. Use the code from one single
-    code-base and rebuild for all \l{Supported Platforms}{supported
-    Windows CE/Mobile versions as well as other other platforms}.
-
-    Supporting most existing Windows CE configurations and with minimal
-    hardware dependencies, Qt is easy to build even for custom hardware
-    configurations. Unused components and features can even be compiled out.
-
-    \section1 Getting Started on Windows CE/Mobile
-
-    \list
-        \o \l{Supported Platforms}{Supported Windows CE/Mobile platforms}
-        - Qt supports a wide range of Windows CE/Mobile platform variants.
-        \o \l{Qt for Windows CE Requirements}{Qt for Windows CE/Mobile
-        Requirements} - Software required to run Qt on Windows CE/Mobile.
-        \o \l{Installing Qt for Windows CE}{Installing Qt for
-        Windows CE/Mobile Platforms} - Build Qt for Windows CE/Mobile
-        development.
-        \o \l{Platform and Compiler Notes - Windows CE}{Platform and
-        Compiler Notes - Windows CE/Mobile} - Platform specific notes.
-        \o \l{Getting Started Guides}{Getting started}
-    \endlist
-
-    \section1 Key Features for Windows CE/Mobile Development
-
-    On top of all the tools and API and class libraries that Qt offers,
-    Qt for Windows CE provides you with added functionality for an
-    optimized embedded development environment.
-
-    \section2 Native and Customizable Look and Feel
-
-    Windows Mobile and Windows CE styles are available with Qt. At runtime,
-    Qt applications will detect which style to use. The look and feel of
-    your applications can also be easily customized in a fraction of
-    the time and lines of code required for traditional UI styling with
-    Qt Style Sheets.
-
-    \section2 Advanced Text Layout Engine
-
-    Qt for Windows CE supports TrueType and raster fonts. Qt also has
-    extended Unicode support and right-to-left languages. Qt's rich text
-    engine adds capabilities for complex text layouts including tables,
-    path tracing and text which flows around shapes.
-
-    \section2 Qt for Windows CE/Mobile also provide support for:
-
-    \list
-        \o Graphics Acceleration using \l{Qt for Windows CE and OpenGL
-        ES}{OpenGL ES}
-        \o \l{Graphics View Framework}{2D graphics canvas} capable of
-        handling millions of items.
-        \o \l{Qt Designer Manual}{Qt Designer} for GUI layout and
-        forms builder.
-        \o \l{Qt Linguist Manual}{Qt Linguist} provides internationalization
-        and translation features.
-    \endlist
-
-    Applications created with Qt for Windows CE/Mobile can be ported to
-    Symbian, Maemo and any other OS that Qt supports.
-
-    Additional \l{Cross-Platform and Platform-Specific Development}
-    information.
-
-*/
-
-/*!
     \page embeddedLinux-support.html
     \title Support for Embedded Linux
     \brief Platform support for Embedded Linux.
@@ -378,6 +296,8 @@
     one single code-base and rebuild for all \l{Supported Platforms}
     {supported platforms}.
 
+    \note Qt on Embedded Linux will not exist as a separate platform for Qt 5.0.
+
     \section1 Getting Started on Embedded Linux
 
     \list
@@ -387,8 +307,6 @@
         Requirements} - Software required to run Qt on Embedded Linux.
         \o \l{Installing Qt for Embedded Linux}{Installing Qt for Embedded
         Linux} - Build Qt for development on Embedded Linux.
-        \o \l{Platform and Compiler Notes - Embedded Linux}{Platform and
-        Compiler Notes - Embedded Linux} - Platform specific notes.
         \o \l{Getting Started Guides}{Getting started}
     \endlist
 
@@ -465,6 +383,8 @@
         \o \l{Platform and Compiler Notes - Symbian}{Platform Notes - Symbian}
         - Platform specific notes.
         \o \l{Getting Started Guides}{Getting started}
+        \o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian}
+        - provides a QML component set for the Symbian^3 platform
     \endlist
 
     \section1 Key Features for Symbian Development
@@ -480,6 +400,9 @@
     applications can also be easily customized in a fraction of the
     time and lines of code required for traditional UI styling with
     Qt Style Sheets.
+
+    The \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian 1.1}
+    provides a native QML component set.
 
     \section2 Graphics Features
 
@@ -519,161 +442,6 @@
 
 */
 /*!
-    \page maemo-support.html
-    \title Support for Maemo
-    \brief Platform support for Maemo.
-    \ingroup platform-specific
-    \ingroup platform-details
-
-    \section1 Qt on Maemo
-
-    Qt is a comprehensive application and UI framework for developing
-    Maemo applications that can also be deployed across major
-    device and desktop operating systems without rewriting the source code.
-    If you are developing apps for the Symbian, Mameo platforms
-    in most cases, you can use Qt under the free LGPL licensing option.
-    Qt is cross-platform, and that means that you can use the code from
-    one single code-base and rebuild for all \l{Supported Platforms}
-    {supported platforms}. Maemo 6 is now MeeGo.
-
-    \section1 Getting Started on Maemo
-    \list
-        \o \l{Supported Platforms}{Supported Maemo platforms}
-        - Qt support for Maemo versions.
-        \omit
-        \o \l{Qt for Maemo Requirements}{Qt for Maemo
-        Requirements} - Software required to run Qt on Maemo.
-        \o \l{Installing Qt for Maemo}{Installing Qt for
-        Maemo} - Build Qt for Maemo	development.
-        \o \l{Platform and Compiler Notes - Maemo}{Platform and
-        Compiler Notes - Maemo} - Platform specific notes.
-        \endomit
-        \o \l{Getting Started Guides}{Getting started}
-    \endlist
-
-    \section1 Key Features for Maemo Development
-
-    \section2 Native Look and Feel
-
-    Qt will detect which theme the device is running and applies the
-    style at runtime to your Qt application. Widgets are optimized
-    for touch screen usage.
-
-    \section2 Graphics Features
-
-    Qt for Maemo provides a powerful paint engine that cotain
-    features such as anti aliasing, gradients, curves and transparency.
-    It also has animation support with timelines and easing curves. Qt
-    for Maemo also supports hardware acceleration using ARM NEON
-    and OpenGL ES 2.0.
-
-    \section2 Device Configurations
-
-    Applications developed with Qt for Maemo will across all
-    supported Maemo devices provide automatic support for switching
-    between landscape and portrait mode. They will support input methods,
-    including predictive text input and on-screen keyboard. The
-    applications will also have support for one finger touch events and
-    gestures, and have configurable kinetic scrolling.
-
-    \section2 Maemo - Linux/X11
-
-    Qt supports a wide range of X11 platform variants, such as: Solaris,
-    AIX, HP-UX, Maemo 5 and MeeGo. Qt for Maemo contains all Qt modules
-    and features the same functionality as the Qt on X11 version.
-
-    \section2 Cross-Platform Development using Qt Creator
-
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
-    a complete Cross-platform IDE included in the Qt SDK. The IDE allows
-    programmers to create, build, debug and run Qt applications accross all
-    supported platforms.
-
-    Additional \l{Cross-Platform and Platform-Specific Development}
-    information.
-*/
-
-/*!
-
-    \page meego-support.html
-    \title Support for MeeGo
-    \brief Platform support for MeeGo.
-    \ingroup platform-specific
-    \ingroup platform-details
-
-    \section1 Qt on MeeGo
-
-    Qt is a comprehensive application and UI framework for developing
-    MeeGo applications that can also be deployed across major
-    device and desktop operating systems without rewriting the source code.
-    If you are developing apps for the Symbian, MeeGo platforms
-    in most cases, you can use Qt under the free LGPL licensing option.
-    Qt is cross-platform, and that means that you can use the code from
-    one single code-base and rebuild for all \l{Supported Platforms}
-    {supported platforms}.
-
-    \section1 Getting Started on MeeGo
-
-    \list
-        \o \l{Supported Platforms}{Supported MeeGo platforms}
-        - Qt support for MeeGo versions.
-        \omit
-        \o \l{Qt for MeeGo Requirements}{Qt for MeeGo
-        Requirements} - Software required to run Qt on MeeGo.
-        \o \l{Installing Qt for MeeGo}{Installing Qt for
-        MeeGo} - Build Qt for MeeGo	development.
-        \o \l{Platform and Compiler Notes - MeeGo}{Platform and
-        Compiler Notes - MeeGo} - Platform specific notes.
-        \endomit
-        \o \l{Getting Started Guides}{Getting started}
-    \endlist
-
-    \section1 Key Features for MeeGo Development
-
-    \section2 Native Look and Feel
-
-    Qt will detect which theme the device is running and applies the
-    style at runtime to your Qt application. Widgets are optimized
-    for touch screen usage.
-
-    \section2 Graphics Features
-
-    Qt for MeeGo provides a powerful paint engine that cotain
-    features such as anti aliasing, gradients, curves and transparency.
-    It also has animation support with timelines and easing curves. Qt
-    for MeeGo also supports hardware acceleration using ARM NEON, x86,
-    and OpenGL ES 2.0.
-
-    \section2 Device Configurations
-
-    Qt is the foundation of MeeGo UI and application development and
-    therefore Qt will be present in all upcoming MeeGo devices. Qt
-    can provide automatic support for:
-    \list
-    \o Switching between landscape and portrait mode
-    \o Input Methods, including predictive text input and on-screen
-    keyboard
-    \o Configurable kinetic scrolling
-    \endlist
-
-    \section2 Maemo - Linux/X11
-
-    Qt supports a wide range of X11 platform variants, such as: Solaris,
-    AIX, HP-UX, Maemo 5 and MeeGo. Qt for MeeGo contains all Qt modules
-    and features the same functionality as the Qt on X11 version.
-
-    \section2 Cross-Platform Development using Qt Creator
-
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
-    a complete Cross-platform IDE included in the Qt SDK. The IDE allows
-    programmers to create, build, debug and run Qt applications accross all
-    supported platforms.
-
-    Additional \l{Cross-Platform and Platform-Specific Development}
-    information.
-*/
-
-/*!
     \page supported-platforms.html
     \title Supported Platforms
     \brief The platforms supported by Nokia for Qt.
@@ -692,26 +460,22 @@
     \o {2,1} Qt Cross Platform Support
     \header
     \o {1,1} Desktop
-    \o {1,1} Mobile/Embedded
+    \o {1,1} Embedded/Mobile
     \row
     \o \l{Support for Windows}{Windows}
-    \o \l{Support for Windows CE and Windows Mobile}{Windows CE and Windows Mobile}
-    \row
-    \o \l{Support for Linux/X11}{Linux/X11}
     \o \l{Support for Embedded Linux}{Embedded Linux}
     \row
-    \o \l{Support for Mac OS X}{Mac OS X}
+    \o \l{Support for Linux/X11}{Linux/X11}
     \o \l{Support for Symbian}{Symbian}
     \row
-    \o\l{Support for MeeGo}{MeeGo}
-    \o\l{Support for Maemo}{Maemo}
+    \o \l{Support for Mac OS X}{Mac OS X}
     \endtable
 
     \section1 Supported Platform Details
 
     The Qt team strives to provide support for the platforms most
     frequently used by Qt users. We have designed our internal testing procedure to
-    divide platforms into three test categories (Tier 1, Tier 2 and Tier 3) in order
+    divide platforms into three test categories (Tier 1 and Tier 2) in order
     to prioritize internal testing and development resources so that the most
     frequently used platforms are subjected to our most rigorous testing processes.
 
@@ -738,30 +502,18 @@
     \table
     \header \o Platform
                                      \o Compilers
-    \row    \o Linux (32 and 64-bit)
-                                     \o gcc 4.2
-    \row    \o Microsoft Windows XP
-                                     \o gcc 4.4 (MinGW) (32-bit), MSVC 2005 (32 and 64-bit)
-    \row    \o Microsoft Windows Vista
-                                     \o MSVC 2005, 2008
-    \row    \o Microsoft Windows Vista 64bit
+    \row    \o Ubuntu Linux 10.04 (32-bit)
+                                     \o As provided by Ubuntu
+    \row    \o Microsoft Windows XP SP3 (32-bit)
                                      \o MSVC 2008
-    \row    \o Microsoft Windows 7
+    \row    \o Microsoft Windows 7 (32-bit)
                                      \o MSVC 2008
-    \row    \o Apple Mac OS X 10.6 "Snow Leopard"
+    \row    \o Microsoft Windows 7 (32-bit)
+                                     \o MSVC 2010 SP1
+    \row    \o Apple Mac OS X 10.6 "Snow Leopard" (64-bit)
                                      \o As provided by Apple
-    \row    \o Apple Mac OS X 10.5 "Leopard" x86_64 (Cocoa 32 and 64bit)
+    \row    \o Apple Mac OS X 10.7 "Lion" (64-bit)
                                      \o As provided by Apple
-    \row    \o Embedded Linux QWS (ARM)
-                                     \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
-    \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
-                                     \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
-    \row    \o Maemo 5(Linux, ARM, X11)
-                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
-    \row    \o MeeGo (Linux, ARM, X11)
-                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
-    \row    \o Symbian (Symbian/S60 5.0)
-                                     \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
 
     \section1 Tier 2 Platforms
@@ -774,46 +526,25 @@
     \table
     \header \o Platform
                                      \o Compilers
-    \row    \o Windows 7
-                                     \o MSVC 2010
-    \row    \o Apple Mac OS X 10.4 "Tiger" (Carbon)
+    \row    \o Ubuntu Linux 10.04 QWS (x86 32-bit)
+                                     \o As provided by Ubuntu
+    \row    \o Ubuntu Linux 10.04 (32-bit)
+                                     \o Intel Compiler [version 12]
+    \row    \o Ubuntu Linux 10.04 (64-bit)
+                                     \o As provided by Ubuntu
+    \row    \o Microsoft Windows XP SP3 (32-bit)
+                                     \o GCC 4.4 (MinGW)
+    \row    \o Microsoft Windows 7 (64-bit)
+                                     \o MSVC 2010 SP1
+    \row    \o Apple Mac OS X 10.6 "Snow Leopard" Cocoa (32-bit)
                                      \o As provided by Apple
-    \row    \o Apple Mac OS X 10.5 "Leopard" (Carbon)
-                                     \o As provided by Apple
-    \row    \o HPUXi 11.23
-                                     \o aCC 6.10
-    \row    \o Solaris 10 UltraSparc
-                                     \o Sun Studio 12
-    \row    \o AIX 6
-                                     \o Power5 xlC 7
-    \row    \o Microsoft Windows XP
-                                     \o Intel Compiler
-    \row    \o Linux
-                                     \o Intel Compiler
-    \row    \o Embedded Linux QWS (Mips, PowerPC)
-                                     \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
-    \row    \o Embedded Linux X11 (ARM)
-                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
-    \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
-                                     \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
-    \row    \o Windows Embedded CE 6.0 (ARMv4i, x86, MIPS)
-                                     \o MSVC 2008 WinCE Embedded 6.0 Professional
-    \row    \o Symbian (Symbian/S60 3.1, 3.2)
-                                     \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
-
-    \note The PPC architecture on Mac has been downgraded from tier 1 to tier 2 for 4.7.
 
     \section1 Tier 3 Platforms (Not Supported by Nokia)
 
     All platforms not specifically listed above are not supported by Nokia. Nokia does
     not run its unit test suite or perform any other internal tests on platforms not
     listed above.
-
-    Even though some Tier 3 platforms are available under the Qt Commercial License,
-    technical support is not included in that license.
-    However, \l{How to Order}{contact our sales team} to find out about the
-    availability of other services for those platforms.
 
     Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
@@ -827,13 +558,4 @@
     warranties and conditions, either express or implied, including, but not limited to,
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.
-
-    \section1 Planned Changes for Qt 4.8
-
-    The following changes to the list of supported platforms are at time of publishing
-    planned for Qt 4.8:
-
-    \list
-    \o Plans not yet released
-    \endlist
 */

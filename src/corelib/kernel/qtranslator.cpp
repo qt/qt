@@ -51,6 +51,7 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qdatastream.h"
+#include "qdir.h"
 #include "qfile.h"
 #include "qmap.h"
 #include "qalgorithms.h"
@@ -61,6 +62,10 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
 #include "private/qcore_unix_p.h"
+#endif
+
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
 #endif
 
 // most of the headers below are already included in qplatformdefs.h
@@ -403,20 +408,63 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     Q_D(QTranslator);
     d->clear();
 
+    QString fname = filename;
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
+#ifdef Q_OS_SYMBIAN
+        //TFindFile doesn't like path in the filename
+        QString dir(directory);
+        int slash = filename.lastIndexOf(QLatin1Char('/'));
+        slash = qMax(slash, filename.lastIndexOf(QLatin1Char('\\')));
+        if (slash >=0) {
+            //so move the path component into the directory prefix
+            if (dir.isEmpty())
+                dir = filename.left(slash + 1);
+            else
+                dir = dir + QLatin1Char('/') + filename.left(slash + 1);
+            fname = fname.mid(slash + 1);
+        }
+        if (dir.isEmpty())
+            prefix = QCoreApplication::applicationDirPath();
+        else
+            prefix = QFileInfo(dir).absoluteFilePath(); //TFindFile doesn't like dirty paths
+        if (prefix.length() > 2 && prefix.at(1) == QLatin1Char(':') && prefix.at(0).isLetter())
+            prefix[0] = QLatin1Char('Y');
+#else
         prefix = directory;
-	if (prefix.length() && !prefix.endsWith(QLatin1Char('/')))
-	    prefix += QLatin1Char('/');
+#endif
+        if (prefix.length() && !prefix.endsWith(QLatin1Char('/')))
+            prefix += QLatin1Char('/');
     }
 
-    QString fname = filename;
+#ifdef Q_OS_SYMBIAN
+    QString nativePrefix = QDir::toNativeSeparators(prefix);
+#endif
+
     QString realname;
     QString delims;
     delims = search_delimiters.isNull() ? QString::fromLatin1("_.") : search_delimiters;
 
     for (;;) {
         QFileInfo fi;
+
+#ifdef Q_OS_SYMBIAN
+        //search for translations on other drives, e.g. Qt may be in Z, while app is in C
+        //note this uses symbian search rules, i.e. y:->a:, followed by z:
+        TFindFile finder(qt_s60GetRFs());
+        QString fname2 = fname + (suffix.isNull() ? QString::fromLatin1(".qm") : suffix);
+        TInt err = finder.FindByDir(
+            qt_QString2TPtrC(fname2),
+            qt_QString2TPtrC(nativePrefix));
+        if (err != KErrNone)
+            err = finder.FindByDir(qt_QString2TPtrC(fname), qt_QString2TPtrC(nativePrefix));
+        if (err == KErrNone) {
+            fi.setFile(qt_TDesC2QString(finder.File()));
+            realname = fi.canonicalFilePath();
+            if (fi.isReadable() && fi.isFile())
+                break;
+        }
+#endif
 
         realname = prefix + fname + (suffix.isNull() ? QString::fromLatin1(".qm") : suffix);
         fi.setFile(realname);

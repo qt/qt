@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/property-animation.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/property-animation/property-animation.qml"));
     viewer.showExpanded();
 
     return app.exec();

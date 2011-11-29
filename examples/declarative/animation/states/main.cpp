@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/states.qml"));
+
+    //Uncomment the following line to open the states.qml example and comment the transitions.qml line.
+    //viewer.setMainQmlFile(QLatin1String("qml/states/states.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/states/transitions.qml"));
     viewer.showExpanded();
 
     return app.exec();

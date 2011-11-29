@@ -29,5 +29,5 @@
     \example dbus/listnames
     \title D-Bus List Names Example
 
-    The D-Bus List Names examples shows how to query D-Bus for a list of service names.
+    \brief The D-Bus List Names examples shows how to query D-Bus for a list of service names.
 */

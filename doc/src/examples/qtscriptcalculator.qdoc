@@ -29,7 +29,7 @@
     \example script/calculator
     \title QtScript Calculator Example
 
-    In this simple QtScript example, we show how to implement the
+    \brief In the QtScript Calculator example, we show how to implement the
     functionality of a calculator widget.
 
     \image qtscript-calculator-example.png

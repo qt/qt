@@ -14,6 +14,8 @@ wince* {
   DEFINES += SRCDIR=\\\"./\\\"
 } else:symbian {
   TARGET.EPOCHEAPSIZE="0x100 0x800000"
+} else:integrity {
+  DEFINES += SRCDIR=\"/\"
 } else {
   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

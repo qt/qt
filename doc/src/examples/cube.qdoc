@@ -44,8 +44,10 @@
     \group all-examples
     \title Cube OpenGL ES 2.0 example
 
-    The Cube OpenGL ES 2.0 example shows how to write mouse rotateable
-	textured 3D cube using OpenGL ES 2.0 with Qt. It shows how to handle
+    \brief The Cube OpenGL ES 2.0 example shows how to write mouse rotateable
+	textured 3D cube using OpenGL ES 2.0 with Qt.
+    
+    It shows how to handle
 	polygon geometries efficiently and how to write simple vertex and
 	fragment shader for programmable graphics pipeline. In addition it
 	shows how to use quaternions for representing 3D object orientation.

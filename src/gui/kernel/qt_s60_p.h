@@ -102,6 +102,10 @@ class QSymbianTypeFaceExtras;
 typedef QHash<QString, const QSymbianTypeFaceExtras *> QSymbianTypeFaceExtrasHash;
 typedef void (*QThreadLocalReleaseFunc)();
 
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+class CCoeEventData;
+#endif
+
 class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
@@ -163,6 +167,7 @@ public:
     int partial_keyboardAutoTranslation : 1;
     int partialKeyboardOpen : 1;
     int handleStatusPaneResizeNotifications : 1;
+    int screenFurnitureFullyCreated : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -198,6 +203,7 @@ public:
     static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
     static bool setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStates newState);
+    static void createStatusPaneAndCBA();
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
     static TRect clientRect();
@@ -306,10 +312,23 @@ private:
             const QPoint &globalPos,
             Qt::MouseButton button,
             Qt::KeyboardModifiers modifiers);
-    void processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure);
+    struct TouchEventParams
+    {
+        TouchEventParams();
+        TouchEventParams(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure);
+        int pointerNumber;
+        TPointerEvent::TType type;
+        QPointF screenPos;
+        qreal pressure;
+    };
+    void processTouchEvents(const QVector<TouchEventParams> &touches);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+    void translateMultiEventPointerEvent(const CCoeEventData &eventData );
+#endif
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
+    TouchEventParams TouchEventFromAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
     bool isSplitViewWidget(QWidget *widget);
     bool hasFocusedAndVisibleChild(QWidget *parentWidget);
@@ -365,6 +384,7 @@ inline QS60Data::QS60Data()
   partial_keyboardAutoTranslation(1),
   partialKeyboardOpen(0),
   handleStatusPaneResizeNotifications(1),
+  screenFurnitureFullyCreated(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

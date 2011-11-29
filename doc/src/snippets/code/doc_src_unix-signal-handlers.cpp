@@ -44,7 +44,7 @@ class MyDaemon : public QObject
     Q_OBJECT
 
   public:
-    MyDaemon(QObject *parent = 0, const char *name = 0);
+    MyDaemon(QObject *parent = 0);
     ~MyDaemon();
 
     // Unix signal handlers.
@@ -67,8 +67,8 @@ class MyDaemon : public QObject
 
 
 //! [1]
-MyDaemon::MyDaemon(QObject *parent, const char *name)
-    	 : QObject(parent,name)
+MyDaemon::MyDaemon(QObject *parent)
+        : QObject(parent)
 {
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
        qFatal("Couldn't create HUP socketpair");

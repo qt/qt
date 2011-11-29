@@ -7,6 +7,8 @@ wince* {
 } else:symbian {
     # do not define SRCDIR at all
     TARGET.EPOCHEAPSIZE = 0x100000 0x3000000
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

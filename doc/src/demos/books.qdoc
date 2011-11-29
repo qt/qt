@@ -29,7 +29,7 @@
     \example demos/books
     \title Books Demonstration
 
-    The Books demonstration shows how Qt's SQL classes can be used with the model/view
+    \brief The Books demonstration shows how Qt's SQL classes can be used with the model/view
     framework to create rich user interfaces for information stored in a database.
 
     \image books-demo.png

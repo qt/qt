@@ -353,8 +353,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
     static bool resolvedNWE = false;
     if (!resolvedNWE) {
-        resolvedNWE = true;
         ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
+        resolvedNWE = true;
     }
     if (!ptrNotifyWinEvent)
         return;
@@ -691,14 +691,7 @@ private:
 
 static inline BSTR QStringToBSTR(const QString &str)
 {
-    BSTR bstrVal;
-
-    int wlen = str.length()+1;
-    bstrVal = SysAllocStringByteLen(0, wlen*2);
-    memcpy(bstrVal, str.unicode(), sizeof(QChar)*(wlen));
-    bstrVal[wlen] = 0;
-
-    return bstrVal;
+    return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
 }
 
 /*
@@ -1316,7 +1309,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
 
     (*pvarState).vt = VT_I4;
     AccessibleElement elem(varID.lVal, accessible);
-    (*pvarState).lVal = elem.iface ? elem.iface->state(elem.entry) : 0;
+    (*pvarState).lVal = elem.iface ? elem.iface->state(elem.entry) : State(Normal);
     return S_OK;
 }
 

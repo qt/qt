@@ -57,6 +57,7 @@
 #include <QtCore/QThread>
 #include <QtCore/QWaitCondition>
 #include <QtCore/QTimer>
+#include <QtCore/QDir>
 
 namespace SymbianUtils {
 
@@ -182,6 +183,9 @@ SymbianDevice::TrkDevicePtr SymbianDevice::acquireDevice()
                 << "acquired: " << m_data->deviceAcquired << " open: " << isOpen();
     if (isNull() || m_data->deviceAcquired)
         return TrkDevicePtr();
+    //if port was opened for coda (but is not acquired) then close it first.
+    if (m_data->codaDevice)
+        m_data->codaDevice->device()->close();
     if (m_data->device.isNull()) {
         m_data->device = TrkDevicePtr(new trk::TrkDevice);
         m_data->device->setPort(m_data->portName);
@@ -620,6 +624,20 @@ SymbianDeviceManager::SymbianDeviceList SymbianDeviceManager::blueToothDevices()
             device->friendlyName = QString::fromLatin1("USB/Serial device (%1)").arg(device->portName);
             rc.push_back(SymbianDevice(device));
         }
+    }
+#endif
+#if defined(Q_OS_MAC)
+    QDir dir("/dev");
+    QStringList filters;
+    filters << "cu.usbmodem*";
+    dir.setNameFilters(filters);
+    QStringList entries = dir.entryList(QDir::System, QDir::Name);
+    foreach (const QString &dev, entries) {
+        SymbianDeviceData *device = new SymbianDeviceData;
+        device->type = SerialPortCommunication;
+        device->portName = dir.filePath(dev);
+        device->friendlyName = tr("USB/Serial device (%1)").arg(device->portName);
+        rc.push_back(SymbianDevice(device));
     }
 #endif
     return rc;

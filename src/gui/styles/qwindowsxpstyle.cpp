@@ -343,7 +343,6 @@ bool QWindowsXPStylePrivate::resolveSymbols()
 {
     static bool tried = false;
     if (!tried) {
-        tried = true;
         QSystemLibrary themeLib(QLatin1String("uxtheme"));
         pIsAppThemed = (PtrIsAppThemed)themeLib.resolve("IsAppThemed");
         if (pIsAppThemed) {
@@ -372,6 +371,7 @@ bool QWindowsXPStylePrivate::resolveSymbols()
             pGetThemeDocumentationProperty         = (PtrGetThemeDocumentationProperty        )themeLib.resolve("GetThemeDocumentationProperty");
             pIsThemeBackgroundPartiallyTransparent = (PtrIsThemeBackgroundPartiallyTransparent)themeLib.resolve("IsThemeBackgroundPartiallyTransparent");
         }
+        tried = true;
     }
 
     return pIsAppThemed != 0;
@@ -791,7 +791,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         inspectData = (tmt_transparentcolor != 0 || tmt_borderonly || proporigin == PO_PART || proporigin == PO_STATE);
 
         // ### This is a vista-specific workaround for broken alpha in titlebar pixmaps
-        if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
+        if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
             if (themeData.partId == WP_CAPTION || themeData.partId == WP_SMALLCAPTION)
                 inspectData = false;
         }

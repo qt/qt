@@ -45,9 +45,7 @@
 #include "private/qnativesocketengine_p.h"
 #include <ws2tcpip.h>
 #include <private/qsystemlibrary_p.h>
-#include <qmutex.h>
 #include <qurl.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,38 +82,38 @@ static void resolveLibrary()
 {
     // Attempt to resolve getaddrinfo(); without it we'll have to fall
     // back to gethostbyname(), which has no IPv6 support.
+    static bool triedResolve = false;
+    if (triedResolve)
+        return;
+
 #if !defined(Q_OS_WINCE)
-    local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getaddrinfo");
-    local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "freeaddrinfo");
-    local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2_32"), "getnameinfo");
+    QSystemLibrary ws2lib(QLatin1String("ws2_32"));
 #else
-    local_getaddrinfo = (getaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getaddrinfo");
-    local_freeaddrinfo = (freeaddrinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "freeaddrinfo");
-    local_getnameinfo = (getnameinfoProto) QSystemLibrary::resolve(QLatin1String("ws2"), "getnameinfo");
+    QSystemLibrary ws2lib(QLatin1String("ws2"));
 #endif
+    if (ws2lib.load()) {
+        local_getaddrinfo = (getaddrinfoProto)ws2lib.resolve("getaddrinfo");
+        local_freeaddrinfo = (freeaddrinfoProto)ws2lib.resolve("freeaddrinfo");
+        local_getnameinfo = (getnameinfoProto)ws2lib.resolve("getnameinfo");
+    }
+
+    triedResolve = true;
 }
 
 #if defined(Q_OS_WINCE)
 #include <qmutex.h>
-QMutex qPrivCEMutex;
+Q_GLOBAL_STATIC(QMutex, qPrivCEMutex)
 #endif
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
-#if defined(Q_OS_WINCE)
-    QMutexLocker locker(&qPrivCEMutex);
-#endif
-    QWindowsSockInit winSock;
+    resolveLibrary();
 
-    // Load res_init on demand.
-    static volatile bool triedResolve = false;
-    if (!triedResolve) {
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_getaddrinfo));
-        if (!triedResolve) {
-            resolveLibrary();
-            triedResolve = true;
-        }
-    }
+#if defined(Q_OS_WINCE)
+    QMutexLocker locker(qPrivCEMutex());
+#endif
+
+    QWindowsSockInit winSock;
 
     QHostInfo results;
 

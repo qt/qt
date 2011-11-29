@@ -9,10 +9,21 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[Масив довжини %1]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;не визначено&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
-        <source>Fake error !</source>
-        <translation>Несправжня помилка !</translation>
+        <source>Fake error!</source>
+        <translation>Несправжня помилка!</translation>
     </message>
     <message>
         <source>Invalid URL</source>
@@ -397,7 +408,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>Затримка відбиття (мс)</translation>
     </message>
     <message>
@@ -412,7 +423,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>Рівень луни (мБ)</translation>
     </message>
     <message>
@@ -470,7 +481,7 @@ have libgstreamer-plugins-base installed.</source>
         <translation>Гучність: %1%</translation>
     </message>
     <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>Використовуйте цей повзунок для регулювання гучності. Крайня ліва позиція - 0%, крайня права - %1%</translation>
     </message>
     <message>
@@ -1061,6 +1072,14 @@ to
 </context>
 <context>
     <name>QAccessibleButton</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>Зняти відмітку</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Відмітити</translation>
+    </message>
     <message>
         <source>Press</source>
         <translation>Натисніть</translation>
@@ -2450,6 +2469,10 @@ to
         <source>Cannot create %1 for output</source>
         <translation>Неможливо створити %1 для виводу</translation>
     </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>Жодний файловий рушій не є доступним або підтримує UnMapExtension</translation>
+    </message>
 </context>
 <context>
     <name>QFileDialog</name>
@@ -3411,6 +3434,18 @@ Do you want to delete it anyway?</source>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>Неможливо розв’язати символ &quot;%1&quot; в %2: %3</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos; не є об&apos;єктом ELF (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos; не є об&apos;єктом ELF</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos; є неправильним об&apos;єктом ELF (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3507,6 +3542,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: Невідома помилка %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: Доступ заборонено</translation>
     </message>
 </context>
 <context>
@@ -3682,6 +3721,10 @@ Do you want to delete it anyway?</source>
         <source>Actions</source>
         <translation>Дії</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>Кутова панель</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3849,10 +3892,6 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkAccessDataBackend</name>
     <message>
-        <source>Operation not supported on %1</source>
-        <translation>Непідтримувана для %1 операція</translation>
-    </message>
-    <message>
         <source>Invalid URI: %1</source>
         <translation>Неправильний URI: %1</translation>
     </message>
@@ -3945,6 +3984,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Network session error.</source>
         <translation>Помилка мережевої сесії.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>помилка запуску драйвера.</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -4138,6 +4181,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
         <translation>неправильний запит &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>Вузол не знайдено</translation>
     </message>
 </context>
 <context>
@@ -5424,10 +5471,6 @@ Do you want to overwrite it?</source>
         <translation>%1: невідома помилка %2</translation>
     </message>
     <message>
-        <source>%1: key error</source>
-        <translation>%1: помилка ключа</translation>
-    </message>
-    <message>
         <source>%1: unable to make key</source>
         <translation>%1: неможливо створити ключ</translation>
     </message>
@@ -5450,6 +5493,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: system-imposed size restrictions</source>
         <translation>%1: обмеження розміру встановлені системою</translation>
+    </message>
+    <message>
+        <source>%1: bad name</source>
+        <translation>%1: пагане ім&apos;я</translation>
     </message>
     <message>
         <source>%1: not attached</source>
@@ -6430,8 +6477,8 @@ Do you want to overwrite it?</source>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <source>Ok</source>
-        <translation>Ok</translation>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Select</source>
@@ -6675,6 +6722,187 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>Неправильна опція: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>Помилка відкриття бази даних</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>POLICY_DB_DEFAULT повинна бути визначена до того, як будь-які інші визначення POLICY можуть бути використані</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>Неможливо почати транзакцію</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>Неможливо завершити транзакцію</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>Неможливо відкотити транзакцію</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>Помилка отримання кількості стовпців</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>Помилка отримання назви стовпця</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>Помилка отримання типу стовпця</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>Неможливо отримати рядок</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>Неможливо виконати вираз</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>Вираз не підготовлено</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>Неможливо скинути вираз</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>Неможливо прив&apos;язати параметри</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>Кількість параметрів не збігається</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>Неможливо ініціалізувати неблокувальний сокет</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>Неможливо ініціалізувати широкомовний сокет</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>Спроба використати сокет IPv6 на платформі без підтримки IPv6</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>Віддалений вузол закрив з’єднання</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>Час на мережеву операцію вичерпано</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>Недостатньо ресурсів</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>Непідтримувана для сокета операція</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>Тип протоколу не підтримується</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>Неправильний дескриптор сокета</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>Вузол недоступний</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>Мережа недоступна</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>Доступ заборонено</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>Час на з’єднання вичерпано</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>У з&apos;єднанні відмовлено</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>Адреса вже використовується</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>Адреса не доступна</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>Адреса захищена</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>Датаграма завелика, щоб надіслати</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>Неможливо надіслати повідомлення</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>Неможливо отримати повідомлення</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>Неможливо записати</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>Помилка мережі</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>Інший сокет вже слухає цей самий порт</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>Операція з не-сокетом</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>Неправильний тип проксі-серверу для цієї операції</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>Неправильна адреса для цієї операції</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>Вказаний мережевий сеанс не відкрито</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Невідома помилка</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: permission denied</source>
@@ -6691,6 +6919,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: out of resources</source>
         <translation>%1: недостатньо ресурсів</translation>
+    </message>
+    <message>
+        <source>%1: name error</source>
+        <translation>%1: помилка імені</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -6782,11 +7014,21 @@ Do you want to overwrite it?</source>
 <context>
     <name>QUndoGroup</name>
     <message>
+        <source>Undo %1</source>
+        <translation>Повернути %1</translation>
+    </message>
+    <message>
         <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>Повернути</translation>
     </message>
     <message>
+        <source>Redo %1</source>
+        <translation>Повторити %1</translation>
+    </message>
+    <message>
         <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>Повторити</translation>
     </message>
 </context>
@@ -6800,11 +7042,21 @@ Do you want to overwrite it?</source>
 <context>
     <name>QUndoStack</name>
     <message>
+        <source>Undo %1</source>
+        <translation>Повернути %1</translation>
+    </message>
+    <message>
         <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>Повернути</translation>
     </message>
     <message>
+        <source>Redo %1</source>
+        <translation>Повторити %1</translation>
+    </message>
+    <message>
         <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>Повторити</translation>
     </message>
 </context>
@@ -6862,6 +7114,10 @@ Do you want to overwrite it?</source>
         <translation>Запит скасовано</translation>
     </message>
     <message>
+        <source>Request canceled</source>
+        <translation>Запит скасовано</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
         <translation>Запит блоковано</translation>
     </message>
@@ -6881,16 +7137,16 @@ Do you want to overwrite it?</source>
         <source>File does not exist</source>
         <translation>Файл не існує</translation>
     </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>Звантаження оброблене рушієм мультимедіа</translation>
+    </message>
 </context>
 <context>
     <name>QWebPage</name>
     <message>
         <source>Redirection limit reached</source>
         <translation>Ліміт перенаправлень вичерпано</translation>
-    </message>
-    <message>
-        <source>Bad HTTP request</source>
-        <translation>Поганий запит HTTP</translation>
     </message>
     <message numerus="yes">
         <source>%n file(s)</source>
@@ -6932,6 +7188,11 @@ Do you want to overwrite it?</source>
         <translation>Файл не обрано</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>Деталі</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>Відкрити в новому вікні</translation>
@@ -6960,6 +7221,61 @@ Do you want to overwrite it?</source>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
         <translation>Копіювати зображення</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>Скопіювати адресу зображення</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>Відкрити відео</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>Відкрити аудіо</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>Копіювати відео</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>Копіювати аудіо</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>Увімкнути/викнути управління</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>Увімкнути/викнути програвання по колу</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>На повний екран</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>Грати</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>Пауза</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>Без звуку</translation>
     </message>
     <message>
         <source>Open Frame</source>
@@ -7000,6 +7316,11 @@ Do you want to overwrite it?</source>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>Вставити</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>Виділити все</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
@@ -7465,10 +7786,6 @@ Do you want to overwrite it?</source>
     <message>
         <source>Move the cursor to the end of the document</source>
         <translation>Пересунути курсор в кінець документа</translation>
-    </message>
-    <message>
-        <source>Select all</source>
-        <translation>Виділити все</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -7969,6 +8286,94 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>Елементи</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>Режим інспектора</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>Грати/зупинити анімації</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Обрати</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>Обрати (Marquee)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>Масштабувати</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>Вибір кольору</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>Застосувати зміни до переглядача QML</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>Застосувати зміни до документа</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>Інструменти</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>Копіювати колір</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>Масштабувати до &amp;100%</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>Збільшити</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>Зменшити</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
@@ -8431,7 +8836,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9275,7 +9680,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9683,7 +10088,7 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

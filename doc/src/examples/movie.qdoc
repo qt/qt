@@ -29,8 +29,10 @@
     \example widgets/movie
     \title Movie Example
 
-    The Movie example demonstrates how to use QMovie and QLabel to
-    display animations. Now that Qt comes with the \l{Phonon multimedia
+    \brief The Movie example demonstrates how to use QMovie and QLabel to
+    display animations.
+    
+    Now that Qt comes with the \l{Phonon multimedia
     framework} {Phonon multimedia framework}, QMovie is mostly
     useful if one wants to play a simple animation without the added
     complexity of a multimedia framework to install and deploy.

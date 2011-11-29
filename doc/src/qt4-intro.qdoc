@@ -558,7 +558,14 @@
 
     Qt 4.8 introduces changes to the Qt API.
     \list
+    \o C++11 support:
+    Qt supports some of the features of the C++11 standard. QList, QVector and
+    QStringList can be initialized with initializer lists. Most of the tool
+    classes have a move operator. It is possible to use lambda functions in some
+    of the QtConcurrent functions.
+    
     \o Localization API
+
     Changes to the Localization APIs include improvements to \l QLocale and more
     support for different language code formats.
 
@@ -579,6 +586,7 @@
         \endlist
     \o IP Multicast API
     \o Multithreaded HTTP
+    \o QThreadLocalStorage can now store simple objects in addition to pointers
     \endlist
 
     \section1 New Classes, Functions, Macros, etc.

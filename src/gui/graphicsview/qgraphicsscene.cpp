@@ -3504,7 +3504,9 @@ bool QGraphicsScene::event(QEvent *event)
         }
         break;
     case QEvent::WindowDeactivate:
-        if (!--d->activationRefCount) {
+        if (d->activationRefCount > 0)
+            --d->activationRefCount;
+        if (!d->activationRefCount) {
             if (d->activePanel) {
                 // Deactivate the active panel (but keep it so we can
                 // reactivate it later).
@@ -4302,7 +4304,7 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
     QGraphicsWidget *widgetItem = static_cast<QGraphicsWidget *>(item);
     QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
     const qreal windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
-                                ? proxy->widget()->windowOpacity() : 1.0;
+                                ? proxy->widget()->windowOpacity() : qreal(1.0);
     const qreal oldPainterOpacity = painter->opacity();
 
     if (qFuzzyIsNull(windowOpacity))

@@ -68,11 +68,13 @@ class QDir;
 class QDeclarativeImportedNamespace;
 class QDeclarativeImportsPrivate;
 class QDeclarativeImportDatabase;
+class QDeclarativeTypeLoader;
 
 class QDeclarativeImports
 {
 public:
     QDeclarativeImports();
+    QDeclarativeImports(QDeclarativeTypeLoader *);
     QDeclarativeImports(const QDeclarativeImports &);
     ~QDeclarativeImports();
     QDeclarativeImports &operator=(const QDeclarativeImports &);

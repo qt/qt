@@ -464,11 +464,6 @@
 
 #ifndef PNG_VERSION_INFO_ONLY
 
-/* Inhibit C++ name-mangling for libpng functions but not for system calls. */
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /* Version information for C files, stored in png.c.  This had better match
  * the version above.
  */
@@ -520,6 +515,7 @@ extern "C" {
  * See pngconf.h for base types that vary by machine/system
  */
 
+namespace PrivatePng {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
@@ -2579,10 +2575,7 @@ PNG_EXPORT(207, void, png_save_uint_16, (png_bytep buf, unsigned int i));
   PNG_EXPORT_LAST_ORDINAL(229);
 #endif
 
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* PNG_VERSION_INFO_ONLY */
 /* Do not put anything past this line */
+} // namespace PrivatePng
 #endif /* PNG_H */

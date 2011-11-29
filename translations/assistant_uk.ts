@@ -259,6 +259,10 @@ Reason:
         <translation>Адреса</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>Панель закладок</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>Меню закладок</translation>
     </message>
@@ -285,40 +289,8 @@ Reason:
 <context>
     <name>CentralWidget</name>
     <message>
-        <source>Add new page</source>
-        <translation>Додати нову сторінку</translation>
-    </message>
-    <message>
-        <source>Close current page</source>
-        <translation>Закрити поточну сторінку</translation>
-    </message>
-    <message>
         <source>Print Document</source>
         <translation>Друкувати документ</translation>
-    </message>
-    <message>
-        <source>unknown</source>
-        <translation>невідомо</translation>
-    </message>
-    <message>
-        <source>Add New Page</source>
-        <translation>Додати нову сторінку</translation>
-    </message>
-    <message>
-        <source>Close This Page</source>
-        <translation>Закрити цю сторінку</translation>
-    </message>
-    <message>
-        <source>Close Other Pages</source>
-        <translation>Закрити інші сторінки</translation>
-    </message>
-    <message>
-        <source>Add Bookmark for this Page...</source>
-        <translation>Додати закладку для цієї сторінки...</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <translation>Пошук</translation>
     </message>
 </context>
 <context>
@@ -651,6 +623,49 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>&amp;Назад</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>&amp;Вперед</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>&amp;Домівка</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>З&amp;більшити</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>З&amp;меншити</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>&amp;Копіювати виділений текст</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>&amp;Друк...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>Пошук в &amp;тексті...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>По&amp;шук</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -675,16 +690,28 @@ Reason:
         <translation>&lt;title&gt;Помилка 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Не вдалось знайти сторінку&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>Відкрити посилання</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>Копіювати &amp;адресу посилання</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Копіювати</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>Перезавантажити</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
         <translation>Відкрити посилання в новій вкладці 	Ctrl+LMB</translation>
     </message>
     <message>
-        <source>Open Link in New Tab</source>
-        <translation>Відкрити посилання в новій вкладці</translation>
+        <source>Open Link in New Page</source>
+        <translation>Відкрити посилання в новій сторінці</translation>
     </message>
 </context>
 <context>
@@ -875,8 +902,16 @@ Reason:
         <translation>Закладки</translation>
     </message>
     <message>
+        <source>Open Pages</source>
+        <translation>Відкрити сторінки</translation>
+    </message>
+    <message>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>Панель закладок</translation>
     </message>
     <message>
         <source>Looking for Qt Documentation...</source>
@@ -899,10 +934,6 @@ Reason:
         <translation>Попередній перегляд...</translation>
     </message>
     <message>
-        <source>&amp;Print...</source>
-        <translation>&amp;Друк...</translation>
-    </message>
-    <message>
         <source>&amp;Close Tab</source>
         <translation>&amp;Закрити вкладку</translation>
     </message>
@@ -919,18 +950,6 @@ Reason:
         <translation>&amp;Правка</translation>
     </message>
     <message>
-        <source>&amp;Copy selected Text</source>
-        <translation>&amp;Копіювати виділений текст</translation>
-    </message>
-    <message>
-        <source>&amp;Find in Text...</source>
-        <translation>Пошук в &amp;тексті...</translation>
-    </message>
-    <message>
-        <source>&amp;Find</source>
-        <translation>По&amp;шук</translation>
-    </message>
-    <message>
         <source>Find &amp;Next</source>
         <translation>Знайти &amp;наступне</translation>
     </message>
@@ -945,14 +964,6 @@ Reason:
     <message>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;in</source>
-        <translation>З&amp;більшити</translation>
-    </message>
-    <message>
-        <source>Zoom &amp;out</source>
-        <translation>З&amp;меншити</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -979,28 +990,20 @@ Reason:
         <translation>Пошук</translation>
     </message>
     <message>
+        <source>E&amp;xit</source>
+        <translation>Ви&amp;йти</translation>
+    </message>
+    <message>
         <source>ALT+S</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>ALT+P</source>
         <translation></translation>
     </message>
     <message>
         <source>&amp;Go</source>
         <translation>П&amp;ерейти</translation>
-    </message>
-    <message>
-        <source>&amp;Home</source>
-        <translation>&amp;Домівка</translation>
-    </message>
-    <message>
-        <source>ALT+Home</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>&amp;Back</source>
-        <translation>&amp;Назад</translation>
-    </message>
-    <message>
-        <source>&amp;Forward</source>
-        <translation>&amp;Вперед</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1097,6 +1100,17 @@ Reason:
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>Не вдалось зареєструвати файл &apos;%1&apos;: %2</translation>
+    </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
+    <message>
+        <source>Close %1</source>
+        <translation>Закрити %1</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>Закрити все, крім %1</translation>
     </message>
 </context>
 <context>
@@ -1318,6 +1332,14 @@ Do you want to remove it?</source>
         <source>Restore to default</source>
         <translation>Відновити типово</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Зовнішій вигляд</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>Показувати вкладки для кожної окремої сторінки</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1516,6 +1538,29 @@ qhelpgenerator &lt;файл-проекту-довідки&gt; [опції]
     <message>
         <source>Select All</source>
         <translation>Виділити все</translation>
+    </message>
+</context>
+<context>
+    <name>TabBar</name>
+    <message>
+        <source>(Untitled)</source>
+        <translation>(Без назви)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>&amp;Нова вкладка</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>&amp;Закрити вкладку</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>Закрити інші вкладки</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>Додати закладку для цієї сторінки...</translation>
     </message>
 </context>
 <context>

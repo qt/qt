@@ -1089,7 +1089,7 @@ QDeclarativeDebuggingEnabler::QDeclarativeDebuggingEnabler()
 {
 #ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
     if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
-        qWarning("Qml debugging is enabled. Only use this in a safe environment!");
+        qDebug("Qml debugging is enabled. Only use this in a safe environment!");
     }
     QDeclarativeEnginePrivate::qml_debugging_enabled = true;
 #endif
@@ -1202,8 +1202,8 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
         int arraySize = (props + 31) / 32;
         int oldArraySize = bindingBitsSize / 32;
 
-        bindingBits = (quint32 *)realloc(bindingBits,
-                                         arraySize * sizeof(quint32));
+        bindingBits = (quint32 *)q_check_ptr(realloc(bindingBits,
+                                         arraySize * sizeof(quint32)));
 
         memset(bindingBits + oldArraySize,
                0x00,

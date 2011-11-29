@@ -1295,6 +1295,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
 
     correctFlick = false;
     fixupMode = moveReason == Mouse ? fixupMode : Immediate;
+    bool strictHighlightRange = haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange;
 
     qreal highlightStart;
     qreal highlightEnd;
@@ -1325,11 +1326,21 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             tempPosition -= bias;
         }
         FxListItem *topItem = snapItemAt(tempPosition+highlightStart);
+        if (!topItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            topItem = currentItem;
+        }
         FxListItem *bottomItem = snapItemAt(tempPosition+highlightEnd);
+        if (!bottomItem && strictHighlightRange && currentItem) {
+            // StrictlyEnforceRange always keeps an item in range
+            updateHighlight();
+            bottomItem = currentItem;
+        }
         qreal pos;
-        bool isInBounds = -position() > maxExtent && -position() < minExtent;
-        if (topItem && isInBounds) {
-            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2) {
+        bool isInBounds = -position() > maxExtent && -position() <= minExtent;
+        if (topItem && (isInBounds || strictHighlightRange)) {
+            if (topItem->index == 0 && header && tempPosition+highlightStart < header->position()+header->size()/2 && !strictHighlightRange) {
                 pos = isRightToLeft() ? - header->position() + highlightStart - size() : header->position() - highlightStart;
             } else {
                 if (isRightToLeft())
@@ -1358,7 +1369,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             }
             vTime = timeline.time();
         }
-    } else if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange
+    } else if (currentItem && strictHighlightRange
                 && moveReason != QDeclarativeListViewPrivate::SetIndex) {
         updateHighlight();
         qreal pos = currentItem->itemPosition();
@@ -1456,14 +1467,14 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
-            overshootDist = 0.0;
+            overshootDist = qreal(0.0);
             // + averageSize/4 to encourage moving at least one item in the flick direction
-            qreal dist = v2 / (accel * 2.0) + averageSize/4;
+            qreal dist = v2 / (accel * qreal(2.0)) + averageSize/4;
             if (maxDistance > 0)
                 dist = qMin(dist, maxDistance);
             if (v > 0)
                 dist = -dist;
-            if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
+            if ((maxDistance > qreal(0.0) && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeListView::SnapOneItem) {
                 if (snapMode != QDeclarativeListView::SnapOneItem) {
                     qreal distTemp = isRightToLeft() ? -dist : dist;
                     data.flickTarget = -snapPosAt(-(dataValue - highlightStart) + distTemp) + highlightStart;
@@ -1617,7 +1628,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
 
-    \sa {QML Data Models}, GridView, {declarative/modelviews/listview}{ListView examples}
+    \sa {QML Data Models}, GridView, {Models and Views: ListView Examples}{ListView examples}
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
@@ -1945,7 +1956,7 @@ int QDeclarativeListView::count() const
     so as to stay with the current item, unless the highlightFollowsCurrentItem
     property is false.
 
-    \sa highlightItem, highlightFollowsCurrentItem, {declarative/modelviews/listview}{ListView examples}
+    \sa highlightItem, highlightFollowsCurrentItem, {Models and Views: ListView Examples}{ListView examples}
 */
 QDeclarativeComponent *QDeclarativeListView::highlight() const
 {
@@ -2333,7 +2344,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
     differing sections will result in a section header being created
     even if that section exists elsewhere.
 
-    \sa {declarative/modelviews/listview}{ListView examples}
+    \sa {Models and Views: ListView Examples}{ListView examples}
 */
 QDeclarativeViewSection *QDeclarativeListView::sectionCriteria()
 {
@@ -2753,7 +2764,7 @@ qreal QDeclarativeListView::minXExtent() const
                 d->minExtent += d->header->size();
         }
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-            d->minExtent += highlightStart;
+            d->minExtent += d->isRightToLeft() ? -highlightStart : highlightStart;
             d->minExtent = qMax(d->minExtent, -(endPositionFirstItem - highlightEnd + 1));
         }
         d->minExtentDirty = false;
@@ -3274,6 +3285,11 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 addedVisible = true;
             }
             FxListItem *item = d->createItem(modelIndex + i);
+            if (!item) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             d->visibleItems.insert(insertionIdx, item);
             pos -= item->size() + d->spacing;
             item->setPosition(pos);
@@ -3304,6 +3320,11 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
                 addedVisible = true;
             }
             FxListItem *item = d->createItem(modelIndex + i);
+            if (!item) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             d->visibleItems.insert(index, item);
             item->setPosition(pos);
             added.append(item);
@@ -3507,6 +3528,11 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
             FxListItem *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
+            if (!movedItem) {
+                // broken or no delegate
+                d->clear();
+                return;
+            }
             if (item->index <= firstVisible->index)
                 moveBy -= movedItem->size();
             it = d->visibleItems.insert(it, movedItem);

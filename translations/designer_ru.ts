@@ -872,16 +872,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>Некорректный коэффициент растяжения для &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>Некорректный минимальный размер для &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1898,8 +1894,6 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
-----------
-Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
         <translation>Методу %1 (объекта &apos;%2&apos;) было передано пустое имя класса.</translation>

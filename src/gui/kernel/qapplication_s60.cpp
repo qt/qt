@@ -65,6 +65,7 @@
 #ifdef QT_GRAPHICSSYSTEM_RUNTIME
 #include "private/qgraphicssystem_runtime_p.h"
 #endif
+#include "private/qcursor_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
@@ -90,6 +91,10 @@
 
 #ifdef Q_SYMBIAN_TRANSITION_EFFECTS
 #include <graphics/wstfxconst.h>
+#endif
+
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+#include <coeeventdata.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -201,6 +206,32 @@ bool QS60Data::setRecursiveDecorationsVisibility(QWidget *window, Qt::WindowStat
 }
 #endif
 
+void QS60Data::createStatusPaneAndCBA()
+{
+    CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
+    MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
+    QT_TRAP_THROWING(
+        factory->CreateResourceIndependentFurnitureL(ui);
+        CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
+            CEikButtonGroupContainer::EHorizontal, ui, R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+        CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
+        Q_ASSERT(!oldCba);
+        S60->setButtonGroupContainer(cba);
+        CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
+        menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
+        menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
+        S60->appUi()->AddToStackL(menuBar, ECoeStackPriorityMenu, ECoeStackFlagRefusesFocus);
+        CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
+        Q_ASSERT(!oldMenu);
+    )
+    if (S60->statusPane()) {
+        // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
+        // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
+        QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
+        S60->statusPane()->SetObserver(desktopControl);
+    }
+}
+
 void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
 {
     if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control)) {
@@ -209,6 +240,9 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
         if (QTLWExtra *topData = qt_widget_private(window)->maybeTopData()) {
             QWidgetBackingStoreTracker &backingStore = topData->backingStore;
             if (visible) {
+                QApplicationPrivate *d = QApplicationPrivate::instance();
+                d->emitAboutToUseGpuResources();
+
                 if (backingStore.data()) {
                     backingStore.registerWidget(widget);
                 } else {
@@ -218,6 +252,9 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                     widget->repaint();
                 }
             } else {
+                QApplicationPrivate *d = QApplicationPrivate::instance();
+                d->emitAboutToReleaseGpuResources();
+
                 // In certain special scenarios we may get an ENotVisible event
                 // without a previous EPartiallyVisible. The backingstore must
                 // still be destroyed, hence the registerWidget() call below.
@@ -558,7 +595,11 @@ QSymbianControl::~QSymbianControl()
 {
     // Ensure backing store is deleted before the top-level
     // window is destroyed
-    qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    QT_TRY {
+        qt_widget_private(qwidget)->topData()->backingStore.destroy();
+    } QT_CATCH(const std::exception&) {
+        // ignore exceptions, nothing can be done
+    }
 
     if (S60->curWin == this)
         S60->curWin = 0;
@@ -641,71 +682,121 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 }
 
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+void QSymbianControl::translateMultiEventPointerEvent(const CCoeEventData &eventData )
+{
+    TUint count = eventData.Count();
+    QVector<TouchEventParams> touches;
+    touches.reserve(count);
+    for (int i = 0; i < count; i++) {
+        const TPointerEvent *pointerEvent = eventData.Pointer(i);
+        const TAdvancedPointerEvent *advEvent = pointerEvent->AdvancedPointerEvent();
+        if (advEvent)
+            touches.push_back(TouchEventFromAdvancedPointerEvent(advEvent));
+    }
+    if (touches.size())
+        processTouchEvents(touches);
+}
+#endif
+
 void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
+{
+    processTouchEvents(QVector<TouchEventParams>(1, TouchEventFromAdvancedPointerEvent(event)));
+}
+
+QSymbianControl::TouchEventParams QSymbianControl::TouchEventFromAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
     QPointF screenPos = qwidget->mapToGlobal(translatePointForFixedNativeOrientation(event->iPosition));
     qreal pressure;
-    if(d->pressureSupported
+    if (d->pressureSupported
         && event->Pressure() > 0) //workaround for misconfigured HAL
         pressure = event->Pressure() / qreal(d->maxTouchPressure);
     else
         pressure = qreal(1.0);
-    processTouchEvent(event->PointerNumber(), event->iType, screenPos, pressure);
+    return TouchEventParams(event->PointerNumber(), event->iType, screenPos, pressure);
 }
 #endif
 
-void QSymbianControl::processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure)
+QSymbianControl::TouchEventParams::TouchEventParams()
+{}
+
+QSymbianControl::TouchEventParams::TouchEventParams(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure)
+    : pointerNumber(pointerNumber),
+      type(type),
+      screenPos(screenPos),
+      pressure(pressure)
+{}
+
+void QSymbianControl::processTouchEvents(const QVector<TouchEventParams> &touches)
 {
     QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
 
     QApplicationPrivate *d = QApplicationPrivate::instance();
 
+    // get the maximum pointer number
+    int numUpdates = touches.size();
+    int maxPointerNumber = 0;
+    for (int i = 0; i < numUpdates; ++i) {
+        const TouchEventParams &touch = touches[i];
+        maxPointerNumber = qMax(maxPointerNumber, touch.pointerNumber);
+    }
+
+    // ensure there are sufficient touch events in the list,
+    // touch events will be indexed by pointerNumber
     QList<QTouchEvent::TouchPoint> points = d->appAllTouchPoints;
-    while (points.count() <= pointerNumber)
+    while (points.count() <= maxPointerNumber)
         points.append(QTouchEvent::TouchPoint(points.count()));
 
+    // first set all active touch points to stationary
+    for (int i = 0; i < points.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = points[i];
+        if (touchPoint.state() != Qt::TouchPointReleased) {
+            touchPoint.setState(Qt::TouchPointStationary);
+         }
+    }
+
+    // Add all info about moving or state changed touch points
+    for (int i = 0; i < numUpdates; ++i) {
+        const TouchEventParams &touch = touches[i];
+        QTouchEvent::TouchPoint &touchPoint = points[touch.pointerNumber];
+        Qt::TouchPointStates state;
+        switch (touch.type) {
+        case TPointerEvent::EButton1Down:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+        case TPointerEvent::EEnterHighPressure:
+#endif
+            state = Qt::TouchPointPressed;
+            break;
+        case TPointerEvent::EButton1Up:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+        case TPointerEvent::EExitCloseProximity:
+#endif
+            state = Qt::TouchPointReleased;
+            break;
+        case TPointerEvent::EDrag:
+            state = Qt::TouchPointMoved;
+            break;
+        default:
+            // how likely is this to happen?
+            state = Qt::TouchPointStationary;
+            break;
+        }
+        if (touch.pointerNumber == 0)
+            state |= Qt::TouchPointPrimary;
+        touchPoint.setState(state);
+
+        touchPoint.setScreenPos(touch.screenPos);
+        touchPoint.setNormalizedPos(QPointF(touch.screenPos.x() / screenGeometry.width(),
+                                            touch.screenPos.y() / screenGeometry.height()));
+
+        touchPoint.setPressure(touch.pressure);
+    }
+
+    // check the resulting state of all touch points
     Qt::TouchPointStates allStates = 0;
     for (int i = 0; i < points.count(); ++i) {
         QTouchEvent::TouchPoint &touchPoint = points[i];
-
-        if (touchPoint.id() == pointerNumber) {
-            Qt::TouchPointStates state;
-            switch (type) {
-            case TPointerEvent::EButton1Down:
-#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-            case TPointerEvent::EEnterHighPressure:
-#endif
-                state = Qt::TouchPointPressed;
-                break;
-            case TPointerEvent::EButton1Up:
-#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-            case TPointerEvent::EExitCloseProximity:
-#endif
-                state = Qt::TouchPointReleased;
-                break;
-            case TPointerEvent::EDrag:
-                state = Qt::TouchPointMoved;
-                break;
-            default:
-                // how likely is this to happen?
-                state = Qt::TouchPointStationary;
-                break;
-            }
-            if (pointerNumber == 0)
-                state |= Qt::TouchPointPrimary;
-            touchPoint.setState(state);
-
-            touchPoint.setScreenPos(screenPos);
-            touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
-                                                screenPos.y() / screenGeometry.height()));
-
-            touchPoint.setPressure(pressure);
-        } else if (touchPoint.state() != Qt::TouchPointReleased) {
-            // all other active touch points should be marked as stationary
-            touchPoint.setState(Qt::TouchPointStationary);
-        }
-
         allStates |= touchPoint.state();
     }
 
@@ -724,6 +815,28 @@ void QSymbianControl::processTouchEvent(int pointerNumber, TPointerEvent::TType 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+#ifdef COE_GROUPED_POINTER_EVENT_VERSION
+    if (pEvent.iType == TPointerEvent::EDataCCoeEventData) {
+        // only advanced pointers can be data type pointer events
+        const TAdvancedPointerEvent *advEvent = pEvent.AdvancedPointerEvent();
+        if (!advEvent)
+            return;
+        const CCoeEventData& eventData = CCoeEventData::EventData(*advEvent);
+        if (eventData.Type() == CWsEventWithData::EPointerEvent) {
+            QT_TRYCATCH_LEAVING(translateMultiEventPointerEvent(eventData));
+            // pointer 0 events and unnumbered events should also be handled as mouse events
+            for (int i=0; i<eventData.Count(); i++) {
+                const TPointerEvent *pointerEvent = eventData.Pointer(i);
+                const TAdvancedPointerEvent *advEvent = pointerEvent->AdvancedPointerEvent();
+                if (!advEvent || advEvent->PointerNumber() == 0) {
+                    m_longTapDetector->PointerEventL(*pointerEvent);
+                    QT_TRYCATCH_LEAVING(HandlePointerEvent(*pointerEvent));
+                }
+            }
+            return;
+        }
+    }
+#endif
     if (pEvent.IsAdvancedPointerEvent()) {
         const TAdvancedPointerEvent *advancedPointerEvent = pEvent.AdvancedPointerEvent();
         translateAdvancedPointerEvent(advancedPointerEvent);
@@ -797,7 +910,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 //Generate single touch event for S60 5.0 (has touchscreen, does not have advanced pointers)
 #ifndef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     if (S60->hasTouchscreen) {
-        processTouchEvent(0, pEvent.iType, QPointF(globalPos), 1.0);
+        processTouchEvents(QVector<TouchEventParams>(1, TouchEventParams(0, pEvent.iType, QPointF(globalPos), 1.0)));
     }
 #endif
 
@@ -1421,53 +1534,57 @@ bool QSymbianControl::hasFocusedAndVisibleChild(QWidget *parentWidget)
 
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
-    if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
-        return;
+    QT_TRY {
+        if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
+            return;
 
 #ifdef Q_WS_S60
-    if (S60->splitViewLastWidget)
-        return;
+        if (S60->splitViewLastWidget)
+            return;
 #endif
 
-    // Popups never get focused, but still receive the FocusChanged when they are hidden.
-    if (QApplicationPrivate::popupWidgets != 0
-            || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
-        return;
+        // Popups never get focused, but still receive the FocusChanged when they are hidden.
+        if (QApplicationPrivate::popupWidgets != 0
+                || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
+            return;
 
-    if (IsFocused() && IsVisible()) {
-        if (m_symbianPopupIsOpen) {
-            QWidget *fw = QApplication::focusWidget();
-            if (fw) {
-                QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
-                QCoreApplication::sendEvent(fw, &event);
-            }
-            m_symbianPopupIsOpen = false;
-        }
-
-        QApplication::setActiveWindow(qwidget->window());
-        qwidget->d_func()->setWindowIcon_sys(true);
-        qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
-#ifdef Q_WS_S60
-        if (qwidget->isWindow())
-            S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
-#endif
-    } else {
-        QWidget *parentWindow = qwidget->window();
-        if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
-            if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+        if (IsFocused() && IsVisible()) {
+            if (m_symbianPopupIsOpen) {
                 QWidget *fw = QApplication::focusWidget();
                 if (fw) {
-                    QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                    QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
                     QCoreApplication::sendEvent(fw, &event);
                 }
-                m_symbianPopupIsOpen = true;
-                return;
+                m_symbianPopupIsOpen = false;
             }
 
-            QApplication::setActiveWindow(0);
+            QApplication::setActiveWindow(qwidget->window());
+            qwidget->d_func()->setWindowIcon_sys(true);
+            qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
+#ifdef Q_WS_S60
+            if (qwidget->isWindow())
+                S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
+#endif
+        } else {
+            QWidget *parentWindow = qwidget->window();
+            if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
+                if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+                    QWidget *fw = QApplication::focusWidget();
+                    if (fw) {
+                        QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                        QCoreApplication::sendEvent(fw, &event);
+                    }
+                    m_symbianPopupIsOpen = true;
+                    return;
+                }
+
+                QApplication::setActiveWindow(0);
+            }
         }
+        // else { We don't touch the active window unless we were explicitly activated or deactivated }
+    } QT_CATCH(const std::exception&) {
+        // ignore errors
     }
-    // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
 void QSymbianControl::handleClientAreaChange()
@@ -1493,12 +1610,15 @@ void QSymbianControl::handleClientAreaChange()
     }
 }
 
-bool QSymbianControl::isSplitViewWidget(QWidget *widget) {
+bool QSymbianControl::isSplitViewWidget(QWidget *widget)
+{
     bool returnValue = true;
-    //Ignore events sent to non-active windows, not visible widgets and not parents of input widget.
+    // Ignore events sent to non-active windows, not visible widgets and not parents of input widget
+    // and non-Qt dialogs.
     if (!qwidget->isActiveWindow()
         || !qwidget->isVisible()
-        || !qwidget->isAncestorOf(widget)) {
+        || !qwidget->isAncestorOf(widget)
+        || CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
 
         returnValue = false;
     }
@@ -1983,6 +2103,10 @@ void qt_cleanup()
     // Call EndFullScreen() to prevent confusing the system effect state machine.
     qt_endFullScreenEffect();
 
+#ifndef QT_NO_CURSOR
+    QCursorData::cleanup();
+#endif
+
     if (S60->qtOwnsS60Environment) {
         // Restore the S60 framework trap handler. See qt_init().
         User::SetTrapHandler(S60->s60InstalledTrapHandler);
@@ -2257,18 +2381,24 @@ int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 
     QScopedLoopLevelCounter counter(d->threadData);
 
-    if (d->eventDispatcher->filterEvent(const_cast<QSymbianEvent *>(event)))
-        return 1;
-
-    QWidget *w = qApp ? qApp->focusWidget() : 0;
-    if (w) {
-        QInputContext *ic = w->inputContext();
-        if (ic && ic->symbianFilterEvent(w, event))
+    QT_TRY {
+        if (d->eventDispatcher->filterEvent(const_cast<QSymbianEvent *>(event)))
             return 1;
-    }
 
-    if (symbianEventFilter(event))
-        return 1;
+        QWidget *w = qApp ? qApp->focusWidget() : 0;
+        if (w) {
+            QInputContext *ic = w->inputContext();
+            if (ic && ic->symbianFilterEvent(w, event))
+                return 1;
+        }
+
+        if (symbianEventFilter(event))
+            return 1;
+    } QT_CATCH(const std::exception& ex) {
+        // don't allow an exception to stop exit command handling
+        if (event->type() != QSymbianEvent::CommandEvent || event->command() != EEikCmdExit)
+            QT_RETHROW;
+    }
 
     switch (event->type()) {
     case QSymbianEvent::WindowServerEvent:
@@ -2577,6 +2707,24 @@ int QApplicationPrivate::symbianResourceChange(const QSymbianEvent *symbianEvent
     return ret;
 }
 
+void QApplicationPrivate::symbianHandleLiteModeStartup()
+{
+    if (QCoreApplication::arguments().contains(QLatin1String("--startup-lite"))) {
+        if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+                && !S60->buttonGroupContainer() && !S60->statusPane()) {
+            // hide and force this app to the background before creating screen furniture to avoid flickers
+            CAknAppUi *appui = static_cast<CAknAppUi*>(CCoeEnv::Static()->AppUi());
+            if (appui)
+                appui->HideApplicationFromFSW(ETrue);
+            CCoeEnv::Static()->RootWin().SetOrdinalPosition(-1);
+            S60->createStatusPaneAndCBA();
+            if (S60->statusPane()) {
+                S60->setStatusPaneAndButtonGroupVisibility(false, false);
+            }
+        }
+    }
+}
+
 #ifndef QT_NO_WHEELEVENT
 int QApplication::wheelScrollLines()
 {
@@ -2745,6 +2893,24 @@ void QApplicationPrivate::_q_aboutToQuit()
 #ifdef Q_SYMBIAN_TRANSITION_EFFECTS
     // Send the shutdown tfx command
     S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
+#endif
+}
+
+void QApplicationPrivate::emitAboutToReleaseGpuResources()
+{
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    Q_Q(QApplication);
+    QPointer<QApplication> guard(q);
+    emit q->aboutToReleaseGpuResources();
+#endif
+}
+
+void QApplicationPrivate::emitAboutToUseGpuResources()
+{
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    Q_Q(QApplication);
+    QPointer<QApplication> guard(q);
+    emit q->aboutToUseGpuResources();
 #endif
 }
 

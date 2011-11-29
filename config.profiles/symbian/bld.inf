@@ -19,6 +19,7 @@ qtconfig.flm /epoc32/tools/makefile_templates/qt/qtconfig.flm
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_extra_pre_targetdep.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_post_link.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qmake_store_build.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_clean.flm /epoc32/tools/makefile_templates/qt/
 ../../mkspecs/symbian-sbsv2/flm/qt/qt.xml /epoc32/tools/makefile_templates/qt/
 
 qt.conf    /epoc32/tools/qt.conf
@@ -52,33 +53,71 @@ qt_stub.sis                         /epoc32/data/z/system/install/qt_stub.sis
 
 
 /* export localization *.ts files */
-translations/qt_ur.ts /epoc32/include/platform/qt/translations/
-translations/qt_fa.ts /epoc32/include/platform/qt/translations/
-translations/qt_ar.ts /epoc32/include/platform/qt/translations/
-translations/qt_he.ts /epoc32/include/platform/qt/translations/
+translations/qt_ar.ts          /epoc32/include/platform/qt/translations/
+translations/qt_bg.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ca.ts          /epoc32/include/platform/qt/translations/
+translations/qt_cs.ts          /epoc32/include/platform/qt/translations/
+translations/qt_da.ts          /epoc32/include/platform/qt/translations/
+translations/qt_de.ts          /epoc32/include/platform/qt/translations/
+translations/qt_el.ts          /epoc32/include/platform/qt/translations/
+translations/qt_en.ts          /epoc32/include/platform/qt/translations/
+translations/qt_en_CN.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_HK.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_JP.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_TH.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_TW.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_US.ts       /epoc32/include/platform/qt/translations/
+translations/qt_en_x_apac.ts   /epoc32/include/platform/qt/translations/
+translations/qt_en_x_indic.ts  /epoc32/include/platform/qt/translations/
+translations/qt_es.ts          /epoc32/include/platform/qt/translations/
+translations/qt_es_419.ts      /epoc32/include/platform/qt/translations/
+translations/qt_et.ts          /epoc32/include/platform/qt/translations/
+translations/qt_eu.ts          /epoc32/include/platform/qt/translations/
+translations/qt_fa.ts          /epoc32/include/platform/qt/translations/
+translations/qt_fi.ts          /epoc32/include/platform/qt/translations/
+translations/qt_fr.ts          /epoc32/include/platform/qt/translations/
+translations/qt_fr_CA.ts       /epoc32/include/platform/qt/translations/
+translations/qt_gl.ts          /epoc32/include/platform/qt/translations/
+translations/qt_he.ts          /epoc32/include/platform/qt/translations/
+translations/qt_hi.ts          /epoc32/include/platform/qt/translations/
+translations/qt_hr.ts          /epoc32/include/platform/qt/translations/
+translations/qt_hu.ts          /epoc32/include/platform/qt/translations/
+translations/qt_id.ts          /epoc32/include/platform/qt/translations/
+translations/qt_id_x_apac.ts   /epoc32/include/platform/qt/translations/
+translations/qt_is.ts          /epoc32/include/platform/qt/translations/
+translations/qt_it.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ja.ts          /epoc32/include/platform/qt/translations/
+translations/qt_kk.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ko.ts          /epoc32/include/platform/qt/translations/
+translations/qt_lt.ts          /epoc32/include/platform/qt/translations/
+translations/qt_lv.ts          /epoc32/include/platform/qt/translations/
+translations/qt_mr.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ms.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ms_x_apac.ts   /epoc32/include/platform/qt/translations/
+translations/qt_nb.ts          /epoc32/include/platform/qt/translations/
+translations/qt_nl.ts          /epoc32/include/platform/qt/translations/
+translations/qt_pl.ts          /epoc32/include/platform/qt/translations/
+translations/qt_pt.ts          /epoc32/include/platform/qt/translations/
+translations/qt_pt_BR.ts       /epoc32/include/platform/qt/translations/
+translations/qt_ro.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ru.ts          /epoc32/include/platform/qt/translations/
+translations/qt_sk.ts          /epoc32/include/platform/qt/translations/
+translations/qt_sl.ts          /epoc32/include/platform/qt/translations/
+translations/qt_sr.ts          /epoc32/include/platform/qt/translations/
+translations/qt_sv.ts          /epoc32/include/platform/qt/translations/
+translations/qt_th.ts          /epoc32/include/platform/qt/translations/
+translations/qt_tl.ts          /epoc32/include/platform/qt/translations/
+translations/qt_tr.ts          /epoc32/include/platform/qt/translations/
+translations/qt_uk.ts          /epoc32/include/platform/qt/translations/
+translations/qt_ur.ts          /epoc32/include/platform/qt/translations/
+translations/qt_vi.ts          /epoc32/include/platform/qt/translations/
+translations/qt_zh.ts          /epoc32/include/platform/qt/translations/
+translations/qt_zh_HK.ts       /epoc32/include/platform/qt/translations/
+translations/qt_zh_TW.ts       /epoc32/include/platform/qt/translations/
 
-translations/qt_fr_symbian.ts /epoc32/include/platform/qt/translations/qt_fr.ts
-translations/qt_pl_symbian.ts /epoc32/include/platform/qt/translations/qt_pl.ts
-translations/qt_ru_symbian.ts /epoc32/include/platform/qt/translations/qt_ru.ts
-translations/qt_zh_cn_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_cn.ts
-translations/qt_zh_tw_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_tw.ts
-
-../../translations/qt_ar.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_cs.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_da.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_de.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_es.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_gl.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_hu.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_ja.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_pt.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_sk.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_sl.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_sv.ts /epoc32/include/platform/qt/translations/
-../../translations/qt_uk.ts /epoc32/include/platform/qt/translations/
 
 PRJ_EXTENSIONS
 START EXTENSION qt/qtconfig
 OPTION QT_ROOT ..
-OPTION OPTIONS -opensource -confirm-license -openvg -opengl-es-2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -no-usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2
+OPTION OPTIONS -opensource -confirm-license -openvg -opengl es2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2 -debug -debug-and-release
 END

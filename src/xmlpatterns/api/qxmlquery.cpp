@@ -988,7 +988,12 @@ bool setFocusHelper(QXmlQuery *const queryInstance,
     const QXmlItem focusItem(focusResult.next());
 
     if(focusItem.isNull() || focusResult.hasError())
+    {
+        /* The previous focus must be cleared in error situations.
+         * Otherwise the query may be left in an inconsistent state. */
+        queryInstance->setFocus(QXmlItem());
         return false;
+    }
     else
     {
         queryInstance->setFocus(focusItem);

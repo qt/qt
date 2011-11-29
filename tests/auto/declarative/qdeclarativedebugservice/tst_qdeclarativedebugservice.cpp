@@ -73,13 +73,13 @@ private slots:
 
 void tst_QDeclarativeDebugService::initTestCase()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 13769...");
+    QTest::ignoreMessage(QtDebugMsg, "QDeclarativeDebugServer: Waiting for connection on port 13769...");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
     m_conn->connectToHost("127.0.0.1", 13769);
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
+    QTest::ignoreMessage(QtDebugMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
     QVERIFY(ok);
 
