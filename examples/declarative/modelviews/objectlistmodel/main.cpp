@@ -38,15 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-
-#include <qdeclarativeengine.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarative.h>
-#include <qdeclarativeitem.h>
-#include <qdeclarativeview.h>
-
+#include "qmlapplicationviewer.h"
 #include "dataobject.h"
+#include <QApplication>
+#include <qdeclarativecontext.h>
 
 /*
    This example illustrates exposing a QList<QObject*> as a
@@ -57,6 +52,7 @@
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
+    QmlApplicationViewer viewer;
 
     QList<QObject*> dataList;
     dataList.append(new DataObject("Item 1", "red"));
@@ -64,13 +60,13 @@ int main(int argc, char ** argv)
     dataList.append(new DataObject("Item 3", "blue"));
     dataList.append(new DataObject("Item 4", "yellow"));
 
-    QDeclarativeView view;
-    QDeclarativeContext *ctxt = view.rootContext();
+    QDeclarativeContext *ctxt = viewer.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 //![0]
 
-    view.setSource(QUrl("qrc:view.qml"));
-    view.show();
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
+    viewer.setMainQmlFile(QLatin1String("qml/objectlistmodel/view.qml"));
+    viewer.showExpanded();
 
     return app.exec();
 }

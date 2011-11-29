@@ -56,6 +56,7 @@
 #include <qlist.h>
 #include <qiterator.h>
 #include <qtextcodec.h>
+#include <qlibraryinfo.h>
 #include <QUuid>
 
 QT_BEGIN_NAMESPACE
@@ -4404,12 +4405,31 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         //QString docUrl = projectUrl + "/" + en->fileBase() + ".html";
         QString docUrl = manifestDir + en->fileBase() + ".html";
         writer.writeAttribute("docUrl", docUrl);
+
+        QDir installDir(QLibraryInfo::location(QLibraryInfo::DataPath));
+        QDir buildDir(QString::fromLocal8Bit(qgetenv("QT_BUILD_TREE")));
+        QDir sourceDir(QString::fromLocal8Bit(qgetenv("QT_SOURCE_TREE")));
+
+        QString relativePath;
+        if (buildDir.exists() && sourceDir.exists()
+            // shadow build, but no prefix build
+            && installDir == buildDir && buildDir != sourceDir) {
+            relativePath = QString("../%1/%2/").arg(buildDir.relativeFilePath(sourceDir.path()));
+            if (demos)
+                relativePath = relativePath.arg("demos");
+            else
+                relativePath = relativePath.arg("examples");
+        }
+
+
         foreach (const Node* child, en->childNodes()) {
             if (child->subType() == Node::File) {
                 QString file = child->name();
                 if (file.endsWith(".pro") || file.endsWith(".qmlproject")) {
                     if (file.startsWith("demos/"))
                         file = file.mid(6);
+                    if (!relativePath.isEmpty())
+                        file.prepend(relativePath);
                     writer.writeAttribute("projectPath", file);
                     break;
                 }
@@ -4481,6 +4501,16 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                         usedNames.insert(fileName);
                     }
                 }
+            }
+        }
+        if (!en->dependencies().isEmpty()) {
+            for (int idx=0; idx<en->dependencies().size(); ++idx) {
+                writer.writeStartElement("dependency");
+                QString file(en->dependencies()[idx]);
+                if (!relativePath.isEmpty())
+                    file.prepend(relativePath);
+                writer.writeCharacters(file);
+                writer.writeEndElement(); // dependency
             }
         }
         writer.writeEndElement(); // example

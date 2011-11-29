@@ -1628,7 +1628,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
 
-    \sa {QML Data Models}, GridView, {declarative/modelviews/listview}{ListView examples}
+    \sa {QML Data Models}, GridView, {Models and Views: ListView Examples}{ListView examples}
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
@@ -1956,7 +1956,7 @@ int QDeclarativeListView::count() const
     so as to stay with the current item, unless the highlightFollowsCurrentItem
     property is false.
 
-    \sa highlightItem, highlightFollowsCurrentItem, {declarative/modelviews/listview}{ListView examples}
+    \sa highlightItem, highlightFollowsCurrentItem, {Models and Views: ListView Examples}{ListView examples}
 */
 QDeclarativeComponent *QDeclarativeListView::highlight() const
 {
@@ -2344,7 +2344,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
     differing sections will result in a section header being created
     even if that section exists elsewhere.
 
-    \sa {declarative/modelviews/listview}{ListView examples}
+    \sa {Models and Views: ListView Examples}{ListView examples}
 */
 QDeclarativeViewSection *QDeclarativeListView::sectionCriteria()
 {

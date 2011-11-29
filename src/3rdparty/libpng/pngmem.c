@@ -19,6 +19,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 /* Borland DOS special memory handler */
@@ -665,3 +667,4 @@ png_get_mem_ptr(png_const_structp png_ptr)
 }
 #endif /* PNG_USER_MEM_SUPPORTED */
 #endif /* PNG_READ_SUPPORTED || PNG_WRITE_SUPPORTED */
+} // PrivatePng namespace

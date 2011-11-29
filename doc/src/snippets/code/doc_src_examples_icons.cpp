@@ -40,5 +40,5 @@
 
 //! [0]
 if (!condition)
-     qFatal("ASSERT: "condition" in file ...");
+     qFatal("ASSERT: " condition " in file ...");
 //! [0]

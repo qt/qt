@@ -18,6 +18,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #ifdef PNG_READ_SUPPORTED
 
 /* Set the action on getting a CRC error for an ancillary or critical chunk. */
@@ -4951,3 +4953,4 @@ png_do_read_intrapixel(png_row_infop row_info, png_bytep row)
 }
 #endif /* PNG_MNG_FEATURES_SUPPORTED */
 #endif /* PNG_READ_SUPPORTED */
+} // namespace PrivatePng

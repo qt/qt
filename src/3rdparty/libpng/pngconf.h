@@ -64,6 +64,7 @@
 #  endif
 #endif
 
+namespace PrivatePng {
 /* COMPILER SPECIFIC OPTIONS.
  *
  * These options are provided so that a variety of difficult compilers
@@ -627,5 +628,5 @@ typedef char            FAR * FAR * FAR * png_charppp;
 #    endif
 #  endif
 #endif
-
+} // namespace PrivatePng
 #endif /* PNGCONF_H */

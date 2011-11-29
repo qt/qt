@@ -28,6 +28,7 @@
 /*!
     \title RSS News
     \example demos/declarative/rssnews
+    \depends helper/qmlapplicationviewer
 
     \brief The Qt Quick RSS News demo shows how to write a RSS news reader in QML.
 
