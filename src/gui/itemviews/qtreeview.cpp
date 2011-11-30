@@ -1388,11 +1388,19 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option,
     option->showDecorationSelected = (selectionBehavior & QTreeView::SelectRows)
                                      || option->showDecorationSelected;
 
-    QVector<int> logicalIndices;
-    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    QVector<int> logicalIndices; // index = visual index of visible columns only. data = logical index.
+    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns only.
     calcLogicalIndices(&logicalIndices, &viewItemPosList);
-    int logicalIndex = header->logicalIndex(current.column());
-    option->viewItemPosition = viewItemPosList.at(logicalIndex);
+
+    int columnIndex = 0;
+    for (int visualIndex = 0; visualIndex < current.column(); ++visualIndex) {
+        int logicalIndex = header->logicalIndex(visualIndex);
+        if (!header->isSectionHidden(logicalIndex)) {
+            ++columnIndex;
+        }
+    }
+
+    option->viewItemPosition = viewItemPosList.at(columnIndex);
 }
 
 
@@ -2919,7 +2927,6 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
 void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
 {
-    Q_Q(QTreeView);
     viewItems.insert(pos, count, viewItem);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos + count; i < viewItems.count(); i++)
@@ -2927,6 +2934,7 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
             items[i].parentItem += count;
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_WS_X11
+    Q_Q(QTreeView);
     if (QAccessible::isActive()) {
         QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
     }
@@ -2936,7 +2944,6 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
 
 void QTreeViewPrivate::removeViewItems(int pos, int count)
 {
-    Q_Q(QTreeView);
     viewItems.remove(pos, count);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos; i < viewItems.count(); i++)
@@ -2944,6 +2951,7 @@ void QTreeViewPrivate::removeViewItems(int pos, int count)
             items[i].parentItem -= count;
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_WS_X11
+    Q_Q(QTreeView);
     if (QAccessible::isActive()) {
         QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
     }
