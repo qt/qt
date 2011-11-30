@@ -114,7 +114,7 @@ public slots:
 
 private slots:
     void editorCreated(QTextEdit *);
-    void editorDeleted(QTextEdit *);
+    void editorDestroyed();
     void selectionChanged(QTextEdit *);
     void resetHoverSelection();
     void emitTranslationChanged(QTextEdit *);

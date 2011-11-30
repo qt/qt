@@ -91,7 +91,11 @@ class FormatTextEdit : public ExpandingTextEdit
     Q_OBJECT
 public:
     FormatTextEdit(QWidget *parent = 0);
+    ~FormatTextEdit();
     void setEditable(bool editable);
+
+signals:
+    void editorDestroyed();
 
 public slots:
     void setPlainText(const QString & text, bool userAction);
@@ -150,7 +154,6 @@ public:
 
 signals:
     void editorCreated(QTextEdit *);
-    void editorDeleted(QTextEdit *);
     void textChanged(QTextEdit *);
     void selectionChanged(QTextEdit *);
     void cursorPositionChanged();
