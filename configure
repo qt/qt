@@ -7443,9 +7443,10 @@ if [ "$CFG_EXCEPTIONS" != "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG exceptions"
 fi
 
-if [ "$XPLATFORM_MINGW" = "yes" ]; then
+if [ "$XPLATFORM_MINGW" = "yes" ] || [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # mkspecs/features/win32/default_pre.prf sets "no-rtti".
-    # Follow default behavior of configure.exe by overriding with "rtti".
+    # Follow default behavior of configure.exe by overriding with "rtti"
+    # (also on Symbian).
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG rtti"
 fi
 
