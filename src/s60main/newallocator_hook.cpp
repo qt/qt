@@ -109,26 +109,38 @@ struct SStdEpocThreadCreateInfo : public SThreadCreateInfo
  * startup. On return, there is some kind of heap allocator installed on the
  * thread.
 */
+typedef int (*TSetupThreadHeapFunc)(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo);
+// keep the SetupThreadHeap() pointer so that we don't reload QtCore.dll after the first time
+static TSetupThreadHeapFunc gp_qt_symbian_SetupThreadHeap = 0;
+static bool gp_qt_symbian_SetupThreadHeap_set = false;
+
 TInt UserHeap::SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
 {
     TInt r = KErrNone;
 
 #ifndef __WINS__
-    // attempt to create the fast allocator through a known export ordinal in qtcore.dll
-    RLibrary qtcore;
-    if (qtcore.Load(QtCoreLibName) == KErrNone)
-    {
-        const int qt_symbian_SetupThreadHeap_eabi_ordinal = 3713;
-        TLibraryFunction libFunc = qtcore.Lookup(qt_symbian_SetupThreadHeap_eabi_ordinal);
-        if (libFunc)
-        {
-            typedef int (*TSetupThreadHeapFunc)(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo);
-            TSetupThreadHeapFunc p_qt_symbian_SetupThreadHeap = TSetupThreadHeapFunc(libFunc);
-            r = (*p_qt_symbian_SetupThreadHeap)(aNotFirst, aInfo);
+    // on first call, aNotFirst will be false.
+    // on second call, gp_qt_symbian_SetupThreadHeap_set will be false(!) because WSD is zeroed after the first call
+    // on subsequent calls, both will be true and we can use the stored SetupThreadHeap() pointer
+    if (aNotFirst && gp_qt_symbian_SetupThreadHeap_set) {
+        if (gp_qt_symbian_SetupThreadHeap)
+            return (*gp_qt_symbian_SetupThreadHeap)(aNotFirst, aInfo);
+    } else {
+        // attempt to create the fast allocator through a known export ordinal in qtcore.dll
+        RLibrary qtcore;
+        gp_qt_symbian_SetupThreadHeap_set = true;
+        if (qtcore.Load(QtCoreLibName) == KErrNone) {
+            const int qt_symbian_SetupThreadHeap_eabi_ordinal = 3713;
+            TLibraryFunction libFunc = qtcore.Lookup(qt_symbian_SetupThreadHeap_eabi_ordinal);
+            if (libFunc) {
+                TSetupThreadHeapFunc p_qt_symbian_SetupThreadHeap = TSetupThreadHeapFunc(libFunc);
+                gp_qt_symbian_SetupThreadHeap = p_qt_symbian_SetupThreadHeap;
+                r = (*p_qt_symbian_SetupThreadHeap)(aNotFirst, aInfo);
+            }
+            qtcore.Close();
+            if (libFunc)
+                return r;
         }
-        qtcore.Close();
-        if (libFunc)
-            return r;
     }
 #endif
 
