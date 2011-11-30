@@ -2927,7 +2927,6 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
 void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
 {
-    Q_Q(QTreeView);
     viewItems.insert(pos, count, viewItem);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos + count; i < viewItems.count(); i++)
@@ -2935,6 +2934,7 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
             items[i].parentItem += count;
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_WS_X11
+    Q_Q(QTreeView);
     if (QAccessible::isActive()) {
         QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
     }
@@ -2944,7 +2944,6 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
 
 void QTreeViewPrivate::removeViewItems(int pos, int count)
 {
-    Q_Q(QTreeView);
     viewItems.remove(pos, count);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos; i < viewItems.count(); i++)
@@ -2952,6 +2951,7 @@ void QTreeViewPrivate::removeViewItems(int pos, int count)
             items[i].parentItem -= count;
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_WS_X11
+    Q_Q(QTreeView);
     if (QAccessible::isActive()) {
         QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
     }
