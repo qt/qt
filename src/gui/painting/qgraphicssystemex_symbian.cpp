@@ -74,7 +74,7 @@ bool QSymbianGraphicsSystemEx::hasBCM2727()
 #if 1
     // Hacky but fast ~0ms.
     const char* vendor = eglQueryString(display, EGL_VENDOR);
-    if (strstr(vendor, "Broadcom")) {
+    if (vendor && strstr(vendor, "Broadcom")) {
         const TUid KIvePropertyCat = {0x2726beef};
         enum TIvePropertyChipType {
             EVCBCM2727B1 = 0x00000000,

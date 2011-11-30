@@ -32,13 +32,13 @@
  */
 
 #define _POSIX_SOURCE 1
-
 #include "zlib.h"
 #include "png.h"
 /* Copied from pngpriv.h but only used in error messages below. */
 #ifndef PNG_ZBUF_SIZE
 #  define PNG_ZBUF_SIZE 8192
 #endif
+
 #  include <stdio.h>
 #  include <stdlib.h>
 #  include <string.h>
@@ -99,8 +99,9 @@ static char tIME_string[PNG_tIME_STRING_LENGTH] = "tIME chunk is not present";
 
 static int verbose = 0;
 
+namespace PrivatePng {
 int test_one_file PNGARG((PNG_CONST char *inname, PNG_CONST char *outname));
-
+}
 #ifdef __TURBOC__
 #include <mem.h>
 #endif
@@ -114,6 +115,7 @@ int test_one_file PNGARG((PNG_CONST char *inname, PNG_CONST char *outname));
 #  define png_jmpbuf(png_ptr) png_ptr->jmpbuf
 #endif
 
+namespace PrivatePng {
 /* Example of using row callbacks to make a simple progress meter */
 static int status_pass = 1;
 static int status_dots_requested = 0;
@@ -1795,3 +1797,4 @@ main(int argc, char *argv[])
 
 /* Generate a compiler error if there is an old png.h in the search path. */
 typedef png_libpng_version_1_5_4 Your_png_h_is_not_version_1_5_4;
+} // namespace PrivatePng

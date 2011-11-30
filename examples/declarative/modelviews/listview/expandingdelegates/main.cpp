@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/expandingdelegates.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/expandingdelegates/expandingdelegates.qml"));
     viewer.showExpanded();
 
     return app.exec();

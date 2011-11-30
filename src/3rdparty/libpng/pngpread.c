@@ -13,6 +13,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
 
 /* Push model modes */
@@ -1854,3 +1856,4 @@ png_get_progressive_ptr(png_const_structp png_ptr)
    return png_ptr->io_ptr;
 }
 #endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
+} // namespace PrivatePng

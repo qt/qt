@@ -162,6 +162,8 @@ private:
     void enableSymbianCcpuSupport();
     void changeCBA(bool showCopyAndOrPaste);
     void copyOrCutTextToClipboard(const char *operation);
+    void getScreenCoordinatesForFepX(TPoint& aLeftSideOfBaseLine, TInt& aHeight, TInt& aAscent,
+            TInt aDocumentPosition) const;
 
     //From MEikCcpuEditor interface
 public:
@@ -223,6 +225,7 @@ private:
 
 Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
 Q_GUI_EXPORT void qt_s60_setPartialScreenAutomaticTranslation(bool enable);
+Q_GUI_EXPORT void qt_s60_setEditorFlags(int flags);
 
 QT_END_NAMESPACE
 

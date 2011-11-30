@@ -119,5 +119,5 @@ translations/qt_zh_TW.ts       /epoc32/include/platform/qt/translations/
 PRJ_EXTENSIONS
 START EXTENSION qt/qtconfig
 OPTION QT_ROOT ..
-OPTION OPTIONS -opensource -confirm-license -openvg -opengl es2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2
+OPTION OPTIONS -opensource -confirm-license -openvg -opengl es2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2 -debug -debug-and-release
 END

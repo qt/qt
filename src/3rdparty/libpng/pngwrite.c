@@ -13,6 +13,8 @@
 
 #include "pngpriv.h"
 
+namespace PrivatePng {
+
 #ifdef PNG_WRITE_SUPPORTED
 
 /* Writes all the PNG information.  This is the suggested way to use the
@@ -1653,3 +1655,4 @@ png_write_png(png_structp png_ptr, png_infop info_ptr,
 }
 #endif
 #endif /* PNG_WRITE_SUPPORTED */
+} // namespace PrivatePng

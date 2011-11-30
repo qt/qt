@@ -28,6 +28,7 @@
 /*!
     \title Snake
     \example demos/declarative/snake
+    \depends helper/qmlapplicationviewer
 
     \brief The Qt Quick Snake demo shows how to write a Snake game in QML, controlled by the
     keyboard as well as the mouse.

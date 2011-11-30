@@ -28,6 +28,7 @@
 /*!
     \title Minehunt
     \example demos/declarative/minehunt
+    \depends helper/qmlapplicationviewer
 
     \brief The Qt Quick Minehunt demo shows how to create a simple Minehunt game, using QML for the
     UI and C++ for the game logic.
