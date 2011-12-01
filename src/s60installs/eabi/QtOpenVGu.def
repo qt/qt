@@ -176,7 +176,7 @@ EXPORTS
 	_ZN12QVGImagePool11detachImageEP13QVGPixmapData @ 175 NONAME
 	_ZN12QVGImagePool12reclaimSpaceE13VGImageFormatllP13QVGPixmapData @ 176 NONAME
 	_ZN12QVGImagePool12releaseImageEP13QVGPixmapDatam @ 177 NONAME
-	_ZN12QVGImagePool12setImagePoolEPS_ @ 178 NONAME
+	_ZN12QVGImagePool12setImagePoolEPS_ @ 178 NONAME ABSENT
 	_ZN12QVGImagePool13removeFromLRUEP13QVGPixmapData @ 179 NONAME
 	_ZN12QVGImagePool15moveToHeadOfLRUEP13QVGPixmapData @ 180 NONAME
 	_ZN12QVGImagePool20createImageForPixmapE13VGImageFormatllmP13QVGPixmapData @ 181 NONAME
