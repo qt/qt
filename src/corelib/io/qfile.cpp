@@ -824,8 +824,7 @@ QFile::rename(const QString &oldName, const QString &newName)
 
     \note To create a valid link on Windows, \a linkName must have a \c{.lnk} file extension.
 
-    \note On Symbian, no link is created and false is returned if fileName()
-    currently specifies a directory.
+    \note Symbian filesystem does not support links.
 
     \sa setFileName()
 */

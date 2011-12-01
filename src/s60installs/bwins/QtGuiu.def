@@ -13990,4 +13990,11 @@ EXPORTS
 	?resetFontEngineCache@QTextEngine@@QAEXXZ @ 13989 NONAME ; void QTextEngine::resetFontEngineCache(void)
 	?symbianHandleLiteModeStartup@QApplicationPrivate@@QAEXXZ @ 13990 NONAME ; void QApplicationPrivate::symbianHandleLiteModeStartup(void)
 	?_q_cleanupWinIds@QWidgetPrivate@@QAEXXZ @ 13991 NONAME ; void QWidgetPrivate::_q_cleanupWinIds(void)
-	?qt_s60_setEditorFlags@@YAXH@Z @ 13992 NONAME ; void qt_s60_setEditorFlags(int)	
+	?qt_s60_setEditorFlags@@YAXH@Z @ 13992 NONAME ; void qt_s60_setEditorFlags(int)
+	?adjustViewOptionsForIndex@QTreeViewPrivate@@UBEXPAVQStyleOptionViewItemV4@@ABVQModelIndex@@@Z @ 13993 NONAME ; void QTreeViewPrivate::adjustViewOptionsForIndex(class QStyleOptionViewItemV4 *, class QModelIndex const &) const
+	?setNativePaintMode@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@W4NativePaintMode@1@@Z @ 13994 NONAME ; void QSymbianGraphicsSystemHelper::setNativePaintMode(class QWidget *, enum QSymbianGraphicsSystemHelper::NativePaintMode)
+	?calcLogicalIndices@QTreeViewPrivate@@QBEXPAV?$QVector@H@@PAV?$QVector@W4ViewItemPosition@QStyleOptionViewItemV4@@@@@Z @ 13995 NONAME ; void QTreeViewPrivate::calcLogicalIndices(class QVector<int> *, class QVector<enum QStyleOptionViewItemV4::ViewItemPosition> *) const
+	?setReceiveNativePaintEvents@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13996 NONAME ; void QSymbianGraphicsSystemHelper::setReceiveNativePaintEvents(class QWidget *, bool)
+	?setNativePaintMode@QSymbianGraphicsSystemHelper@@SAXPAVCCoeControl@@W4NativePaintMode@1@@Z @ 13997 NONAME ; void QSymbianGraphicsSystemHelper::setNativePaintMode(class CCoeControl *, enum QSymbianGraphicsSystemHelper::NativePaintMode)
+	?setIgnoreFocusChanged@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13998 NONAME ; void QSymbianGraphicsSystemHelper::setIgnoreFocusChanged(class QWidget *, bool)
+
