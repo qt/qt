@@ -1548,6 +1548,7 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
                 || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
             return;
 
+        QWidget *parentWindow = qwidget->window();
         if (IsFocused() && IsVisible()) {
             if (m_symbianPopupIsOpen) {
                 QWidget *fw = QApplication::focusWidget();
@@ -1562,11 +1563,10 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             qwidget->d_func()->setWindowIcon_sys(true);
             qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-            if (qwidget->isWindow())
-                S60->setRecursiveDecorationsVisibility(qwidget, qwidget->windowState());
+            if (parentWindow->isWindow())
+                S60->setRecursiveDecorationsVisibility(parentWindow, parentWindow->windowState());
 #endif
         } else {
-            QWidget *parentWindow = qwidget->window();
             if (QApplication::activeWindow() == parentWindow && !hasFocusedAndVisibleChild(parentWindow)) {
                 if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
                     QWidget *fw = QApplication::focusWidget();
