@@ -262,7 +262,6 @@ void MessageEditor::addPluralForm(int model, const QString &label, bool writable
 {
     FormMultiWidget *transEditor = new FormMultiWidget(label);
     connect(transEditor, SIGNAL(editorCreated(QTextEdit*)), SLOT(editorCreated(QTextEdit*)));
-    connect(transEditor, SIGNAL(editorDeleted(QTextEdit*)), SLOT(editorDeleted(QTextEdit*)));
     transEditor->setEditingEnabled(writable);
     transEditor->setHideWhenEmpty(!writable);
     if (!m_editors[model].transTexts.isEmpty())
@@ -299,9 +298,9 @@ void MessageEditor::editorCreated(QTextEdit *te)
     }
 }
 
-void MessageEditor::editorDeleted(QTextEdit *te)
+void MessageEditor::editorDestroyed()
 {
-    if (m_selectionHolder == te)
+    if (m_selectionHolder == sender())
         resetSelection();
 }
 
@@ -352,9 +351,13 @@ static void clearSelection(QTextEdit *t)
 void MessageEditor::selectionChanged(QTextEdit *te)
 {
     if (te != m_selectionHolder) {
-        if (m_selectionHolder)
+        if (m_selectionHolder) {
             clearSelection(m_selectionHolder);
+            disconnect(this, SLOT(editorDestroyed()));
+        }
         m_selectionHolder = (te->textCursor().hasSelection() ? te : 0);
+        if (FormatTextEdit *fte = qobject_cast<FormatTextEdit*>(m_selectionHolder))
+            connect(fte, SIGNAL(editorDestroyed()), SLOT(editorDestroyed()));
         updateCanCutCopy();
     }
 }
@@ -371,6 +374,7 @@ void MessageEditor::resetSelection()
 {
     if (m_selectionHolder) {
         clearSelection(m_selectionHolder);
+        disconnect(this, SLOT(editorDestroyed()));
         m_selectionHolder = 0;
         updateCanCutCopy();
     }

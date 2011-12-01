@@ -466,11 +466,13 @@ static QString stringify(const QString &data)
     int i;
     for (i = 0; i < data.length(); ++i) {
         retval += QLatin1Char('\"');
-        for ( ; i < data.length() && data[i] != QLatin1Char('\n'); ++i)
+        for ( ; i < data.length() && data[i] != QLatin1Char('\n') && data[i] != QLatin1Char('\r'); ++i)
             if (data[i] == QLatin1Char('\"'))
                 retval += QLatin1String("\\\"");
             else
                 retval += data[i];
+        if (data[i] == QLatin1Char('\r') && data[i+1] == QLatin1Char('\n'))
+            i++;
         retval += QLatin1String("\\n\"\n");
     }
     return retval;
