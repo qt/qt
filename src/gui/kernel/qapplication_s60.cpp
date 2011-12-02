@@ -273,19 +273,16 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
 TRect QS60Data::clientRect()
 {
     TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-    if (S60->partialKeyboardOpen) {
-        // Adjust client rect when splitview is open, since for some curious reason
-        // native side insists that clientRect starts from (0,0) even though status
-        // pane might be visible.
+    if (S60->partialKeyboardOpen && !QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)) {
+        // Adjust client rect when splitview is open
+        // We want it to take the client rect space as if the splitview keyboard was not there
         TRect statusPaneRect;
         TRect mainRect;
         AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
         AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EMainPane, mainRect);
         int clientAreaHeight = mainRect.Height();
         CEikStatusPane *const s = S60->statusPane();
-        if (s && s->IsVisible())
-            r.Move(0, statusPaneRect.Height());
-        else
+        if (!(s && s->IsVisible()))
             clientAreaHeight += statusPaneRect.Height();
         r.SetHeight(clientAreaHeight);
     }
