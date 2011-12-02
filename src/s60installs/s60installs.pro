@@ -34,9 +34,6 @@ symbian: {
         pluginLocations = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerPluginLocation = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerStubZ = $${EPOCROOT}$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin
-        BLD_INF_RULES.prj_exports += \
-            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
-            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         pluginLocations = $$QT_BUILD_TREE/plugins/s60
         bearerPluginLocation = $$QT_BUILD_TREE/plugins/bearer
@@ -54,6 +51,9 @@ symbian: {
             "ENDIF" \
             "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\""
         qtlibraries.pkg_postrules += qts60plugindeployment
+        BLD_INF_RULES.prj_exports += \
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         # No need to deploy plugins for older platform versions when building on Symbian3 or later
         bearer_plugin.files = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
