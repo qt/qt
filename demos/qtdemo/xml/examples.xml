@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <categories name="Qt Examples and Demos">
   <demos dirname="." docname="demos" name="Demonstrations">
-    <example filename="declarative/samegame" name="SameGame" executable="false" qml="true"/>
-    <example filename="declarative/flickr" name="Flickr Client" executable="false" qml="true"/>
+    <example filename="declarative/samegame" name="SameGame"/>
+    <example filename="declarative/flickr" name="Flickr Client"/>
     <example filename="affine" name="Affine Transformations" />
     <example filename="composition" name="Composition Modes" />
     <example filename="gradients" name="Gradients" />
@@ -11,8 +11,8 @@
     <example filename="chip" name="40000 Chips" />
     <example filename="embeddeddialogs" name="Embedded Dialogs" />
     <example filename="interview" name="Interview" />
-    <example filename="declarative/rssnews" name="Rss Client" executable="false" qml="true"/>
-    <example filename="declarative/twitter" name="Twitter Client" executable="false" qml="true"/>
+    <example filename="declarative/rssnews" name="Rss Client"/>
+    <example filename="declarative/twitter" name="Twitter Client"/>
     <example filename="browser" name="Browser" />
     <example filename="qmediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
@@ -41,11 +41,11 @@
     <example filename="wordcount" name="Word Count" executable="false" />
   </category>
   <category dirname="declarative/toys" name="Qt Declarative Examples">
-    <example filename="dynamicscene" name="Dynamic Scene" executable="false" qml="true" />
-    <example filename="tic-tac-toe" name="Tic Tac Toe" executable="false" qml="true" />
-    <example filename="clocks" name="Clocks" executable="false" qml="true" />
-    <example filename="corkboards" name="Corkboards" executable="false" qml="true" />
-    <example filename="tvtennis" name="TV Tennis" executable="false" qml="true" />
+    <example filename="dynamicscene" name="Dynamic Scene"/>
+    <example filename="tic-tac-toe" name="Tic Tac Toe"/>
+    <example filename="clocks" name="Clocks"/>
+    <example filename="corkboards" name="Corkboards"/>
+    <example filename="tvtennis" name="TV Tennis"/>
   </category>
   <category dirname="designer" name="Qt Designer">
     <example filename="calculatorbuilder" name="Calculator Builder" />
