@@ -878,4 +878,6 @@ EXPORTS
 	?glGetShaderPrecisionFormat@QGLFunctions@@QAEXIIPAH0@Z @ 877 NONAME ; void QGLFunctions::glGetShaderPrecisionFormat(unsigned int, unsigned int, int *, int *)
 	?qt_static_metacall@QGLShaderProgram@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 878 NONAME ; void QGLShaderProgram::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?insert@QGLContextGroupResourceBase@@QAEXPBVQGLContext@@PAX@Z @ 879 NONAME ; void QGLContextGroupResourceBase::insert(class QGLContext const *, void *)
+	?contextDeleted@QGLContextGroupResourceBase@@UAEXPBVQGLContext@@@Z @ 880 NONAME ; void QGLContextGroupResourceBase::contextDeleted(class QGLContext const *)
+	?contextDeleted@QGLTextureGlyphCache@@UAEXPBVQGLContext@@@Z @ 881 NONAME ; void QGLTextureGlyphCache::contextDeleted(class QGLContext const *)
 

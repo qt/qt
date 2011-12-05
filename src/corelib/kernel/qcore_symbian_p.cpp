@@ -246,6 +246,38 @@ RConnection* QSymbianSocketManager::defaultConnection() const
     return iDefaultConnection;
 }
 
+void QSymbianSocketManager::addActiveConnection(TUint32 identifier)
+{
+    QMutexLocker l(&iMutex);
+    activeConnectionsMap[identifier]++;
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "addActiveConnection" << identifier << activeConnectionsMap[identifier];
+#endif
+}
+
+void QSymbianSocketManager::removeActiveConnection(TUint32 identifier)
+{
+    QMutexLocker l(&iMutex);
+    int& val(activeConnectionsMap[identifier]);
+    Q_ASSERT(val > 0);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "removeActiveConnection" << identifier << val - 1;
+#endif
+    if (val <= 1)
+        activeConnectionsMap.remove(identifier);
+    else
+        val--;
+}
+
+QList<TUint32> QSymbianSocketManager::activeConnections() const
+{
+    QMutexLocker l(&iMutex);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "activeConnections" <<  activeConnectionsMap.keys();
+#endif
+    return activeConnectionsMap.keys();
+}
+
 Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
 
 QSymbianSocketManager& QSymbianSocketManager::instance()

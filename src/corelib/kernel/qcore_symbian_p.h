@@ -247,6 +247,27 @@ public:
 
     /*!
       \internal
+      Add an opened connection to the active list
+      \param an open connection
+    */
+    void addActiveConnection(TUint32 identifier);
+
+    /*!
+      \internal
+      Remove a connection from the active list
+      \param a closed connection
+    */
+    void removeActiveConnection(TUint32 identifier);
+
+    /*!
+      \internal
+      Add an opened connection to the active list
+      \param an open connection
+    */
+    QList<TUint32> activeConnections() const;
+
+    /*!
+      \internal
       Gets a reference to the singleton socket manager
     */
     static QSymbianSocketManager& instance();
@@ -258,6 +279,7 @@ private:
     int iNextSocket;
     QHash<QHashableSocket, int> socketMap;
     QHash<int, RSocket> reverseSocketMap;
+    QHash<TUint32, int> activeConnectionsMap;
     mutable QMutex iMutex;
     RSocketServ iSocketServ;
     RConnection *iDefaultConnection;

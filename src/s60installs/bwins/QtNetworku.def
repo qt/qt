@@ -1258,4 +1258,6 @@ EXPORTS
 	?metaObject@QHttpMultiPart@@UBEPBUQMetaObject@@XZ @ 1257 NONAME ; struct QMetaObject const * QHttpMultiPart::metaObject(void) const
 	?qt_static_metacall@QNetworkSession@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1258 NONAME ; void QNetworkSession::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?startPolling@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1259 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
+	?testSslOption@QSslConfiguration@@QBE_NW4SslOption@QSsl@@@Z @ 1260 NONAME ; bool QSslConfiguration::testSslOption(enum QSsl::SslOption) const
+	?setSslOption@QSslConfiguration@@QAEXW4SslOption@QSsl@@_N@Z @ 1261 NONAME ; void QSslConfiguration::setSslOption(enum QSsl::SslOption, bool)
 
