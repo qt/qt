@@ -681,6 +681,7 @@ void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, const Sy
         locTarget.append(".rss");
 
         t << "SOURCEPATH\t\t\t. " << endl;
+        t << MMP_START_RESOURCE "\t\t" << locTarget << endl;
         t << "LANG SC ";    // no endl
         SymbianLocalizationListIterator iter(symbianLocalizationList);
         while (iter.hasNext()) {
@@ -688,7 +689,6 @@ void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, const Sy
             t << loc.symbianLanguageCode << " "; // no endl
         }
         t << endl;
-        t << MMP_START_RESOURCE "\t\t" << locTarget << endl;
         t << "HEADER" << endl;
         t << "TARGETPATH\t\t\t" RESOURCE_DIRECTORY_MMP << endl;
         t << MMP_END_RESOURCE << endl << endl;

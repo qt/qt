@@ -397,7 +397,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
     if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
         addLocalizedResourcesToDeployment("default_resource_deployment.files", symbianLocalizationList);
-        addLocalizedResourcesToDeployment("default_reg_deployment.files", symbianLocalizationList);
     }
 
     // deploy files specified by DEPLOYMENT variable
