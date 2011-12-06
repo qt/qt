@@ -31,6 +31,7 @@ symbian:TARGET.UID3 = 0xEFDDF868
 # CONFIG += mobility
 # MOBILITY +=
 
+TARGET = tic-tac-toe
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp
 

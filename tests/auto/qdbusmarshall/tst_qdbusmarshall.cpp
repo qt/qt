@@ -93,6 +93,9 @@ private slots:
     void receiveUnknownType_data();
     void receiveUnknownType();
 
+    void demarshallPrimitives_data();
+    void demarshallPrimitives();
+
 private:
     int fileDescriptorForTest();
 
@@ -1166,6 +1169,85 @@ void tst_QDBusMarshall::receiveUnknownType()
         QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
     }
 #endif
+}
+
+void tst_QDBusMarshall::demarshallPrimitives_data()
+{
+    sendBasic_data();
+}
+
+template<class T>
+QVariant demarshallPrimitiveAs(const QDBusArgument& dbusArg)
+{
+    T val;
+    dbusArg >> val;
+    return qVariantFromValue(val);
+}
+
+QVariant demarshallPrimitiveAs(int typeIndex, const QDBusArgument& dbusArg)
+{
+    switch (typeIndex) {
+    case 0:
+        return demarshallPrimitiveAs<uchar>(dbusArg);
+    case 1:
+        return demarshallPrimitiveAs<bool>(dbusArg);
+    case 2:
+        return demarshallPrimitiveAs<short>(dbusArg);
+    case 3:
+        return demarshallPrimitiveAs<ushort>(dbusArg);
+    case 4:
+        return demarshallPrimitiveAs<int>(dbusArg);
+    case 5:
+        return demarshallPrimitiveAs<uint>(dbusArg);
+    case 6:
+        return demarshallPrimitiveAs<qlonglong>(dbusArg);
+    case 7:
+        return demarshallPrimitiveAs<qulonglong>(dbusArg);
+    case 8:
+        return demarshallPrimitiveAs<double>(dbusArg);
+    default:
+        return QVariant();
+    }
+}
+
+void tst_QDBusMarshall::demarshallPrimitives()
+{
+    QFETCH(QVariant, value);
+    QFETCH(QString, sig);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    // Demarshall each test data value to all primitive types to test
+    // demarshalling to the wrong type does not cause a crash
+    for (int typeIndex = 0; true; ++typeIndex) {
+        QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                          interfaceName, "ping");
+        QDBusArgument sendArg;
+        sendArg.beginStructure();
+        sendArg.appendVariant(value);
+        sendArg.endStructure();
+        msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+        QDBusMessage reply = con.call(msg);
+
+        const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+        receiveArg.beginStructure();
+        QCOMPARE(receiveArg.currentSignature(), sig);
+
+        const QVariant receiveValue = demarshallPrimitiveAs(typeIndex, receiveArg);
+        if (receiveValue.type() == value.type()) {
+            // Value type is the same, compare the values
+            QCOMPARE(receiveValue, value);
+            QVERIFY(receiveArg.atEnd());
+        }
+
+        receiveArg.endStructure();
+        QVERIFY(receiveArg.atEnd());
+
+        if (!receiveValue.isValid())
+            break;
+    }
 }
 
 QTEST_MAIN(tst_QDBusMarshall)

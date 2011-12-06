@@ -44,6 +44,7 @@
 #include <qgraphicslayoutitem.h>
 #include <float.h>
 #include <limits.h>
+#include <QtGui/qgraphicswidget.h>
 
 class tst_QGraphicsLayoutItem : public QObject {
 Q_OBJECT
@@ -60,6 +61,8 @@ private slots:
     void contentsRect();
     void effectiveSizeHint_data();
     void effectiveSizeHint();
+    void effectiveSizeHint2_data();
+    void effectiveSizeHint2();
     void getContentsMargins();
     void isLayout_data();
     void isLayout();
@@ -102,6 +105,40 @@ public:
         { updateGeometryCalled++; QGraphicsLayoutItem::updateGeometry(); }
     int updateGeometryCalled;
 
+};
+
+class RectWidget : public QGraphicsWidget
+{
+public:
+    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent), m_fnConstraint(fn2000_div_w) {}
+
+
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        if (constraint.width() < 0 && constraint.height() < 0 && m_sizeHints[which].isValid()) {
+            return m_sizeHints[which];
+        }
+        if (m_fnConstraint) {
+            return m_fnConstraint(which, constraint);
+        }
+        return QGraphicsWidget::sizeHint(which, constraint);
+    }
+
+    void setSizeHint(Qt::SizeHint which, const QSizeF &size) {
+        m_sizeHints[which] = size;
+        updateGeometry();
+    }
+
+    void setConstraintFunction(QSizeF (*fnConstraint)(Qt::SizeHint, const QSizeF &)) {
+        m_fnConstraint = fnConstraint;
+    }
+
+    QSizeF m_sizeHints[Qt::NSizeHints];
+    QSizeF (*m_fnConstraint)(Qt::SizeHint, const QSizeF &);
+
+    static QSizeF fn2000_div_w(Qt::SizeHint /*which*/, const QSizeF &constraint = QSizeF()) {
+        return QSizeF(constraint.width(), 2000.0/constraint.width());
+    }
 };
 
 // This will be called before the first test function is executed.
@@ -182,6 +219,77 @@ void tst_QGraphicsLayoutItem::effectiveSizeHint()
     if (constraint.height() != -1)
         QCOMPARE(r.height(), constraint.height());
 }
+
+
+void tst_QGraphicsLayoutItem::effectiveSizeHint2_data()
+{
+    QTest::addColumn<QSizeF>("minimumSize");
+    QTest::addColumn<QSizeF>("preferredSize");
+    QTest::addColumn<QSizeF>("maximumSize");
+    QTest::addColumn<QSizeF>("minimumSizeHint");
+    QTest::addColumn<QSizeF>("preferredSizeHint");
+    QTest::addColumn<QSizeF>("maximumSizeHint");
+
+    QTest::addColumn<QSizeF>("inputConstraint");
+    QTest::addColumn<QSizeF>("expectedMinimumESH");
+    QTest::addColumn<QSizeF>("expectedPreferredESH");
+    QTest::addColumn<QSizeF>("expectedMaximumESH");
+
+    QTest::newRow("P1-a")
+            << QSizeF(  6,   4) << QSizeF( 60,  40) << QSizeF( 600, 400)
+            << QSizeF( -1,  -1) << QSizeF( -1,  -1) << QSizeF( -1,  -1)
+            << QSizeF(-1, -1)
+            << QSizeF(6, 4)     << QSizeF( 60,  40) << QSizeF(600, 400);
+
+    QTest::newRow("P1-hfw-1")
+            << QSizeF( -1,  -1) << QSizeF( -1,  -1) << QSizeF( -1,  -1)
+            << QSizeF(  6,   4) << QSizeF( 60,  40) << QSizeF(600, 400)
+            << QSizeF(200, -1)
+            << QSizeF(200, 10)  << QSizeF(200,  10) << QSizeF(200,  10);
+
+    QTest::newRow("P1-hfw-2")
+            << QSizeF(  6,  -1) << QSizeF( 60,  -1) << QSizeF(600,  -1)
+            << QSizeF( -1,  -1) << QSizeF( -1,  -1) << QSizeF( -1,  -1)
+            << QSizeF(200, -1)
+            << QSizeF(200, 10)  << QSizeF(200,  10) << QSizeF(200,  10);
+
+    // constraint is bigger than max width
+    QTest::newRow("P1-hfw-3")
+            << QSizeF(  5,  -1) << QSizeF( 50,  -1) << QSizeF(500,  -1)
+            << QSizeF( -1,  -1) << QSizeF( -1,  -1) << QSizeF( -1,  -1)
+            << QSizeF(600,  -1)
+            << QSizeF(500,   4)  << QSizeF(500,   4) << QSizeF(500,   4);
+
+}
+
+void tst_QGraphicsLayoutItem::effectiveSizeHint2()
+{
+    QFETCH(QSizeF, minimumSize);
+    QFETCH(QSizeF, preferredSize);
+    QFETCH(QSizeF, maximumSize);
+    QFETCH(QSizeF, minimumSizeHint);
+    QFETCH(QSizeF, preferredSizeHint);
+    QFETCH(QSizeF, maximumSizeHint);
+
+    QFETCH(QSizeF, inputConstraint);
+    QFETCH(QSizeF, expectedMinimumESH);
+    QFETCH(QSizeF, expectedPreferredESH);
+    QFETCH(QSizeF, expectedMaximumESH);
+
+    RectWidget *item = new RectWidget;
+    item->setMinimumSize(minimumSize);
+    item->setPreferredSize(preferredSize);
+    item->setMaximumSize(maximumSize);
+    item->setSizeHint(Qt::MinimumSize, minimumSizeHint);
+    item->setSizeHint(Qt::PreferredSize, preferredSizeHint);
+    item->setSizeHint(Qt::MaximumSize, maximumSizeHint);
+
+    QCOMPARE(item->effectiveSizeHint(Qt::MinimumSize, inputConstraint), expectedMinimumESH);
+    QCOMPARE(item->effectiveSizeHint(Qt::PreferredSize, inputConstraint), expectedPreferredESH);
+    QCOMPARE(item->effectiveSizeHint(Qt::MaximumSize, inputConstraint), expectedMaximumESH);
+
+}
+
 
 // void getContentsMargins(qreal* left, qreal* top, qreal* right, qreal* bottom) const public
 void tst_QGraphicsLayoutItem::getContentsMargins()
