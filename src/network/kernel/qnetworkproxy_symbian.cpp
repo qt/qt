@@ -60,6 +60,7 @@
 #include <QtNetwork/QNetworkConfigurationManager>
 #include <QtNetwork/QNetworkConfiguration>
 #include <QFlags>
+#include <QtCore/private/qcore_symbian_p.h>
 
 using namespace CommsDat;
 
@@ -73,6 +74,25 @@ public:
     void setIapId(TUint32 iapId) { valid = true; id = iapId; }
     bool isValid() { return valid; }
     TUint32 iapId() { return id; }
+    static SymbianIapId fromConfiguration(const QNetworkConfiguration& config)
+    {
+        SymbianIapId iapId;
+        // Note: the following code assumes that the identifier is in format
+        // I_xxxx where xxxx is the identifier of IAP. This is meant as a
+        // temporary solution until there is a support for returning
+        // implementation specific identifier.
+        const int generalPartLength = 2;
+        QString idString(config.identifier().mid(generalPartLength));
+        bool success;
+        uint id = idString.toUInt(&success);
+        if (success)
+            iapId.setIapId(id);
+        else
+            qWarning() << "Failed to convert identifier to access point identifier: "
+                << config.identifier();
+        return iapId;
+    }
+
 private:
     bool valid;
     TUint32 id;
@@ -122,9 +142,16 @@ QNetworkConfiguration SymbianProxyQuery::findCurrentConfigurationFromServiceNetw
 
 QNetworkConfiguration SymbianProxyQuery::findCurrentConfiguration(QNetworkConfigurationManager& configurationManager)
 {
+    QList<TUint32> openConfigurations = QSymbianSocketManager::instance().activeConnections();
     QList<QNetworkConfiguration> activeConfigurations = configurationManager.allConfigurations(
         QNetworkConfiguration::Active);
+    for (int i = 0; i < activeConfigurations.count(); i++) {
+        // get first configuration which was opened by this process
+        if (openConfigurations.contains(SymbianIapId::fromConfiguration(activeConfigurations.at(i)).iapId()))
+            return activeConfigurations.at(i);
+    }
     if (activeConfigurations.count() > 0) {
+        // get first active configuration opened by any process
         return activeConfigurations.at(0);
     } else {
         // No active configurations, try default one

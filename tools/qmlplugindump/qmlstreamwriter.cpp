@@ -93,8 +93,7 @@ void QmlStreamWriter::writeEndObject()
         m_pendingLineLength = 0;
         m_maybeOneline = false;
     } else {
-        if (m_maybeOneline)
-            flushPotentialLinesWithNewlines();
+        flushPotentialLinesWithNewlines();
         --m_indentDepth;
         writeIndent();
         m_stream->write("}\n");
