@@ -1,13 +1,12 @@
-load(qttest_p4)
-SOURCES += ../tst_selftests.cpp
-QT += core xml
-
+CONFIG += testcase
 TARGET = ../tst_selftests
+QT = core xml testlib
+SOURCES += ../tst_selftests.cpp
 
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_selftests
-} else {
+  } else {
     TARGET = ../../release/tst_selftests
   }
 }
