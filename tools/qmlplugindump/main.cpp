@@ -308,8 +308,12 @@ public:
             qml->writeArrayBinding(QLatin1String("exports"), exports);
 
             if (const QMetaObject *attachedType = (*qmlTypes.begin())->attachedPropertiesType()) {
-                qml->writeScriptBinding(QLatin1String("attachedType"), enquote(
-                                            convertToId(attachedType)));
+                // Can happen when a type is registered that returns itself as attachedPropertiesType()
+                // because there is no creatable type to attach to.
+                if (attachedType != meta) {
+                    qml->writeScriptBinding(QLatin1String("attachedType"), enquote(
+                                                convertToId(attachedType)));
+                }
             }
         }
 
