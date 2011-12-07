@@ -12,7 +12,7 @@ CONFIG += release
 # Input
 SOURCES += main.cpp
 
-include( $${QT_SOURCE_TREE}/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pri )
+include( $${QT_SOURCE_TREE}/src/3rdparty/webkit/Source/JavaScriptCore/JavaScriptCore.pri )
 
 exists( /usr/include/boost/regex.hpp ){
 DEFINES+=HAVE_BOOST

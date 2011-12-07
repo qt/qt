@@ -6,8 +6,10 @@ SUBDIRS = \
         qline \
         qlist \
         qrect \
-        qregexp \
+        #qregexp \     # FIXME: broken
         qstring \
         qstringbuilder \
         qstringlist \
         qvector
+
+!*g++*: SUBDIRS -= qstring

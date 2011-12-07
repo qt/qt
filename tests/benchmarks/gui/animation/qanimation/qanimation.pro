@@ -5,8 +5,6 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 CONFIG += release
-#CONFIG += debug
-
 
 SOURCES += main.cpp \
            dummyobject.cpp \

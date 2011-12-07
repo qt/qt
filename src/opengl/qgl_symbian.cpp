@@ -181,7 +181,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
         d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
-        if (!QSymbianGraphicsSystemEx::hasBCM2727()) {
+        // Allow apps to override ability to use multisampling by setting an environment variable. Eg:
+        //   qputenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE", "1");
+        // Added to allow camera app to start with limited memory.
+        if (!QSymbianGraphicsSystemEx::hasBCM2727() && !qgetenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE").toInt()) {
             // Most likely we have hw support for multisampling
             // so let's enable it.
             d->glFormat.setSampleBuffers(1);

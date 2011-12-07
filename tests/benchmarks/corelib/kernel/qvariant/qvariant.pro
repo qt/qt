@@ -5,7 +5,5 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 CONFIG += release
-#CONFIG += debug
-
 
 SOURCES += tst_qvariant.cpp
