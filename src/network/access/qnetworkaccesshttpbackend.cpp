@@ -721,6 +721,12 @@ void QNetworkAccessHttpBackend::readFromHttp()
     if (!httpReply)
         return;
 
+    if (!http) {
+        // Connection has been destroyed
+        finished();
+        return;
+    }
+
     // We read possibly more than nextDownstreamBlockSize(), but
     // this is not a critical thing since it is already in the
     // memory anyway
