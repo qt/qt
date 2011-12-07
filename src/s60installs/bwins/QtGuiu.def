@@ -13118,233 +13118,233 @@ EXPORTS
 	?aboutToReleaseGpuResources@QApplication@@IAEXXZ @ 13117 NONAME ; void QApplication::aboutToReleaseGpuResources(void)
 	?emitAboutToUseGpuResources@QApplicationPrivate@@QAEXXZ @ 13118 NONAME ; void QApplicationPrivate::emitAboutToUseGpuResources(void)
 	?emitAboutToReleaseGpuResources@QApplicationPrivate@@QAEXXZ @ 13119 NONAME ; void QApplicationPrivate::emitAboutToReleaseGpuResources(void)
-	png_access_version_number @ 13120 NONAME
-	png_benign_error @ 13121 NONAME
-	png_build_grayscale_palette @ 13122 NONAME
-	png_calloc @ 13123 NONAME
-	png_chunk_benign_error @ 13124 NONAME
-	png_chunk_error @ 13125 NONAME
-	png_chunk_warning @ 13126 NONAME
-	png_convert_from_struct_tm @ 13127 NONAME
-	png_convert_from_time_t @ 13128 NONAME
-	png_convert_to_rfc1123 @ 13129 NONAME
-	png_create_info_struct @ 13130 NONAME
-	png_create_read_struct @ 13131 NONAME
-	png_create_read_struct_2 @ 13132 NONAME
-	png_create_write_struct @ 13133 NONAME
-	png_create_write_struct_2 @ 13134 NONAME
-	png_data_freer @ 13135 NONAME
-	png_destroy_info_struct @ 13136 NONAME
-	png_destroy_read_struct @ 13137 NONAME
-	png_destroy_write_struct @ 13138 NONAME
-	png_error @ 13139 NONAME
-	png_free @ 13140 NONAME
-	png_free_data @ 13141 NONAME
-	png_free_default @ 13142 NONAME
-	png_get_IHDR @ 13143 NONAME
-	png_get_PLTE @ 13144 NONAME
-	png_get_bKGD @ 13145 NONAME
-	png_get_bit_depth @ 13146 NONAME
-	png_get_cHRM @ 13147 NONAME
-	png_get_cHRM_fixed @ 13148 NONAME
-	png_get_channels @ 13149 NONAME
-	png_get_chunk_cache_max @ 13150 NONAME
-	png_get_chunk_malloc_max @ 13151 NONAME
-	png_get_color_type @ 13152 NONAME
-	png_get_compression_buffer_size @ 13153 NONAME
-	png_get_compression_type @ 13154 NONAME
-	png_get_copyright @ 13155 NONAME
-	png_get_current_pass_number @ 13156 NONAME
-	png_get_current_row_number @ 13157 NONAME
-	png_get_error_ptr @ 13158 NONAME
-	png_get_filter_type @ 13159 NONAME
-	png_get_gAMA @ 13160 NONAME
-	png_get_gAMA_fixed @ 13161 NONAME
-	png_get_hIST @ 13162 NONAME
-	png_get_header_ver @ 13163 NONAME
-	png_get_header_version @ 13164 NONAME
-	png_get_iCCP @ 13165 NONAME
-	png_get_image_height @ 13166 NONAME
-	png_get_image_width @ 13167 NONAME
-	png_get_int_32 @ 13168 NONAME
-	png_get_interlace_type @ 13169 NONAME
-	png_get_io_chunk_name @ 13170 NONAME
-	png_get_io_chunk_type @ 13171 NONAME
-	png_get_io_ptr @ 13172 NONAME
-	png_get_io_state @ 13173 NONAME
-	png_get_libpng_ver @ 13174 NONAME
-	png_get_mem_ptr @ 13175 NONAME
-	png_get_oFFs @ 13176 NONAME
-	png_get_pCAL @ 13177 NONAME
-	png_get_pHYs @ 13178 NONAME
-	png_get_pHYs_dpi @ 13179 NONAME
-	png_get_pixel_aspect_ratio @ 13180 NONAME
-	png_get_pixel_aspect_ratio_fixed @ 13181 NONAME
-	png_get_pixels_per_inch @ 13182 NONAME
-	png_get_pixels_per_meter @ 13183 NONAME
-	png_get_progressive_ptr @ 13184 NONAME
-	png_get_rgb_to_gray_status @ 13185 NONAME
-	png_get_rowbytes @ 13186 NONAME
-	png_get_rows @ 13187 NONAME
-	png_get_sBIT @ 13188 NONAME
-	png_get_sCAL @ 13189 NONAME
-	png_get_sCAL_fixed @ 13190 NONAME
-	png_get_sCAL_s @ 13191 NONAME
-	png_get_sPLT @ 13192 NONAME
-	png_get_sRGB @ 13193 NONAME
-	png_get_signature @ 13194 NONAME
-	png_get_tIME @ 13195 NONAME
-	png_get_tRNS @ 13196 NONAME
-	png_get_text @ 13197 NONAME
-	png_get_uint_16 @ 13198 NONAME
-	png_get_uint_31 @ 13199 NONAME
-	png_get_uint_32 @ 13200 NONAME
-	png_get_unknown_chunks @ 13201 NONAME
-	png_get_user_chunk_ptr @ 13202 NONAME
-	png_get_user_height_max @ 13203 NONAME
-	png_get_user_transform_ptr @ 13204 NONAME
-	png_get_user_width_max @ 13205 NONAME
-	png_get_valid @ 13206 NONAME
-	png_get_x_offset_inches @ 13207 NONAME
-	png_get_x_offset_inches_fixed @ 13208 NONAME
-	png_get_x_offset_microns @ 13209 NONAME
-	png_get_x_offset_pixels @ 13210 NONAME
-	png_get_x_pixels_per_inch @ 13211 NONAME
-	png_get_x_pixels_per_meter @ 13212 NONAME
-	png_get_y_offset_inches @ 13213 NONAME
-	png_get_y_offset_inches_fixed @ 13214 NONAME
-	png_get_y_offset_microns @ 13215 NONAME
-	png_get_y_offset_pixels @ 13216 NONAME
-	png_get_y_pixels_per_inch @ 13217 NONAME
-	png_get_y_pixels_per_meter @ 13218 NONAME
-	png_handle_as_unknown @ 13219 NONAME
-	png_info_init_3 @ 13220 NONAME
-	png_init_io @ 13221 NONAME
-	png_longjmp @ 13222 NONAME
-	png_malloc @ 13223 NONAME
-	png_malloc_default @ 13224 NONAME
-	png_malloc_warn @ 13225 NONAME
-	png_permit_mng_features @ 13226 NONAME
-	png_process_data @ 13227 NONAME
-	png_process_data_pause @ 13228 NONAME
-	png_process_data_skip @ 13229 NONAME
-	png_progressive_combine_row @ 13230 NONAME
-	png_read_end @ 13231 NONAME
-	png_read_image @ 13232 NONAME
-	png_read_info @ 13233 NONAME
-	png_read_png @ 13234 NONAME
-	png_read_row @ 13235 NONAME
-	png_read_rows @ 13236 NONAME
-	png_read_update_info @ 13237 NONAME
-	png_reset_zstream @ 13238 NONAME
-	png_save_int_32 @ 13239 NONAME
-	png_save_uint_16 @ 13240 NONAME
-	png_save_uint_32 @ 13241 NONAME
-	png_set_IHDR @ 13242 NONAME
-	png_set_PLTE @ 13243 NONAME
-	png_set_add_alpha @ 13244 NONAME
-	png_set_alpha_mode @ 13245 NONAME
-	png_set_alpha_mode_fixed @ 13246 NONAME
-	png_set_bKGD @ 13247 NONAME
-	png_set_background @ 13248 NONAME
-	png_set_background_fixed @ 13249 NONAME
-	png_set_benign_errors @ 13250 NONAME
-	png_set_bgr @ 13251 NONAME
-	png_set_cHRM @ 13252 NONAME
-	png_set_cHRM_fixed @ 13253 NONAME
-	png_set_chunk_cache_max @ 13254 NONAME
-	png_set_chunk_malloc_max @ 13255 NONAME
-	png_set_compression_buffer_size @ 13256 NONAME
-	png_set_compression_level @ 13257 NONAME
-	png_set_compression_mem_level @ 13258 NONAME
-	png_set_compression_method @ 13259 NONAME
-	png_set_compression_strategy @ 13260 NONAME
-	png_set_compression_window_bits @ 13261 NONAME
-	png_set_crc_action @ 13262 NONAME
-	png_set_error_fn @ 13263 NONAME
-	png_set_expand @ 13264 NONAME
-	png_set_expand_16 @ 13265 NONAME
-	png_set_expand_gray_1_2_4_to_8 @ 13266 NONAME
-	png_set_filler @ 13267 NONAME
-	png_set_filter @ 13268 NONAME
-	png_set_filter_heuristics @ 13269 NONAME
-	png_set_filter_heuristics_fixed @ 13270 NONAME
-	png_set_flush @ 13271 NONAME
-	png_set_gAMA @ 13272 NONAME
-	png_set_gAMA_fixed @ 13273 NONAME
-	png_set_gamma @ 13274 NONAME
-	png_set_gamma_fixed @ 13275 NONAME
-	png_set_gray_to_rgb @ 13276 NONAME
-	png_set_hIST @ 13277 NONAME
-	png_set_iCCP @ 13278 NONAME
-	png_set_interlace_handling @ 13279 NONAME
-	png_set_invalid @ 13280 NONAME
-	png_set_invert_alpha @ 13281 NONAME
-	png_set_invert_mono @ 13282 NONAME
-	png_set_keep_unknown_chunks @ 13283 NONAME
-	png_set_longjmp_fn @ 13284 NONAME
-	png_set_mem_fn @ 13285 NONAME
-	png_set_oFFs @ 13286 NONAME
-	png_set_pCAL @ 13287 NONAME
-	png_set_pHYs @ 13288 NONAME
-	png_set_packing @ 13289 NONAME
-	png_set_packswap @ 13290 NONAME
-	png_set_palette_to_rgb @ 13291 NONAME
-	png_set_progressive_read_fn @ 13292 NONAME
-	png_set_quantize @ 13293 NONAME
-	png_set_read_fn @ 13294 NONAME
-	png_set_read_status_fn @ 13295 NONAME
-	png_set_read_user_chunk_fn @ 13296 NONAME
-	png_set_read_user_transform_fn @ 13297 NONAME
-	png_set_rgb_to_gray @ 13298 NONAME
-	png_set_rgb_to_gray_fixed @ 13299 NONAME
-	png_set_rows @ 13300 NONAME
-	png_set_sBIT @ 13301 NONAME
-	png_set_sCAL @ 13302 NONAME
-	png_set_sCAL_fixed @ 13303 NONAME
-	png_set_sCAL_s @ 13304 NONAME
-	png_set_sPLT @ 13305 NONAME
-	png_set_sRGB @ 13306 NONAME
-	png_set_sRGB_gAMA_and_cHRM @ 13307 NONAME
-	png_set_scale_16 @ 13308 NONAME
-	png_set_shift @ 13309 NONAME
-	png_set_sig_bytes @ 13310 NONAME
-	png_set_strip_16 @ 13311 NONAME
-	png_set_strip_alpha @ 13312 NONAME
-	png_set_swap @ 13313 NONAME
-	png_set_swap_alpha @ 13314 NONAME
-	png_set_tIME @ 13315 NONAME
-	png_set_tRNS @ 13316 NONAME
-	png_set_tRNS_to_alpha @ 13317 NONAME
-	png_set_text @ 13318 NONAME
-	png_set_text_compression_level @ 13319 NONAME
-	png_set_text_compression_mem_level @ 13320 NONAME
-	png_set_text_compression_method @ 13321 NONAME
-	png_set_text_compression_strategy @ 13322 NONAME
-	png_set_text_compression_window_bits @ 13323 NONAME
-	png_set_unknown_chunk_location @ 13324 NONAME
-	png_set_unknown_chunks @ 13325 NONAME
-	png_set_user_limits @ 13326 NONAME
-	png_set_user_transform_info @ 13327 NONAME
-	png_set_write_fn @ 13328 NONAME
-	png_set_write_status_fn @ 13329 NONAME
-	png_set_write_user_transform_fn @ 13330 NONAME
-	png_sig_cmp @ 13331 NONAME
-	png_start_read_image @ 13332 NONAME
-	png_warning @ 13333 NONAME
-	png_write_chunk @ 13334 NONAME
-	png_write_chunk_data @ 13335 NONAME
-	png_write_chunk_end @ 13336 NONAME
-	png_write_chunk_start @ 13337 NONAME
-	png_write_end @ 13338 NONAME
-	png_write_flush @ 13339 NONAME
-	png_write_image @ 13340 NONAME
-	png_write_info @ 13341 NONAME
-	png_write_info_before_PLTE @ 13342 NONAME
-	png_write_png @ 13343 NONAME
-	png_write_row @ 13344 NONAME
-	png_write_rows @ 13345 NONAME
-	png_write_sig @ 13346 NONAME
+	?png_access_version_number@PrivatePng@@YAIXZ @ 13120 NONAME ; unsigned int PrivatePng::png_access_version_number(void)
+	?png_benign_error@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13121 NONAME ; void PrivatePng::png_benign_error(struct PrivatePng::png_struct_def *, char const *)
+	?png_build_grayscale_palette@PrivatePng@@YAXHPAUpng_color_struct@1@@Z @ 13122 NONAME ; void PrivatePng::png_build_grayscale_palette(int, struct PrivatePng::png_color_struct *)
+	?png_calloc@PrivatePng@@YAPAXPAUpng_struct_def@1@I@Z @ 13123 NONAME ; void * PrivatePng::png_calloc(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_chunk_benign_error@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13124 NONAME ; void PrivatePng::png_chunk_benign_error(struct PrivatePng::png_struct_def *, char const *)
+	?png_chunk_error@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13125 NONAME ; void PrivatePng::png_chunk_error(struct PrivatePng::png_struct_def *, char const *)
+	?png_chunk_warning@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13126 NONAME ; void PrivatePng::png_chunk_warning(struct PrivatePng::png_struct_def *, char const *)
+	?png_convert_from_struct_tm@PrivatePng@@YAXPAUpng_time_struct@1@PBUtm@@@Z @ 13127 NONAME ; void PrivatePng::png_convert_from_struct_tm(struct PrivatePng::png_time_struct *, struct tm const *)
+	?png_convert_from_time_t@PrivatePng@@YAXPAUpng_time_struct@1@H@Z @ 13128 NONAME ; void PrivatePng::png_convert_from_time_t(struct PrivatePng::png_time_struct *, int)
+	?png_convert_to_rfc1123@PrivatePng@@YAPBDPAUpng_struct_def@1@PBUpng_time_struct@1@@Z @ 13129 NONAME ; char const * PrivatePng::png_convert_to_rfc1123(struct PrivatePng::png_struct_def *, struct PrivatePng::png_time_struct const *)
+	?png_create_info_struct@PrivatePng@@YAPAUpng_info_def@1@PAUpng_struct_def@1@@Z @ 13130 NONAME ; struct PrivatePng::png_info_def * PrivatePng::png_create_info_struct(struct PrivatePng::png_struct_def *)
+	?png_create_read_struct@PrivatePng@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@ZP6AX20@Z@Z @ 13131 NONAME ; struct PrivatePng::png_struct_def * PrivatePng::png_create_read_struct(char const *, void *, void (*)(struct PrivatePng::png_struct_def *, char const *), void (*)(struct PrivatePng::png_struct_def *, char const *))
+	?png_create_read_struct_2@PrivatePng@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@ZP6AX20@Z1P6APAX2I@ZP6AX21@Z@Z @ 13132 NONAME ; struct PrivatePng::png_struct_def * PrivatePng::png_create_read_struct_2(char const *, void *, void (*)(struct PrivatePng::png_struct_def *, char const *), void (*)(struct PrivatePng::png_struct_def *, char const *), void *, void * (*)(struct PrivatePng::png_struct_def *, unsigned int), void (*)(struct PrivatePng::png_struct_def *, void *))
+	?png_create_write_struct@PrivatePng@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@ZP6AX20@Z@Z @ 13133 NONAME ; struct PrivatePng::png_struct_def * PrivatePng::png_create_write_struct(char const *, void *, void (*)(struct PrivatePng::png_struct_def *, char const *), void (*)(struct PrivatePng::png_struct_def *, char const *))
+	?png_create_write_struct_2@PrivatePng@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@ZP6AX20@Z1P6APAX2I@ZP6AX21@Z@Z @ 13134 NONAME ; struct PrivatePng::png_struct_def * PrivatePng::png_create_write_struct_2(char const *, void *, void (*)(struct PrivatePng::png_struct_def *, char const *), void (*)(struct PrivatePng::png_struct_def *, char const *), void *, void * (*)(struct PrivatePng::png_struct_def *, unsigned int), void (*)(struct PrivatePng::png_struct_def *, void *))
+	?png_data_freer@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HI@Z @ 13135 NONAME ; void PrivatePng::png_data_freer(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, unsigned int)
+	?png_destroy_info_struct@PrivatePng@@YAXPAUpng_struct_def@1@PAPAUpng_info_def@1@@Z @ 13136 NONAME ; void PrivatePng::png_destroy_info_struct(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def * *)
+	?png_destroy_read_struct@PrivatePng@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_def@1@1@Z @ 13137 NONAME ; void PrivatePng::png_destroy_read_struct(struct PrivatePng::png_struct_def * *, struct PrivatePng::png_info_def * *, struct PrivatePng::png_info_def * *)
+	?png_destroy_write_struct@PrivatePng@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_def@1@@Z @ 13138 NONAME ; void PrivatePng::png_destroy_write_struct(struct PrivatePng::png_struct_def * *, struct PrivatePng::png_info_def * *)
+	?png_error@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13139 NONAME ; void PrivatePng::png_error(struct PrivatePng::png_struct_def *, char const *)
+	?png_free@PrivatePng@@YAXPAUpng_struct_def@1@PAX@Z @ 13140 NONAME ; void PrivatePng::png_free(struct PrivatePng::png_struct_def *, void *)
+	?png_free_data@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@IH@Z @ 13141 NONAME ; void PrivatePng::png_free_data(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned int, int)
+	?png_free_default@PrivatePng@@YAXPAUpng_struct_def@1@PAX@Z @ 13142 NONAME ; void PrivatePng::png_free_default(struct PrivatePng::png_struct_def *, void *)
+	?png_get_IHDR@PrivatePng@@YAIPAUpng_struct_def@1@PAUpng_info_def@1@PAI2PAH3333@Z @ 13143 NONAME ; unsigned int PrivatePng::png_get_IHDR(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned int *, unsigned int *, int *, int *, int *, int *, int *)
+	?png_get_PLTE@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPAUpng_color_struct@1@PAH@Z @ 13144 NONAME ; unsigned int PrivatePng::png_get_PLTE(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, struct PrivatePng::png_color_struct * *, int *)
+	?png_get_bKGD@PrivatePng@@YAIPBUpng_struct_def@1@PAUpng_info_def@1@PAPAUpng_color_16_struct@1@@Z @ 13145 NONAME ; unsigned int PrivatePng::png_get_bKGD(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def *, struct PrivatePng::png_color_16_struct * *)
+	?png_get_bit_depth@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13146 NONAME ; unsigned char PrivatePng::png_get_bit_depth(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_cHRM@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAN2222222@Z @ 13147 NONAME ; unsigned int PrivatePng::png_get_cHRM(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, double *, double *, double *, double *, double *, double *, double *, double *)
+	?png_get_cHRM_fixed@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAH2222222@Z @ 13148 NONAME ; unsigned int PrivatePng::png_get_cHRM_fixed(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *, int *, int *, int *, int *, int *, int *, int *)
+	?png_get_channels@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13149 NONAME ; unsigned char PrivatePng::png_get_channels(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_chunk_cache_max@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13150 NONAME ; unsigned int PrivatePng::png_get_chunk_cache_max(struct PrivatePng::png_struct_def const *)
+	?png_get_chunk_malloc_max@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13151 NONAME ; unsigned int PrivatePng::png_get_chunk_malloc_max(struct PrivatePng::png_struct_def const *)
+	?png_get_color_type@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13152 NONAME ; unsigned char PrivatePng::png_get_color_type(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_compression_buffer_size@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13153 NONAME ; unsigned int PrivatePng::png_get_compression_buffer_size(struct PrivatePng::png_struct_def const *)
+	?png_get_compression_type@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13154 NONAME ; unsigned char PrivatePng::png_get_compression_type(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_copyright@PrivatePng@@YAPBDPBUpng_struct_def@1@@Z @ 13155 NONAME ; char const * PrivatePng::png_get_copyright(struct PrivatePng::png_struct_def const *)
+	?png_get_current_pass_number@PrivatePng@@YAEPBUpng_struct_def@1@@Z @ 13156 NONAME ; unsigned char PrivatePng::png_get_current_pass_number(struct PrivatePng::png_struct_def const *)
+	?png_get_current_row_number@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13157 NONAME ; unsigned int PrivatePng::png_get_current_row_number(struct PrivatePng::png_struct_def const *)
+	?png_get_error_ptr@PrivatePng@@YAPAXPBUpng_struct_def@1@@Z @ 13158 NONAME ; void * PrivatePng::png_get_error_ptr(struct PrivatePng::png_struct_def const *)
+	?png_get_filter_type@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13159 NONAME ; unsigned char PrivatePng::png_get_filter_type(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_gAMA@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAN@Z @ 13160 NONAME ; unsigned int PrivatePng::png_get_gAMA(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, double *)
+	?png_get_gAMA_fixed@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAH@Z @ 13161 NONAME ; unsigned int PrivatePng::png_get_gAMA_fixed(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *)
+	?png_get_hIST@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPAG@Z @ 13162 NONAME ; unsigned int PrivatePng::png_get_hIST(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, unsigned short * *)
+	?png_get_header_ver@PrivatePng@@YAPBDPBUpng_struct_def@1@@Z @ 13163 NONAME ; char const * PrivatePng::png_get_header_ver(struct PrivatePng::png_struct_def const *)
+	?png_get_header_version@PrivatePng@@YAPBDPBUpng_struct_def@1@@Z @ 13164 NONAME ; char const * PrivatePng::png_get_header_version(struct PrivatePng::png_struct_def const *)
+	?png_get_iCCP@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPADPAHPAPAEPAI@Z @ 13165 NONAME ; unsigned int PrivatePng::png_get_iCCP(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, char * *, int *, unsigned char * *, unsigned int *)
+	?png_get_image_height@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13166 NONAME ; unsigned int PrivatePng::png_get_image_height(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_image_width@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13167 NONAME ; unsigned int PrivatePng::png_get_image_width(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_int_32@PrivatePng@@YAHPBE@Z @ 13168 NONAME ; int PrivatePng::png_get_int_32(unsigned char const *)
+	?png_get_interlace_type@PrivatePng@@YAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13169 NONAME ; unsigned char PrivatePng::png_get_interlace_type(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_io_chunk_name@PrivatePng@@YAPBEPAUpng_struct_def@1@@Z @ 13170 NONAME ; unsigned char const * PrivatePng::png_get_io_chunk_name(struct PrivatePng::png_struct_def *)
+	?png_get_io_chunk_type@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13171 NONAME ; unsigned int PrivatePng::png_get_io_chunk_type(struct PrivatePng::png_struct_def const *)
+	?png_get_io_ptr@PrivatePng@@YAPAXPAUpng_struct_def@1@@Z @ 13172 NONAME ; void * PrivatePng::png_get_io_ptr(struct PrivatePng::png_struct_def *)
+	?png_get_io_state@PrivatePng@@YAIPAUpng_struct_def@1@@Z @ 13173 NONAME ; unsigned int PrivatePng::png_get_io_state(struct PrivatePng::png_struct_def *)
+	?png_get_libpng_ver@PrivatePng@@YAPBDPBUpng_struct_def@1@@Z @ 13174 NONAME ; char const * PrivatePng::png_get_libpng_ver(struct PrivatePng::png_struct_def const *)
+	?png_get_mem_ptr@PrivatePng@@YAPAXPBUpng_struct_def@1@@Z @ 13175 NONAME ; void * PrivatePng::png_get_mem_ptr(struct PrivatePng::png_struct_def const *)
+	?png_get_oFFs@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAH22@Z @ 13176 NONAME ; unsigned int PrivatePng::png_get_oFFs(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *, int *, int *)
+	?png_get_pCAL@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPADPAH3332PAPAPAD@Z @ 13177 NONAME ; unsigned int PrivatePng::png_get_pCAL(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, char * *, int *, int *, int *, int *, char * *, char * * *)
+	?png_get_pHYs@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAI2PAH@Z @ 13178 NONAME ; unsigned int PrivatePng::png_get_pHYs(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, unsigned int *, unsigned int *, int *)
+	?png_get_pHYs_dpi@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAI2PAH@Z @ 13179 NONAME ; unsigned int PrivatePng::png_get_pHYs_dpi(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, unsigned int *, unsigned int *, int *)
+	?png_get_pixel_aspect_ratio@PrivatePng@@YAMPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13180 NONAME ; float PrivatePng::png_get_pixel_aspect_ratio(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_pixel_aspect_ratio_fixed@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13181 NONAME ; int PrivatePng::png_get_pixel_aspect_ratio_fixed(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_pixels_per_inch@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13182 NONAME ; unsigned int PrivatePng::png_get_pixels_per_inch(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_pixels_per_meter@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13183 NONAME ; unsigned int PrivatePng::png_get_pixels_per_meter(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_progressive_ptr@PrivatePng@@YAPAXPBUpng_struct_def@1@@Z @ 13184 NONAME ; void * PrivatePng::png_get_progressive_ptr(struct PrivatePng::png_struct_def const *)
+	?png_get_rgb_to_gray_status@PrivatePng@@YAEPBUpng_struct_def@1@@Z @ 13185 NONAME ; unsigned char PrivatePng::png_get_rgb_to_gray_status(struct PrivatePng::png_struct_def const *)
+	?png_get_rowbytes@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13186 NONAME ; unsigned int PrivatePng::png_get_rowbytes(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_rows@PrivatePng@@YAPAPAEPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13187 NONAME ; unsigned char * * PrivatePng::png_get_rows(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_sBIT@PrivatePng@@YAIPBUpng_struct_def@1@PAUpng_info_def@1@PAPAUpng_color_8_struct@1@@Z @ 13188 NONAME ; unsigned int PrivatePng::png_get_sBIT(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def *, struct PrivatePng::png_color_8_struct * *)
+	?png_get_sCAL@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAHPAN3@Z @ 13189 NONAME ; unsigned int PrivatePng::png_get_sCAL(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *, double *, double *)
+	?png_get_sCAL_fixed@PrivatePng@@YAIPAUpng_struct_def@1@PBUpng_info_def@1@PAH22@Z @ 13190 NONAME ; unsigned int PrivatePng::png_get_sCAL_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def const *, int *, int *, int *)
+	?png_get_sCAL_s@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAHPAPAD3@Z @ 13191 NONAME ; unsigned int PrivatePng::png_get_sCAL_s(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *, char * *, char * *)
+	?png_get_sPLT@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPAUpng_sPLT_struct@1@@Z @ 13192 NONAME ; unsigned int PrivatePng::png_get_sPLT(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, struct PrivatePng::png_sPLT_struct * *)
+	?png_get_sRGB@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAH@Z @ 13193 NONAME ; unsigned int PrivatePng::png_get_sRGB(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, int *)
+	?png_get_signature@PrivatePng@@YAPBEPBUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13194 NONAME ; unsigned char const * PrivatePng::png_get_signature(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def *)
+	?png_get_tIME@PrivatePng@@YAIPBUpng_struct_def@1@PAUpng_info_def@1@PAPAUpng_time_struct@1@@Z @ 13195 NONAME ; unsigned int PrivatePng::png_get_tIME(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def *, struct PrivatePng::png_time_struct * *)
+	?png_get_tRNS@PrivatePng@@YAIPBUpng_struct_def@1@PAUpng_info_def@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z @ 13196 NONAME ; unsigned int PrivatePng::png_get_tRNS(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def *, unsigned char * *, int *, struct PrivatePng::png_color_16_struct * *)
+	?png_get_text@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@PAPAUpng_text_struct@1@PAH@Z @ 13197 NONAME ; unsigned int PrivatePng::png_get_text(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, struct PrivatePng::png_text_struct * *, int *)
+	?png_get_uint_16@PrivatePng@@YAGPBE@Z @ 13198 NONAME ; unsigned short PrivatePng::png_get_uint_16(unsigned char const *)
+	?png_get_uint_31@PrivatePng@@YAIPAUpng_struct_def@1@PBE@Z @ 13199 NONAME ; unsigned int PrivatePng::png_get_uint_31(struct PrivatePng::png_struct_def *, unsigned char const *)
+	?png_get_uint_32@PrivatePng@@YAIPBE@Z @ 13200 NONAME ; unsigned int PrivatePng::png_get_uint_32(unsigned char const *)
+	?png_get_unknown_chunks@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@PAPAUpng_unknown_chunk_t@1@@Z @ 13201 NONAME ; int PrivatePng::png_get_unknown_chunks(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, struct PrivatePng::png_unknown_chunk_t * *)
+	?png_get_user_chunk_ptr@PrivatePng@@YAPAXPBUpng_struct_def@1@@Z @ 13202 NONAME ; void * PrivatePng::png_get_user_chunk_ptr(struct PrivatePng::png_struct_def const *)
+	?png_get_user_height_max@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13203 NONAME ; unsigned int PrivatePng::png_get_user_height_max(struct PrivatePng::png_struct_def const *)
+	?png_get_user_transform_ptr@PrivatePng@@YAPAXPBUpng_struct_def@1@@Z @ 13204 NONAME ; void * PrivatePng::png_get_user_transform_ptr(struct PrivatePng::png_struct_def const *)
+	?png_get_user_width_max@PrivatePng@@YAIPBUpng_struct_def@1@@Z @ 13205 NONAME ; unsigned int PrivatePng::png_get_user_width_max(struct PrivatePng::png_struct_def const *)
+	?png_get_valid@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@I@Z @ 13206 NONAME ; unsigned int PrivatePng::png_get_valid(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *, unsigned int)
+	?png_get_x_offset_inches@PrivatePng@@YAMPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13207 NONAME ; float PrivatePng::png_get_x_offset_inches(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_x_offset_inches_fixed@PrivatePng@@YAHPAUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13208 NONAME ; int PrivatePng::png_get_x_offset_inches_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def const *)
+	?png_get_x_offset_microns@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13209 NONAME ; int PrivatePng::png_get_x_offset_microns(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_x_offset_pixels@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13210 NONAME ; int PrivatePng::png_get_x_offset_pixels(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_x_pixels_per_inch@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13211 NONAME ; unsigned int PrivatePng::png_get_x_pixels_per_inch(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_x_pixels_per_meter@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13212 NONAME ; unsigned int PrivatePng::png_get_x_pixels_per_meter(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_y_offset_inches@PrivatePng@@YAMPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13213 NONAME ; float PrivatePng::png_get_y_offset_inches(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_y_offset_inches_fixed@PrivatePng@@YAHPAUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13214 NONAME ; int PrivatePng::png_get_y_offset_inches_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def const *)
+	?png_get_y_offset_microns@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13215 NONAME ; int PrivatePng::png_get_y_offset_microns(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_y_offset_pixels@PrivatePng@@YAHPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13216 NONAME ; int PrivatePng::png_get_y_offset_pixels(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_y_pixels_per_inch@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13217 NONAME ; unsigned int PrivatePng::png_get_y_pixels_per_inch(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_get_y_pixels_per_meter@PrivatePng@@YAIPBUpng_struct_def@1@PBUpng_info_def@1@@Z @ 13218 NONAME ; unsigned int PrivatePng::png_get_y_pixels_per_meter(struct PrivatePng::png_struct_def const *, struct PrivatePng::png_info_def const *)
+	?png_handle_as_unknown@PrivatePng@@YAHPAUpng_struct_def@1@PBE@Z @ 13219 NONAME ; int PrivatePng::png_handle_as_unknown(struct PrivatePng::png_struct_def *, unsigned char const *)
+	?png_info_init_3@PrivatePng@@YAXPAPAUpng_info_def@1@I@Z @ 13220 NONAME ; void PrivatePng::png_info_init_3(struct PrivatePng::png_info_def * *, unsigned int)
+	?png_init_io@PrivatePng@@YAXPAUpng_struct_def@1@PAU__sFILE@@@Z @ 13221 NONAME ; void PrivatePng::png_init_io(struct PrivatePng::png_struct_def *, struct __sFILE *)
+	?png_longjmp@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13222 NONAME ; void PrivatePng::png_longjmp(struct PrivatePng::png_struct_def *, int)
+	?png_malloc@PrivatePng@@YAPAXPAUpng_struct_def@1@I@Z @ 13223 NONAME ; void * PrivatePng::png_malloc(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_malloc_default@PrivatePng@@YAPAXPAUpng_struct_def@1@I@Z @ 13224 NONAME ; void * PrivatePng::png_malloc_default(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_malloc_warn@PrivatePng@@YAPAXPAUpng_struct_def@1@I@Z @ 13225 NONAME ; void * PrivatePng::png_malloc_warn(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_permit_mng_features@PrivatePng@@YAIPAUpng_struct_def@1@I@Z @ 13226 NONAME ; unsigned int PrivatePng::png_permit_mng_features(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_process_data@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PAEI@Z @ 13227 NONAME ; void PrivatePng::png_process_data(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned char *, unsigned int)
+	?png_process_data_pause@PrivatePng@@YAIPAUpng_struct_def@1@H@Z @ 13228 NONAME ; unsigned int PrivatePng::png_process_data_pause(struct PrivatePng::png_struct_def *, int)
+	?png_process_data_skip@PrivatePng@@YAIPAUpng_struct_def@1@@Z @ 13229 NONAME ; unsigned int PrivatePng::png_process_data_skip(struct PrivatePng::png_struct_def *)
+	?png_progressive_combine_row@PrivatePng@@YAXPAUpng_struct_def@1@PAEPBE@Z @ 13230 NONAME ; void PrivatePng::png_progressive_combine_row(struct PrivatePng::png_struct_def *, unsigned char *, unsigned char const *)
+	?png_read_end@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13231 NONAME ; void PrivatePng::png_read_end(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_read_image@PrivatePng@@YAXPAUpng_struct_def@1@PAPAE@Z @ 13232 NONAME ; void PrivatePng::png_read_image(struct PrivatePng::png_struct_def *, unsigned char * *)
+	?png_read_info@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13233 NONAME ; void PrivatePng::png_read_info(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_read_png@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HPAX@Z @ 13234 NONAME ; void PrivatePng::png_read_png(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, void *)
+	?png_read_row@PrivatePng@@YAXPAUpng_struct_def@1@PAE1@Z @ 13235 NONAME ; void PrivatePng::png_read_row(struct PrivatePng::png_struct_def *, unsigned char *, unsigned char *)
+	?png_read_rows@PrivatePng@@YAXPAUpng_struct_def@1@PAPAE1I@Z @ 13236 NONAME ; void PrivatePng::png_read_rows(struct PrivatePng::png_struct_def *, unsigned char * *, unsigned char * *, unsigned int)
+	?png_read_update_info@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13237 NONAME ; void PrivatePng::png_read_update_info(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_reset_zstream@PrivatePng@@YAHPAUpng_struct_def@1@@Z @ 13238 NONAME ; int PrivatePng::png_reset_zstream(struct PrivatePng::png_struct_def *)
+	?png_save_int_32@PrivatePng@@YAXPAEH@Z @ 13239 NONAME ; void PrivatePng::png_save_int_32(unsigned char *, int)
+	?png_save_uint_16@PrivatePng@@YAXPAEI@Z @ 13240 NONAME ; void PrivatePng::png_save_uint_16(unsigned char *, unsigned int)
+	?png_save_uint_32@PrivatePng@@YAXPAEI@Z @ 13241 NONAME ; void PrivatePng::png_save_uint_32(unsigned char *, unsigned int)
+	?png_set_IHDR@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@IIHHHHH@Z @ 13242 NONAME ; void PrivatePng::png_set_IHDR(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned int, unsigned int, int, int, int, int, int)
+	?png_set_PLTE@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_color_struct@1@H@Z @ 13243 NONAME ; void PrivatePng::png_set_PLTE(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_color_struct const *, int)
+	?png_set_add_alpha@PrivatePng@@YAXPAUpng_struct_def@1@IH@Z @ 13244 NONAME ; void PrivatePng::png_set_add_alpha(struct PrivatePng::png_struct_def *, unsigned int, int)
+	?png_set_alpha_mode@PrivatePng@@YAXPAUpng_struct_def@1@HN@Z @ 13245 NONAME ; void PrivatePng::png_set_alpha_mode(struct PrivatePng::png_struct_def *, int, double)
+	?png_set_alpha_mode_fixed@PrivatePng@@YAXPAUpng_struct_def@1@HH@Z @ 13246 NONAME ; void PrivatePng::png_set_alpha_mode_fixed(struct PrivatePng::png_struct_def *, int, int)
+	?png_set_bKGD@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_color_16_struct@1@@Z @ 13247 NONAME ; void PrivatePng::png_set_bKGD(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_color_16_struct const *)
+	?png_set_background@PrivatePng@@YAXPAUpng_struct_def@1@PBUpng_color_16_struct@1@HHN@Z @ 13248 NONAME ; void PrivatePng::png_set_background(struct PrivatePng::png_struct_def *, struct PrivatePng::png_color_16_struct const *, int, int, double)
+	?png_set_background_fixed@PrivatePng@@YAXPAUpng_struct_def@1@PBUpng_color_16_struct@1@HHH@Z @ 13249 NONAME ; void PrivatePng::png_set_background_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_color_16_struct const *, int, int, int)
+	?png_set_benign_errors@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13250 NONAME ; void PrivatePng::png_set_benign_errors(struct PrivatePng::png_struct_def *, int)
+	?png_set_bgr@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13251 NONAME ; void PrivatePng::png_set_bgr(struct PrivatePng::png_struct_def *)
+	?png_set_cHRM@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@NNNNNNNN@Z @ 13252 NONAME ; void PrivatePng::png_set_cHRM(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, double, double, double, double, double, double, double, double)
+	?png_set_cHRM_fixed@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HHHHHHHH@Z @ 13253 NONAME ; void PrivatePng::png_set_cHRM_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, int, int, int, int, int, int, int)
+	?png_set_chunk_cache_max@PrivatePng@@YAXPAUpng_struct_def@1@I@Z @ 13254 NONAME ; void PrivatePng::png_set_chunk_cache_max(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_set_chunk_malloc_max@PrivatePng@@YAXPAUpng_struct_def@1@I@Z @ 13255 NONAME ; void PrivatePng::png_set_chunk_malloc_max(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_set_compression_buffer_size@PrivatePng@@YAXPAUpng_struct_def@1@I@Z @ 13256 NONAME ; void PrivatePng::png_set_compression_buffer_size(struct PrivatePng::png_struct_def *, unsigned int)
+	?png_set_compression_level@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13257 NONAME ; void PrivatePng::png_set_compression_level(struct PrivatePng::png_struct_def *, int)
+	?png_set_compression_mem_level@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13258 NONAME ; void PrivatePng::png_set_compression_mem_level(struct PrivatePng::png_struct_def *, int)
+	?png_set_compression_method@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13259 NONAME ; void PrivatePng::png_set_compression_method(struct PrivatePng::png_struct_def *, int)
+	?png_set_compression_strategy@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13260 NONAME ; void PrivatePng::png_set_compression_strategy(struct PrivatePng::png_struct_def *, int)
+	?png_set_compression_window_bits@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13261 NONAME ; void PrivatePng::png_set_compression_window_bits(struct PrivatePng::png_struct_def *, int)
+	?png_set_crc_action@PrivatePng@@YAXPAUpng_struct_def@1@HH@Z @ 13262 NONAME ; void PrivatePng::png_set_crc_action(struct PrivatePng::png_struct_def *, int, int)
+	?png_set_error_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6AX0PBD@ZP6AX02@Z@Z @ 13263 NONAME ; void PrivatePng::png_set_error_fn(struct PrivatePng::png_struct_def *, void *, void (*)(struct PrivatePng::png_struct_def *, char const *), void (*)(struct PrivatePng::png_struct_def *, char const *))
+	?png_set_expand@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13264 NONAME ; void PrivatePng::png_set_expand(struct PrivatePng::png_struct_def *)
+	?png_set_expand_16@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13265 NONAME ; void PrivatePng::png_set_expand_16(struct PrivatePng::png_struct_def *)
+	?png_set_expand_gray_1_2_4_to_8@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13266 NONAME ; void PrivatePng::png_set_expand_gray_1_2_4_to_8(struct PrivatePng::png_struct_def *)
+	?png_set_filler@PrivatePng@@YAXPAUpng_struct_def@1@IH@Z @ 13267 NONAME ; void PrivatePng::png_set_filler(struct PrivatePng::png_struct_def *, unsigned int, int)
+	?png_set_filter@PrivatePng@@YAXPAUpng_struct_def@1@HH@Z @ 13268 NONAME ; void PrivatePng::png_set_filter(struct PrivatePng::png_struct_def *, int, int)
+	?png_set_filter_heuristics@PrivatePng@@YAXPAUpng_struct_def@1@HHPBN1@Z @ 13269 NONAME ; void PrivatePng::png_set_filter_heuristics(struct PrivatePng::png_struct_def *, int, int, double const *, double const *)
+	?png_set_filter_heuristics_fixed@PrivatePng@@YAXPAUpng_struct_def@1@HHPBH1@Z @ 13270 NONAME ; void PrivatePng::png_set_filter_heuristics_fixed(struct PrivatePng::png_struct_def *, int, int, int const *, int const *)
+	?png_set_flush@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13271 NONAME ; void PrivatePng::png_set_flush(struct PrivatePng::png_struct_def *, int)
+	?png_set_gAMA@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@N@Z @ 13272 NONAME ; void PrivatePng::png_set_gAMA(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, double)
+	?png_set_gAMA_fixed@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@H@Z @ 13273 NONAME ; void PrivatePng::png_set_gAMA_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int)
+	?png_set_gamma@PrivatePng@@YAXPAUpng_struct_def@1@NN@Z @ 13274 NONAME ; void PrivatePng::png_set_gamma(struct PrivatePng::png_struct_def *, double, double)
+	?png_set_gamma_fixed@PrivatePng@@YAXPAUpng_struct_def@1@HH@Z @ 13275 NONAME ; void PrivatePng::png_set_gamma_fixed(struct PrivatePng::png_struct_def *, int, int)
+	?png_set_gray_to_rgb@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13276 NONAME ; void PrivatePng::png_set_gray_to_rgb(struct PrivatePng::png_struct_def *)
+	?png_set_hIST@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBG@Z @ 13277 NONAME ; void PrivatePng::png_set_hIST(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned short const *)
+	?png_set_iCCP@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBDHPBEI@Z @ 13278 NONAME ; void PrivatePng::png_set_iCCP(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, char const *, int, unsigned char const *, unsigned int)
+	?png_set_interlace_handling@PrivatePng@@YAHPAUpng_struct_def@1@@Z @ 13279 NONAME ; int PrivatePng::png_set_interlace_handling(struct PrivatePng::png_struct_def *)
+	?png_set_invalid@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@H@Z @ 13280 NONAME ; void PrivatePng::png_set_invalid(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int)
+	?png_set_invert_alpha@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13281 NONAME ; void PrivatePng::png_set_invert_alpha(struct PrivatePng::png_struct_def *)
+	?png_set_invert_mono@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13282 NONAME ; void PrivatePng::png_set_invert_mono(struct PrivatePng::png_struct_def *)
+	?png_set_keep_unknown_chunks@PrivatePng@@YAXPAUpng_struct_def@1@HPBEH@Z @ 13283 NONAME ; void PrivatePng::png_set_keep_unknown_chunks(struct PrivatePng::png_struct_def *, int, unsigned char const *, int)
+	?png_set_longjmp_fn@PrivatePng@@YAPAY0BA@KPAUpng_struct_def@1@P6AXQAKH@ZI@Z @ 13284 NONAME ; unsigned long [16] * PrivatePng::png_set_longjmp_fn(struct PrivatePng::png_struct_def *, void (*)(unsigned long * const, int), unsigned int)
+	?png_set_mem_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6APAX0I@ZP6AX01@Z@Z @ 13285 NONAME ; void PrivatePng::png_set_mem_fn(struct PrivatePng::png_struct_def *, void *, void * (*)(struct PrivatePng::png_struct_def *, unsigned int), void (*)(struct PrivatePng::png_struct_def *, void *))
+	?png_set_oFFs@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HHH@Z @ 13286 NONAME ; void PrivatePng::png_set_oFFs(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, int, int)
+	?png_set_pCAL@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBDHHHH2PAPAD@Z @ 13287 NONAME ; void PrivatePng::png_set_pCAL(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, char const *, int, int, int, int, char const *, char * *)
+	?png_set_pHYs@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@IIH@Z @ 13288 NONAME ; void PrivatePng::png_set_pHYs(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned int, unsigned int, int)
+	?png_set_packing@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13289 NONAME ; void PrivatePng::png_set_packing(struct PrivatePng::png_struct_def *)
+	?png_set_packswap@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13290 NONAME ; void PrivatePng::png_set_packswap(struct PrivatePng::png_struct_def *)
+	?png_set_palette_to_rgb@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13291 NONAME ; void PrivatePng::png_set_palette_to_rgb(struct PrivatePng::png_struct_def *)
+	?png_set_progressive_read_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6AX0PAUpng_info_def@1@@ZP6AX0PAEIH@ZP6AX02@Z@Z @ 13292 NONAME ; void PrivatePng::png_set_progressive_read_fn(struct PrivatePng::png_struct_def *, void *, void (*)(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *), void (*)(struct PrivatePng::png_struct_def *, unsigned char *, unsigned int, int), void (*)(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *))
+	?png_set_quantize@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_color_struct@1@HHPBGH@Z @ 13293 NONAME ; void PrivatePng::png_set_quantize(struct PrivatePng::png_struct_def *, struct PrivatePng::png_color_struct *, int, int, unsigned short const *, int)
+	?png_set_read_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6AX0PAEI@Z@Z @ 13294 NONAME ; void PrivatePng::png_set_read_fn(struct PrivatePng::png_struct_def *, void *, void (*)(struct PrivatePng::png_struct_def *, unsigned char *, unsigned int))
+	?png_set_read_status_fn@PrivatePng@@YAXPAUpng_struct_def@1@P6AX0IH@Z@Z @ 13295 NONAME ; void PrivatePng::png_set_read_status_fn(struct PrivatePng::png_struct_def *, void (*)(struct PrivatePng::png_struct_def *, unsigned int, int))
+	?png_set_read_user_chunk_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6AH0PAUpng_unknown_chunk_t@1@@Z@Z @ 13296 NONAME ; void PrivatePng::png_set_read_user_chunk_fn(struct PrivatePng::png_struct_def *, void *, int (*)(struct PrivatePng::png_struct_def *, struct PrivatePng::png_unknown_chunk_t *))
+	?png_set_read_user_transform_fn@PrivatePng@@YAXPAUpng_struct_def@1@P6AX0PAUpng_row_info_struct@1@PAE@Z@Z @ 13297 NONAME ; void PrivatePng::png_set_read_user_transform_fn(struct PrivatePng::png_struct_def *, void (*)(struct PrivatePng::png_struct_def *, struct PrivatePng::png_row_info_struct *, unsigned char *))
+	?png_set_rgb_to_gray@PrivatePng@@YAXPAUpng_struct_def@1@HNN@Z @ 13298 NONAME ; void PrivatePng::png_set_rgb_to_gray(struct PrivatePng::png_struct_def *, int, double, double)
+	?png_set_rgb_to_gray_fixed@PrivatePng@@YAXPAUpng_struct_def@1@HHH@Z @ 13299 NONAME ; void PrivatePng::png_set_rgb_to_gray_fixed(struct PrivatePng::png_struct_def *, int, int, int)
+	?png_set_rows@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PAPAE@Z @ 13300 NONAME ; void PrivatePng::png_set_rows(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned char * *)
+	?png_set_sBIT@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_color_8_struct@1@@Z @ 13301 NONAME ; void PrivatePng::png_set_sBIT(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_color_8_struct const *)
+	?png_set_sCAL@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HNN@Z @ 13302 NONAME ; void PrivatePng::png_set_sCAL(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, double, double)
+	?png_set_sCAL_fixed@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HHH@Z @ 13303 NONAME ; void PrivatePng::png_set_sCAL_fixed(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, int, int)
+	?png_set_sCAL_s@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HPBD2@Z @ 13304 NONAME ; void PrivatePng::png_set_sCAL_s(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, char const *, char const *)
+	?png_set_sPLT@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_sPLT_struct@1@H@Z @ 13305 NONAME ; void PrivatePng::png_set_sPLT(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_sPLT_struct const *, int)
+	?png_set_sRGB@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@H@Z @ 13306 NONAME ; void PrivatePng::png_set_sRGB(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int)
+	?png_set_sRGB_gAMA_and_cHRM@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@H@Z @ 13307 NONAME ; void PrivatePng::png_set_sRGB_gAMA_and_cHRM(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int)
+	?png_set_scale_16@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13308 NONAME ; void PrivatePng::png_set_scale_16(struct PrivatePng::png_struct_def *)
+	?png_set_shift@PrivatePng@@YAXPAUpng_struct_def@1@PBUpng_color_8_struct@1@@Z @ 13309 NONAME ; void PrivatePng::png_set_shift(struct PrivatePng::png_struct_def *, struct PrivatePng::png_color_8_struct const *)
+	?png_set_sig_bytes@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13310 NONAME ; void PrivatePng::png_set_sig_bytes(struct PrivatePng::png_struct_def *, int)
+	?png_set_strip_16@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13311 NONAME ; void PrivatePng::png_set_strip_16(struct PrivatePng::png_struct_def *)
+	?png_set_strip_alpha@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13312 NONAME ; void PrivatePng::png_set_strip_alpha(struct PrivatePng::png_struct_def *)
+	?png_set_swap@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13313 NONAME ; void PrivatePng::png_set_swap(struct PrivatePng::png_struct_def *)
+	?png_set_swap_alpha@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13314 NONAME ; void PrivatePng::png_set_swap_alpha(struct PrivatePng::png_struct_def *)
+	?png_set_tIME@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_time_struct@1@@Z @ 13315 NONAME ; void PrivatePng::png_set_tIME(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_time_struct const *)
+	?png_set_tRNS@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBEHPBUpng_color_16_struct@1@@Z @ 13316 NONAME ; void PrivatePng::png_set_tRNS(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, unsigned char const *, int, struct PrivatePng::png_color_16_struct const *)
+	?png_set_tRNS_to_alpha@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13317 NONAME ; void PrivatePng::png_set_tRNS_to_alpha(struct PrivatePng::png_struct_def *)
+	?png_set_text@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_text_struct@1@H@Z @ 13318 NONAME ; void PrivatePng::png_set_text(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_text_struct const *, int)
+	?png_set_text_compression_level@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13319 NONAME ; void PrivatePng::png_set_text_compression_level(struct PrivatePng::png_struct_def *, int)
+	?png_set_text_compression_mem_level@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13320 NONAME ; void PrivatePng::png_set_text_compression_mem_level(struct PrivatePng::png_struct_def *, int)
+	?png_set_text_compression_method@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13321 NONAME ; void PrivatePng::png_set_text_compression_method(struct PrivatePng::png_struct_def *, int)
+	?png_set_text_compression_strategy@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13322 NONAME ; void PrivatePng::png_set_text_compression_strategy(struct PrivatePng::png_struct_def *, int)
+	?png_set_text_compression_window_bits@PrivatePng@@YAXPAUpng_struct_def@1@H@Z @ 13323 NONAME ; void PrivatePng::png_set_text_compression_window_bits(struct PrivatePng::png_struct_def *, int)
+	?png_set_unknown_chunk_location@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HH@Z @ 13324 NONAME ; void PrivatePng::png_set_unknown_chunk_location(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, int)
+	?png_set_unknown_chunks@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@PBUpng_unknown_chunk_t@1@H@Z @ 13325 NONAME ; void PrivatePng::png_set_unknown_chunks(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, struct PrivatePng::png_unknown_chunk_t const *, int)
+	?png_set_user_limits@PrivatePng@@YAXPAUpng_struct_def@1@II@Z @ 13326 NONAME ; void PrivatePng::png_set_user_limits(struct PrivatePng::png_struct_def *, unsigned int, unsigned int)
+	?png_set_user_transform_info@PrivatePng@@YAXPAUpng_struct_def@1@PAXHH@Z @ 13327 NONAME ; void PrivatePng::png_set_user_transform_info(struct PrivatePng::png_struct_def *, void *, int, int)
+	?png_set_write_fn@PrivatePng@@YAXPAUpng_struct_def@1@PAXP6AX0PAEI@ZP6AX0@Z@Z @ 13328 NONAME ; void PrivatePng::png_set_write_fn(struct PrivatePng::png_struct_def *, void *, void (*)(struct PrivatePng::png_struct_def *, unsigned char *, unsigned int), void (*)(struct PrivatePng::png_struct_def *))
+	?png_set_write_status_fn@PrivatePng@@YAXPAUpng_struct_def@1@P6AX0IH@Z@Z @ 13329 NONAME ; void PrivatePng::png_set_write_status_fn(struct PrivatePng::png_struct_def *, void (*)(struct PrivatePng::png_struct_def *, unsigned int, int))
+	?png_set_write_user_transform_fn@PrivatePng@@YAXPAUpng_struct_def@1@P6AX0PAUpng_row_info_struct@1@PAE@Z@Z @ 13330 NONAME ; void PrivatePng::png_set_write_user_transform_fn(struct PrivatePng::png_struct_def *, void (*)(struct PrivatePng::png_struct_def *, struct PrivatePng::png_row_info_struct *, unsigned char *))
+	?png_sig_cmp@PrivatePng@@YAHPBEII@Z @ 13331 NONAME ; int PrivatePng::png_sig_cmp(unsigned char const *, unsigned int, unsigned int)
+	?png_start_read_image@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13332 NONAME ; void PrivatePng::png_start_read_image(struct PrivatePng::png_struct_def *)
+	?png_warning@PrivatePng@@YAXPAUpng_struct_def@1@PBD@Z @ 13333 NONAME ; void PrivatePng::png_warning(struct PrivatePng::png_struct_def *, char const *)
+	?png_write_chunk@PrivatePng@@YAXPAUpng_struct_def@1@PBE1I@Z @ 13334 NONAME ; void PrivatePng::png_write_chunk(struct PrivatePng::png_struct_def *, unsigned char const *, unsigned char const *, unsigned int)
+	?png_write_chunk_data@PrivatePng@@YAXPAUpng_struct_def@1@PBEI@Z @ 13335 NONAME ; void PrivatePng::png_write_chunk_data(struct PrivatePng::png_struct_def *, unsigned char const *, unsigned int)
+	?png_write_chunk_end@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13336 NONAME ; void PrivatePng::png_write_chunk_end(struct PrivatePng::png_struct_def *)
+	?png_write_chunk_start@PrivatePng@@YAXPAUpng_struct_def@1@PBEI@Z @ 13337 NONAME ; void PrivatePng::png_write_chunk_start(struct PrivatePng::png_struct_def *, unsigned char const *, unsigned int)
+	?png_write_end@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13338 NONAME ; void PrivatePng::png_write_end(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_write_flush@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13339 NONAME ; void PrivatePng::png_write_flush(struct PrivatePng::png_struct_def *)
+	?png_write_image@PrivatePng@@YAXPAUpng_struct_def@1@PAPAE@Z @ 13340 NONAME ; void PrivatePng::png_write_image(struct PrivatePng::png_struct_def *, unsigned char * *)
+	?png_write_info@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13341 NONAME ; void PrivatePng::png_write_info(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_write_info_before_PLTE@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@@Z @ 13342 NONAME ; void PrivatePng::png_write_info_before_PLTE(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *)
+	?png_write_png@PrivatePng@@YAXPAUpng_struct_def@1@PAUpng_info_def@1@HPAX@Z @ 13343 NONAME ; void PrivatePng::png_write_png(struct PrivatePng::png_struct_def *, struct PrivatePng::png_info_def *, int, void *)
+	?png_write_row@PrivatePng@@YAXPAUpng_struct_def@1@PBE@Z @ 13344 NONAME ; void PrivatePng::png_write_row(struct PrivatePng::png_struct_def *, unsigned char const *)
+	?png_write_rows@PrivatePng@@YAXPAUpng_struct_def@1@PAPAEI@Z @ 13345 NONAME ; void PrivatePng::png_write_rows(struct PrivatePng::png_struct_def *, unsigned char * *, unsigned int)
+	?png_write_sig@PrivatePng@@YAXPAUpng_struct_def@1@@Z @ 13346 NONAME ; void PrivatePng::png_write_sig(struct PrivatePng::png_struct_def *)
 	?clipEnabledChanged@QBlitterPaintEngine@@UAEXXZ @ 13347 NONAME ; void QBlitterPaintEngine::clipEnabledChanged(void)
 	?qt_static_metacall@QEventDispatcherS60@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13348 NONAME ; void QEventDispatcherS60::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?supportsSubPixelPositions@QFontEngine@@UBE_NXZ @ 13349 NONAME ; bool QFontEngine::supportsSubPixelPositions(void) const
@@ -13990,3 +13990,11 @@ EXPORTS
 	?resetFontEngineCache@QTextEngine@@QAEXXZ @ 13989 NONAME ; void QTextEngine::resetFontEngineCache(void)
 	?symbianHandleLiteModeStartup@QApplicationPrivate@@QAEXXZ @ 13990 NONAME ; void QApplicationPrivate::symbianHandleLiteModeStartup(void)
 	?_q_cleanupWinIds@QWidgetPrivate@@QAEXXZ @ 13991 NONAME ; void QWidgetPrivate::_q_cleanupWinIds(void)
+	?qt_s60_setEditorFlags@@YAXH@Z @ 13992 NONAME ; void qt_s60_setEditorFlags(int)
+	?adjustViewOptionsForIndex@QTreeViewPrivate@@UBEXPAVQStyleOptionViewItemV4@@ABVQModelIndex@@@Z @ 13993 NONAME ; void QTreeViewPrivate::adjustViewOptionsForIndex(class QStyleOptionViewItemV4 *, class QModelIndex const &) const
+	?setNativePaintMode@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@W4NativePaintMode@1@@Z @ 13994 NONAME ; void QSymbianGraphicsSystemHelper::setNativePaintMode(class QWidget *, enum QSymbianGraphicsSystemHelper::NativePaintMode)
+	?calcLogicalIndices@QTreeViewPrivate@@QBEXPAV?$QVector@H@@PAV?$QVector@W4ViewItemPosition@QStyleOptionViewItemV4@@@@@Z @ 13995 NONAME ; void QTreeViewPrivate::calcLogicalIndices(class QVector<int> *, class QVector<enum QStyleOptionViewItemV4::ViewItemPosition> *) const
+	?setReceiveNativePaintEvents@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13996 NONAME ; void QSymbianGraphicsSystemHelper::setReceiveNativePaintEvents(class QWidget *, bool)
+	?setNativePaintMode@QSymbianGraphicsSystemHelper@@SAXPAVCCoeControl@@W4NativePaintMode@1@@Z @ 13997 NONAME ; void QSymbianGraphicsSystemHelper::setNativePaintMode(class CCoeControl *, enum QSymbianGraphicsSystemHelper::NativePaintMode)
+	?setIgnoreFocusChanged@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13998 NONAME ; void QSymbianGraphicsSystemHelper::setIgnoreFocusChanged(class QWidget *, bool)
+

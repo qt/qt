@@ -104,8 +104,13 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 {
     RDrawableWindow *cbaWindow = cba.DrawableWindow();
     Q_ASSERT_X(cbaWindow, Q_FUNC_INFO, "Native CBA does not have window!");
-    // Make sure CBA is visible, i.e. CBA window is on top
-    cbaWindow->SetOrdinalPosition(0);
+    // CBA comes on top of new option menu
+    int pos = 0;
+   
+    if(cba.ButtonGroupType()== SLafButtonGroupContainer::ECba)
+        pos = 1;
+    
+    cbaWindow->SetOrdinalPosition(pos);
     // Qt shares same CBA instance between top-level widgets,
     // make sure we are not faded by underlying window.
     cbaWindow->SetFaded(EFalse, RWindowTreeNode::EFadeIncludeChildren);

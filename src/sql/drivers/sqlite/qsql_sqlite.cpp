@@ -104,6 +104,7 @@ class QSQLiteDriverPrivate
 public:
     inline QSQLiteDriverPrivate() : access(0) {}
     sqlite3 *access;
+    QList <QSQLiteResult *> results;
 };
 
 
@@ -286,10 +287,12 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
 {
     d = new QSQLiteResultPrivate(this);
     d->access = db->d->access;
+    db->d->results.append(this);
 }
 
 QSQLiteResult::~QSQLiteResult()
 {
+    qobject_cast<const QSQLiteDriver *>(driver())->d->results.removeOne(this);
     d->cleanup();
     delete d;
 }
@@ -322,17 +325,24 @@ bool QSQLiteResult::prepare(const QString &query)
 
     setSelect(false);
 
+    const void *pzTail = NULL;
+
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     int res = sqlite3_prepare16_v2(d->access, query.constData(), (query.size() + 1) * sizeof(QChar),
-                                   &d->stmt, 0);
+                                   &d->stmt, &pzTail);
 #else
     int res = sqlite3_prepare16(d->access, query.constData(), (query.size() + 1) * sizeof(QChar),
-                                &d->stmt, 0);
+                                &d->stmt, &pzTail);
 #endif
 
     if (res != SQLITE_OK) {
         setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
                      "Unable to execute statement"), QSqlError::StatementError, res));
+        d->finalize();
+        return false;
+    } else if (pzTail && !QString(reinterpret_cast<const QChar *>(pzTail)).trimmed().isEmpty()) {
+        setLastError(qMakeError(d->access, QCoreApplication::translate("QSQLiteResult",
+            "Unable to execute multiple statements at a time"), QSqlError::StatementError, SQLITE_MISUSE));
         d->finalize();
         return false;
     }
@@ -546,6 +556,10 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 void QSQLiteDriver::close()
 {
     if (isOpen()) {
+        foreach (QSQLiteResult *result, d->results) {
+            result->d->finalize();
+        }
+
         if (sqlite3_close(d->access) != SQLITE_OK)
             setLastError(qMakeError(d->access, tr("Error closing database"),
                                     QSqlError::ConnectionError));

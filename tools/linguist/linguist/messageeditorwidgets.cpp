@@ -130,6 +130,11 @@ FormatTextEdit::FormatTextEdit(QWidget *parent)
     m_highlighter = new MessageHighlighter(this);
 }
 
+FormatTextEdit::~FormatTextEdit()
+{
+    emit editorDestroyed();
+}
+
 void FormatTextEdit::setEditable(bool editable)
 {
     // save default frame style
@@ -362,11 +367,9 @@ void FormMultiWidget::setTranslation(const QString &text, bool userAction)
     QStringList texts = text.split(QChar(Translator::BinaryVariantSeparator), QString::KeepEmptyParts);
 
     while (m_editors.count() > texts.count()) {
-        FormatTextEdit *editor = m_editors.takeLast();
-        emit editorDeleted(editor);
         delete m_minusButtons.takeLast();
         delete m_plusButtons.takeLast();
-        delete editor;
+        delete m_editors.takeLast();
     }
     while (m_editors.count() < texts.count())
         addEditor(m_editors.count());

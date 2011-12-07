@@ -146,6 +146,7 @@ private:
     mutable QCFType<CFMutableDictionaryRef> attributeDict;
     CGAffineTransform transform;
     friend class QFontDialogPrivate;
+    bool transformAdvances;
 };
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 Q_OPENGL_EXPORT extern QGLWidget* qt_gl_share_widget();
 
-static QGLTexturePool *qt_gl_texture_pool = 0;
+Q_GLOBAL_STATIC(QGLTexturePool, qt_gl_texture_pool)
 
 class QGLTexturePoolPrivate
 {
@@ -69,9 +69,7 @@ QGLTexturePool::~QGLTexturePool()
 
 QGLTexturePool *QGLTexturePool::instance()
 {
-    if (!qt_gl_texture_pool)
-        qt_gl_texture_pool = new QGLTexturePool();
-    return qt_gl_texture_pool;
+    return qt_gl_texture_pool();
 }
 
 GLuint QGLTexturePool::createTexture(GLenum target,

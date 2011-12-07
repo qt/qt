@@ -213,6 +213,10 @@ private slots:
     void QTBUG_5765();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
+    void QTBUG_21884_data() { generic_data("QSQLITE"); }
+    void QTBUG_21884();
+    void QTBUG_16967_data() { generic_data("QSQLITE"); }
+    void QTBUG_16967(); //clean close
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -328,6 +332,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("bug6421", __FILE__).toUpper()
                << qTableName("bug5765", __FILE__)
                << qTableName("bug6852", __FILE__)
+               << qTableName("bug21884", __FILE__)
                << qTableName( "qtest_lockedtable", __FILE__ )
                << qTableName( "Planet", __FILE__ )
                << qTableName( "task_250026", __FILE__ )
@@ -3102,6 +3107,97 @@ void tst_QSqlQuery::QTBUG_5765()
     QCOMPARE(q.value(0).toInt(), 12);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 123);
+}
+
+/**
+* This test case tests multiple statements in one execution.
+* Sqlite driver doesn't support multiple statement at one time.
+* If more than one statement is given, the exec or prepare function
+* return failure to the client.
+*/
+void tst_QSqlQuery::QTBUG_21884()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QStringList stList;
+    QString tableName(qTableName("bug21884", __FILE__ ));
+    stList << "create table " + tableName + "(id integer primary key, note string)";
+    stList << "select * from " + tableName + ";";
+    stList << "select * from " + tableName + ";  \t\n\r";
+    stList << "drop table " + tableName;
+
+
+    foreach (const QString& st, stList) {
+        QVERIFY_SQL(q, exec(st));
+    }
+
+    foreach (const QString& st, stList) {
+        QVERIFY_SQL(q, prepare(st));
+        QVERIFY_SQL(q, exec());
+    }
+
+    stList.clear();
+    stList << "create table " + tableName + "(id integer primary key); select * from " + tableName;
+    stList << "create table " + tableName + "(id integer primary key); syntax error!;";
+    stList << "create table " + tableName + "(id integer primary key);;";
+    stList << "create table " + tableName + "(id integer primary key);\'\"\a\b\b\v";
+
+    foreach (const QString&st , stList) {
+        QVERIFY2(!q.prepare(st), qPrintable(QString("the statement is expected to fail! ") + st));
+        QVERIFY2(!q.exec(st), qPrintable(QString("the statement is expected to fail! ") + st));
+    }
+}
+
+/**
+  * This test case test sqlite driver close function. Sqlite driver should close cleanly
+  * even if there is still outstanding prepared statement.
+  */
+void tst_QSqlQuery::QTBUG_16967()
+{
+    QFETCH(QString, dbName);
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        q.exec();
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q.exec("INSERT INTO t1 (id, str) VALUES(1, \"test1\");");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q.exec("SELECT * FROM t1;");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
 }
 
 void tst_QSqlQuery::oraOCINumber()
