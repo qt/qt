@@ -1270,4 +1270,6 @@ EXPORTS
 	_ZNK9QHttpParteqERKS_ @ 1269 NONAME
 	_ZTI14QHttpMultiPart @ 1270 NONAME
 	_ZTV14QHttpMultiPart @ 1271 NONAME
+	_ZN17QSslConfiguration12setSslOptionEN4QSsl9SslOptionEb @ 1272 NONAME
+	_ZNK17QSslConfiguration13testSslOptionEN4QSsl9SslOptionE @ 1273 NONAME
 

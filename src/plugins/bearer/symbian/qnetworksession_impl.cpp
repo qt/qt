@@ -64,7 +64,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
     ipConnectionNotifier(0), ipConnectionStarter(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
-    iConnectInBackground(false), isOpening(false)
+    iConnectInBackground(false), iCurrentIap(0), isOpening(false)
 {
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -77,6 +77,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 void QNetworkSessionPrivateImpl::closeHandles()
 {
     QMutexLocker lock(&mutex);
+    updateCurrentIap(0);
     // Cancel Connection Progress Notifications first.
     // Note: ConnectionNotifier must be destroyed before RConnection::Close()
     //       => deleting ipConnectionNotifier results RConnection::CancelProgressNotification()
@@ -637,6 +638,8 @@ void QNetworkSessionPrivateImpl::accept()
 
         QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
+        updateCurrentIap(iNewRoamingIap);
+
         newState(QNetworkSession::Connected, iNewRoamingIap);
     }
 #endif
@@ -867,19 +870,31 @@ quint64 QNetworkSessionPrivateImpl::activeTime() const
     return startTime.secsTo(QDateTime::currentDateTime());
 }
 
+bool QNetworkSessionPrivateImpl::activeIapId(TUint32& iapId) const
+{
+    if (!iConnection.SubSessionHandle())
+        return false;
+    _LIT(KSetting, "IAP\\Id");
+    TInt err = iConnection.GetIntSetting(KSetting, iapId);
+    if (err != KErrNone)
+        return false;
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    // Check if this is an Easy WLAN configuration. On Symbian^3 RConnection may report
+    // the used configuration as 'EasyWLAN' IAP ID if someone has just opened the configuration
+    // from WLAN Scan dialog, _and_ that connection is still up. We need to find the
+    // real matching configuration. Function alters the Easy WLAN ID to real IAP ID (only if
+    // easy WLAN):
+    easyWlanTrueIapId(iapId);
+#endif
+    return true;
+}
+
 QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 iapId) const
 {
     if (iapId == 0) {
-        _LIT(KSetting, "IAP\\Id");
-        iConnection.GetIntSetting(KSetting, iapId);
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-        // Check if this is an Easy WLAN configuration. On Symbian^3 RConnection may report
-        // the used configuration as 'EasyWLAN' IAP ID if someone has just opened the configuration
-        // from WLAN Scan dialog, _and_ that connection is still up. We need to find the
-        // real matching configuration. Function alters the Easy WLAN ID to real IAP ID (only if
-        // easy WLAN):
-        easyWlanTrueIapId(iapId);
-#endif
+        bool ok = activeIapId(iapId);
+        if (!ok)
+            return QNetworkConfiguration();
     }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -1015,6 +1030,20 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
     return publicConfig;
 }
 
+void QNetworkSessionPrivateImpl::updateCurrentIap(TUint32 iapId)
+{
+    if (iCurrentIap == iapId)
+        return;
+
+    if (iCurrentIap != 0)
+        QSymbianSocketManager::instance().removeActiveConnection(iCurrentIap);
+
+    iCurrentIap = iapId;
+
+    if (iCurrentIap != 0)
+        QSymbianSocketManager::instance().addActiveConnection(iCurrentIap);
+}
+
 void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
 {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
@@ -1028,7 +1057,10 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
         case KErrNone: // Connection created successfully
             {
             TInt error = KErrNone;
-            QNetworkConfiguration newActiveConfig = activeConfiguration();
+            TUint32 iapId;
+            QNetworkConfiguration newActiveConfig;
+            if (activeIapId(iapId))
+                newActiveConfig = activeConfiguration(iapId);
             if (!newActiveConfig.isValid()) {
                 // RConnection startup was successful but no configuration
                 // was found. That indicates that user has chosen to create a
@@ -1038,6 +1070,7 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
                 error = KErrGeneral;
             } else {
                 QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
+                updateCurrentIap(iapId);
             }
             if (error != KErrNone) {
                 isOpen = false;

@@ -782,4 +782,5 @@ EXPORTS
 	_ZThn104_N20QGLTextureGlyphCacheD0Ev @ 781 NONAME
 	_ZThn104_N20QGLTextureGlyphCacheD1Ev @ 782 NONAME
 	_ZThn8_NK16QGLWindowSurface8featuresEv @ 783 NONAME
+	_ZN27QGLContextGroupResourceBase14contextDeletedEPK10QGLContext @ 784 NONAME
 

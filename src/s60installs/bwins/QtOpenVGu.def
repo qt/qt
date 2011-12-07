@@ -159,7 +159,7 @@ EXPORTS
 	?hibernate@QVGImagePool@@UAEXXZ @ 158 NONAME ; void QVGImagePool::hibernate(void)
 	?qt_vg_destroy_context@@YAXPAVQEglContext@@H@Z @ 159 NONAME ; void qt_vg_destroy_context(class QEglContext *, int)
 	??0QVGImagePool@@QAE@XZ @ 160 NONAME ; QVGImagePool::QVGImagePool(void)
-	?setImagePool@QVGImagePool@@SAXPAV1@@Z @ 161 NONAME ; void QVGImagePool::setImagePool(class QVGImagePool *)
+	?setImagePool@QVGImagePool@@SAXPAV1@@Z @ 161 NONAME ABSENT ; void QVGImagePool::setImagePool(class QVGImagePool *)
 	?pixmapLRU@QVGImagePool@@IAEPAVQVGPixmapData@@XZ @ 162 NONAME ; class QVGPixmapData * QVGImagePool::pixmapLRU(void)
 	?qt_vg_create_context@@YAPAVQEglContext@@PAVQPaintDevice@@H@Z @ 163 NONAME ; class QEglContext * qt_vg_create_context(class QPaintDevice *, int)
 	?reclaimImages@QVGPixmapData@@UAEXXZ @ 164 NONAME ; void QVGPixmapData::reclaimImages(void)
