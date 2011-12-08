@@ -153,7 +153,7 @@ symbian {
     CONFIG += do_not_build_as_thumb
 
     CONFIG(release, debug|release): QMAKE_CXXFLAGS.ARMCC += -OTime -O3
-    # Symbian plugin support.
+    # Symbian plugin support
     LIBS += -lefsrv
 
     !CONFIG(QTDIR_build) {
