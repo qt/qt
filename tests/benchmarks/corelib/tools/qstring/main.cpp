@@ -58,6 +58,11 @@
 #include <unistd.h>
 #endif
 
+// MAP_ANON is deprecated on Linux, and MAP_ANONYMOUS is not present on Mac
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
+
 #include <private/qsimd_p.h>
 
 #include "data.h"
@@ -789,7 +794,7 @@ static void __attribute__((noinline)) equals2_selftest()
     void *page1, *page3;
     ushort *page2;
     page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+    page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);
@@ -938,7 +943,7 @@ static inline int ucstrncmp_short_tail(const ushort *p1, const ushort *p2, int l
     return 0;
 }
 
-static inline int bsf_nonzero(register long val)
+static inline int bsf_nonzero(register int val)
 {
     int result;
 # ifdef Q_CC_GNU
@@ -1346,7 +1351,7 @@ void tst_QString::ucstrncmp() const
         void *page1, *page3;
         ushort *page2;
         page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
         Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);

@@ -7,8 +7,6 @@ INCLUDEPATH += .
 QT -= gui
 
 CONFIG += release
-CONFIG += debug
-
 
 SOURCES += main.cpp
 
