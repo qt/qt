@@ -105,6 +105,7 @@ class QSQLiteDriverPrivate
 public:
     inline QSQLiteDriverPrivate() : access(0) {}
     sqlite3 *access;
+    QList <QSQLiteResult *> results;
 };
 
 
@@ -312,10 +313,14 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
 {
     d = new QSQLiteResultPrivate(this);
     d->access = db->d->access;
+    db->d->results.append(this);
 }
 
 QSQLiteResult::~QSQLiteResult()
 {
+    const QSQLiteDriver * sqlDriver = qobject_cast<const QSQLiteDriver *>(driver());
+    if (sqlDriver)
+        sqlDriver->d->results.removeOne(this);
     d->cleanup();
     delete d;
 }
@@ -579,6 +584,9 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 void QSQLiteDriver::close()
 {
     if (isOpen()) {
+        foreach (QSQLiteResult *result, d->results)
+            result->d->finalize();
+
         if (sqlite3_close(d->access) != SQLITE_OK)
             setLastError(qMakeError(d->access, tr("Error closing database"),
                                     QSqlError::ConnectionError));

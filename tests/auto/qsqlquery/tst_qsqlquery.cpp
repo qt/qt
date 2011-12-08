@@ -215,6 +215,8 @@ private slots:
     void QTBUG_14132();
     void QTBUG_21884_data() { generic_data("QSQLITE"); }
     void QTBUG_21884();
+    void QTBUG_16967_data() { generic_data("QSQLITE"); }
+    void QTBUG_16967(); //clean close
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -3150,6 +3152,58 @@ void tst_QSqlQuery::QTBUG_21884()
     }
 }
 
+/**
+  * This test case test sqlite driver close function. Sqlite driver should close cleanly
+  * even if there is still outstanding prepared statement.
+  */
+void tst_QSqlQuery::QTBUG_16967()
+{
+    QSqlQuery q2;
+    QFETCH(QString, dbName);
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q2.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        q2.exec();
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q.exec("INSERT INTO t1 (id, str) VALUES(1, \"test1\");");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q2.exec("SELECT * FROM t1;");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+}
 
 void tst_QSqlQuery::oraOCINumber()
 {
