@@ -235,8 +235,8 @@
 */
 
 /*!
-    \externalpage http://www.postgresql.org/docs/faqs.FAQ_MINGW.html
-    \title Compiling PostgreSQL On Native Win32 FAQ
+    \externalpage http://www.postgresql.org/docs/current/static/installation-platform-notes.html#INSTALLATION-NOTES-MINGW
+    \title PostgreSQL MinGW/Native Windows
 */
 
 /*!
