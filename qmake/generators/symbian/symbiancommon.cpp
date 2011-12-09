@@ -397,7 +397,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
     if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
         addLocalizedResourcesToDeployment("default_resource_deployment.files", symbianLocalizationList);
-        addLocalizedResourcesToDeployment("default_reg_deployment.files", symbianLocalizationList);
     }
 
     // deploy files specified by DEPLOYMENT variable
@@ -865,12 +864,17 @@ void SymbianCommonGenerator::fillQt2SymbianLocalizationList(SymbianLocalizationL
     QStringList symbianLanguages = generator->project->values("SYMBIAN_MATCHED_LANGUAGES");
 
     foreach (QString qtCode, symbianLanguages) {
-        SymbianLocalization newLoc;
         QString symbianCodeVariable = symbianCodePrefix + qtCode;
-        newLoc.symbianLanguageCode = generator->project->first(symbianCodeVariable);
-        if (!newLoc.symbianLanguageCode.isEmpty()) {
-            newLoc.qtLanguageCode = qtCode;
-            symbianLocalizationList->append(newLoc);
+        QStringList symbianCodes = generator->project->values(symbianCodeVariable);
+		// Some languages have more than one Symbian code, so they get more than one
+		// entry in symbianLocalizationList.
+        foreach (QString symbianCode, symbianCodes) {
+            SymbianLocalization newLoc;
+            newLoc.symbianLanguageCode = symbianCode;
+            if (!newLoc.symbianLanguageCode.isEmpty()) {
+                newLoc.qtLanguageCode = qtCode;
+                symbianLocalizationList->append(newLoc);
+            }
         }
     }
 }
