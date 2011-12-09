@@ -12,4 +12,10 @@ SUBDIRS += \
 
 contains(QT_CONFIG, opengl): SUBDIRS += painting qmlshadersplugin
 
+!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           creation \
+           pointers \
+           qdeclarativeimage \
+           script \
+
 include(../trusted-benchmarks.pri)
