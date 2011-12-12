@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QVGImagePool, qt_vg_image_pool)
+static QVGImagePool *qt_vg_image_pool = 0;
 
 class QVGImagePoolPrivate
 {
@@ -66,7 +66,16 @@ QVGImagePool::~QVGImagePool()
 
 QVGImagePool *QVGImagePool::instance()
 {
-    return qt_vg_image_pool();
+    if (!qt_vg_image_pool)
+        qt_vg_image_pool = new QVGImagePool();
+    return qt_vg_image_pool;
+}
+
+void QVGImagePool::setImagePool(QVGImagePool *pool)
+{
+    if (qt_vg_image_pool != pool)
+        delete qt_vg_image_pool;
+    qt_vg_image_pool = pool;
 }
 
 VGImage QVGImagePool::createTemporaryImage(VGImageFormat format,

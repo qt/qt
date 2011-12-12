@@ -69,6 +69,10 @@ public:
 
     static QVGImagePool *instance();
 
+    // This function can be used from system-specific graphics system
+    // plugins to alter the image allocation strategy.
+    static void setImagePool(QVGImagePool *pool);
+
     // Create a new VGImage from the pool with the specified parameters
     // that is not associated with a pixmap.  The VGImage is returned to
     // the pool when releaseImage() is called.
