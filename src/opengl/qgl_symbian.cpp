@@ -181,14 +181,19 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
         d->ownsEglContext = true;
         d->eglContext->setApi(QEgl::OpenGL);
 
-        // Allow apps to override ability to use multisampling by setting an environment variable. Eg:
-        //   qputenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE", "1");
-        // Added to allow camera app to start with limited memory.
-        if (!QSymbianGraphicsSystemEx::hasBCM2727() && !qgetenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE").toInt()) {
-            // Most likely we have hw support for multisampling
-            // so let's enable it.
-            d->glFormat.setSampleBuffers(1);
-            d->glFormat.setSamples(4);
+        if (d->glFormat.samples() == EGL_DONT_CARE) {
+            // Allow apps to override ability to use multisampling by setting an environment variable. Eg:
+            //   qputenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE", "1");
+            // Added to allow camera app to start with limited memory.
+            if (!QSymbianGraphicsSystemEx::hasBCM2727() && !qgetenv("QT_SYMBIAN_DISABLE_GL_MULTISAMPLE").toInt()) {
+                // Most likely we have hw support for multisampling
+                // so let's enable it.
+                d->glFormat.setSampleBuffers(1);
+                d->glFormat.setSamples(4);
+            } else {
+                d->glFormat.setSampleBuffers(0);
+                d->glFormat.setSamples(1);
+            }
         }
 
 	    // If the device is a widget with WA_TranslucentBackground set, make sure the glFormat

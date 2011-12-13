@@ -46,9 +46,15 @@ SUBDIRS=\
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qauthenticator \
+    qhostinfo \
     qhttpnetworkconnection \
     qhttpnetworkreply \
+    qhttpsocketengine \
+    qnetworkreply \
     platformsocketengine \
     qsocketnotifier \
     qsocks5socketengine \
+    qsslsocket \
+    qsslsocket_onDemandCertificates_member \
+    qsslsocket_onDemandCertificates_static \
 

@@ -1388,15 +1388,25 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     // but FEP requires that selected text is always removed at StartFepInlineEditL.
     // Let's remove the selected text if aInitialInlineText is empty and there is selected text
     if (m_preeditString.isEmpty()) {
-        int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-        int cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-        int replacementLength = qAbs(cursorPos-anchor);
-        if (replacementLength > 0) {
-            int replacementStart = cursorPos < anchor ? 0 : -replacementLength;
-            QList<QInputMethodEvent::Attribute> clearSelectionAttributes;
-            QInputMethodEvent clearSelectionEvent(QLatin1String(""), clearSelectionAttributes);
-            clearSelectionEvent.setCommitString(QLatin1String(""), replacementStart, replacementLength);
+        QString currentSelection = w->inputMethodQuery(Qt::ImCurrentSelection).toString();
+        if (!currentSelection.isEmpty()) {
+            // To correctly remove selection in cases where we have multiple lines selected,
+            // we must rely on the control's own selection removal mechanism, as surrounding
+            // text contains only one line. It's also impossible to accurately detect
+            // these overselection cases as the anchor and cursor positions are limited to the
+            // surrounding text.
+            // Solution is to clear the selection by faking a preedit. Use a dummy character
+            // from the current selection just to be safe.
+            QString dummyText = currentSelection.left(1);
+            QList<QInputMethodEvent::Attribute> attributes;
+            QInputMethodEvent clearSelectionEvent(dummyText, attributes);
+            clearSelectionEvent.setCommitString(QLatin1String(""), 0, 0);
             sendEvent(clearSelectionEvent);
+
+            // Now that selection is taken care of, clear the fake preedit.
+            QInputMethodEvent clearPreeditEvent(QLatin1String(""), attributes);
+            clearPreeditEvent.setCommitString(QLatin1String(""), 0, 0);
+            sendEvent(clearPreeditEvent);
         }
     }
 

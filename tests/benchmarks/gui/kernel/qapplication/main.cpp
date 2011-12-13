@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
+#include <QtGui>
 
 #include <qtest.h>
 

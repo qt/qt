@@ -42,26 +42,25 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbconvenience.h"
 
+QT_BEGIN_NAMESPACE
 
-QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
-        QPlatformCursor(screen), surface(0)
+QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
+    : QPlatformCursor(screen)
 {
-    QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
-    image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    m_image.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
 }
 
-void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
+void QDirectFBCursor::changeCursor(QCursor *cursor, QWidget *)
 {
-    Q_UNUSED(widget);
     int xSpot;
     int ySpot;
     QPixmap map;
 
     if (cursor->shape() != Qt::BitmapCursor) {
-        image->set(cursor->shape());
-        xSpot = image->hotspot().x();
-        ySpot = image->hotspot().y();
-        QImage *i = image->image();
+        m_image->set(cursor->shape());
+        xSpot = m_image->hotspot().x();
+        ySpot = m_image->hotspot().y();
+        QImage *i = m_image->image();
         map = QPixmap::fromImage(*i);
     } else {
         QPoint point = cursor->hotSpot();
@@ -70,11 +69,18 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
         map = cursor->pixmap();
     }
 
-    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPixmapData(map.pixmapData());
+    DFBResult res;
+    IDirectFBDisplayLayer *layer = toDfbLayer(screen);
+    IDirectFBSurface* surface(QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.pixmapData()));
 
-    if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
+    res = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+    if (res != DFB_OK) {
+        DirectFBError("Failed to set DLSCL_ADMINISTRATIVE", res);
         return;
     }
-    m_layer->SetCursorShape( m_layer, surface, xSpot, ySpot);
-    m_layer->SetCooperativeLevel(m_layer, DLSCL_SHARED);
+
+    layer->SetCursorShape(layer, surface, xSpot, ySpot);
+    layer->SetCooperativeLevel(layer, DLSCL_SHARED);
 }
+
+QT_END_NAMESPACE

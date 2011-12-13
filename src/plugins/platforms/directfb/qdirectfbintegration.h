@@ -43,6 +43,7 @@
 #define QPLATFORMINTEGRATION_DIRECTFB_H
 
 #include "qdirectfbinput.h"
+#include "qdirectfbscreen.h"
 
 #include <QtGui/QPlatformIntegration>
 #include <directfb.h>
@@ -51,32 +52,6 @@
 QT_BEGIN_NAMESPACE
 
 class QThread;
-class QDirectFBCursor;
-
-class QDirectFbScreen : public QPlatformScreen
-{
-Q_OBJECT
-public:
-    QDirectFbScreen(int display);
-    ~QDirectFbScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
-
-    IDirectFBDisplayLayer *m_layer;
-
-private:
-    QDirectFBCursor * cursor;
-
-};
 
 class QDirectFbIntegration : public QPlatformIntegration
 {
@@ -92,11 +67,20 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const;
 
-private:
+    void initialize();
+
+protected:
+    virtual void initializeDirectFB();
+    virtual void initializeScreen();
+    virtual void initializeInput();
+
+protected:
     QList<QPlatformScreen *> mScreens;
-    QDirectFbInput *mInput;
-    QThread *mInputRunner;
-    QPlatformFontDatabase *mFontDb;
+    QDirectFBPointer<IDirectFB> m_dfb;
+    QScopedPointer<QDirectFbScreen> m_primaryScreen;
+    QScopedPointer<QDirectFbInput> m_input;
+    QScopedPointer<QThread> m_inputRunner;
+    QScopedPointer<QPlatformFontDatabase> m_fontDb;
 };
 
 QT_END_NAMESPACE

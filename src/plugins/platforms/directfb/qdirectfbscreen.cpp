@@ -39,29 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFBCURSOR_H
-#define QDIRECTFBCURSOR_H
-
-#include <QPlatformCursor>
-#include <directfb.h>
-
-#include "qdirectfbconvenience.h"
+#include "qdirectfbscreen.h"
+#include "qdirectfbcursor.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbScreen;
-class QDirectFbBlitter;
-
-class QDirectFBCursor : public QPlatformCursor
+QDirectFbScreen::QDirectFbScreen(int display)
+    : QPlatformScreen()
+    , m_layer(QDirectFbConvenience::dfbDisplayLayer(display))
 {
-public:
-    QDirectFBCursor(QPlatformScreen *screen);
-    void changeCursor(QCursor *cursor, QWidget *window);
+    m_layer->SetCooperativeLevel(m_layer.data(), DLSCL_SHARED);
 
-private:
-    QScopedPointer<QPlatformCursorImage> m_image;
-};
+    DFBDisplayLayerConfig config;
+    m_layer->GetConfiguration(m_layer.data(), &config);
+
+    m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
+    m_geometry = QRect(0, 0, config.width, config.height);
+    const int dpi = 72;
+    const qreal inch = 25.4;
+    m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
+    m_physicalSize = QSize(config.width, config.height) * inch / dpi;
+
+    m_cursor.reset(new QDirectFBCursor(this));
+}
+
+IDirectFBDisplayLayer *QDirectFbScreen::dfbLayer() const
+{
+    return m_layer.data();
+}
+
 
 QT_END_NAMESPACE
-
-#endif // QDIRECTFBCURSOR_H
