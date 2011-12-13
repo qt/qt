@@ -26,6 +26,20 @@ aínda se está a indexar!</translation>
     </message>
 </context>
 <context>
+    <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 de %n coincidencia</numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>0 - 0 of 0 Hits</source>
+        <translation>0 - 0 de 0 coincidencias</translation>
+    </message>
+</context>
+<context>
     <name>QHelp</name>
     <message>
         <source>Untitled</source>
@@ -301,20 +315,6 @@ aínda se está a indexar!</translation>
     <message>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
         <translation>con &lt;B&gt;polo menos unha&lt;/B&gt; das palabras:</translation>
-    </message>
-</context>
-<context>
-    <name>QHelpSearchResultWidget</name>
-    <message numerus="yes">
-        <source>%1 - %2 of %n Hits</source>
-        <translation>
-            <numerusform>%1 - %2 de %n coincidencia</numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>0 - 0 of 0 Hits</source>
-        <translation>0 - 0 de 0 coincidencias</translation>
     </message>
 </context>
 </TS>
