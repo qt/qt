@@ -105,7 +105,7 @@ while (it.current()) {
 
 //! [7]
 QList<Q3ListViewItem *> lst;
-Q3ListViewItemIterator it(myListView, Selected);
+Q3ListViewItemIterator it(myListView, Q3ListViewItemIterator::Selected);
 while (it.current()) {
     lst.append(it.current());
     ++it;

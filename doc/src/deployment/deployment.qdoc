@@ -853,6 +853,7 @@
            \endlist
         \o \list
                \o MINGWM10.DLL - The MinGW run-time
+               \o LIBGCC_S_DW2-1.DLL
            \endlist
     \endtable
 

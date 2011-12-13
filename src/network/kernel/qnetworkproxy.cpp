@@ -129,9 +129,9 @@
     \value NoProxy No proxying is used
     \value DefaultProxy Proxy is determined based on the application proxy set using setApplicationProxy()
     \value Socks5Proxy \l Socks5 proxying is used
-    \value HttpProxy HTTP transparent proxying is used
-    \value HttpCachingProxy Proxying for HTTP requests only
-    \value FtpCachingProxy Proxying for FTP requests only
+    \value HttpProxy HTTP transparent proxying is used (This value was introduced in 4.3.)
+    \value HttpCachingProxy Proxying for HTTP requests only (This value was introduced in 4.4.)
+    \value FtpCachingProxy Proxying for FTP requests only (This value was introduced in 4.4.)
 
     The table below lists different proxy types and their
     capabilities. Since each proxy type has different capabilities, it

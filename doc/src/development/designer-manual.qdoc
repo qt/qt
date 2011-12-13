@@ -1878,7 +1878,8 @@ pixmap property in the property editor.
     \snippet examples/designer/calculatorform/calculatorform.cpp 0
 
     We can connect signals and slots in user interface widgets in the usual
-    way, taking care to prefix the \c ui object to each widget used.
+    way by adding the on_<object name> - prefix. For more information,
+    see \l{widgets-and-dialogs-with-auto-connect}.
 
     The advantages of this approach are its simple use of inheritance to
     provide a QWidget-based interface, and its encapsulation of the user

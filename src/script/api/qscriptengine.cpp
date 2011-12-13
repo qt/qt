@@ -196,8 +196,8 @@ QT_BEGIN_NAMESPACE
   "standard" Qt constructor, Qt Script can provide a default script
   constructor for you; see scriptValueFromQMetaObject().
 
-  See the \l{QtScript} documentation for more information on
-  the QObject integration.
+  For more information about QObject integration, see
+  \l{Making Applications Scriptable} 
 
   \section1 Support for Custom C++ Types
 
