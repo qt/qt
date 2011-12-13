@@ -72,35 +72,9 @@ QT_BEGIN_NAMESPACE
     needs from the io device. So playing back an audio file is as
     simple as:
 
-    \code
-      QFile inputFile;     // class member.
-      QAudioOutput* audio; // class member.
-    \endcode
-
-    \code
-      inputFile.setFileName("/tmp/test.raw");
-      inputFile.open(QIODevice::ReadOnly);
-
-      QAudioFormat format;
-      // Set up the format, eg.
-      format.setFrequency(8000);
-      format.setChannels(1);
-      format.setSampleSize(8);
-      format.setCodec("audio/pcm");
-      format.setByteOrder(QAudioFormat::LittleEndian);
-      format.setSampleType(QAudioFormat::UnSignedInt);
-
-      QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-      if (!info.isFormatSupported(format)) {
-          qWarning()<<"raw audio format not supported by backend, cannot play audio.";
-          return;
-      }
-
-      audio = new QAudioOutput(format, this);
-      connect(audio,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
-      audio->start(&inputFile);
-
-    \endcode
+    \snippet doc/src/snippets/audio/main.cpp 9
+    \dots 4
+    \snippet doc/src/snippets/audio/main.cpp 4
 
     The file will start playing assuming that the audio system and
     output device support it. If you run out of luck, check what's
@@ -108,16 +82,7 @@ QT_BEGIN_NAMESPACE
 
     After the file has finished playing, we need to stop the device:
 
-    \code
-      void finishedPlaying(QAudio::State state)
-      {
-        if(state == QAudio::IdleState) {
-          audio->stop();
-          inputFile.close();
-          delete audio;
-        }
-      }
-    \endcode
+    \snippet doc/src/snippets/audio/main.cpp 5
 
     At any given time, the QAudioOutput will be in one of four states:
     active, suspended, stopped, or idle. These states are described
@@ -145,7 +110,7 @@ QT_BEGIN_NAMESPACE
     You can check for errors by connecting to the stateChanged()
     signal:
 
-    \snippet doc/src/snippets/audio/main.cpp 3
+    \snippet doc/src/snippets/audio/main.cpp 8
 
     \sa QAudioInput, QAudioDeviceInfo
 */

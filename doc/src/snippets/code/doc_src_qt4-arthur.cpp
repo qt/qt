@@ -74,7 +74,7 @@ painter.drawEllipse(0, 0, 100, 100);
 painter.setBrush(QColor(255, 0, 0, 127));
 painter.drawRect(0, 0, width()/2, height());
 
-// Specify semi-transparend blue
+// Specify semi-transparent blue
 painter.setBrush(QColor(0, 0, 255, 127));
 painter.drawRect(0, 0, width(), height()/2);
 //! [3]
@@ -86,15 +86,16 @@ painter.drawLine(0, 0, width()/2, height());
 
 // One line with anti-aliasing
 painter.setRenderHint(QPainter::Antialiasing);
-painter.drawLine(width()/2, 0, width()/2, height());
+painter.drawLine(width()/2, 0, width(), height());
 //! [4]
 
 
 //! [5]
 QPainterPath path;
 path.addRect(20, 20, 60, 60);
-path.addBezier(0, 0,  99, 0,  50, 50,  99, 99);
-path.addBezier(99, 99,  0, 99,  50, 50,  0, 0);
+path.moveTo(0, 0);
+path.cubicTo(99, 0, 50, 50, 99, 99);
+path.cubicTo(0, 99, 50, 50, 0, 0);
 painter.drawPath(path);
 //! [5]
 

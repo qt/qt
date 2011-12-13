@@ -2089,7 +2089,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     \value Yugoslavia
     \value Zambia
     \value Zimbabwe
-    \value SerbiaAndMontenegro
     \value Montenegro
     \value Serbia
     \value SaintBarthelemy
