@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 static int global_ser_no = 0;
 
 QBlittablePixmapData::QBlittablePixmapData()
-    : QPixmapData(QPixmapData::PixmapType,BlitterClass), m_engine(0), m_blittable(0)
+    : QPixmapData(QPixmapData::PixmapType,BlitterClass)
 #ifdef QT_BLITTER_RASTEROVERLAY
     ,m_rasterOverlay(0), m_unmergedCopy(0)
 #endif //QT_BLITTER_RASTEROVERLAY
@@ -67,8 +67,6 @@ QBlittablePixmapData::QBlittablePixmapData()
 
 QBlittablePixmapData::~QBlittablePixmapData()
 {
-    delete m_blittable;
-    delete m_engine;
 #ifdef QT_BLITTER_RASTEROVERLAY
     delete m_rasterOverlay;
     delete m_unmergedCopy;
@@ -79,25 +77,23 @@ QBlittable *QBlittablePixmapData::blittable() const
 {
     if (!m_blittable) {
         QBlittablePixmapData *that = const_cast<QBlittablePixmapData *>(this);
-        that->m_blittable = this->createBlittable(QSize(w,h));
+        that->m_blittable.reset(this->createBlittable(QSize(w,h)));
     }
 
-    return m_blittable;
+    return m_blittable.data();
 }
 
 void QBlittablePixmapData::setBlittable(QBlittable *blittable)
 {
     resize(blittable->size().width(),blittable->size().height());
-    m_blittable = blittable;
+    m_blittable.reset(blittable);
 }
 
 void QBlittablePixmapData::resize(int width, int height)
 {
 
-    delete m_blittable;
-    m_blittable = 0;
-    delete m_engine;
-    m_engine = 0;
+    m_blittable.reset(0);
+    m_engine.reset(0);
 #ifdef Q_WS_QPA
     d = QApplicationPrivate::platformIntegration()->screens().at(0)->depth();
 #endif
@@ -209,9 +205,9 @@ QPaintEngine *QBlittablePixmapData::paintEngine() const
 {
     if (!m_engine) {
         QBlittablePixmapData *that = const_cast<QBlittablePixmapData *>(this);
-        that->m_engine = new QBlitterPaintEngine(that);
+        that->m_engine.reset(new QBlitterPaintEngine(that));
     }
-    return m_engine;
+    return m_engine.data();
 }
 
 #ifdef QT_BLITTER_RASTEROVERLAY
