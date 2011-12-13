@@ -48,6 +48,8 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFbBlitter : public QBlittable
 {
 public:
@@ -58,25 +60,51 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
 
+    IDirectFBSurface *dfbSurface() const;
+
+    static DFBSurfacePixelFormat alphaPixmapFormat();
+    static DFBSurfacePixelFormat pixmapFormat();
+    static DFBSurfacePixelFormat selectPixmapFormat(bool withAlpha);
+
 protected:
     virtual QImage *doLock();
     virtual void doUnlock();
 
-    IDirectFBSurface *m_surface;
+    QDirectFBPointer<IDirectFBSurface> m_surface;
     QImage m_image;
 
     friend class QDirectFbConvenience;
 };
 
-class QDirectFbBlitterPixmapData : public QBlittablePixmapData
+class QDirectFbBlitterPlatformPixmap : public QBlittablePixmapData
 {
 public:
     QBlittable *createBlittable(const QSize &size, bool alpha) const;
+
+    QDirectFbBlitter *dfbBlitter() const;
+
+    virtual bool fromFile(const QString &filename, const char *format,
+                          Qt::ImageConversionFlags flags);
+
+private:
+    bool fromDataBufferDescription(const DFBDataBufferDescription &);
 };
 
-inline QBlittable *QDirectFbBlitterPixmapData::createBlittable(const QSize& size, bool alpha) const
+inline QBlittable *QDirectFbBlitterPlatformPixmap::createBlittable(const QSize& size, bool alpha) const
 {
     return new QDirectFbBlitter(size, alpha);
 }
+
+inline QDirectFbBlitter *QDirectFbBlitterPlatformPixmap::dfbBlitter() const
+{
+    return static_cast<QDirectFbBlitter*>(blittable());
+}
+
+inline IDirectFBSurface *QDirectFbBlitter::dfbSurface() const
+{
+    return m_surface.data();
+}
+
+QT_END_NAMESPACE
 
 #endif // QDIRECTFBBLITTER_H

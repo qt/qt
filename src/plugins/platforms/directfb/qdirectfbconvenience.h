@@ -49,6 +49,11 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
+class QDirectFbScreen;
+class QPlatformScreen;
+
 class QDirectFbKeyMap: public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {
 public:
@@ -67,7 +72,7 @@ public:
     static IDirectFB *dfbInterface();
     static IDirectFBDisplayLayer *dfbDisplayLayer(int display = DLID_PRIMARY);
 
-    static IDirectFBSurface *dfbSurfaceForPixmapData(QPixmapData *);
+    static IDirectFBSurface *dfbSurfaceForPlatformPixmap(QPixmapData *);
 
     static Qt::MouseButton mouseButton(DFBInputDeviceButtonIdentifier identifier);
     static Qt::MouseButtons mouseButtons(DFBInputDeviceButtonMask mask);
@@ -80,5 +85,42 @@ private:
     static QDirectFbKeyMap *dfbKeymap;
     friend class QDirectFbIntegration;
 };
+
+template <typename T> struct QDirectFBInterfaceCleanupHandler
+{
+    static void cleanup(T *t)
+    {
+        if (!t)
+            return;
+        t->Release(t);
+    }
+};
+
+template <typename T>
+class QDirectFBPointer : public QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >
+{
+public:
+    QDirectFBPointer(T *t = 0)
+        : QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >(t)
+    {}
+
+    T** outPtr()
+    {
+        this->reset(0);
+        return &this->d;
+    }
+};
+
+// Helper conversions from internal to DFB types
+QDirectFbScreen *toDfbScreen(QWidget *window);
+IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen);
+
+#define QDFB_STRINGIFY(x) #x
+#define QDFB_TOSTRING(x) QDFB_STRINGIFY(x)
+#define QDFB_PRETTY \
+    (__FILE__ ":" QDFB_TOSTRING(__LINE__))
+
+QT_END_NAMESPACE
+
 
 #endif // QDIRECTFBCONVENIENCE_H
