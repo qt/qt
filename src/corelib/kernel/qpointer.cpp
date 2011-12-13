@@ -97,7 +97,7 @@
     Note that class \c T must inherit QObject, or a compilation or
     link error will result.
 
-    \sa QSharedPointer, QObject, QObjectCleanupHandler
+    \sa QSharedPointer, QWeakPointer, QObject, QObjectCleanupHandler
 */
 
 /*!

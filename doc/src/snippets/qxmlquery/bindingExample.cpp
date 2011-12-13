@@ -44,6 +44,6 @@
     device.open(QIODevice::ReadOnly);
 
     QXmlQuery query;
-    query.setQuery("doc($inputDocument)/query[theDocument]");
     query.bindVariable("inputDocument", &device);
+    query.setQuery("doc($inputDocument)/query[theDocument]");
 //! [0]

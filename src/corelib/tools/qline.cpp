@@ -155,7 +155,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn int QLine::dx() const
 
-    Returns the horizontal component of the line's vector.
+    Returns the horizontal component of the line's vector. 
+    Return value is positive if x2() >= x1() and negative if x2() < x1().
 
     \sa dy()
 */
@@ -164,6 +165,7 @@ QT_BEGIN_NAMESPACE
     \fn int QLine::dy() const
 
     Returns the vertical component of the line's vector.
+    Return value is positive if y2() >= y1() and negative if y2() < y1().
 
     \sa dx()
 */
@@ -501,6 +503,7 @@ bool QLineF::isNull() const
 
     Sets the length of the line to the given \a length. QLineF will
     move the end point - p2() - of the line to give the line its new length.
+    If the given \a length is negative the angle() is also changed.
     
     If the line is a null line, the length will remain zero regardless
     of the length specified. 
@@ -757,7 +760,7 @@ QLineF::IntersectType QLineF::intersect(const QLineF &l, QPointF *intersectionPo
 
   \since 4.4
 
-  Returns the angle (in degrees) from this line to the given \a
+  Returns the angle (in positive degrees) from this line to the given \a
   line, taking the direction of the lines into account. If the lines
   do not intersect within their range, it is the intersection point of
   the extended lines that serves as origin (see

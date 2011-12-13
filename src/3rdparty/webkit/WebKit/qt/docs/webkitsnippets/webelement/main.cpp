@@ -57,7 +57,7 @@ static void findButtonAndClick()
      */
 
     QWebElement button = document.findFirst("input[type=submit]");
-    button.evaluateJavaScript("click()");
+    button.evaluateJavaScript("this.click()");
 
 //! [Calling a DOM element method]
 

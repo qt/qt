@@ -590,7 +590,7 @@ the Symbian platform from scratch.
     The \l{Configuration Options for Qt} page gives a brief overview
     of these.
 
-    SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor}) 
+    SBSv2 (also known as \l{http://projects.developer.nokia.com/raptor/wiki} {Raptor}) 
     is a next-generation Symbian build system. SBSv2 is not officially supported
     by any of the S60 SDKs currently available from Forum Nokia.
 
@@ -1348,7 +1348,7 @@ We hope you will enjoy using Qt.
     \endlist
 
 
-    We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
+    We recommend you to take a look at \l{http://doc.qt.nokia.com/latest/install-symbian.html}{Installing Qt for the Symbian platform}
     to get more information about how to setup the development environment.
 
     \sa {Known Issues}
