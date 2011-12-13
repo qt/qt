@@ -42,30 +42,30 @@
 #ifndef QDIRECTFBINPUT_H
 #define QDIRECTFBINPUT_H
 
-#include <QSemaphore>
-#include <QObject>
+#include <QThread>
 #include <QHash>
 #include <QPoint>
 #include <QEvent>
 
 #include <QtGui/qwindowdefs.h>
 
-#include <directfb.h>
+#include "qdirectfbconvenience.h"
 
-class QDirectFbInput : public QObject
+class QDirectFbInput : public QThread
 {
     Q_OBJECT
 public:
-    QDirectFbInput(QObject *parent);
-    void addWindow(DFBWindowID id, QWidget *tlw);
-    void removeWindow(WId wId);
+    QDirectFbInput(IDirectFB *dfb, IDirectFBDisplayLayer *dfbLayer);
+    void addWindow(IDirectFBWindow *window, QWidget *platformWindow);
+    void removeWindow(IDirectFBWindow *window);
 
-public slots:
-    void runInputEventLoop();
     void stopInputEventLoop();
-    void handleEvents();
+
+protected:
+    void run();
 
 private:
+    void handleEvents();
     void handleMouseEvents(const DFBEvent &event);
     void handleWheelEvent(const DFBEvent &event);
     void handleKeyEvents(const DFBEvent &event);
@@ -75,11 +75,9 @@ private:
 
     IDirectFB *m_dfbInterface;
     IDirectFBDisplayLayer *m_dfbDisplayLayer;
-    IDirectFBEventBuffer *m_eventBuffer;
+    QDirectFBPointer<IDirectFBEventBuffer> m_eventBuffer;
 
     bool m_shouldStop;
-    QSemaphore m_waitStop;
-
     QHash<DFBWindowID,QWidget *>m_tlwMap;
 };
 

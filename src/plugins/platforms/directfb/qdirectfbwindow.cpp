@@ -40,21 +40,23 @@
 ****************************************************************************/
 
 #include "qdirectfbwindow.h"
-#include "qdirectfbinput.h"
-#include "qdirectfbglcontext.h"
-
-#include <QWidget>
-
 #include "qdirectfbwindowsurface.h"
+#include "qdirectfbinput.h"
+#include "qdirectfbscreen.h"
+
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
-    : QPlatformWindow(tlw), m_inputHandler(inputhandler), m_context(0)
+    : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
-    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     DFBDisplayLayerConfig layerConfig;
-    layer->GetConfiguration(layer,&layerConfig);
+    IDirectFBDisplayLayer *layer;
+
+    layer = toDfbScreen(tlw)->dfbLayer();
+    toDfbScreen(tlw)->dfbLayer()->GetConfiguration(layer, &layerConfig);
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
@@ -63,10 +65,10 @@ QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
                                                   |DWDESC_OPTIONS
 #endif
                                                   |DWDESC_CAPS);
-    description.width = tlw->rect().width();
-    description.height = tlw->rect().height();
-    description.posx = tlw->rect().x();
-    description.posy = tlw->rect().y();
+    description.width = tlw->width();
+    description.height = tlw->height();
+    description.posx = tlw->x();
+    description.posy = tlw->y();
 
     if (layerConfig.surface_caps & DSCAPS_PREMULTIPLIED)
         description.surface_caps = DSCAPS_PREMULTIPLIED;
@@ -78,34 +80,32 @@ QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
-    DFBResult result = layer->CreateWindow(layer,&description,&m_dfbWindow);
+    DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
         DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
     }
 
-    m_dfbWindow->SetOpacity(m_dfbWindow,0xff);
+    m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
 
     setVisible(widget()->isVisible());
 
-    DFBWindowID id;
-    m_dfbWindow->GetID(m_dfbWindow, &id);
-    m_inputHandler->addWindow(id,tlw);
+    m_inputHandler->addWindow(m_dfbWindow.data(), tlw);
 }
 
 QDirectFbWindow::~QDirectFbWindow()
 {
-    m_inputHandler->removeWindow(winId());
-    m_dfbWindow->Destroy(m_dfbWindow);
+    m_inputHandler->removeWindow(m_dfbWindow.data());
+    m_dfbWindow->Destroy(m_dfbWindow.data());
 }
 
 void QDirectFbWindow::setGeometry(const QRect &rect)
 {
     bool isMoveOnly = (rect.topLeft() != geometry().topLeft()) && (rect.size() == geometry().size());
+
     QPlatformWindow::setGeometry(rect);
     if (widget()->isVisible() && !(widget()->testAttribute(Qt::WA_DontShowOnScreen))) {
-        m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
+        m_dfbWindow->SetBounds(m_dfbWindow.data(), rect.x(),rect.y(),
                                rect.width(), rect.height());
-
         //Hack. When moving since the WindowSurface of a window becomes invalid when moved
         if (isMoveOnly) { //if resize then windowsurface is updated.
             widget()->windowSurface()->resize(rect.size());
@@ -117,7 +117,7 @@ void QDirectFbWindow::setGeometry(const QRect &rect)
 void QDirectFbWindow::setOpacity(qreal level)
 {
     const quint8 windowOpacity = quint8(level * 0xff);
-    m_dfbWindow->SetOpacity(m_dfbWindow,windowOpacity);
+    m_dfbWindow->SetOpacity(m_dfbWindow.data(), windowOpacity);
 }
 
 void QDirectFbWindow::setVisible(bool visible)
@@ -125,14 +125,14 @@ void QDirectFbWindow::setVisible(bool visible)
     if (visible) {
         int x = geometry().x();
         int y = geometry().y();
-        m_dfbWindow->MoveTo(m_dfbWindow,x,y);
+        m_dfbWindow->MoveTo(m_dfbWindow.data(), x, y);
     } else {
-        IDirectFBDisplayLayer *displayLayer;
-        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY,&displayLayer);
+        QDirectFBPointer<IDirectFBDisplayLayer> displayLayer;
+        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(), DLID_PRIMARY, displayLayer.outPtr());
 
         DFBDisplayLayerConfig config;
-        displayLayer->GetConfiguration(displayLayer,&config);
-        m_dfbWindow->MoveTo(m_dfbWindow,config.width+1,config.height + 1);
+        displayLayer->GetConfiguration(displayLayer.data(), &config);
+        m_dfbWindow->MoveTo(m_dfbWindow.data(), config. width + 1, config.height + 1);
     }
 }
 
@@ -141,51 +141,73 @@ Qt::WindowFlags QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
     switch (flags & Qt::WindowType_Mask) {
     case Qt::ToolTip: {
         DFBWindowOptions options;
-        m_dfbWindow->GetOptions(m_dfbWindow,&options);
+        m_dfbWindow->GetOptions(m_dfbWindow.data(), &options);
         options = DFBWindowOptions(options | DWOP_GHOST);
-        m_dfbWindow->SetOptions(m_dfbWindow,options);
+        m_dfbWindow->SetOptions(m_dfbWindow.data(), options);
         break; }
     default:
         break;
     }
 
-    m_dfbWindow->SetStackingClass(m_dfbWindow, flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
+    m_dfbWindow->SetStackingClass(m_dfbWindow.data(), flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
     return flags;
 }
 
 void QDirectFbWindow::raise()
 {
-    m_dfbWindow->RaiseToTop(m_dfbWindow);
+    m_dfbWindow->RaiseToTop(m_dfbWindow.data());
 }
 
 void QDirectFbWindow::lower()
 {
-    m_dfbWindow->LowerToBottom(m_dfbWindow);
+    m_dfbWindow->LowerToBottom(m_dfbWindow.data());
 }
 
 WId QDirectFbWindow::winId() const
 {
     DFBWindowID id;
-    m_dfbWindow->GetID(m_dfbWindow, &id);
+    m_dfbWindow->GetID(m_dfbWindow.data(), &id);
     return WId(id);
 }
 
-QPlatformGLContext *QDirectFbWindow::glContext() const
+bool QDirectFbWindow::setKeyboardGrabEnabled(bool grab)
 {
-    if (!m_context) {
-        IDirectFBSurface *surface;
-        DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&surface);
-        if (result != DFB_OK) {
-            qWarning("could not retrieve surface in QDirectFbWindow::glContext()");
-            return 0;
-        }
-        IDirectFBGL *gl;
-        result = surface->GetGL(surface,&gl);
-        if (result != DFB_OK) {
-            qWarning("could not retrieve IDirectFBGL in QDirectFbWindow::glContext()");
-            return 0;
-        }
-        const_cast<QDirectFbWindow *>(this)->m_context = new QDirectFbGLContext(gl);
-    }
-    return m_context;
+    DFBResult res;
+
+    if (grab)
+        res = m_dfbWindow->GrabKeyboard(m_dfbWindow.data());
+    else
+        res = m_dfbWindow->UngrabKeyboard(m_dfbWindow.data());
+
+    return res == DFB_OK;
 }
+
+bool QDirectFbWindow::setMouseGrabEnabled(bool grab)
+{
+    DFBResult res;
+
+    if (grab)
+        res = m_dfbWindow->GrabPointer(m_dfbWindow.data());
+    else
+        res = m_dfbWindow->UngrabPointer(m_dfbWindow.data());
+
+    return res == DFB_OK;
+}
+
+IDirectFBWindow *QDirectFbWindow::dfbWindow() const
+{
+    return m_dfbWindow.data();
+}
+
+IDirectFBSurface *QDirectFbWindow::dfbSurface()
+{
+    if (!m_dfbSurface) {
+        DFBResult res = m_dfbWindow->GetSurface(m_dfbWindow.data(), m_dfbSurface.outPtr());
+        if (res != DFB_OK)
+            DirectFBError(QDFB_PRETTY, res);
+    }
+
+    return m_dfbSurface.data();
+}
+
+QT_END_NAMESPACE

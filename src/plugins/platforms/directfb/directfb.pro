@@ -20,7 +20,8 @@ SOURCES = main.cpp \
     qdirectfbinput.cpp \
     qdirectfbcursor.cpp \
     qdirectfbwindow.cpp \
-    qdirectfbglcontext.cpp
+    qdirectfbglcontext.cpp \
+    qdirectfbscreen.cpp
 HEADERS = qdirectfbintegration.h \
     qdirectfbwindowsurface.h \
     qdirectfbblitter.h \
@@ -28,7 +29,8 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \
     qdirectfbwindow.h \
-    qdirectfbglcontext.h
+    qdirectfbglcontext.h \
+    qdirectfbscreen.h
 
 include(../fontdatabases/genericunix/genericunix.pri)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

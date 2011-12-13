@@ -43,39 +43,29 @@
 #include "qdirectfbintegration.h"
 #include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
+#include "qdirectfbwindow.h"
 #include <private/qpixmap_blitter_p.h>
 
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window, WId wId)
-    : QWindowSurface(window), m_pixmap(0), m_pmdata(0), m_dfbSurface(0)
+QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
+    : QWindowSurface(window), m_pixmap(0), m_pmdata(0)
 {
+    IDirectFBWindow *dfbWindow = static_cast<QDirectFbWindow *>(window->platformWindow())->dfbWindow();
+    dfbWindow->GetSurface(dfbWindow, m_dfbSurface.outPtr());
 
-    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
-
-    DFBWindowID id(wId);
-    IDirectFBWindow *dfbWindow;
-
-    layer->GetWindow(layer,id,&dfbWindow);
-
-    dfbWindow->GetSurface(dfbWindow,&m_dfbSurface);
 //WRONGSIZE
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect().size(), m_dfbSurface);
-    m_pmdata = new QDirectFbBlitterPixmapData;
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface.data());
+    m_pmdata = new QDirectFbBlitterPlatformPixmap;
     m_pmdata->setBlittable(blitter);
-    m_pixmap = new QPixmap(m_pmdata);
-}
-
-QDirectFbWindowSurface::~QDirectFbWindowSurface()
-{
-    delete m_pixmap;
+    m_pixmap.reset(new QPixmap(m_pmdata));
 }
 
 QPaintDevice *QDirectFbWindowSurface::paintDevice()
 {
-    return m_pixmap;
+    return m_pixmap.data();
 }
 
 void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -87,17 +77,13 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     for (int i = 0 ; i < rects.size(); i++) {
         const QRect rect = rects.at(i);
         DFBRegion dfbReg = { rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y()};
-        m_dfbSurface->Flip(m_dfbSurface, &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
+        m_dfbSurface->Flip(m_dfbSurface.data(), &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
     }
 }
 
 void QDirectFbWindowSurface::resize(const QSize &size)
 {
-    QWindowSurface::resize(size);
-
-    //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
-    m_dfbSurface->AddRef(m_dfbSurface);
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(size,m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(size, m_dfbSurface.data());
     m_pmdata->setBlittable(blitter);
 }
 
@@ -115,14 +101,14 @@ bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 
     if (!m_dfbSurface || area.isEmpty())
         return false;
-    m_dfbSurface->SetBlittingFlags(m_dfbSurface, DSBLIT_NOFX);
+    m_dfbSurface->SetBlittingFlags(m_dfbSurface.data(), DSBLIT_NOFX);
     if (area.rectCount() == 1) {
-        scrollSurface(m_dfbSurface, area.boundingRect(), dx, dy);
+        scrollSurface(m_dfbSurface.data(), area.boundingRect(), dx, dy);
     } else {
         const QVector<QRect> rects = area.rects();
         const int n = rects.size();
         for (int i=0; i<n; ++i) {
-            scrollSurface(m_dfbSurface, rects.at(i), dx, dy);
+            scrollSurface(m_dfbSurface.data(), rects.at(i), dx, dy);
         }
     }
     return true;
