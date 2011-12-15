@@ -273,6 +273,10 @@ Grund:
         <translation>Adresa</translation>
     </message>
     <message>
+        <source>Toolbar Menu</source>
+        <translation>Nabídka nástrojového pruhu</translation>
+    </message>
+    <message>
         <source>Bookmarks Menu</source>
         <translation>Nabídka se záložkami</translation>
     </message>
@@ -324,11 +328,11 @@ Grund:
     <name>CentralWidget</name>
     <message>
         <source>Add new page</source>
-        <translation>Přidat novou stranu</translation>
+        <translation type="obsolete">Přidat novou stranu</translation>
     </message>
     <message>
         <source>Close current page</source>
-        <translation>Zavřít současnou stranu</translation>
+        <translation type="obsolete">Zavřít současnou stranu</translation>
     </message>
     <message>
         <source>Print Document</source>
@@ -336,27 +340,27 @@ Grund:
     </message>
     <message>
         <source>unknown</source>
-        <translation>Neznámý</translation>
+        <translation type="obsolete">Neznámý</translation>
     </message>
     <message>
         <source>Add New Page</source>
-        <translation>Přidat novou stranu</translation>
+        <translation type="obsolete">Přidat novou stranu</translation>
     </message>
     <message>
         <source>Close This Page</source>
-        <translation>Zavřít tuto stranu</translation>
+        <translation type="obsolete">Zavřít tuto stranu</translation>
     </message>
     <message>
         <source>Close Other Pages</source>
-        <translation>Zavřít jiné strany</translation>
+        <translation type="obsolete">Zavřít jiné strany</translation>
     </message>
     <message>
         <source>Add Bookmark for this Page...</source>
-        <translation>Přidat záložku pro tuto stranu...</translation>
+        <translation type="obsolete">Přidat záložku pro tuto stranu...</translation>
     </message>
     <message>
         <source>Search</source>
-        <translation>Hledat</translation>
+        <translation type="obsolete">Hledat</translation>
     </message>
 </context>
 <context>
@@ -392,7 +396,35 @@ Grund:
                            status message.
 -help                      Displays this help.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Použití: assistant [volby]
+
+-collectionFile file       Použije zadaný soubor se sbírkou
+                           namísto výchozího souboru
+-showUrl url               Ukáže dokument s adresou
+                           (URL).
+-enableRemoteControl       Povolí, aby byl Assistant
+                           ovládán vzdáleně.
+-show widget               Ukáže zadaný panelový prvek,
+                           což může být &quot;obsah&quot;, &quot;rejstřík&quot;,
+                           &quot;záložky&quot; nebo &quot;hledání&quot;.
+-activate widget           Zapne zadaný panelový prvek,
+                           což může být &quot;obsah&quot;, &quot;rejstřík&quot;,
+                           &quot;záložky&quot; nebo &quot;hledání&quot;.
+-hide widget               Skryje zadaný panelový prvek,
+                           což může být &quot;obsah&quot;, &quot;rejstřík&quot;,
+                           &quot;záložky&quot; nebo &quot;hledání&quot;.
+-register helpFile         Registers the specified help file
+                           (.qch) in the given collection
+                           file.
+-unregister helpFile       Odregistruje zadaný soubor s nápovědou
+                           (.qch) ze souboru se sbírkou.
+-setCurrentFilter filter   Nastaví filtr jako aktivní filtr.
+-remove-search-index       Odstraní rejstřík hledání v celém textu.
+-rebuild-search-index      Přestaví rejstřík hledání v celém textu (může to být pomalé).
+-quiet                     Nezobrazí žádnou chybu nebo
+                           zprávu o stavu.
+-help                      Zobrazí tuto nápovědu.
+</translation>
     </message>
     <message>
         <source>Unknown option: %1</source>
@@ -672,6 +704,49 @@ Grund:
     </message>
 </context>
 <context>
+    <name>GlobalActions</name>
+    <message>
+        <source>&amp;Back</source>
+        <translation>&amp;Zpět</translation>
+    </message>
+    <message>
+        <source>&amp;Forward</source>
+        <translation>&amp;Dopředu</translation>
+    </message>
+    <message>
+        <source>&amp;Home</source>
+        <translation>&amp;Začáteční strana</translation>
+    </message>
+    <message>
+        <source>ALT+Home</source>
+        <translation>ALT+Home</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;in</source>
+        <translation>&amp;Přiblížit</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;out</source>
+        <translation>&amp;Oddálit</translation>
+    </message>
+    <message>
+        <source>&amp;Copy selected Text</source>
+        <translation>&amp;Kopírovat vybraný text</translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation>&amp;Tisk...</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Text...</source>
+        <translation>&amp;Najít v textu...</translation>
+    </message>
+    <message>
+        <source>&amp;Find</source>
+        <translation>&amp;Najít</translation>
+    </message>
+</context>
+<context>
     <name>HelpEngineWrapper</name>
     <message>
         <source>Unfiltered</source>
@@ -704,8 +779,20 @@ Grund:
         <translation>&lt;title&gt;Chyba 404 ...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Stranu se nepodařilo najít.&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
+        <source>Open Link</source>
+        <translation>Otevřít adresu odkazu</translation>
+    </message>
+    <message>
         <source>Copy &amp;Link Location</source>
         <translation>&amp;Kopírovat adresu odkazu</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Kopírovat</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>Nahrát znovu</translation>
     </message>
     <message>
         <source>Open Link in New Tab	Ctrl+LMB</source>
@@ -713,13 +800,17 @@ Grund:
     </message>
     <message>
         <source>Open Link in New Tab</source>
-        <translation>Otevřít odkaz v nové kartě</translation>
+        <translation type="obsolete">Otevřít odkaz v nové kartě</translation>
     </message>
     <message>
         <source>Unable to launch external application.
 </source>
         <translation type="obsolete">Chyba při spouštění vnější aplikace.
 </translation>
+    </message>
+    <message>
+        <source>Open Link in New Page</source>
+        <translation>Otevřít odkazu na nové straně</translation>
     </message>
 </context>
 <context>
@@ -931,7 +1022,7 @@ Grund:
     </message>
     <message>
         <source>&amp;Print...</source>
-        <translation>&amp;Tisk...</translation>
+        <translation type="obsolete">&amp;Tisk...</translation>
     </message>
     <message>
         <source>New &amp;Tab</source>
@@ -951,15 +1042,15 @@ Grund:
     </message>
     <message>
         <source>&amp;Copy selected Text</source>
-        <translation>&amp;Kopírovat vybraný text</translation>
+        <translation type="obsolete">&amp;Kopírovat vybraný text</translation>
     </message>
     <message>
         <source>&amp;Find in Text...</source>
-        <translation>&amp;Najít v textu...</translation>
+        <translation type="obsolete">&amp;Najít v textu...</translation>
     </message>
     <message>
         <source>&amp;Find</source>
-        <translation>&amp;Najít</translation>
+        <translation type="obsolete">&amp;Najít</translation>
     </message>
     <message>
         <source>Find &amp;Next</source>
@@ -975,11 +1066,11 @@ Grund:
     </message>
     <message>
         <source>Zoom &amp;in</source>
-        <translation>&amp;Zvětšit</translation>
+        <translation type="obsolete">&amp;Zvětšit</translation>
     </message>
     <message>
         <source>Zoom &amp;out</source>
-        <translation>&amp;Zmenšit</translation>
+        <translation type="obsolete">&amp;Zmenšit</translation>
     </message>
     <message>
         <source>Normal &amp;Size</source>
@@ -1003,15 +1094,15 @@ Grund:
     </message>
     <message>
         <source>&amp;Home</source>
-        <translation>&amp;Začáteční strana</translation>
+        <translation type="obsolete">&amp;Začáteční strana</translation>
     </message>
     <message>
         <source>&amp;Back</source>
-        <translation>&amp;Zpět</translation>
+        <translation type="obsolete">&amp;Zpět</translation>
     </message>
     <message>
         <source>&amp;Forward</source>
-        <translation>&amp;Dopředu</translation>
+        <translation type="obsolete">&amp;Dopředu</translation>
     </message>
     <message>
         <source>Sync with Table of Contents</source>
@@ -1110,8 +1201,20 @@ Grund:
         <translation>Zvětšení</translation>
     </message>
     <message>
+        <source>Open Pages</source>
+        <translation>Otevřít strany</translation>
+    </message>
+    <message>
+        <source>Bookmark Toolbar</source>
+        <translation>Nástrojový pruh záložek</translation>
+    </message>
+    <message>
         <source>&amp;File</source>
         <translation>&amp;Soubor</translation>
+    </message>
+    <message>
+        <source>E&amp;xit</source>
+        <translation>&amp;Ukončit</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -1122,12 +1225,16 @@ Grund:
         <translation>&amp;Pohled</translation>
     </message>
     <message>
+        <source>ALT+P</source>
+        <translation>ALT+P</translation>
+    </message>
+    <message>
         <source>&amp;Go</source>
         <translation>&amp;Jít na</translation>
     </message>
     <message>
         <source>ALT+Home</source>
-        <translation>ALT+Home</translation>
+        <translation type="obsolete">ALT+Home</translation>
     </message>
     <message>
         <source>&amp;Bookmarks</source>
@@ -1144,6 +1251,17 @@ Grund:
     <message>
         <source>CTRL+D</source>
         <translation type="obsolete">CTRL+D</translation>
+    </message>
+</context>
+<context>
+    <name>OpenPagesWidget</name>
+    <message>
+        <source>Close %1</source>
+        <translation>Zavřít %1</translation>
+    </message>
+    <message>
+        <source>Close All Except %1</source>
+        <translation>Zavřít vše kromě %1</translation>
     </message>
 </context>
 <context>
@@ -1365,6 +1483,14 @@ Chcete jej odstranit?</translation>
         <source>Blank Page</source>
         <translation>Prázdná strana</translation>
     </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Vzhled</translation>
+    </message>
+    <message>
+        <source>Show tabs for each individual page</source>
+        <translation>Ukázat karty pro každou jednotlivou stranu</translation>
+    </message>
 </context>
 <context>
     <name>QCollectionGenerator</name>
@@ -1412,7 +1538,18 @@ qcollectiongenerator &lt;collection-config-file&gt; [options]
                          qcollectiongenerator.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Použití:
+
+qcollectiongenerator &lt;collection-config-file&gt; [volby]
+
+  -o &lt;collection-file&gt;   Vytvoří soubor se sbírkou
+                         nazvaný &lt;collection-file&gt;. Pokud
+                         tato volba není stanovena
+                         použije se výchozí název.
+  -v                     Zobrazí verzi
+                         qcollectiongeneratoru.
+
+</translation>
     </message>
     <message>
         <source>Could not open %1.
@@ -1495,7 +1632,20 @@ qhelpgenerator &lt;help-project-file&gt; [options]
                          qhelpgenerator.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Použití:
+
+qhelpgenerator &lt;help-project-file&gt; [volby]
+
+  -o &lt;compressed-file&gt;   Vytvoří zabalenou nápovědu
+                         nazvanou &lt;compressed-file&gt;. Pokud
+                         tato volba není stanovena
+                         použije se výchozí název.
+  -c                    Ověří, zda všechny odkazy v souborech HTML
+                         ukazují na soubory v tomto projektu nápovědy.
+  -v                    Zobrazí verzi 
+                         qhelpgenerator.
+
+</translation>
     </message>
     <message>
         <source>Could not open %1.
@@ -1623,6 +1773,29 @@ Grund:
     <message>
         <source>Select All</source>
         <translation>Vybrat vše</translation>
+    </message>
+</context>
+<context>
+    <name>TabBar</name>
+    <message>
+        <source>(Untitled)</source>
+        <translation>(Bez názvu)</translation>
+    </message>
+    <message>
+        <source>New &amp;Tab</source>
+        <translation>Nová &amp;karta</translation>
+    </message>
+    <message>
+        <source>&amp;Close Tab</source>
+        <translation>&amp;Zavřít kartu</translation>
+    </message>
+    <message>
+        <source>Close Other Tabs</source>
+        <translation>Zavřít jiné karty</translation>
+    </message>
+    <message>
+        <source>Add Bookmark for this Page...</source>
+        <translation>Přidat záložku pro tuto stranu...</translation>
     </message>
 </context>
 <context>
