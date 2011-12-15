@@ -46,43 +46,27 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbwindow.h"
 
-#include "qgenericunixfontdatabase.h"
-
-#include <private/qwindowsurface_raster_p.h>
-#include <private/qpixmap_raster_p.h>
-
 #include <QtGui/private/qpixmap_blitter_p.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 
+#include "qgenericunixfontdatabase.h"
+
 QT_BEGIN_NAMESPACE
 
-QDirectFbScreen::QDirectFbScreen(int display)
-    :QPlatformScreen()
-{
-    m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
-    m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
-
-    DFBDisplayLayerConfig config;
-    m_layer->GetConfiguration(m_layer, &config);
-
-    m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
-    m_geometry = QRect(0,0,config.width,config.height);
-    const int dpi = 72;
-    const qreal inch = 25.4;
-    m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
-    m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
-
-    cursor = new QDirectFBCursor(this);
-}
-
-QDirectFbScreen::~QDirectFbScreen()
-{
-}
-
 QDirectFbIntegration::QDirectFbIntegration()
-    : mFontDb(new QGenericUnixFontDatabase())
+    : m_fontDb(new QGenericUnixFontDatabase())
+{}
+
+void QDirectFbIntegration::initialize()
+{
+    initializeDirectFB();
+    initializeScreen();
+    initializeInput();
+}
+
+void QDirectFbIntegration::initializeDirectFB()
 {
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
@@ -96,26 +80,31 @@ QDirectFbIntegration::QDirectFbIntegration()
         DirectFBError("QDirectFBScreen: error initializing DirectFB",
                       result);
     }
+
+    for (int i = 0; i < argc; ++i)
+        delete[] argv[i];
     delete[] argv;
 
+    // This must happen after DirectFBInit.
+    m_dfb.reset(QDirectFbConvenience::dfbInterface());
+}
 
-    QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
-    mScreens.append(primaryScreen);
+void QDirectFbIntegration::initializeScreen()
+{
+    m_primaryScreen.reset(new QDirectFbScreen(0));
+    mScreens.append(m_primaryScreen.data());
+}
 
-    mInputRunner = new QThread;
-    mInput = new QDirectFbInput(0);
-    mInput->moveToThread(mInputRunner);
-    QObject::connect(mInputRunner,SIGNAL(started()),mInput,SLOT(runInputEventLoop()));
-    mInputRunner->start();
+void QDirectFbIntegration::initializeInput()
+{
+    m_input.reset(new QDirectFbInput(m_dfb.data(), m_primaryScreen->dfbLayer()));
+    m_input->start();
 }
 
 QDirectFbIntegration::~QDirectFbIntegration()
 {
-    mInput->stopInputEventLoop();
-    mInputRunner->quit();
-    mInputRunner->wait();
-    delete mInputRunner;
-    delete mInput;
+    m_input->stopInputEventLoop();
+    m_input->wait();
 }
 
 QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -123,24 +112,22 @@ QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type)
     if (type == QPixmapData::BitmapType)
         return new QRasterPixmapData(type);
     else
-        return new QDirectFbBlitterPixmapData;
+        return new QDirectFbBlitterPlatformPixmap;
 }
 
-QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *window, WId) const
 {
-    Q_UNUSED(winId);
-    QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
-    return new QDirectFbWindow(widget,input);
+    return new QDirectFbWindow(window,m_input.data());
 }
 
-QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *window, WId) const
 {
-    return new QDirectFbWindowSurface(widget,winId);
+    return new QDirectFbWindowSurface(window);
 }
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return m_fontDb.data();
 }
 
 QT_END_NAMESPACE

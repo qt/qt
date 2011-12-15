@@ -143,8 +143,8 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
             tryCount = 0;
         } else {
             // Symbian native file dialog doesn't allow accessing files outside C:/Data
-            // It will always leave in that case, so default into QDir::rootPath() in error cases.
-            QString dir = QDir::toNativeSeparators(QDir::rootPath());
+            // It will always leave in that case, so default into QDir::homePath() in error cases.
+            QString dir = QDir::toNativeSeparators(QDir::homePath());
             startFolder = qt_QString2TPtrC(dir);
         }
     }

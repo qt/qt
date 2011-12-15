@@ -44,16 +44,16 @@
 
 #include <QtGui/private/qwindowsurface_p.h>
 #include <private/qpixmap_blitter_p.h>
-
 #include <directfb.h>
+
+#include "qdirectfbconvenience.h"
 
 QT_BEGIN_NAMESPACE
 
 class QDirectFbWindowSurface : public QWindowSurface
 {
 public:
-    QDirectFbWindowSurface(QWidget *window, WId wid);
-    ~QDirectFbWindowSurface();
+    QDirectFbWindowSurface(QWidget *window);
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
@@ -66,10 +66,9 @@ public:
 private:
     void lockSurfaceToImage();
 
-    QPixmap *m_pixmap;
+    QScopedPointer<QPixmap> m_pixmap;
     QBlittablePixmapData *m_pmdata;
-
-    IDirectFBSurface *m_dfbSurface;
+    QDirectFBPointer<IDirectFBSurface> m_dfbSurface;
 };
 
 QT_END_NAMESPACE
