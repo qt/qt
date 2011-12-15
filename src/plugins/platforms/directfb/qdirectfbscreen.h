@@ -39,29 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFBCURSOR_H
-#define QDIRECTFBCURSOR_H
-
-#include <QPlatformCursor>
-#include <directfb.h>
+#ifndef QDIRECTFBSCREEN_H
+#define QDIRECTFBSCREEN_H
 
 #include "qdirectfbconvenience.h"
+#include "qdirectfbcursor.h"
+
+#include <QtGui/QPlatformIntegration>
+
+#include <directfb.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbScreen;
-class QDirectFbBlitter;
 
-class QDirectFBCursor : public QPlatformCursor
+class QDirectFbScreen : public QPlatformScreen
 {
 public:
-    QDirectFBCursor(QPlatformScreen *screen);
-    void changeCursor(QCursor *cursor, QWidget *window);
+    QDirectFbScreen(int display);
+
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSize physicalSize() const { return m_physicalSize; }
+
+    // DirectFb helpers
+    IDirectFBDisplayLayer *dfbLayer() const;
+
+public:
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSize m_physicalSize;
+
+    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
 
 private:
-    QScopedPointer<QPlatformCursorImage> m_image;
+    QScopedPointer<QDirectFBCursor> m_cursor;
 };
 
 QT_END_NAMESPACE
 
-#endif // QDIRECTFBCURSOR_H
+#endif
