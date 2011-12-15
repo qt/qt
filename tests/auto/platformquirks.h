@@ -72,6 +72,8 @@ struct PlatformQuirks
 #elif defined(Q_WS_X11)
         // ### this is a very bad assumption, we should really check the version of libjpeg
         return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
+#elif defined(Q_OS_QNX)
+        return true;
 #else
         return false;
 #endif
