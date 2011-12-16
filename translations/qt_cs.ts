@@ -2894,7 +2894,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation>Lehké</translation>
+        <translation>Jemné</translation>
     </message>
     <message>
         <source>Ogham</source>
@@ -2950,7 +2950,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation>Itala</translation>
+        <translation>Kurzíva</translation>
     </message>
     <message>
         <source>Korean</source>
@@ -2958,11 +2958,11 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation>Obvyklé</translation>
+        <translation>Normální</translation>
     </message>
     <message>
         <source>Oblique</source>
-        <translation>Nakloněné</translation>
+        <translation>Skloněné</translation>
     </message>
     <message>
         <source>Telugu</source>
