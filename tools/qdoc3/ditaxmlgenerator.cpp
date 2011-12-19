@@ -3492,7 +3492,8 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                                 addLink(link, arg);
                             }
                             else {
-                                link = arg.toString();
+                                //Encountered in snippets for example. Where the text should not be a link.
+                                writeCharacters(arg.toString());
                             }
                         }
                         else {
