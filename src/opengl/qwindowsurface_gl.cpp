@@ -184,28 +184,29 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0), initializing(false) {
+    QGLGlobalShareWidget() : widget(0), init(false) {
         created = true;
     }
 
     QGLWidget *shareWidget() {
-        if (!initializing && !widget && !cleanedUp) {
-            initializing = true;
+        if (!init && !widget && !cleanedUp) {
+            init = true;
             widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
 #ifdef Q_OS_SYMBIAN
             if (!widget->context()->isValid()) {
                 delete widget;
                 widget = 0;
-                initializing = false;
+                init = false;
                 return 0;
             }
 #endif
+
             widget->resize(1, 1);
 
             // We don't need this internal widget to appear in QApplication::topLevelWidgets()
             if (QWidgetPrivate::allWidgets)
                 QWidgetPrivate::allWidgets->remove(widget);
-            initializing = false;
+            init = false;
         }
         return widget;
     }
@@ -232,12 +233,17 @@ public:
         cleanedUp = false;
     }
 
+    bool initializing()
+    {
+        return init;
+    }
+
     static bool cleanedUp;
     static bool created;
 
 private:
     QGLWidget *widget;
-    bool initializing;
+    bool init;
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
@@ -266,6 +272,13 @@ void qt_destroy_gl_share_widget()
 {
     if (QGLGlobalShareWidget::created)
         _qt_gl_share_widget()->destroy();
+}
+
+bool qt_initializing_gl_share_widget()
+{
+    if (QGLGlobalShareWidget::created)
+        return _qt_gl_share_widget()->initializing();
+    return false;
 }
 
 const QGLContext *qt_gl_share_context()

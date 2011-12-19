@@ -552,11 +552,13 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
         // the control's window
         qwidget->d_func()->createExtra();
 
-        SetFocusing(true);
-        m_longTapDetector = QLongTapTimer::NewL(this);
-        m_doubleClickTimer.invalidate();
-
-        DrawableWindow()->SetPointerGrab(ETrue);
+        if (!qwidget->d_func()->isGLGlobalShareWidget) {
+            SetFocusing(true);
+            m_longTapDetector = QLongTapTimer::NewL(this);
+            m_doubleClickTimer.invalidate();
+    
+            DrawableWindow()->SetPointerGrab(ETrue);
+        }
     }
 
 #ifdef Q_SYMBIAN_TRANSITION_EFFECTS
@@ -590,25 +592,27 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
 QSymbianControl::~QSymbianControl()
 {
-    // Ensure backing store is deleted before the top-level
-    // window is destroyed
-    QT_TRY {
-        qt_widget_private(qwidget)->topData()->backingStore.destroy();
-    } QT_CATCH(const std::exception&) {
-        // ignore exceptions, nothing can be done
-    }
-
-    if (S60->curWin == this)
-        S60->curWin = 0;
-    if (!QApplicationPrivate::is_app_closing) {
+    if (!qwidget->d_func()->isGLGlobalShareWidget) { // GLGlobalShareWidget doesn't interact with scene
+        // Ensure backing store is deleted before the top-level
+        // window is destroyed
         QT_TRY {
-            setFocusSafely(false);
+            qt_widget_private(qwidget)->topData()->backingStore.destroy();
         } QT_CATCH(const std::exception&) {
             // ignore exceptions, nothing can be done
         }
+    
+        if (S60->curWin == this)
+            S60->curWin = 0;
+        if (!QApplicationPrivate::is_app_closing) {
+            QT_TRY {
+                setFocusSafely(false);
+            } QT_CATCH(const std::exception&) {
+                // ignore exceptions, nothing can be done
+            }
+        }
+        S60->appUi()->RemoveFromStack(this);
+        delete m_longTapDetector;
     }
-    S60->appUi()->RemoveFromStack(this);
-    delete m_longTapDetector;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
@@ -1535,6 +1539,10 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
             return;
 
+        // just in case
+        if (qwidget->d_func()->isGLGlobalShareWidget)
+            return;
+
 #ifdef Q_WS_S60
         if (S60->splitViewLastWidget)
             return;
@@ -1723,6 +1731,9 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 
 void QSymbianControl::setFocusSafely(bool focus)
 {
+    if (qwidget->d_func()->isGLGlobalShareWidget)
+        return;
+
     // The stack hack in here is very unfortunate, but it is the only way to ensure proper
     // focus in Symbian. If this is not executed, the control which happens to be on
     // the top of the stack may randomly be assigned focus by Symbian, for example
