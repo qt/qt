@@ -314,6 +314,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #elif defined(Q_OS_SYMBIAN)
       , symbianScreenNumber(0)
       , fixNativeOrientationCalled(false)
+      , isGLGlobalShareWidget(0)
 #endif
 {
     if (!qApp) {
