@@ -847,6 +847,9 @@ void QHttpNetworkConnectionChannel::handleStatus()
                     closeAndResendCurrentRequest();
                     QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
                 }
+            } else {
+                //authentication cancelled, close the channel.
+                close();
             }
         } else {
             emit reply->headerChanged();
