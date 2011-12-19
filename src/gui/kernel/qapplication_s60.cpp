@@ -556,7 +556,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
             SetFocusing(true);
             m_longTapDetector = QLongTapTimer::NewL(this);
             m_doubleClickTimer.invalidate();
-    
+
             DrawableWindow()->SetPointerGrab(ETrue);
         }
     }
@@ -600,7 +600,7 @@ QSymbianControl::~QSymbianControl()
         } QT_CATCH(const std::exception&) {
             // ignore exceptions, nothing can be done
         }
-    
+
         if (S60->curWin == this)
             S60->curWin = 0;
         if (!QApplicationPrivate::is_app_closing) {
@@ -830,7 +830,8 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
                 const TPointerEvent *pointerEvent = eventData.Pointer(i);
                 const TAdvancedPointerEvent *advEvent = pointerEvent->AdvancedPointerEvent();
                 if (!advEvent || advEvent->PointerNumber() == 0) {
-                    m_longTapDetector->PointerEventL(*pointerEvent);
+                    if (m_longTapDetector)
+                        m_longTapDetector->PointerEventL(*pointerEvent);
                     QT_TRYCATCH_LEAVING(HandlePointerEvent(*pointerEvent));
                 }
             }
@@ -847,8 +848,8 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
         }
     }
 #endif
-
-    m_longTapDetector->PointerEventL(pEvent);
+    if (m_longTapDetector)
+        m_longTapDetector->PointerEventL(pEvent);
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
@@ -1718,7 +1719,8 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 }
 void QSymbianControl::CancelLongTapTimer()
 {
-    m_longTapDetector->Cancel();
+    if (m_longTapDetector)
+        m_longTapDetector->Cancel();
 }
 
 TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
