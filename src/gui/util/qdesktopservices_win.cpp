@@ -54,9 +54,6 @@
 #  include <intshcut.h>
 #else
 #  include <qguifunctions_wince.h>
-#  if !defined(STANDARDSHELL_UI_MODEL)
-#    include <winx.h>
-#  endif
 #endif
 
 #ifndef CSIDL_MYMUSIC
