@@ -1058,22 +1058,24 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     TInt nativeMapError = KErrNone;
     RFileMap mapping;
     TUint mode(EFileMapRemovableMedia);
+    TUint64 nativeOffset = offset & ~(mapping.PageSizeInBytes() - 1);
+
     //If the file was opened for write or read/write, then open the map for read/write
     if (openMode & QIODevice::WriteOnly)
         mode |= EFileMapWrite;
     if (symbianFile.SubSessionHandle()) {
-        nativeMapError = mapping.Open(symbianFile, offset, size, mode);
+        nativeMapError = mapping.Open(symbianFile, nativeOffset, size, mode);
     } else {
         //map file by name if we don't have a native handle
         QString fn = QFileSystemEngine::absoluteName(fileEntry).nativeFilePath();
         TUint filemode = EFileShareReadersOrWriters | EFileRead;
         if (openMode & QIODevice::WriteOnly)
             filemode |= EFileWrite;
-        nativeMapError = mapping.Open(qt_s60GetRFs(), qt_QString2TPtrC(fn), filemode, offset, size, mode);
+        nativeMapError = mapping.Open(qt_s60GetRFs(), qt_QString2TPtrC(fn), filemode, nativeOffset, size, mode);
     }
     if (nativeMapError == KErrNone) {
         QScopedResource<RFileMap> ptr(mapping); //will call Close if adding to mapping throws an exception
-        uchar *address = mapping.Base();
+        uchar *address = mapping.Base() + (offset - nativeOffset);
         maps[address] = mapping;
         ptr.take();
         return address;
