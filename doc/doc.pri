@@ -36,6 +36,7 @@ $$unixstyle {
     DEMOSMANIFESTTARGET = $$replace(DEMOSMANIFESTTARGET,  "/", "\\")
 }
 ADP_DOCS_QDOCCONF_FILE = qt-build-docs-online.qdocconf
+DITA_DOCS_QDOCCONF_FILE = qt-ditaxml.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
                     linguist.qdocconf qmake.qdocconf qdeclarative.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
@@ -69,6 +70,8 @@ win32-g++*:isEmpty(QMAKE_SH) {
 # Build rules:
 adp_docs.commands = ($$QDOC $$ADP_DOCS_QDOCCONF_FILE && $$QMAKE_COPY_DIR $$COPYWEBKITGUIDE $$COPYWEBKITTARGB)
 adp_docs.depends += sub-qdoc3 # qdoc3
+dita_docs.commands = ($$QDOC $$DITA_DOCS_QDOCCONF_FILE)
+dita_docs.depends += sub-qdoc3 # qdoc3
 qch_docs.commands = $$QT_DOCUMENTATION
 qch_docs.depends += sub-qdoc3
 
@@ -103,5 +106,5 @@ docimages.path = $$[QT_INSTALL_DOCS]/src
 sub-qdoc3.depends = sub-corelib sub-xml
 sub-qdoc3.commands += (cd tools/qdoc3 && $(MAKE))
 
-QMAKE_EXTRA_TARGETS += sub-qdoc3 adp_docs qch_docs docs docs_zh_CN docs_ja_JP
+QMAKE_EXTRA_TARGETS += sub-qdoc3 adp_docs dita_docs qch_docs docs docs_zh_CN docs_ja_JP
 INSTALLS += htmldocs qchdocs docimages examplesmanifest demosmanifest
