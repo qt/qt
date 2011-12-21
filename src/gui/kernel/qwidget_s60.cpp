@@ -393,16 +393,18 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 stackingFlags = ECoeStackFlagStandard;
             }
             control->MakeVisible(false);
-            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
-            // Avoid keyboard focus to a hidden window.
-            control->setFocusSafely(false);
 
-            RDrawableWindow *const drawableWindow = control->DrawableWindow();
-            // Request mouse move events.
-            drawableWindow->PointerFilter(EPointerFilterEnterExit
-                | EPointerFilterMove | EPointerFilterDrag, 0);
-            drawableWindow->EnableVisibilityChangeEvents();
+            if (!isGLGlobalShareWidget) {
+                QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
+                // Avoid keyboard focus to a hidden window.
+                control->setFocusSafely(false);
 
+                RDrawableWindow *const drawableWindow = control->DrawableWindow();
+                // Request mouse move events.
+                drawableWindow->PointerFilter(EPointerFilterEnterExit
+                    | EPointerFilterMove | EPointerFilterDrag, 0);
+                drawableWindow->EnableVisibilityChangeEvents();
+            }
         }
 
         q->setAttribute(Qt::WA_WState_Created);

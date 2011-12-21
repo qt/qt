@@ -61,17 +61,21 @@ public:
     void setVisible(bool visible);
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
     void raise();
     void lower();
     WId winId() const;
 
-    QPlatformGLContext *glContext() const;
+    IDirectFBWindow *dfbWindow() const;
+
+    // helper to get access to DirectFB types
+    IDirectFBSurface *dfbSurface();
 
 private:
-    IDirectFBWindow *m_dfbWindow;
+    QDirectFBPointer<IDirectFBSurface> m_dfbSurface;
+    QDirectFBPointer<IDirectFBWindow> m_dfbWindow;
     QDirectFbInput *m_inputHandler;
-
-    QPlatformGLContext *m_context;
 };
 
 QT_END_NAMESPACE

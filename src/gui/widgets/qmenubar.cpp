@@ -1111,8 +1111,10 @@ void QMenuBar::setVisible(bool visible)
 #else
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
+#ifndef Q_WS_S60
         if (!visible)
             QWidget::setVisible(false);
+#endif        
         return;
     }
 #endif

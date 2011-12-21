@@ -9,9 +9,24 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[Array de longitude %1]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;non definido&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
         <source>Fake error !</source>
+        <translation type="obsolete">Erro falso!</translation>
+    </message>
+    <message>
+        <source>Fake error!</source>
         <translation>Erro falso!</translation>
     </message>
     <message>
@@ -111,7 +126,7 @@ máis preferencia ou está configurado especificamente para este fluxo.&lt;/html
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
         <translation>Aviso: Non semella ter instalados os complementos básicos de GStreamer.
-          Desactivouse todo o soporte de son e vídeo</translation>
+          Desactivouse toda a compatibilidade con son e vídeo</translation>
     </message>
 </context>
 <context>
@@ -152,7 +167,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Could not open audio device. The device is already in use.</source>
-        <translation>Non foi posíbel abrir o dispositivo de audio. O dispositivo xa está en uso.</translation>
+        <translation>Non foi posíbel abrir o dispositivo de son; Xa está en uso.</translation>
     </message>
     <message>
         <source>Could not decode media source.</source>
@@ -183,7 +198,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Not supported</source>
-        <translation>Non soportado</translation>
+        <translation>Non admitido</translation>
     </message>
     <message>
         <source>Overflow</source>
@@ -239,7 +254,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Streaming not supported</source>
-        <translation>Non está soportada a retransmisión</translation>
+        <translation>Non permite utilizar retransmisións</translation>
     </message>
     <message>
         <source>Server alert</source>
@@ -263,7 +278,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Proxy server not supported</source>
-        <translation>O servidor proxy non está soportado</translation>
+        <translation>Non se permite utilizar servidor proxy</translation>
     </message>
     <message>
         <source>Audio output error</source>
@@ -326,7 +341,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Download error</source>
-        <translation type="unfinished"></translation>
+        <translation>Aconteceu un erro ao descargar</translation>
     </message>
 </context>
 <context>
@@ -400,7 +415,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>Retardo dos reflexos (ms)</translation>
     </message>
     <message>
@@ -415,7 +430,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>Nivel da reverberación (mB)</translation>
     </message>
     <message>
@@ -433,7 +448,7 @@ reproducir este contido: %0</translation>
     <name>Phonon::MMF::MediaObject</name>
     <message>
         <source>Error opening source: type not supported</source>
-        <translation>Erro ao abrir a fonte: tipo non soportado</translation>
+        <translation>Erro ao abrir a fonte: tipo non admitido</translation>
     </message>
     <message>
         <source>Error opening source: resource is compressed</source>
@@ -449,7 +464,7 @@ reproducir este contido: %0</translation>
     </message>
     <message>
         <source>Failed to set requested IAP</source>
-        <translation type="unfinished"></translation>
+        <translation>Fallou a definición da IAP pedida</translation>
     </message>
 </context>
 <context>
@@ -473,8 +488,12 @@ reproducir este contido: %0</translation>
         <translation>Volume: %1%</translation>
     </message>
     <message>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
+        <translation>Use esta barra deslizante para axustar o volume. A posición da esquerda é o 0%, a da dereita o %1%</translation>
+    </message>
+    <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation>Use esta barra deslizante para axustar o volume. A posición da esquerda é o 
+        <translation type="obsolete">Use esta barra deslizante para axustar o volume. A posición da esquerda é o 
 0%, a da dereita o %1%</translation>
     </message>
     <message>
@@ -756,7 +775,7 @@ File not found.
 Check path and filename.</source>
         <translation>%1
 Non se atopou o ficheiro.
-Verifique a ruta e o nome do ficheiro.</translation>
+Comprobe a ruta e o nome do ficheiro.</translation>
     </message>
     <message>
         <source>All Files (*.*)</source>
@@ -828,7 +847,7 @@ para
     <name>Q3NetworkProtocol</name>
     <message>
         <source>Operation stopped by the user</source>
-        <translation>Operación interrompida polo usuario</translation>
+        <translation>Operación detida polo usuario</translation>
     </message>
 </context>
 <context>
@@ -958,35 +977,35 @@ para
     <name>Q3UrlOperator</name>
     <message>
         <source>The protocol `%1&apos; is not supported</source>
-        <translation>O protocolo «%1» non está soportado.</translation>
+        <translation>Non se permite utilizar o protocolo «%1»</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support listing directories</source>
-        <translation>O protocolo «%1» non soporta sacar listaxes de cartafoles</translation>
+        <translation>O protocolo «%1» non permite sacar listaxes de cartafoles</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support creating new directories</source>
-        <translation>O protocolo «%1» non soporta crear cartafoles novos</translation>
+        <translation>O protocolo «%1» non permite crear cartafoles novos</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support removing files or directories</source>
-        <translation>O protocolo «%1» non soporta eliminar nin ficheiros nin cartafoles</translation>
+        <translation>O protocolo «%1» non permite eliminar nin ficheiros nin cartafoles</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support renaming files or directories</source>
-        <translation>O protocolo «%1» non soporta mudar o nome dos ficheiros nin dos cartafoles</translation>
+        <translation>O protocolo «%1» non permite mudar o nome dos ficheiros nin dos cartafoles</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support getting files</source>
-        <translation>O protocolo «%1» non soporta obter ficheiros</translation>
+        <translation>O protocolo «%1» non permite obter ficheiros</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support putting files</source>
-        <translation>O protocolo «%1» non soporta enviar ficheiros</translation>
+        <translation>O protocolo «%1» non permite enviar ficheiros</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support copying or moving files or directories</source>
-        <translation>O protocolo «%1» non soporta copiar nin mover nin ficheiros nin cartafoles</translation>
+        <translation>O protocolo «%1» non permite copiar nin mover nin ficheiros nin cartafoles</translation>
     </message>
     <message>
         <source>(unknown)</source>
@@ -1024,7 +1043,7 @@ para
     </message>
     <message>
         <source>Operation on socket is not supported</source>
-        <translation>A operación no socket non está soportada</translation>
+        <translation>Non se permite usar a operación no socket</translation>
     </message>
     <message>
         <source>Host not found</source>
@@ -1064,6 +1083,14 @@ para
 </context>
 <context>
     <name>QAccessibleButton</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>Desmarcar</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Marcar</translation>
+    </message>
     <message>
         <source>Press</source>
         <translation>Premer</translation>
@@ -1213,7 +1240,7 @@ para
     <message>
         <source>%1: permission denied</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished">%1: negouse o permiso</translation>
+        <translation>%1: negouse o permiso</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -1244,15 +1271,15 @@ para
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
     <message>
         <source>Unable to set autocommit</source>
-        <translation>Non foi posíbel activar a entrega automática</translation>
+        <translation>Non foi posíbel activar a remisión automática</translation>
     </message>
 </context>
 <context>
@@ -1379,7 +1406,14 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeAnimatedImage</name>
     <message>
         <source>Qt was built without support for QMovie</source>
-        <translation>Qt construíuse sen soporte para QMovie</translation>
+        <translation>Qt construíuse sen a implementación de QMovie</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>A aplicación é unha clase abstracta</translation>
     </message>
 </context>
 <context>
@@ -1510,6 +1544,14 @@ superior, inferior nin vcenter.</translation>
         <translation>Non se pode crear unha especificación de compoñente baleira</translation>
     </message>
     <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>«%1.%2» non está dispoñíbel en %3 %4 %5.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>«%1.%2» non está dispoñíbel debido ás versións das compoñentes.</translation>
+    </message>
+    <message>
         <source>Incorrectly specified signal assignment</source>
         <translation>Especificouse incorrectamente a asignación de sinal</translation>
     </message>
@@ -1607,7 +1649,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a singular property</source>
-        <translation type="unfinished"></translation>
+        <translation>Non se poden asignar varios valores a unha propiedade singular</translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
@@ -1703,19 +1745,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia non válida a un alcume. Unha referencia a un alcume debe indicarse como &lt;id&gt;, &lt;id&gt; &lt;property&gt; ou como &lt;id&gt;.&lt;value.property&gt;.&lt;property&gt;</translation>
     </message>
     <message>
         <source>Alias property exceeds alias bounds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="obsolete">Referencia non válida a un alcume. Unha referencia a un alcume debe indicarse como &lt;id&gt; ou como &lt;id&gt;.&lt;propiedade&gt;</translation>
+        <translation>A propiedade do alcume excede os límite do alcume</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
         <translation>Referencia non válida a un alcume. Non foi posíbel atopar o id «%1»</translation>
+    </message>
+    <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
+        <translation type="obsolete">Referencia non válida a un alcume. Unha referencia a un alcume debe indicarse como &lt;id&gt; ou como &lt;id&gt;.&lt;propiedade&gt;</translation>
     </message>
 </context>
 <context>
@@ -1723,6 +1765,10 @@ superior, inferior nin vcenter.</translation>
     <message>
         <source>Invalid empty URL</source>
         <translation>URL baleiro non válido</translation>
+    </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: o valor non é un obxecto</translation>
     </message>
 </context>
 <context>
@@ -1805,11 +1851,11 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeImportDatabase</name>
     <message>
         <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">non se pode cargar o módulo «%1»: non coinciden as maiúsculas do nome do ficheiro «%2»</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>a definición «%2» no módulo «%1» non é lexíbel</translation>
+        <translation type="obsolete">a definición «%2» no módulo «%1» non é lexíbel</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
@@ -1864,8 +1910,12 @@ superior, inferior nin vcenter.</translation>
         <translation>non é un tipo</translation>
     </message>
     <message>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>Non casan as maiúculas do nome do ficheiro «%1»</translation>
+    </message>
+    <message>
         <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Non casan as maiúculas do nome do ficheiro «%2»</translation>
     </message>
 </context>
 <context>
@@ -1880,6 +1930,17 @@ superior, inferior nin vcenter.</translation>
     <message>
         <source>Keys is only available via attached properties</source>
         <translation>Keys só está dispoñíbel mediante as propiedades anexadas</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>A propriedade anexa LayoutDirection só funciona con «Items»</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring só está dispoñíbel a través das propiedades anexas</translation>
     </message>
 </context>
 <context>
@@ -1981,16 +2042,12 @@ superior, inferior nin vcenter.</translation>
         <translation>Cadea non pechada no fin dunha liña</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
-        <translation type="obsolete">Secuencia de escape ilegal</translation>
-    </message>
-    <message>
         <source>Illegal escape sequence</source>
         <translation>Secuencia de escape ilegal</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
-        <translation>Comentario non pechado ao final dunha liña</translation>
+        <translation>Comentario non pechado ao final dun ficheiro</translation>
     </message>
     <message>
         <source>Illegal syntax for exponential number</source>
@@ -2022,7 +2079,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Unexpected token `%1&apos;</source>
-        <translation>Token «%1» non agardado.</translation>
+        <translation>Token «%1» non agardado</translation>
     </message>
     <message>
         <source>Expected token `%1&apos;</source>
@@ -2074,11 +2131,15 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Readonly not yet supported</source>
-        <translation>Aínda non se soporta o só para lectura</translation>
+        <translation>Aínda non se permite utilizar só para lectura</translation>
     </message>
     <message>
         <source>JavaScript declaration outside Script element</source>
         <translation>Declaración de JavaScript fora dun elemento Script</translation>
+    </message>
+    <message>
+        <source>Illegal escape squence</source>
+        <translation type="obsolete">Secuencia de escape ilegal</translation>
     </message>
 </context>
 <context>
@@ -2114,7 +2175,7 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation>PropertyChanges non soporta crear obxectos específicos dun estado.</translation>
+        <translation>PropertyChanges non permite crear obxectos específicos dun estado.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
@@ -2140,19 +2201,19 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeTypeLoader</name>
     <message>
         <source>Script %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>O script %1 non está dispoñíbel</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished">O tipo %1 non está dispoñíbel</translation>
+        <translation>O tipo %1 non está dispoñíbel</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished">O espazo de nomes %1 non se pode empregar como un tipo</translation>
+        <translation>O espazo de nomes %1 non se pode empregar como un tipo</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation type="unfinished">%1 %2</translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -2198,14 +2259,14 @@ superior, inferior nin vcenter.</translation>
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation>O compoñente delegado debe ser do tipo Item.</translation>
+        <translation>O compoñente delegado debe ser do tipo «Item».</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModel</name>
     <message>
         <source>Qt was built without support for xmlpatterns</source>
-        <translation>Qt construíuse sen soporte para xmlpatterns</translation>
+        <translation>Qt construíuse sen implementación de xmlpatterns</translation>
     </message>
 </context>
 <context>
@@ -2332,7 +2393,7 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Abort</source>
-        <translation>Abortar</translation>
+        <translation>Interromper</translation>
     </message>
     <message>
         <source>Retry</source>
@@ -2441,15 +2502,19 @@ superior, inferior nin vcenter.</translation>
     </message>
     <message>
         <source>Cannot open for output</source>
-        <translation>Non foi posíbel abrir o ficheiro de saída</translation>
+        <translation>Non foi posíbel abrir para saída</translation>
     </message>
     <message>
         <source>Failure to write block</source>
-        <translation>Non foi posíbel escribir o bloque</translation>
+        <translation>Fallou a escrita do bloque</translation>
     </message>
     <message>
         <source>Cannot create %1 for output</source>
         <translation>Non foi posíbel crear %1 para a saída</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>Ou non hai dispoñíbel ningún motor de ficheiros ou o motor non admite UnMapExtension</translation>
     </message>
 </context>
 <context>
@@ -2628,7 +2693,7 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>Drive</source>
-        <translation>Dispositivo</translation>
+        <translation>Unidade</translation>
     </message>
     <message>
         <source>File</source>
@@ -2991,7 +3056,7 @@ Desexa aínda así borralo?</translation>
     <message>
         <source>Downloading file failed:
 %1</source>
-        <translation>Fallou a obtención do ficheiro:
+        <translation>Fallou a descarga do ficheiro:
 %1</translation>
     </message>
     <message>
@@ -3105,7 +3170,7 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>HTTPS connection requested but SSL support not compiled in</source>
-        <translation>Pediuse unha conexión HTTPS pero non se compilou con soporte de SSL</translation>
+        <translation>Pediuse unha conexión HTTPS pero non se compilou con implementación de SSL</translation>
     </message>
     <message>
         <source>Unknown error</source>
@@ -3113,7 +3178,7 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>Request aborted</source>
-        <translation>Pedido abortado</translation>
+        <translation>Interrompeuse o pedido</translation>
     </message>
     <message>
         <source>No server set to connect to</source>
@@ -3235,11 +3300,11 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
 </context>
 <context>
@@ -3278,7 +3343,7 @@ Desexa aínda así borralo?</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Could not allocate statement</source>
@@ -3373,16 +3438,8 @@ Desexa aínda así borralo?</translation>
 <context>
     <name>QLibrary</name>
     <message>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">Non foi posíbel mmap «%1»: %2</translation>
-    </message>
-    <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation>Erro de concordancia na verificación dos datos do complemento en «%1»</translation>
-    </message>
-    <message>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">Non foi posíbel unmap «%1»: %2</translation>
     </message>
     <message>
         <source>The shared library was not found.</source>
@@ -3420,6 +3477,26 @@ chave de compilación «%2», obtívose a «%3»</translation>
     <message>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>Non é posíbel resolver o símbolo «%1» en %2: %3</translation>
+    </message>
+    <message>
+        <source>Could not mmap &apos;%1&apos;: %2</source>
+        <translation type="obsolete">Non foi posíbel mmap «%1»: %2</translation>
+    </message>
+    <message>
+        <source>Could not unmap &apos;%1&apos;: %2</source>
+        <translation type="obsolete">Non foi posíbel unmap «%1»: %2</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>«%1» non é un obxecto ELF (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>«%1» non é un obxecto ELF</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>«%1» non é un obxecto ELF válido (%2)</translation>
     </message>
 </context>
 <context>
@@ -3508,7 +3585,7 @@ chave de compilación «%2», obtívose a «%3»</translation>
     </message>
     <message>
         <source>%1: The socket operation is not supported</source>
-        <translation>%1: A operación do socket non está soportada</translation>
+        <translation>%1: Non se permite utilizar a operación do socket</translation>
     </message>
     <message>
         <source>%1: Unknown error</source>
@@ -3517,6 +3594,10 @@ chave de compilación «%2», obtívose a «%3»</translation>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: Erro descoñecido %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: acceso denegado</translation>
     </message>
 </context>
 <context>
@@ -3535,11 +3616,11 @@ chave de compilación «%2», obtívose a «%3»</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
 </context>
 <context>
@@ -3692,6 +3773,10 @@ chave de compilación «%2», obtívose a «%3»</translation>
         <source>Actions</source>
         <translation>Accións</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>Barra de ferramentas da esquina</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3763,7 +3848,7 @@ texto</translation>
     </message>
     <message>
         <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
-        <translation>Tentouse usar soporte de socket IPv6 nunha plataforma en soporte de IPv6</translation>
+        <translation>Tentouse usar un socket IPv6 nunha plataforma sen implementación de IPv6</translation>
     </message>
     <message>
         <source>The remote host closed the connection</source>
@@ -3783,7 +3868,7 @@ texto</translation>
     </message>
     <message>
         <source>Protocol type not supported</source>
-        <translation>Tipo de protocolo non soportado</translation>
+        <translation>Non se permite utilizar ese tipo de protocolo</translation>
     </message>
     <message>
         <source>Invalid socket descriptor</source>
@@ -3811,7 +3896,7 @@ texto</translation>
     </message>
     <message>
         <source>The bound address is already in use</source>
-        <translation>O enderezo de conexión xa está en uso</translation>
+        <translation>O enderezo vinculado xa está en uso</translation>
     </message>
     <message>
         <source>The address is not available</source>
@@ -3869,7 +3954,7 @@ texto</translation>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>Operación non soportada en %1</translation>
+        <translation type="obsolete">Operación non admitida en %1</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
@@ -3930,7 +4015,7 @@ texto</translation>
     </message>
     <message>
         <source>Error while downloading %1: %2</source>
-        <translation>Aconteceu un erro ao obter %1: %2</translation>
+        <translation>Aconteceu un erro ao descargar %1: %2</translation>
     </message>
     <message>
         <source>Error while uploading %1: %2</source>
@@ -3955,7 +4040,7 @@ texto</translation>
     <name>QNetworkReply</name>
     <message>
         <source>Error downloading %1 - server replied: %2</source>
-        <translation>Aconteceu un erro ao obter %1, o servidor respondeu: %2</translation>
+        <translation>Aconteceu un erro ao descargar %1, o servidor respondeu: %2</translation>
     </message>
     <message>
         <source>Protocol &quot;%1&quot; is unknown</source>
@@ -3964,6 +4049,10 @@ texto</translation>
     <message>
         <source>Network session error.</source>
         <translation>Erro da sesión de rede.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>fallou o inicio da infraestrutura</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -3992,7 +4081,7 @@ texto</translation>
     </message>
     <message>
         <source>Session aborted by user or system</source>
-        <translation>A sesión abortouse polo usuario ou polo sistema</translation>
+        <translation>A sesión interrompeuse polo usuario ou polo sistema</translation>
     </message>
     <message>
         <source>Unidentified Error</source>
@@ -4004,11 +4093,11 @@ texto</translation>
     </message>
     <message>
         <source>The session was aborted by the user or system.</source>
-        <translation>A sesión abortouse polo usuario ou polo sistema.</translation>
+        <translation>A sesión interrompeuse polo usuario ou polo sistema.</translation>
     </message>
     <message>
         <source>The requested operation is not supported by the system.</source>
-        <translation>A operación pedida non está soportada polo sistema.</translation>
+        <translation>O sistema non permite utilizar a operación pedida.</translation>
     </message>
     <message>
         <source>The specified configuration cannot be used.</source>
@@ -4016,7 +4105,7 @@ texto</translation>
     </message>
     <message>
         <source>Roaming was aborted or is not possible.</source>
-        <translation>A itinerancia abortouse ou non é posíbel.</translation>
+        <translation>A itinerancia interrompeuse ou non é posíbel.</translation>
     </message>
 </context>
 <context>
@@ -4036,11 +4125,11 @@ texto</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
 </context>
 <context>
@@ -4086,7 +4175,7 @@ texto</translation>
     </message>
     <message>
         <source>Unable to connect - Driver doesn&apos;t support all functionality required</source>
-        <translation>Non foi posíbel conectar xa que o controlador non soporta todas as funcionalidades requiridas</translation>
+        <translation>Non foi posíbel conectar xa que o controlador non permite utilizar todas as funcionalidades requiridas</translation>
     </message>
     <message>
         <source>Unable to disable autocommit</source>
@@ -4094,11 +4183,11 @@ texto</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
     <message>
         <source>Unable to enable autocommit</source>
@@ -4114,7 +4203,7 @@ texto</translation>
     <message>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: Non foi posíbel estabelecer «SQL_CURSOR_STATIC» como 
-atributo da sentenza. Verifique a configuración do controlador ODBC</translation>
+atributo da sentenza. Comprobe a configuración do controlador ODBC</translation>
     </message>
     <message>
         <source>Unable to execute statement</source>
@@ -4159,6 +4248,50 @@ atributo da sentenza. Verifique a configuración do controlador ODBC</translatio
         <source>PulseAudio Sound Server</source>
         <translation>Servidor de son PulseAudio</translation>
     </message>
+    <message>
+        <source>Host not found</source>
+        <translation>Non se atopou o servidor</translation>
+    </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>Non foi posíbel ler os datos da imaxe</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
+        <translation>Non están implementados os dispositivos secuenciais (p.ex. socket) para ler imaxes</translation>
+    </message>
+    <message>
+        <source>Seek file/device for image read failed</source>
+        <translation>Fallou a busca de ficheiro ou dispositivo para ler imaxes</translation>
+    </message>
+    <message>
+        <source>Image mHeader read failed</source>
+        <translation>Fallou a lectura da mHeader da imaxe</translation>
+    </message>
+    <message>
+        <source>Image type not supported</source>
+        <translation>Tipo de imaxe non admitido</translation>
+    </message>
+    <message>
+        <source>Image dpeth not valid</source>
+        <translation>Profundidade da imaxe non válida</translation>
+    </message>
+    <message>
+        <source>Could not seek to image read footer</source>
+        <translation>Non foi posíbel buscar no pé de imaxe lido</translation>
+    </message>
+    <message>
+        <source>Could not read footer</source>
+        <translation>Non foi posíbel ler o pé</translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation>Tipo de imaxe non admitido (non TrueVision 2.0)</translation>
+    </message>
+    <message>
+        <source>Could not reset to read data</source>
+        <translation>Non foi posíbel reiniciar para ler os datos</translation>
+    </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
@@ -4183,11 +4316,11 @@ atributo da sentenza. Verifique a configuración do controlador ODBC</translatio
     </message>
     <message>
         <source>Could not commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Could not rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
     <message>
         <source>Unable to subscribe</source>
@@ -4951,6 +5084,10 @@ Desexa sobrescribilo?</translation>
         <translation>sintaxe incorrecta para a procura cara diante</translation>
     </message>
     <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>non están implementadas as buscas por detrás, consulte QTBUG-2371</translation>
+    </message>
+    <message>
         <source>bad repetition syntax</source>
         <translation>sintaxe incorrecta para a repetición</translation>
     </message>
@@ -4991,11 +5128,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
 </context>
 <context>
@@ -5025,11 +5162,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Unable to commit transaction</source>
-        <translation>Non foi posíbel entregar a transacción</translation>
+        <translation>Non foi posíbel remitir a transacción</translation>
     </message>
     <message>
         <source>Unable to rollback transaction</source>
-        <translation>Non foi posíbel anular a transacción</translation>
+        <translation>Non foi posíbel regresar a transacción</translation>
     </message>
 </context>
 <context>
@@ -5173,7 +5310,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Clear Error Log</source>
-        <translation>Limpar a saída de erros</translation>
+        <translation>Limpar o rexistro de erros</translation>
     </message>
     <message>
         <source>Clear Console</source>
@@ -5445,7 +5582,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1: key error</source>
-        <translation>%1: erro de chave</translation>
+        <translation type="obsolete">%1: erro de chave</translation>
     </message>
     <message>
         <source>%1: unable to make key</source>
@@ -5470,6 +5607,10 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>%1: system-imposed size restrictions</source>
         <translation>%1: restricións de tamaño impostas polo sistema</translation>
+    </message>
+    <message>
+        <source>%1: bad name</source>
+        <translation>%1: nome non válido</translation>
     </message>
     <message>
         <source>%1: not attached</source>
@@ -5597,7 +5738,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Refresh</source>
-        <translation>Anovar</translation>
+        <translation>Actualizar</translation>
     </message>
     <message>
         <source>Volume Down</source>
@@ -5687,71 +5828,71 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Launch Media</source>
-        <translation>Lanzar Multimedia</translation>
+        <translation>Iniciar Multimedia</translation>
     </message>
     <message>
         <source>Launch (0)</source>
-        <translation>Lanzar (0)</translation>
+        <translation>Iniciar (0)</translation>
     </message>
     <message>
         <source>Launch (1)</source>
-        <translation>Lanzar (1)</translation>
+        <translation>Iniciar (1)</translation>
     </message>
     <message>
         <source>Launch (2)</source>
-        <translation>Lanzar (2)</translation>
+        <translation>Iniciar (2)</translation>
     </message>
     <message>
         <source>Launch (3)</source>
-        <translation>Lanzar (3)</translation>
+        <translation>Iniciar (3)</translation>
     </message>
     <message>
         <source>Launch (4)</source>
-        <translation>Lanzar (4)</translation>
+        <translation>Iniciar (4)</translation>
     </message>
     <message>
         <source>Launch (5)</source>
-        <translation>Lanzar (5)</translation>
+        <translation>Iniciar (5)</translation>
     </message>
     <message>
         <source>Launch (6)</source>
-        <translation>Lanzar (6)</translation>
+        <translation>Iniciar (6)</translation>
     </message>
     <message>
         <source>Launch (7)</source>
-        <translation>Lanzar (7)</translation>
+        <translation>Iniciar (7)</translation>
     </message>
     <message>
         <source>Launch (8)</source>
-        <translation>Lanzar (8)</translation>
+        <translation>Iniciar (8)</translation>
     </message>
     <message>
         <source>Launch (9)</source>
-        <translation>Lanzar (9)</translation>
+        <translation>Iniciar (9)</translation>
     </message>
     <message>
         <source>Launch (A)</source>
-        <translation>Lanzar (A)</translation>
+        <translation>Iniciar (A)</translation>
     </message>
     <message>
         <source>Launch (B)</source>
-        <translation>Lanzar (B)</translation>
+        <translation>Iniciar (B)</translation>
     </message>
     <message>
         <source>Launch (C)</source>
-        <translation>Lanzar (C)</translation>
+        <translation>Iniciar (C)</translation>
     </message>
     <message>
         <source>Launch (D)</source>
-        <translation>Lanzar (D)</translation>
+        <translation>Iniciar (D)</translation>
     </message>
     <message>
         <source>Launch (E)</source>
-        <translation>Lanzar (E)</translation>
+        <translation>Iniciar (E)</translation>
     </message>
     <message>
         <source>Launch (F)</source>
-        <translation>Lanzar (F)</translation>
+        <translation>Iniciar (F)</translation>
     </message>
     <message>
         <source>Monitor Brightness Up</source>
@@ -6432,11 +6573,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>SOCKSv5 command not supported</source>
-        <translation>A orde SOCKSv5 non está soportada</translation>
+        <translation>Non se permite utilizar a orde SOCKSv5</translation>
     </message>
     <message>
         <source>Address type not supported</source>
-        <translation>Tipo de enderezo non soportado</translation>
+        <translation>Tipo de enderezo non admitido</translation>
     </message>
     <message>
         <source>Unknown SOCKSv5 proxy error code 0x%1</source>
@@ -6451,6 +6592,10 @@ Desexa sobrescribilo?</translation>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
+        <translation type="obsolete">Aceptar</translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation>Aceptar</translation>
     </message>
     <message>
@@ -6619,6 +6764,10 @@ Desexa sobrescribilo?</translation>
         <translation>O nome do servidor non coincide con ningún dos válidos para este certificado</translation>
     </message>
     <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>O certificado do parceiro está na lista negra</translation>
+    </message>
+    <message>
         <source>Unknown error</source>
         <translation>Erro descoñecido</translation>
     </message>
@@ -6679,11 +6828,192 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Missing default state in history state &apos;%1&apos;</source>
-        <translation>Falta o estado predeterminado no estado histórico «%1»</translation>
+        <translation>Falta o estado predeterminado no estado «%1» do historial</translation>
     </message>
     <message>
         <source>No common ancestor for targets and source of transition from state &apos;%1&apos;</source>
         <translation>Non hai antecesor común para o destino e orixe da transición desde o estado «%1»</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Erro descoñecido</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>Opción non válida:</translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>Aconteceu un erro ao abrir a base de datos</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>Debe definirse POLICY_DB_DEFAULT antes de poder usar calquera outra definición de POLICY</translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>Non foi posíbel comezar a transacción</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>Non foi posíbel remitir a transacción</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>Non foi posíbel regresar a transacción</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>Aconteceu un erro ao obter a cantidade de columnas</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>Aconteceu un erro ao obter o nome da columna</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>Aconteceu un erro ao obter o tipo da columna</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>Non foi posíbel acadar a fila</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>Non foi posíbel executar a sentenza</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>A sentenza non está preparada</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>Non foi posíbel reiniciar a sentenza</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>Non foi posíbel asociar os parámetros</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>O número de parámetros non coincide</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>Non foi posíbel inicializar o socket non bloqueante</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>Non foi posíbel inicializar o socket de broadcast</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>Tentouse usar un socket IPv6 nunha plataforma sen implementación de IPv6</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>O servidor remoto pechou a conexión</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>A operación de rede esgotou o tempo-límite</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>Esgotáronse os recursos</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>Operación de socket non admitida</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>Non se permite utilizar ese tipo de protocolo</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>Descritor de socket non válido</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>Non foi posíbel acadar o servidor</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>Non foi posíbel acadar a rede</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>Permiso negado</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>A conexión esgotou o tempo-límite</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>Aconexión rexeitouse</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>O enderezo vinculado xa está en uso</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>O enderezo non está dispoñíbel</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>O enderezo está protexido</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>O datagrama é grande de máis para envialo</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>Non foi posíbel enviar unha mensaxe</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>Non foi posíbel recibir unha mensaxe</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>Non foi posíbel escribir</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>Erro de rede</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>Xa hai outro socket a escoitar o mesmo porto</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>Operación nun non socket</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>O tipo de proxy non é válido para esta operación</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>O enderezo non é válido para esta operación</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>A sesión de rede que se especificou non está aberta</translation>
     </message>
     <message>
         <source>Unknown error</source>
@@ -6707,6 +7037,10 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>%1: out of resources</source>
         <translation>%1: esgotou os recursos</translation>
+    </message>
+    <message>
+        <source>%1: name error</source>
+        <translation>%1: err o de nome</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -6739,7 +7073,7 @@ Desexa sobrescribilo?</translation>
     <name>QTcpServer</name>
     <message>
         <source>Operation on socket is not supported</source>
-        <translation>A operación no socket non está soportada</translation>
+        <translation>Non se permite a operación no socket</translation>
     </message>
 </context>
 <context>
@@ -6799,11 +7133,29 @@ Desexa sobrescribilo?</translation>
     <name>QUndoGroup</name>
     <message>
         <source>Undo</source>
-        <translation>Desfacer</translation>
+        <translation type="obsolete">Desfacer</translation>
     </message>
     <message>
         <source>Redo</source>
-        <translation>Facer de novo</translation>
+        <translation type="obsolete">Refacer</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>Desfacer %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>Desfacer</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>Refacer %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
+        <translation>Refacer</translation>
     </message>
 </context>
 <context>
@@ -6817,11 +7169,29 @@ Desexa sobrescribilo?</translation>
     <name>QUndoStack</name>
     <message>
         <source>Undo</source>
-        <translation>Desfacer</translation>
+        <translation type="obsolete">Desfacer</translation>
     </message>
     <message>
         <source>Redo</source>
-        <translation>Facer de novo</translation>
+        <translation type="obsolete">Refacer</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>Desfacer %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>Desfacer</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>Refacer %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
+        <translation>Refacer</translation>
     </message>
 </context>
 <context>
@@ -6878,6 +7248,10 @@ Desexa sobrescribilo?</translation>
         <translation>Pedido cancelado</translation>
     </message>
     <message>
+        <source>Request canceled</source>
+        <translation>Pedido cancelado</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
         <translation>Pedido bloqueado</translation>
     </message>
@@ -6897,6 +7271,10 @@ Desexa sobrescribilo?</translation>
         <source>File does not exist</source>
         <translation>O ficheiro non existe</translation>
     </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>A carga xestiónaa o motor de medios</translation>
+    </message>
 </context>
 <context>
     <name>QWebPage</name>
@@ -6906,7 +7284,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Bad HTTP request</source>
-        <translation>Pedido HTTP incorrecto</translation>
+        <translation type="obsolete">Pedido HTTP incorrecto</translation>
     </message>
     <message numerus="yes">
         <source>%n file(s)</source>
@@ -6947,6 +7325,11 @@ Desexa sobrescribilo?</translation>
         <translation>Non escolleu ningún ficheiro</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>Detalles</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>Abrir nunha xanela nova</translation>
@@ -6975,6 +7358,61 @@ Desexa sobrescribilo?</translation>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
         <translation>Copiar a imaxe</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>Copiar o enderezo da imaxe</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>Abrir un vídeo</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>Abrir un son</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>Copiar o vídeo</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>Copiar o son</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>Conmutar os controis</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>Conmutar o repetir</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>Pór en pantalla completa</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>Reproducir</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>Pausar</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>Silenciar</translation>
     </message>
     <message>
         <source>Open Frame</source>
@@ -7015,6 +7453,11 @@ Desexa sobrescribilo?</translation>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>Apegar</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>Escoller todo</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
@@ -7079,7 +7522,7 @@ Desexa sobrescribilo?</translation>
     <message>
         <source>Check Grammar With Spelling</source>
         <comment>Check grammar with spelling context menu item</comment>
-        <translation>Verificar a gramática mentres se escribe</translation>
+        <translation>Comprobar a gramática mentres se escribe</translation>
     </message>
     <message>
         <source>Fonts</source>
@@ -7483,7 +7926,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Select all</source>
-        <translation>Escoller todo</translation>
+        <translation type="obsolete">Escoller todo</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -7644,7 +8087,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Commit</source>
-        <translation>Entregar</translation>
+        <translation>Remitir</translation>
     </message>
     <message>
         <source>Done</source>
@@ -7984,6 +8427,94 @@ Desexa sobrescribilo?</translation>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>Elementos</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>Modo de inspección</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>Reproducir/Pausar as animacións</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Escoller</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>Escoller (marcado)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>Ampliar</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>Selector de cores</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>Aplicar as modificación no Visor de QML</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>Aplicar as modificacións ao documento</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>Utensilios</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>0,5x</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>0,25x</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>0,125x</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>0,1x</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>Copiar a cor</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>Ampliar ao &amp;100%</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>Ampliar</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>Reducir</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
@@ -8266,7 +8797,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>In the replacement string, %1 can only be used to escape itself or %2, not %3</source>
-        <translation>Na cadea substituta %1 só pode ser usado para escaparse a si mesmo ou a %2, non a %3.</translation>
+        <translation>Na cadea substituta %1 só pode usarse para escaparse a si mesmo ou a %2, non a %3</translation>
     </message>
     <message>
         <source>%1 matches newline characters</source>
@@ -8310,7 +8841,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The normalization form %1 is unsupported. The supported forms are %2, %3, %4, and %5, and none, i.e. the empty string (no normalization).</source>
-        <translation>A forma de normalización %1 non está soportada. As formas soportadas son %2, %3, %4, %5 e ningunha, i.e. a cadea en branco (sen normalización).</translation>
+        <translation>Non se permite a forma de normalización %1. As formas permitidas son %2, %3, %4, %5 e ningunha, i.e. a cadea en branco (sen normalización).</translation>
     </message>
     <message>
         <source>A zone offset must be in the range %1..%2 inclusive. %3 is out of range.</source>
@@ -8374,7 +8905,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Version %1 is not supported. The supported XQuery version is 1.0.</source>
-        <translation>Non está soportada a versión %1. A versión soportada de XQuery é a 1.0.</translation>
+        <translation>Non se permite utilizar a versión %1. A versión admitida de XQuery é a 1.0.</translation>
     </message>
     <message>
         <source>The encoding %1 is invalid. It must contain Latin characters only, must not contain whitespace, and must match the regular expression %2.</source>
@@ -8398,7 +8929,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The keyword %1 cannot occur with any other mode name.</source>
-        <translation>A palabra-chave %1 só pode aparecer con calquera outro nome de modo.</translation>
+        <translation>A palabra clave %1 só pode aparecer con calquera outro nome de modo.</translation>
     </message>
     <message>
         <source>The value of attribute %1 must be of type %2, which %3 isn&apos;t.</source>
@@ -8422,7 +8953,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The Schema Import feature is not supported, and therefore %1 declarations cannot occur.</source>
-        <translation>A funcionalidade de Importación de Esquema non está soportada, polo tanto non pode haber declaracións %1.</translation>
+        <translation>Non se permite utilizar a funcionalidade de Importación de Esquema, polo tanto non pode haber declaracións %1.</translation>
     </message>
     <message>
         <source>The target namespace of a %1 cannot be empty.</source>
@@ -8430,7 +8961,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The module import feature is not supported</source>
-        <translation>A funcionalidade de importación de módulos non está soportada</translation>
+        <translation>Non se permite utilizar a funcionalidade de importación de módulos</translation>
     </message>
     <message>
         <source>A variable with name %1 has already been declared.</source>
@@ -8446,7 +8977,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>O espazo de nomes das funcións definidas polo usuario non pode estar en branco (probe co prefixo predefinido %1, que está para casos como este)</translation>
+        <translation type="obsolete">O espazo de nomes das funcións definidas polo usuario non pode estar en branco (probe co prefixo predefinido %1, que está para casos como este)</translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>O espazo de nomes das funcións definidas polo usuario non pode estar en branco (ténteo co prefixo predefinido %1, que está para casos coma este)</translation>
     </message>
     <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
@@ -8462,7 +8997,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>No external functions are supported. All supported functions can be used directly, without first declaring them as external</source>
-        <translation>Non se soportan as funcións externas. Todas as funcións soportadas poden ser usadas directamente, non fai falla declaralas como externas</translation>
+        <translation>Non se permiten utilizar as funcións externas. Todas as funcións soportadas poden ser usadas directamente, non fai falla declaralas como externas</translation>
     </message>
     <message>
         <source>An argument with name %1 has already been declared. Every argument name must be unique.</source>
@@ -8502,11 +9037,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>The Schema Validation Feature is not supported. Hence, %1-expressions may not be used.</source>
-        <translation>Non está soportada a funcionalidade de Validación do Esquema. Polo tanto, as expresións %1 non poden ser usadas.</translation>
+        <translation>Non se permite utilizar a funcionalidade de Validación do Esquema. Polo tanto, as expresións %1 non poden ser usadas.</translation>
     </message>
     <message>
         <source>None of the pragma expressions are supported. Therefore, a fallback expression must be present</source>
-        <translation>Non está soportada ningunha das expresións pragma. Polo tanto, debe haber presente unha expresión de reserva</translation>
+        <translation>Non se permite utilizar ningunha das expresións pragma. Polo tanto, debe haber presente unha expresión de reserva</translation>
     </message>
     <message>
         <source>Each name of a template parameter must be unique; %1 is duplicated.</source>
@@ -8574,7 +9109,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1 is not in the in-scope attribute declarations. Note that the schema import feature is not supported.</source>
-        <translation>%1 non está nas declaracións de atributos ao alcance. Lembre que non está soportada a funcionalidade de importación de esquemas.</translation>
+        <translation>%1 non está nas declaracións de atributos ao alcance. Lembre que non está implementada a funcionalidade de importación de esquemas.</translation>
     </message>
     <message>
         <source>The name of an extension expression must be in a namespace.</source>
@@ -8914,7 +9449,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Unknown notation %1 used in %2 facet.</source>
-        <translation>Empregouse a notación non válida %1 na faceta %2.</translation>
+        <translation>Empregouse a notación descoñecida %1 na faceta %2.</translation>
     </message>
     <message>
         <source>%1 facet contains invalid value %2: %3.</source>
@@ -9290,7 +9825,11 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
-        <translation>O modelo de contido do tipo complexo %1 contén un elemento %2 polo que non se pode derivar por extensión a partir dun tipo non baleiro.</translation>
+        <translation type="obsolete">O modelo de contido do tipo complexo %1 contén un elemento %2 polo que non se pode derivar por extensión a partir dun tipo non baleiro.</translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
+        <translation>O modelo do contido do tipo complexo %1 contén o elemento %2, polo que non se pode derivar por extensión a partir dun tipo non baleiro.</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
@@ -9334,7 +9873,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4.</source>
-        <translation>Nin atributo %1 nin o %2 da referencia %2 casan coa declaración do atributo %3.</translation>
+        <translation>Nin atributo %1 nin o %2 da referencia %3 casan coa declaración do atributo %4.</translation>
     </message>
     <message>
         <source>Attribute group %1 has circular reference.</source>
@@ -9550,7 +10089,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Invalid QName content: %1.</source>
-        <translation>Contido non válido do QName: %1</translation>
+        <translation>Contido non válido do QName: %1.</translation>
     </message>
     <message>
         <source>QName content is not listed in the enumeration facet.</source>
@@ -9562,7 +10101,7 @@ Desexa sobrescribilo?</translation>
     </message>
     <message>
         <source>Notation content is not listed in the enumeration facet.</source>
-        <translation>O contido da notación non está na faceta de enumeración</translation>
+        <translation>O contido da notación non está enumerado na faceta de enumeración.</translation>
     </message>
     <message>
         <source>List content does not match length facet.</source>
@@ -9697,8 +10236,12 @@ Desexa sobrescribilo?</translation>
         <translation>O elemento %1 ten contido de texto non permitido.</translation>
     </message>
     <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation>O elemento %1 non pode conter outros elementos porque ten contido fixo.</translation>
+    </message>
+    <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation>O elemento %1 non pode conter outros elementos xa que ten un contido fixo.</translation>
+        <translation type="obsolete">O elemento %1 non pode conter outros elementos xa que ten un contido fixo.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>

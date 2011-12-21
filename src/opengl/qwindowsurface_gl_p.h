@@ -68,6 +68,7 @@ struct QGLWindowSurfacePrivate;
 
 Q_OPENGL_EXPORT QGLWidget* qt_gl_share_widget();
 Q_OPENGL_EXPORT void qt_destroy_gl_share_widget();
+bool qt_initializing_gl_share_widget();
 
 class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
 {

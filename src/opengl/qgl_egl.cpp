@@ -64,6 +64,25 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
     int stencilSize = glFormat.stencilBufferSize();
     int sampleCount = glFormat.samples();
 
+#ifdef Q_OS_SYMBIAN
+    // on Symbian we prefer 32-bit configs
+    if (glFormat.alpha() && alphaSize <= 0)
+        alphaSize = 8;
+    if (glFormat.depth() && depthSize <= 0)
+        depthSize = 24;
+    if (glFormat.stencil() && stencilSize <= 0)
+        stencilSize = 8;
+    if (glFormat.sampleBuffers() && sampleCount <= 0)
+        sampleCount = 1;
+
+    redSize   = redSize   > 0 ? redSize   : 8;
+    greenSize = greenSize > 0 ? greenSize : 8;
+    blueSize  = blueSize  > 0 ? blueSize  : 8;
+    alphaSize = alphaSize > 0 ? alphaSize : 8;
+    depthSize = depthSize > 0 ? depthSize : 24;
+    stencilSize = stencilSize > 0 ? stencilSize : 8;
+    sampleCount = sampleCount > 0 ? sampleCount : 4;
+#else
     // QGLFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
     // type has been requested. So we must check QGLFormat's booleans too if size is -1:
     if (glFormat.alpha() && alphaSize <= 0)
@@ -101,6 +120,7 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
     depthSize = depthSize > 0 ? depthSize : 0;
     stencilSize = stencilSize > 0 ? stencilSize : 0;
     sampleCount = sampleCount > 0 ? sampleCount : 0;
+#endif
 
     eglProperties.setValue(EGL_RED_SIZE,   redSize);
     eglProperties.setValue(EGL_GREEN_SIZE, greenSize);
