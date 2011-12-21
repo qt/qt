@@ -1,5 +1,4 @@
-load(qttest_p4)
-QT -= gui
+QT = core testlib
 SOURCES += tst_waitwithoutgui.cpp
 
 mac:CONFIG -= app_bundle
