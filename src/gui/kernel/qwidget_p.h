@@ -916,6 +916,7 @@ public:
     void reparentChildren();
     void registerTouchWindow();
     QList<WId> widCleanupList;
+    uint isGLGlobalShareWidget : 1;
 #endif
 
 };

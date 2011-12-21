@@ -6231,6 +6231,11 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
             CFG_COREWLAN=no
         fi
     fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+        QT_CONFIG="$QT_CONFIG coreservices"
+    else
+        QMakeVar add DEFINES QT_NO_CORESERVICES
+    fi
 fi
 
 
@@ -6339,13 +6344,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
         QT_CONFIG="$QT_CONFIG wayland"
     fi
-
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-        QT_CONFIG="$QT_CONFIG coreservices"
-    else
-        QMakeVar add DEFINES QT_NO_CORESERVICES
-    fi
-
 fi
 
 

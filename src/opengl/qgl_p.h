@@ -106,6 +106,10 @@ class QMacWindowChangeEvent;
 class QWSGLWindowSurface;
 #endif
 
+#ifdef Q_OS_SYMBIAN
+extern bool qt_initializing_gl_share_widget();
+#endif
+
 #ifndef QT_NO_EGL
 class QEglContext;
 #endif
@@ -183,6 +187,10 @@ public:
 #endif
     {
         isGLWidget = 1;
+#if defined(Q_OS_SYMBIAN)
+        if (qt_initializing_gl_share_widget())
+            isGLGlobalShareWidget = 1;
+#endif
     }
 
     ~QGLWidgetPrivate() {}

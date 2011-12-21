@@ -1164,7 +1164,11 @@ Volby:
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation>Neplatná úniková posloupnost</translation>
+        <translation type="obsolete">Neplatná úniková posloupnost</translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Illegal unicode escape sequence</source>

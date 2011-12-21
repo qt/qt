@@ -364,7 +364,7 @@
     </message>
     <message>
         <source>page</source>
-        <translation>Strana</translation>
+        <translation type="obsolete">Strana</translation>
     </message>
     <message>
         <source>Insert Page</source>
@@ -476,7 +476,7 @@
     </message>
     <message>
         <source>subwindow</source>
-        <translation>Podokno</translation>
+        <translation type="obsolete">Podokno</translation>
     </message>
     <message>
         <source>Subwindow</source>
@@ -520,6 +520,10 @@
         <translation>Změnit rozvržení &apos;%1&apos; z %2 na %3</translation>
     </message>
     <message>
+        <source>Change layout alignment</source>
+        <translation>Změnit zarovnání rozvržení</translation>
+    </message>
+    <message>
         <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
         <extracomment>Command description for adding buttons to a QButtonGroup</extracomment>
         <translation>Přidat &apos;%1&apos; k &apos;%2&apos;</translation>
@@ -541,9 +545,9 @@
         <source>Changed &apos;%1&apos; of %n objects</source>
         <translatorcomment>Singular will never be shown</translatorcomment>
         <translation>
-            <numerusform>Změněna vlastnost &apos;%1&apos; jednoho předmětu</numerusform>
-            <numerusform>Změněna vlastnost &apos;%1&apos; %n předmětů</numerusform>
-            <numerusform>Změněna vlastnost &apos;%1&apos; %n předmětů</numerusform>
+            <numerusform>Změněna vlastnost &apos;%1&apos; jednoho objektu</numerusform>
+            <numerusform>Změněna vlastnost &apos;%1&apos; %n objektů</numerusform>
+            <numerusform>Změněna vlastnost &apos;%1&apos; %n objektů</numerusform>
         </translation>
     </message>
     <message>
@@ -554,9 +558,9 @@
         <source>Reset &apos;%1&apos; of %n objects</source>
         <translatorcomment>Singular will never be shown</translatorcomment>
         <translation>
-            <numerusform>Znovu nastavit &apos;%1&apos; jednoho předmětu</numerusform>
-            <numerusform>Znovu nastavit &apos;%1&apos; %n předmětů</numerusform>
-            <numerusform>Znovu nastavit &apos;%1&apos; %n předmětů</numerusform>
+            <numerusform>Znovu nastavit &apos;%1&apos; jednoho objektu</numerusform>
+            <numerusform>Znovu nastavit &apos;%1&apos; %n objektů</numerusform>
+            <numerusform>Znovu nastavit &apos;%1&apos; %n objektů</numerusform>
         </translation>
     </message>
     <message>
@@ -567,9 +571,9 @@
         <source>Add dynamic property &apos;%1&apos; to %n objects</source>
         <translatorcomment>Singular will never be shown</translatorcomment>
         <translation>
-            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do jednoho předmětu</numerusform>
-            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do %n předmětů</numerusform>
-            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do %n předmětů</numerusform>
+            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do jednoho objektu</numerusform>
+            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do %n objektů</numerusform>
+            <numerusform>Přidat dynamickou vlastnost &apos;%1&apos; do %n objektů</numerusform>
         </translation>
     </message>
     <message>
@@ -579,9 +583,9 @@
     <message numerus="yes">
         <source>Remove dynamic property &apos;%1&apos; from %n objects</source>
         <translation>
-            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z jednoho předmětu</numerusform>
-            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z %n předmětů</numerusform>
-            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z %n předmětů</numerusform>
+            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z jednoho objektu</numerusform>
+            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z %n objektů</numerusform>
+            <numerusform>Odstranit dynamickou vlastnost &apos;%1&apos; z %n objektů</numerusform>
         </translation>
     </message>
 </context>
@@ -608,7 +612,7 @@
     <name>ConnectionDelegate</name>
     <message>
         <source>&lt;object&gt;</source>
-        <translation>&lt;Předmět&gt;</translation>
+        <translation>&lt;objekt&gt;</translation>
     </message>
     <message>
         <source>&lt;signal&gt;</source>
@@ -1102,7 +1106,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>ObjectInspectorModel</name>
     <message>
         <source>Object</source>
-        <translation>Předmět</translation>
+        <translation>Objekt</translation>
     </message>
     <message>
         <source>Class</source>
@@ -1121,11 +1125,11 @@ Parsing grid layout minimum size values</extracomment>
     <name>ObjectNameDialog</name>
     <message>
         <source>Change Object Name</source>
-        <translation>Změnit název předmětu</translation>
+        <translation>Změnit název objektu</translation>
     </message>
     <message>
         <source>Object Name</source>
-        <translation>Název předmětu</translation>
+        <translation>Název objektu</translation>
     </message>
 </context>
 <context>
@@ -1208,7 +1212,7 @@ Parsing grid layout minimum size values</extracomment>
     </message>
     <message>
         <source>Attempt to add child that is not of class QWizardPage to QWizard.</source>
-        <translation>Pokus o přidání strany předmětu třídy QWizard, která není typu QWizardPage.</translation>
+        <translation>Pokus o přidání strany objektu třídy QWizard, která není typu QWizardPage.</translation>
     </message>
     <message>
         <source>Attempt to add a layout to a widget &apos;%1&apos; (%2) which already has a layout of non-box type %3.
@@ -1758,7 +1762,7 @@ Chcete to zkusit ještě jednou?</translation>
         <source>The container extension of the widget &apos;%1&apos; (%2) returned a widget not managed by Designer &apos;%3&apos; (%4) when queried for page #%5.
 Container pages should only be added by specifying them in XML returned by the domXml() method of the custom widget.</source>
         <translation>Kontejnerové rozšíření prvku &apos;%1&apos; (%2) vrátilo pro stranu %5 prvek &apos;%3&apos; (%4), který není spravován programem Designer.
-Kontejnerové stránky by měly být zadány výhradně v XML vráceném postupu domXML() uživatelsky stanoveného prvku.</translation>
+Kontejnerové stránky by měly být zadány výhradně v XML vrácené metodě domXML() uživatelsky stanoveného prvku.</translation>
     </message>
     <message>
         <source>Unexpected element &lt;%1&gt;</source>
@@ -1799,7 +1803,7 @@ Kontejnerové stránky by měly být zadány výhradně v XML vráceném postupu
     </message>
     <message>
         <source>Object Inspector</source>
-        <translation>Ukazatel předmětů</translation>
+        <translation>Ukazatel objektů</translation>
     </message>
     <message>
         <source>Resource Browser</source>
@@ -1838,7 +1842,7 @@ Kontejnerové stránky by měly být zadány výhradně v XML vráceném postupu
     </message>
     <message>
         <source>Edit</source>
-        <translation>Úpravy</translation>
+        <translation type="obsolete">Úpravy</translation>
     </message>
     <message>
         <source>Toolbars</source>
@@ -1851,6 +1855,10 @@ Kontejnerové stránky by měly být zadány výhradně v XML vráceném postupu
     <message>
         <source>&amp;View</source>
         <translation>&amp;Pohled</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>&amp;Úpravy</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -1906,7 +1914,7 @@ Kontejnerové stránky by měly být zadány výhradně v XML vráceném postupu
 Empty class name passed to widget factory method
 ----------
 Empty class name passed to widget factory method</extracomment>
-        <translation>Postupu %1 byl předán prázdný název třídy (název předmětu &apos;%2&apos;).</translation>
+        <translation>Postupu %1 byl předán prázdný název třídy (název objektu &apos;%2&apos;).</translation>
     </message>
     <message>
         <source>QFormBuilder was unable to create a custom widget of the class &apos;%1&apos;; defaulting to base class &apos;%2&apos;.</source>
@@ -1914,7 +1922,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>QFormBuilder was unable to create a widget of the class &apos;%1&apos;.</source>
-        <translation>QFormBuilderu se nepodařilo vytvořit předmět třídy &apos;%1&apos;.</translation>
+        <translation>QFormBuilderu se nepodařilo vytvořit objekt třídy &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The layout type `%1&apos; is not supported.</source>
@@ -3746,12 +3754,20 @@ Chcete tuto předlohu přepsat?</translation>
         <translation>Zděděno</translation>
     </message>
     <message>
+        <source>[Theme] %1</source>
+        <translation>[Téma] %1</translation>
+    </message>
+    <message>
         <source>Horizontal</source>
         <translation>Vodorovný</translation>
     </message>
     <message>
         <source>Vertical</source>
         <translation>Svislý</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Téma</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -4346,6 +4362,17 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
 </context>
 <context>
+    <name>qdesigner_internal::IconThemeDialog</name>
+    <message>
+        <source>Set Icon From Theme</source>
+        <translation>Nastavit ikonu z tématu</translation>
+    </message>
+    <message>
+        <source>Input icon name from the current theme:</source>
+        <translation>Název pro ikonu z nynějšího tématu:</translation>
+    </message>
+</context>
+<context>
     <name>qdesigner_internal::ItemListEditor</name>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -4396,7 +4423,7 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::LabelTaskMenu</name>
     <message>
         <source>Change rich text...</source>
-        <translation>Změnit upravovatelný text...</translation>
+        <translation>Změnit bohatý text...</translation>
     </message>
     <message>
         <source>Change plain text...</source>
@@ -4488,15 +4515,15 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Shortcut:</source>
-        <translation>Klávesová zkratka:</translation>
+        <translation type="obsolete">Klávesová zkratka:</translation>
     </message>
     <message>
         <source>Checkable:</source>
-        <translation>Zaškrtnutelná:</translation>
+        <translation type="obsolete">Zaškrtnutelná:</translation>
     </message>
     <message>
         <source>ToolTip:</source>
-        <translation>Rada k nástroji:</translation>
+        <translation type="obsolete">Rada k nástroji:</translation>
     </message>
     <message>
         <source>...</source>
@@ -4508,7 +4535,23 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Object &amp;name:</source>
-        <translation>&amp;Název předmětu:</translation>
+        <translation>&amp;Název objektu:</translation>
+    </message>
+    <message>
+        <source>T&amp;oolTip:</source>
+        <translation>&amp;Nástrojová rada:</translation>
+    </message>
+    <message>
+        <source>Icon th&amp;eme:</source>
+        <translation>&amp;Téma ikon:</translation>
+    </message>
+    <message>
+        <source>&amp;Checkable:</source>
+        <translation>&amp;Zaškrtnutelné:</translation>
+    </message>
+    <message>
+        <source>&amp;Shortcut:</source>
+        <translation>&amp;Klávesová zkratka:</translation>
     </message>
 </context>
 <context>
@@ -4520,7 +4563,7 @@ Chcete tuto předlohu přepsat?</translation>
     <message>
         <source>The current object already has a property named &apos;%1&apos;.
 Please select another, unique one.</source>
-        <translation>nynější předmět již má vlastnost s názvem &apos;%1&apos;.
+        <translation>Nynější objekt již má vlastnost s názvem &apos;%1&apos;.
 Zvolte, prosím, jiný, jedinečný název.</translation>
     </message>
     <message>
@@ -4774,8 +4817,16 @@ Zvolte, prosím, jiný název.</translation>
         <translation>Vybrat soubor...</translation>
     </message>
     <message>
+        <source>Set Icon From Theme...</source>
+        <translation>Nastavit ikonu z tématu...</translation>
+    </message>
+    <message>
         <source>...</source>
         <translation>...</translation>
+    </message>
+    <message>
+        <source>[Theme] %1</source>
+        <translation>[Téma] %1</translation>
     </message>
 </context>
 <context>
@@ -5049,7 +5100,7 @@ která byla volně puštěná.</translation>
     <message>
         <source>Object: %1
 Class: %2</source>
-        <translation>Předmět: %1
+        <translation>Objekt: %1
 Třída: %2</translation>
     </message>
     <message>
@@ -5130,7 +5181,7 @@ Třída: %2</translation>
     <name>qdesigner_internal::QDesignerTaskMenu</name>
     <message>
         <source>Change objectName...</source>
-        <translation>Změnit název předmětu...</translation>
+        <translation>Změnit název objektu...</translation>
     </message>
     <message>
         <source>Change toolTip...</source>
@@ -5179,7 +5230,7 @@ Třída: %2</translation>
     <message numerus="yes">
         <source>Set size constraint on %n widget(s)</source>
         <translation>
-            <numerusform>Nastavit omezení velikosti u jednoho prvku</numerusform>
+            <numerusform>Nastavit omezení velikosti u %n prvku</numerusform>
             <numerusform>Nastavit omezení velikosti u %n prvků</numerusform>
             <numerusform>Nastavit omezení velikosti u %n prvků</numerusform>
         </translation>
@@ -5187,6 +5238,42 @@ Třída: %2</translation>
     <message>
         <source>Size Constraints</source>
         <translation>Omezení velikosti</translation>
+    </message>
+    <message>
+        <source>Layout Alignment</source>
+        <translation>Zarovnání rozvržení</translation>
+    </message>
+    <message>
+        <source>No Horizontal Alignment</source>
+        <translation>Žádné vodorovné zarovnání</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Vlevo</translation>
+    </message>
+    <message>
+        <source>Center Horizontally</source>
+        <translation>Na střed vodorovně</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Vpravo</translation>
+    </message>
+    <message>
+        <source>No Vertical Alignment</source>
+        <translation>Žádné svislé zarovnání</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Nahoře</translation>
+    </message>
+    <message>
+        <source>Center Vertically</source>
+        <translation>Na střed svisle</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Dole</translation>
     </message>
     <message>
         <source>Set Minimum Width</source>
@@ -5331,7 +5418,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Rich Text</source>
-        <translation>Upravovatelný text</translation>
+        <translation>Bohatý text</translation>
     </message>
     <message>
         <source>Source</source>
@@ -5395,6 +5482,10 @@ Třída: %2</translation>
     <message>
         <source>Insert &amp;Image</source>
         <translation>Vložit &amp;obrázek</translation>
+    </message>
+    <message>
+        <source>Simplify Rich Text</source>
+        <translation>Zjednodušit bohatý text</translation>
     </message>
 </context>
 <context>

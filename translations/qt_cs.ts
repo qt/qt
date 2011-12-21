@@ -31,10 +31,25 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[Pole délky %1]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;nevymezeno&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
         <source>Fake error !</source>
-        <translation>Napodobená chyba!</translation>
+        <translation type="obsolete">Napodobená chyba!</translation>
+    </message>
+    <message>
+        <source>Fake error!</source>
+        <translation>Falešná chyba!</translation>
     </message>
     <message>
         <source>Invalid URL</source>
@@ -507,6 +522,10 @@ Ověřte, prosím, instalaci Gstreamer a ujistěte se,
     <message>
         <source>Error opening source: media type could not be determined</source>
         <translation>Zdroj se nepodařilo otevřít: nepodařilo se určit typ média</translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation>Nepodařilo se nastavit požadované IAP</translation>
     </message>
 </context>
 <context>
@@ -1126,6 +1145,14 @@ na
 <context>
     <name>QAccessibleButton</name>
     <message>
+        <source>Uncheck</source>
+        <translation>Zrušit označení křížkem</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Označit křížkem</translation>
+    </message>
+    <message>
         <source>Press</source>
         <translation>Stisknout</translation>
     </message>
@@ -1303,6 +1330,11 @@ na
         <translation>%1: Nejsou již použitelné zdroje</translation>
     </message>
     <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: Přístup odepřen</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
         <comment>QSystemSemaphore</comment>
         <translation>%1: Neznámá chyba %2</translation>
@@ -1454,6 +1486,13 @@ na
     </message>
 </context>
 <context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation>Aplikace je abstraktní třída</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
@@ -1566,19 +1605,27 @@ na
     </message>
     <message>
         <source>Component objects cannot declare new properties.</source>
-        <translation>Předměty součástek nemohou prohlásit nové vlastnosti.</translation>
+        <translation>Objekty součástek nemohou prohlásit nové vlastnosti.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new signals.</source>
-        <translation>Předměty součástek nemohou prohlásit nové signály.</translation>
+        <translation>Objekty součástek nemohou prohlásit nové signály.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new functions.</source>
-        <translation>Předměty součástek nemohou prohlásit nové funkce.</translation>
+        <translation>Objekty součástek nemohou prohlásit nové funkce.</translation>
     </message>
     <message>
         <source>Cannot create empty component specification</source>
         <translation>Nelze vytvořit prázdné vymezení součástky</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation>&quot;%1.%2&quot; není dostupný v %3 %4.%5.</translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation>&quot;%1.%2&quot; není dostupný kvůli verzování součástky.</translation>
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
@@ -1602,11 +1649,11 @@ na
     </message>
     <message>
         <source>Non-existent attached object</source>
-        <translation>Pro vlastnost neexistuje žádný připojený předmět</translation>
+        <translation>Pro vlastnost neexistuje žádný připojený objekt</translation>
     </message>
     <message>
         <source>Invalid attached object assignment</source>
-        <translation>Neplatné přiřazení připojeného předmětu</translation>
+        <translation>Neplatné přiřazení připojeného objektu</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent default property</source>
@@ -1654,11 +1701,11 @@ na
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation>Nepřípustné přiřazení předmětu</translation>
+        <translation>Nepřípustné přiřazení objektu</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation>Přiřazení předmětu k seznamům není přípustné</translation>
+        <translation>Přiřazení objektu k seznamům není přípustné</translation>
     </message>
     <message>
         <source>Can only assign one binding to lists</source>
@@ -1682,7 +1729,7 @@ na
     </message>
     <message>
         <source>Cannot assign object to property</source>
-        <translation>Přiřazení předmětu k vlastnosti není přípustné</translation>
+        <translation>Přiřazení objektu k vlastnosti není přípustné</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
@@ -1791,6 +1838,10 @@ na
         <source>Invalid empty URL</source>
         <translation>Neplátná prázdná adresa (URL)</translation>
     </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>createObject: Hodnota není objektem</translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
@@ -1800,7 +1851,7 @@ na
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
-        <translation>Spojení: vkládané předměty nejsou povoleny</translation>
+        <translation>Spojení: vkládané objekty nejsou povoleny</translation>
     </message>
     <message>
         <source>Connections: syntax error</source>
@@ -1931,6 +1982,17 @@ na
     </message>
 </context>
 <context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation>Připojená vlastnost LayoutDirection pracuje jen s položkami</translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation>LayoutMirroring je dostupné pouze prostřednictvím připojených vlastností</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeListModel</name>
     <message>
         <source>remove: index %1 out of range</source>
@@ -1938,7 +2000,7 @@ na
     </message>
     <message>
         <source>insert: value is not an object</source>
-        <translation>vložit (insert): Hodnota není předmětem</translation>
+        <translation>vložit (insert): Hodnota není objektem</translation>
     </message>
     <message>
         <source>insert: index %1 out of range</source>
@@ -1950,11 +2012,11 @@ na
     </message>
     <message>
         <source>append: value is not an object</source>
-        <translation>připojit (append): Hodnota není předmětem</translation>
+        <translation>připojit (append): Hodnota není objektem</translation>
     </message>
     <message>
         <source>set: value is not an object</source>
-        <translation>nastavit (set): Hodnota není předmětem</translation>
+        <translation>nastavit (set): Hodnota není objektem</translation>
     </message>
     <message>
         <source>set: index %1 out of range</source>
@@ -2030,6 +2092,10 @@ na
     </message>
     <message>
         <source>Illegal escape squence</source>
+        <translation type="obsolete">Neplatná úniková posloupnost</translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
         <translation>Neplatná úniková posloupnost</translation>
     </message>
     <message>
@@ -2158,7 +2224,7 @@ na
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation>PropertyChanges nepodporuje vytváření předmětů, které jsou přiřazeny jednomu stavu.</translation>
+        <translation>PropertyChanges nepodporuje vytváření objektů, které jsou přiřazeny jednomu stavu.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
@@ -2203,7 +2269,7 @@ na
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
-        <translation>Nepodařilo se vytvořit žádný předmět typu %1</translation>
+        <translation>Nepodařilo se vytvořit žádný objekt typu %1</translation>
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
@@ -2211,7 +2277,7 @@ na
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation>Typ předmětu %1 nelze přiřadit, protože neexistuje žádná výchozí metoda</translation>
+        <translation>Typ objektu %1 nelze přiřadit, protože neexistuje žádná výchozí metoda</translation>
     </message>
     <message>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
@@ -2219,19 +2285,19 @@ na
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation>Vlastnosti signálu %1 nelze přiřadit žádný předmět</translation>
+        <translation>Vlastnosti signálu %1 nelze přiřadit žádný objekt</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation>Přiřazení předmětu k seznamům není přípustné</translation>
+        <translation>Přiřazení objektu k seznamům není přípustné</translation>
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation>Vlastnosti rozhraní nelze přiřadit žádný předmět</translation>
+        <translation>Vlastnosti rozhraní nelze přiřadit žádný objekt</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
-        <translation>Nepodařilo se vytvořit žádný připojený předmět (typu &apos;attached&apos;)</translation>
+        <translation>Nepodařilo se vytvořit žádný připojený objekt (typu &apos;attached&apos;)</translation>
     </message>
     <message>
         <source>Cannot set properties on %1 as it is null</source>
@@ -2494,6 +2560,10 @@ na
     <message>
         <source>Cannot open %1 for input</source>
         <translation>%1 se nepodařilo otevřít pro čtení</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>Není dostupný žádný souborový stroj nebo stroj nepodporuje UnMapExtension</translation>
     </message>
     <message>
         <source>Destination file exists</source>
@@ -2824,7 +2894,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation>Lehké</translation>
+        <translation>Jemné</translation>
     </message>
     <message>
         <source>Ogham</source>
@@ -2880,7 +2950,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation>Itala</translation>
+        <translation>Kurzíva</translation>
     </message>
     <message>
         <source>Korean</source>
@@ -2888,11 +2958,11 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Normal</source>
-        <translation>Obvyklé</translation>
+        <translation>Normální</translation>
     </message>
     <message>
         <source>Oblique</source>
-        <translation>Nakloněné</translation>
+        <translation>Skloněné</translation>
     </message>
     <message>
         <source>Telugu</source>
@@ -3480,6 +3550,18 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
         <source>Could not mmap &apos;%1&apos;: %2</source>
         <translation type="obsolete">Operace mmap se nezdařila u &apos;%1&apos;: %2</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>&apos;%1&apos; není objekt ELF (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>&apos;%1&apos; není objekt ELF</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>&apos;%1&apos; je neplatný objekt ELF (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3576,6 +3658,10 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     <message>
         <source>%1: Remote closed</source>
         <translation>%1: Spojení bylo protější stranou uzavřeno</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>Přístup odepřen</translation>
     </message>
 </context>
 <context>
@@ -3751,6 +3837,10 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
         <source>Actions</source>
         <translation>Činnosti</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>Rohový nástrojový pruh</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3869,7 +3959,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     </message>
     <message>
         <source>Another socket is already listening on the same port</source>
-        <translation>Na tomto portu již naslouchá jiná zásuvka (socket)</translation>
+        <translation>Na této přípojce (bráně, portu) již naslouchá jiná zásuvka (socket)</translation>
     </message>
     <message>
         <source>Unable to send a message</source>
@@ -3935,7 +4025,7 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>Tato operace není %1 podporována</translation>
+        <translation type="obsolete">Tato operace není %1 podporována</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
@@ -4030,6 +4120,10 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     <message>
         <source>Network session error.</source>
         <translation>Chyba při spojení přes síť.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>Chyba spuštění jádra.</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -4275,6 +4369,10 @@ Ověřte, prosím, že byl zadán správný název souboru.</translation>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
         <translation>Neplátný dotaz: &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>Nepodařilo se najít počítač</translation>
     </message>
 </context>
 <context>
@@ -5545,6 +5643,10 @@ Zvolte, prosím, pro soubor jiný název.</translation>
         <translation>%1: Bylo dosaženo systémem podmíněné meze velikosti</translation>
     </message>
     <message>
+        <source>%1: bad name</source>
+        <translation>%1: Špatný název</translation>
+    </message>
+    <message>
         <source>%1: unix key file doesn&apos;t exists</source>
         <translation type="obsolete">%1: Soubor s unixovým klíčem neexistuje</translation>
     </message>
@@ -5558,7 +5660,7 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     </message>
     <message>
         <source>%1: key error</source>
-        <translation>%1: Chybný klíč</translation>
+        <translation type="obsolete">%1: Chybný klíč</translation>
     </message>
     <message>
         <source>%1: create size is less then 0</source>
@@ -6804,6 +6906,10 @@ Zvolte, prosím, pro soubor jiný název.</translation>
         <translation>Název hostitelského počítače neodpovídá žádnému z hostitelů platných pro toto osvědčení, kteří jsou na seznamu</translation>
     </message>
     <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>Osvědčení protějšího místa je na černé listině</translation>
+    </message>
+    <message>
         <source>Unknown error</source>
         <translation>Neznámá chyba</translation>
     </message>
@@ -6828,6 +6934,121 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     </message>
 </context>
 <context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>Neblokující zásuvku (socket) se nepodařilo spustit</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>Zásuvku pro vysílání (socket) se nepodařilo spustit</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>Vyzkoušelo se použít IPv6 zásuvku (socket) na systému bez podpory IPv6</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>Vzdálený počítač uzavřel spojení</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>Časový limit pro síťovou operaci byl překročen</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>Nejsou dostupné žádné zdroje</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>Nepodporovaná zásuvková operace (povel pro socket)</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>Protokol tohoto typu není podporován</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>Neplatný deskriptor zásuvky (socketu)</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>Cílový počítač je nedosažitelný</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>Síť není dosažitelná</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>Přístup odepřen</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>Časový limit pro spojení byl překročen</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>Spojení bylo odmítnuto</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>Uvedená adresa se už používá</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>Adresa není dostupná</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>Adresa je chráněna</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>Datagram byl pro odeslání příliš veliký</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>Nepodařilo se odeslat zprávu</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>Zprávu se nepodařilo přijmout</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>Nepodařilo se zapsat</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>Síťová chyba</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>Na této přípojce (bráně, portu) již naslouchá jiná zásuvka (socket)</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>Operaci lze použít pouze na ne-zásuvce (socketu)</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>Tuto operaci nelze s tímto typem proxy provést</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>Adresa pro tuto operaci není platná</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>Zadané síťové sezení není otevřeno</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Neznámá chyba</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: does not exist</source>
@@ -6836,6 +7057,10 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <message>
         <source>%1: already exists</source>
         <translation>%1: Již existuje</translation>
+    </message>
+    <message>
+        <source>%1: name error</source>
+        <translation>%1: Chybný název</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -6936,11 +7161,29 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <name>QUndoGroup</name>
     <message>
         <source>Redo</source>
-        <translation>Znovu</translation>
+        <translation type="obsolete">Znovu</translation>
     </message>
     <message>
         <source>Undo</source>
+        <translation type="obsolete">Zpět</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>Zpět %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>Zpět</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>Znovu %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
+        <translation>Znovu</translation>
     </message>
 </context>
 <context>
@@ -6954,11 +7197,29 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <name>QUndoStack</name>
     <message>
         <source>Redo</source>
-        <translation>Znovu</translation>
+        <translation type="obsolete">Znovu</translation>
     </message>
     <message>
         <source>Undo</source>
+        <translation type="obsolete">Zpět</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>Zpět %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
         <translation>Zpět</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>Znovu %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
+        <translation>Znovu</translation>
     </message>
 </context>
 <context>
@@ -7025,6 +7286,10 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <message>
         <source>Frame load interrupted by policy change</source>
         <translation>Nahrání rámce bylo přerušeno změnou směrnice</translation>
+    </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>O nahrávání se stará multimediální stroj</translation>
     </message>
     <message>
         <source>Frame load interruped by policy change</source>
@@ -7123,7 +7388,7 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     </message>
     <message>
         <source>Select all</source>
-        <translation>Vybrat vše</translation>
+        <translation type="obsolete">Vybrat vše</translation>
     </message>
     <message>
         <source>Select to the start of the line</source>
@@ -7319,6 +7584,11 @@ Zvolte, prosím, pro soubor jiný název.</translation>
         <translation>Nebyl vybrán žádný soubor</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>Podrobnosti</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>Otevřít v novém okně</translation>
@@ -7336,17 +7606,72 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <message>
         <source>Open Image</source>
         <comment>Open Image in New Window context menu item</comment>
-        <translation>Vyobrazení otevřít v novém okně</translation>
+        <translation>Obrázek otevřít v novém okně</translation>
     </message>
     <message>
         <source>Save Image</source>
         <comment>Download Image context menu item</comment>
-        <translation>Uložit vyobrazení</translation>
+        <translation>Uložit obrázek</translation>
     </message>
     <message>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
-        <translation>Kopírovat vyobrazení</translation>
+        <translation>Kopírovat obrázek</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>Kopírovat adresu obrázku</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>Otevřít video</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>Otevřít zvuk</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>Kopírovat video</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>Kopírovat umístění odkazu na zvuk</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>Přepnout ovládání</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>Přepnout smyčku</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>Vejít do režimu na celou obrazovku</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>Přehrát</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>Pozastavit</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>Ztlumit</translation>
     </message>
     <message>
         <source>Open Frame</source>
@@ -7387,6 +7712,11 @@ Zvolte, prosím, pro soubor jiný název.</translation>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>Vložit</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>Vybrat vše</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
@@ -7866,7 +8196,7 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     </message>
     <message>
         <source>Bad HTTP request</source>
-        <translation>Neplatný požadavek HTTP</translation>
+        <translation type="obsolete">Neplatný požadavek HTTP</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -8325,6 +8655,94 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     <message>
         <source>NDATA in parameter entity declaration.</source>
         <translation>Parametrické prohlášení entitynesmí obsahovat žádné NDATA.</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>Položky</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>Režim inspektora</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>Přehrát/Pozastavit animace</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Vybrat</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>Vybrat (Marquee)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>Přiblížit/Oddálit</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>Volič barvy</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>Použít změny na prohlížeč QML</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>Použít změny na dokument</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>Nástroje</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>0.5x</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>0.25x</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>0.125x</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>0.1x</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>Kopírovat barvu</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>Zvětšit na &amp;100%</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>Přiblížit</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>Oddálit</translation>
     </message>
 </context>
 <context>
@@ -9363,7 +9781,7 @@ Zvolte, prosím, pro soubor jiný název.</translation>
     </message>
     <message>
         <source>Derivation method of %1 must be extension because the base type %2 is a simple type.</source>
-        <translation>Rozšíření s musí používat jako způsob dědičnosti (odvození) pro %1, neboť základní typ %2 je jednoduchým typem.</translation>
+        <translation>Rozšíření musí používat jako způsob dědičnosti (odvození) pro %1, neboť základní typ %2 je jednoduchým typem.</translation>
     </message>
     <message>
         <source>Complex type %1 has duplicated element %2 in its content model.</source>
