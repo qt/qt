@@ -1968,7 +1968,7 @@ void tst_QTextEdit::setText()
 }
 
 QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value);
+extern Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 void tst_QTextEdit::fullWidthSelection_data()

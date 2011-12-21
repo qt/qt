@@ -53,7 +53,7 @@ Q_DECLARE_METATYPE(QScriptValueList)
 Q_DECLARE_METATYPE(QScriptContext::Error)
 
 QT_BEGIN_NAMESPACE
-extern bool qt_script_isJITEnabled();
+extern Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled();
 QT_END_NAMESPACE
 
 class tst_QScriptContext : public QObject
