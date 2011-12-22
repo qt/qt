@@ -1,4 +1,4 @@
-load(qttest_p4)
+QT = core testlib
 SOURCES  += tst_xunit.cpp
 
 mac:CONFIG -= app_bundle
