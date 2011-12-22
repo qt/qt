@@ -2,7 +2,7 @@
 # specified relative to the template directory and will be copied into
 # subdirectories of the output directory.
 
-HTML.templatedir = $QT_SOURCE_TREE/doc/src/template
+HTML.templatedir = $MODULE_SOURCE_TREE/doc/src/template
 
 HTML.stylesheets = style/offline.css
 
