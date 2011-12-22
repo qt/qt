@@ -1231,7 +1231,7 @@ void QPdfBaseEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
         setPen();
 }
 
-extern QPainterPath qt_regionToPath(const QRegion &region);
+extern Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region);
 
 void QPdfBaseEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
 {
