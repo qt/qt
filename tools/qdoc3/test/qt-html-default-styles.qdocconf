@@ -2,7 +2,7 @@
 # specified relative to the template directory and will be copied into
 # subdirectories of the output directory.
 
-HTML.templatedir = $QT_SOURCE_TREE/doc/src/template
+HTML.templatedir = $MODULE_SOURCE_TREE/doc/src/template
 
 HTML.stylesheets = style/offline.css
 
@@ -13,13 +13,22 @@ HTML.scripts     =
 # directory prefixes.
 
 extraimages.HTML        = qt-logo.png \
+                          arrow.png \
                           arrow_down.png \
+                          bgrContent.png \
                           breadcrumb.png \
+                          blu_dot.png \
+                          btn_next.png \
+                          btn_prev.png \
                           bullet_gt.png \
                           bullet_dn.png \
                           bullet_sq.png \
                           bullet_up.png \
+                          home.png \
                           horBar.png \
+                          ico_note.png \
+                          ico_note_attention.png \
+                          ico_out.png \
                           sprites-combined.png
 
 # Include the style sheets and scripts used.
