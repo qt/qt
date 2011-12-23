@@ -52,7 +52,7 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-extern int qt_defaultDpi();
+extern Q_GUI_EXPORT int qt_defaultDpi();
 QT_END_NAMESPACE
 
 class tst_qdeclarativevaluetypes : public QObject
