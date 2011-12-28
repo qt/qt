@@ -1,12 +1,13 @@
-load(qttest_p4)
-SOURCES  += ../tst_qtextstream.cpp
+CONFIG += testcase
 
 TARGET = ../tst_qtextstream
+QT = core network testlib
+SOURCES  += ../tst_qtextstream.cpp
 
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qtextstream
-} else {
+  } else {
     TARGET = ../../release/tst_qtextstream
   }
 }
@@ -14,8 +15,6 @@ win32 {
 RESOURCES += ../qtextstream.qrc
 
 contains(QT_CONFIG, qt3support):QT += qt3support
-QT = core network
-
 
 wince*|symbian: {
    addFiles.files = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp

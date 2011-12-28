@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
-SOURCES += ../tst_qapplication.cpp
 TARGET = ../tst_qapplication
+QT += testlib
+SOURCES += ../tst_qapplication.cpp
 
 wince* {
   additional.files = ../desktopsettingsaware/desktopsettingsaware.exe

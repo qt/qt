@@ -1,5 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qmovie
+QT += testlib
 SOURCES += tst_qmovie.cpp
+
 MOC_DIR=tmp
 
 !contains(QT_CONFIG, no-gif):DEFINES += QTEST_HAVE_GIF

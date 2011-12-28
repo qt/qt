@@ -1,9 +1,6 @@
-############################################################
-# Project file for autotest for file qdrag.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-
+TARGET = tst_qdrag
+QT += testlib
 SOURCES += tst_qdrag.cpp
-
 

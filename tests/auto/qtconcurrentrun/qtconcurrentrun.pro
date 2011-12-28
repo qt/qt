@@ -1,5 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qtconcurrentrun
+QT = core testlib
 SOURCES += tst_qtconcurrentrun.cpp
-QT = core
-CONFIG += parallel_test
 CONFIG += parallel_test

@@ -1,5 +1,7 @@
-load(qttest_p4)
-TARGET.EPOCHEAPSIZE = 0x200000 0x800000
+CONFIG += testcase
+
+TARGET = tst_qtableview
+QT += testlib
 SOURCES  += tst_qtableview.cpp
 
 CONFIG+=insignificant_test # QTQAINFRA-428

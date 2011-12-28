@@ -1,7 +1,5 @@
 CONFIG += testcase
+
 TARGET = tst_qwindowsurface
-
-QT += widgets widgets-private testlib
-QT += gui-private
-
+QT += testlib
 SOURCES += tst_qwindowsurface.cpp

@@ -1,7 +1,8 @@
-load(qttest_p4)
-SOURCES  += tst_qsql.cpp
+CONFIG += testcase
 
-QT += sql
+TARGET = tst_qsql
+QT += sql testlib
+SOURCES  += tst_qsql.cpp
 
 contains(QT_CONFIG, qt3support): QT += qt3support
 
