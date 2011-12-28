@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qnetworkaccessmanager_and_qprogressdialog
 SOURCES += tst_qnetworkaccessmanager_and_qprogressdialog.cpp
-QT += network
+QT += network testlib
 
 symbian: TARGET.CAPABILITY = NetworkServices
 

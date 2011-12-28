@@ -1,10 +1,9 @@
-############################################################
-# Project file for autotest for file qlayout.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-
+TARGET = tst_qlayout
+QT += testlib
 SOURCES += tst_qlayout.cpp
+
 contains(QT_CONFIG, qt3support): QT += qt3support
 wince*|symbian: {
    addFiles.files = baseline

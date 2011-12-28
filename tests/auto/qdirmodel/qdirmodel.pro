@@ -1,5 +1,8 @@
-load(qttest_p4)
-SOURCES         += tst_qdirmodel.cpp
+CONFIG += testcase
+
+TARGET = tst_qdirmodel
+QT += testlib
+SOURCES += tst_qdirmodel.cpp
 
 wince*|symbian {
 	addit.files = dirtest\\test1\\*

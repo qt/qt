@@ -1,4 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qgraphicslinearlayout
+QT += testlib
 SOURCES  += tst_qgraphicslinearlayout.cpp
+
 CONFIG += parallel_test
 

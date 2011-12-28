@@ -1,5 +1,8 @@
-CONFIG += qttest_p4
-#QT = core
+CONFIG += testcase
+
+TARGET = tst_qsystemlock
+QT += testlib
+SOURCES += tst_qsystemlock.cpp
 
 include(../src/src.pri)
 win32: CONFIG += console
@@ -15,8 +18,3 @@ DESTDIR = ./
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG
-
-SOURCES		+= tst_qsystemlock.cpp 
-TARGET		= tst_qsystemlock
-
-

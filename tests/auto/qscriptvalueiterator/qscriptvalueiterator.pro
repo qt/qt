@@ -1,5 +1,5 @@
-load(qttest_p4)
-QT = core script
+CONFIG += testcase
+
+TARGET = tst_qscriptvalueiterator
+QT = core script testlib
 SOURCES  += tst_qscriptvalueiterator.cpp
-
-

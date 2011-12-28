@@ -1,4 +1,5 @@
 CONFIG += testcase
+
 TARGET = tst_qwsembedwidget
-QT += widgets testlib
+QT += testlib
 SOURCES += tst_qwsembedwidget.cpp
