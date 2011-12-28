@@ -10,3 +10,5 @@ wince*: {
 	accessneeded.path = accessible
 	DEPLOYMENT += accessneeded
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

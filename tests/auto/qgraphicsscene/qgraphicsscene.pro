@@ -18,3 +18,5 @@ wince*:{
 }
 
 symbian:TARGET.EPOCHEAPSIZE="0x100000 0x1000000" # Min 1Mb, max 16Mb
+
+CONFIG+=insignificant_test # QTQAINFRA-428

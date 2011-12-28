@@ -9,3 +9,5 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
 include (../xmlpatterns.pri)
+
+CONFIG+=insignificant_test # QTQAINFRA-428

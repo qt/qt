@@ -34,4 +34,4 @@ QT = core network
 MOC_DIR=tmp
 
 
-
+mac*:CONFIG+=insignificant_test # QTQAINFRA-428

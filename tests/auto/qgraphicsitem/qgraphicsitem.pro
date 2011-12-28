@@ -4,4 +4,4 @@ DEFINES += QT_NO_CAST_TO_ASCII
 
 win32:!wince*: LIBS += -lUser32
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428

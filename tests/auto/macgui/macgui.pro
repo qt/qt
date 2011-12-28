@@ -9,3 +9,4 @@ HEADERS += guitest.h
 
 requires(mac)
 
+CONFIG+=insignificant_test # QTQAINFRA-428

@@ -9,3 +9,4 @@ macx:CONFIG -= app_bundle
 
 CONFIG += parallel_test
 
+CONFIG+=insignificant_test # QTQAINFRA-428

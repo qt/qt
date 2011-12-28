@@ -13,4 +13,4 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428

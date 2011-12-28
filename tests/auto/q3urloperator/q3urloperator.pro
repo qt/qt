@@ -7,4 +7,4 @@ requires(contains(QT_CONFIG,qt3support))
 QT += network
 
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428
