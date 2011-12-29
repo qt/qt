@@ -1,8 +1,8 @@
-load(qttest_p4)
-QT = core gui
+CONFIG += testcase
 
-SOURCES += \
-    tst_qrawfont.cpp
+TARGET = tst_qrawfont
+QT = core gui testlib
+SOURCES += tst_qrawfont.cpp
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 

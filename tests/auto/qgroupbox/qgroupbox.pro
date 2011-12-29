@@ -1,5 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qgroupbox
+QT += testlib
 SOURCES  += tst_qgroupbox.cpp
-
-
-

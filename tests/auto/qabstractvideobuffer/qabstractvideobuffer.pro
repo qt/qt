@@ -1,5 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qabstractvideobuffer
+QT += multimedia testlib
 SOURCES += tst_qabstractvideobuffer.cpp
 
-QT += multimedia
 requires(contains(QT_CONFIG, multimedia))
