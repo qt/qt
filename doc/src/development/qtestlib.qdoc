@@ -195,6 +195,8 @@
     outputs XML formatted results instead of plain text
     \o \c -lightxml \BR
     outputs results as a stream of XML tags
+    \o \c -xunitxml \BR
+    outputs results as an Xunit XML document
     \o \c -eventdelay \e ms \BR
     if no delay is specified for keyboard or mouse simulation
     (\l QTest::keyClick(),
