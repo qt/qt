@@ -1,6 +1,7 @@
-load(qttest_p4)
-SOURCES = main.cpp
+CONFIG += testcase
+
 TARGET = testSend
+QT += testlib
+SOURCES = main.cpp
 
 requires(embedded)
-

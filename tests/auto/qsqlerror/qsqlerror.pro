@@ -1,10 +1,7 @@
-############################################################
-# Project file for autotest for file qsqlerror.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-QT = core sql
-
+TARGET = tst_qsqlerror
+QT = core sql testlib
 SOURCES += tst_qsqlerror.cpp
 
 symbian {
