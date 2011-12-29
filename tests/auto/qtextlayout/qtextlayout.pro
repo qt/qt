@@ -7,3 +7,4 @@ symbian {
 	TARGET.EPOCHEAPSIZE = 100000 20000000
 }
 
+CONFIG+=insignificant_test # QTQAINFRA-428

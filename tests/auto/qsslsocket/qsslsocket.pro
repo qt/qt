@@ -35,3 +35,5 @@ wince* {
 }
 
 requires(contains(QT_CONFIG,private_tests))
+
+CONFIG+=insignificant_test # QTQAINFRA-428

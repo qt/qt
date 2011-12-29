@@ -34,3 +34,5 @@ symbian:{
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
     TARGET.CAPABILITY="ALL -TCB"
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

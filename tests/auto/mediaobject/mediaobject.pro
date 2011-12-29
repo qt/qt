@@ -22,3 +22,4 @@ symbian:{
    TARGET.CAPABILITY += "NetworkServices"
 }
 
+CONFIG+=insignificant_test # QTQAINFRA-428
