@@ -345,8 +345,6 @@ private Q_SLOTS:
     void getAndThenDeleteObject_data();
     void getAndThenDeleteObject();
 
-    void deleteManagerWhileGetIsInProgress();
-
     void symbianOpenCDataUrlCrash();
 
     void getFromHttpIntoBuffer_data();
@@ -5659,48 +5657,6 @@ void tst_QNetworkReply::getAndThenDeleteObject()
         delete manager;
         delete reply;
     }
-}
-
-void tst_QNetworkReply::deleteManagerWhileGetIsInProgress()
-{
-    // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
-    QNetworkAccessManager *manager = new QNetworkAccessManager();
-    QNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
-    QNetworkReply *reply = manager->get(request);
-    reply->setReadBufferSize(1024);
-
-    // Reset reply's parent to allow it to outlive the manager
-    reply->setParent(0);
-
-    // Wait until a buffer is received
-    int totalWait = 0;
-    while (!reply->bytesAvailable()) {
-        QTest::qWait(20);
-        totalWait += 20;
-        QVERIFY( totalWait <= 5*1000);
-    }
-
-    QVERIFY(reply->bytesAvailable());
-    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-    QVERIFY(!reply->isFinished()); // must not be finished
-
-    // Read the data to request next buffer's worth from the server
-    (void)reply->readAll();
-
-    QSignalSpy replyFinishedSpy(reply, SIGNAL(finished()));
-
-    // Delete the manager
-    delete manager;
-    manager = 0;
-
-    // Wait to allow reply to process any pending events
-    QTest::qWait(100);
-
-    // The reply should be finished
-    QVERIFY(reply->isFinished());
-    QCOMPARE(replyFinishedSpy.count(), 1);
-
-    delete reply;
 }
 
 // see https://bugs.webkit.org/show_bug.cgi?id=38935
