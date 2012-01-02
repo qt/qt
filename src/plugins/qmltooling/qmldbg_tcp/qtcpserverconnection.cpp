@@ -152,7 +152,7 @@ void QTcpServerConnection::listen()
     d->tcpServer = new QTcpServer(this);
     QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
     if (d->tcpServer->listen(QHostAddress::Any, d->port)) {
-        qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
+        qDebug("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
     } else {
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
     }
