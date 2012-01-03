@@ -6,6 +6,10 @@ contains(QT_CONFIG, webkit):QT += webkit
 CONFIG += qt \
     warn_on \
     help
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
 QT += network
 PROJECTNAME = Assistant
 DESTDIR = ../../../../bin

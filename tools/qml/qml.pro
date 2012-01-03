@@ -15,6 +15,11 @@ DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
+
 wince* {
     QT += xml
 

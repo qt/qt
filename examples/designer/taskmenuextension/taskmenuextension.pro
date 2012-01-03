@@ -18,6 +18,11 @@ SOURCES += tictactoe.cpp \
            tictactoetaskmenu.cpp
 #! [2]
 
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
+
 # install
 target.path = $$[QT_INSTALL_PLUGINS]/designer
 sources.files = $$SOURCES $$HEADERS *.pro

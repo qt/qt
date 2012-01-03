@@ -8,6 +8,10 @@ CONFIG += qt \
     help \
     console
 CONFIG -= app_bundle
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 SOURCES += ../shared/helpgenerator.cpp \

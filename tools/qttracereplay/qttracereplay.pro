@@ -13,3 +13,7 @@ target.path=$$[QT_INSTALL_BINS]
 INSTALLS += target
 
 CONFIG += console
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}

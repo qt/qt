@@ -21,11 +21,9 @@ win32-msvc*:{
 } 
  
 !isEmpty(QT_BUILD_TREE):DESTDIR = $$QT_BUILD_TREE/bin
-#CONFIG += debug
 build_all:!build_pass {
     CONFIG -= build_all
-    CONFIG += debug-and-release
-#    CONFIG += debug
+    CONFIG += release
 }
 
 CONFIG -= app_bundle

@@ -3,6 +3,10 @@ TARGET = xmlpatterns
 DESTDIR = ../../bin
 QT -= gui
 QT += xmlpatterns
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
 
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
