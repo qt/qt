@@ -1,9 +1,8 @@
-CONFIG += qttest_p4
+CONFIG += testcase
 
-QT = core gui
-
-SOURCES		+= tst_qfilesystemmodel.cpp
-TARGET		= tst_qfilesystemmodel
+TARGET = tst_qfilesystemmodel
+QT += testlib
+SOURCES += tst_qfilesystemmodel.cpp
 
 symbian: {
     HEADERS += ../../../include/qtgui/private/qfileinfogatherer_p.h

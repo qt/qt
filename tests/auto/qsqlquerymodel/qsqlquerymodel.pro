@@ -1,7 +1,8 @@
-load(qttest_p4)
-SOURCES  += tst_qsqlquerymodel.cpp
+CONFIG += testcase
 
-QT += sql
+TARGET = tst_qsqlquerymodel
+QT += sql testlib
+SOURCES  += tst_qsqlquerymodel.cpp
 
 wince*: {
    DEPLOYMENT_PLUGIN += qsqlite

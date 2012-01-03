@@ -1,9 +1,5 @@
-############################################################
-# Project file for autotest for file qscrollarea.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-
+TARGET = tst_qscrollarea
+QT += testlib
 SOURCES += tst_qscrollarea.cpp
-
-

@@ -1,4 +1,6 @@
-load(qttest_p4)
-SOURCES  += tst_qwineventnotifier.cpp
-QT = core
+CONFIG += testcase
+
+TARGET = tst_qwineventnotifier
+QT = core testlib
+SOURCES += tst_qwineventnotifier.cpp
 CONFIG += parallel_test

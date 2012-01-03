@@ -1,9 +1,5 @@
-############################################################
-# Project file for autotest for file qslider.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-
+TARGET = tst_qslider
+QT += testlib
 SOURCES += tst_qslider.cpp
-
-

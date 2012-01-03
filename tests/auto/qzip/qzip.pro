@@ -1,4 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qzip
+QT += testlib
 SOURCES += tst_qzip.cpp
 
 wince*|symbian: {

@@ -1,4 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qimage
+QT += testlib
 SOURCES  += tst_qimage.cpp
 
 wince*: {

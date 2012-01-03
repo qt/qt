@@ -1,2 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qabstractproxymodel
+QT += testlib
 SOURCES  += tst_qabstractproxymodel.cpp

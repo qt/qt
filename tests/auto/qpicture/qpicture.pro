@@ -1,5 +1,5 @@
-load(qttest_p4)
-SOURCES  += tst_qpicture.cpp
+CONFIG += testcase
 
-
-
+TARGET = tst_qpicture
+QT += testlib
+SOURCES += tst_qpicture.cpp

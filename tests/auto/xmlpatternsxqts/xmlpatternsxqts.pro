@@ -1,4 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_xmlpatternsxqts
+QT += xml testlib
 SOURCES += tst_xmlpatternsxqts.cpp ../qxmlquery/TestFundament.cpp tst_suitetest.cpp
 
 include(../xmlpatterns.pri)
@@ -15,9 +18,5 @@ INCLUDEPATH += $$(QTDIR)/include/QtXmlPatterns/private      \
                $$(QTSRCDIR)/tools/xmlpatterns               \
                $$(QTDIR)/tools/xmlpatterns                  \
                ../xmlpatternssdk/
-
-CONFIG += testlib
-QT += xml
-TARGET = tst_xmlpatternsxqts
 
 requires(contains(QT_CONFIG,private_tests))
