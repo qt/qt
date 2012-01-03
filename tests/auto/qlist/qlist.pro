@@ -1,5 +1,5 @@
-load(qttest_p4)
-SOURCES  += tst_qlist.cpp
+CONFIG += testcase
 
-
-
+TARGET = tst_qlist
+QT = core testlib
+SOURCES += tst_qlist.cpp

@@ -1,9 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qabstractitemmodel
+QT += testlib
+SOURCES += tst_qabstractitemmodel.cpp ../modeltest/dynamictreemodel.cpp ../modeltest/modeltest.cpp
 
 INCLUDEPATH += $$PWD/../modeltest
-
-SOURCES         += tst_qabstractitemmodel.cpp ../modeltest/dynamictreemodel.cpp ../modeltest/modeltest.cpp
-HEADERS         += ../modeltest/dynamictreemodel.h ../modeltest/modeltest.h
-
-
-
+HEADERS     += ../modeltest/dynamictreemodel.h ../modeltest/modeltest.h

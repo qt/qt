@@ -1,5 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qprogressbar
+QT += testlib
 SOURCES += tst_qprogressbar.cpp
-
-
-

@@ -1,10 +1,9 @@
-load(qttest_p4)
-
-SOURCES += tst_qsslcertificate.cpp
-!wince*:win32:LIBS += -lws2_32
-QT = core network
+CONFIG += testcase
 
 TARGET = tst_qsslcertificate
+QT = core network testlib
+SOURCES += tst_qsslcertificate.cpp
+!wince*:win32:LIBS += -lws2_32
 
 win32 {
   CONFIG(debug, debug|release) {

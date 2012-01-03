@@ -1,14 +1,14 @@
-load(qttest_p4)
-#QT = core
+CONFIG += testcase
+
+TARGET = tst_qsystemsemaphore
+QT += testlib
+SOURCES += tst_qsystemsemaphore.cpp
 
 include(../qsharedmemory/src/src.pri)
 win32: CONFIG += console
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG
-
-SOURCES		+= tst_qsystemsemaphore.cpp 
-TARGET		= tst_qsystemsemaphore
 
 RESOURCES += files.qrc
 

@@ -1,4 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_moc
+QT += sql network svg testlib
+SOURCES += tst_moc.cpp
 
 #exists(/usr/include/boost/spirit.hpp) {
 #    message("including boost headers in test")
@@ -18,14 +22,10 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            dir-in-include-path.h single_function_keyword.h task192552.h task189996.h \
            task234909.h task240368.h pure-virtual-signals.h
 if(*-g++*|*-icc*|*-clang|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
-SOURCES += tst_moc.cpp
 
-QT += sql network svg
 contains(QT_CONFIG, script): QT += script
 contains(QT_CONFIG, qt3support): QT += qt3support
-contains(QT_CONFIG, dbus){
+contains(QT_CONFIG, dbus) {
     DEFINES += WITH_DBUS
     QT += dbus
 }
-
-

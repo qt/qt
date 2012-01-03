@@ -1,19 +1,19 @@
-load(qttest_p4)
-QT -= gui
-SOURCES  += ../tst_qnetworkreply.cpp
+CONFIG += testcase
+
 TARGET = ../tst_qnetworkreply
+QT = core network testlib
+SOURCES  += ../tst_qnetworkreply.cpp
 
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qnetworkreply
-} else {
+  } else {
     TARGET = ../../release/tst_qnetworkreply
   }
 }
 
 !symbian:DEFINES += SRCDIR=\\\"$$PWD/..\\\"
 
-QT = core network
 RESOURCES += ../qnetworkreply.qrc
 
 symbian|wince*:{
