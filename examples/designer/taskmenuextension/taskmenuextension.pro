@@ -1,9 +1,9 @@
 #! [0]
-TEMPLATE = lib
+CONFIG  += designer plugin
 #! [0]
 TARGET   = $$qtLibraryTarget($$TARGET)
 #! [1]
-CONFIG  += designer plugin
+TEMPLATE = lib
 #! [1]
 QTDIR_build:DESTDIR  = $$QT_BUILD_TREE/plugins/designer
 
@@ -17,6 +17,11 @@ SOURCES += tictactoe.cpp \
            tictactoeplugin.cpp \
            tictactoetaskmenu.cpp
 #! [2]
+
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
 
 # install
 target.path = $$[QT_INSTALL_PLUGINS]/designer
