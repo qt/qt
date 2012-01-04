@@ -759,6 +759,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 out() << "<img src=\"" << protectEnc(fileName) << "\"";
                 if (!text.isEmpty())
                     out() << " alt=\"" << protectEnc(text) << "\"";
+                else
+                    out() << " alt=\"\"";
                 out() << " />";
                 helpProjectWriter->addExtraFile(fileName);
                 if ((relative->type() == Node::Fake) &&

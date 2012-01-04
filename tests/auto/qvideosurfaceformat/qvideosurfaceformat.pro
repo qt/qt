@@ -1,5 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qvideosurfaceformat
+QT += multimedia testlib
 SOURCES += tst_qvideosurfaceformat.cpp
 
-QT += multimedia
 requires(contains(QT_CONFIG, multimedia))

@@ -1,18 +1,18 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = ../tst_qsharedmemory
+QT = core testlib
+SOURCES += ../tst_qsharedmemory.cpp
 
 include(../src/src.pri)
-QT -= gui
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG
 
-SOURCES += ../tst_qsharedmemory.cpp
-TARGET = ../tst_qsharedmemory
-
 !wince*:win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qsharedmemory
-} else {
+  } else {
     TARGET = ../../release/tst_qsharedmemory
   }
 }

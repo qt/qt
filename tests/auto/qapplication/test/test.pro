@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
-SOURCES += ../tst_qapplication.cpp
 TARGET = ../tst_qapplication
+QT += testlib
+SOURCES += ../tst_qapplication.cpp
 
 wince* {
   additional.files = ../desktopsettingsaware/desktopsettingsaware.exe
@@ -24,9 +25,9 @@ symbian: {
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qapplication
-} else {
+  } else {
     TARGET = ../../release/tst_qapplication
   }
 }
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428

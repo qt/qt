@@ -1,7 +1,5 @@
-load(qttest_p4)
-
 SOURCES += tst_assert.cpp
-QT = core
+QT = core testlib
 
 mac:CONFIG -= app_bundle
 CONFIG -= debug_and_release_target

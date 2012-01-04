@@ -1,6 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
 
-SOURCES += ../tst_qcopchannel.cpp
 TARGET = ../tst_qcopchannel
-
-
+QT += testlib
+SOURCES += ../tst_qcopchannel.cpp

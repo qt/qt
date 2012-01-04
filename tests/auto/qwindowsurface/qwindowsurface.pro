@@ -1,5 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qwindowsurface
+QT += testlib
 SOURCES += tst_qwindowsurface.cpp
-
-
-

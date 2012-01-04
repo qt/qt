@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
+TARGET = tst_qhostinfo
+QT = core network testlib
 SOURCES  += tst_qhostinfo.cpp
-
-QT = core network
 
 wince*: {
   LIBS += ws2.lib
@@ -14,3 +14,5 @@ symbian: TARGET.CAPABILITY = NetworkServices
 symbian: {
   INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

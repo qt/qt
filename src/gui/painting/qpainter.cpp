@@ -2663,7 +2663,7 @@ QRegion QPainter::clipRegion() const
     return region;
 }
 
-extern QPainterPath qt_regionToPath(const QRegion &region);
+extern Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region);
 
 /*!
     Returns the currently clip as a path. Note that the clip path is

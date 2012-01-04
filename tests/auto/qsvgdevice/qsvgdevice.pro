@@ -1,6 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qsvgdevice
+QT += xml testlib
 SOURCES  += tst_qsvgdevice.cpp
-QT += xml
-
-
-

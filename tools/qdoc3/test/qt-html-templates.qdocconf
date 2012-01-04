@@ -43,13 +43,22 @@ HTML.footer = \
 # Files not referenced in any qdoc file.
 # See also extraimages.HTML
 qhp.Qt.extraFiles = index.html \
+                    images/arrow.png \
                     images/arrow_down.png \
+                    images/bgrContent.png \
+                    images/blu_dot.png \
+                    images/btn_next.png \
+                    images/btn_prev.png \
                     images/breadcrumb.png \
                     images/bullet_gt.png \
                     images/bullet_dn.png \
                     images/bullet_sq.png \
                     images/bullet_up.png \
+                    images/home.png \
                     images/horBar.png \
+                    images/ico_note.png \
+                    images/ico_note_attention.png \
+                    images/ico_out.png \
                     images/sprites-combined.png \
                     style/offline.css
 

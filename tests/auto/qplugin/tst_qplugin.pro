@@ -1,12 +1,13 @@
-load(qttest_p4)
+CONFIG += testcase
 
+TARGET = tst_qplugin
+QT = core testlib
 SOURCES = tst_qplugin.cpp
-QT = core
 
 wince*: {
-   plugins.files = plugins/*
-   plugins.path = plugins
-   DEPLOYMENT += plugins
+    plugins.files = plugins/*
+    plugins.path = plugins
+    DEPLOYMENT += plugins
 }
 
 symbian: {

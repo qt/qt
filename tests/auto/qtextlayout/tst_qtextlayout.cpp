@@ -174,7 +174,7 @@ void tst_QTextLayout::getSetCheck()
 }
 
 QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value);
+extern Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 tst_QTextLayout::tst_QTextLayout()
@@ -1109,7 +1109,7 @@ void tst_QTextLayout::tabsForRtl()
 }
 
 QT_BEGIN_NAMESPACE
-extern int qt_defaultDpiY();
+extern Q_GUI_EXPORT int qt_defaultDpiY();
 QT_END_NAMESPACE
 
 void tst_QTextLayout::testTabDPIScale()

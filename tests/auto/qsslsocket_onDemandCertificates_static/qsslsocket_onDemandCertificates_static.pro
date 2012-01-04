@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
 SOURCES += tst_qsslsocket_onDemandCertificates_static.cpp
 !wince*:win32:LIBS += -lws2_32
-QT += network
+QT += network testlib
 QT -= gui
 
 TARGET = tst_qsslsocket_onDemandCertificates_static
@@ -10,7 +10,7 @@ TARGET = tst_qsslsocket_onDemandCertificates_static
 win32 {
   CONFIG(debug, debug|release) {
     DESTDIR = debug
-} else {
+  } else {
     DESTDIR = release
   }
 }
@@ -26,3 +26,5 @@ wince* {
 }
 
 requires(contains(QT_CONFIG,private_tests))
+
+CONFIG+=insignificant_test # QTQAINFRA-428

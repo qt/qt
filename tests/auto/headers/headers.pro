@@ -1,3 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_headers
+QT = core testlib
 SOURCES  += tst_headers.cpp headersclean.cpp
-QT = core
+
+CONFIG+=insignificant_test # QTQAINFRA-428

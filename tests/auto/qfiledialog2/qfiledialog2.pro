@@ -1,9 +1,7 @@
-############################################################
-# Project file for autotest for file qfiledialog.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
-
+TARGET = tst_qfiledialog2
+QT += testlib
 SOURCES += tst_qfiledialog2.cpp
 
 wince*|symbian {

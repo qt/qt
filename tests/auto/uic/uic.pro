@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
-CONFIG += qtestlib
-SOURCES += tst_uic.cpp
 TARGET = tst_uic
+QT += testlib
+SOURCES += tst_uic.cpp
 
 # This test is not run on wince (I think)
 DEFINES += SRCDIR=\\\"$$PWD/\\\"

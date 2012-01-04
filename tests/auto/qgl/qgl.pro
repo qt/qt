@@ -1,14 +1,13 @@
-############################################################
-# Project file for autotest for file qgl.h
-############################################################
+CONFIG += testcase
 
-load(qttest_p4)
+TARGET = tst_qgl
+QT += opengl testlib
+SOURCES += tst_qgl.cpp
+
 requires(contains(QT_CONFIG,opengl))
-QT += opengl
-
 contains(QT_CONFIG,egl):DEFINES += QGL_EGL
 win32:!wince*: DEFINES += QT_NO_EGL
 
-SOURCES   += tst_qgl.cpp
 RESOURCES  = qgl.qrc
 
+CONFIG+=insignificant_test # QTQAINFRA-428

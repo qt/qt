@@ -1,4 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qxmlitem
+QT += testlib
 SOURCES += tst_qxmlitem.cpp
 
 include (../xmlpatterns.pri)

@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
+TARGET = tst_qaudioinput
+QT = core multimedia testlib
 SOURCES += tst_qaudioinput.cpp
-
-QT = core multimedia
 
 wince* {
     deploy.files += 4.wav
@@ -13,3 +13,4 @@ wince* {
     !symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
+CONFIG+=insignificant_test # QTQAINFRA-428

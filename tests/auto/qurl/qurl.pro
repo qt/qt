@@ -1,5 +1,6 @@
-load(qttest_p4)
-SOURCES  += tst_qurl.cpp
-QT = core
+CONFIG += testcase
+TARGET = tst_qurl
+QT = core testlib
+SOURCES = tst_qurl.cpp
 symbian: TARGET.CAPABILITY = NetworkServices
 CONFIG += parallel_test

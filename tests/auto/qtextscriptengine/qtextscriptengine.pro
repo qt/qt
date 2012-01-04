@@ -1,6 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = tst_qtextscriptengine
+QT += testlib
+SOURCES += tst_qtextscriptengine.cpp
 HEADERS += 
-SOURCES += tst_qtextscriptengine.cpp 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
-
+CONFIG+=insignificant_test # QTQAINFRA-428
