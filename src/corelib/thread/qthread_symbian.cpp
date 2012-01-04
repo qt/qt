@@ -46,10 +46,12 @@
 #include "qthreadstorage.h"
 #include "qthread_p.h"
 #include <private/qsystemerror_p.h>
+#include <private/qcore_symbian_p.h>
 
 #include <sched.h>
 #include <hal.h>
 #include <hal_data.h>
+#include <e32math.h>
 
 // You only find these enumerations on Symbian^3 onwards, so we need to provide our own
 // to remain compatible with older releases. They won't be called by pre-Sym^3 SDKs.
@@ -509,7 +511,21 @@ void QThread::start(Priority priority)
         // operations like file I/O fail, so we increase it by default.
         d->stackSize = 0x14000; // Maximum stack size on Symbian.
 
-    int code = d->data->symbian_thread_handle.Create(KNullDesC, (TThreadFunction) QThreadPrivate::start, d->stackSize, NULL, this);
+    int code = KErrAlreadyExists;
+    QString objName = objectName();
+    TPtrC objNamePtr(qt_QString2TPtrC(objName));
+    TName name;
+    objNamePtr.Set(objNamePtr.Left(qMin(objNamePtr.Length(), name.MaxLength() - 16)));
+    const int MaxRetries = 10;
+    for (int i=0; i<MaxRetries && code == KErrAlreadyExists; i++) {
+        // generate a thread name using a similar method to libpthread in Symbian
+        // a named thread can be opened from another process
+        name.Zero();
+        name.Append(objNamePtr);
+        name.AppendNumFixedWidth(int(this), EHex, 8);
+        name.AppendNumFixedWidth(Math::Random(), EHex, 8);
+        code = d->data->symbian_thread_handle.Create(name, (TThreadFunction) QThreadPrivate::start, d->stackSize, NULL, this);
+    }
     if (code == KErrNone) {
         d->thread_id = d->data->symbian_thread_handle.Id();
         TThreadPriority symPriority = calculateSymbianPriority(priority);
