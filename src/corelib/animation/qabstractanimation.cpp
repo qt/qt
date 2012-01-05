@@ -392,13 +392,16 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
 
 void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
 {
-    if (driver->isRunning()) {
-        qWarning("QUnifiedTimer: Cannot change animation driver while animations are running");
-        return;
-    }
+    if (driver) {
 
-    if (driver && driver != &defaultDriver)
-        delete driver;
+        if (driver->isRunning()) {
+            qWarning("QUnifiedTimer: Cannot change animation driver while animations are running");
+            return;
+        }
+
+        if (driver != &defaultDriver)
+            delete driver;
+    }
 
     driver = d;
 }
