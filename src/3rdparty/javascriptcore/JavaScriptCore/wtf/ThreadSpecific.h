@@ -256,7 +256,8 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 #endif
 #if PLATFORM(QT)
     // See comment as above
-    data->owner->m_key.setLocalData(data);
+    if (!data->owner->m_key.hasLocalData())
+        data->owner->m_key.setLocalData(data);
 #endif
 
     data->value->~T();
