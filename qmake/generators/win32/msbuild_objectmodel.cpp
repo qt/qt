@@ -902,10 +902,14 @@ static inline QString toString(inlineExpansionOption option)
 static inline QString toString(optimizeOption option)
 {
     switch (option) {
+    case optimizeDisabled:
+        return "Disabled";
     case optimizeMinSpace:
         return "MinSpace";
     case optimizeMaxSpeed:
         return "MaxSpeed";
+    case optimizeFull:
+        return "Full";
     }
     return QString();
 }
