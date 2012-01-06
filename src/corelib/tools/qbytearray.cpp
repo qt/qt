@@ -1369,12 +1369,17 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
-    Q_CHECK_PTR(d);
-    d->ref = 1;
-    d->alloc = d->size = size;
-    d->data = d->array;
-    d->array[size] = '\0';
+    if (size <= 0) {
+        d = &shared_empty;
+    } else {
+        d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
+        Q_CHECK_PTR(d);
+        d->ref = 0;
+        d->alloc = d->size = size;
+        d->data = d->array;
+        d->array[size] = '\0';
+    }
+    d->ref.ref();
 }
 
 /*!
