@@ -3343,14 +3343,8 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         else
             drawVGImage(d, r, vgpd->toVGImage(d->opacity), vgpd->size(), sr);
 
-        if(!vgpd->failedToAlloc)
+        if (vgpd->vgImage != VG_INVALID_HANDLE)
             return;
-
-        // try to reallocate next time if reasonable small pixmap
-        QSize screenSize = QApplication::desktop()->screenGeometry().size();
-        if (pm.size().width() <= screenSize.width()
-            && pm.size().height() <= screenSize.height())
-            vgpd->failedToAlloc = false;
 
         vgpd->source.beginDataAccess();
         drawImage(r, vgpd->source.imageRef(), sr, Qt::AutoColor);
@@ -3375,14 +3369,8 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         else
             drawVGImage(d, pos, vgpd->toVGImage(d->opacity));
 
-        if (!vgpd->failedToAlloc)
+        if (vgpd->vgImage != VG_INVALID_HANDLE)
             return;
-
-        // try to reallocate next time if reasonable small pixmap
-        QSize screenSize = QApplication::desktop()->screenGeometry().size();
-        if (pm.size().width() <= screenSize.width()
-            && pm.size().height() <= screenSize.height())
-            vgpd->failedToAlloc = false;
 
         vgpd->source.beginDataAccess();
         drawImage(pos, vgpd->source.imageRef());

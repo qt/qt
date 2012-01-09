@@ -246,10 +246,13 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                 if (backingStore.data()) {
                     backingStore.registerWidget(widget);
                 } else {
+                    S60->eglSurfaceCreationError = false;
                     backingStore.create(window);
                     backingStore.registerWidget(widget);
                     qt_widget_private(widget)->invalidateBuffer(widget->rect());
                     widget->repaint();
+                    if (S60->eglSurfaceCreationError)
+                        backingStore.unregisterWidget(widget);
                 }
             } else {
                 QApplicationPrivate *d = QApplicationPrivate::instance();
