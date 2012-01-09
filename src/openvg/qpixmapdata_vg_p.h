@@ -158,7 +158,6 @@ private:
     QVGPixmapData *nextLRU;
     QVGPixmapData *prevLRU;
     bool inLRU;
-    bool failedToAlloc;
     friend class QVGImagePool;
     friend class QVGPaintEngine;
 

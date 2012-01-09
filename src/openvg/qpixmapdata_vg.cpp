@@ -67,7 +67,6 @@ QVGPixmapData::QVGPixmapData(PixelType type)
     recreate = true;
     inImagePool = false;
     inLRU = false;
-    failedToAlloc = false;
 #if defined(Q_OS_SYMBIAN)
     nativeImageHandleProvider = 0;
     nativeImageHandle = 0;
@@ -344,7 +343,7 @@ QPaintEngine* QVGPixmapData::paintEngine() const
 
 VGImage QVGPixmapData::toVGImage()
 {
-    if (!isValid() || failedToAlloc)
+    if (!isValid())
         return VG_INVALID_HANDLE;
 
 #if !defined(QT_NO_EGL)
@@ -370,7 +369,6 @@ VGImage QVGPixmapData::toVGImage()
 
         // Bail out if we run out of GPU memory - try again next time.
         if (vgImage == VG_INVALID_HANDLE) {
-            failedToAlloc = true;
             return VG_INVALID_HANDLE;
         }
 

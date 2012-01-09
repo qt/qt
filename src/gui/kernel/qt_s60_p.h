@@ -168,6 +168,9 @@ public:
     int partialKeyboardOpen : 1;
     int handleStatusPaneResizeNotifications : 1;
     int screenFurnitureFullyCreated : 1;
+    int beginFullScreenCalled : 1;
+    int endFullScreenCalled : 1;
+    int eglSurfaceCreationError : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     QPointer<QWidget> splitViewLastWidget;
 
@@ -208,9 +211,7 @@ public:
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
     static TRect clientRect();
 
-#ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
-#endif
 
     int screenWidthInPixelsForScreen[qt_symbian_max_screens];
     int screenHeightInPixelsForScreen[qt_symbian_max_screens];
@@ -228,8 +229,6 @@ public:
     };
     ScreenRotation screenRotation;
 
-    int beginFullScreenCalled : 1;
-    int endFullScreenCalled : 1;
     int editorFlags;
 };
 
@@ -386,12 +385,10 @@ inline QS60Data::QS60Data()
   partialKeyboardOpen(0),
   handleStatusPaneResizeNotifications(1),
   screenFurnitureFullyCreated(0),
-  s60ApplicationFactory(0)
-#ifdef Q_OS_SYMBIAN
-  ,s60InstalledTrapHandler(0)
-#endif
-  ,beginFullScreenCalled(0),
+  beginFullScreenCalled(0),
   endFullScreenCalled(0),
+  s60ApplicationFactory(0),
+  s60InstalledTrapHandler(0),
   editorFlags(0)
 {
 }
