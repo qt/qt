@@ -1,9 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 
-QT = core
-
+TARGET = tst_qcontiguouscache
+QT = core testlib
 SOURCES  += tst_qcontiguouscache.cpp
-
-
 
 CONFIG += parallel_test
