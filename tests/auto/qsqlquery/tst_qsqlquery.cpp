@@ -219,11 +219,6 @@ private slots:
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
-#if 0
-    void benchmark_data() { generic_data(); }
-    void benchmark();
-#endif
-
     void sqlite_real_data() { generic_data("QSQLITE"); }
     void sqlite_real();
 
@@ -3282,36 +3277,6 @@ void tst_QSqlQuery::sqlite_constraint()
     QVERIFY(!q.exec("DELETE FROM "+qtest));
     QCOMPARE(q.lastError().databaseText(), QLatin1String("Raised Abort successfully"));
 }
-
-#if 0
-void tst_QSqlQuery::benchmark()
-{
-    QFETCH( QString, dbName );
-    QSqlDatabase db = QSqlDatabase::database( dbName );
-    CHECK_DATABASE( db );
-    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
-
-    QSqlQuery q(db);
-    const QString tableName(qTableName("benchmark", __FILE__));
-
-    tst_Databases::safeDropTable( db, tableName );
-
-    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
-                        "MainKey INT NOT NULL,\n"
-                        "OtherTextCol VARCHAR(45) NOT NULL,\n"
-                        "PRIMARY KEY(`MainKey`))"));
-
-    int i=1;
-
-    QBENCHMARK {
-        QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES("+QString::number(i)+", \"Value"+QString::number(i)+"\")"));
-        i++;
-    }
-
-    tst_Databases::safeDropTable( db, tableName );
-}
-#endif
 
 void tst_QSqlQuery::sqlite_real()
 {

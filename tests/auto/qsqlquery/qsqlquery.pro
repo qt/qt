@@ -1,7 +1,8 @@
-load(qttest_p4)
-SOURCES  += tst_qsqlquery.cpp
+CONFIG += testcase
 
-QT = core sql
+TARGET = tst_qsqlquery
+QT = core sql testlib
+SOURCES  += tst_qsqlquery.cpp
 
 
 !wince*:win32:LIBS += -lws2_32
