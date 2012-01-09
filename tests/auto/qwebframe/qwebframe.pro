@@ -11,3 +11,5 @@ contains(QT_CONFIG,webkit) {
 } else {
     SOURCES += dummy.cpp
 }
+
+CONFIG+=insignificant_test # QTQAINFRA-428

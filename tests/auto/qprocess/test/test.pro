@@ -122,3 +122,5 @@ symbian: {
 
    DEPLOYMENT += binDep
 }
+
+mac*:CONFIG+=insignificant_test # QTQAINFRA-428
