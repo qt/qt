@@ -2,7 +2,7 @@
 
 This file is part of _PACKAGE_NAME_
 
-Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 All rights reserved.
 
 You may use this file under the terms of the BSD license as follows:
