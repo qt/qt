@@ -515,7 +515,7 @@ static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
                                               || e->xselectionclear.selection == ATOM(CLIPBOARD))));
 }
 
-bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int timeout)
+bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int timeout, bool checkManager)
 {
     QElapsedTimer started;
     started.start();
@@ -544,6 +544,9 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
                 return true;
             }
 
+            if (checkManager && XGetSelectionOwner(X11->display, ATOM(CLIPBOARD_MANAGER)) == XNone)
+                return false;
+
             XSync(X11->display, false);
             usleep(50000);
 
@@ -570,6 +573,9 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
         do {
             if (XCheckTypedWindowEvent(X11->display,win,type,event))
                 return true;
+
+            if (checkManager && XGetSelectionOwner(X11->display, ATOM(CLIPBOARD_MANAGER)) == XNone)
+                return false;
 
             // process other clipboard events, since someone is probably requesting data from us
             XEvent e;
@@ -933,7 +939,7 @@ bool QClipboard::event(QEvent *e)
 
         XEvent event;
         // waiting until the clipboard manager fetches the content.
-        if (!X11->clipboardWaitForEvent(ownerId, SelectionNotify, &event, 10000)) {
+        if (!X11->clipboardWaitForEvent(ownerId, SelectionNotify, &event, 10000, true)) {
             qWarning("QClipboard: Unable to receive an event from the "
                      "clipboard manager in a reasonable time");
         }
