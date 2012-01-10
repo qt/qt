@@ -504,6 +504,8 @@
                                      \o Compilers
     \row    \o Ubuntu Linux 10.04 (32-bit)
                                      \o As provided by Ubuntu
+    \row    \o Ubuntu Linux 11.10 (64-bit)
+                                     \o As provided by Ubuntu
     \row    \o Microsoft Windows XP SP3 (32-bit)
                                      \o MSVC 2008
     \row    \o Microsoft Windows 7 (32-bit)
