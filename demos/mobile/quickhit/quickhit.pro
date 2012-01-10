@@ -1,6 +1,3 @@
-
-# Copyright (c) 2011 Nokia Corporation.
-
 QT       += core gui declarative opengl
 
 VERSION = 1.1.1

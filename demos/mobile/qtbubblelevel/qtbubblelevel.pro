@@ -1,5 +1,3 @@
-# Copyright (c) 2011 Nokia Corporation.
-
 QT       += core gui declarative
 CONFIG   += mobility
 MOBILITY += sensors

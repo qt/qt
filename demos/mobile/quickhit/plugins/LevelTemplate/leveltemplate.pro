@@ -1,6 +1,3 @@
-
-# Copyright (c) 2010 Nokia Corporation.
-
 TEMPLATE        = lib
 
 #VERSION         = 1.1.0

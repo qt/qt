@@ -1,6 +1,3 @@
-
-# Copyright (c) 2011 Nokia Corporation.
-
 TEMPLATE = app
 TARGET = qcamera
 
