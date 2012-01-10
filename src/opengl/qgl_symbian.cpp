@@ -192,7 +192,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext) // almost same as
                 d->glFormat.setSamples(4);
             } else {
                 d->glFormat.setSampleBuffers(0);
-                d->glFormat.setSamples(1);
+                d->glFormat.setSamples(0);
             }
         }
 
