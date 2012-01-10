@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -809,7 +809,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setText(tr("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
-            "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</p>")
+            "<p>Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
             resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
