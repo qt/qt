@@ -150,16 +150,15 @@ static void destroy_current_thread_data(void *p)
 static void create_current_thread_data_key()
 {
     pthread_key_create(&current_thread_data_key, destroy_current_thread_data);
-    static class destroy_current_thread_data_key
-    {
-    public:
-        ~destroy_current_thread_data_key()
-        {
-            pthread_key_delete(current_thread_data_key);
-        }
-    } d;
-    Q_UNUSED(d);
 }
+
+static void destroy_current_thread_data_key()
+{
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_key_delete(current_thread_data_key);
+}
+Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
+
 
 // Utility functions for getting, setting and clearing thread specific data.
 // In Symbian, TLS access is significantly faster than pthread_getspecific.
