@@ -95,8 +95,8 @@
         <translation>Izberite mapo</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Različica %2&lt;br/&gt;&lt;br/&gt;Avtorske pravice © 2011 Nokia Corporation in/ali njene podružnice.&lt;br/&gt;&lt;br/&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Različica %2&lt;br/&gt;&lt;br/&gt;Avtorske pravice © 2012 Nokia Corporation in/ali njene podružnice.&lt;br/&gt;&lt;br/&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;</translation>
     </message>
     <message>
         <source>Qt Configuration</source>

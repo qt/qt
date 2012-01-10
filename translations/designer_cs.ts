@@ -3267,12 +3267,8 @@ Chcete tuto předlohu přepsat?</translation>
         <translation>&lt;br/&gt;Qt Designer je obrazový návrhář uživatelského rozhraní pro programy Qt.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Autorské právo (C) 2009 Nokia Corporation a/nebo její dceřinná společnost(i).</translation>
-    </message>
-    <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation type="obsolete">%1&lt;br/&gt;Autorské právo (C) 2009 Nokia Corporation a/nebo její dceřinná společnost(i).</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;Autorské právo (C) 2012 Nokia Corporation a/nebo její dceřinná společnost(i).</translation>
     </message>
 </context>
 <context>

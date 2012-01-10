@@ -122,8 +122,8 @@
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</translation>
     </message>
     <message>
         <location line="+3"/>
