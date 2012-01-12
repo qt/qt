@@ -179,6 +179,8 @@ void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
 
 QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
 {
+    if (hasCustomPaperSize)
+        return QPrinter::Custom;
     PMRect paper;
     PMGetUnadjustedPaperRect(format, &paper);
     int wMM = int((paper.right - paper.left) / 72 * 25.4 + 0.5);
@@ -854,11 +856,11 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PaperRect: {
         QRect r;
         PMRect macrect;
+        qreal hRatio = d->resolution.hRes / 72;
+        qreal vRatio = d->resolution.vRes / 72;
         if (d->hasCustomPaperSize) {
-            r = QRect(0, 0, qRound(d->customSize.width()), qRound(d->customSize.height()));
+            r = QRect(0, 0, qRound(d->customSize.width() * hRatio), qRound(d->customSize.height() * vRatio));
         } else if (PMGetAdjustedPaperRect(d->format, &macrect) == noErr) {
-            qreal hRatio = d->resolution.hRes / 72;
-            qreal vRatio = d->resolution.vRes / 72;
             r.setCoords(int(macrect.left * hRatio), int(macrect.top * vRatio),
                         int(macrect.right * hRatio), int(macrect.bottom * vRatio));
             r.translate(-r.x(), -r.y());
