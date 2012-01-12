@@ -153,7 +153,7 @@ void tst_uic3::convert()
     }
 
     QCOMPARE(QString(bFile.readAll()), QString(gFile.readAll()));
-    QCOMPARE(QString(eFile.readAll()), QString::fromLocal8Bit(errorOutput).remove(QLatin1Char('\r')));
+    QCOMPARE(QString(eFile.readAll()), QString(QString::fromLocal8Bit(errorOutput).remove(QLatin1Char('\r'))).remove("QPixmap: Cannot create a QPixmap when no GUI is being used\n"));
 }
 
 void tst_uic3::convert_data() const
