@@ -61,7 +61,7 @@
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qvector.h"
-#include "QtNetwork/qauthenticator.h"
+#include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
 #include "QtNetwork/qhttpmultipart.h"
@@ -1093,14 +1093,8 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
                                                                QAuthenticator *authenticator)
 {
     Q_Q(QNetworkAccessManager);
-    // ### FIXME Tracking of successful authentications
-    // This code is a bit broken right now for SOCKS authentication
-    // first request: proxyAuthenticationRequired gets emitted, credentials gets saved
-    // second request: (proxy != backend->reply->lastProxyAuthentication) does not evaluate to true,
-    //      proxyAuthenticationRequired gets emitted again
-    // possible solution: some tracking inside the authenticator
-    //      or a new function proxyAuthenticationSucceeded(true|false)
-    if (proxy != backend->reply->lastProxyAuthentication) {
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
+    if (proxy != backend->reply->lastProxyAuthentication && (!priv || !priv->hasFailed)) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);

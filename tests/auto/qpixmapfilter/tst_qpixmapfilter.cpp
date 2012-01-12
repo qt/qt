@@ -425,7 +425,7 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
 }
 
 QT_BEGIN_NAMESPACE
-void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
+Q_GUI_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
 QT_END_NAMESPACE
 
 void tst_QPixmapFilter::blurIndexed8()

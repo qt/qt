@@ -648,7 +648,7 @@ void tst_QGL::getSetCheck()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern QGLFormat::OpenGLVersionFlags qOpenGLVersionFlagsFromString(const QString &versionString);
+extern Q_AUTOTEST_EXPORT QGLFormat::OpenGLVersionFlags qOpenGLVersionFlagsFromString(const QString &versionString);
 QT_END_NAMESPACE
 #endif
 

@@ -654,7 +654,7 @@ QPolygonF QMatrix::map(const QPolygonF &a) const
     \sa QMatrix::map()
 */
 
-extern QPainterPath qt_regionToPath(const QRegion &region);
+extern Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region);
 
 /*!
     \fn QRegion QMatrix::map(const QRegion &region) const

@@ -10,8 +10,11 @@ requires(contains(QT_CONFIG,private_tests))
 wince*|symbian: {
    addFiles.files = testdata
    addFiles.path = .
+   DEPLOYMENT += addFiles
+}
+wince* {
    timesFont.files = c:/windows/fonts/times.ttf
    timesFont.path = .
-   DEPLOYMENT += addFiles timesFont
+   DEPLOYMENT += timesFont
 }
 

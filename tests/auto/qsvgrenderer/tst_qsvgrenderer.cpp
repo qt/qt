@@ -666,7 +666,7 @@ void tst_QSvgRenderer::testGzLoading()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-QByteArray qt_inflateGZipDataFrom(QIODevice *device);
+Q_AUTOTEST_EXPORT QByteArray qt_inflateGZipDataFrom(QIODevice *device);
 QT_END_NAMESPACE
 #endif
 
