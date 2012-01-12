@@ -622,7 +622,7 @@
             \i \bold{Editing Properties}
 
         The property editor uses standard Qt input widgets to manage the
-        properties of jbects on the form. Textual properties are shown in line
+        properties of objects on the form. Textual properties are shown in line
         edits, integer properties are displayed in spinboxes, boolean
         properties are displayed in check boxes, and compound properties such
         as colors and sizes are presented in drop-down lists of input widgets.
