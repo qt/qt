@@ -450,8 +450,8 @@ void QNetworkSessionPrivateImpl::open()
         isOpen = false;
         isOpening = false;
         iError = QNetworkSession::UnknownSessionError;
-        emit QNetworkSessionPrivate::error(iError);
         closeHandles();
+        emit QNetworkSessionPrivate::error(iError);
         syncStateWithInterface();    
     }
 }
@@ -723,8 +723,8 @@ void QNetworkSessionPrivateImpl::Error(TInt aError)
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::RoamingError;
-        emit QNetworkSessionPrivate::error(iError);
         closeHandles();
+        emit QNetworkSessionPrivate::error(iError);
         QT_TRY {
             syncStateWithInterface();
             // In some cases IAP is still in Connected state when
@@ -1076,8 +1076,8 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
                 isOpen = false;
                 isOpening = false;
                 iError = QNetworkSession::UnknownSessionError;
-                QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
                 closeHandles();
+                QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
                 if (!newActiveConfig.isValid()) {
                     // No valid configuration, bail out.
                     // Status updates from QNCM won't be received correctly
@@ -1125,8 +1125,8 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
-            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             closeHandles();
+            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
         case KErrCancel: // Connection attempt cancelled
@@ -1144,8 +1144,8 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
             } else {
                 iError = QNetworkSession::UnknownSessionError;
             }
-            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             closeHandles();
+            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
     }
@@ -1226,8 +1226,8 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::SessionAbortedError;
-        emit QNetworkSessionPrivate::error(iError);
         closeHandles();
+        emit QNetworkSessionPrivate::error(iError);
         // Start handling IAP state change signals from QNetworkConfigurationManagerPrivate
         iHandleStateNotificationsFromManager = true;
         emitSessionClosed = true; // Emit SessionClosed after state change has been reported
