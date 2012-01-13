@@ -164,6 +164,10 @@ QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
+#ifdef Q_OS_SYMBIAN
+bool QApplicationPrivate::inputContextBeingCreated = false;
+#endif
+
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -5508,7 +5512,11 @@ QInputContext *QApplication::inputContext() const
         if (keys.contains(QLatin1String("hbim"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
         } else if (keys.contains(QLatin1String("coefep"))) {
-            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+            if (!that->d_func()->inputContextBeingCreated) {
+                that->d_func()->inputContextBeingCreated = true;
+                that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+                that->d_func()->inputContextBeingCreated = false;
+            }
         } else {
             for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
                 that->d_func()->inputContext = QInputContextFactory::create(keys[c], that);

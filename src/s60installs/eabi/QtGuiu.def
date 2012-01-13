@@ -12810,4 +12810,5 @@ EXPORTS
 	_ZN28QSymbianGraphicsSystemHelper27setReceiveNativePaintEventsEP7QWidgetb @ 12809 NONAME
 	_ZNK16QTreeViewPrivate18calcLogicalIndicesEP7QVectorIiEPS0_IN22QStyleOptionViewItemV416ViewItemPositionEE @ 12810 NONAME
 	_ZNK16QTreeViewPrivate25adjustViewOptionsForIndexEP22QStyleOptionViewItemV4RK11QModelIndex @ 12811 NONAME
+	_ZN19QApplicationPrivate24inputContextBeingCreatedE @ 12812 NONAME DATA 1
 
