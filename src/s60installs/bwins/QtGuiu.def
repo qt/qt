@@ -13997,4 +13997,5 @@ EXPORTS
 	?setReceiveNativePaintEvents@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13996 NONAME ; void QSymbianGraphicsSystemHelper::setReceiveNativePaintEvents(class QWidget *, bool)
 	?setNativePaintMode@QSymbianGraphicsSystemHelper@@SAXPAVCCoeControl@@W4NativePaintMode@1@@Z @ 13997 NONAME ; void QSymbianGraphicsSystemHelper::setNativePaintMode(class CCoeControl *, enum QSymbianGraphicsSystemHelper::NativePaintMode)
 	?setIgnoreFocusChanged@QSymbianGraphicsSystemHelper@@SAXPAVQWidget@@_N@Z @ 13998 NONAME ; void QSymbianGraphicsSystemHelper::setIgnoreFocusChanged(class QWidget *, bool)
+	?inputContextBeingCreated@QApplicationPrivate@@2_NA @ 13999 NONAME ; bool QApplicationPrivate::inputContextBeingCreated
 

@@ -419,7 +419,9 @@ public:
     }
 #endif
     static QInputContext *inputContext;
-
+#ifdef Q_OS_SYMBIAN
+    static bool inputContextBeingCreated;
+#endif
     static Qt::MouseButtons mouse_buttons;
     static Qt::KeyboardModifiers modifier_buttons;
 
