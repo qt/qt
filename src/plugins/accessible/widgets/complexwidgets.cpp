@@ -1545,6 +1545,28 @@ QAccessible::Role QAccessibleTabBar::role(int child) const
 }
 
 /*! \reimp */
+int QAccessibleTabBar::navigate(RelationFlag relation, int entry, QAccessibleInterface** target) const
+{
+    //QAccessibleWidgetEx::navigate might think that this is not a complex widget
+    //if close buttons are enabled, so this functions handles those cases in which
+    //the value to return is different if it's a complex widget and if it's not.
+    if (!target)
+        return -1;
+
+    *target = 0;
+
+    switch (relation) {
+    case Child:
+        if ((entry >= 0) && (entry <= childCount()))
+            return entry;
+        return -1;
+    default:
+        return QAccessibleWidgetEx::navigate(relation, entry, target);
+    }
+}
+
+
+/*! \reimp */
 QAccessible::State QAccessibleTabBar::state(int child) const
 {
     State st = QAccessibleWidgetEx::state(0);
@@ -1574,10 +1596,47 @@ QAccessible::State QAccessibleTabBar::state(int child) const
     else
         st |= Selectable;
 
-    if (!tb->currentIndex() == child - 1)
+    if (tb->currentIndex() == child - 1)
         st |= Selected;
 
     return st;
+}
+
+/*! \reimp */
+QString QAccessibleTabBar::actionText(int action, Text t, int child) const
+{
+    if (!child)
+        return QString();
+
+    switch (t) {
+    case QAccessible::Name:
+        if ((action == 1) && (child <= tabBar()->count())) {
+            return tabBar()->tabsClosable() ? QTabBar::tr("Close") : QString();
+        } else if (action == 0) {
+            if (child <= tabBar()->count())
+                return QTabBar::tr("Activate");
+            else //it's an scroll button
+                return QTabBar::tr("Press");
+        }
+        break;
+    case QAccessible::Description:
+        if ((action == 1) && (child <= tabBar()->count())) {
+            return tabBar()->tabsClosable() ? QTabBar::tr("Close the tab") : QString();
+        } else if (action == 0) {
+            if (child <= tabBar()->count())
+                return QTabBar::tr("Activate the tab");
+        }
+        break;
+    }
+    return QString();
+}
+
+/*! \reimp */
+int QAccessibleTabBar::userActionCount(int child) const
+{
+    if (!child || (child > tabBar()->count()))
+        return 0;
+    return tabBar()->tabsClosable() ? 1 : 0;
 }
 
 /*! \reimp */
@@ -1585,6 +1644,10 @@ bool QAccessibleTabBar::doAction(int action, int child, const QVariantList &)
 {
     if (!child)
         return false;
+
+    if ((action == 1) && (child <= tabBar()->count()) && tabBar()->tabsClosable()) {
+        emit tabBar()->tabCloseRequested(child - 1);
+    }
 
     if (action != QAccessible::DefaultAction && action != QAccessible::Press)
         return false;
