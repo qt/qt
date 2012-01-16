@@ -119,6 +119,10 @@ void QPlatformSoftwareCursor::setCursor(const uchar *data, const uchar *mask, in
 
 void QPlatformSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
 {
+#ifdef QT_NO_CURSOR
+    Q_UNUSED(widgetCursor);
+    Q_UNUSED(widget);
+#else
     Q_UNUSED(widget);
     Qt::CursorShape shape = widgetCursor->shape();
 
@@ -134,6 +138,7 @@ void QPlatformSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget * wid
     QPoint screenOffset = screen->geometry().topLeft(); // global to local translation
     if (onScreen || screen->geometry().intersects(currentRect.translated(screenOffset)))
         setDirty();
+#endif
 }
 
 QFbScreen::QFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)

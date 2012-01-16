@@ -827,7 +827,9 @@ QLinuxFbScreen::QLinuxFbScreen(uchar * d, int w,
                               mFormat);
     mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
                               bytesPerLine, mFormat);
+#ifndef QT_NO_CURSOR
     cursor = new QPlatformSoftwareCursor(this);
+#endif
 }
 
 void QLinuxFbScreen::setGeometry(QRect rect)
