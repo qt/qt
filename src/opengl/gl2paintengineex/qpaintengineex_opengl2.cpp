@@ -1455,7 +1455,8 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
         if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+            if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                || d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
                 || (s->composition_mode != QPainter::CompositionMode_Source
                 && s->composition_mode != QPainter::CompositionMode_SourceOver))
             {
@@ -1518,7 +1519,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
+        if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+            || d->device->alphaRequested() || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {
@@ -2139,7 +2141,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
     bool success = qt_resolve_version_2_0_functions(d->ctx)
-                   && qt_resolve_buffer_extensions(d->ctx);
+                   && qt_resolve_buffer_extensions(d->ctx)
+                   && (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                       || qt_resolve_framebufferobject_extensions(d->ctx));
     Q_ASSERT(success);
     Q_UNUSED(success);
 #endif

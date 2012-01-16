@@ -111,7 +111,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     // create in QImageTextureGlyphCache baseclass is meant to be called
     // only to create the initial image and does not preserve the content,
     // so we don't call when this function is called from resize.
-    if (ctx->d_ptr->workaround_brokenFBOReadBack && image().isNull())
+    if ((!QGLFramebufferObject::hasOpenGLFramebufferObjects() || ctx->d_ptr->workaround_brokenFBOReadBack) && image().isNull())
         QImageTextureGlyphCache::createTextureData(width, height);
 
     // Make the lower glyph texture size 16 x 16.
@@ -166,7 +166,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     GLuint oldTexture = glyphTexture->m_texture;
     createTextureData(width, height);
 
-    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects() || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
@@ -286,7 +286,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
     }
 
     QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
-    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects() || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
 
         glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
