@@ -72,7 +72,9 @@ HintLineEdit::HintLineEdit(QWidget *parent) :
 IconButton::IconButton(QWidget *parent)
     : QToolButton(parent)
 {
+#ifndef QT_NO_CURSOR
     setCursor(Qt::ArrowCursor);
+#endif
 }
 
 void IconButton::paintEvent(QPaintEvent *)
