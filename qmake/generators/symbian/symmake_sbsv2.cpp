@@ -687,13 +687,24 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << endl;
 
     // Write deployment rules
-    QString remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
+    QString remoteTestPath = qt_epocRoot()
+        + QLatin1String("epoc32/release/winscw/udeb/z/private/") + privateDirUid;
     DeploymentList depList;
 
     //write emulator deployment
+    // There are deployment targets for both uded and urel emulators.
     t << "#if defined(WINSCW)" << endl;
     initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
-        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
+        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QLatin1String(BUILD_DEBUG),
+        generatedDirs, generatedFiles);
+    writeSbsDeploymentList(depList, t);
+
+    depList.clear();
+    remoteTestPath = qt_epocRoot()
+        + QLatin1String("epoc32/release/winscw/urel/z/private/") + privateDirUid;
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
+        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QLatin1String(BUILD_RELEASE),
+        generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
 
