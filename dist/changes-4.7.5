@@ -1,0 +1,257 @@
+Qt 4.7.5 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 4.7.0.  For more details,
+refer to the online documentation included in this distribution. The
+documentation is also available online:
+
+  http://qt.nokia.com/doc/4.7
+
+The Qt version 4.7 series is binary compatible with the 4.6.x series.
+Applications compiled for 4.6 will continue to run with 4.7.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker or the Merge Request queue
+of the public source repository.
+
+Qt Bug Tracker: http://bugreports.qt.nokia.com
+Merge Request:  http://qt.gitorious.org
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+Documentation
+-------------
+Various Qt documentation improvements and fixes (QTBUG-21067, QTBUG-17025, 
+ QTBUG-11489, QTBUG-20069, QTBUG-3563, QTBUG-20089, QTBUG-13983, QTBUG-11820, 
+ QTBUG-14732, QTBUG-14521, QTBUG-9675, QTBUG-18313, QTBUG-18313, QTBUG-11312,
+ QTBUG-17739, QTBUG-7678, QTBUG-14759, QTBUG-14756, QTBUG-14677, QTBUG-16164,
+ QTBUG-20721, QTBUG-15562, QTBUG-17029, QTBUG-18544, QTBUG-8673, QTBUG-18101,
+ QTBUG-14194, QTBUG-9109, QTBUG-8331, QTBUG-8329, QTBUG-8786, QTBUG-8787,
+ QTBUG-21295, QTBUG-14554, QTBUG-19367, QTBUG-8323,QTBUG-9466, QTBUG-7924,
+ QTBUG-20355, QTBUG-21073, QTBUG-8625, QTBUG-1231, QTBUG-19808, QTBUG-8939,
+ QTBUG-20399, QTBUG-20944, QTBUG-12096, QTBUG-12389, QTBUG-6151, QTBUG-16667,
+ QTBUG-7542, QTBUG-22095, QTBUG-11278, QTBUG-15653, QTBUG-13362, QTBUG-15738,
+ QTBUG-15921, QTBUG-18356, QTBUG-18417, QTBUG-18664, QTBUG-21562, 
+ QTBUG-22094, QTBUG-18741, QTBUG-20197, QTBUG-19919 and QTBUG-20398)
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtGui
+-----
+ - [QTBUG-18997] QPrinter: pdf printing of Format_Mono images is extremely slow
+ - [QTBUG-15504] QFileDialog for saving can get two file names when filters change
+ - [QTBUG-14204] cursor is not getting position correctly when U+200D comes in syllable
+ - [QTBUG-13620] open type init feature applied on character U+09c7 even thought it is in the middle of word
+ - [QTBUG-13616] Invalid Rendering of Bengali Yaphala and Kannada kaphala when occur with reph
+ - [QTBUG-13542] oriya script open type features are not applied properly, 
+     result in incorrect rendering of below based forms not rendering correctly
+ - [QTBUG-13491] The up arrow of a tool button is not correct stylable
+ - [QTBUG-13090] QTextOption SuppressColors tag breaks subscript and superscript in rich text
+ - [QTBUG-12384] QDateTimeEdit unexpected/undocumented behaviour
+ - [QTBUG-10850] Auto expand of QTreeWidget does not work correctly if animated mode is on
+ - [QTBUG-10491] QComboBox does not respect modelColumn() when using a multi column itemview as popup
+ - [QTBUG-9684] Error painting QLabel
+ - [QTBUG-8589] guiapplauncher autotest does not build
+ - [QTBUG-6986] Child widget of QGraphicsProxyWidget does not get the GraphicsSceneMouseMove event
+ - [QTBUG-15323] tests/auto/tst_qwidget.cpp build failure
+ - [QTBUG-18233] QAccessibleTextEdit::characterRect uses y coordinate to calculate width
+ - [QTBUG-17873] Instantiating a QPixmap in a server application causes a crash
+ - [QTBUG-16788] QPainterPath::pointAtPercent(t) returns wrong values when the path is empty
+ - [QTBUG-16530] Error in handling hue value in HSL color model
+ - [QTBUG-16435] missing image graphic from WebKit is not visible when rendering to pdf
+ - [QTBUG-16127] QCommonStyle::drawControl() does not call subElementRect() on the proxy() when drawing the CE_ItemViewItem case
+ - [QTBUG-13015] Setting a stylesheet on a QGroupBox causes the focus rect of the title not being painted
+ - [QTBUG-12709] QLineEdit no longer does partial updates (performance regression)
+ - [QTBUG-11438] QListView::setRowHidden() is very slow when hiding large numbers of items
+ - [QTBUG-5773] QAbstractItemView::sizeHintForRow/sizeHintForColumn
+ - [QTBUG-2748] QMenu size is not shown properly on dual monitor and one with lower resolution.
+ - [QTBUG-2559] QComboBox: setSizeAdjustPolicy(QComboBox::AdjustToContents) is ignored in layout. Buggy behavior.
+ - [QTBUG-17785] ODF manifest.xml file does not conform to OASIS standard
+ - [QTBUG-9530] Changing the suffix of a QDoubleSpinBox doesn't invalidate the sizeHint()
+ - [QTBUG-5331] Raster engine artifacts
+ - [QTBUG-19110] improvement CPU usage at QProgressBar call setStyleSheet("") method
+ - [QTBUG-10501] QProgressBar Timer event spam from QWindowsStyle
+ - [QTBUG-22168] Crash bug (vulnerability) in bundled libpng 1.5.4
+ - [QTBUG-21429] TextInput does not emit selectedTextChanged() when selection is dismissed by InputMethodEvent
+ - [QTBUG-13298] qpngphandler.cpp:qt_setup fails to call png_set_interlace_handling
+ - [QTBUG-21222] memory leak in QPainter::drawText()
+ 
+ QtNetwork
+---------
+ - [QTBUG-18876] QNetworkCookie::parseCookies() do not parse values containing whitespaces
+ - [QTBUG-16123] Full read buffer triggers infinite busy loop in QAbstractSocket
+ - [QTBUG-13564] Qt clobbers the cache-control headers set by WebCore 
+     when CacheLoadControlAttribute == QNetworkRequest::AlwaysNetwork
+ - [QTBUG-9619] Do not cache network connections per username
+ - [QTBUG-20165] Typo in QSslConfiguration::operator==
+ - [QTBUG-18204] QLocalSocket isValid method returns false even if state is ConnectedState
+ - [QTBUG-7912] problem QSslCertifcate subject/issuerInfo utf8 strings
+ - [QTBUG-15566] Setting only a password (no username) for HTTP requests does not result in the password being sent
+ - [QTBUG-19894] QAuthenticator::setUser(...) incorrectly parses user name in form user@domain (NTLM Authentication)
+
+QtCore
+------
+ - [QTBUG-18257] QVariant creates corrupt QObject* in unit tests
+ - [QTBUG-16005] QPointer not thread safe, crash possible in removeGuard()
+ - [QTBUG-18290] QDateTime::toString loses GMT offset for Qt::OffsetFromUTC QDateTime
+ - [QTBUG-18149] QFuture does not throw exceptions if called from destructors during stack unwinding
+ - [QTBUG-16262] Wait period computation in QSemaphore::tryAcquire fails when thread gets preempted
+ - [QTBUG-15255] deconstructor of QFileSystemWatcher hangs if run after deconstruction of Q(Core)Application
+ - [QTBUG-12920] qint8 (signed char on my platform) is not declared as Qt Metatype
+ - [QTBUG-11217] QLibrary::isLibrary(libPath) returns true on a .bundle, but QLibrary::load() 
+     requires the path of the executable inside the bundle to succeed.
+ - [QTBUG-7610] Infinite recursion in QFSFileEnginePrivate::canonicalized if current directory is a symbolic link
+ - [QTBUG-7127] QtConcurrent::run() doesn't handle QtConcurrent::Exception(s)
+ - [QTBUG-16673] qRound do double to float conversions
+ - [QTBUG-17278] Typo in zlib.h patch
+ - [QTBUG-18555] ActiveQt: failed to retrieve custom object from control
+
+QtScript
+--------
+ - [QTBUG-14842] qScriptValueFromValue(QScriptEngine*, QVariant) crashes when engine is null
+ - [QTBUG-10315] QVariant conversion to QScriptValue is recursive
+
+QtDBus
+------
+ 
+QtSql
+-----
+ - [QTBUG-13211] sqlStatement() wrongly ignores columns where value is invalid
+ - [QTBUG-13423] Introduction of numericalPrecisionPolicy make database() function non thread safe anymore
+ 
+QtXml
+-----
+ - [QTBUG-8948] QtXmlSchema has memory leak
+
+Declarative
+-----------
+ - [QTBUG-4110] QMimeData does not provide image/png if the imagedrag is in-process
+ - [QTBUG-22379] QML Application crashes when XMLListModel is used with GridView
+ - [QTBUG-21756] Cannot flick to the end of a horizontal list view if LayoutMirroring is enabled
+ - [QTBUG-21306] Declarative autotests pkg file generation broken.
+ - [QTBUG-21219] Flicking/dragging in nested vertical views contained in a horizontal ListView no longer works as expected
+ - [QTBUG-21288] Latest inputted letters will not be shown if it's longer than one line 
+ - [QTBUG-21194] QDeclarativeState leaks QDeclarativeBindings in some scenarios
+ - [QTBUG-17770] A memory leak can occur in code which calls QDeclarativeTypeData::compile()
+ - [QTBUG-21084] Memory usage keeps increasing when creating and destructing ListModel
+ - [QTBUG-17003] QML TextInput element to support masking delay when using Password echo mode
+ - [QTBUG-22271] QML GridView crashes in itemsInserted when item removed during refill
+
+OpenVG
+------
+
+OpenGL
+------
+ - [QTBUG-18212] Qt application with window transparency potentially segfaults
+ - [QTBUG-20736] ShaderEffectItems start consuming GPU memory already at load time even if they are not shown. Also they consume GPU memory while application is in background.
+ - [QTBUG-21499] Fix to QtOpenGL crash
+
+3rdParty
+--------
+ - [QTBUG-18374] Errors when compiling Qt with STLport
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+ - [QTBUG-17455] QFontDatabase do not use Font Config suggestion when size differs from request
+ - [QTBUG-14461] timer can be activated with Glib event loop despite QEventLoop::X11ExcludeTimers
+ - [QTBUG-14434] while debugging, QSystemSemaphore::aquire() misbehaves
+ - [QTBUG-14412] QListView: When resizing a listview rather quickly 
+    then it can recurse into updateGeometries() can cause a loop
+ - [QTBUG-14269] QFontDatabase::styles() appears to have locale sensitivity on Linux
+ - [QTBUG-10066] Kde image plugin are loaded and unload for every image load-
+ - [QTBUG-14455] Certain font styles don't apply to fallback fonts
+ - [QTBUG-13800] Font autohinting is not used even when enabled in GNOME font settings
+ - [QTBUG-10861] Intel TBB + Qt 4.7 = SIGABRT (Linux 64 bits)
+
+Qt for Windows
+--------------
+ - [QTBUG-18632] Crash in QSvgRenderer when called in a separate thread
+ - [QTBUG-14939] QLocalSocket::abort() does not abort
+ - [QTBUG-14807] QSystemTrayIcon context menu does not close using the ESC key on Windows.
+ - [QTBUG-14363] QLineEdit fails to engage completer when editting an item in an itemview
+ - [QTBUG-12655] QFileDialog getExistingDirectory returns blank path for Library in Windows 7
+ - [QTBUG-10984] Indeterminate progress bars don't work with QWindowsVistaStyle
+ - [QTBUG-10957] Indeterminate QProgressBar doesn't animate when disabled using Vista style
+ - [QTBUG-10589] Focus lost when embedding external application using ActiveX
+ - [QTBUG-10305] QLibrary getFileName method returns "DLL" on Windows7 and "dll" on Vista
+ - [QTBUG-10088] moc.exe crash when NTFS-JUNCTIONS exists, created with Sysinternals junction.exe
+ - [QTBUG-12410] Fix tst_qnetworkreply httpProxyCommands(https) test on Windows
+ - [QTBUG-10920] QToolBar bug
+ - [QTBUG-14712] QListView infinite recursion
+ - [QTBUG-6887] VS2008 complains about items with the same name in "projects.sln"
+ - [QTBUG-3206] Be able to specify the property Name in a vcproj file via the .pro
+ - [QTBUG-22419] configuring with -no-rtti on Windows will cause a build failure
+ - [QTBUG-22545] When qmake generates just a single configuration vcxproj file 
+     then the handling of RC_FILE is incorrect for MSVC 2010
+ - [QTBUG-21455] Precompiled Qt libraries 4.7.4 for Windows (VS 2008) exports libpng functions in QtGui4.dll
+ - [QTBUG-21408] Qt 4.7.4 - problem with libpng
+
+Qt for Mac OS X
+---------------
+ - [QTBUG-18947] Running configure executable(in Mac) results in internal error
+ - [QTBUG-17923] Choosing an entry from the drop-down list of kanji alternatives 
+    puts the text cursor in the wrong place when entering Japanese text in a QTextEdit
+ - [QTBUG-13938] QMessageBox::Discard should respond to Command D on Mac OS X
+ - [QTBUG-13593] Window title is not centered for narrow windows on Mac Cocoa
+ - [QTBUG-13055] Corner of scroll area not stylable on Mac.
+ - [QTBUG-12495] Accepting a QEvent::ShortcutOverride still triggers shortcuts on Mac OS X.
+ - [QTBUG-11518] Window resizing shows blank areas with the raster engine on Mac OS X
+ - [QTBUG-11367] QItemDelegate does not allow editor widget to be placed transparently on top of painted display
+ - [QTBUG-21617] Using State machine with onPositionChanged in MouseArea causes a CRASH when DeclarativeView is deleted
+ - [QTBUG-20516] corewlan.pro should have an entry for Mac OS X Lion
+ - [QTBUG-20882] QPrinter: When using setPaperSize(QPrinter::PaperSize) then this does not always set the paper size correctly
+ - [QTBUG-23448] When application that has a popup widget open is deactivated then if the popup widget does not accept the close
+      then it will get stuck in a loop
+
+Qt for Symbian
+--------------
+ - [QTBUG-2795] Wrong cursor position when editing Arabic text and inserting numerical characters (TSW: HHES-7ZLE4Y)
+ - [QTBUG-21928] QObject::deleteLater() does not work properly from CActive::RunL method(in Symbian)
+ - [QTBUG-21211] Clearing Qt::WA_TranslucentBackground flag does not revert switch to raster graphics
+ - [QTBUG-21209] Opening a file with QDesktopServices fails in Symbian Belle
+ - [QTBUG-20155] Not possible to catch RequestSoftwareInputPanel with eventFilter() on Symbian
+ - [QTBUG-20919] "Word bubble" element doesn't disappear from QML TextEdit/TextInput elements after a tap when Symbian partial screen VKB is used
+ - [QTBUG-20033] closeSoftwareInputPanel() method is not closing the VKB when applied on TextEdit and TextInput elements 
+ - [QTBUG-20444] LineFeeds can not be deleted in QML TextEdit
+ - [QTBUG-20813] Disabled splitscreen translation still moves screen
+ - [QTBUG-18516] Support text rendering in non-GUI thread in Symbian
+ - [QTBUG-20214] QRentBook: LSK and RSK of booking page will change somethimes
+ - [QTBUG-5697] Symbian: Qt painting over the lower softkey area in landscape mode
+ - [QTBUG-18749] Symbian: Fullscreen child dialog of a maximized main window is drawn incorrectly when a non-fullscreen child dialog of that dialog is closed
+ - [QTBUG-20629] QML app crash on exit due to threading problem (XmlListModel internals suspected)
+ - [QTBUG-20218] Symbian 5.3: QML text edit components are sending software input panel requests
+ - [QTBUG-15993] crash when creating scroll bar skin graphics on S60
+ - [QTBUG-20724] ShaderEffectItems don't work on Symbian/OpenGL graphics system after app background/forground switch
+ - [QTBUG-20932] Softkeys:In landscape mode, the combox window can not be showed completely.
+ - [QTBUG-22147] Commiting predicted text using hardware keyboard replaces unwanted part
+ - [QTBUG-15899] Multiple file exist checks for one file during declarative view creation slowing app startup. 
+ - [QTBUG-21409] QML imports search order wrong SYMBIAN
+
+Qt for Windows CE
+-----------------
+ - [QTBUG-22506] Fixed WinCE 5 and 6 compilation issue
+
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+ - [QTBUG-7169] QtUiTools is not built with the correct suffix
+ - [QTBUG-11418] qmake: pkg-config checks with link_pkgconfig don't fail
+ - [QTBUG-19403] QButtonGroups created in Qt Designer have translatable names!
+ - [QTBUG-18631] Cannot assign a raw QWidget as a buddy
+ - [QTBUG-18244] create mdiArea child window in designer occur objectName error
+ - [QTBUG-17918] QtDesigner doesn't save updated paths to resource files when *.ui moved manually to another folder.
+ - [QTBUG-17542] Old UI-file leftovers cause newer Qt Designer to crash when loading the UI-file
+ - [QTBUG-16096] Assistant prints warnings 'Could not load translation file qt_C in ...' 
+    when launched with environment variable LANG=C set
+ - [QTBUG-13683] QFormBuilder::save() does not process QGridLayouts properly
+ - [QTBUG-10099] QtConfig shows NoIcon instead of appicon.png
+ - [QTBUG-21210] Typo in /usr/include/qt4/QtTest/qtestxmlstreamer.h causes compiler errors
