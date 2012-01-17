@@ -507,7 +507,7 @@ public:
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
 //    static void reportAvailableGeometryChange(int screenIndex);
     static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
-
+    static void reportLocaleChange();
 #endif
 
 #ifdef Q_WS_QWS

@@ -130,6 +130,9 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
         QApplicationPrivate::reportAvailableGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::LocaleChange:
+        QApplicationPrivate::reportLocaleChange();
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -979,6 +982,11 @@ void QApplicationPrivate::reportAvailableGeometryChange(
         else if (w->isMaximized())
             w->d_func()->setMaxWindowState_helper();
     }
+}
+
+void QApplicationPrivate::reportLocaleChange()
+{
+    QApplication::sendSpontaneousEvent( qApp, new QEvent( QEvent::LocaleChange ) );
 }
 
 QT_END_NAMESPACE

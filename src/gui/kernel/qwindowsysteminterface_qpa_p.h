@@ -61,7 +61,8 @@ public:
         Touch,
         ScreenGeometry,
         ScreenAvailableGeometry,
-        ScreenCountChange
+        ScreenCountChange,
+        LocaleChange
     };
 
     class WindowSystemEvent {
@@ -192,6 +193,13 @@ public:
             : WindowSystemEvent(ScreenAvailableGeometry), index(index) { }
         int index;
     };
+
+    class LocaleChangeEvent : public WindowSystemEvent {
+    public:
+        LocaleChangeEvent()
+            : WindowSystemEvent(LocaleChange) { }
+    };
+
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;
     static QMutex queueMutex;

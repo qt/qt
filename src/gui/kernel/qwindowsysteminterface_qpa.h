@@ -100,6 +100,8 @@ public:
     static void handleScreenGeometryChange(int screenIndex);
     static void handleScreenAvailableGeometryChange(int screenIndex);
     static void handleScreenCountChange(int count);
+
+    static void handleLocaleChange();
 };
 
 QT_END_NAMESPACE
