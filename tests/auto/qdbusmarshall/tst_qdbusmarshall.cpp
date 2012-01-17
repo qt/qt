@@ -162,13 +162,15 @@ int tst_QDBusMarshall::fileDescriptorForTest()
     return tempFile.handle();
 }
 
-void tst_QDBusMarshall::sendBasic_data()
+void addBasicTypesColumns()
 {
     QTest::addColumn<QVariant>("value");
     QTest::addColumn<QString>("sig");
     QTest::addColumn<QString>("stringResult");
+}
 
-    // basic types:
+void basicNumericTypes_data()
+{
     QTest::newRow("bool") << QVariant(false) << "b" << "false";
 #if 1
     QTest::newRow("bool2") << QVariant(true) << "b" << "true";
@@ -180,11 +182,24 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << "x" << "3";
     QTest::newRow("uint64") << QVariant(Q_UINT64_C(4)) << "t" << "4";
     QTest::newRow("double") << QVariant(42.5) << "d" << "42.5";
+}
+
+void basicStringTypes_data()
+{
     QTest::newRow("string") << QVariant("ping") << "s" << "\"ping\"";
     QTest::newRow("objectpath") << qVariantFromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
     QTest::newRow("signature") << qVariantFromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
+}
+
+void tst_QDBusMarshall::sendBasic_data()
+{
+    addBasicTypesColumns();
+
+    // basic types:
+    basicNumericTypes_data();
+    basicStringTypes_data();
 
     if (fileDescriptorPassing)
         QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
@@ -1173,7 +1188,10 @@ void tst_QDBusMarshall::receiveUnknownType()
 
 void tst_QDBusMarshall::demarshallPrimitives_data()
 {
-    sendBasic_data();
+    addBasicTypesColumns();
+
+    // Primitive types, excluding strings and FD
+    basicNumericTypes_data();
 }
 
 template<class T>
