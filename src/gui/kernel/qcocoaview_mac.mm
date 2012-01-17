@@ -1014,7 +1014,13 @@ static int qCocoaViewCount = 0;
     // When entering characters through Character Viewer or Keyboard Viewer, the text is passed
     // through this insertText method. Since we dont receive a keyDown Event in such cases, the
     // composing flag will be false.
-    if (([aString length] && composing) || !fromKeyDownEvent) {
+    //
+    // Characters can be sent through input method directly without composing process as well,
+    // for instance a Chinese input method will send "，" (U+FF0C) to insertText: when "," key
+    // is pressed. In that case we want to set commit string directly instead of going through
+    // key events handling again. Hence we only leave the string with Unicode value less than
+    // 256 to the key events handling process.
+    if (([aString length] && (composing || commitText.at(0).unicode() > 0xff)) || !fromKeyDownEvent) {
         // Send the commit string to the widget.
         composing = false;
         sendKeyEvents = false;
