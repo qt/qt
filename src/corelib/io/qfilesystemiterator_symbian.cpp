@@ -83,10 +83,12 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &path, QDir::Fil
         symbianMask |= KEntryAttHidden;
     if (filters & QDir::System)
         symbianMask |= KEntryAttSystem;
-    if (((filters & QDir::Files) == 0) && symbianMask == KEntryAttDir)
-        symbianMask |= KEntryAttMatchExclusive; //exclude non-directories
-    else if (symbianMask == 0) {
-        if ((filters & QDir::PermissionMask) == QDir::Writable)
+    //Do not use KEntryAttMatchExclusive to optimise to return only
+    //directories for QDir::Dirs. There may be a file which is actually
+    //a "mount point" for a file engine and needs to be returned so it
+    //can be overriden to be a directory, see QTBUG-23688
+    if (symbianMask == 0
+        && ((filters & QDir::PermissionMask) == QDir::Writable)) {
             symbianMask = KEntryAttMatchExclude | KEntryAttReadOnly;
     }
 
