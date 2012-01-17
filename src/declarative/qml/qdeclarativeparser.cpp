@@ -68,6 +68,11 @@ using namespace QDeclarativeParser;
 QDeclarativeParser::Object::Object()
 : type(-1), majorVersion(-1), minorVersion(-1), idIndex(-1), metatype(0), synthCache(0), defaultProperty(0), parserStatusCast(-1)
 {
+    // initialize the members in the meta object
+    extObject.d.superdata = 0;
+    extObject.d.stringdata = 0;
+    extObject.d.data = 0;
+    extObject.d.extradata = 0;
 }
 
 QDeclarativeParser::Object::~Object() 
