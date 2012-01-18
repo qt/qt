@@ -7461,6 +7461,7 @@ bool QDomHandler::characters(const QString&  ch)
         QScopedPointer<QDomEntityPrivate> e(new QDomEntityPrivate(doc, 0, entityName,
                 QString(), QString(), QString()));
         e->value = ch;
+        e->ref.deref();
         doc->doctype()->appendChild(e.data());
         e.take();
         n.reset(doc->createEntityReference(entityName));
