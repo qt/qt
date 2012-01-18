@@ -579,7 +579,10 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
 
             // process other clipboard events, since someone is probably requesting data from us
             XEvent e;
-            if (XCheckIfEvent(X11->display, &e, checkForClipboardEvents, 0))
+            // Pass the event through the event dispatcher filter so that applications
+            // which install an event filter on the dispatcher get to handle it first.
+            if (XCheckIfEvent(X11->display, &e, checkForClipboardEvents, 0) &&
+                !QAbstractEventDispatcher::instance()->filterEvent(&e))
                 qApp->x11ProcessEvent(&e);
 
             now.start();

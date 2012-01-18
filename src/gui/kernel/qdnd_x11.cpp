@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 
 #include "qapplication.h"
+#include "qabstracteventdispatcher.h"
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -1967,7 +1968,10 @@ Qt::DropAction QDragManager::drag(QDrag * o)
         timer.start();
         do {
             XEvent event;
-            if (XCheckTypedEvent(X11->display, ClientMessage, &event))
+            // Pass the event through the event dispatcher filter so that applications
+            // which install an event filter on the dispatcher get to handle it first.
+            if (XCheckTypedEvent(X11->display, ClientMessage, &event) &&
+                !QAbstractEventDispatcher::instance()->filterEvent(&event))
                 qApp->x11ProcessEvent(&event);
 
             // sleep 50 ms, so we don't use up CPU cycles all the time.
