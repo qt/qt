@@ -148,7 +148,7 @@ QMacPrintEnginePrivate::~QMacPrintEnginePrivate()
 void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
 {
     Q_Q(QMacPrintEngine);
-    QSizeF newSize = qt_paperSizeToQSizeF(ps);
+    QSize newSize = qt_paperSizeToQSizeF(ps).toSize();
     QCFType<CFArrayRef> formats;
     PMPrinter printer;
 
@@ -186,7 +186,7 @@ QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
     int wMM = int((paper.right - paper.left) / 72 * 25.4 + 0.5);
     int hMM = int((paper.bottom - paper.top) / 72 * 25.4 + 0.5);
     for (int i = QPrinter::A4; i < QPrinter::NPaperSize; ++i) {
-        QSizeF s = qt_paperSizeToQSizeF(QPrinter::PaperSize(i));
+        QSize s = qt_paperSizeToQSizeF(QPrinter::PaperSize(i)).toSize();
         if (s.width() == wMM && s.height() == hMM)
             return (QPrinter::PaperSize)i;
     }
