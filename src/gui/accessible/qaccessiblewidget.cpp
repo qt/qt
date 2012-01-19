@@ -888,12 +888,15 @@ bool QAccessibleWidget::doAction(int action, int child, const QVariantList &para
     if (action == SetFocus || action == DefaultAction) {
         if (child || !widget()->isEnabled())
             return false;
-        if (widget()->focusPolicy() != Qt::NoFocus)
-            widget()->setFocus();
-        else if (widget()->isWindow())
-            widget()->activateWindow();
-        else
+
+        if ((widget()->focusPolicy() == Qt::NoFocus) && (!widget()->isWindow()))
             return false;
+
+        if (!widget()->isWindow())
+            widget()->setFocus();
+
+        widget()->activateWindow();
+
         return true;
     } else if (action > 0) {
         if (QAction *act = widget()->actions().value(action - 1)) {
