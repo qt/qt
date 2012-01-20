@@ -251,7 +251,7 @@ static int qTextBlockPosition(QTextBlock block)
   Constructs a QAccessibleTextEdit object for a \a widget.
 */
 QAccessibleTextEdit::QAccessibleTextEdit(QWidget *o)
-: QAccessibleWidgetEx(o, EditableText)
+: QAccessibleTextWidget(o, EditableText)
 {
     Q_ASSERT(widget()->inherits("QTextEdit"));
     childOffset = QAccessibleWidgetEx::childCount();
@@ -261,6 +261,34 @@ QAccessibleTextEdit::QAccessibleTextEdit(QWidget *o)
 QTextEdit *QAccessibleTextEdit::textEdit() const
 {
     return static_cast<QTextEdit *>(widget());
+}
+
+QTextCursor QAccessibleTextEdit::textCursor() const
+{
+    return textEdit()->textCursor();
+}
+
+QTextDocument* QAccessibleTextEdit::textDocument() const
+{
+    return textEdit()->document();
+}
+
+void QAccessibleTextEdit::setTextCursor(const QTextCursor& textCursor)
+{
+    textEdit()->setTextCursor(textCursor);
+}
+
+QWidget* QAccessibleTextEdit::viewport() const
+{
+    return textEdit()->viewport();
+}
+
+QPoint QAccessibleTextEdit::scrollBarsCurrentPosition() const
+{
+    QPoint result(0, 0);
+    result.setX(textEdit()->horizontalScrollBar() ? textEdit()->horizontalScrollBar()->sliderPosition() : 0);
+    result.setY(textEdit()->verticalScrollBar() ? textEdit()->verticalScrollBar()->sliderPosition() : 0);
+    return result;
 }
 
 QRect QAccessibleTextEdit::rect(int child) const
@@ -1313,13 +1341,77 @@ bool QAccessibleTitleBar::isValid() const
 
 #endif // QT_NO_DOCKWIDGET
 
-#ifndef QT_NO_TEXTEDIT
-void QAccessibleTextEdit::addSelection(int startOffset, int endOffset)
+QAccessibleTextWidget::QAccessibleTextWidget(QWidget* o, QAccessible::Role r, const QString& name):
+    QAccessibleWidgetEx(o, r, name)
 {
-    setSelection(0, startOffset, endOffset);
 }
 
-QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset)
+void QAccessibleTextWidget::setAttributes(int startOffset, int endOffset, const QString& attributes)
+{
+    //TODO: not implemented
+    Q_UNUSED(startOffset);
+    Q_UNUSED(endOffset);
+    Q_UNUSED(attributes);
+}
+
+QRect QAccessibleTextWidget::characterRect(int offset, CoordinateType coordType)
+{
+    QTextBlock block = textDocument()->findBlock(offset);
+    if (!block.isValid())
+        return QRect();
+
+    QTextLayout *layout = block.layout();
+    QPointF layoutPosition = layout->position();
+    int relativeOffset = offset - block.position();
+    QTextLine line = layout->lineForTextPosition(relativeOffset);
+
+    QRect r;
+
+    if (line.isValid()) {
+        qreal x = line.cursorToX(relativeOffset);
+        qreal w = 0;
+
+        if ((relativeOffset - line.textStart())< line.textLength()) {
+            w = line.cursorToX(relativeOffset + 1) - x;
+        } else {
+            // If the width of a character is not known, IAccessible2 tells to return the width of a default character
+            int averageCharWidth = QFontMetrics(textCursor().charFormat().font()).averageCharWidth();
+            if (block.blockFormat().layoutDirection()  == Qt::RightToLeft)
+                averageCharWidth *= -1;
+
+            r.setWidth(averageCharWidth);
+        }
+        r = QRect(layoutPosition.x() + x, layoutPosition.y() + line.y(),
+                  w, line.height());
+
+        if (coordType == RelativeToScreen) {
+            r.moveTo(viewport()->mapToGlobal(r.topLeft()));
+        }
+
+    }
+
+    r.translate(-scrollBarsCurrentPosition());
+
+    return r;
+}
+
+int QAccessibleTextWidget::offsetAtPoint(const QPoint &point, CoordinateType coordType)
+{
+    QPoint p = point;
+    if (coordType == RelativeToScreen)
+        p = viewport()->mapFromGlobal(p);
+
+    p += scrollBarsCurrentPosition();
+
+    return textDocument()->documentLayout()->hitTest(p, Qt::ExactHit);
+}
+
+int QAccessibleTextWidget::selectionCount()
+{
+    return textCursor().hasSelection() ? 1 : 0;
+}
+
+QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *endOffset)
 {
     /* The list of attributes can be found at:
      http://linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
@@ -1333,7 +1425,7 @@ QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOf
 
     QMap<QString, QString> attrs;
 
-    QTextCursor cursor = textEdit()->textCursor();
+    QTextCursor cursor = textCursor();
 
     //cursor.charFormat returns the format of the previous character
     cursor.setPosition(offset + 1);
@@ -1429,65 +1521,15 @@ QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOf
     return result;
 }
 
-int QAccessibleTextEdit::cursorPosition()
+int QAccessibleTextWidget::cursorPosition()
 {
-    return textEdit()->textCursor().position();
+    return textCursor().position();
 }
 
-QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
-{
-    QTextEdit *edit = textEdit();
-    QTextCursor cursor(edit->document());
-    cursor.setPosition(offset);
-
-    if (cursor.position() != offset)
-        return QRect();
-
-    QRect r = edit->cursorRect(cursor);
-    if (cursor.movePosition(QTextCursor::NextCharacter)) {
-        r.setWidth(edit->cursorRect(cursor).x() - r.x());
-    } else {
-        // we don't know the width of the character - maybe because we're at document end
-        // in that case, IAccessible2 tells us to return the width of a default character
-        int averageCharWidth = QFontMetrics(cursor.charFormat().font()).averageCharWidth();
-        if (edit->layoutDirection() == Qt::RightToLeft)
-            averageCharWidth *= -1;
-        r.setWidth(averageCharWidth);
-    }
-
-    switch (coordType) {
-    case RelativeToScreen:
-        r.moveTo(edit->viewport()->mapToGlobal(r.topLeft()));
-        break;
-    case RelativeToParent:
-        break;
-    }
-
-    return r;
-}
-
-int QAccessibleTextEdit::selectionCount()
-{
-    return textEdit()->textCursor().hasSelection() ? 1 : 0;
-}
-
-int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType)
-{
-    QTextEdit *edit = textEdit();
-
-    QPoint p = point;
-    if (coordType == RelativeToScreen)
-        p = edit->viewport()->mapFromGlobal(p);
-    // convert to document coordinates
-    p += QPoint(edit->horizontalScrollBar()->value(), edit->verticalScrollBar()->value());
-
-    return edit->document()->documentLayout()->hitTest(p, Qt::ExactHit);
-}
-
-void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *endOffset)
+void QAccessibleTextWidget::selection(int selectionIndex, int *startOffset, int *endOffset)
 {
     *startOffset = *endOffset = 0;
-    QTextCursor cursor = textEdit()->textCursor();
+    QTextCursor cursor = textCursor();
 
     if (selectionIndex != 0 || !cursor.hasSelection())
         return;
@@ -1496,9 +1538,9 @@ void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *e
     *endOffset = cursor.selectionEnd();
 }
 
-QString QAccessibleTextEdit::text(int startOffset, int endOffset)
+QString QAccessibleTextWidget::text(int startOffset, int endOffset)
 {
-    QTextCursor cursor(textEdit()->document());
+    QTextCursor cursor = textCursor();
 
     cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
     cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
@@ -1506,115 +1548,202 @@ QString QAccessibleTextEdit::text(int startOffset, int endOffset)
     return cursor.selectedText();
 }
 
-QString QAccessibleTextEdit::textBeforeOffset (int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+QPoint QAccessibleTextWidget::scrollBarsCurrentPosition() const
 {
-    // TODO - what exactly is before?
-    Q_UNUSED(offset);
-    Q_UNUSED(boundaryType);
-    Q_UNUSED(startOffset);
-    Q_UNUSED(endOffset);
-    return QString();
+    return QPoint(0, 0);
 }
 
-QString QAccessibleTextEdit::textAfterOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType boundaryType)
 {
-    // TODO - what exactly is after?
-    Q_UNUSED(offset);
-    Q_UNUSED(boundaryType);
-    Q_UNUSED(startOffset);
-    Q_UNUSED(endOffset);
-    return QString();
-}
-
-QString QAccessibleTextEdit::textAtOffset(int offset, BoundaryType boundaryType,
-                                          int *startOffset, int *endOffset)
-{
-    Q_ASSERT(startOffset);
-    Q_ASSERT(endOffset);
-
-    *startOffset = *endOffset = -1;
-    QTextEdit *edit = textEdit();
-
-    QTextCursor cursor(edit->document());
     if (offset >= characterCount())
-        return QString();
+        return QPair<int, int>(characterCount(), characterCount());
+    if (offset < 0)
+        return QPair<int, int>(0, 0);
+
+    QTextCursor cursor = textCursor();
+
+    QPair<int, int> result;
 
     cursor.setPosition(offset);
     switch (boundaryType) {
     case CharBoundary:
-        *startOffset = cursor.position();
+        result.first = cursor.position();
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
-        *endOffset = cursor.position();
-        break;
+        result.second = cursor.position();
     case WordBoundary:
         cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
-        *startOffset = cursor.position();
+        result.first = cursor.position();
         cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        *endOffset = cursor.position();
+        result.second = cursor.position();
         break;
     case SentenceBoundary:
         // TODO - what's a sentence?
-        return QString();
     case LineBoundary:
         cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
-        *startOffset = cursor.position();
+        result.first = cursor.position();
         cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-        *endOffset = cursor.position();
+        result.second = cursor.position();
         break;
     case ParagraphBoundary:
         cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
-        *startOffset = cursor.position();
+        result.first = cursor.position();
         cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-        *endOffset = cursor.position();
+        result.second = cursor.position();
         break;
-    case NoBoundary: {
-        *startOffset = 0;
-        const QString txt = edit->toPlainText();
-        *endOffset = txt.count();
-        return txt; }
+    case NoBoundary:
+        result.first = 0;
+        result.second = characterCount();
+        break;
     default:
-        qDebug("AccessibleTextAdaptor::textAtOffset: Unknown boundary type %d", boundaryType);
-        return QString();
+        qDebug("QAccessibleTextWidget::getBoundaries: Unknown boundary type %d", boundaryType);
+        result.first = -1;
+        result.second = -1;
     }
-
-    return cursor.selectedText();
+    return result;
 }
 
-void QAccessibleTextEdit::removeSelection(int selectionIndex)
+QString QAccessibleTextWidget::textBeforeOffset (int offset, BoundaryType boundaryType,
+        int *startOffset, int *endOffset)
 {
-    if (selectionIndex != 0)
-        return;
+    Q_ASSERT(startOffset);
+    Q_ASSERT(endOffset);
 
-    QTextCursor cursor = textEdit()->textCursor();
-    cursor.clearSelection();
-    textEdit()->setTextCursor(cursor);
+    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
+    boundaries = getBoundaries(boundaries.first - 1, boundaryType);
+
+    *startOffset = boundaries.first;
+    *endOffset = boundaries.second;
+
+    return text(boundaries.first, boundaries.second);
 }
 
-void QAccessibleTextEdit::setCursorPosition(int position)
+QString QAccessibleTextWidget::textAfterOffset (int offset, BoundaryType boundaryType,
+        int *startOffset, int *endOffset)
 {
-    QTextCursor cursor = textEdit()->textCursor();
+    Q_ASSERT(startOffset);
+    Q_ASSERT(endOffset);
+
+    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
+    boundaries = getBoundaries(boundaries.second, boundaryType);
+
+    *startOffset = boundaries.first;
+    *endOffset = boundaries.second;
+
+    return text(boundaries.first, boundaries.second);
+}
+
+QString QAccessibleTextWidget::textAtOffset(int offset, BoundaryType boundaryType,
+                                            int *startOffset, int *endOffset)
+{
+    Q_ASSERT(startOffset);
+    Q_ASSERT(endOffset);
+
+    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
+
+    *startOffset = boundaries.first;
+    *endOffset = boundaries.second;
+
+    return text(boundaries.first, boundaries.second);
+}
+
+void QAccessibleTextWidget::setCursorPosition(int position)
+{
+    QTextCursor cursor = textCursor();
     cursor.setPosition(position);
-    textEdit()->setTextCursor(cursor);
+    setTextCursor(cursor);
 }
 
-void QAccessibleTextEdit::setSelection(int selectionIndex, int startOffset, int endOffset)
+void QAccessibleTextWidget::addSelection(int startOffset, int endOffset)
+{
+    setSelection(0, startOffset, endOffset);
+}
+
+void QAccessibleTextWidget::removeSelection(int selectionIndex)
 {
     if (selectionIndex != 0)
         return;
 
-    QTextCursor cursor = textEdit()->textCursor();
+    QTextCursor cursor = textCursor();
+    cursor.clearSelection();
+    setTextCursor(cursor);
+}
+
+void QAccessibleTextWidget::setSelection(int selectionIndex, int startOffset, int endOffset)
+{
+    if (selectionIndex != 0)
+        return;
+
+    QTextCursor cursor = textCursor();
     cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
     cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
-    textEdit()->setTextCursor(cursor);
+    setTextCursor(cursor);
 }
 
-int QAccessibleTextEdit::characterCount()
+int QAccessibleTextWidget::characterCount()
 {
-    return textEdit()->toPlainText().count();
+    QTextCursor cursor = textCursor();
+    cursor.movePosition(QTextCursor::End);
+    return cursor.position();
 }
 
+QTextCursor QAccessibleTextWidget::textCursorForRange(int startOffset, int endOffset) const
+{
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
+    cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
+
+    return cursor;
+}
+
+void QAccessibleTextWidget::deleteText(int startOffset, int endOffset)
+{
+    QTextCursor cursor = textCursorForRange(startOffset, endOffset);
+
+    cursor.removeSelectedText();
+}
+
+void QAccessibleTextWidget::insertText(int offset, const QString &text)
+{
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(offset);
+
+    cursor.insertText(text);
+}
+
+void QAccessibleTextWidget::replaceText(int startOffset, int endOffset, const QString &text)
+{
+    QTextCursor cursor = textCursorForRange(startOffset, endOffset);
+
+    cursor.removeSelectedText();
+    cursor.insertText(text);
+}
+
+void QAccessibleTextWidget::copyText(int startOffset, int endOffset)
+{
+#ifndef QT_NO_CLIPBOARD
+    QString text = this->text(startOffset, endOffset);
+    QApplication::clipboard()->setText(text);
+#endif
+}
+
+void QAccessibleTextWidget::cutText(int startOffset, int endOffset)
+{
+#ifndef QT_NO_CLIPBOARD
+    QString text = this->text(startOffset, endOffset);
+    QApplication::clipboard()->setText(text);
+    deleteText(startOffset, endOffset);
+#endif
+}
+
+void QAccessibleTextWidget::pasteText(int offset)
+{
+#ifndef QT_NO_CLIPBOARD
+    QString text = QApplication::clipboard()->text();
+    insertText(offset, text);
+#endif
+}
+
+#ifndef QT_NO_TEXTEDIT
 void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
 {
     QTextEdit *edit = textEdit();
@@ -1634,20 +1763,11 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
         qWarning("AccessibleTextEdit::scrollToSubstring failed!");
 }
 
-static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endOffset)
-{
-    QTextCursor cursor(textEdit->document());
-    cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
-    cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
-
-    return cursor;
-}
-
 void QAccessibleTextEdit::copyText(int startOffset, int endOffset)
 {
 #ifndef QT_NO_CLIPBOARD
     QTextCursor previousCursor = textEdit()->textCursor();
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
+    QTextCursor cursor = textCursorForRange(startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
@@ -1658,25 +1778,10 @@ void QAccessibleTextEdit::copyText(int startOffset, int endOffset)
 #endif
 }
 
-void QAccessibleTextEdit::deleteText(int startOffset, int endOffset)
-{
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
-
-    cursor.removeSelectedText();
-}
-
-void QAccessibleTextEdit::insertText(int offset, const QString &text)
-{
-    QTextCursor cursor(textEdit()->document());
-    cursor.setPosition(offset);
-
-    cursor.insertText(text);
-}
-
 void QAccessibleTextEdit::cutText(int startOffset, int endOffset)
 {
 #ifndef QT_NO_CLIPBOARD
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
+    QTextCursor cursor = textCursorForRange(startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
@@ -1699,14 +1804,6 @@ void QAccessibleTextEdit::pasteText(int offset)
     edit->paste();
 #endif
     edit->setTextCursor(oldCursor);
-}
-
-void QAccessibleTextEdit::replaceText(int startOffset, int endOffset, const QString &text)
-{
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
-
-    cursor.removeSelectedText();
-    cursor.insertText(text);
 }
 
 void QAccessibleTextEdit::setAttributes(int startOffset, int endOffset, const QString &attributes)
