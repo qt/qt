@@ -125,6 +125,7 @@ QStringList AccessibleFactory::keys() const
 #ifndef QT_NO_TEXTEDIT
     list << QLatin1String("QTextEdit");
 #endif
+    list << QLatin1String("QPlainTextEdit");
     list << QLatin1String("QTipLabel");
     list << QLatin1String("QFrame");
     list << QLatin1String("QStackedWidget");
@@ -300,6 +301,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QTextEdit")) {
         iface = new QAccessibleTextEdit(widget);
 #endif
+    } else if (classname == QLatin1String("QPlainTextEdit")) {
+        iface = new QAccessiblePlainTextEdit(widget);
     } else if (classname == QLatin1String("QTipLabel")) {
         iface = new QAccessibleDisplay(widget, ToolTip);
     } else if (classname == QLatin1String("QFrame")) {
