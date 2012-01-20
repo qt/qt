@@ -79,6 +79,7 @@
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtGui/qlineedit.h>
+#include <QtGui/qaccessible.h>
 
 #ifndef QT_NO_SHORTCUT
 #include "private/qapplication_p.h"
@@ -573,8 +574,13 @@ void QTextControlPrivate::repaintOldAndNewSelection(const QTextCursor &oldSelect
 void QTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged /*=false*/)
 {
     Q_Q(QTextControl);
-    if (forceEmitSelectionChanged)
+    if (forceEmitSelectionChanged) {
         emit q->selectionChanged();
+#ifndef QT_NO_ACCESSIBILITY
+        if (q->parent())
+            QAccessible::updateAccessibility(q->parent(), 0, QAccessible::TextSelectionChanged);
+#endif
+    }
 
     bool current = cursor.hasSelection();
     if (current == lastSelectionState)
@@ -582,8 +588,13 @@ void QTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged /*=fal
 
     lastSelectionState = current;
     emit q->copyAvailable(current);
-    if (!forceEmitSelectionChanged)
+    if (!forceEmitSelectionChanged) {
         emit q->selectionChanged();
+#ifndef QT_NO_ACCESSIBILITY
+        if (q->parent())
+            QAccessible::updateAccessibility(q->parent(), 0, QAccessible::TextSelectionChanged);
+#endif
+    }
     emit q->microFocusChanged();
 }
 
