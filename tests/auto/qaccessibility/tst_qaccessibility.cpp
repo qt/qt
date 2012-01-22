@@ -263,6 +263,7 @@ private slots:
     void mdiAreaTest();
     void mdiSubWindowTest();
     void lineEditTest();
+    void groupBoxTest();
     void workspaceTest();
     void dialogButtonBoxTest();
     void dialTest();
@@ -3143,6 +3144,50 @@ void tst_QAccessibility::lineEditTest()
     delete iface;
     delete toplevel;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::groupBoxTest()
+{
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setTitle(QLatin1String("Test QGroupBox"));
+    groupBox->setToolTip(QLatin1String("This group box will be used to test accessibility"));
+    QVBoxLayout *layout = new QVBoxLayout();
+    QRadioButton *rbutton = new QRadioButton();
+    layout->addWidget(rbutton);
+    groupBox->setLayout(layout);
+    QAccessibleInterface *rButtonIface = QAccessible::queryAccessibleInterface(rbutton);
+
+    QCOMPARE(iface->childCount(), 1);
+    QCOMPARE(iface->role(0), QAccessible::Grouping);
+    QCOMPARE(iface->text(QAccessible::Name, 0), QLatin1String("Test QGroupBox"));
+    QCOMPARE(iface->text(QAccessible::Description, 0), QLatin1String("This group box will be used to test accessibility"));
+    QAccessible::Relation relation = iface->relationTo(0, rButtonIface, 0);
+    QVERIFY(relation & QAccessible::Label);
+
+    delete rButtonIface;
+    delete iface;
+    delete groupBox;
+
+    groupBox = new QGroupBox();
+    iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setCheckable(true);
+    groupBox->setChecked(false);
+
+    QCOMPARE(iface->role(0), QAccessible::CheckBox);
+    QAccessibleActionInterface *actionIface = iface->actionInterface();
+    QVERIFY(actionIface);
+    QAccessible::State state = iface->state(0);
+    QVERIFY(!(state & QAccessible::Checked));
+    actionIface->doAction(0);
+    QVERIFY(groupBox->isChecked());
+    state = iface->state(0);
+    QVERIFY(state & QAccessible::Checked);
+
+    delete iface;
+    delete groupBox;
 }
 
 void tst_QAccessibility::workspaceTest()

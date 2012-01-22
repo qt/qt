@@ -537,10 +537,6 @@ QString QAccessibleDisplay::text(Text t, int child) const
         if (str.isEmpty()) {
             if (qobject_cast<QLabel*>(object())) {
                 str = qobject_cast<QLabel*>(object())->text();
-#ifndef QT_NO_GROUPBOX
-            } else if (qobject_cast<QGroupBox*>(object())) {
-                str = qobject_cast<QGroupBox*>(object())->title();
-#endif
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
@@ -581,13 +577,6 @@ QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibl
         if (o == label->buddy())
             relation |= Label;
 #endif
-#ifndef QT_NO_GROUPBOX
-    } else {
-	QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-	if (groupbox && !groupbox->title().isEmpty())
-	    if (groupbox->children().contains(o))
-		relation |= Label;
-#endif
     }
     return relation;
 }
@@ -603,12 +592,6 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
 #ifndef QT_NO_SHORTCUT
             if (entry == 1)
                 targetObject = label->buddy();
-#endif
-#ifndef QT_NO_GROUPBOX
-        } else {
-	    QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-	    if (groupbox && !groupbox->title().isEmpty())
-		rel = Child;
 #endif
         }
         *target = QAccessible::queryAccessibleInterface(targetObject);
@@ -659,6 +642,118 @@ QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType)
 
     return QRect();
 }
+
+#ifndef QT_NO_GROUPBOX
+QAccessibleGroupBox::QAccessibleGroupBox(QWidget *w)
+ : QAccessibleWidgetEx(w, Grouping)
+{
+}
+
+QGroupBox* QAccessibleGroupBox::groupBox() const
+{
+    return static_cast<QGroupBox *>(widget());
+}
+
+QString QAccessibleGroupBox::text(QAccessible::Text t, int child) const
+{
+    QString txt = QAccessibleWidgetEx::text(t, child);
+
+    if (txt.isEmpty()) {
+        switch (t) {
+        case Name:
+            txt = qt_accStripAmp(groupBox()->title());
+        case Description:
+            txt = qt_accStripAmp(groupBox()->title());
+        default:
+            break;
+        }
+    }
+
+    return txt;
+}
+
+QAccessible::State QAccessibleGroupBox::state(int child) const
+{
+    QAccessible::State st = QAccessibleWidgetEx::state(child);
+
+    if (groupBox()->isChecked())
+        st |= QAccessible::Checked;
+
+    return st;
+}
+
+QAccessible::Role QAccessibleGroupBox::role(int child) const
+{
+    if (child)
+        return QAccessibleWidgetEx::role(child);
+
+    return groupBox()->isCheckable() ? QAccessible::CheckBox : QAccessible::Grouping;
+}
+
+int QAccessibleGroupBox::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
+{
+    if ((rel == Labelled) && !groupBox()->title().isEmpty())
+        rel = Child;
+    return QAccessibleWidgetEx::navigate(rel, entry, target);
+}
+
+QAccessible::Relation QAccessibleGroupBox::relationTo(int child, const QAccessibleInterface* other, int otherChild) const
+{
+    QGroupBox *groupbox = this->groupBox();
+
+    QAccessible::Relation relation = QAccessibleWidgetEx::relationTo(child, other, otherChild);
+
+    if (!child && !otherChild && !groupbox->title().isEmpty()) {
+        QObject *o = other->object();
+        if (groupbox->children().contains(o))
+            relation |= Label;
+    }
+
+    return relation;
+}
+
+int QAccessibleGroupBox::actionCount()
+{
+    return groupBox()->isCheckable() ? 1 : 0;
+}
+
+void QAccessibleGroupBox::doAction(int actionIndex)
+{
+    if ((actionIndex == 0) && groupBox()->isCheckable()) {
+        groupBox()->setChecked(!groupBox()->isChecked());
+    }
+}
+
+QString QAccessibleGroupBox::description(int actionIndex)
+{
+    if ((actionIndex == 0) && (groupBox()->isCheckable())) {
+        return QLatin1String("Toggles the button.");
+    }
+    return QString();
+}
+
+QString QAccessibleGroupBox::name(int actionIndex)
+{
+    if (actionIndex || !groupBox()->isCheckable())
+        return QString();
+
+    return QLatin1String("Toggle");
+}
+
+QString QAccessibleGroupBox::localizedName(int actionIndex)
+{
+    if (actionIndex || !groupBox()->isCheckable())
+        return QString();
+
+    return QGroupBox::tr("Toggle");
+}
+
+QStringList QAccessibleGroupBox::keyBindings(int actionIndex)
+{
+    return QStringList();
+}
+
+#endif
 
 #ifndef QT_NO_LINEEDIT
 /*!
