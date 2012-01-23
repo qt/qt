@@ -77,6 +77,8 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color) = 0;
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect) = 0;
 
+    bool isLocked() const;
+
     QImage *lock();
     void unlock();
 

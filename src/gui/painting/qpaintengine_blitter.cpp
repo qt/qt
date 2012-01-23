@@ -189,7 +189,6 @@ public:
         : QPaintEngineExPrivate()
         , pmData(p)
         , caps(pmData->blittable()->capabilities())
-        , isBlitterLocked(false)
         , hasXForm(false)
 
     {
@@ -197,17 +196,12 @@ public:
     }
 
     inline void lock() {
-        if (!isBlitterLocked) {
-            raster->d_func()->rasterBuffer->prepare(pmData->blittable()->lock());
-            isBlitterLocked = true;
-        }
+        if (!pmData->blittable()->isLocked())
+            raster->d_func()->rasterBuffer->prepare(pmData->buffer());
     }
 
     inline void unlock() {
-        if (isBlitterLocked) {
-            pmData->blittable()->unlock();
-            isBlitterLocked = false;
-        }
+        pmData->blittable()->unlock();
     }
 
     void fillRect(const QRectF &rect, const QColor &color) {
@@ -276,8 +270,6 @@ public:
 
     QBlittablePixmapData *pmData;
     CapabilitiesToStateMask caps;
-    bool isBlitterLocked;
-
     uint hasXForm;
 };
 

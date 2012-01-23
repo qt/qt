@@ -80,6 +80,12 @@ QSize QBlittable::size() const
     return d->m_size;
 }
 
+bool QBlittable::isLocked() const
+{
+    Q_D(const QBlittable);
+    return d->locked;
+}
+
 QImage *QBlittable::lock()
 {
     Q_D(QBlittable);
