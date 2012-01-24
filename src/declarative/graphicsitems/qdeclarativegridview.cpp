@@ -2849,7 +2849,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
     bool addedVisible = false;
     QList<FxGridItem*> added;
     int i = 0;
-    while (i < insertCount && rowPos <= to + d->rowSize()*(d->columns - (colPos/d->colSize()))/qreal(d->columns)) {
+    while (i < insertCount && rowPos <= to + d->rowSize()*(d->columns - (colPos/d->colSize()))/qreal(d->columns+1)) {
         if (!addedVisible) {
             d->scheduleLayout();
             addedVisible = true;
