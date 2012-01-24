@@ -332,6 +332,7 @@ private:
 #endif
     bool isSplitViewWidget(QWidget *widget);
     bool hasFocusedAndVisibleChild(QWidget *parentWidget);
+    void doDraw(const TRect& aRect) const;
 
 public:
     void handleClientAreaChange();
