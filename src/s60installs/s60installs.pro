@@ -71,8 +71,9 @@ symbian: {
         ":\"Nokia, Qt\"" \
         " "
 
+    ru_header = "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$TARGET.UID3), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=SA,RU"
 
-    qtlibraries.pkg_prerules = vendorinfo
+    qtlibraries.pkg_prerules = ru_header vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
 
     # It is expected that Symbian^3 and newer phones will have sufficiently new OpenC already installed
