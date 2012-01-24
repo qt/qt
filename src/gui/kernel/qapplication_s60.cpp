@@ -1332,7 +1332,21 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 }
 #endif
 
-void QSymbianControl::Draw(const TRect& controlRect) const
+void QSymbianControl::Draw(const TRect& aRect) const
+{
+    int leaveCode = 0;
+    int exceptionCode = 0;
+    // Implementation of CCoeControl::Draw() must never leave or throw exception.
+    // In native Symbian code this is considered a fatal error, and it causes
+    // process termination.
+    TRAP(leaveCode, QT_TRYCATCH_ERROR(exceptionCode, doDraw(aRect)));
+    if (leaveCode)
+        qWarning() << "QSymbianControl::doDraw leaved with code " << leaveCode;
+    else if (exceptionCode)
+        qWarning() << "QSymbianControl::doDraw threw exception with code " << exceptionCode;
+}
+
+void QSymbianControl::doDraw(const TRect& controlRect) const
 {
     // Set flag to avoid calling DrawNow in window surface
     QWidget *window = qwidget->window();
