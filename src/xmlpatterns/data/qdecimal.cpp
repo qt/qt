@@ -118,7 +118,7 @@ QString Decimal::toString(const xsDecimal value)
         /* If the copy constructor is used instead of QString::operator=(),
          * it doesn't compile. I have no idea why. */
         const QString qret(QString::fromLatin1(result));
-        delete result;
+        free(result);
 
         QString valueAsString;
 
