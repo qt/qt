@@ -72,6 +72,8 @@ public:
     static void setNativePaintMode(QWidget *widget, NativePaintMode mode);
     static void setNativePaintMode(WId wid, NativePaintMode mode);
     static void setReceiveNativePaintEvents(QWidget *widget, bool value);
+
+    static void releaseCachedGpuResources();
 };
 
 QT_END_NAMESPACE
