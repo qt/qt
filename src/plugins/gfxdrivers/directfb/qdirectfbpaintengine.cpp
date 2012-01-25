@@ -829,11 +829,13 @@ void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     const qreal                     *points   = path.points();
 
     if (path.elementCount() == 5) {
-        if (elements[0] == QPainterPath::MoveToElement
+        if ((elements
+            && elements[0] == QPainterPath::MoveToElement
             && elements[1] == QPainterPath::LineToElement
             && elements[2] == QPainterPath::LineToElement
             && elements[3] == QPainterPath::LineToElement
-            && elements[4] == QPainterPath::LineToElement) {
+            && elements[4] == QPainterPath::LineToElement )
+                || (path.shape() == QVectorPath::RectangleHint)) {
 
             if (points[1] == points[3]
                 && points[2] == points[4]
