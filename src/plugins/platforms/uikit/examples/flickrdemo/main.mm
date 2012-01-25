@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
 	viewer.engine()->setOfflineStoragePath(documentsDirectory());
     NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
-    viewer.setMainQmlFile(qStringFromNSString([resourcePath stringByAppendingPathComponent:@"flickr/flickr.qml"]));
+    viewer.setMainQmlFile(qStringFromNSString([resourcePath stringByAppendingPathComponent:@"flickr/qml/flickr/flickr.qml"]));
     viewer.showMaximized();
     int retVal = app.exec();
     [pool release];
