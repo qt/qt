@@ -159,6 +159,9 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
 
+    virtual qint64 peek(char *data, qint64 maxSize);
+    virtual QByteArray peek(qint64 maxSize);
+
     // Platform specific functions
     virtual void startClientEncryption() = 0;
     virtual void startServerEncryption() = 0;

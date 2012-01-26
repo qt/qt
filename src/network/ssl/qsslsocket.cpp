@@ -2246,6 +2246,41 @@ void QSslSocketPrivate::_q_flushReadBuffer()
 /*!
     \internal
 */
+qint64 QSslSocketPrivate::peek(char *data, qint64 maxSize)
+{
+    if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
+        if (plainSocket)
+            return plainSocket->peek(data, maxSize);
+        else
+            return -1;
+    } else {
+        QByteArray tmp;
+        tmp = readBuffer.peek(maxSize);
+        memcpy(data, tmp.data(), tmp.length());
+        return tmp.length();
+    }
+}
+
+/*!
+    \internal
+*/
+QByteArray QSslSocketPrivate::peek(qint64 maxSize)
+{
+    if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
+        if (plainSocket)
+            return plainSocket->peek(maxSize);
+        else
+            return QByteArray();
+    } else {
+        QByteArray tmp;
+        tmp = readBuffer.peek(maxSize);
+        return tmp;
+    }
+}
+
+/*!
+    \internal
+*/
 QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 {
     return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...

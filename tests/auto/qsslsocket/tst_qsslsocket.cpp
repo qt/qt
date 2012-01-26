@@ -190,6 +190,7 @@ private slots:
     void readFromClosedSocket();
     void writeBigChunk();
     void blacklistedCertificates();
+    void qtbug18498_peek();
     void setEmptyDefaultConfiguration();
 
     static void exitLoop()
@@ -2030,6 +2031,132 @@ void tst_QSslSocket::blacklistedCertificates()
     QVERIFY(sslErrors.count() > 0);
     // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
     QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
+}
+
+class WebSocket : public QSslSocket
+{
+    Q_OBJECT
+public:
+    explicit WebSocket(int socketDescriptor,
+                       const QString &keyFile = SRCDIR "certs/fluke.key",
+                       const QString &certFile = SRCDIR "certs/fluke.cert");
+
+protected slots:
+    void onReadyReadFirstBytes(void);
+
+private:
+    void _startServerEncryption(void);
+
+    QString m_keyFile;
+    QString m_certFile;
+
+private:
+    Q_DISABLE_COPY(WebSocket)
+};
+
+WebSocket::WebSocket (int socketDescriptor, const QString &keyFile, const QString &certFile)
+    : m_keyFile(keyFile),
+      m_certFile(certFile)
+{
+    QVERIFY(setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState, QIODevice::ReadWrite | QIODevice::Unbuffered));
+    connect (this, SIGNAL(readyRead()), this, SLOT(onReadyReadFirstBytes()));
+}
+
+void WebSocket::_startServerEncryption (void)
+{
+    QFile file(m_keyFile);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!key.isNull());
+    setPrivateKey(key);
+
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
+    QVERIFY(!localCert.isEmpty());
+    QVERIFY(localCert.first().handle());
+    setLocalCertificate(localCert.first());
+
+    QVERIFY(!peerAddress().isNull());
+    QVERIFY(peerPort() != 0);
+    QVERIFY(!localAddress().isNull());
+    QVERIFY(localPort() != 0);
+
+    setProtocol(QSsl::AnyProtocol);
+    setPeerVerifyMode(QSslSocket::VerifyNone);
+    ignoreSslErrors();
+    startServerEncryption();
+}
+
+void WebSocket::onReadyReadFirstBytes (void)
+{
+    peek(1);
+    disconnect(this,SIGNAL(readyRead()), this, SLOT(onReadyReadFirstBytes()));
+    _startServerEncryption();
+}
+
+class SslServer4 : public QTcpServer
+{
+    Q_OBJECT
+public:
+    SslServer4() : socket(0) {}
+    WebSocket *socket;
+
+protected:
+    void incomingConnection(int socketDescriptor)
+    {
+        socket =  new WebSocket(socketDescriptor);
+    }
+};
+
+void tst_QSslSocket::qtbug18498_peek()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer4 server;
+    QSslSocket *client = new QSslSocket(this);
+
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    client->connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(client->waitForConnected(5000));
+    QVERIFY(server.waitForNewConnection(0));
+    client->setObjectName("client");
+    client->ignoreSslErrors();
+
+    connect(client, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    connect(client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+
+    client->startClientEncryption();
+    WebSocket *serversocket = server.socket;
+    QVERIFY(serversocket);
+    serversocket->setObjectName("server");
+
+    enterLoop(1);
+    QVERIFY(!timeout());
+    QVERIFY(serversocket->isEncrypted());
+    QVERIFY(client->isEncrypted());
+
+    QByteArray data("abc123");
+    client->write(data.data());
+
+    connect(serversocket, SIGNAL(readyRead()), this, SLOT(exitLoop()));
+    enterLoop(1);
+    QVERIFY(!timeout());
+
+    QByteArray peek1_data;
+    peek1_data.reserve(data.size());
+    QByteArray peek2_data;
+    QByteArray read_data;
+
+    int lngth = serversocket->peek(peek1_data.data(), 10);
+    peek1_data.resize(lngth);
+
+    peek2_data = serversocket->peek(10);
+    read_data = serversocket->readAll();
+
+    QCOMPARE(peek1_data, data);
+    QCOMPARE(peek2_data, data);
+    QCOMPARE(read_data, data);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration()
