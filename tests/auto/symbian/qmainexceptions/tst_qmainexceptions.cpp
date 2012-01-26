@@ -163,6 +163,7 @@ private slots:
     void leave();
     void testTranslateBadAlloc();
     void testTranslateBigAlloc();
+    void testExceptionFromAO();
     void testRoundTrip();
     void testTrap();
     void testPropagation();
@@ -325,6 +326,15 @@ void tst_qmainexceptions::testTranslateBigAlloc()
 {
     // this test will fail if new does not throw on failure, otherwise should give KErrNoMemory in AO
     TestSchedulerCatchesError(&TranslateBigAllocL, KErrNoMemory);
+}
+
+void tst_qmainexceptions::testExceptionFromAO()
+{
+    CTestActive *act = new(ELeave) CTestActive(&ThrowBadAlloc, true);
+    act->Test();
+    QCOMPARE(act->error, KErrNoMemory);
+    QVERIFY(act->cleanedUp);
+    delete act;
 }
 
 void tst_qmainexceptions::TestSymbianRoundTrip(int leave, int trap)
