@@ -1774,10 +1774,12 @@ void tst_QUrl::toLocalFile_data()
     QTest::newRow("data9")	<< QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
     QTest::newRow("data10")	<< QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
 
+    // relative urls
+    QTest::newRow("relative0") << QString::fromLatin1("a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("relative1") << QString::fromLatin1("/a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("relative2") << QString::fromLatin1("//a.txt") << QString::fromLatin1("//a.txt");
+
     // and some that result in empty (i.e., not local)
-    QTest::newRow("xdata0") << QString::fromLatin1("/a.txt") << QString();
-    QTest::newRow("xdata1") << QString::fromLatin1("//a.txt") << QString();
-    QTest::newRow("xdata2") << QString::fromLatin1("///a.txt") << QString();
     QTest::newRow("xdata3") << QString::fromLatin1("foo:/a.txt") << QString();
     QTest::newRow("xdata4") << QString::fromLatin1("foo://a.txt") << QString();
     QTest::newRow("xdata5") << QString::fromLatin1("foo:///a.txt") << QString();

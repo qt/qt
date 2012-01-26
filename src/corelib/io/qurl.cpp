@@ -6155,12 +6155,19 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     returned value in the form found on SMB networks (for example,
     "//servername/path/to/file.txt").
 
+    If this is a relative URL, in Qt 4.x this function returns the path to
+    maintain backward compatability. This will change from 5.0 onwards. Then
+    the path is returned only for URLs where the scheme is "file", and for
+    all other URLs an empty string is returned.
+
     \sa fromLocalFile(), isLocalFile()
 */
 QString QUrl::toLocalFile() const
 {
+    if (!d) return QString();
+
     // the call to isLocalFile() also ensures that we're parsed
-    if (!isLocalFile())
+    if (!isLocalFile() && !d->scheme.isEmpty())
         return QString();
 
     QString tmp;
