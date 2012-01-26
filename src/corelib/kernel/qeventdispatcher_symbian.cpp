@@ -824,7 +824,7 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
                     runPriority = active->Priority();
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
-                    TRAP(error, QT_TRYCATCH_ERROR(error, active->RunL()));
+                    TRAP(error, QT_TRYCATCH_LEAVING(active->RunL()));
                     if (error!=KErrNone)
                         error=active->RunError(error);
                     if (error) {
