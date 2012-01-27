@@ -2076,11 +2076,17 @@ QString Configure::defaultTo(const QString &option)
         && option == "SQL_OCI")
         return "no";
 
-    if (option == "SYNCQT"
-        && (!QFile::exists(sourcePath + "/bin/syncqt") ||
-            !QFile::exists(sourcePath + "/bin/syncqt.bat")))
-        return "no";
-
+    //Run syncqt for shadow build and developer build and sources from git
+    if (option == "SYNCQT") {
+        if ((buildPath != sourcePath)
+            || (dictionary["BUILDDEV"] == "yes")
+            || QDir(sourcePath + "/.git").exists())
+            return "yes";
+        if (!QFile::exists(sourcePath + "/bin/syncqt")
+            || !QFile::exists(sourcePath + "/bin/syncqt.bat")
+            || QDir(buildPath + "/include").exists())
+            return "no";
+    }
     return "yes";
 }
 
