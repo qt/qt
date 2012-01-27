@@ -703,7 +703,8 @@ QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 
 
     if (!QApplicationPrivate::tryModalHelper(dragOverWidget)
-            || !dragOverWidget->testAttribute(Qt::WA_DropSiteRegistered)) {
+            || !dragOverWidget->testAttribute(Qt::WA_DropSiteRegistered)
+            || !dragOverWidget->acceptDrops()) {
         *pdwEffect = DROPEFFECT_NONE;
         return NOERROR;
     }

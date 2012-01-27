@@ -1773,8 +1773,6 @@ QOleDropTarget* QWidgetPrivate::registerOleDnd(QWidget *widget)
         Q_ASSERT(nativeParent);
         QWExtra *nativeExtra = nativeParent->d_func()->extra;
         Q_ASSERT(nativeExtra);
-        if (!nativeParent->acceptDrops())
-            nativeParent->setAcceptDrops(true);
         if (!nativeExtra->oleDropWidgets.contains(widget))
             nativeExtra->oleDropWidgets.append(widget);
         if (!nativeExtra->dropTarget) {
