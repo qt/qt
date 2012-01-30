@@ -241,11 +241,10 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     if (!d->interrupt) {
-        if (QEventDispatcherUNIX::processEvents(flags)) {
-            QEventDispatcherUNIX::processEvents(flags);
+        if (QEventDispatcherUNIX::processEvents(flags))
             return true;
-        }
     }
+
     return (nevents > 0);
 }
 
