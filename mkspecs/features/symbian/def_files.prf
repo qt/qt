@@ -4,7 +4,8 @@
 CONFIG -= def_files_disabled
 
 # We need a target name without the INFIX'ed part, since DEF files are not infixed.
-equals(QMAKE_TARGET_PRODUCT, Qt4)|equals(QMAKE_TARGET_PRODUCT, QTestLib):clean_TARGET = $$replace(TARGET, "$${QT_LIBINFIX}$", "")
+# If a non-Qt project uses QT_LIBINFIX, it may declare QT_LIBINFIX_USED
+equals(QMAKE_TARGET_PRODUCT, Qt4)|equals(QMAKE_TARGET_PRODUCT, QTestLib)|!isEmpty(QT_LIBINFIX_USED):clean_TARGET = $$replace(TARGET, "$${QT_LIBINFIX}$", "")
 else:clean_TARGET = $$TARGET
 
 defineTest(qtTestIfDirExists) {
