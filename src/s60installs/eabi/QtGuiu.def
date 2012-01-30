@@ -12512,15 +12512,15 @@ EXPORTS
 	_ZN19QBlitterPaintEngine12drawTextItemERK7QPointFRK9QTextItem @ 12511 NONAME
 	_ZN19QBlitterPaintEngine14opacityChangedEv @ 12512 NONAME
 	_ZN19QBlitterPaintEngine16transformChangedEv @ 12513 NONAME
-	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12514 NONAME
+	_ZN19QBlitterPaintEngine18brushOriginChangedEv @ 12514 NONAME ABSENT
 	_ZN19QBlitterPaintEngine18clipEnabledChangedEv @ 12515 NONAME
 	_ZN19QBlitterPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 12516 NONAME
 	_ZN19QBlitterPaintEngine18renderHintsChangedEv @ 12517 NONAME
 	_ZN19QBlitterPaintEngine22compositionModeChangedEv @ 12518 NONAME
 	_ZN19QBlitterPaintEngine3endEv @ 12519 NONAME
-	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12520 NONAME
-	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12521 NONAME
-	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12522 NONAME
+	_ZN19QBlitterPaintEngine4clipERK11QVectorPathN2Qt13ClipOperationE @ 12520 NONAME ABSENT
+	_ZN19QBlitterPaintEngine4clipERK5QRectN2Qt13ClipOperationE @ 12521 NONAME ABSENT
+	_ZN19QBlitterPaintEngine4clipERK7QRegionN2Qt13ClipOperationE @ 12522 NONAME ABSENT
 	_ZN19QBlitterPaintEngine4fillERK11QVectorPathRK6QBrush @ 12523 NONAME
 	_ZN19QBlitterPaintEngine5beginEP12QPaintDevice @ 12524 NONAME
 	_ZN19QBlitterPaintEngine6strokeERK11QVectorPathRK4QPen @ 12525 NONAME
@@ -12532,9 +12532,9 @@ EXPORTS
 	_ZN19QBlitterPaintEngine9drawRectsEPK6QRectFi @ 12531 NONAME
 	_ZN19QBlitterPaintEngineC1EP20QBlittablePixmapData @ 12532 NONAME
 	_ZN19QBlitterPaintEngineC2EP20QBlittablePixmapData @ 12533 NONAME
-	_ZN19QBlitterPaintEngineD0Ev @ 12534 NONAME
-	_ZN19QBlitterPaintEngineD1Ev @ 12535 NONAME
-	_ZN19QBlitterPaintEngineD2Ev @ 12536 NONAME
+	_ZN19QBlitterPaintEngineD0Ev @ 12534 NONAME ABSENT
+	_ZN19QBlitterPaintEngineD1Ev @ 12535 NONAME ABSENT
+	_ZN19QBlitterPaintEngineD2Ev @ 12536 NONAME ABSENT
 	_ZN19QEventDispatcherS6018qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12537 NONAME
 	_ZN19QEventDispatcherS6025staticMetaObjectExtraDataE @ 12538 NONAME DATA 8
 	_ZN19QGraphicsBlurEffect18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12539 NONAME
@@ -12761,7 +12761,7 @@ EXPORTS
 	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12760 NONAME
 	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12761 NONAME
 	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12762 NONAME
-	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12763 NONAME
+	_ZNK19QBlitterPaintEngine11createStateEP13QPainterState @ 12763 NONAME ABSENT
 	_ZNK19QIdentityProxyModel10metaObjectEv @ 12764 NONAME
 	_ZNK19QIdentityProxyModel11columnCountERK11QModelIndex @ 12765 NONAME
 	_ZNK19QIdentityProxyModel11mapToSourceERK11QModelIndex @ 12766 NONAME
