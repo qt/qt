@@ -277,17 +277,6 @@ typedef struct tagGESTURECONFIG
 
 #endif // Q_WS_WIN
 
-class QScopedLoopLevelCounter
-{
-    QThreadData *threadData;
-public:
-    QScopedLoopLevelCounter(QThreadData *threadData)
-        : threadData(threadData)
-    { ++threadData->loopLevel; }
-    ~QScopedLoopLevelCounter()
-    { --threadData->loopLevel; }
-};
-
 typedef QHash<QByteArray, QFont> FontHash;
 FontHash *qt_app_fonts_hash();
 
