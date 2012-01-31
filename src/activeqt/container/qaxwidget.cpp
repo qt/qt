@@ -2148,7 +2148,7 @@ QSize QAxWidget::minimumSizeHint() const
 */
 void QAxWidget::changeEvent(QEvent *e)
 {
-    if (isNull())
+    if (isNull() || !container)
         return;
 
     switch (e->type()) {
