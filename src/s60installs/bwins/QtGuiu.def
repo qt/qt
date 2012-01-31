@@ -13360,7 +13360,7 @@ EXPORTS
 	?qt_static_metacall@QGraphicsItemAnimation@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13359 NONAME ; void QGraphicsItemAnimation::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	??0QRasterWindowSurface@@QAE@PAVQWidget@@_N@Z @ 13360 NONAME ; QRasterWindowSurface::QRasterWindowSurface(class QWidget *, bool)
 	?brushChanged@QBlitterPaintEngine@@UAEXXZ @ 13361 NONAME ; void QBlitterPaintEngine::brushChanged(void)
-	?clip@QBlitterPaintEngine@@UAEXABVQRect@@W4ClipOperation@Qt@@@Z @ 13362 NONAME ; void QBlitterPaintEngine::clip(class QRect const &, enum Qt::ClipOperation)
+	?clip@QBlitterPaintEngine@@UAEXABVQRect@@W4ClipOperation@Qt@@@Z @ 13362 NONAME ABSENT ; void QBlitterPaintEngine::clip(class QRect const &, enum Qt::ClipOperation)
 	?staticMetaObjectExtraData@QGraphicsWidget@@0UQMetaObjectExtraData@@B @ 13363 NONAME ; struct QMetaObjectExtraData const QGraphicsWidget::staticMetaObjectExtraData
 	?qt_static_metacall@QSessionManager@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13364 NONAME ; void QSessionManager::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QTabWidget@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13365 NONAME ; void QTabWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
@@ -13562,7 +13562,7 @@ EXPORTS
 	?qt_static_metacall@QAbstractButton@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13561 NONAME ; void QAbstractButton::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QTextDocument@@0UQMetaObjectExtraData@@B @ 13562 NONAME ; struct QMetaObjectExtraData const QTextDocument::staticMetaObjectExtraData
 	?setSourceModel@QIdentityProxyModel@@UAEXPAVQAbstractItemModel@@@Z @ 13563 NONAME ; void QIdentityProxyModel::setSourceModel(class QAbstractItemModel *)
-	?clip@QBlitterPaintEngine@@UAEXABVQRegion@@W4ClipOperation@Qt@@@Z @ 13564 NONAME ; void QBlitterPaintEngine::clip(class QRegion const &, enum Qt::ClipOperation)
+	?clip@QBlitterPaintEngine@@UAEXABVQRegion@@W4ClipOperation@Qt@@@Z @ 13564 NONAME ABSENT ; void QBlitterPaintEngine::clip(class QRegion const &, enum Qt::ClipOperation)
 	?subPixelPositionForX@QTextureGlyphCache@@QBE?AUQFixed@@U2@@Z @ 13565 NONAME ; struct QFixed QTextureGlyphCache::subPixelPositionForX(struct QFixed) const
 	?addFile@QZipWriter@@QAEXABVQString@@PAVQIODevice@@@Z @ 13566 NONAME ; void QZipWriter::addFile(class QString const &, class QIODevice *)
 	?hasAlphaChannel@QBlittablePixmapData@@UBE_NXZ @ 13567 NONAME ; bool QBlittablePixmapData::hasAlphaChannel(void) const
@@ -13677,7 +13677,7 @@ EXPORTS
 	?staticMetaObjectExtraData@QDrag@@0UQMetaObjectExtraData@@B @ 13676 NONAME ; struct QMetaObjectExtraData const QDrag::staticMetaObjectExtraData
 	?qt_static_metacall@QProxyModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13677 NONAME ; void QProxyModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QWidgetResizeHandler@@0UQMetaObjectExtraData@@B @ 13678 NONAME ; struct QMetaObjectExtraData const QWidgetResizeHandler::staticMetaObjectExtraData
-	?state@QBlitterPaintEngine@@QBEPBVQPainterState@@XZ @ 13679 NONAME ; class QPainterState const * QBlitterPaintEngine::state(void) const
+	?state@QBlitterPaintEngine@@QBEPBVQPainterState@@XZ @ 13679 NONAME ABSENT ; class QPainterState const * QBlitterPaintEngine::state(void) const
 	?qt_static_metacall@QGroupBox@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13680 NONAME ; void QGroupBox::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?qt_static_metacall@QTextObject@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 13681 NONAME ; void QTextObject::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QScrollBar@@0UQMetaObjectExtraData@@B @ 13682 NONAME ; struct QMetaObjectExtraData const QScrollBar::staticMetaObjectExtraData
