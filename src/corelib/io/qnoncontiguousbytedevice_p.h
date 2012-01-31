@@ -146,7 +146,7 @@ protected:
     qint64 currentReadBufferSize;
     qint64 currentReadBufferAmount;
     qint64 currentReadBufferPosition;
-    qint64 totalAdvancements;
+    qint64 totalAdvancements; //progress counter used for emitting the readProgress signal
     bool eof;
     qint64 initialPosition;
 };

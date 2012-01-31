@@ -392,6 +392,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 
     if (device->seek(initialPosition)) {
         eof = false; // assume eof is false, it will be true after a read has been attempted
+        totalAdvancements = 0; //reset the progress counter
         return true;
     }
 
