@@ -38,7 +38,7 @@
         <group name="qtdemos"/>
       </meta>
       <component id="qtexamples_build" name="Qt Examples Build" introduced="^2"
-                 filter="s60,test,qtexamples,build_as_app">
+                 filter="s60,test,qtdemos,build_as_app">
         <unit bldFile="examples" qt:proFile="examples.pro"/>
       </component>
     </collection>
