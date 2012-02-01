@@ -98,4 +98,6 @@ inline int getpagesize()
 
 #define QT_QWS_TEMP_DIR QString::fromLatin1(qgetenv("TMP"))
 
+#define QT_NO_QWS_INPUTMETHODS
+
 #endif // QPLATFORMDEFS_H
