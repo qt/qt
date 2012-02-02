@@ -89,6 +89,7 @@
 - (IBAction)qtDispatcherToQAction:(id)sender;
 - (void)qtUpdateMenubar;
 - (void)orderFrontCharacterPalette:(id)sender;
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 @end
 
 #endif // QT_MAC_USE_COCOA
