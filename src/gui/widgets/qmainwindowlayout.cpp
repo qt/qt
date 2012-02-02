@@ -1368,10 +1368,11 @@ bool QMainWindowLayout::separatorMove(const QPoint &pos)
 
 bool QMainWindowLayout::endSeparatorMove(const QPoint&)
 {
-    bool result = !movingSeparator.isEmpty();
+    if (movingSeparator.isEmpty())
+        return false;
     movingSeparator.clear();
     savedState.clear();
-    return result;
+    return true;
 }
 
 void QMainWindowLayout::raise(QDockWidget *widget)
