@@ -71,6 +71,10 @@
 #include "qwidget_p.h"
 #include "qcursor_p.h"
 
+#ifndef QT_NO_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // #define DND_DEBUG
@@ -1432,6 +1436,7 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
 
         if (attr.map_state == IsViewable
             && QRect(attr.x,attr.y,attr.width,attr.height).contains(pos)) {
+            bool windowContainsMouse = true;
             {
                 Atom   type = XNone;
                 int f;
@@ -1441,8 +1446,26 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                 XGetWindowProperty(X11->display, w, ATOM(XdndAware), 0, 0, False,
                                    AnyPropertyType, &type, &f,&n,&a,&data);
                 if (data) XFree(data);
-                if (type)
-                    return w;
+                if (type) {
+#ifndef QT_NO_XFIXES
+                    if (X11->use_xfixes && X11->ptrXFixesCreateRegionFromWindow && X11->ptrXFixesFetchRegion && X11->ptrXFixesDestroyRegion) {
+                        XserverRegion region = X11->ptrXFixesCreateRegionFromWindow(X11->display, w, WindowRegionBounding);
+                        int nrectanglesRet;
+                        XRectangle *rectangles = X11->ptrXFixesFetchRegion(X11->display, region, &nrectanglesRet);
+                        if (rectangles) {
+                            windowContainsMouse = false;
+                            for (int i = 0; !windowContainsMouse && i < nrectanglesRet; ++i)
+                                windowContainsMouse = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
+                            XFree(rectangles);
+                        }
+                        X11->ptrXFixesDestroyRegion(X11->display, region);
+
+                        if (windowContainsMouse)
+                            return w;
+                    } else
+#endif
+                        return w;
+                }
             }
 
             Window r, p;
@@ -1463,7 +1486,10 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
             }
 
             // No children!
-            return w;
+            if (!windowContainsMouse)
+                return 0;
+            else
+                return w;
         }
     }
     return 0;

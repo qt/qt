@@ -209,6 +209,9 @@ typedef Bool (*PtrXFixesQueryExtension)(Display *, int *, int *);
 typedef Status (*PtrXFixesQueryVersion)(Display *, int *, int *);
 typedef void (*PtrXFixesSetCursorName)(Display *dpy, Cursor cursor, const char *name);
 typedef void (*PtrXFixesSelectSelectionInput)(Display *dpy, Window win, Atom selection, unsigned long eventMask);
+typedef void (*PtrXFixesDestroyRegion)(Display *dpy, /*XserverRegion*/ XID region);
+typedef /*XserverRegion*/ XID (*PtrXFixesCreateRegionFromWindow)(Display *dpy, Window window, int kind);
+typedef XRectangle *(*PtrXFixesFetchRegion)(Display *dpy, /*XserverRegion*/ XID region, int *nrectanglesRet);
 #endif // QT_NO_XFIXES
 
 #ifndef QT_NO_XCURSOR
@@ -419,6 +422,9 @@ struct QX11Data
     PtrXFixesQueryVersion ptrXFixesQueryVersion;
     PtrXFixesSetCursorName ptrXFixesSetCursorName;
     PtrXFixesSelectSelectionInput ptrXFixesSelectSelectionInput;
+    PtrXFixesDestroyRegion ptrXFixesDestroyRegion;
+    PtrXFixesCreateRegionFromWindow ptrXFixesCreateRegionFromWindow;
+    PtrXFixesFetchRegion ptrXFixesFetchRegion;
 #endif
 
 #ifndef QT_NO_XINPUT
