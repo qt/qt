@@ -30,3 +30,5 @@ wince*|symbian: {
 
   DEPLOYMENT += copier paster rsc reg_resource
 }
+
+win32:CONFIG+=insignificant_test # QTQAINFRA-428

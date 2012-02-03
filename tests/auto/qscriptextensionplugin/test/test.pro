@@ -23,3 +23,4 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
+win32:CONFIG+=insignificant_test # QTQAINFRA-428

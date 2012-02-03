@@ -14,4 +14,4 @@ win32 {
 QT += qt3support
 requires(contains(QT_CONFIG,qt3support))
 
-
+win32:CONFIG+=insignificant_test # QTQAINFRA-428
