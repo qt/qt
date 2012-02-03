@@ -1105,6 +1105,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
                        const QPixmap &pixmap, const QRect &sourceRect,const QMargins &sourceMargins,
                        const QTileRules &rules, QDrawBorderPixmap::DrawingHints hints)
 {
+    if (!painter->isActive()) {
+        qWarning("qDrawBorderPixmap: Painter not active");
+        return;
+    }
+
     QRectFArray sourceData[2];
     QRectFArray targetData[2];
 
