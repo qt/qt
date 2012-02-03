@@ -134,6 +134,9 @@ QMacCocoaViewContainer::QMacCocoaViewContainer(void *cocoaViewToWrap, QWidget *p
 {
     if (cocoaViewToWrap)
         setCocoaView(cocoaViewToWrap);
+
+    // QMacCocoaViewContainer requires a native window handle.
+    setAttribute(Qt::WA_NativeWindow);
 }
 
 /*!
