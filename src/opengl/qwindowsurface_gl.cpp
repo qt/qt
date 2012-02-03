@@ -693,6 +693,11 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
+#ifdef Q_OS_SYMBIAN
+            if (!ctx)
+                return;
+#endif
+
             if (widget != window()) {
                 if (initializeOffscreenTexture(window()->size()))
                     qWarning() << "QGLWindowSurface: Flushing to native child widget, may lead to significant performance loss";

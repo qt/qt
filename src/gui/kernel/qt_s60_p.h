@@ -388,6 +388,7 @@ inline QS60Data::QS60Data()
   screenFurnitureFullyCreated(0),
   beginFullScreenCalled(0),
   endFullScreenCalled(0),
+  eglSurfaceCreationError(0),
   s60ApplicationFactory(0),
   s60InstalledTrapHandler(0),
   editorFlags(0)

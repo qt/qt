@@ -243,7 +243,9 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                 QApplicationPrivate *d = QApplicationPrivate::instance();
                 d->emitAboutToUseGpuResources();
 
-                if (backingStore.data()) {
+                // (Re)create the backing store and force repaint if we have no
+                // backing store already, or EGL surface cration failed on last attempt.
+                if (backingStore.data() && !S60->eglSurfaceCreationError) {
                     backingStore.registerWidget(widget);
                 } else {
                     S60->eglSurfaceCreationError = false;
@@ -1348,6 +1350,13 @@ void QSymbianControl::Draw(const TRect& aRect) const
 
 void QSymbianControl::doDraw(const TRect& controlRect) const
 {
+    // Bail out immediately, if we don't have a drawing surface. Surface is attempted to be recreated
+    // when this application becomes visible for the next time.
+    if (S60->eglSurfaceCreationError) {
+        qWarning() << "QSymbianControl::doDraw: EGL surface creation has failed, abort";
+        return;
+    }
+
     // Set flag to avoid calling DrawNow in window surface
     QWidget *window = qwidget->window();
     Q_ASSERT(window);
