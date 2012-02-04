@@ -367,7 +367,7 @@ void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardM
     QString str;
     if (unicode != 0xffff)
         str = QString(unicode);
-    QWindowSystemInterface::handleKeyEvent(0, type, keycode, modifiers, str);
+    QWindowSystemInterface::handleKeyEvent(0, type, keycode, modifiers, str, autoRepeat);
 #endif
 }
 
