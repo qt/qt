@@ -157,6 +157,7 @@ private:
 QActiveObject::QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher)
     : CActive(priority),
       m_dispatcher(dispatcher),
+      m_threadData(QThreadData::current()),
       m_hasAlreadyRun(false),
       m_hasRunAgain(false),
       m_iterationCount(1)
@@ -258,18 +259,32 @@ QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, Symb
 QTimerActiveObject::~QTimerActiveObject()
 {
     Cancel();
-    m_rTimer.Close(); //close of null handle is safe
+    // deletion in the wrong thread (eg adoptedThreadMonitor thread) must avoid using the RTimer, which is local
+    // to the thread it was created in.
+    if (QThreadData::current() == m_threadData)
+        m_rTimer.Close(); //close of null handle is safe
 }
 
 void QTimerActiveObject::DoCancel()
 {
-    if (m_timerInfo->interval > 0) {
-        m_rTimer.Cancel();
-    } else {
-        if (iStatus.Int() == KRequestPending) {
-            TRequestStatus *status = &iStatus;
-            QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    // RTimer is thread local and cannot be cancelled outside of the thread it was created in
+    if (QThreadData::current() == m_threadData) {
+        if (m_timerInfo->interval > 0) {
+            m_rTimer.Cancel();
+        } else {
+            if (iStatus.Int() == KRequestPending) {
+                TRequestStatus *status = &iStatus;
+                QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+            }
         }
+    } else {
+        // Cancel requires a signal to continue, we're in the wrong thread to use the RTimer
+        if (m_threadData->symbian_thread_handle.ExitType() == EExitPending) {
+            // owner thread is still running, it will receive a stray event if the timer fires now.
+            qFatal("QTimerActiveObject cancelled from wrong thread");
+        }
+        TRequestStatus *status = &iStatus;
+        User::RequestComplete(status, KErrCancel);
     }
 }
 
@@ -358,6 +373,7 @@ void QTimerActiveObject::Start()
     if (m_timerInfo->interval > 0) {
         if (!m_rTimer.Handle()) {
             qt_symbian_throwIfError(m_rTimer.CreateLocal());
+            m_threadData = QThreadData::current();
         }
         m_timeoutTimer.start();
         m_expectedTimeSinceLastEvent = 0;
