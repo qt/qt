@@ -3116,7 +3116,7 @@ void onApplicationChangedActivation( bool activated )
         qt_mac_update_cursor();
     } else { // de-activated
         QApplicationPrivate *priv = [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] qAppPrivate];
-        while (priv->inPopupMode())
+        if (priv->inPopupMode())
             app->activePopupWidget()->close();
         if (app) {
             QEvent ev(QEvent::ApplicationDeactivate);
