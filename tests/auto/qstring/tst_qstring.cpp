@@ -152,6 +152,7 @@ private slots:
 //  void indexOf3();
     void sprintf();
     void copy();
+    void latin1();
     void fill();
     void truncate();
     void constructor();
@@ -914,6 +915,24 @@ void tst_QString::copy()
     e = "XXX";
     QCOMPARE(ce,(QString)"String E");
     QCOMPARE(e,(QString)"XXX");
+#endif
+}
+
+void tst_QString::latin1()
+{
+#ifdef QT3_SUPPORT
+    QString e = "String E";
+    const char* lat = e.latin1();
+    QCOMPARE(lat, "String E");
+    e += "F";
+    QCOMPARE(e.latin1(), "String EF");
+
+    QString null;
+    QString empty = "";
+    QCOMPARE(null.latin1(), ""); // was a null pointer in Qt3!
+    QCOMPARE(empty.latin1(), "");
+#else
+    QSKIP("This test requires QT3_SUPPORT", SkipSingle);
 #endif
 }
 
