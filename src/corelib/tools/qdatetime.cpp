@@ -4038,6 +4038,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     tm res;
     if(err == KErrNone) {
         TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
+        CTrapCleanup *cleanup = CTrapCleanup::New();    // needed to avoid crashes in apps that previously were able to use this function in static data initialization
         TRAP(err,
             RTz tz;
             User::LeaveIfError(tz.Connect());
@@ -4048,6 +4049,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
             User::LeaveIfError(tz.ConvertToLocalTime(utcTTime));
             CleanupStack::PopAndDestroy(tzId);
             CleanupStack::PopAndDestroy(&tz));
+        delete cleanup;
         if (KErrNone == err) {
             TDateTime localDateTime = utcTTime.DateTime();
             res.tm_sec = localDateTime.Second();

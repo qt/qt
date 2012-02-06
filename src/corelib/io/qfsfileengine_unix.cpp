@@ -191,18 +191,15 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     if(openMode & QIODevice::Text)
         symbianMode |= EFileStreamText;
 
-    // pre Symbian 9.4, file I/O is always unbuffered, and the enum values don't exist
-    if(QSysInfo::symbianVersion() >= QSysInfo::SV_9_4) {
-        if (openMode & QFile::Unbuffered) {
-            if (openMode & QIODevice::WriteOnly)
-                symbianMode |= 0x00001000; //EFileWriteDirectIO;
-            // ### Unbuffered read is not used, because it prevents file open in /resource
-            // ### and has no obvious benefits
-        } else {
-            if (openMode & QIODevice::WriteOnly)
-                symbianMode |= 0x00000800; //EFileWriteBuffered;
-            // use implementation defaults for read buffering
-        }
+    if (openMode & QFile::Unbuffered) {
+        if (openMode & QIODevice::WriteOnly)
+            symbianMode |= 0x00001000; //EFileWriteDirectIO;
+        // ### Unbuffered read is not used, because it prevents file open in /resource
+        // ### and has no obvious benefits
+    } else {
+        if (openMode & QIODevice::WriteOnly)
+            symbianMode |= 0x00000800; //EFileWriteBuffered;
+        // use implementation defaults for read buffering
     }
 
     // Until Qt supports file sharing, we can't support EFileShareReadersOrWriters safely,
