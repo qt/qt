@@ -207,14 +207,7 @@ namespace QPatternist
          */
         inline Item()
         {
-            /* Note that this function should be equal to reset(). */
-
-            /* This is the area which atomicValue uses. Becauase we want as()
-             * to return null on null-constructed objects, we initialize it. */
-            node.data = 0;
-
-            /* This signals that we're not an atomic value. */
-            node.model = 0;
+            node.reset();
         }
 
         inline Item(const QXmlNodeModelIndex &n) : node(n.m_storage)
@@ -231,6 +224,7 @@ namespace QPatternist
 
         inline Item(const AtomicValue::Ptr &a)
         {
+            node.reset();
             if(a)
             {
                 atomicValue = a.data();
@@ -239,14 +233,12 @@ namespace QPatternist
                 /* Signal that we're housing an atomic value. */
                 node.model = reinterpret_cast<const QAbstractXmlNodeModel *>(~0);
             }
-            else
-                node.model = 0; /* Like the default constructor. */
         }
 
         inline Item(const AtomicValue *const a)
         {
             /* Note, the implementation is a copy of the constructor above. */
-
+            node.reset();
             if(a)
             {
                 atomicValue = a;
@@ -255,8 +247,6 @@ namespace QPatternist
                 /* Signal that we're housing an atomic value. */
                 node.model = reinterpret_cast<const QAbstractXmlNodeModel *>(~0);
             }
-            else
-                node.model = 0; /* Like the default constructor. */
         }
 
         inline ~Item()
@@ -412,10 +402,7 @@ namespace QPatternist
             if(isAtomicValue() && !atomicValue->ref.deref())
                 delete atomicValue;
 
-            /* Note that this function should be equal to the default
-             * constructor. */
-            node.model = 0;
-            node.data = 0;
+            node.reset();
         }
 
         static inline Item fromPublic(const QXmlItem &i)

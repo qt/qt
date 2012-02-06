@@ -1138,9 +1138,7 @@ bool QAbstractXmlNodeModel::isDeepEqual(const QXmlNodeModelIndex &n1,
  */
 QXmlItem::QXmlItem()
 {
-    m_node.model = 0;
-    m_node.data = 0;
-    m_node.additionalData = 0;
+    m_node.reset();
 }
 
 bool QXmlItem::internalIsAtomicValue() const
@@ -1164,12 +1162,10 @@ QXmlItem::QXmlItem(const QXmlItem &other) : m_node(other.m_node)
  */
 QXmlItem::QXmlItem(const QVariant &atomicValue)
 {
+    m_node.reset();
     if(atomicValue.isNull())
     {
         /* Then we behave just like the default constructor. */
-        m_node.model = 0;
-        m_node.data = 0;
-        m_node.additionalData = 0;
         return;
     }
 
@@ -1188,10 +1184,7 @@ QXmlItem::QXmlItem(const QVariant &atomicValue)
     else
     {
         m_atomicValue = 0;
-        m_node.model = 0;
     }
-
-    m_node.additionalData = 0;
 }
 
 /*!
