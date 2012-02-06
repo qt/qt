@@ -102,6 +102,7 @@ private slots:
     void adoptedThreadSetPriority();
     void adoptedThreadExit();
     void adoptedThreadExec();
+    void adoptThreadExitWithActiveTimer();
     void adoptedThreadFinished();
     void adoptedThreadExecFinished();
     void adoptMultipleThreads();
@@ -1010,6 +1011,32 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(int(recorder.activationCount), numThreads);
 }
+
+void adoptedThreadActiveTimerFunction(void *)
+{
+    QThread  * const adoptedThread = QThread::currentThread();
+    QEventLoop eventLoop(adoptedThread);
+
+    const int code = 1;
+    Exit_Object o;
+    o.thread = adoptedThread;
+    o.code = code;
+    QTimer::singleShot(100, &o, SLOT(slot()));
+
+    // create a timer that will still be active when the thread finishes
+    QTimer::singleShot(3000, &o, SLOT(slot()));
+
+    const int result = eventLoop.exec();
+    QCOMPARE(result, code);
+}
+
+void tst_QThread::adoptThreadExitWithActiveTimer()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.start(adoptedThreadActiveTimerFunction);
+    nativeThread.join();
+}
+
 void tst_QThread::stressTest()
 {
 #if defined(Q_OS_WINCE)

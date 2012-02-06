@@ -88,6 +88,7 @@ public:
     void reactivateAndComplete();
 protected:
     QEventDispatcherSymbian *m_dispatcher;
+    QThreadData *m_threadData;
 
 private:
     bool m_hasAlreadyRun : 1;
