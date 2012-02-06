@@ -700,15 +700,6 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
                 usedNamespaces.insert(path.join("::"));
             }
         }
-
-        if (command == COMMAND_CLASS) {
-            if (paths.size() > 1) {
-                if (!paths[1].endsWith(".h")) {
-                    ClassNode* cnode = static_cast<ClassNode*>(node);
-                    cnode->setQmlElement(paths[1]);
-                }
-            }
-        }
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
