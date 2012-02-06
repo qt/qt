@@ -2795,6 +2795,8 @@ void Configure::generateOutputVars()
 
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
+    // We currently have no switch for QtConcurrent, so add it unconditionally.
+    qtConfig += "concurrent";
 
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()
