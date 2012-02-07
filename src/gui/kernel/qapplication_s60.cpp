@@ -1946,6 +1946,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
 
+    // Notify uiaccelerator, that we are qt application. This info is used for
+    // decision making how startup effects are shown.
+    GfxTransEffect::BeginFullScreen(AknTransEffect::ENone,
+        TRect(0, 0, 0, 0),
+        AknTransEffect::EParameterAvkonInternal,
+        AknTransEffect::GfxTransParam(S60->uid, KQtAppExitFlag));
+
     // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
     // and for dimming behind modal windows
     S60->windowGroup().EnableFocusChangeEvents();
