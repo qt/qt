@@ -1313,6 +1313,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
         int screen = desktopWidget->d_func()->topData()->screenIndex;
+        topData()->screenIndex = screen;
         QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
         platform->moveToScreen(q, screen);
     }
