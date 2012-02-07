@@ -3,6 +3,3 @@ CONFIG *= symbian_no_export_sqlite
 
 # STL autodetection in clean builds not working, specify it explicitly
 CONFIG *= stl
-
-S60_VERSION = 5.4
-SYMBIAN_VERSION = 5.4
