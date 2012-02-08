@@ -1111,7 +1111,7 @@ public:
         if (!instance) {
             qWarning("QDBusConnection: %s D-Bus connection created before QCoreApplication. Application may misbehave.",
                      type == SessionBus ? "session" : type == SystemBus ? "system" : "generic");
-        } else {
+        } else if (QDBusConnectionPrivate::d(*this)) {
             QDBusConnectionPrivate::d(*this)->moveToThread(instance->thread());
         }
     }
