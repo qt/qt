@@ -245,7 +245,7 @@ void QWakeUpActiveObject::RunL()
 {
     iStatus = KRequestPending;
     SetActive();
-    QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
+    QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled(this));
 }
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
@@ -349,7 +349,7 @@ void QTimerActiveObject::Run()
         m_timerInfo->msLeft = m_timerInfo->interval;
         StartTimer();
 
-        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
+        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId, this);
     } else {
         // However, we only complete zero timers after the event has finished,
         // in order to prevent busy looping when doing nested loops.
@@ -357,7 +357,7 @@ void QTimerActiveObject::Run()
         // Keep the refpointer around in order to avoid deletion until the end of this function.
         SymbianTimerInfoPtr timerInfoPtr(m_timerInfo);
 
-        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
+        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId, this);
 
         iStatus = KRequestPending;
         SetActive();
@@ -767,6 +767,7 @@ public:
     };
     static RunResult RunMarkedIfReady(TInt &runPriority, TInt minimumPriority, QEventDispatcherSymbian *dispatcher);
     static bool UseRRActiveScheduler();
+    static bool TestAndClearActiveObjectRunningInRRScheduler(CActive* ao);
 
 private:
     // active scheduler access kit, for gaining access to the internals of active objects for
@@ -786,9 +787,11 @@ private:
         TPriQueLink iLink;
         enum TMarks
         {
-            ENewObject,     // CBase zero initialization sets this, new objects cannot be run in the processEvents in which they are created
-            ENotRun,        // This object has not yet run in the current processEvents call
-            ERan            // This object has run in the current processEvents call
+            ENewObject,         // CBase zero initialization sets this, new objects cannot be run in the processEvents in which they are created
+            ENotRun,            // This object has not yet run in the current processEvents call
+            ERunningUnchecked,  // This object is running in the current processEvents call, as yet unacknowledged by the event dispatcher
+            ERunningChecked,    // This object is running in a processEvents call, the event dispatcher knows which loop level
+            ERan                // This object has run in the current processEvents call
         };
         int iMark;      //TAny* iSpare;
     };
@@ -836,11 +839,12 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
             if (active->IsActive() && (active->iStatus!=KRequestPending)) {
                 int& mark = dataAccess->iMark;
                 if (mark == CActiveDataAccess::ENotRun && active->Priority()>=minimumPriority) {
-                    mark = CActiveDataAccess::ERan;
+                    mark = CActiveDataAccess::ERunningUnchecked;
                     runPriority = active->Priority();
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
                     TRAP(error, QT_TRYCATCH_LEAVING(active->RunL()));
+                    mark = CActiveDataAccess::ERan;
                     if (error!=KErrNone)
                         error=active->RunError(error);
                     if (error) {
@@ -867,6 +871,16 @@ bool QtRRActiveScheduler::UseRRActiveScheduler()
     TAny* schedulerCompatibilityNumber;
     access->Extension_(0x2001B2DC, schedulerCompatibilityNumber, NULL);
     return schedulerCompatibilityNumber == NULL;
+}
+
+bool QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(CActive* ao)
+{
+    CActiveDataAccess *dataAccess = (CActiveDataAccess*)ao;
+    if (dataAccess->iMark == CActiveDataAccess::ERunningUnchecked) {
+        dataAccess->iMark = CActiveDataAccess::ERunningChecked;
+        return true;
+    }
+    return false;
 }
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
@@ -1166,7 +1180,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
     return handledAnyEvent;
 }
 
-void QEventDispatcherSymbian::timerFired(int timerId)
+void QEventDispatcherSymbian::timerFired(int timerId, QTimerActiveObject *ao)
 {
     Q_D(QAbstractEventDispatcher);
     QHash<int, SymbianTimerInfoPtr>::iterator i = m_timerList.find(timerId);
@@ -1187,9 +1201,13 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     m_insideTimerEvent = true;
 
     QTimerEvent event(timerInfo->timerId);
-    //undo the added nesting level around RunIfReady, since Qt's event system also nests
-    Decrementer dec(d->threadData->loopLevel);
-    QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    if (QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(ao)) {
+        //undo the added nesting level around RunIfReady, since Qt's event system also nests
+        Decrementer dec(d->threadData->loopLevel);
+        QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    } else {
+        QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    }
 
     m_insideTimerEvent = oldInsideTimerEventValue;
     timerInfo->inTimerEvent = false;
@@ -1197,7 +1215,7 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     return;
 }
 
-void QEventDispatcherSymbian::wakeUpWasCalled()
+void QEventDispatcherSymbian::wakeUpWasCalled(QWakeUpActiveObject *ao)
 {
     Q_D(QAbstractEventDispatcher);
     // The reactivation should happen in RunL, right before the call to this function.
@@ -1209,9 +1227,13 @@ void QEventDispatcherSymbian::wakeUpWasCalled()
     // the sendPostedEvents was done, but before the object was ready to be completed
     // again. This could deadlock the application if there are no other posted events.
     m_wakeUpDone.fetchAndStoreOrdered(0);
-    //undo the added nesting level around RunIfReady, since Qt's event system also nests
-    Decrementer dec(d->threadData->loopLevel);
-    sendPostedEvents();
+    if (QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(ao)) {
+        //undo the added nesting level around RunIfReady, since Qt's event system also nests
+        Decrementer dec(d->threadData->loopLevel);
+        sendPostedEvents();
+    } else {
+        sendPostedEvents();
+    }
 }
 
 void QEventDispatcherSymbian::interrupt()

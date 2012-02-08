@@ -248,8 +248,8 @@ public:
     void startingUp();
     void closingDown();
 
-    void timerFired(int timerId);
-    void wakeUpWasCalled();
+    void timerFired(int timerId, QTimerActiveObject *ao);
+    void wakeUpWasCalled(QWakeUpActiveObject *ao);
     void reactivateSocketNotifier(QSocketNotifier *notifier);
 
     void addDeferredActiveObject(QActiveObject *object);
