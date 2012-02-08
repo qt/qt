@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../../integrity-ghs/qplatformdefs.h"
+#include "../../common/integrity/qplatformdefs.h"
