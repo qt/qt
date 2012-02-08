@@ -1280,13 +1280,13 @@ EXPORTS
 	_ZN23QCoreApplicationPrivateD1Ev @ 1279 NONAME
 	_ZN23QCoreApplicationPrivateD2Ev @ 1280 NONAME
 	_ZN23QEventDispatcherSymbian10startingUpEv @ 1281 NONAME
-	_ZN23QEventDispatcherSymbian10timerFiredEi @ 1282 NONAME
+	_ZN23QEventDispatcherSymbian10timerFiredEi @ 1282 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian11closingDownEv @ 1283 NONAME
 	_ZN23QEventDispatcherSymbian11socketFiredEP19QSocketActiveObject @ 1284 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE @ 1285 NONAME
 	_ZN23QEventDispatcherSymbian13registerTimerEiiP7QObject @ 1286 NONAME
 	_ZN23QEventDispatcherSymbian15unregisterTimerEi @ 1287 NONAME
-	_ZN23QEventDispatcherSymbian15wakeUpWasCalledEv @ 1288 NONAME
+	_ZN23QEventDispatcherSymbian15wakeUpWasCalledEv @ 1288 NONAME ABSENT
 	_ZN23QEventDispatcherSymbian16hasPendingEventsEv @ 1289 NONAME
 	_ZN23QEventDispatcherSymbian16sendPostedEventsEv @ 1290 NONAME
 	_ZN23QEventDispatcherSymbian16unregisterTimersEP7QObject @ 1291 NONAME
@@ -4169,4 +4169,6 @@ EXPORTS
 	_ZN21QSymbianSocketManager22removeActiveConnectionEm @ 4168 NONAME
 	_ZN23QEventDispatcherSymbian17activeObjectErrorEi @ 4169 NONAME
 	_ZNK21QSymbianSocketManager17activeConnectionsEv @ 4170 NONAME
+	_ZN23QEventDispatcherSymbian10timerFiredEiP18QTimerActiveObject @ 4171 NONAME
+	_ZN23QEventDispatcherSymbian15wakeUpWasCalledEP19QWakeUpActiveObject @ 4172 NONAME
 

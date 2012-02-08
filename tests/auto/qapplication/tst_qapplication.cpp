@@ -1406,6 +1406,101 @@ public slots:
         QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
         QVERIFY(!p);
     }
+
+#ifdef Q_OS_SYMBIAN
+    void deleteLaterAndProcessEventsSymbian()
+    {
+        CActiveSchedulerWait *eventLoop = new CActiveSchedulerWait;
+        currentSymLoop = eventLoop;
+
+        QPointer<QObject> p = this;
+        deleteLater();
+
+        // this will not be deleted, but deleteLater on an object within that loop will work
+        m_ptr = new QObject;
+        QMetaObject::invokeMethod(m_ptr, "deleteLater", Qt::QueuedConnection);
+        QTimer::singleShot(100, this, SLOT(quitSymLoop()));
+        eventLoop->Start();
+        QVERIFY(p);
+        QVERIFY(!m_ptr);
+
+        // further nesting of symbian event loop still works correctly
+        m_ptr = new QObject;
+        QMetaObject::invokeMethod(m_ptr, "deleteLater", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "extraSymbianNesting", Qt::QueuedConnection);
+        QTimer::singleShot(100, this, SLOT(invokeCheckMPtr()));     // queue the check event to ensure wakeup runs before we check that deleteLater has not happened
+        QTimer::singleShot(200, this, SLOT(quitSymLoop()));
+        QTimer::singleShot(300, this, SLOT(invokeQuitSymLoop()));   // need to queue a new event to trigger wakeup, since Symbian's scheduler loop exit doesn't generate events on exit
+        eventLoop->Start();
+        QVERIFY(p);
+        QVERIFY(!m_ptr);
+
+        // trying to delete this object in a deeper eventloop just won't work
+        QMetaObject::invokeMethod(this,
+                                  "processEventsOnly",
+                                  Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "quitSymLoop", Qt::QueuedConnection);
+        eventLoop->Start();
+        QVERIFY(p);
+        QMetaObject::invokeMethod(this,
+                                  "processEventsWithDeferredDeletion",
+                                  Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "quitSymLoop", Qt::QueuedConnection);
+        eventLoop->Start();
+        QVERIFY(p);
+        QMetaObject::invokeMethod(this,
+                                  "sendPostedEventsWithDeferredDelete",
+                                  Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "quitSymLoop", Qt::QueuedConnection);
+        eventLoop->Start();
+        QVERIFY(p);
+
+        // trying to delete it from this eventloop still doesn't work
+        QApplication::processEvents();
+        QVERIFY(p);
+
+        // however, it *will* work with this magic incantation
+        QApplication::processEvents(QEventLoop::DeferredDeletion);
+        QVERIFY(!p);
+
+        delete eventLoop;
+        currentSymLoop = 0;
+    }
+
+    void quitSymLoop()
+    {
+        currentSymLoop->AsyncStop();
+    }
+
+    void invokeQuitSymLoop()
+    {
+        QMetaObject::invokeMethod(this, "quitSymLoop", Qt::QueuedConnection);
+    }
+
+    void extraSymbianNesting()
+    {
+        CActiveSchedulerWait *old = currentSymLoop;
+        CActiveSchedulerWait *thisLevel = new CActiveSchedulerWait;
+        currentSymLoop = thisLevel;
+        thisLevel->Start();
+        currentSymLoop = old;
+        delete thisLevel;
+    }
+
+    void checkMPtr()
+    {
+        QVERIFY(m_ptr);
+    }
+
+    void invokeCheckMPtr()
+    {
+        QMetaObject::invokeMethod(this, "checkMPtr", Qt::QueuedConnection);
+    }
+
+private:
+    QPointer<QObject> m_ptr;
+    CActiveSchedulerWait *currentSymLoop;
+#endif
 };
 
 void tst_QApplication::testDeleteLaterProcessEvents()
@@ -1512,6 +1607,23 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         loop.exec();
         QVERIFY(!p);
     }
+
+#ifdef Q_OS_SYMBIAN
+    {
+        // when the event loop that calls deleteLater() also calls
+        // processEvents() immediately afterwards, the object should
+        // not die until the parent loop continues
+        QApplication app(argc, 0, QApplication::GuiServer);
+        QEventLoop loop;
+        EventLoopNester *nester = new EventLoopNester();
+        p = nester;
+        QTimer::singleShot(3000, &loop, SLOT(quit()));
+        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEventsSymbian()));
+
+        loop.exec();
+        QVERIFY(!p);
+    }
+#endif
 }
 
 /*

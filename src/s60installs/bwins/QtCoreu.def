@@ -3696,7 +3696,7 @@ EXPORTS
 	?timerEvent@QObject@@MAEXPAVQTimerEvent@@@Z @ 3695 NONAME ; void QObject::timerEvent(class QTimerEvent *)
 	?timerEvent@QTimeLine@@MAEXPAVQTimerEvent@@@Z @ 3696 NONAME ; void QTimeLine::timerEvent(class QTimerEvent *)
 	?timerEvent@QTimer@@MAEXPAVQTimerEvent@@@Z @ 3697 NONAME ; void QTimer::timerEvent(class QTimerEvent *)
-	?timerFired@QEventDispatcherSymbian@@QAEXH@Z @ 3698 NONAME ; void QEventDispatcherSymbian::timerFired(int)
+	?timerFired@QEventDispatcherSymbian@@QAEXH@Z @ 3698 NONAME ABSENT ; void QEventDispatcherSymbian::timerFired(int)
 	?timerId@QBasicTimer@@QBEHXZ @ 3699 NONAME ; int QBasicTimer::timerId(void) const
 	?timerId@QTimer@@QBEHXZ @ 3700 NONAME ; int QTimer::timerId(void) const
 	?timerId@QTimerEvent@@QBEHXZ @ 3701 NONAME ; int QTimerEvent::timerId(void) const
@@ -4202,7 +4202,7 @@ EXPORTS
 	?wakeOne@QWaitCondition@@QAEXXZ @ 4201 NONAME ; void QWaitCondition::wakeOne(void)
 	?wakeUp@QEventDispatcherSymbian@@UAEXXZ @ 4202 NONAME ; void QEventDispatcherSymbian::wakeUp(void)
 	?wakeUp@QEventLoop@@QAEXXZ @ 4203 NONAME ; void QEventLoop::wakeUp(void)
-	?wakeUpWasCalled@QEventDispatcherSymbian@@QAEXXZ @ 4204 NONAME ; void QEventDispatcherSymbian::wakeUpWasCalled(void)
+	?wakeUpWasCalled@QEventDispatcherSymbian@@QAEXXZ @ 4204 NONAME ABSENT ; void QEventDispatcherSymbian::wakeUpWasCalled(void)
 	?weekNumber@QDate@@QBEHPAH@Z @ 4205 NONAME ; int QDate::weekNumber(int *) const
 	?width@QRect@@QBEHXZ @ 4206 NONAME ; int QRect::width(void) const
 	?width@QRectF@@QBEMXZ @ 4207 NONAME ; float QRectF::width(void) const
@@ -4889,4 +4889,6 @@ EXPORTS
 	?removeActiveConnection@QSymbianSocketManager@@QAEXK@Z @ 4888 NONAME ; void QSymbianSocketManager::removeActiveConnection(unsigned long)
 	?addActiveConnection@QSymbianSocketManager@@QAEXK@Z @ 4889 NONAME ; void QSymbianSocketManager::addActiveConnection(unsigned long)
 	?activeObjectError@QEventDispatcherSymbian@@QAEXH@Z @ 4890 NONAME ; void QEventDispatcherSymbian::activeObjectError(int)
+	?timerFired@QEventDispatcherSymbian@@QAEXHPAVQTimerActiveObject@@@Z @ 4891 NONAME ; void QEventDispatcherSymbian::timerFired(int, class QTimerActiveObject *)
+	?wakeUpWasCalled@QEventDispatcherSymbian@@QAEXPAVQWakeUpActiveObject@@@Z @ 4892 NONAME ; void QEventDispatcherSymbian::wakeUpWasCalled(class QWakeUpActiveObject *)
 
