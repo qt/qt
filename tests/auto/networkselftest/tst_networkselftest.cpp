@@ -177,7 +177,7 @@ static QString prettyByteArray(const QByteArray &array)
     return result;
 }
 
-static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
+static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 30000)
 {
     QElapsedTimer timer;
     timer.start();
@@ -192,7 +192,7 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
     }
 }
 
-static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
+static bool doSocketFlush(QTcpSocket *socket, int timeout = 30000)
 {
 #ifndef QT_NO_OPENSSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
@@ -224,7 +224,7 @@ static void netChat(int port, const QList<Chat> &chat)
 
     socket.connectToHost(QtNetworkSettings::serverName(), port);
     qDebug() << 0 << "Connecting to server on port" << port;
-    QVERIFY2(socket.waitForConnected(10000),
+    QVERIFY2(socket.waitForConnected(30000),
              QString("Failed to connect to server in step 0: %1").arg(socket.errorString()).toLocal8Bit());
 
     // now start the chat
@@ -305,7 +305,7 @@ static void netChat(int port, const QList<Chat> &chat)
             case Chat::DiscardUntilDisconnect:
                 qDebug() << i << "Waiting for remote disconnect";
                 if (socket.state() != QAbstractSocket::UnconnectedState)
-                    socket.waitForDisconnected(10000);
+                    socket.waitForDisconnected(30000);
                 QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState,
                          QString("Socket did not disconnect as expected in step %1").arg(i).toLocal8Bit());
 
@@ -323,7 +323,7 @@ static void netChat(int port, const QList<Chat> &chat)
             case Chat::Reconnect:
                 qDebug() << i << "Reconnecting to server on port" << port;
                 socket.connectToHost(QtNetworkSettings::serverName(), port);
-                QVERIFY2(socket.waitForConnected(10000),
+                QVERIFY2(socket.waitForConnected(30000),
                          QString("Failed to reconnect to server in step %1: %2").arg(i).arg(socket.errorString()).toLocal8Bit());
                 break;
 
@@ -334,7 +334,7 @@ static void netChat(int port, const QList<Chat> &chat)
                 qDebug() << i << "Starting client encryption";
                 socket.ignoreSslErrors();
                 socket.startClientEncryption();
-                QVERIFY2(socket.waitForEncrypted(5000),
+                QVERIFY2(socket.waitForEncrypted(30000),
                          QString("Failed to start client encryption in step %1: %2").arg(i)
                          .arg(socket.errorString()).toLocal8Bit());
                 break;
@@ -428,7 +428,7 @@ void tst_NetworkSelfTest::serverReachability()
 
     QTime timer;
     timer.start();
-    socket.waitForConnected(10000);
+    socket.waitForConnected(30000);
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
 
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
@@ -466,7 +466,7 @@ void tst_NetworkSelfTest::remotePortsOpen()
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), portNumber);
 
-    if (!socket.waitForConnected(10000)) {
+    if (!socket.waitForConnected(30000)) {
         if (socket.error() == QAbstractSocket::SocketTimeoutError)
             QFAIL(QString("Network timeout connecting to the server on port %1").arg(portNumber).toLocal8Bit());
         else
@@ -1016,15 +1016,15 @@ void tst_NetworkSelfTest::smbServer()
     QString progname = "smbclient";
     QProcess smbclient;
     smbclient.start(progname, QIODevice::ReadOnly);
-    if (!smbclient.waitForStarted(2000))
+    if (!smbclient.waitForStarted())
         QSKIP("Could not find smbclient (from Samba), cannot continue testing", SkipAll);
-    if (!smbclient.waitForFinished(2000) || smbclient.exitStatus() != QProcess::NormalExit)
+    if (!smbclient.waitForFinished() || smbclient.exitStatus() != QProcess::NormalExit)
         QSKIP("smbclient isn't working, cannot continue testing", SkipAll);
     smbclient.close();
 
     // try listing the server
     smbclient.start(progname, QStringList() << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName(), QIODevice::ReadOnly);
-    QVERIFY(smbclient.waitForFinished(5000));
+    QVERIFY(smbclient.waitForFinished());
     if (smbclient.exitStatus() != QProcess::NormalExit)
         QSKIP("smbclient crashed", SkipAll);
     QVERIFY2(smbclient.exitCode() == 0, "Test server not found");
@@ -1041,7 +1041,7 @@ void tst_NetworkSelfTest::smbServer()
     smbclient.setProcessEnvironment(env);
     smbclient.start(progname, QStringList() << "-N" << "-c" << "more test.pri"
                     << QString("\\\\%1\\testshare").arg(QtNetworkSettings::winServerName()), QIODevice::ReadOnly);
-    QVERIFY(smbclient.waitForFinished(5000));
+    QVERIFY(smbclient.waitForFinished());
     if (smbclient.exitStatus() != QProcess::NormalExit)
         QSKIP("smbclient crashed", SkipAll);
     QVERIFY2(smbclient.exitCode() == 0, "File //qt-test-server/testshare/test.pri not found");
