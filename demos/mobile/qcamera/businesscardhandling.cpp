@@ -93,7 +93,7 @@ bool BusinessCardHandling::findContact(const QString phoneNumber, QContact& c)
         QContactPhoneNumber::FieldNumber);
 
 #if defined Q_WS_MAEMO_5
-    // Workaround for Maemo bug http://bugreports.qt.nokia.com/browse/QTMOBILITY-437
+    // Workaround for Maemo bug http://bugreports.qt-project.org/browse/QTMOBILITY-437
     phoneFilter.setValue(phoneNumber.right(7));
     phoneFilter.setMatchFlags(QContactFilter::MatchContains);
 #else

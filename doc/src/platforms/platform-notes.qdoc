@@ -186,9 +186,9 @@
     Known issues can be found by visiting the
     \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}{wiki page} with an
     up-to-date list of known issues, and the list of bugs can be found by
-    \l{http://bugreports.qt.nokia.com/browse/QTBUG/component/19171}{browsing} the
+    \l{http://bugreports.qt-project.org/browse/QTBUG/component/19171}{browsing} the
     S60 component in Qt's public task tracker, located at
-    \l{http://bugreports.qt.nokia.com/}{http://bugreports.qt.nokia.com/}.
+    \l{http://bugreports.qt-project.org/}{http://bugreports.qt-project.org/}.
 
     For information about mixing exceptions with Symbian leaves, see
     \l{Exception Safety with Symbian}.

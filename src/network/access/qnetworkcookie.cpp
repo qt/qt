@@ -396,7 +396,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // quoted-pair    = "\" CHAR
 
         // If it is NAME=VALUE, retain the value as is
-        // refer to http://bugreports.qt.nokia.com/browse/QTBUG-17746
+        // refer to http://bugreports.qt-project.org/browse/QTBUG-17746
         if (isNameValue)
             second += '"';
         ++i;

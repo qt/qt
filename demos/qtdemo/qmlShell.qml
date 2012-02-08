@@ -134,7 +134,7 @@ Item {
             //Note that if loader is Error, it is because the file was found but there was an error creating the component
             //This means either we have a bug in our demos, or the required modules (which ship with Qt) did not deploy correctly
             text: "The example has failed to load.<br />If you installed all Qt's C++ and QML modules then this is a bug!<br />"
-                + 'Report it at <a href="http://bugreports.qt.nokia.com">http://bugreports.qt.nokia.com</a>';
+                + 'Report it at <a href="http://bugreports.qt-project.org">http://bugreports.qt-project.org</a>';
             onLinkActivated: Qt.openUrlExternally(link);
         }
     }

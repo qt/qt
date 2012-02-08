@@ -45,7 +45,7 @@ testcase = {
   implicit_text_alignment: function()
   {
       prompt(twiki('---++ Implicit Text alignment
-Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt.nokia.com/browse/QTBUG-17973
+Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt-project.org/browse/QTBUG-17973
 | *Step* | *Verification* |
 | Execute systemtests/Qt/examples/declarative/rtl/rtltext.qml | Verify that the indicator at the bottom shows Implicit alignment |
 | Observe the three different element types - Text, TextInput, TextEdit | Verify that for each case where the text box shows right-to-left text, the text is aligned to the right |
@@ -61,7 +61,7 @@ Note: Empty/whitepace text has no direction, thus TextEdits will still show the 
   left_center_and_right_text_alignment: function(name,alignment)
   {
     prompt(twiki('---++ '+name+' Text alignment
-Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt.nokia.com/browse/QTBUG-17973
+Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt-project.org/browse/QTBUG-17973
 | *Step* | *Verification* |
 | Execute systemtests/Qt/examples/declarative/rtl/rtltext.qml | Verify that the indicator at the bottom shows Implicit alignment |
 | Press the indicator until '+name+' alignment shows | Verify that the indicator at the bottom shows '+name+' alignment |
@@ -72,7 +72,7 @@ Note: Empty/whitepace text has no direction, thus TextEdits will still show the 
   {
       prompt(twiki('---++ Justified Text alignment
 Note that this only applies to Text and TextEdit. AlignJustify is not available for TextInput
-Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt.nokia.com/browse/QTBUG-17973
+Note: Empty/whitepace text has no direction, thus TextEdits will still show the cursor to the left. See http://bugreports.qt-project.org/browse/QTBUG-17973
 | *Step* | *Verification* |
 | Execute systemtests/Qt/examples/declarative/rtl/rtltext.qml | Verify that the indicator at the bottom shows Implicit alignment |
 | Press the indicator until Justify alignment shows | Verify that the indicator at the bottom shows Justify alignment |
