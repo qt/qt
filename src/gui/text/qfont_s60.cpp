@@ -62,6 +62,14 @@ static QString classicalSymbianSystemFont()
 {
     static QString font;
     if (font.isEmpty()) {
+        if (User::Language() == ELangPrcChinese) {
+            // Use font with simplified Chinese characters as default
+            QString scfont("MHeiM-C-GB18030-S60");
+            if (fontFamiliesOnFontServer()->contains(scfont)) {
+                font = scfont;
+                return font;
+            }
+        }
         static const char* const classicSymbianSystemFonts[] = { "Nokia Sans S60", "Series 60 Sans" };
         for (int i = 0; i < sizeof classicSymbianSystemFonts / sizeof classicSymbianSystemFonts[0]; ++i) {
             const QString classicFont = QLatin1String(classicSymbianSystemFonts[i]);
