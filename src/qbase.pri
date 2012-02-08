@@ -135,14 +135,18 @@ embedded:DEPENDPATH += ;$$EMBEDDED_H
 #install directives
 include(qt_install.pri)
 
-unix:!symbian {
-   CONFIG     += create_libtool create_pc explicitlib
-   QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS]
-   QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS]
+unix|win32-g++*:!symbian {
+   CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
    QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS]
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+}
+
+unix:!symbian {
+   CONFIG += create_libtool explicitlib
+   QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS]
+   QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS]
    include_replace.match = $$QMAKE_INCDIR_QT
    include_replace.replace = $$[QT_INSTALL_HEADERS]
    lib_replace.match = $$QMAKE_LIBDIR_QT
@@ -152,14 +156,6 @@ unix:!symbian {
    QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
-}
-
-win32-g++* {
-   CONFIG += create_pc
-   QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
-   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
-   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS]
-   QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
