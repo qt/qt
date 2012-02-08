@@ -501,6 +501,14 @@ void QCoeFepInputContext::setFocusWidget(QWidget *w)
     QInputContext::setFocusWidget(w);
 
     updateHints(true);
+    if (w) {
+        // Store last focused widget and object. Needed when Menu is Opened
+        QObject *focusObject = 0;
+        m_lastFocusedEditor = getQWidgetFromQGraphicsView(focusWidget(),
+            &focusObject);
+        m_lastFocusedObject = focusObject; // Can be null
+        Q_ASSERT(m_lastFocusedEditor);
+    }
 }
 
 void QCoeFepInputContext::widgetDestroyed(QWidget *w)
@@ -1509,21 +1517,49 @@ TInt QCoeFepInputContext::DocumentLengthForFep() const
 {
     QT_TRY {
         QWidget *w = focusWidget();
+        QObject *focusObject = 0;
+        if (!w) {
+            //when Menu is opened editor lost the focus, but fep manager wants focused editor
+            w = m_lastFocusedEditor;
+            focusObject = m_lastFocusedObject;
+        } else {
+            w = getQWidgetFromQGraphicsView(w, &focusObject);
+        }
         if (!w)
             return 0;
 
         QVariant variant = w->inputMethodQuery(Qt::ImSurroundingText);
-
         int size = variant.value<QString>().size() + m_preeditString.size();
 
         // To fix an issue with backspaces not being generated if document size is zero,
         // fake document length to be at least one always, except when dealing with
-        // hidden text widgets, where this faking would generate extra asterisk. Since the
-        // primary use of hidden text widgets is password fields, they are unlikely to
-        // support multiple lines anyway.
-        if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText))
-            size = 1;
-
+        // hidden text widgets, all singleline text widgets and
+        // also multiline text widget with single line.
+        if (size == 0 && !(m_textCapabilities & TCoeInputCapabilities::ESecretText)
+            && !(qobject_cast< QLineEdit *> (w))) {
+            int lineCount = 0;
+            if (QTextEdit* tedit = qobject_cast<QTextEdit *>(w)) {
+                lineCount = tedit->document()->lineCount();
+            } else if (QPlainTextEdit* ptedit = qobject_cast<QPlainTextEdit *>(w)) {
+                lineCount = ptedit->document()->lineCount();
+            } else {
+                // Unknown editor (probably a QML one); Request the "lineCount" property.
+                QObject *invokeTarget = w;
+                if (focusObject)
+                    invokeTarget = focusObject;
+                QVariant lineVariant = invokeTarget->property("lineCount");
+                if (lineVariant.isValid()) {
+                    lineCount = lineVariant.toInt();
+                } else {
+                    lineCount = 1;
+                }
+            }
+            // To fix an issue with backspaces not being generated if document size is zero,
+            // return size to 1 only for multiline editors with
+            // no text and multiple lines presented.
+            if (lineCount > 1)
+                size = 1;
+        }
         return size;
     } QT_CATCH(const std::exception&) {
         return 0;

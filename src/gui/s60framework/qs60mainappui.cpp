@@ -258,7 +258,8 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
 {
 #ifdef Q_WS_S60
     if (resourceId == R_AVKON_MENUPANE_EMPTY) {
-        if (menuPane->NumberOfItemsInPane() <= 1)
+        // As ccpu is enabled in the editors, default native menu items are now <=2
+        if (menuPane->NumberOfItemsInPane() <= 2)
             QT_TRYCATCH_LEAVING(qt_symbian_show_toplevel(menuPane));
 
     } else if (resourceId != R_AVKON_MENUPANE_FEP_DEFAULT
