@@ -2082,6 +2082,14 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->use_xfixes = (major >= 1);
                 X11->xfixes_major = major;
             }
+        } else {
+            X11->ptrXFixesQueryExtension  = 0;
+            X11->ptrXFixesQueryVersion    = 0;
+            X11->ptrXFixesSetCursorName   = 0;
+            X11->ptrXFixesSelectSelectionInput = 0;
+            X11->ptrXFixesCreateRegionFromWindow = 0;
+            X11->ptrXFixesFetchRegion = 0;
+            X11->ptrXFixesDestroyRegion = 0;
         }
 #endif // QT_NO_XFIXES
 
