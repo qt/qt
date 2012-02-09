@@ -10,9 +10,7 @@ HEADERS += forwarddeclared.h \
 
 QT = core
 
-integrity {
-    DEFINES += SRCDIR=\"/\"
-} else:!symbian {
+!symbian {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 

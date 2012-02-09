@@ -13,8 +13,6 @@ wince*: {
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian: {
     DEFINES += SRCDIR=""
-} else:integrity {
-    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

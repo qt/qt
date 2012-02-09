@@ -2,9 +2,7 @@ load(qttest_p4)
 QT = core
 HEADERS += 
 SOURCES += tst_qtextboundaryfinder.cpp 
-integrity {
-    DEFINES += SRCDIR=\"/\"
-} else:!symbian {
+!symbian {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 

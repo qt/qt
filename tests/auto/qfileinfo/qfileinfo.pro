@@ -26,8 +26,6 @@ wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
     # do not define SRCDIR at all
-} else:integrity {
-    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
