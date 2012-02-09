@@ -8,5 +8,3 @@ TARGET = tst_uic3
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 requires(contains(QT_CONFIG,qt3support))
-
-CONFIG+=insignificant_test # QTQAINFRA-428
