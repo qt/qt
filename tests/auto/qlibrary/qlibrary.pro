@@ -18,5 +18,3 @@ TARGET = tst_qlibrary
 # no special install rule for subdir
 INSTALLS =
 CONFIG += parallel_test
-
-win32:CONFIG+=insignificant_test # QTQAINFRA-428

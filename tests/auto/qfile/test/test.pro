@@ -41,4 +41,4 @@ symbian {
     LIBS+=-lefsrv
 }
 
-mac*:CONFIG+=insignificant_test # QTQAINFRA-428
+mac*|win32:CONFIG+=insignificant_test # QTQAINFRA-428
