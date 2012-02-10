@@ -1174,7 +1174,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         flags |= EAknEditorFlagNoT9;
     }
     
-   if ((hints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) && (S60->editorFlags & EAknEditorFlagLatinInputModesOnly)){
+    if (S60->editorFlags & EAknEditorFlagLatinInputModesOnly){
         flags |= EAknEditorFlagLatinInputModesOnly;
     }
    
