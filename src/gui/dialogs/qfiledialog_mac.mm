@@ -154,7 +154,8 @@ QT_USE_NAMESPACE
         mOpenPanel = 0;
     }
 
-    [mSavePanel setLevel:NSModalPanelWindowLevel];
+    if ([mSavePanel respondsToSelector:@selector(setLevel:)])
+        [mSavePanel setLevel:NSModalPanelWindowLevel];
     [mSavePanel setDelegate:self];
     mQDirFilter = new QT_PREPEND_NAMESPACE(QDir::Filters)(qDirFilter);
     mFileOptions = new QT_PREPEND_NAMESPACE(QFileDialog::Options)(fileOptions);
@@ -204,7 +205,8 @@ QT_USE_NAMESPACE
     delete mSelectedNameFilter;
     delete mCurrentSelection;
 
-    [mSavePanel orderOut:mSavePanel];
+    if ([mSavePanel respondsToSelector:@selector(orderOut:)])
+        [mSavePanel orderOut:mSavePanel];
     [mSavePanel setAccessoryView:nil];
     [mPopUpButton release];
     [mTextField release];
@@ -224,7 +226,8 @@ QT_USE_NAMESPACE
 - (void)closePanel
 {
     *mCurrentSelection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)([mSavePanel filename]);
-    [mSavePanel close];
+    if ([mSavePanel respondsToSelector:@selector(close)])
+        [mSavePanel close];
 }
 
 - (void)showModelessPanel
@@ -361,7 +364,8 @@ QT_USE_NAMESPACE
     Q_UNUSED(sender);
     QString selection = mNameFilterDropDownList->value([mPopUpButton indexOfSelectedItem]);
     *mSelectedNameFilter = [self findStrippedFilterWithVisualFilterName:selection];
-    [mSavePanel validateVisibleColumns];
+    if ([mSavePanel respondsToSelector:@selector(validateVisibleColumns)])
+        [mSavePanel validateVisibleColumns];
     [self updateProperties];
     if (mPriv)
         mPriv->QNSOpenSavePanelDelegate_filterSelected([mPopUpButton indexOfSelectedItem]);
@@ -406,8 +410,11 @@ QT_USE_NAMESPACE
         ext.prepend(mPriv->defaultSuffix);
     [mSavePanel setAllowedFileTypes:ext.isEmpty() ? nil : QT_PREPEND_NAMESPACE(qt_mac_QStringListToNSMutableArray(ext))];
 
-    if ([mSavePanel isVisible])
-        [mOpenPanel validateVisibleColumns];
+    if ([mSavePanel respondsToSelector:@selector(isVisible)] && [mSavePanel isVisible])
+    {
+        if ([mOpenPanel respondsToSelector:@selector(validateVisibleColumns)])
+            [mOpenPanel validateVisibleColumns];
+    }
 }
 
 - (void)panelSelectionDidChange:(id)sender
