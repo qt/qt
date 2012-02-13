@@ -111,6 +111,7 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent();
+void qt_resetNSApplicationSendEvent();
 
 QT_END_NAMESPACE
 

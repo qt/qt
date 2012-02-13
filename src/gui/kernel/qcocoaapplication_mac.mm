@@ -218,5 +218,12 @@ void qt_redirectNSApplicationSendEvent()
             @selector(qt_sendEvent_original:));
  }
 
+void qt_resetNSApplicationSendEvent()
+{
+    qt_cocoa_change_back_implementation([NSApplication class],
+                                         @selector(sendEvent:),
+                                         @selector(qt_sendEvent_original:));
+}
+
 QT_END_NAMESPACE
 #endif

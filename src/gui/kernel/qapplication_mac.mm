@@ -1311,6 +1311,11 @@ void qt_cleanup()
     }
 #endif
     qt_release_apple_event_handler();
+
+#ifdef QT_MAC_USE_COCOA
+    qt_resetNSApplicationSendEvent();
+#endif
+
     qt_release_tablet_proximity_handler();
     if (tablet_proximity_UPP)
         DisposeEventHandlerUPP(tablet_proximity_UPP);
