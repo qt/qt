@@ -68,6 +68,7 @@ public:
     public:
         WindowSystemEvent(EventType t)
             : type(t) { }
+        virtual ~WindowSystemEvent() {}
         EventType type;
     };
 
