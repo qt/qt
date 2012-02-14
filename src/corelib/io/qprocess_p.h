@@ -288,15 +288,11 @@ public:
     QRingBuffer errorReadBuffer;
     QRingBuffer writeBuffer;
 
-#ifndef Q_OS_QNX
     Q_PIPE childStartedPipe[2];
-#endif
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
 
-#ifndef Q_OS_QNX
     QSocketNotifier *startupSocketNotifier;
-#endif
     QSocketNotifier *deathNotifier;
 
     // the wonderful windows notifier
