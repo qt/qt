@@ -35,3 +35,5 @@ symbian:contains(S60_VERSION,3.2) {
 }
 
 symbian: INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
+
+win32:CONFIG+=insignificant_test # QTQAINFRA-428
