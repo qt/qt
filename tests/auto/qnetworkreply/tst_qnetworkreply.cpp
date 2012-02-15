@@ -2790,12 +2790,21 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth_data()
 {
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QByteArray>("expectedData");
+    QTest::addColumn<int>("expectedAuth");
 
     QFile reference(SRCDIR "/rfc3252.txt");
     reference.open(QIODevice::ReadOnly);
     QByteArray referenceData = reference.readAll();
-    QTest::newRow("basic") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData;
-    QTest::newRow("digest") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n");
+    QTest::newRow("basic") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData << 1;
+    QTest::newRow("digest") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n") << 1;
+    //if url contains username & password, then it should be used
+    QTest::newRow("basic-in-url") << QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData << 0;
+    QTest::newRow("digest-in-url") << QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n") << 0;
+    // if url contains incorrect credentials, expect QNAM to ask for good ones (even if cached - matches behaviour of browsers)
+    QTest::newRow("basic-bad-user-in-url") << QUrl("http://baduser:httptest@" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData << 3;
+    QTest::newRow("basic-bad-password-in-url") << QUrl("http://httptest:wrong@" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData << 3;
+    QTest::newRow("digest-bad-user-in-url") << QUrl("http://baduser:httptest@" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n") << 3;
+    QTest::newRow("digest-bad-password-in-url") << QUrl("http://httptest:wrong@" + QtNetworkSettings::serverName() + "/qtest/auth-digest/") << QByteArray("digest authentication successful\n") << 3;
 }
 
 void tst_QNetworkReply::ioGetFromHttpWithAuth()
@@ -2806,6 +2815,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
 
     QFETCH(QUrl, url);
     QFETCH(QByteArray, expectedData);
+    QFETCH(int, expectedAuth);
     QNetworkRequest request(url);
     {
         QNetworkReplyPtr reply1 = manager.get(request);
@@ -2834,7 +2844,8 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         QCOMPARE(reader1.data, expectedData);
         QCOMPARE(reader2.data, expectedData);
 
-        QCOMPARE(authspy.count(), 1);
+        QCOMPARE(authspy.count(), (expectedAuth ? 1 : 0));
+        expectedAuth = qMax(0, expectedAuth - 1);
     }
 
     // rinse and repeat:
@@ -2854,7 +2865,8 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
         QCOMPARE(reader.data, expectedData);
 
-        QCOMPARE(authspy.count(), 0);
+        QCOMPARE(authspy.count(), (expectedAuth ? 1 : 0));
+        expectedAuth = qMax(0, expectedAuth - 1);
     }
 
     // now check with synchronous calls:
@@ -2866,14 +2878,45 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
         QNetworkReplyPtr replySync = manager.get(request);
         QVERIFY(replySync->isFinished()); // synchronous
-        QCOMPARE(authspy.count(), 0);
+        if (expectedAuth) {
+            // bad credentials in a synchronous request should just fail
+            QCOMPARE(replySync->error(), QNetworkReply::AuthenticationRequiredError);
+        } else {
+            QCOMPARE(authspy.count(), 0);
 
-        // we cannot use a data reader here, since that connects to the readyRead signal,
-        // just use readAll()
+            // we cannot use a data reader here, since that connects to the readyRead signal,
+            // just use readAll()
 
-        // the only thing we check here is that the auth cache was used when using synchronous requests
-        QCOMPARE(replySync->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-        QCOMPARE(replySync->readAll(), expectedData);
+            // the only thing we check here is that the auth cache was used when using synchronous requests
+            QCOMPARE(replySync->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+            QCOMPARE(replySync->readAll(), expectedData);
+        }
+    }
+
+    // check that credentials are used from cache if the same url is requested without credentials
+    {
+        url.setUserInfo(QString());
+        request.setUrl(url);
+        request.setAttribute(
+                QNetworkRequest::SynchronousRequestAttribute,
+                true);
+
+        QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+        QNetworkReplyPtr replySync = manager.get(request);
+        QVERIFY(replySync->isFinished()); // synchronous
+        if (expectedAuth) {
+            // bad credentials in a synchronous request should just fail
+            QCOMPARE(replySync->error(), QNetworkReply::AuthenticationRequiredError);
+        } else {
+            QCOMPARE(authspy.count(), 0);
+
+            // we cannot use a data reader here, since that connects to the readyRead signal,
+            // just use readAll()
+
+            // the only thing we check here is that the auth cache was used when using synchronous requests
+            QCOMPARE(replySync->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+            QCOMPARE(replySync->readAll(), expectedData);
+        }
     }
 }
 
