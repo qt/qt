@@ -321,7 +321,7 @@ static void resolveTimerAPI()
 {
     static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef Q_OS_WINCE
+#ifdef Q_OS_WINCE
         QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
         QSystemLibrary library(QLatin1String("winmm"));
