@@ -789,9 +789,8 @@ private:
         {
             ENewObject,         // CBase zero initialization sets this, new objects cannot be run in the processEvents in which they are created
             ENotRun,            // This object has not yet run in the current processEvents call
-            ERunningUnchecked,  // This object is running in the current processEvents call, as yet unacknowledged by the event dispatcher
-            ERunningChecked,    // This object is running in a processEvents call, the event dispatcher knows which loop level
-            ERan                // This object has run in the current processEvents call
+            ERunUnchecked,      // This object is run in the current processEvents call, as yet unacknowledged by the event dispatcher
+            ERunChecked         // This object is run in a processEvents call, the event dispatcher knows which loop level
         };
         int iMark;      //TAny* iSpare;
     };
@@ -839,12 +838,11 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
             if (active->IsActive() && (active->iStatus!=KRequestPending)) {
                 int& mark = dataAccess->iMark;
                 if (mark == CActiveDataAccess::ENotRun && active->Priority()>=minimumPriority) {
-                    mark = CActiveDataAccess::ERunningUnchecked;
+                    mark = CActiveDataAccess::ERunUnchecked;
                     runPriority = active->Priority();
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
                     TRAP(error, QT_TRYCATCH_LEAVING(active->RunL()));
-                    mark = CActiveDataAccess::ERan;
                     if (error!=KErrNone)
                         error=active->RunError(error);
                     if (error) {
@@ -876,8 +874,8 @@ bool QtRRActiveScheduler::UseRRActiveScheduler()
 bool QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(CActive* ao)
 {
     CActiveDataAccess *dataAccess = (CActiveDataAccess*)ao;
-    if (dataAccess->iMark == CActiveDataAccess::ERunningUnchecked) {
-        dataAccess->iMark = CActiveDataAccess::ERunningChecked;
+    if (dataAccess->iMark == CActiveDataAccess::ERunUnchecked) {
+        dataAccess->iMark = CActiveDataAccess::ERunChecked;
         return true;
     }
     return false;
