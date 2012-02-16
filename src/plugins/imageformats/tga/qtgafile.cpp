@@ -162,7 +162,7 @@ QTgaFile::QTgaFile(QIODevice *device)
     bool validDepth = (bitsPerPixel == 16 || bitsPerPixel == 24 || bitsPerPixel == 32);
     if (!validDepth)
     {
-        mErrorMessage = QObject::tr("Image dpeth not valid");
+        mErrorMessage = QObject::tr("Image depth not valid");
     }
     int curPos = mDevice->pos();
     int fileBytes = mDevice->size();

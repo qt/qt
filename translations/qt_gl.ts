@@ -4273,7 +4273,7 @@ atributo da sentenza. Comprobe a configuración do controlador ODBC</translation
         <translation>Tipo de imaxe non admitido</translation>
     </message>
     <message>
-        <source>Image dpeth not valid</source>
+        <source>Image depth not valid</source>
         <translation>Profundidade da imaxe non válida</translation>
     </message>
     <message>
