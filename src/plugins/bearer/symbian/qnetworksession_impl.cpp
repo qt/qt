@@ -1050,7 +1050,7 @@ void QNetworkSessionPrivateImpl::ConnectionStartComplete(TInt statusCode)
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
             << "RConnection::Start completed with status code: " << statusCode;
 #endif
-    delete ipConnectionStarter;
+    // ConnectionStarter *ipConnectionStarter will delete itself at the end of RunL
     ipConnectionStarter = 0;
 
     switch (statusCode) {
@@ -1572,12 +1572,14 @@ void ConnectionStarter::Start(TConnPref &pref)
 void ConnectionStarter::RunL()
 {
     iOwner.ConnectionStartComplete(iStatus.Int());
-    //note owner deletes on callback
+    delete this;
 }
 
 TInt ConnectionStarter::RunError(TInt err)
 {
     qWarning() << "ConnectionStarter::RunError" << err;
+    // there must have been a leave from iOwner.ConnectionStartComplete, in which case "delete this" in RunL was missed.
+    delete this;
     return KErrNone;
 }
 

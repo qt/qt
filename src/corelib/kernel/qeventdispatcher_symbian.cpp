@@ -843,8 +843,12 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
                     TRAP(error, QT_TRYCATCH_LEAVING(active->RunL()));
-                    if (error!=KErrNone)
-                        error=active->RunError(error);
+                    if (error!=KErrNone) {
+                        if (vptr != *(int*)active)
+                            qWarning("Active object vptr change from 0x%08x to 0x%08x. Error %i not handled.", vptr, *(int*)active, error);
+                        else
+                            error=active->RunError(error);
+                    }
                     if (error) {
                         qWarning("Active object (ptr=0x%08x, vptr=0x%08x) leave: %i\n", active, vptr, error);
                         dispatcher->activeObjectError(error);
