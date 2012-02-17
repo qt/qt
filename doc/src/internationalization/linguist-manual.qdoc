@@ -886,7 +886,7 @@
 
     Use the batch translation feature of \QL to automatically
     translate source texts that are also in a phrase book. Selecting
-    \menu{Tools|Batch Translation} will show you the batch translation dialog,
+    \menu{Edit|Batch Translation} will show you the batch translation dialog,
     which let you configure which phrase books to use in what order during the
     batch translation process. Furthermore you can set whether only entries
     with no present translation should be considered, and whether batch translated
