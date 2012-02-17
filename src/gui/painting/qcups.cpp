@@ -133,7 +133,8 @@ QCUPSSupport::QCUPSSupport()
     if (!isAvailable())
         return;
 
-    prnCount = _cupsGetDests(&printers);
+    // Update the available printer count
+    qt_cups_num_printers = prnCount = _cupsGetDests(&printers);
 
     for (int i = 0; i <  prnCount; ++i) {
         if (printers[i].is_default) {
