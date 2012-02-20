@@ -208,6 +208,8 @@ private slots:
 
     void qtbug14268_peek();
 
+    void setSocketOption();
+
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -2686,7 +2688,34 @@ void tst_QTcpSocket::qtbug14268_peek()
     QVERIFY(incoming->read(128*1024) == QByteArray("abc\ndef\nghi\n"));
 }
 
+void tst_QTcpSocket::setSocketOption()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
 
+    SocketPair socketPair;
+    QVERIFY(socketPair.create());
+    QTcpSocket *outgoing = socketPair.endPoints[0];
+    QTcpSocket *incoming = socketPair.endPoints[1];
+
+    QVERIFY(incoming->state() == QTcpSocket::ConnectedState);
+    QVERIFY(outgoing->state() == QTcpSocket::ConnectedState);
+
+    outgoing->setSocketOption(QAbstractSocket::LowDelayOption, true);
+    QVariant v = outgoing->socketOption(QAbstractSocket::LowDelayOption);
+    QVERIFY(v.isValid() && v.toBool());
+    outgoing->setSocketOption(QAbstractSocket::KeepAliveOption, true);
+    v = outgoing->socketOption(QAbstractSocket::KeepAliveOption);
+    QVERIFY(v.isValid() && v.toBool());
+
+    outgoing->setSocketOption(QAbstractSocket::LowDelayOption, false);
+    v = outgoing->socketOption(QAbstractSocket::LowDelayOption);
+    QVERIFY(v.isValid() && !v.toBool());
+    outgoing->setSocketOption(QAbstractSocket::KeepAliveOption, false);
+    v = outgoing->socketOption(QAbstractSocket::KeepAliveOption);
+    QVERIFY(v.isValid() && !v.toBool());
+}
 
 QTEST_MAIN(tst_QTcpSocket)
 #include "tst_qtcpsocket.moc"
