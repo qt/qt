@@ -97,6 +97,7 @@ private slots:
     void task258459_visibilityChanged();
     void taskQTBUG_1665_closableChanged();
 	void taskQTBUG_9758_undockedGeometry();
+    void taskQTBUG_2940_resizeAfterUndocking();
 };
 
 // Testing get/set functions
@@ -899,6 +900,32 @@ void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
     QVERIFY(dock1.y() >= 0);
 }
 
+void tst_QDockWidget::taskQTBUG_2940_resizeAfterUndocking()
+{
+    QMainWindow window;
+    QDockWidget dw("dw", &window);
+    window.setGeometry(window.x(), window.y(), 400, 400);
+    window.addDockWidget(Qt::TopDockWidgetArea, &dw);
+    window.show();
+    dw.setFloating(true);
+    dw.setGeometry(dw.x(), dw.y(), 100, 100);
+
+    // When docked, width should be the same than window's width
+    dw.setFloating(false);
+    QCOMPARE(dw.width(), window.width());
+
+    // Drag the dock widget out of the window
+    qApp->postEvent(&dw, new QMouseEvent(QEvent::MouseButtonPress,
+                    QPoint(10, 10), Qt::LeftButton, 0, 0));
+    qApp->postEvent(&dw, new QMouseEvent(QEvent::MouseMove,
+                    QPoint(100, 100), Qt::LeftButton,Qt::LeftButton, 0));
+    qApp->postEvent(&dw, new QMouseEvent(QEvent::MouseButtonRelease,
+                    QPoint(100, 100), Qt::LeftButton, 0, 0));
+    qApp->processEvents();
+
+    // When undocked, size should be the restored
+    QCOMPARE(dw.size(), QSize(100, 100));
+}
 
 
 QTEST_MAIN(tst_QDockWidget)

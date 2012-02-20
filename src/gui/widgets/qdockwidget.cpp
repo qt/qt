@@ -690,6 +690,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     if (state != 0)
         return;
 
+    Q_Q(QDockWidget);
     QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qt_mainwindow_layout(win);
@@ -698,12 +699,23 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
         return;
 
     state = new QDockWidgetPrivate::DragState;
-    state->pressPos = pos;
     state->dragging = false;
     state->widgetItem = 0;
     state->ownWidgetItem = false;
     state->nca = nca;
     state->ctrlDrag = false;
+
+    if (!q->isFloating()) {
+        // When dragging the widget out of the docking area,
+        // use the middle of title area as pressPos
+        QDockWidgetLayout *dwlayout = qobject_cast<QDockWidgetLayout*>(q->layout());
+        Q_ASSERT(dwlayout != 0);
+        int width = undockedGeometry.isNull() ? q->width() : undockedGeometry.width();
+        state->pressPos.setY(dwlayout->titleArea().height() / 2);
+        state->pressPos.setX(width / 2);
+    } else {
+        state->pressPos = pos;
+    }
 }
 
 void QDockWidgetPrivate::startDrag()
@@ -987,11 +999,17 @@ void QDockWidgetPrivate::moveEvent(QMoveEvent *event)
 void QDockWidgetPrivate::unplug(const QRect &rect)
 {
     Q_Q(QDockWidget);
-    QRect r = rect;
-    r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
-    QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
-    if (dwLayout->nativeWindowDeco(true))
-        r.adjust(0, dwLayout->titleHeight(), 0, 0);
+    QRect r;
+    if (!undockedGeometry.isNull()) {
+        r = undockedGeometry;
+    } else {
+        r = rect;
+        r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
+        QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
+        if (dwLayout->nativeWindowDeco(true))
+            r.adjust(0, dwLayout->titleHeight(), 0, 0);
+    }
+
     setWindowState(true, true, r);
 }
 
