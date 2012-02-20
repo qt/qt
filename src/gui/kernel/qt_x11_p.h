@@ -422,9 +422,6 @@ struct QX11Data
     PtrXFixesQueryVersion ptrXFixesQueryVersion;
     PtrXFixesSetCursorName ptrXFixesSetCursorName;
     PtrXFixesSelectSelectionInput ptrXFixesSelectSelectionInput;
-    PtrXFixesDestroyRegion ptrXFixesDestroyRegion;
-    PtrXFixesCreateRegionFromWindow ptrXFixesCreateRegionFromWindow;
-    PtrXFixesFetchRegion ptrXFixesFetchRegion;
 #endif
 
 #ifndef QT_NO_XINPUT

@@ -2062,9 +2062,6 @@ void qt_init(QApplicationPrivate *priv, int,
             X11->ptrXFixesQueryVersion    = XFIXES_LOAD_V1(XFixesQueryVersion);
             X11->ptrXFixesSetCursorName   = XFIXES_LOAD_V2(XFixesSetCursorName);
             X11->ptrXFixesSelectSelectionInput = XFIXES_LOAD_V2(XFixesSelectSelectionInput);
-            X11->ptrXFixesCreateRegionFromWindow = XFIXES_LOAD_V2(XFixesCreateRegionFromWindow);
-            X11->ptrXFixesFetchRegion = XFIXES_LOAD_V2(XFixesFetchRegion);
-            X11->ptrXFixesDestroyRegion = XFIXES_LOAD_V2(XFixesDestroyRegion);
 
             if(X11->ptrXFixesQueryExtension && X11->ptrXFixesQueryVersion
                && X11->ptrXFixesQueryExtension(X11->display, &X11->xfixes_eventbase,
@@ -2087,9 +2084,6 @@ void qt_init(QApplicationPrivate *priv, int,
             X11->ptrXFixesQueryVersion    = 0;
             X11->ptrXFixesSetCursorName   = 0;
             X11->ptrXFixesSelectSelectionInput = 0;
-            X11->ptrXFixesCreateRegionFromWindow = 0;
-            X11->ptrXFixesFetchRegion = 0;
-            X11->ptrXFixesDestroyRegion = 0;
         }
 #endif // QT_NO_XFIXES
 

@@ -1423,6 +1423,21 @@ void QDragManager::cancel(bool deleteSource)
 }
 
 static
+bool windowInteractsWithPosition(const QPoint & pos, Window w, int shapeType)
+{
+    int nrectanglesRet, dummyOrdering;
+    XRectangle *rectangles = XShapeGetRectangles(QX11Info::display(), w, shapeType, &nrectanglesRet, &dummyOrdering);
+    bool interacts = true;
+    if (rectangles) {
+        interacts = false;
+        for (int i = 0; !interacts && i < nrectanglesRet; ++i)
+            interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
+        XFree(rectangles);
+    }
+    return interacts;
+}
+
+static
 Window findRealWindow(const QPoint & pos, Window w, int md)
 {
     if (xdnd_data.deco && w == xdnd_data.deco->effectiveWinId())
@@ -1448,23 +1463,10 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                                    AnyPropertyType, &type, &f,&n,&a,&data);
                 if (data) XFree(data);
                 if (type) {
-#ifndef QT_NO_XFIXES
-                    if (X11->use_xfixes && X11->ptrXFixesCreateRegionFromWindow && X11->ptrXFixesFetchRegion && X11->ptrXFixesDestroyRegion) {
-                        XserverRegion region = X11->ptrXFixesCreateRegionFromWindow(X11->display, w, WindowRegionBounding);
-                        int nrectanglesRet;
-                        XRectangle *rectangles = X11->ptrXFixesFetchRegion(X11->display, region, &nrectanglesRet);
-                        if (rectangles) {
-                            windowContainsMouse = false;
-                            for (int i = 0; !windowContainsMouse && i < nrectanglesRet; ++i)
-                                windowContainsMouse = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
-                            XFree(rectangles);
-                        }
-                        X11->ptrXFixesDestroyRegion(X11->display, region);
-
-                        if (windowContainsMouse)
-                            return w;
-                    } else
-#endif
+                    // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
+                    // need an && here so that in the case one is set and the other is not we still get the correct result.
+                    windowContainsMouse = windowInteractsWithPosition(pos, w, ShapeInput) && windowInteractsWithPosition(pos, w, ShapeBounding);
+                    if (windowContainsMouse)
                         return w;
                 }
             }
