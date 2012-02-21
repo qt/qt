@@ -1127,6 +1127,10 @@ void tst_QTextScriptEngine::greek()
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
 #if defined(Q_WS_X11)
+    if (QFontDatabase().families(QFontDatabase::Devanagari).isEmpty()) {
+        QSKIP("Devanagari font required", SkipAll);
+        return;
+    }
     QString s;
     s.append(QChar(0x0915));
     s.append(QChar(0x094d));
