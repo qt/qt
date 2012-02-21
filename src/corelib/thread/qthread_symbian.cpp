@@ -337,18 +337,26 @@ void *QThreadPrivate::start(void *arg)
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
 
-    emit thr->started();
     TRAPD(err, {
         try {
+            emit thr->started();
             thr->run();
         } catch (const std::exception& ex) {
             qWarning("QThreadPrivate::start: Thread exited on exception %s", ex.what());
+            User::Leave(KErrGeneral);   // leave to force cleanup stack cleanup
         }
     });
     if (err)
         qWarning("QThreadPrivate::start: Thread exited on leave %d", err);
 
-    QThreadPrivate::finish(arg);
+    // finish emits signals which should be wrapped in a trap for Symbian code, but otherwise ignore leaves and exceptions.
+    TRAP(err, {
+        try {
+            QThreadPrivate::finish(arg);
+        } catch (const std::exception& ex) {
+            User::Leave(KErrGeneral);   // leave to force cleanup stack cleanup
+        }
+    });
 
     delete cleanup;
 
