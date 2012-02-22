@@ -344,6 +344,11 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
 
         }
 
+        // Check drawing below fonts descent
+        if (cmb == HB_Combining_Below || cmb == HB_Combining_BelowRight)
+            if ((markMetrics.height + offset) > item->font->klass->getFontMetric(item->font, HB_FontDescent))
+                offset = markMetrics.y; // Use offset from mark metrics so it won't get drawn below descent
+
         // combining marks of different class don't interact. Reset the rectangle.
         if (cmb != lastCmb) {
             //qDebug("resetting rect");
