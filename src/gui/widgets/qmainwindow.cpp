@@ -1443,9 +1443,9 @@ bool QMainWindow::event(QEvent *event)
             break;
 #ifdef Q_WS_MAC
         case QEvent::Show:
+            d->layout->blockVisiblityCheck = false;
             if (unifiedTitleAndToolBarOnMac())
                 d->layout->syncUnifiedToolbarVisibility();
-            d->layout->blockVisiblityCheck = false;
             break;
        case QEvent::WindowStateChange:
             {
