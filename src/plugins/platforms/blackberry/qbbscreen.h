@@ -43,6 +43,8 @@
 #include <QtGui/QPlatformScreen>
 #include <QByteArray>
 
+#include "qbbrootwindow.h"
+
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
@@ -70,7 +72,7 @@ public:
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return mDisplay; }
     screen_context_t nativeContext() const { return mContext; }
-    const char *windowGroupName() const { return mWindowGroupName.constData(); }
+    const char *windowGroupName() const { return mRootWindow->groupName().constData(); }
 
     /* Window hierarchy management */
     static void addWindow(QBBWindow* child);
@@ -82,11 +84,12 @@ public:
     void onWindowPost(QBBWindow* window);
     void ensureDisplayCreated();
 
+    QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
+
 private:
     screen_context_t mContext;
     screen_display_t mDisplay;
-    screen_window_t mAppWindow;
-    QByteArray mWindowGroupName;
+    QSharedPointer<QBBRootWindow> mRootWindow;
     bool mPosted;
     bool mUsingOpenGL;
     bool mPrimaryDisplay;
@@ -104,9 +107,6 @@ private:
     QBBScreen(screen_context_t context, screen_display_t display, bool primary);
     virtual ~QBBScreen();
 
-    static bool orthogonal(int rotation1, int rotation2);
-    void createRootWindow();
-    void destroyRootWindow();
     bool isPrimaryDisplay() { return mPrimaryDisplay; }
 };
 

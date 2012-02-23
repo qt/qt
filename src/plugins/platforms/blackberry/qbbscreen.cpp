@@ -41,6 +41,7 @@
 
 #include "qbbscreen.h"
 #include "qbbvirtualkeyboard.h"
+#include "qbbrootwindow.h"
 #include "qbbwindow.h"
 
 #include <QUuid>
@@ -59,7 +60,6 @@ QList<QBBWindow*> QBBScreen::sChildren;
 QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, bool primary)
     : mContext(context),
       mDisplay(display),
-      mAppWindow(0),
       mPosted(false),
       mUsingOpenGL(false),
       mPrimaryDisplay(primary)
@@ -109,7 +109,7 @@ QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, bool pr
 
     // We only create the root window if we are not the primary display.
     if (mPrimaryDisplay)
-        createRootWindow();
+        mRootWindow = QSharedPointer<QBBRootWindow>(new QBBRootWindow(this));
 }
 
 QBBScreen::~QBBScreen()
@@ -117,8 +117,6 @@ QBBScreen::~QBBScreen()
 #if defined(QBBSCREEN_DEBUG)
     qDebug() << "QBBScreen::~QBBScreen";
 #endif
-
-    destroyRootWindow();
 }
 
 /* static */
@@ -178,157 +176,8 @@ int QBBScreen::defaultDepth()
 
 void QBBScreen::ensureDisplayCreated()
 {
-    if (!mAppWindow)
-        createRootWindow();
-}
-
-void QBBScreen::createRootWindow()
-{
-    // create one top-level QNX window to act as a container for child windows
-    // since navigator only supports one application window
-    errno = 0;
-    int result = screen_create_window(&mAppWindow, mContext);
-    int val[2];
-    if (result != 0) {
-        qFatal("QBBScreen: failed to create window, errno=%d", errno);
-    }
-
-    // move window to proper display
-    errno = 0;
-    result = screen_set_window_property_pv(mAppWindow, SCREEN_PROPERTY_DISPLAY, (void **)&mDisplay);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window display, errno=%d", errno);
-    }
-
-    // make sure window is above navigator but below keyboard if running as root
-    // since navigator won't automatically set our z-order in this case
-    if (getuid() == 0) {
-        errno = 0;
-        val[0] = MAGIC_ZORDER_FOR_NO_NAV;
-        result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_ZORDER, val);
-        if (result != 0) {
-            qFatal("QBBScreen: failed to set window z-order, errno=%d", errno);
-        }
-    }
-
-    // window won't be visible unless it has some buffers so make one dummy buffer
-    // that is 1x1
-    errno = 0;
-
-    val[0] = SCREEN_USAGE_NATIVE;
-
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_USAGE, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window buffer usage, errno=%d", errno);
-    }
-
-    errno = 0;
-    val[0] = nativeFormat();
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_FORMAT, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window pixel format, errno=%d", errno);
-    }
-
-    errno = 0;
-    val[0] = 1;
-    val[1] = 1;
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_BUFFER_SIZE, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window buffer size, errno=%d", errno);
-    }
-
-    errno = 0;
-    result = screen_create_window_buffers(mAppWindow, 1);
-    if (result != 0) {
-        qFatal("QBB: failed to create window buffer, errno=%d", errno);
-    }
-
-    // window is always the size of the display
-    errno = 0;
-    val[0] = mCurrentGeometry.width();
-    val[1] = mCurrentGeometry.height();
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window size, errno=%d", errno);
-    }
-
-    // fill the window with solid black
-    errno = 0;
-    val[0] = 0;
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_COLOR, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window colour, errno=%d", errno);
-    }
-
-    // make the window opaque
-    errno = 0;
-    val[0] = SCREEN_TRANSPARENCY_NONE;
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_TRANSPARENCY, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window transparency, errno=%d", errno);
-    }
-
-    // set the swap interval to 1
-    errno = 0;
-    val[0] = 1;
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SWAP_INTERVAL, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window swap interval, errno=%d", errno);
-    }
-
-    // set viewport size equal to window size but move outside buffer so the fill
-    // colour is used exclusively
-    errno = 0;
-    val[0] = mCurrentGeometry.width();
-    val[1] = mCurrentGeometry.height();
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SOURCE_SIZE, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window source size, errno=%d", errno);
-    }
-
-    errno = 0;
-    val[0] = 1;
-    val[1] = 0;
-    result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SOURCE_POSITION, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to set window source position, errno=%d", errno);
-    }
-
-    // generate a random window group name
-    QUuid uuid;
-    mWindowGroupName = QUuid::createUuid().toString().toAscii();
-
-    // create window group so child windows can be parented by container window
-    errno = 0;
-    result = screen_create_window_group(mAppWindow, windowGroupName());
-    if (result != 0) {
-        qFatal("QBBScreen: failed to create app window group, errno=%d", errno);
-    }
-
-    errno = 0;
-    screen_buffer_t buffer;
-    result = screen_get_window_property_pv(mAppWindow, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)&buffer);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to query window buffer, errno=%d", errno);
-    }
-
-    errno = 0;
-    int dirtyRect[] = {0, 0, 1, 1};
-    result = screen_post_window(mAppWindow, buffer, 1, dirtyRect, 0);
-    if (result != 0) {
-        qFatal("QBB: failed to post window buffer, errno=%d", errno);
-    }
-}
-
-void QBBScreen::destroyRootWindow()
-{
-    if (!mAppWindow)
-        return;
-
-    // cleanup top-level QNX window
-    screen_destroy_window(mAppWindow);
-    mAppWindow = 0;
-    mWindowGroupName = QByteArray();
+    if (!mRootWindow)
+        mRootWindow = QSharedPointer<QBBRootWindow>(new QBBRootWindow(this));
 }
 
 QRect QBBScreen::availableGeometry() const
@@ -339,6 +188,14 @@ QRect QBBScreen::availableGeometry() const
                  mCurrentGeometry.width(), mCurrentGeometry.height() - keyboardHeight);
 }
 
+/*!
+    Check if the supplied angles are perpendicular to each other.
+*/
+static bool isOrthogonal(int angle1, int angle2)
+{
+    return ((angle1 - angle2) % 180) != 0;
+}
+
 void QBBScreen::setRotation(int rotation)
 {
 #if defined(QBBSCREEN_DEBUG)
@@ -347,16 +204,12 @@ void QBBScreen::setRotation(int rotation)
 
     // check if rotation changed
     if (mCurrentRotation != rotation) {
-
-        // update rotation of app window
-        errno = 0;
-        int result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_ROTATION, &rotation);
-        if (result != 0) {
-            qFatal("QBBScreen: failed to set window rotation, errno=%d", errno);
-        }
+        // update rotation of root window
+        if (mRootWindow)
+            mRootWindow->setRotation(rotation);
 
         // swap dimensions if we've rotated 90 or 270 from initial orientation
-        if (orthogonal(mStartRotation, rotation)) {
+        if (isOrthogonal(mStartRotation, rotation)) {
             mCurrentGeometry = QRect(0, 0, mStartGeometry.height(), mStartGeometry.width());
             mCurrentPhysicalSize = QSize(mStartPhysicalSize.height(), mStartPhysicalSize.width());
         } else {
@@ -365,51 +218,26 @@ void QBBScreen::setRotation(int rotation)
         }
 
         // resize app window if we've rotated 90 or 270 from previous orientation
-        if (orthogonal(mCurrentRotation, rotation)) {
+        if (isOrthogonal(mCurrentRotation, rotation)) {
 
 #if defined(QBBSCREEN_DEBUG)
             qDebug() << "QBBScreen::setRotation - resize, s=" << mCurrentGeometry.size();
 #endif
-            errno = 0;
-            int val[] = {mCurrentGeometry.width(), mCurrentGeometry.height()};
-            result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SIZE, val);
-            if (result != 0) {
-                qFatal("QBBScreen: failed to set window size, errno=%d", errno);
-            }
-
-            errno = 0;
-            result = screen_set_window_property_iv(mAppWindow, SCREEN_PROPERTY_SOURCE_SIZE, val);
-            if (result != 0) {
-                qFatal("QBBScreen: failed to set window source size, errno=%d", errno);
-            }
-
-            // NOTE: display will update when child windows relayout and repaint
-
+            if (mRootWindow)
+                mRootWindow->resize(mCurrentGeometry.size());
         } else {
-
             // TODO: find one global place to flush display updates
 #if defined(QBBSCREEN_DEBUG)
             qDebug() << "QBBScreen::setRotation - flush";
 #endif
             // force immediate display update if no geometry changes required
-            errno = 0;
-            int result = screen_flush_context(mContext, 0);
-            if (result != 0) {
-                qFatal("QBBScreen: failed to flush context, errno=%d", errno);
-            }
+            if (mRootWindow)
+                mRootWindow->flush();
         }
 
         // save new rotation
         mCurrentRotation = rotation;
     }
-}
-
-/*!
-    Check if the supplied angles are perpendicular to each other.
-*/
-bool QBBScreen::orthogonal(int rotation1, int rotation2)
-{
-    return ((rotation1 - rotation2) % 180) != 0;
 }
 
 void QBBScreen::addWindow(QBBWindow* window)
@@ -476,11 +304,6 @@ void QBBScreen::updateHierarchy()
         map[static_cast<QBBScreen*>((*it)->screen())] = 1;
     }
 
-    // Check to see if any root windows need destruction
-    for (sit = sScreens.begin(); sit != sScreens.end(); sit++)
-        if (!static_cast<QBBScreen*>(*sit)->isPrimaryDisplay() && map[*sit] == 0)
-            static_cast<QBBScreen*>(*sit)->destroyRootWindow();
-
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
     screen_flush_context( primaryDisplay()->mContext, 0 );
@@ -493,22 +316,8 @@ void QBBScreen::onWindowPost(QBBWindow* window)
     // post app window (so navigator will show it) after first child window
     // has posted; this only needs to happen once as the app window's content
     // never changes
-    if (!mPosted) {
-
-        errno = 0;
-        screen_buffer_t buffer;
-        int result = screen_get_window_property_pv(mAppWindow, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)&buffer);
-        if (result != 0) {
-            qFatal("QBB: failed to query window buffer, errno=%d", errno);
-        }
-
-        errno = 0;
-        int dirtyRect[] = {0, 0, 1, 1};
-        result = screen_post_window(mAppWindow, buffer, 1, dirtyRect, 0);
-        if (result != 0) {
-            qFatal("QBB: failed to post window buffer, errno=%d", errno);
-        }
-
+    if (!mPosted && mRootWindow) {
+        mRootWindow->post();
         mPosted = true;
     }
 }
