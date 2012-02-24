@@ -1551,7 +1551,10 @@ TInt QCoeFepInputContext::DocumentLengthForFep() const
                 if (lineVariant.isValid()) {
                     lineCount = lineVariant.toInt();
                 } else {
-                    lineCount = 1;
+                    // If we can't get linecount from a custom QML editor, assume that it
+                    // has multiple lines, so that it can receive backspaces also when
+                    // the current line is empty.
+                    lineCount = 2;
                 }
             }
             // To fix an issue with backspaces not being generated if document size is zero,
