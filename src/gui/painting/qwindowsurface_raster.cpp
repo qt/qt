@@ -97,7 +97,7 @@ QRasterWindowSurface::QRasterWindowSurface(QWidget *window, bool setDefaultSurfa
     d_ptr->translucentBackground = X11->use_xrender
         && window->x11Info().depth() == 32;
 #endif
-#ifndef QT_NO_MITHSM
+#ifndef QT_NO_MITSHM
     d_ptr->needsSync = false;
 #endif
 #endif
