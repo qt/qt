@@ -681,20 +681,21 @@ void tst_QDeclarativeMouseArea::preventContextMenu()
     QCOMPARE(eventsReceived.read().toInt(), 0);
 
     QPoint targetPoint = view->mapFromScene(QPoint(80, 80));
+    QPoint targetGlobalPoint = view->viewport()->mapToGlobal(targetPoint);
 
-    QContextMenuEvent fakeEvent1(QContextMenuEvent::Mouse, targetPoint);
+    QContextMenuEvent fakeEvent1(QContextMenuEvent::Mouse, targetPoint, targetGlobalPoint);
     QApplication::sendEvent(view->viewport(), &fakeEvent1);
     QCOMPARE(eventsReceived.read().toInt(), 0);
 
     mouseAreaEnabled.write(false);
     QVERIFY(!mouseAreaEnabled.read().toBool());
-    QContextMenuEvent fakeEvent2(QContextMenuEvent::Mouse, targetPoint);
+    QContextMenuEvent fakeEvent2(QContextMenuEvent::Mouse, targetPoint, targetGlobalPoint);
     QApplication::sendEvent(view->viewport(), &fakeEvent2);
     QCOMPARE(eventsReceived.read().toInt(), 1);
 
     mouseAreaEnabled.write(true);
     QVERIFY(mouseAreaEnabled.read().toBool());
-    QContextMenuEvent fakeEvent3(QContextMenuEvent::Mouse, targetPoint);
+    QContextMenuEvent fakeEvent3(QContextMenuEvent::Mouse, targetPoint, targetGlobalPoint);
     QApplication::sendEvent(view->viewport(), &fakeEvent3);
     QCOMPARE(eventsReceived.read().toInt(), 1);
 }
