@@ -1788,7 +1788,7 @@ bool QX11Data::xdndHandleBadwindow()
             qt_xdnd_current_proxy_target = 0;
             manager->object->deleteLater();
             manager->object = 0;
-            delete xdnd_data.deco;
+            xdnd_data.deco->deleteLater(); //delay freeing to avoid crash QTBUG-19363
             xdnd_data.deco = 0;
             return true;
         }
