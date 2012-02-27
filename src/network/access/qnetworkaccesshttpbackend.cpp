@@ -521,7 +521,7 @@ void QNetworkAccessHttpBackend::postRequest()
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
-#ifndef Q_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT
     QVariant v(property("_q_networksession"));
     if (v.isValid())
         delegate->networkSession = qvariant_cast<QSharedPointer<QNetworkSession> >(v);
