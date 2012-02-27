@@ -1082,7 +1082,7 @@ bool QFileDialogPrivate::showCocoaFilePanel()
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     if (qt_mac_is_macsheet(q))
         [delegate showWindowModalSheet:q->parentWidget()];
-    else
+    else if (!q->testAttribute(Qt::WA_ShowModal))
         [delegate showModelessPanel];
     return true;
 }
