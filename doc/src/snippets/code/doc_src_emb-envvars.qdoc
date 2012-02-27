@@ -62,17 +62,12 @@ export QWS_MOUSE_PROTO="<driver>[:<driver specific options>]
 
 
 //! [4]
-export QWS_MOUSE_PROTO="Vr41xx:press=500:/dev/misc/ts"
+export QWS_KEYBOARD=<driver>[:<driver specific options>]
 //! [4]
 
 
 //! [5]
-export QWS_KEYBOARD=<driver>[:<driver specific options>]
-//! [5]
-
-
-//! [6]
 export QWS_KEYBOARD="<driver>[:<driver specific options>]
         <driver>[:<driver specific options>]
         <driver>[:<driver specific options>]"
-//! [6]
+//! [5]

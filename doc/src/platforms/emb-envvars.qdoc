@@ -106,8 +106,8 @@
     \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 2
 
     The valid values for the \c <driver> argument are \c MouseMan, \c
-    IntelliMouse, \c Microsoft, \c VR41xx, \c LinuxTP, \c Yopy. \c
-    Tslib and \l {QMouseDriverPlugin::keys()}{keys} identifying
+    IntelliMouse, \c Microsoft, \c LinuxTP, \c LinuxInput, \c Tslib
+    and \l {QMouseDriverPlugin::keys()}{keys} identifying
     custom drivers, and the driver specific options are typically a
     device, e.g., \c /dev/mouse for mouse devices and \c /dev/ts for
     touch panels.
@@ -117,13 +117,6 @@
     \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 3
 
     Input will be read from all specified drivers.
-    Note that the \c Vr41xx driver also accepts two optional
-    arguments: \c press=<value> defining a mouseclick (the default
-    value is 750) and \c filter=<value> specifying the length of the
-    filter used to eliminate noise (the default length is 3). For
-    example:
-
-    \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 4
 
     See also \l {Qt for Embedded Linux Pointer Handling}.
 
@@ -134,17 +127,16 @@
     Specifies the driver and device for character input. For example, if the
     current shell is bash, ksh, zsh or sh:
 
-    \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 4
 
-    The valid values for the \c <driver> argument are \c SL5000, \c
-    Yopy, \c VR41xx, \c TTY, \c USB and \l
-    {QKbdDriverPlugin::keys()}{keys} identifying custom drivers,
+    The valid values for the \c <driver> argument are \c TTY,
+    \c LinuxInput and \l {QKbdDriverPlugin::keys()}{keys} identifying custom drivers,
     and the driver specific options are typically a device, e.g., \c
     /dev/tty0.
 
     Multiple keyboard drivers can be specified in one go:
 
-    \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 5
 
     Input will be read from all specified drivers.
 
