@@ -38,8 +38,6 @@ SOURCES         = qvfb.cpp \
 
 !embedded {
     DEFINES         += QT_NO_QWS_SIGNALHANDLER
-    HEADERS         += ../../src/gui/embedded/qlock_p.h
-    SOURCES         += ../../src/gui/embedded/qlock.cpp
 }
 
 include(../shared/deviceskin/deviceskin.pri)
