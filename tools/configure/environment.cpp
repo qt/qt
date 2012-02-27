@@ -167,8 +167,18 @@ Compiler Environment::detectCompiler()
             QStringList::iterator it;
             for(it = pathlist.begin(); it != pathlist.end(); ++it) {
                 if((*it).contains(productPath)) {
-                    ++installed;
-                    detectedCompiler = compiler_info[i].compiler;
+                    if (detectedCompiler != compiler_info[i].compiler) {
+                        ++installed;
+                        detectedCompiler = compiler_info[i].compiler;
+                    }
+                    /* else {
+
+                        We detected the same compiler again, which happens when
+                        configure is run on a 64 bit Windows. Skip the
+                        duplicate so that we don't think it's installed twice.
+
+                    }
+                    */
                     break;
                 }
             }
@@ -180,14 +190,24 @@ Compiler Environment::detectCompiler()
         for(int i = 0; compiler_info[i].compiler; ++i) {
             QString executable = QString(compiler_info[i].executable).toLower();
             if (executable.length() && Environment::detectExecutable(executable)) {
-                ++installed;
-                detectedCompiler = compiler_info[i].compiler;
-                if (detectedCompiler == CC_MINGW) {
-                    bool is64bit;
-                    const int version = detectGPlusPlusVersion(executable, &is64bit);
-                    if (version < 0x040600)
-                        detectedCompiler = CC_MINGW_44;
+                if (detectedCompiler != compiler_info[i].compiler) {
+                    ++installed;
+                    detectedCompiler = compiler_info[i].compiler;
+                    if (detectedCompiler == CC_MINGW) {
+                        bool is64bit;
+                        const int version = detectGPlusPlusVersion(executable, &is64bit);
+                        if (version < 0x040600)
+                            detectedCompiler = CC_MINGW_44;
+                    }
                 }
+                /* else {
+
+                    We detected the same compiler again, which happens when
+                    configure is run on a 64 bit Windows. Skip the
+                    duplicate so that we don't think it's installed twice.
+
+                }
+                */
                 break;
             }
         }
