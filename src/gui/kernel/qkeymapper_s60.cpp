@@ -45,9 +45,11 @@
 #include <e32cmn.h>
 #include <centralrepository.h>
 #include <biditext.h>
+#include <qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
-
+static const TSecureId KLegacyAppUids [] = {0x20043644, 0x200431D8, 0x200431D9, 0x200431D7,
+                                           0x200444FE, 0x2004450C, 0x20044504};
 QKeyMapperPrivate::QKeyMapperPrivate()
 {
 }
@@ -75,6 +77,17 @@ QString QKeyMapperPrivate::translateKeyEvent(int keySym, Qt::KeyboardModifiers /
             return QString(QChar('\t'));
         case Qt::Key_Return:    // fall through
         case Qt::Key_Enter:
+            // some legacy Symbian apps depend on buggy behaviour
+            TSecureId currentUID = RThread().SecureId();
+            for (int i = 0; i < sizeof(KLegacyAppUids) / sizeof(TSecureId); i++) {
+                if (KLegacyAppUids[i] == currentUID) {
+                    QVariant v = QCoreApplication::instance()->property(
+                        "noLegacyTranslateReturn");
+                    if (!v.isValid())
+                        return QString();
+                    break;
+                }
+            }
             return QString(QChar('\r'));
         default:
             return QString();
