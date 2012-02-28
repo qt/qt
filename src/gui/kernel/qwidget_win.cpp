@@ -427,8 +427,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                 }
             }
             if (!wasMoved) {
-                x = sw/2 - w/2;
-                y = sh/2 - h/2;
+                x = qMax(sw/2 - w/2, 0);
+                y = qMax(sh/2 - h/2, 0);
             }
         }
 
