@@ -408,7 +408,7 @@ private:
     CONTROLINFO control_info;
 
     QSize sizehint;
-    unsigned long ref;
+    LONG ref;
     QAxWidget *widget;
     QAxHostWidget *host;
 #if !defined(Q_WS_WINCE)
@@ -774,16 +774,16 @@ void QAxClientSite::deactivate()
 //**** IUnknown
 unsigned long WINAPI QAxClientSite::AddRef()
 {
-    return ++ref;
+    return InterlockedIncrement(&ref);
 }
 
 unsigned long WINAPI QAxClientSite::Release()
 {
-    if (!--ref) {
+    LONG refCount = InterlockedDecrement(&ref);
+    if (!refCount)
         delete this;
-        return 0;
-    }
-    return ref;
+
+    return refCount;
 }
 
 HRESULT WINAPI QAxClientSite::QueryInterface(REFIID iid, void **iface)
