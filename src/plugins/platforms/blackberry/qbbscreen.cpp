@@ -294,7 +294,7 @@ void QBBScreen::updateHierarchy()
     QList<QBBWindow*>::iterator it;
     QList<QPlatformScreen *>::iterator sit;
     QMap<QPlatformScreen *, int> map;
-    int topZorder = 0;
+    int topZorder = 1; // root window is z-order 0, all "top" level windows are "above" it
 
     for (sit = sScreens.begin(); sit != sScreens.end(); sit++)
         map[*sit] = 0;
