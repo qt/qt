@@ -42,9 +42,9 @@
 #ifndef QMEEGOGRAPHICSSYSTEMHELPER_H
 #define QMEEGOGRAPHICSSYSTEMHELPER_H
 
-#include <QPixmap>
-#include <QImage>
-#include "qmeegolivepixmap.h"
+#include <QtGui/QPixmap>
+#include <QtGui/QImage>
+#include "QtMeeGoGraphicsSystemHelper/qmeegolivepixmap.h"
 
 class QLibrary;
 

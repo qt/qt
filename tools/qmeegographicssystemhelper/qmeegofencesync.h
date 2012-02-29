@@ -42,7 +42,7 @@
 #ifndef QMEEGOFENCESYNC_H
 #define QMEEGOFENCESYNC_H
 
-#include <QWidget>
+#include <QtGui/QWidget>
 
 class QMeeGoFenceSyncPrivate;
 

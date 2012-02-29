@@ -42,7 +42,7 @@
 #ifndef QMEEGOOVERLAYWIDGET_H
 #define QMEEGOOVERLAYWIDGET_H
 
-#include <QWidget>
+#include <QtGui/QWidget>
 
 //! A widget automatically scaling it's content.
 /*!

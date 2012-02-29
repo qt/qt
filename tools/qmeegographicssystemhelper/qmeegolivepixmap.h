@@ -42,8 +42,8 @@
 #ifndef QMEEGOLIVEPIXMAP_H
 #define QMEEGOLIVEPIXMAP_H
 
-#include <QPixmap>
-#include "qmeegofencesync.h"
+#include <QtGui/QPixmap>
+#include "QtMeeGoGraphicsSystemHelper/qmeegofencesync.h"
 
 class QMeeGoLivePixmapPrivate;
 class QSharedMemory;

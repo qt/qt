@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QEvent>
-#include <QString>
+#include <QtCore/QEvent>
+#include <QtCore/QString>
 
 //! A custom event representing a graphics system switch.
 /*!

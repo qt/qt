@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QPixmap>
-#include <QImage>
+#include <QtGui/QPixmap>
+#include <QtGui/QImage>
 
-#include "qmeegographicssystemhelper.h"
+#include "QtMeeGoGraphicsSystemHelper/qmeegographicssystemhelper.h"
 
 class QMeeGoRuntime
 {
