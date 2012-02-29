@@ -663,8 +663,9 @@ bool QAxClientSite::activateObject(bool initialized, const QByteArray &data)
         if (spAdviseSink && spViewObject) {
             if (spViewObject)
                 spViewObject->SetAdvise(DVASPECT_CONTENT, 0, spAdviseSink);
-            spAdviseSink->Release();
         }
+        if (spAdviseSink)
+            spAdviseSink->Release();
         if (spViewObject)
             spViewObject->Release();
 
