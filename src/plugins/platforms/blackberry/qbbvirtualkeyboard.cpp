@@ -275,15 +275,15 @@ void QBBVirtualKeyboard::handleKeyboardInfoMessage()
     }
     if (pps_decoder_get_string(mDecoder, "languageId", &value) != PPS_DECODER_OK) {
         qCritical("QBBVirtualKeyboard: Keyboard PPS languageId field not found");
-        mLanguageId = QString::fromLatin1(value);
         return;
     }
+    mLanguageId = QString::fromLatin1(value);
+
     if (pps_decoder_get_string(mDecoder, "countryId", &value) != PPS_DECODER_OK) {
         qCritical("QBBVirtualKeyboard: Keyboard PPS size countryId not found");
-        mCountryId = QString::fromLatin1(value);
         return;
     }
-
+    mCountryId = QString::fromLatin1(value);
 
     // HUGE hack, should be removed ASAP.
     newHeight -= KEYBOARD_SHADOW_HEIGHT; // We want to ignore the 8 pixel shadow above the keyboard. (PR 88400)
