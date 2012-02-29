@@ -58,6 +58,8 @@ public:
     virtual bool filterEvent( const QEvent *event );
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
+    void setFocusWidget(QWidget *w);
+
 private:
     bool hasPhysicalKeyboard();
 

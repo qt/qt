@@ -99,3 +99,16 @@ bool QBBInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan,
     return false;
 }
 
+void QBBInputContext::setFocusWidget(QWidget *w)
+{
+#if defined(QBBINPUTCONTEXT_DEBUG)
+    qDebug() << Q_FUNC_INFO << (w ? "requesting" : "hiding") << "virtual keyboard";
+#endif
+    QInputContext::setFocusWidget(w);
+
+    if (w)
+        QBBVirtualKeyboard::instance().showKeyboard();
+    else
+        QBBVirtualKeyboard::instance().hideKeyboard();
+}
+
