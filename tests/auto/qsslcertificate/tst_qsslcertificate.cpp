@@ -113,6 +113,7 @@ private slots:
     void largeSerialNumber();
     void largeExpirationDate();
     void blacklistedCertificates();
+    void threadSafeConstMethods();
 
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
@@ -850,7 +851,67 @@ void tst_QSslCertificate::blacklistedCertificates()
     }
 }
 
-#endif // QT_NO_OPENSSL
+class TestThread : public QThread
+{
+public:
+    void run()
+    {
+        effectiveDate = cert.effectiveDate();
+        expiryDate = cert.expiryDate();
+        isValid = cert.isValid();
+        issuerInfo = cert.issuerInfo(QSslCertificate::CommonName);
+        publicKey = cert.publicKey();
+        serialNumber = cert.serialNumber();
+        subjectInfo = cert.subjectInfo(QSslCertificate::CommonName);
+        toDer = cert.toDer();
+        toPem = cert.toPem();
+        version = cert.version();
+    }
+    QSslCertificate cert;
+    QDateTime effectiveDate;
+    QDateTime expiryDate;
+    bool isValid;
+    QString issuerInfo;
+    QSslKey publicKey;
+    QByteArray serialNumber;
+    QString subjectInfo;
+    QByteArray toDer;
+    QByteArray toPem;
+    QByteArray version;
+};
+
+void tst_QSslCertificate::threadSafeConstMethods()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QByteArray encoded = readFile(QLatin1String(SRCDIR "/certificates/cert.pem"));
+    QSslCertificate certificate(encoded);
+    QVERIFY(!certificate.isNull());
+
+    TestThread t1;
+    t1.cert = certificate; //shallow copy
+    TestThread t2;
+    t2.cert = certificate; //shallow copy
+    t1.start();
+    t2.start();
+    QVERIFY(t1.wait(5000));
+    QVERIFY(t2.wait(5000));
+    QVERIFY(t1.cert == t2.cert);
+    QVERIFY(t1.effectiveDate == t2.effectiveDate);
+    QVERIFY(t1.expiryDate == t2.expiryDate);
+    QVERIFY(t1.isValid == t2.isValid);
+    QVERIFY(t1.issuerInfo == t2.issuerInfo);
+    QVERIFY(t1.publicKey == t2.publicKey);
+    QVERIFY(t1.serialNumber == t2.serialNumber);
+    QVERIFY(t1.subjectInfo == t2.subjectInfo);
+    QVERIFY(t1.toDer == t2.toDer);
+    QVERIFY(t1.toPem == t2.toPem);
+    QVERIFY(t1.version == t2.version);
+
+}
+
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslCertificate)
 #include "tst_qsslcertificate.moc"
