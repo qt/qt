@@ -879,7 +879,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (err != FT_Err_Ok)
         qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
 
-    if (set->outline_drawing || fetchMetricsOnly)
+    if (set->outline_drawing && fetchMetricsOnly)
         return 0;
 
     FT_GlyphSlot slot = face->glyph;
