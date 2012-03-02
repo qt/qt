@@ -25,6 +25,12 @@
 #ifndef PNGPRIV_H
 #define PNGPRIV_H
 
+#ifdef _MSC_VER
+#  ifndef _CRT_SECURE_NO_DEPRECATE
+#    define _CRT_SECURE_NO_DEPRECATE
+#  endif
+#endif
+
 /* Feature Test Macros.  The following are defined here to ensure that correctly
  * implemented libraries reveal the APIs libpng needs to build and hide those
  * that are not needed and potentially damaging to the compilation.
@@ -96,6 +102,11 @@
 #     endif
 #  endif
 #endif /* Setting PNG_BUILD_DLL if required */
+
+/* Modfied for usage in Qt: Do not export the libpng APIs */
+#ifdef PNG_BUILD_DLL
+#undef PNG_BUILD_DLL
+#endif
 
 /* See pngconf.h for more details: the builder of the library may set this on
  * the command line to the right thing for the specific compilation system or it
@@ -350,7 +361,9 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
-#  include <windows.h>  /* defines _WINDOWS_ macro */
+#  if !defined(__SYMBIAN32__)
+#    include <windows.h>  /* defines _WINDOWS_ macro */
+#  endif
 #endif
 
 /* Moved here around 1.5.0beta36 from pngconf.h */
@@ -360,7 +373,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  ifdef _WINDOWS_
+#  if defined(_WINDOWS_) || defined(_WIN32_WCE)
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()
@@ -1584,7 +1597,7 @@ PNG_EXTERN void png_ascii_from_fixed PNGARG((png_structp png_ptr,
 #define PNG_FP_IS_ZERO(state) (((state) & PNG_FP_Z_MASK) == PNG_FP_SAW_DIGIT)
 #define PNG_FP_IS_POSITIVE(state) (((state) & PNG_FP_NZ_MASK) == PNG_FP_Z_MASK)
 #define PNG_FP_IS_NEGATIVE(state) (((state) & PNG_FP_NZ_MASK) == PNG_FP_NZ_MASK)
- 
+
 /* The actual parser.  This can be called repeatedly, it updates
  * the index into the string and the state variable (which must
  * be initialzed to 0).  It returns a result code, as above.  There

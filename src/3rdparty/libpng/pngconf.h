@@ -35,7 +35,7 @@
  * because this file defines png_memcpy and so on the base APIs must
  * be defined here.
  */
-#  ifdef BSD
+#  if defined(BSD) && !defined(VXWORKS)
 #    include <strings.h>
 #  else
 #    include <string.h>
@@ -199,7 +199,7 @@
 #    define PNGCAPI __watcall
 #  endif
 
-#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))
+#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800)) || defined(__WINSCW__)
 #    define PNGCAPI __cdecl
 #    if PNG_API_RULE == 1
 #      define PNGAPI __stdcall

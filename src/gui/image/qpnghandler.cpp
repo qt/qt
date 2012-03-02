@@ -53,7 +53,6 @@
 #ifdef QT_USE_BUNDLED_LIBPNG
 #include <../../3rdparty/libpng/png.h>
 #include <../../3rdparty/libpng/pngconf.h>
-using namespace PrivatePng;
 #else
 #include <png.h>
 #include <pngconf.h>
