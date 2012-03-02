@@ -625,23 +625,25 @@ void QSymbianControl::setWidget(QWidget *w)
     qwidget = w;
 }
 
-QPoint QSymbianControl::translatePointForFixedNativeOrientation(const TPoint &pointerEventPos) const
+QPoint QSymbianControl::translatePointForFixedNativeOrientation(const TPoint &pointerEventPos, TTranslationType translationType) const
 {
     QPoint pos(pointerEventPos.iX, pointerEventPos.iY);
     if (qwidget->d_func()->fixNativeOrientationCalled) {
         QSize wsize = qwidget->size(); // always same as the size in the native orientation
         TSize size = Size(); // depends on the current orientation
+        // pixel center translations, eg touch points, should be reflected against the last pixel center, which is at size-1
+        int offset = (translationType == ETranslatePixelCenter) ? 1 : 0;
         if (size.iWidth == wsize.height() && size.iHeight == wsize.width()) {
             qreal x = pos.x();
             qreal y = pos.y();
             if (S60->screenRotation == QS60Data::ScreenRotation90) {
                 // DisplayRightUp
-                pos.setX(size.iHeight - y);
+                pos.setX(size.iHeight - offset - y);
                 pos.setY(x);
             } else if (S60->screenRotation == QS60Data::ScreenRotation270) {
                 // DisplayLeftUp
                 pos.setX(y);
-                pos.setY(size.iWidth - x);
+                pos.setY(size.iWidth - offset - x);
             }
         }
     }
@@ -652,8 +654,8 @@ TRect QSymbianControl::translateRectForFixedNativeOrientation(const TRect &contr
 {
     TRect rect = controlRect;
     if (qwidget->d_func()->fixNativeOrientationCalled) {
-        QPoint a = translatePointForFixedNativeOrientation(rect.iTl);
-        QPoint b = translatePointForFixedNativeOrientation(rect.iBr);
+        QPoint a = translatePointForFixedNativeOrientation(rect.iTl, ETranslatePixelEdge);
+        QPoint b = translatePointForFixedNativeOrientation(rect.iBr, ETranslatePixelEdge);
         if (a.x() < b.x()) {
             rect.iTl.iX = a.x();
             rect.iBr.iX = b.x();
@@ -675,8 +677,8 @@ TRect QSymbianControl::translateRectForFixedNativeOrientation(const TRect &contr
 void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation )
 {
     QWidget *alienWidget;
-    QPoint widgetPos = translatePointForFixedNativeOrientation(aPenEventLocation);
-    QPoint globalPos = translatePointForFixedNativeOrientation(aPenEventScreenLocation);
+    QPoint widgetPos = translatePointForFixedNativeOrientation(aPenEventLocation, ETranslatePixelCenter);
+    QPoint globalPos = translatePointForFixedNativeOrientation(aPenEventScreenLocation, ETranslatePixelCenter);
     alienWidget = qwidget->childAt(widgetPos);
     if (!alienWidget)
         alienWidget = qwidget;
@@ -713,7 +715,7 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
 QSymbianControl::TouchEventParams QSymbianControl::TouchEventFromAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
-    QPointF screenPos = qwidget->mapToGlobal(translatePointForFixedNativeOrientation(event->iPosition));
+    QPointF screenPos = qwidget->mapToGlobal(translatePointForFixedNativeOrientation(event->iPosition, ETranslatePixelCenter));
     qreal pressure;
     if (d->pressureSupported
         && event->Pressure() > 0) //workaround for misconfigured HAL
@@ -866,7 +868,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
     app_keyboardModifiers = modifiers;
 
-    QPoint widgetPos = translatePointForFixedNativeOrientation(pEvent.iPosition);
+    QPoint widgetPos = translatePointForFixedNativeOrientation(pEvent.iPosition, ETranslatePixelCenter);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
     S60->lastCursorPos = globalPos;

@@ -275,7 +275,8 @@ public:
     bool isControlActive();
 
     void ensureFixNativeOrientation();
-    QPoint translatePointForFixedNativeOrientation(const TPoint &pointerEventPos) const;
+    enum TTranslationType { ETranslatePixelCenter, ETranslatePixelEdge };
+    QPoint translatePointForFixedNativeOrientation(const TPoint &pointerEventPos, TTranslationType translationType) const;
     TRect translateRectForFixedNativeOrientation(const TRect &controlRect) const;
 
 #ifdef Q_WS_S60
