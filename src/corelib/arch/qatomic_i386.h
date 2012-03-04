@@ -202,7 +202,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 
 extern "C" {
     Q_CORE_EXPORT int q_atomic_test_and_set_int(volatile int *ptr, int expected, int newval);
-    Q_CORE_EXPORT int q_atomic_test_and_set_ptr(volatile void *ptr, void *expected, void *newval);
+    Q_CORE_EXPORT int q_atomic_test_and_set_ptr(volatile void *ptr, const void *expected, const void *newval);
     Q_CORE_EXPORT int q_atomic_increment(volatile int *ptr);
     Q_CORE_EXPORT int q_atomic_decrement(volatile int *ptr);
     Q_CORE_EXPORT int q_atomic_set_int(volatile int *ptr, int newval);
