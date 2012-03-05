@@ -5400,7 +5400,7 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
 
 #endif // QT3_SUPPORT
 
-typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
+typedef const GLubyte * (APIENTRY *qt_glGetStringi)(GLenum, GLuint);
 
 #ifndef GL_NUM_EXTENSIONS
 #define GL_NUM_EXTENSIONS 0x821D
