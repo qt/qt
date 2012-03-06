@@ -27,5 +27,16 @@ HEADERS =   qeglfsintegration.h \
 
 include(../fontdatabases/genericunix/genericunix.pri)
 
+!isEmpty(QMAKE_INCDIR_EGL){
+    INCLUDEPATH += $$QMAKE_INCDIR_EGL
+}
+!isEmpty(QMAKE_LIBDIR_EGL){
+    for(p, QMAKE_LIBDIR_EGL) {
+        exists($$p):LIBS += -L$$p
+    }
+}
+
+!isEmpty(QMAKE_LIBS_EGL): LIBS += $$QMAKE_LIBS_EGL
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
