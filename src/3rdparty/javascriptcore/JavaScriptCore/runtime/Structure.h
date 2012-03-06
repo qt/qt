@@ -317,7 +317,7 @@ namespace JSC {
         TransitionTable* transitionTable = new TransitionTable;
         setTransitionTable(transitionTable);
         if (existingTransition)
-            add(std::make_pair(RefPtr<UString::Rep>(existingTransition->m_nameInPrevious.get()), existingTransition->m_attributesInPrevious), existingTransition, existingTransition->m_specificValueInPrevious);
+            add(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(existingTransition->m_nameInPrevious.get()), existingTransition->m_attributesInPrevious), existingTransition, existingTransition->m_specificValueInPrevious);
     }
 } // namespace JSC
 

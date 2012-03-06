@@ -237,7 +237,7 @@ namespace WTF {
         typedef HashMapTranslator<ValueType, ValueTraits, HashFunctions> TranslatorType;
         pair<typename HashTableType::iterator, bool> p = m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
 	typename HashMap<T, U, V, W, X>::iterator temp = p.first;
-        return make_pair<typename HashMap<T, U, V, W, X>::iterator, bool>(temp, p.second);
+        return std::pair<typename HashMap<T, U, V, W, X>::iterator, bool>(temp, p.second);
 //      return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
     }
 

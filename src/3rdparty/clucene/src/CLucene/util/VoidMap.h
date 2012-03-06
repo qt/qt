@@ -19,19 +19,18 @@ CL_NS_DEF(util)
 * @internal
 */
 template<typename _kt, typename _vt, 
-	typename _base,
+	typename base,
 	typename _KeyDeletor=CL_NS(util)::Deletor::Dummy,
 	typename _ValueDeletor=CL_NS(util)::Deletor::Dummy>
-class __CLMap:public _base,LUCENE_BASE {
+class __CLMap: public base, LUCENE_BASE {
 private:
 	bool dk;
 	bool dv;
-	typedef _base base;
 public:
    DEFINE_MUTEX(THIS_LOCK)
 
-	typedef typename _base::iterator iterator;
-	typedef typename _base::const_iterator const_iterator;
+	typedef typename base::iterator iterator;
+	typedef typename base::const_iterator const_iterator;
 	typedef CL_NS_STD(pair)<_kt, _vt> _pair;
 
 	///Default constructor for the __CLMap

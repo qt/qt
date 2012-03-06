@@ -209,7 +209,7 @@ namespace WTF {
     {
         pair<typename HashTable<T, T, IdentityExtractor<T>, U, V, V>::iterator, bool> p = m_impl.add(value);
         typename HashSet<T, U, V>::iterator temp = p.first;
-        pair<typename HashSet<T, U, V>::iterator, bool> p2 = make_pair<typename HashSet<T, U, V>::iterator, bool>(temp, p.second);
+        pair<typename HashSet<T, U, V>::iterator, bool> p2 = pair<typename HashSet<T, U, V>::iterator, bool>(temp, p.second);
  //       p2.first = p.first;
  //       p2.second = p.second;
         return p2;
@@ -222,7 +222,7 @@ namespace WTF {
     {
         typedef HashSetTranslatorAdapter<ValueType, ValueTraits, T, HashTranslator> Adapter;
         pair<typename HashTableType::iterator, bool> p = m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
-	return make_pair<iterator, bool>(p.first, p.second);
+	return pair<iterator, bool>(p.first, p.second);
     }
 
     template<typename T, typename U, typename V>

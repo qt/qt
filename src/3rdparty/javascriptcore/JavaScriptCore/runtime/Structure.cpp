@@ -157,7 +157,7 @@ Structure::~Structure()
 {
     if (m_previous) {
         if (m_nameInPrevious)
-            m_previous->table.remove(make_pair(RefPtr<UString::Rep>(m_nameInPrevious.get()), m_attributesInPrevious), m_specificValueInPrevious);
+            m_previous->table.remove(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(m_nameInPrevious.get()), m_attributesInPrevious), m_specificValueInPrevious);
         else
             m_previous->table.removeAnonymousSlotTransition(m_anonymousSlotsInPrevious);
 
@@ -344,7 +344,7 @@ PassRefPtr<Structure> Structure::addPropertyTransitionToExistingStructure(Struct
     ASSERT(!structure->isDictionary());
     ASSERT(structure->typeInfo().type() == ObjectType);
 
-    if (Structure* existingTransition = structure->table.get(make_pair(RefPtr<UString::Rep>(propertyName.ustring().rep()), attributes), specificValue)) {
+    if (Structure* existingTransition = structure->table.get(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(propertyName.ustring().rep()), attributes), specificValue)) {
         ASSERT(existingTransition->m_offset != noOffset);
         offset = existingTransition->m_offset;
         return existingTransition;
@@ -403,7 +403,7 @@ PassRefPtr<Structure> Structure::addPropertyTransition(Structure* structure, con
 
     transition->m_offset = offset;
 
-    structure->table.add(make_pair(RefPtr<UString::Rep>(propertyName.ustring().rep()), attributes), transition.get(), specificValue);
+    structure->table.add(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(propertyName.ustring().rep()), attributes), transition.get(), specificValue);
     return transition.release();
 }
 
@@ -888,7 +888,7 @@ void Structure::addAnonymousSlots(unsigned count)
 
 bool Structure::hasTransition(UString::Rep* rep, unsigned attributes)
 {
-    return table.hasTransition(make_pair(RefPtr<UString::Rep>(rep), attributes));
+    return table.hasTransition(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(rep), attributes));
 }
 
 size_t Structure::remove(const Identifier& propertyName)

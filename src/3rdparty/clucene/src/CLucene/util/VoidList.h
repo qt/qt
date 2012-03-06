@@ -19,16 +19,15 @@ CL_NS_DEF(util)
 * A template to encapsulate various list type classes
 * @internal
 */
-template<typename _kt,typename _base,typename _valueDeletor> 
-class __CLList:public _base,LUCENE_BASE {
+template<typename _kt,typename base,typename _valueDeletor> 
+class __CLList:public base,LUCENE_BASE {
 private:
 	bool dv;
-	typedef _base base;
 public:
     DEFINE_MUTEX(THIS_LOCK)
 
-	typedef typename _base::const_iterator const_iterator;
-	typedef typename _base::iterator iterator;
+	typedef typename base::const_iterator const_iterator;
+	typedef typename base::iterator iterator;
 
 	virtual ~__CLList(){
 		clear();

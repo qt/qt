@@ -212,7 +212,7 @@ namespace WTF {
         typedef HashMapTranslator<ValueType, ValueTraits, HashFunctions> TranslatorType;
         pair<typename HashTableType::iterator, bool> p = m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
 //        typename RefPtrHashMap<T, U, V, W, X>::iterator temp = p.first;
-        return make_pair<typename RefPtrHashMap<T, U, V, W, X>::iterator, bool>(
+        return std::pair<typename RefPtrHashMap<T, U, V, W, X>::iterator, bool>(
             typename RefPtrHashMap<T, U, V, W, X>::iterator(p.first), p.second);
 
 //        return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
@@ -223,7 +223,7 @@ namespace WTF {
     RefPtrHashMap<T, U, V, W, X>::inlineAdd(RawKeyType key, const MappedType& mapped) 
     {
         pair<typename HashTableType::iterator, bool> p = m_impl.template add<RawKeyType, MappedType, RawKeyTranslator>(key, mapped);
-        return make_pair<typename RefPtrHashMap<T, U, V, W, X>::iterator, bool>(
+        return std::pair<typename RefPtrHashMap<T, U, V, W, X>::iterator, bool>(
             typename RefPtrHashMap<T, U, V, W, X>::iterator(p.first), p.second);
 
  //       return m_impl.template add<RawKeyType, MappedType, RawKeyTranslator>(key, mapped);

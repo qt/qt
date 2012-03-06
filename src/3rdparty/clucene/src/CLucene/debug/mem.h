@@ -16,10 +16,10 @@
 //Macro for creating new objects
 #if defined(LUCENE_ENABLE_MEMLEAKTRACKING)
    #define _CLNEW new(__FILE__, __LINE__)
-   #define LUCENE_BASE public CL_NS(debug)::LuceneBase
+   #define LUCENE_BASE public virtual CL_NS(debug)::LuceneBase
 #elif defined(LUCENE_ENABLE_REFCOUNT)
    #define _CLNEW new
-   #define LUCENE_BASE public CL_NS(debug)::LuceneBase
+   #define LUCENE_BASE public virtual CL_NS(debug)::LuceneBase
 #else
    #define _CLNEW new
    #define LUCENE_BASE public CL_NS(debug)::LuceneVoidBase
