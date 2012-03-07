@@ -668,6 +668,7 @@ void QNetworkAccessHttpBackend::postRequest()
 
         // End the thread. It will delete itself from the finished() signal
         thread->quit();
+        thread->wait(5000);
 
         finished();
     } else {

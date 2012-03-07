@@ -1152,6 +1152,7 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
     if (manager->d_func()->httpThread) {
         // The thread will deleteLater() itself from its finished() signal
         manager->d_func()->httpThread->quit();
+        manager->d_func()->httpThread->wait(5000);
         manager->d_func()->httpThread = 0;
     }
 }
@@ -1161,6 +1162,7 @@ QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
     if (httpThread) {
         // The thread will deleteLater() itself from its finished() signal
         httpThread->quit();
+        httpThread->wait(5000);
         httpThread = 0;
     }
 }
