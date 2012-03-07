@@ -90,6 +90,8 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
     void qtbug_16871();
+    void qtbug_21045();
+    void hasActiveFocusAfterClear();
 private:
     QDeclarativeEngine engine;
 };
@@ -1236,6 +1238,45 @@ void tst_QDeclarativeItem::qtbug_16871()
     QObject *o = component.create();
     QVERIFY(o != 0);
     delete o;
+}
+
+void tst_QDeclarativeItem::qtbug_21045()
+{
+    QDeclarativeComponent component(&engine);
+    QGraphicsScene scene;
+    component.setData("import QtQuick 1.1\nItem{visible: false; focus: true}", QUrl::fromLocalFile("file:"));
+    QObject *o = component.create();
+    QDeclarativeItem* i = qobject_cast<QDeclarativeItem*>(o);
+    QVERIFY(i);
+    scene.addItem(i);
+    QVERIFY(!i->hasActiveFocus());
+}
+
+void tst_QDeclarativeItem::hasActiveFocusAfterClear()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent qmlComponent(&engine);
+    qmlComponent.setData(
+            "import QtQuick 1.1;"
+            "TextInput {"
+            "width: 100; height: 100;"
+            "Rectangle { anchors.fill: parent; color: \"yellow\"; z: parent.z - 1 }"
+            "}", QUrl());
+    QDeclarativeItem *createdItem = qobject_cast<QDeclarativeItem*>(qmlComponent.create(engine.rootContext()));
+    QVERIFY(createdItem != 0);
+
+    scene.addItem(createdItem);
+
+    createdItem->QGraphicsItem::setFocus();
+    QCoreApplication::processEvents();
+    scene.setFocusItem(0);
+    QCoreApplication::processEvents();
+
+    QVERIFY(!createdItem->hasActiveFocus());
 }
 
 QTEST_MAIN(tst_QDeclarativeItem)
