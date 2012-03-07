@@ -1669,7 +1669,6 @@ bool QFile::atEnd() const
 
 /*!
     \fn bool QFile::seek(qint64 pos)
-    \since 4.8
 
     For random-access devices, this function sets the current position
     to \a pos, returning true on success, or false if an error occurred.
