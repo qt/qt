@@ -6,6 +6,6 @@ contains(QT_CONFIG, wayland) {
     SUBDIRS += wayland
 }
 
-blackberry-armv7le-qcc {
+qnx-*-qcc {
     SUBDIRS += blackberry
 }
