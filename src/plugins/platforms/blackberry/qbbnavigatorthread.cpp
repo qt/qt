@@ -43,12 +43,14 @@
 #include "qbbnavigatorthread.h"
 #include "qbbscreen.h"
 
+#include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
 #include <QByteArray>
 #include <QList>
 #include <QDebug>
+#include <QSocketNotifier>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -62,7 +64,7 @@
 QBBNavigatorThread::QBBNavigatorThread(QBBScreen& primaryScreen)
     : mPrimaryScreen(primaryScreen),
       mFd(-1),
-      mQuit(false)
+      mReadNotifier(0)
 {
 }
 
@@ -70,6 +72,8 @@ QBBNavigatorThread::~QBBNavigatorThread()
 {
     // block until thread terminates
     shutdown();
+
+    delete mReadNotifier;
 }
 
 void QBBNavigatorThread::run()
@@ -86,37 +90,11 @@ void QBBNavigatorThread::run()
         return;
     }
 
-    // allocate buffer for pps data
-    char buffer[PPS_BUFFER_SIZE];
+    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read);
+    // using direct connection to get the slot called in this thread's context
+    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readData()), Qt::DirectConnection);
 
-    // loop indefinitely
-    while (!mQuit) {
-
-        // attempt to read pps data
-        errno = 0;
-        int bytes = read(mFd, buffer, PPS_BUFFER_SIZE - 1);
-        if (bytes == -1) {
-            qFatal("QBB: failed to read navigator pps, errno=%d", errno);
-        }
-
-        // check if pps data was received
-        if (bytes > 0) {
-
-            // ensure data is null terminated
-            buffer[bytes] = '\0';
-
-            // process received message
-            QByteArray ppsData(buffer);
-            QByteArray msg;
-            QByteArray dat;
-            QByteArray id;
-            parsePPS(ppsData, msg, dat, id);
-            handleMessage(msg, dat, id);
-        }
-
-        // yield
-        msleep(5);
-    }
+    exec();
 
     // close connection to navigator
     close(mFd);
@@ -128,12 +106,12 @@ void QBBNavigatorThread::run()
 
 void QBBNavigatorThread::shutdown()
 {
-    // signal thread to terminate
-    mQuit = true;
-
 #if defined(QBBNAVIGATORTHREAD_DEBUG)
     qDebug() << "QBB: navigator thread shutdown begin";
 #endif
+
+    // signal thread to terminate
+    quit();
 
     // block until thread terminates
     wait();
@@ -268,4 +246,37 @@ void QBBNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray &
 #endif
         QApplication::quit();
     }
+}
+
+void QBBNavigatorThread::readData()
+{
+#if defined(QBBNAVIGATORTHREAD_DEBUG)
+    qDebug() << "QBB: reading navigator data";
+#endif
+
+    // allocate buffer for pps data
+    char buffer[PPS_BUFFER_SIZE];
+
+    // attempt to read pps data
+    errno = 0;
+    int bytes = qt_safe_read(mFd, buffer, PPS_BUFFER_SIZE - 1);
+    if (bytes == -1) {
+        qFatal("QBB: failed to read navigator pps, errno=%d", errno);
+    }
+
+    // check if pps data was received
+    if (bytes > 0) {
+
+        // ensure data is null terminated
+        buffer[bytes] = '\0';
+
+        // process received message
+        QByteArray ppsData(buffer);
+        QByteArray msg;
+        QByteArray dat;
+        QByteArray id;
+        parsePPS(ppsData, msg, dat, id);
+        handleMessage(msg, dat, id);
+    }
+
 }

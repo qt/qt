@@ -45,9 +45,11 @@
 QT_BEGIN_NAMESPACE
 
 class QBBScreen;
+class QSocketNotifier;
 
 class QBBNavigatorThread : public QThread
 {
+    Q_OBJECT
 public:
     QBBNavigatorThread(QBBScreen& primaryScreen);
     virtual ~QBBNavigatorThread();
@@ -55,10 +57,13 @@ public:
 protected:
     virtual void run();
 
+private Q_SLOTS:
+    void readData();
+
 private:
     QBBScreen& mPrimaryScreen;
     int mFd;
-    bool mQuit;
+    QSocketNotifier *mReadNotifier;
 
     void shutdown();
     void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
