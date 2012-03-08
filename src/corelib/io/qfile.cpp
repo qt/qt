@@ -1692,6 +1692,9 @@ bool QFile::seek(qint64 off)
         return false;
     }
 
+    if (off == d->pos && off == d->devicePos)
+        return true; //avoid expensive flush for NOP seek to current position
+
     if (!d->ensureFlushed())
         return false;
 

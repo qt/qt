@@ -113,6 +113,13 @@ private slots:
     void readBigFile_posix();
     void readBigFile_Win32();
 
+    void writeFileSequential_data();
+    void writeFileSequential();
+    void writeFileBackwards_data();
+    void writeFileBackwards();
+    void writeFileSequentialWithSeeks_data();
+    void writeFileSequentialWithSeeks();
+
 private:
     void readBigFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b);
     void readBigFile();
@@ -676,6 +683,103 @@ void tst_qfile::readSmallFiles()
 
     removeSmallFiles();
     delete[] buffer;
+}
+
+void tst_qfile::writeFileSequential_data()
+{
+    QTest::addColumn<int>("blockSize");
+    QTest::addColumn<QString>("path");
+
+    QTest::newRow("internal 16b") << 16 << QDir::tempPath();
+    QTest::newRow("internal 512b") << 512 << QDir::tempPath();
+    QTest::newRow("internal 4k") << 4096 << QDir::tempPath();
+    QTest::newRow("internal 16k") << 16384 << QDir::tempPath();
+    QTest::newRow("internal 64k") << 65536 << QDir::tempPath();
+
+    //slow media (e.g. SD card)
+    QString externalPath;
+#ifdef Q_OS_SYMBIAN
+    externalPath = "E:/";
+#endif
+    if (!externalPath.isEmpty()) {
+        QTest::newRow("external 16b") << 16 << externalPath;
+        QTest::newRow("external 512b") << 512 << externalPath;
+        QTest::newRow("external 4k") << 4096 << externalPath;
+        QTest::newRow("external 16k") << 16384 << externalPath;
+        QTest::newRow("external 64k") << 65536 << externalPath;
+    }
+}
+
+void tst_qfile::writeFileSequential()
+{
+    const qint64 limit = 1024 * 1024;
+    QFETCH(int, blockSize);
+    QFETCH(QString, path);
+    QTemporaryFile f;
+    f.setFileTemplate(path);
+    QByteArray block;
+    block.fill('@', blockSize);
+    QBENCHMARK {
+        QVERIFY(f.open());
+        for (qint64 pos = 0; pos < limit; pos += blockSize) {
+            QVERIFY(f.write(block));
+        }
+        QVERIFY(f.flush());
+        QCOMPARE(f.size(), limit);
+        f.close();
+    }
+}
+
+void tst_qfile::writeFileBackwards_data()
+{
+    writeFileSequential_data();
+}
+
+void tst_qfile::writeFileBackwards()
+{
+    const qint64 limit = 1024 * 1024;
+    QFETCH(int, blockSize);
+    QFETCH(QString, path);
+    QTemporaryFile f;
+    f.setFileTemplate(path);
+    QByteArray block;
+    block.fill('@', blockSize);
+    QBENCHMARK {
+        QVERIFY(f.open());
+        for (qint64 pos = limit - blockSize; pos >= 0; pos -= blockSize) {
+            QVERIFY(f.seek(pos));
+            QVERIFY(f.write(block));
+        }
+        QVERIFY(f.flush());
+        QCOMPARE(f.size(), limit);
+        f.close();
+    }
+}
+
+void tst_qfile::writeFileSequentialWithSeeks_data()
+{
+    writeFileSequential_data();
+}
+
+void tst_qfile::writeFileSequentialWithSeeks()
+{
+    const qint64 limit = 1024 * 1024;
+    QFETCH(int, blockSize);
+    QFETCH(QString, path);
+    QTemporaryFile f;
+    f.setFileTemplate(path);
+    QByteArray block;
+    block.fill('@', blockSize);
+    QBENCHMARK {
+        QVERIFY(f.open());
+        for (qint64 pos = 0; pos < limit; pos += blockSize) {
+            QVERIFY(f.seek(pos));
+            QVERIFY(f.write(block));
+        }
+        QVERIFY(f.flush());
+        QCOMPARE(f.size(), limit);
+        f.close();
+    }
 }
 
 QTEST_MAIN(tst_qfile)

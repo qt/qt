@@ -128,6 +128,7 @@ private slots:
     void seek();
     void setSize();
     void setSizeSeek();
+    void seekToSamePosition();
     void atEnd();
     void readLine();
     void readLine2();
@@ -458,6 +459,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("readAllBuffer.txt");
     QFile::remove("qt_file.tmp");
     QFile::remove("File.txt");
+    QFile::remove("seekToSamePosition.txt");
 }
 
 //------------------------------------------
@@ -754,6 +756,59 @@ void tst_QFile::setSizeSeek()
     QCOMPARE(f.pos(), qint64(3));
     f.resize(2);
     QCOMPARE(f.pos(), qint64(2));
+}
+
+void tst_QFile::seekToSamePosition()
+{
+    QFile in("testfile.txt");
+    QFile out("seekToSamePosition.txt");
+    QVERIFY(in.open(QFile::ReadOnly));
+    QVERIFY(out.open(QFile::WriteOnly));
+    QByteArray plusses;
+    plusses.fill('+', 58);
+
+    qint64 cursor = 0;
+    QVERIFY(in.seek(cursor));
+    QVERIFY(out.seek(cursor));
+
+    QVERIFY(out.write(plusses));
+
+    cursor += 58;
+    QVERIFY(in.seek(cursor));
+    QVERIFY(out.seek(cursor));
+
+    QByteArray copy = in.read(60);
+    QVERIFY(out.write(copy));
+
+    cursor += 60;
+    QVERIFY(in.seek(cursor));
+    QVERIFY(out.seek(cursor));
+
+    QVERIFY(out.write(plusses));
+
+    cursor += 58;
+    QVERIFY(in.seek(cursor));
+    QVERIFY(out.seek(cursor));
+
+    copy = in.readAll();
+    QVERIFY(out.write(copy));
+
+    //compare
+    out.close();
+    QVERIFY(out.open(QFile::ReadOnly));
+    QVERIFY(in.seek(0));
+
+    QByteArray clean = in.readAll();
+    QByteArray dirty = out.readAll();
+    out.close();
+
+    QVERIFY(clean.size() == dirty.size());
+    for (int i=0;i<clean.size();i++) {
+        if (clean[i] == '-')
+            QVERIFY2(dirty[i] == '+', qPrintable(QString("no + at pos %1").arg(i)));
+        else
+            QVERIFY2(dirty[i] == clean[i], qPrintable(QString("char at pos %1 mismatched, %2 vs %3").arg(i).arg(clean[i]).arg(dirty[i])));
+    }
 }
 
 void tst_QFile::atEnd()
