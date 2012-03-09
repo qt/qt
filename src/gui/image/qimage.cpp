@@ -4202,6 +4202,10 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     }
     // detach is called from within scanLine
     uchar * s = scanLine(y);
+    if (!s) {
+        qWarning("setPixel: Out of memory");
+        return;
+    }
     const quint32p p = quint32p::fromRawData(index_or_rgb);
     switch(d->format) {
     case Format_Mono:
