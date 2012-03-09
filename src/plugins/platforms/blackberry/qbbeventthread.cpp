@@ -436,13 +436,20 @@ void QBBEventThread::handlePointerEvent(screen_event_t event)
     QPoint localPoint(windowPos[0], windowPos[1]);
 
     // Convert buttons.
+    // Some QNX header files invert 'Right Button versus "Left Button' ('Right' == 0x01). But they also offer a 'Button Swap' bit,
+    // so we may receive events as shown. (If this is wrong, the fix is easy.)
+    // QNX Button mask is 8 buttons wide, with a maximum value of 0x80.
     Qt::MouseButtons buttons = Qt::NoButton;
-    if (buttonState & 1)
+    if (buttonState & 0x01)
         buttons |= Qt::LeftButton;
-    if (buttonState & 2)
+    if (buttonState & 0x02)
         buttons |= Qt::MidButton;
-    if (buttonState & 4)
+    if (buttonState & 0x04)
         buttons |= Qt::RightButton;
+    if (buttonState & 0x08)
+        buttons |= Qt::XButton1;
+    if (buttonState & 0x10)
+        buttons |= Qt::XButton2;
 
     if (w) {
         // Inject mouse event into Qt only if something has changed.
