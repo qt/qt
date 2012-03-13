@@ -559,6 +559,10 @@ void tst_qdeclarativelistmodel::static_types_data()
     QTest::newRow("enum")
         << "ListElement { foo: Text.AlignHCenter }"
         << QVariant(double(QDeclarativeText::AlignHCenter));
+
+    QTest::newRow("real11")
+        << "ListElement { foo: 11 }"
+        << QVariant(11.0);
 }
 
 void tst_qdeclarativelistmodel::static_types()
