@@ -29,7 +29,7 @@
     \page corefeatures.html
     \title Core Features
 
-    \input examples/signalandslots.qdocinc
-    \input examples/objectmodel.qdocinc
-    \input examples/layoutmanagement.qdocinc
+    \include examples/signalandslots.qdocinc
+    \include examples/objectmodel.qdocinc
+    \include examples/layoutmanagement.qdocinc
 */
