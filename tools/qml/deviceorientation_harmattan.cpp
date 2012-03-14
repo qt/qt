@@ -43,13 +43,13 @@
 #include <QtDBus>
 #include <QDebug>
 
-#define ORIENTATION_SERVICE "com.nokia.SensorService"
-#define ORIENTATION_PATH "/org/maemo/contextkit/Screen/TopEdge"
-#define CONTEXT_INTERFACE "org.maemo.contextkit.Property"
-#define CONTEXT_CHANGED "ValueChanged"
-#define CONTEXT_SUBSCRIBE "Subscribe"
-#define CONTEXT_UNSUBSCRIBE "Unsubscribe"
-#define CONTEXT_GET "Get"
+#define ORIENTATION_SERVICE QLatin1String("com.nokia.SensorService")
+#define ORIENTATION_PATH QLatin1String("/org/maemo/contextkit/Screen/TopEdge")
+#define CONTEXT_INTERFACE QLatin1String("org.maemo.contextkit.Property")
+#define CONTEXT_CHANGED QLatin1String("ValueChanged")
+#define CONTEXT_SUBSCRIBE QLatin1String("Subscribe")
+#define CONTEXT_UNSUBSCRIBE QLatin1String("Unsubscribe")
+#define CONTEXT_GET QLatin1String("Get")
 
 
 class HarmattanOrientation : public DeviceOrientation
@@ -136,13 +136,13 @@ private Q_SLOTS:
 private:
     static Orientation toOrientation(const QString &nativeOrientation)
     {
-        if (nativeOrientation == "top")
+        if (nativeOrientation == QLatin1String("top"))
             return Landscape;
-        else if (nativeOrientation == "left")
+        else if (nativeOrientation == QLatin1String("left"))
             return Portrait;
-        else if (nativeOrientation == "bottom")
+        else if (nativeOrientation == QLatin1String("bottom"))
             return LandscapeInverted;
-        else if (nativeOrientation == "right")
+        else if (nativeOrientation == QLatin1String("right"))
             return PortraitInverted;
         return UnknownOrientation;
     }
