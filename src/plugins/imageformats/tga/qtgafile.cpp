@@ -150,12 +150,14 @@ QTgaFile::QTgaFile(QIODevice *device)
     if (bytes != HeaderSize)
     {
         mErrorMessage = QObject::tr("Image mHeader read failed");
+        device->seek(0);
         return;
     }
     if (mHeader[ImageType] != 2)
     {
         // TODO: should support other image types
         mErrorMessage = QObject::tr("Image type not supported");
+        device->seek(0);
         return;
     }
     int bitsPerPixel = mHeader[PixelDepth];
@@ -164,11 +166,11 @@ QTgaFile::QTgaFile(QIODevice *device)
     {
         mErrorMessage = QObject::tr("Image depth not valid");
     }
-    int curPos = mDevice->pos();
     int fileBytes = mDevice->size();
     if (!mDevice->seek(fileBytes - FooterSize))
     {
         mErrorMessage = QObject::tr("Could not seek to image read footer");
+        device->seek(0);
         return;
     }
     char footer[FooterSize];
@@ -181,9 +183,9 @@ QTgaFile::QTgaFile(QIODevice *device)
     {
         mErrorMessage = QObject::tr("Image type (non-TrueVision 2.0) not supported");
     }
-    if (!mDevice->seek(curPos))
+    if (!mDevice->seek(0))
     {
-        mErrorMessage = QObject::tr("Could not reset to read data");
+        mErrorMessage = QObject::tr("Could not reset to start position");
     }
 }
 
