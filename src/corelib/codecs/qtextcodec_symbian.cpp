@@ -167,8 +167,12 @@ Q_GLOBAL_STATIC(QThreadStorage<CCnvCharacterSetConverter *>,gs_converterStore);
 CCnvCharacterSetConverter *QSymbianTextCodec::converter()
 {
     CCnvCharacterSetConverter *&conv = gs_converterStore()->localData();
-    if (!conv)
+    if (!conv) {
+        QScopedPointer<CTrapCleanup> trap;
+        if (!User::TrapHandler())
+            trap.reset(CTrapCleanup::New());
         QT_TRAP_THROWING(conv = CCnvCharacterSetConverter::NewL())
+    }
     return conv;
 }
 
