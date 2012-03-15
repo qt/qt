@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the qmake spec of the Qt Toolkit.
 **
@@ -35,19 +34,9 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include "../linux-arm-gnueabi-g++/qplatformdefs.h"
-
-#define QT_GUI_DOUBLE_CLICK_RADIUS 20
-#define QT_GUI_DRAG_DISTANCE 16
-
-#define QML_FLICK_OVERSHOOT 160
-#define QML_FLICK_SAMPLEBUFFER 6
-#define QML_FLICK_DISCARDSAMPLES 2
-#define QML_FLICK_DEFAULTMAXVELOCITY 2500
-#define QML_FLICK_DEFAULTDECELERATION 2000
-#define QML_FLICK_OVERSHOOTFRICTION 10
-
+#include "../linux-g++/qplatformdefs.h"
