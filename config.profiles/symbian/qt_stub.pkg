@@ -3,7 +3,7 @@
 
 
 ; SIS header: name, uid, version
-#{"Qt"},(0x2001E61C),4,8,0
+#{"Qt"},(0x2001E61C),4,8,1
 
 
 ; Manual PKG pre-rules from PRO files
