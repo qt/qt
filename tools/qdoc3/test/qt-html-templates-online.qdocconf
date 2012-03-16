@@ -10,9 +10,9 @@ HTML.postheader = \
     "    <div id=\"nav-topright\">\n" \
     "      <ul>\n" \
     "        <li class=\"nav-topright-home\"><a href=\"http://qt.nokia.com/\">Qt HOME</a></li>\n" \
-    "        <li class=\"nav-topright-dev\"><a href=\"http://developer.qt.nokia.com/\">DEV</a></li>\n" \
+    "        <li class=\"nav-topright-dev\"><a href=\"http://qt-project.org/\">DEV</a></li>\n" \
     "        <li class=\"nav-topright-labs\"><a href=\"http://labs.qt.nokia.com/blogs/\">LABS</a></li>\n" \
-    "        <li class=\"nav-topright-doc nav-topright-doc-active\"><a href=\"http://doc.qt.nokia.com/\">\n" \
+    "        <li class=\"nav-topright-doc nav-topright-doc-active\"><a href=\"http://qt-project.org/doc/\">\n" \
     "          DOC</a></li>\n" \
     "        <li class=\"nav-topright-blog\"><a href=\"http://blog.qt.nokia.com/\">BLOG</a></li>\n" \
     "      </ul>\n" \
