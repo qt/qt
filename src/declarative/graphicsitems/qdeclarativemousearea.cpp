@@ -886,6 +886,8 @@ void QDeclarativeMouseArea::setHovered(bool h)
     \o Qt.LeftButton
     \o Qt.RightButton
     \o Qt.MiddleButton
+    \o Qt.XButton1
+    \o Qt.XButton2
     \endlist
 
     To accept more than one button the flags can be combined with the
