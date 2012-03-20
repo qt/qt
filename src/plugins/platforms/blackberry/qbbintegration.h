@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBBEventThread;
-class QBBNavigatorThread;
+class QBBNavigatorEventHandler;
 class QBBLocaleThread;
 
 class QBBIntegration : public QPlatformIntegration
@@ -77,7 +77,7 @@ public:
 private:
     screen_context_t mContext;
     QBBEventThread *mEventThread;
-    QBBNavigatorThread *mNavigatorThread;
+    QBBNavigatorEventHandler *mNavigatorEventHandler;
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
     bool mPaintUsingOpenGL;

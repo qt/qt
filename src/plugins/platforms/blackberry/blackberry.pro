@@ -11,7 +11,7 @@ SOURCES =   main.cpp \
             qbbglwindowsurface.cpp \
             qbbinputcontext.cpp \
             qbbintegration.cpp \
-            qbbnavigatorthread.cpp \
+            qbbnavigatoreventhandler.cpp \
             qbbscreen.cpp \
             qbbwindow.cpp \
             qbbrasterwindowsurface.cpp \
@@ -24,7 +24,7 @@ HEADERS =   qbbbuffer.h \
             qbbeventthread.h \
             qbbinputcontext.h \
             qbbintegration.h \
-            qbbnavigatorthread.h \
+            qbbnavigatoreventhandler.h \
             qbbglcontext.h \
             qbbglwindowsurface.h \
             qbbscreen.h \

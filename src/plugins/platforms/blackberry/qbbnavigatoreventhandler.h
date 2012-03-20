@@ -37,25 +37,25 @@
 **
 ****************************************************************************/
 
-#ifndef QBBNAVIGATORTHREAD_H
-#define QBBNAVIGATORTHREAD_H
+#ifndef QBBNAVIGATOREVENTHANDLER_H
+#define QBBNAVIGATOREVENTHANDLER_H
 
-#include <QThread>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
 class QBBScreen;
 class QSocketNotifier;
 
-class QBBNavigatorThread : public QThread
+class QBBNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QBBNavigatorThread(QBBScreen& primaryScreen);
-    virtual ~QBBNavigatorThread();
+    QBBNavigatorEventHandler(QBBScreen& primaryScreen);
+    virtual ~QBBNavigatorEventHandler();
 
-protected:
-    virtual void run();
+public Q_SLOTS:
+    void start();
 
 private Q_SLOTS:
     void readData();
@@ -65,7 +65,6 @@ private:
     int mFd;
     QSocketNotifier *mReadNotifier;
 
-    void shutdown();
     void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
     void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
     void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
@@ -73,4 +72,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QBBNAVIGATORTHREAD_H
+#endif // QBBNAVIGATOREVENTHANDLER_H

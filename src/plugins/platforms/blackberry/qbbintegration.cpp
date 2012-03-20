@@ -44,7 +44,7 @@
 #include "qbbeventthread.h"
 #include "qbbglcontext.h"
 #include "qbbglwindowsurface.h"
-#include "qbbnavigatorthread.h"
+#include "qbbnavigatoreventhandler.h"
 #include "qbbrasterwindowsurface.h"
 #include "qbbscreen.h"
 #include "qbbwindow.h"
@@ -93,9 +93,15 @@ QBBIntegration::QBBIntegration() :
     mEventThread = new QBBEventThread(mContext, *QBBScreen::primaryDisplay());
     mEventThread->start();
 
-    // create/start navigator thread
-    mNavigatorThread = new QBBNavigatorThread(*QBBScreen::primaryDisplay());
-    mNavigatorThread->start();
+    // Create/start navigator event handler
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+#ifndef Q_OS_BLACKBERRY
+    mNavigatorEventHandler = new QBBNavigatorEventHandler(*QBBScreen::primaryDisplay());
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(mNavigatorEventHandler, "start", Qt::QueuedConnection);
+#endif
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // Start the locale change monitoring thread.
@@ -127,7 +133,7 @@ QBBIntegration::~QBBIntegration()
     delete mEventThread;
 
     // stop/destroy navigator thread
-    delete mNavigatorThread;
+    delete mNavigatorEventHandler;
 
     // destroy all displays
     QBBScreen::destroyDisplays();
