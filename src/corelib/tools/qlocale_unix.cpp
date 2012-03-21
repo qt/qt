@@ -94,6 +94,8 @@ struct QSystemLocaleData
             lang = QByteArray("C");
         if (numeric.isEmpty())
             numeric = lang;
+        if (time.isEmpty())
+            time = lang;
         if (monetary.isEmpty())
             monetary = lang;
         if (lc_messages_var.isEmpty())
