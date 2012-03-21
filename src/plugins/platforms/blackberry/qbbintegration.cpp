@@ -63,6 +63,10 @@
 
 #include <errno.h>
 
+#if defined(Q_OS_BLACKBERRY)
+#include <bps/navigator.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QBBIntegration::QBBIntegration() :
@@ -109,6 +113,10 @@ QBBIntegration::QBBIntegration() :
     mLocaleThread->start();
 #endif
 
+#if defined(Q_OS_BLACKBERRY)
+    bps_initialize();
+#endif
+
     // create/start the keyboard class.
     QBBVirtualKeyboard::instance();
 
@@ -143,6 +151,10 @@ QBBIntegration::~QBBIntegration()
 
     // cleanup global OpenGL resources
     QBBGLContext::shutdown();
+
+#if defined(Q_OS_BLACKBERRY)
+    bps_shutdown();
+#endif
 
 #if defined(QBBINTEGRATION_DEBUG)
     qDebug() << "QBB: platform plugin shutdown end";
