@@ -2415,10 +2415,6 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-#if defined(Q_OS_LINUX)
-    QSKIP( "Event support doesn't work on linux", SkipAll );
-#endif
-
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc", __FILE__);
 
