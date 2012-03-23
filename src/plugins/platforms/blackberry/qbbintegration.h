@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QBBEventThread;
 class QBBNavigatorEventHandler;
 class QBBLocaleThread;
+class QBBVirtualKeyboard;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -81,6 +82,7 @@ private:
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
     bool mPaintUsingOpenGL;
+    QBBVirtualKeyboard *mVirtualKeyboard;
 };
 
 QT_END_NAMESPACE

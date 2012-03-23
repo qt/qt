@@ -40,12 +40,12 @@
 // #define QBBSCREEN_DEBUG
 
 #include "qbbscreen.h"
-#include "qbbvirtualkeyboard.h"
 #include "qbbrootwindow.h"
 #include "qbbwindow.h"
 
 #include <QUuid>
 #include <QDebug>
+#include <QtGui/QWindowSystemInterface>
 
 #include <errno.h>
 #include <unistd.h>
@@ -62,7 +62,8 @@ QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, bool pr
       mDisplay(display),
       mPosted(false),
       mUsingOpenGL(false),
-      mPrimaryDisplay(primary)
+      mPrimaryDisplay(primary),
+      mKeyboardHeight(0)
 {
 #if defined(QBBSCREEN_DEBUG)
     qDebug() << "QBBScreen::QBBScreen";
@@ -183,9 +184,8 @@ void QBBScreen::ensureDisplayCreated()
 QRect QBBScreen::availableGeometry() const
 {
     // available geometry = total geometry - keyboard
-    int keyboardHeight = QBBVirtualKeyboard::instance().getHeight();
     return QRect(mCurrentGeometry.x(), mCurrentGeometry.y(),
-                 mCurrentGeometry.width(), mCurrentGeometry.height() - keyboardHeight);
+                 mCurrentGeometry.width(), mCurrentGeometry.height() - mKeyboardHeight);
 }
 
 /*!
@@ -320,6 +320,16 @@ void QBBScreen::onWindowPost(QBBWindow* window)
         mRootWindow->post();
         mPosted = true;
     }
+}
+
+void QBBScreen::keyboardHeightChanged(int height)
+{
+    if (height == mKeyboardHeight)
+        return;
+
+    mKeyboardHeight = height;
+
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screens().indexOf(this));
 }
 
 QT_END_NAMESPACE

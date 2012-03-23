@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-//#define QBBVIRTUALKEYBOARD_DEBUG
+#define QBBVIRTUALKEYBOARD_DEBUG
 
 #include "qbbvirtualkeyboard.h"
 
@@ -58,10 +58,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+
+QT_BEGIN_NAMESPACE
+
 const char  *QBBVirtualKeyboard::sPPSPath = "/pps/services/input/control?wait";
 const size_t QBBVirtualKeyboard::sBufferSize = 2048;
-
-static QBBVirtualKeyboard* s_instance = NULL;
 
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
 #define KEYBOARD_SHADOW_HEIGHT 8
@@ -85,20 +86,6 @@ QBBVirtualKeyboard::~QBBVirtualKeyboard()
     close();
 }
 
-/* static */
-QBBVirtualKeyboard& QBBVirtualKeyboard::instance()
-{
-    if (!s_instance) {
-        s_instance = new QBBVirtualKeyboard();
-
-        // delay invocation of start() to the time the event loop is up and running
-        // needed to have the QThread internals of the main thread properly initialized
-        QMetaObject::invokeMethod(s_instance, "start", Qt::QueuedConnection);
-     }
-
-    return *s_instance;
-}
-
 void QBBVirtualKeyboard::start()
 {
 #ifdef QBBVIRTUALKEYBOARD_DEBUG
@@ -107,15 +94,6 @@ void QBBVirtualKeyboard::start()
 
     if (!connect())
         return;
-}
-
-/* static */
-void QBBVirtualKeyboard::destroy()
-{
-    if (s_instance) {
-        delete s_instance;
-        s_instance = 0;
-    }
 }
 
 void QBBVirtualKeyboard::close()
@@ -289,7 +267,8 @@ void QBBVirtualKeyboard::handleKeyboardInfoMessage()
 
     if (newHeight != mHeight) {
         mHeight = newHeight;
-        handleKeyboardStateChangeMessage(true);
+        if (mVisible)
+            emit heightChanged(mHeight);
     }
 
 #ifdef QBBVIRTUALKEYBOARD_DEBUG
@@ -304,10 +283,8 @@ void QBBVirtualKeyboard::handleKeyboardStateChangeMessage(bool visible)
     qDebug() << "QBB: handleKeyboardStateChangeMessage " << visible;
 #endif
 
-    // TODO: What screen index should be used? I assume 0 here because it works, and
-    //       we do it for handleScreenGeometryChange elsewhere but since we have support
-    //       for more than one screen, that's not going to always work.
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(0);
+    if (mVisible != visible)
+        emit heightChanged(getHeight());
 }
 
 bool QBBVirtualKeyboard::showKeyboard()
@@ -375,7 +352,12 @@ bool QBBVirtualKeyboard::hideKeyboard()
 
 void QBBVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
 {
+    if (mKeyboardMode == mode)
+        return;
+
     mKeyboardMode = mode;
+    if (mVisible)
+        applyKeyboardModeOptions();
 }
 
 void QBBVirtualKeyboard::applyKeyboardModeOptions()
@@ -472,3 +454,5 @@ void QBBVirtualKeyboard::addSymbolModeOptions()
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "symbol");
 }
+
+QT_END_NAMESPACE

@@ -71,7 +71,8 @@ QT_BEGIN_NAMESPACE
 
 QBBIntegration::QBBIntegration() :
     mFontDb(new QGenericUnixFontDatabase()),
-    mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL)
+    mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
+    mVirtualKeyboard(0)
 {
     if (mPaintUsingOpenGL) {
         // Set default window API to OpenGL
@@ -118,10 +119,18 @@ QBBIntegration::QBBIntegration() :
 #endif
 
     // create/start the keyboard class.
-    QBBVirtualKeyboard::instance();
+    mVirtualKeyboard = new QBBVirtualKeyboard();
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(mVirtualKeyboard, "start", Qt::QueuedConnection);
+
+    // TODO check if we need to do this for all screens or only the primary one
+    QObject::connect(mVirtualKeyboard, SIGNAL(heightChanged(int)),
+                     QBBScreen::primaryDisplay(), SLOT(keyboardHeightChanged(int)));
 
     // Set up the input context
-    qApp->setInputContext(new QBBInputContext(qApp));
+    qApp->setInputContext(new QBBInputContext(*mVirtualKeyboard, qApp));
 }
 
 QBBIntegration::~QBBIntegration()
@@ -130,7 +139,7 @@ QBBIntegration::~QBBIntegration()
     qDebug() << "QBB: platform plugin shutdown begin";
 #endif
     // destroy the keyboard class.
-    QBBVirtualKeyboard::destroy();
+    delete mVirtualKeyboard;
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // stop/destroy the locale thread.

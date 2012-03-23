@@ -41,7 +41,6 @@
 #define VIRTUALKEYBOARD_H_
 
 #include <QtGui/QPlatformScreen>
-#include <QtGui/QWindowSystemInterface>
 #include <QObject>
 
 #include <stddef.h>
@@ -49,9 +48,9 @@
 #include <string>
 #include <sys/pps.h>
 
-class QSocketNotifier;
-
 QT_BEGIN_NAMESPACE
+
+class QSocketNotifier;
 
 /* Shamelessly copied from the browser - this should be rewritten once we have a proper PPS wrapper class */
 class QBBVirtualKeyboard : public QObject
@@ -71,8 +70,8 @@ public:
     //
     enum KeyboardMode { Default, Url, Email, Web, NumPunc, Symbol, Phone, Pin };
 
-    static QBBVirtualKeyboard& instance();
-    static void destroy();
+    QBBVirtualKeyboard();
+    ~QBBVirtualKeyboard();
 
     bool showKeyboard();
     bool hideKeyboard();
@@ -86,13 +85,13 @@ public:
 public Q_SLOTS:
     void start();
 
+Q_SIGNALS:
+    void heightChanged(int height);
+
 private Q_SLOTS:
     void ppsDataReady();
 
 private:
-    QBBVirtualKeyboard();
-    virtual ~QBBVirtualKeyboard();
-
     pps_encoder_t          *mEncoder;
     pps_decoder_t          *mDecoder;
     char                   *mBuffer;

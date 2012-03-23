@@ -43,9 +43,13 @@
 #include <qbbvirtualkeyboard.h>
 
 #include <QDebug>
+#include <QAbstractSpinBox>
 
-QBBInputContext::QBBInputContext(QObject* parent):
-         QInputContext(parent)
+QT_BEGIN_NAMESPACE
+
+QBBInputContext::QBBInputContext(QBBVirtualKeyboard &keyboard, QObject* parent)
+    : QInputContext(parent),
+      mVirtualKeyboard(keyboard)
 {
 }
 
@@ -56,7 +60,7 @@ QBBInputContext::~QBBInputContext()
 QString QBBInputContext::language()
 {
     // Once we enable full IMF support, we need to hook that up here.
-    return QBBVirtualKeyboard::instance().languageId();
+    return mVirtualKeyboard.languageId();
 }
 
 bool QBBInputContext::hasPhysicalKeyboard()
@@ -75,7 +79,7 @@ bool QBBInputContext::filterEvent( const QEvent *event )
         return false;
 
     if (event->type() == QEvent::CloseSoftwareInputPanel) {
-        QBBVirtualKeyboard::instance().hideKeyboard();
+        mVirtualKeyboard.hideKeyboard();
 #if defined(QBBINPUTCONTEXT_DEBUG)
         qDebug() << "QBB: hiding virtual keyboard";
 #endif
@@ -83,7 +87,7 @@ bool QBBInputContext::filterEvent( const QEvent *event )
     }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
-        QBBVirtualKeyboard::instance().showKeyboard();
+        mVirtualKeyboard.showKeyboard();
 #if defined(QBBINPUTCONTEXT_DEBUG)
         qDebug() << "QBB: requesting virtual keyboard";
 #endif
@@ -106,9 +110,16 @@ void QBBInputContext::setFocusWidget(QWidget *w)
 #endif
     QInputContext::setFocusWidget(w);
 
-    if (w)
-        QBBVirtualKeyboard::instance().showKeyboard();
-    else
-        QBBVirtualKeyboard::instance().hideKeyboard();
+    if (w) {
+        if (qobject_cast<QAbstractSpinBox*>(w))
+            mVirtualKeyboard.setKeyboardMode(QBBVirtualKeyboard::Phone);
+        else
+            mVirtualKeyboard.setKeyboardMode(QBBVirtualKeyboard::Default);
+
+        mVirtualKeyboard.showKeyboard();
+    } else {
+        mVirtualKeyboard.hideKeyboard();
+    }
 }
 
+QT_END_NAMESPACE

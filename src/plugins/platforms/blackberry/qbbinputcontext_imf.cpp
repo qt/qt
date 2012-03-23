@@ -676,10 +676,13 @@ static bool imfAvailable()
     return s_imfReady;
 }
 
-QBBInputContext::QBBInputContext(QObject* parent):
+QT_BEGIN_NAMESPACE
+
+QBBInputContext::QBBInputContext(QBBVirtualKeyboard &keyboard, QObject* parent):
          QInputContext(parent),
          mLastCaretPos(0),
-         mIsComposing(false)
+         mIsComposing(false),
+         mVirtualKeyboard(keyboard)
 {
 #if defined(QBBINPUTCONTEXT_DEBUG)
     qDebug() << TAG;
@@ -890,7 +893,7 @@ QString QBBInputContext::identifierName()
 
 QString QBBInputContext::language()
 {
-    return QBBVirtualKeyboard::instance().languageId();
+    return mVirtualKeyboard.languageId();
 }
 
 bool QBBInputContext::filterEvent( const QEvent *event )
@@ -1044,7 +1047,7 @@ bool QBBInputContext::hasSelectedText()
 
 bool QBBInputContext::dispatchRequestSoftwareInputPanel()
 {
-    QBBVirtualKeyboard::instance().showKeyboard();
+    mVirtualKeyboard.showKeyboard();
 #if defined(QBBINPUTCONTEXT_DEBUG)
     qDebug() << "QBB: requesting virtual keyboard";
 #endif
@@ -1065,7 +1068,7 @@ bool QBBInputContext::dispatchRequestSoftwareInputPanel()
 
 bool QBBInputContext::dispatchCloseSoftwareInputPanel()
 {
-    QBBVirtualKeyboard::instance().hideKeyboard();
+    mVirtualKeyboard.hideKeyboard();
 #if defined(QBBINPUTCONTEXT_DEBUG)
     qDebug() << "QBB: hiding virtual keyboard";
 #endif
@@ -1656,4 +1659,4 @@ int32_t QBBInputContext::onSetSelection(input_session_t* ic, int32_t start, int3
     return 0;
 }
 
-
+QT_END_NAMESPACE

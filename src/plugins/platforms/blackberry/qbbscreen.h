@@ -53,6 +53,7 @@ class QBBWindow;
 
 class QBBScreen : public QPlatformScreen
 {
+    Q_OBJECT
 public:
     static QList<QPlatformScreen *> screens() { return sScreens; }
     static void createDisplays(screen_context_t context);
@@ -86,6 +87,9 @@ public:
 
     QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
 
+private Q_SLOTS:
+    void keyboardHeightChanged(int height);
+
 private:
     screen_context_t mContext;
     screen_display_t mDisplay;
@@ -96,6 +100,7 @@ private:
 
     int mStartRotation;
     int mCurrentRotation;
+    int mKeyboardHeight;
     QSize mStartPhysicalSize;
     QSize mCurrentPhysicalSize;
     QRect mStartGeometry;
