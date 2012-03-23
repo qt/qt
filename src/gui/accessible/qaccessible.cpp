@@ -586,9 +586,6 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return 0;
 
-    QEvent e(QEvent::AccessibilityPrepare);
-    QApplication::sendEvent(object, &e);
-
     const QMetaObject *mo = object->metaObject();
     while (mo) {
         const QLatin1String cn(mo->className());
