@@ -33,7 +33,7 @@ namespace JSC{
     class JSStaticScopeObject : public JSVariableObject {
     protected:
         using JSVariableObject::JSVariableObjectData;
-        struct JSStaticScopeObjectData : public JSVariableObjectData {
+        struct JSStaticScopeObjectData : public JSVariableObject::JSVariableObjectData {
             JSStaticScopeObjectData()
                 : JSVariableObjectData(&symbolTable, &registerStore + 1)
             {

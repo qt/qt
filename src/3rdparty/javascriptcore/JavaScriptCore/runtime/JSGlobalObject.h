@@ -59,7 +59,7 @@ namespace JSC {
     protected:
         using JSVariableObject::JSVariableObjectData;
 
-        struct JSGlobalObjectData : public JSVariableObjectData {
+        struct JSGlobalObjectData : public JSVariableObject::JSVariableObjectData {
             // We use an explicit destructor function pointer instead of a
             // virtual destructor because we want to avoid adding a vtable
             // pointer to this struct. Adding a vtable pointer would force the
