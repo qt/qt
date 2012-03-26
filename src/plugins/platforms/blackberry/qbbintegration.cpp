@@ -92,7 +92,7 @@ QBBIntegration::QBBIntegration() :
     }
 
     // Create displays for all possible screens (which may not be attached)
-    QBBScreen::createDisplays(mContext);
+    createDisplays();
 
     // create/start event thread
     mEventThread = new QBBEventThread(mContext);
@@ -101,7 +101,7 @@ QBBIntegration::QBBIntegration() :
     // Create/start navigator event handler
     // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
 #ifndef Q_OS_BLACKBERRY
-    mNavigatorEventHandler = new QBBNavigatorEventHandler(*QBBScreen::primaryDisplay());
+    mNavigatorEventHandler = new QBBNavigatorEventHandler(*primaryDisplay());
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
@@ -127,7 +127,7 @@ QBBIntegration::QBBIntegration() :
 
     // TODO check if we need to do this for all screens or only the primary one
     QObject::connect(mVirtualKeyboard, SIGNAL(heightChanged(int)),
-                     QBBScreen::primaryDisplay(), SLOT(keyboardHeightChanged(int)));
+                     primaryDisplay(), SLOT(keyboardHeightChanged(int)));
 
     // Set up the input context
     qApp->setInputContext(new QBBInputContext(*mVirtualKeyboard, qApp));
@@ -153,7 +153,7 @@ QBBIntegration::~QBBIntegration()
     delete mNavigatorEventHandler;
 
     // destroy all displays
-    QBBScreen::destroyDisplays();
+    destroyDisplays();
 
     // close connection to QNX composition manager
     screen_destroy_context(mContext);
@@ -193,8 +193,7 @@ QPlatformWindow *QBBIntegration::createPlatformWindow(QWidget *widget, WId winId
 {
     Q_UNUSED(winId);
 
-    // New windows are created on the primary display.
-    return new QBBWindow(widget, mContext);
+    return new QBBWindow(widget, mContext, primaryDisplay());
 }
 
 QWindowSurface *QBBIntegration::createWindowSurface(QWidget *widget, WId winId) const
@@ -216,7 +215,7 @@ void QBBIntegration::moveToScreen(QWidget *window, int screen)
     QBBWindow* platformWindow = static_cast<QBBWindow*>(window->platformWindow());
 
     // lookup platform screen by index
-    QBBScreen* platformScreen = static_cast<QBBScreen*>(QBBScreen::screens().at(screen));
+    QBBScreen* platformScreen = static_cast<QBBScreen*>(mScreens.at(screen));
 
     // move the platform window to the platform screen (this can fail when move to screen
     // is called before the window is actually created).
@@ -226,7 +225,7 @@ void QBBIntegration::moveToScreen(QWidget *window, int screen)
 
 QList<QPlatformScreen *> QBBIntegration::screens() const
 {
-    return QBBScreen::screens();
+    return mScreens;
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -240,9 +239,45 @@ QPlatformClipboard *QBBIntegration::clipboard() const
 }
 #endif
 
+QBBScreen *QBBIntegration::primaryDisplay() const
+{
+    return static_cast<QBBScreen*>(mScreens.first());
+}
+
 void QBBIntegration::setCursorPos(int x, int y)
 {
     mEventThread->injectPointerMoveEvent(x, y);
+}
+
+void QBBIntegration::createDisplays()
+{
+    // get number of displays
+    errno = 0;
+    int displayCount;
+    int result = screen_get_context_property_iv(mContext, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
+    if (result != 0)
+        qFatal("QBBIntegration: failed to query display count, errno=%d", errno);
+
+    // get all displays
+    errno = 0;
+    screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
+    result = screen_get_context_property_pv(mContext, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
+    if (result != 0)
+        qFatal("QBBIntegration: failed to query displays, errno=%d", errno);
+
+    for (int i=0; i<displayCount; i++) {
+#if defined(QBBINTEGRATION_DEBUG)
+        qDebug() << "QBBIntegration: Creating screen for display " << i;
+#endif
+        QBBScreen *screen = new QBBScreen(mContext, displays[i], i);
+        mScreens.push_back(screen);
+    }
+}
+
+void QBBIntegration::destroyDisplays()
+{
+    qDeleteAll(mScreens);
+    mScreens.clear();
 }
 
 QT_END_NAMESPACE

@@ -41,7 +41,6 @@
 #define QBBSCREEN_H
 
 #include <QtGui/QPlatformScreen>
-#include <QByteArray>
 
 #include "qbbrootwindow.h"
 
@@ -55,15 +54,12 @@ class QBBScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
-    static QList<QPlatformScreen *> screens() { return sScreens; }
-    static void createDisplays(screen_context_t context);
-    static void destroyDisplays();
-    static QBBScreen* primaryDisplay() { return static_cast<QBBScreen*>(sScreens.at(0)); }
-    static int defaultDepth();
+    QBBScreen(screen_context_t context, screen_display_t display, int screenIndex);
+    virtual ~QBBScreen();
 
     virtual QRect geometry() const { return mCurrentGeometry; }
     virtual QRect availableGeometry() const;
-    virtual int depth() const { return defaultDepth(); }
+    virtual int depth() const;
     virtual QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
     virtual QSize physicalSize() const { return mCurrentPhysicalSize; }
 
@@ -75,12 +71,14 @@ public:
     screen_context_t nativeContext() const { return mContext; }
     const char *windowGroupName() const { return mRootWindow->groupName().constData(); }
 
+    QBBWindow *findWindow(screen_window_t windowHandle);
+
     /* Window hierarchy management */
-    static void addWindow(QBBWindow* child);
-    static void removeWindow(QBBWindow* child);
-    static void raiseWindow(QBBWindow* window);
-    static void lowerWindow(QBBWindow* window);
-    static void updateHierarchy();
+    void addWindow(QBBWindow* child);
+    void removeWindow(QBBWindow* child);
+    void raiseWindow(QBBWindow* window);
+    void lowerWindow(QBBWindow* window);
+    void updateHierarchy();
 
     void onWindowPost(QBBWindow* window);
     void ensureDisplayCreated();
@@ -106,11 +104,8 @@ private:
     QRect mStartGeometry;
     QRect mCurrentGeometry;
 
-    static QList<QPlatformScreen *> sScreens;
-    static QList<QBBWindow*> sChildren;
-
-    QBBScreen(screen_context_t context, screen_display_t display, bool primary);
-    virtual ~QBBScreen();
+    QList<QBBWindow*> mChildren;
+    int mScreenIndex;
 
     bool isPrimaryDisplay() { return mPrimaryDisplay; }
 };

@@ -61,7 +61,7 @@ class QBBWindow : public QPlatformWindow
 {
 friend class QBBScreen;
 public:
-    QBBWindow(QWidget *window, screen_context_t context);
+    QBBWindow(QWidget *window, screen_context_t context, QBBScreen *screen);
     virtual ~QBBWindow();
 
     virtual void setGeometry(const QRect &rect);
@@ -91,6 +91,8 @@ public:
 
     QBBScreen* screen() const { return mScreen; }
     const QList<QBBWindow*>& children() const { return mChildren; }
+
+    QBBWindow *findWindow(screen_window_t windowHandle);
 
 private:
     screen_context_t mContext;

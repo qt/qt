@@ -50,6 +50,7 @@ class QBBEventThread;
 class QBBNavigatorEventHandler;
 class QBBLocaleThread;
 class QBBAbstractVirtualKeyboard;
+class QBBScreen;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -76,11 +77,16 @@ public:
     bool paintUsingOpenGL() const { return mPaintUsingOpenGL; }
 
 private:
+    QBBScreen *primaryDisplay() const;
+    void createDisplays();
+    void destroyDisplays();
+
     screen_context_t mContext;
     QBBEventThread *mEventThread;
     QBBNavigatorEventHandler *mNavigatorEventHandler;
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
+    QList<QPlatformScreen*> mScreens;
     bool mPaintUsingOpenGL;
     QBBAbstractVirtualKeyboard *mVirtualKeyboard;
 };

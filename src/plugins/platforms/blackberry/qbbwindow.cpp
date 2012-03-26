@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QBBWindow::QBBWindow(QWidget *window, screen_context_t context)
+QBBWindow::QBBWindow(QWidget *window, screen_context_t context, QBBScreen *screen)
     : QPlatformWindow(window),
       mContext(context),
       mCurrentBufferIndex(-1),
@@ -120,10 +120,7 @@ QBBWindow::QBBWindow(QWidget *window, screen_context_t context)
     }
 
     // Set the screen to the primary display (this is the default specified by screen).
-    setScreen(QBBScreen::primaryDisplay());
-
-    // Add the window to the root of the Hierarchy.
-    QBBScreen::addWindow(this);
+    setScreen(screen);
 }
 
 QBBWindow::~QBBWindow()
@@ -134,7 +131,7 @@ QBBWindow::~QBBWindow()
 
     // Remove from parent's Hierarchy.
     removeFromParent();
-    QBBScreen::updateHierarchy();
+    mScreen->updateHierarchy();
 
     // We shouldn't allow this case unless QT allows it. Does it? Or should we send the
     // handleCloseEvent on all children when this window is deleted?
@@ -428,6 +425,9 @@ void QBBWindow::setScreen(QBBScreen *platformScreen)
     if (mScreen == platformScreen)
         return;
 
+    if (mScreen)
+        mScreen->removeWindow(this);
+    platformScreen->addWindow(this);
     mScreen = platformScreen;
 
     // The display may not have a root (desktop) window yet so we must ensure that one has been
@@ -458,7 +458,7 @@ void QBBWindow::setScreen(QBBScreen *platformScreen)
             (*it)->setScreen(platformScreen);
     }
 
-    QBBScreen::updateHierarchy();
+    mScreen->updateHierarchy();
 }
 
 void QBBWindow::removeFromParent()
@@ -470,7 +470,7 @@ void QBBWindow::removeFromParent()
         else
             qFatal("QBBWindow: Window Hierarchy broken; window has parent, but parent hasn't got child.");
     } else {
-        QBBScreen::removeWindow(this);
+        mScreen->removeWindow(this);
     }
 }
 
@@ -499,10 +499,10 @@ void QBBWindow::setParent(const QPlatformWindow *window)
 
         mParent->mChildren.push_back(this);
     } else {
-        QBBScreen::addWindow(this);
+        mScreen->addWindow(this);
     }
 
-    QBBScreen::updateHierarchy();
+    mScreen->updateHierarchy();
 }
 
 void QBBWindow::raise()
@@ -516,10 +516,10 @@ void QBBWindow::raise()
         removeFromParent();
         oldParent->mChildren.push_back(this);
     } else {
-        QBBScreen::raiseWindow(this);
+        mScreen->raiseWindow(this);
     }
 
-    QBBScreen::updateHierarchy();
+    mScreen->updateHierarchy();
 }
 
 void QBBWindow::lower()
@@ -533,10 +533,10 @@ void QBBWindow::lower()
         removeFromParent();
         oldParent->mChildren.push_front(this);
     } else {
-        QBBScreen::lowerWindow(this);
+        mScreen->lowerWindow(this);
     }
 
-    QBBScreen::updateHierarchy();
+    mScreen->updateHierarchy();
 }
 
 void QBBWindow::requestActivateWindow()
@@ -559,6 +559,20 @@ void QBBWindow::gainedFocus()
 
     // Got focus
     QWindowSystemInterface::handleWindowActivated(widget());
+}
+
+QBBWindow *QBBWindow::findWindow(screen_window_t windowHandle)
+{
+    if (mWindow == windowHandle)
+        return this;
+
+    Q_FOREACH (QBBWindow *window, mChildren) {
+        QBBWindow * const result = window->findWindow(windowHandle);
+        if (result)
+            return result;
+    }
+
+    return 0;
 }
 
 void QBBWindow::updateZorder(int &topZorder)
