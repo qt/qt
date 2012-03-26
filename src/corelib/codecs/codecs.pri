@@ -25,7 +25,7 @@ unix {
         contains(QT_CONFIG,iconv) {
                 HEADERS += codecs/qiconvcodec_p.h
                 SOURCES += codecs/qiconvcodec.cpp
-                qnx-*-qcc:LIBS_PRIVATE *= -liconv
+                qnx:LIBS_PRIVATE *= -liconv
         } else:contains(QT_CONFIG,gnu-libiconv) {
                 HEADERS += codecs/qiconvcodec_p.h
                 SOURCES += codecs/qiconvcodec.cpp
