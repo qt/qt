@@ -108,6 +108,9 @@ public:
     int &argc;
     char **argv;
     void appendApplicationPathToLibraryPaths(void);
+    void processCommandLineArguments();
+
+    static QString qmljsDebugArguments(); // access arguments from other libraries
 
 #ifndef QT_NO_TRANSLATION
     QTranslatorList translators;

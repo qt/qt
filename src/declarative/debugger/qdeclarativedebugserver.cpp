@@ -49,7 +49,7 @@
 #include <QtCore/QStringList>
 
 #include <private/qobject_p.h>
-#include <private/qapplication_p.h>
+#include <private/qcoreapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,7 +169,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     if (!commandLineTested) {
         commandLineTested = true;
 
-        QApplicationPrivate *appD = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+        QCoreApplicationPrivate *appD = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(qApp));
 #ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         // ### remove port definition when protocol is changed
         int port = 0;
@@ -177,26 +177,26 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool ok = false;
 
         // format: qmljsdebugger=port:3768[,block] OR qmljsdebugger=ost[,block]
-        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+        if (!appD->qmljsDebugArguments().isEmpty()) {
             if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
                 qWarning() << QString::fromLatin1(
                                   "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                   "Debugging has not been enabled.").arg(
-                                  appD->qmljsDebugArgumentsString());
+                                  appD->qmljsDebugArguments());
                 return 0;
             }
 
             QString pluginName;
-            if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
-                int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
-                port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
+            if (appD->qmljsDebugArguments().indexOf(QLatin1String("port:")) == 0) {
+                int separatorIndex = appD->qmljsDebugArguments().indexOf(QLatin1Char(','));
+                port = appD->qmljsDebugArguments().mid(5, separatorIndex - 5).toInt(&ok);
                 pluginName = QLatin1String("qmldbg_tcp");
-            } else if (appD->qmljsDebugArgumentsString().contains(QLatin1String("ost"))) {
+            } else if (appD->qmljsDebugArguments().contains(QLatin1String("ost"))) {
                 pluginName = QLatin1String("qmldbg_ost");
                 ok = true;
             }
 
-            block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
+            block = appD->qmljsDebugArguments().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer();
@@ -213,22 +213,22 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                     qWarning() << QString::fromLatin1(
                                       "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                       "Remote debugger plugin has not been found.").arg(
-                                      appD->qmljsDebugArgumentsString());
+                                      appD->qmljsDebugArguments());
                 }
 
             } else {
                 qWarning() << QString::fromLatin1(
                                   "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                   "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                                  appD->qmljsDebugArgumentsString());
+                                  appD->qmljsDebugArguments());
             }
         }
 #else
-        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+        if (!appD->qmljsDebugArguments().isEmpty()) {
             qWarning() << QString::fromLatin1(
                               "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                               "QtDeclarative is not configured for debugging.").arg(
-                              appD->qmljsDebugArgumentsString());
+                              appD->qmljsDebugArguments());
         }
 #endif
     }

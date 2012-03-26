@@ -217,6 +217,30 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
+Q_GLOBAL_STATIC(QString, qmljs_debug_arguments);
+
+void QCoreApplicationPrivate::processCommandLineArguments()
+{
+    int j = argc ? 1 : 0;
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] && *argv[i] != '-') {
+            argv[j++] = argv[i];
+            continue;
+        }
+        QByteArray arg = argv[i];
+        if (arg.startsWith("-qmljsdebugger=")) {
+            *qmljs_debug_arguments() = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+        } else {
+            argv[j++] = argv[i];
+        }
+    }
+
+    if (j < argc) {
+        argv[j] = 0;
+        argc = j;
+    }
+}
+
 // Support for introspection
 
 QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
@@ -497,6 +521,11 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 #endif
 }
 
+QString QCoreApplicationPrivate::qmljsDebugArguments()
+{
+    return *qmljs_debug_arguments();
+}
+
 QString qAppName()
 {
     if (!QCoreApplicationPrivate::checkInstance("qAppName"))
@@ -741,6 +770,8 @@ void QCoreApplication::init()
         CleanupStack::PopAndDestroy(&loader);
     }
 #endif
+
+    d->processCommandLineArguments();
 
     qt_startup_hook();
 }
