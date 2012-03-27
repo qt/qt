@@ -51,6 +51,7 @@ class QBBNavigatorEventHandler;
 class QBBLocaleThread;
 class QBBAbstractVirtualKeyboard;
 class QBBScreen;
+class QBBScreenEventHandler;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -87,6 +88,7 @@ private:
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen*> mScreens;
+    QBBScreenEventHandler *mScreenEventHandler;
     bool mPaintUsingOpenGL;
     QBBAbstractVirtualKeyboard *mVirtualKeyboard;
 };

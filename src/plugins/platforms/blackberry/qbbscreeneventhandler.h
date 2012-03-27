@@ -46,8 +46,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QBBScreenEventHandler
+class QBBScreenEventHandler : public QObject
 {
+    Q_OBJECT
 public:
     QBBScreenEventHandler();
 
@@ -57,11 +58,16 @@ public:
     bool handleEvent(screen_event_t event);
     bool handleEvent(screen_event_t event, int qnxType);
 
+Q_SIGNALS:
+    void newWindowCreated(screen_window_t window);
+    void windowClosed(screen_window_t window);
+
 private:
     void handleKeyboardEvent(screen_event_t event);
     void handlePointerEvent(screen_event_t event);
     void handleTouchEvent(screen_event_t event, int type);
     void handleCloseEvent(screen_event_t event);
+    void handleCreateEvent(screen_event_t event);
 
 private:
     enum {

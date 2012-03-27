@@ -85,10 +85,17 @@ public:
 
     QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
 
+public Q_SLOTS:
+    void newWindowCreated(screen_window_t window);
+    void windowClosed(screen_window_t window);
+
 private Q_SLOTS:
     void keyboardHeightChanged(int height);
 
 private:
+    void addOverlayWindow(screen_window_t window);
+    void removeOverlayWindow(screen_window_t window);
+
     screen_context_t mContext;
     screen_display_t mDisplay;
     QSharedPointer<QBBRootWindow> mRootWindow;
@@ -105,6 +112,7 @@ private:
     QRect mCurrentGeometry;
 
     QList<QBBWindow*> mChildren;
+    QList<screen_window_t> mOverlays;
     int mScreenIndex;
 
     bool isPrimaryDisplay() { return mPrimaryDisplay; }

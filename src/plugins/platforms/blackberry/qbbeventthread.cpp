@@ -48,9 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QBBEventThread::QBBEventThread(screen_context_t context)
+QBBEventThread::QBBEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler)
     : mContext(context),
-      mQuit(false)
+      mQuit(false),
+      mEventHandler(eventHandler)
 {
 }
 
@@ -67,7 +68,7 @@ void QBBEventThread::injectKeyboardEvent(int flags, int sym, int mod, int scan, 
 
 void QBBEventThread::injectPointerMoveEvent(int x, int y)
 {
-    mEventHandler.injectPointerMoveEvent(x, y);
+    mEventHandler->injectPointerMoveEvent(x, y);
 }
 
 void QBBEventThread::run()
@@ -107,7 +108,7 @@ void QBBEventThread::run()
             #endif
             mQuit = true;
         } else {
-            mEventHandler.handleEvent(event, qnxType);
+            mEventHandler->handleEvent(event, qnxType);
         }
     }
 

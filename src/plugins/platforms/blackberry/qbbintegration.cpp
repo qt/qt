@@ -47,6 +47,7 @@
 #include "qbbnavigatoreventhandler.h"
 #include "qbbrasterwindowsurface.h"
 #include "qbbscreen.h"
+#include "qbbscreeneventhandler.h"
 #include "qbbwindow.h"
 #include "qbbvirtualkeyboard.h"
 #include "qgenericunixfontdatabase.h"
@@ -69,11 +70,16 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_METATYPE(screen_window_t);
+
 QBBIntegration::QBBIntegration() :
     mFontDb(new QGenericUnixFontDatabase()),
+    mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
     mVirtualKeyboard(0)
 {
+    qRegisterMetaType<screen_window_t>();
+
     if (mPaintUsingOpenGL) {
         // Set default window API to OpenGL
         QPlatformWindowFormat format = QPlatformWindowFormat::defaultFormat();
@@ -95,7 +101,7 @@ QBBIntegration::QBBIntegration() :
     createDisplays();
 
     // create/start event thread
-    mEventThread = new QBBEventThread(mContext);
+    mEventThread = new QBBEventThread(mContext, mScreenEventHandler);
     mEventThread->start();
 
     // Create/start navigator event handler
@@ -138,6 +144,8 @@ QBBIntegration::~QBBIntegration()
 #if defined(QBBINTEGRATION_DEBUG)
     qDebug() << "QBB: platform plugin shutdown begin";
 #endif
+
+
     // destroy the keyboard class.
     delete mVirtualKeyboard;
 
@@ -151,6 +159,8 @@ QBBIntegration::~QBBIntegration()
 
     // stop/destroy navigator thread
     delete mNavigatorEventHandler;
+
+    delete mScreenEventHandler;
 
     // destroy all displays
     destroyDisplays();
@@ -271,6 +281,11 @@ void QBBIntegration::createDisplays()
 #endif
         QBBScreen *screen = new QBBScreen(mContext, displays[i], i);
         mScreens.push_back(screen);
+
+        QObject::connect(mScreenEventHandler, SIGNAL(newWindowCreated(screen_window_t)),
+                         screen, SLOT(newWindowCreated(screen_window_t)));
+        QObject::connect(mScreenEventHandler, SIGNAL(windowClosed(screen_window_t)),
+                         screen, SLOT(windowClosed(screen_window_t)));
     }
 }
 

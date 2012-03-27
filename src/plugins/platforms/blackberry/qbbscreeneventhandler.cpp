@@ -105,6 +105,10 @@ bool QBBScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
         handleCloseEvent(event);
         break;
 
+    case SCREEN_EVENT_CREATE:
+        handleCreateEvent(event);
+        break;
+
     default:
         // event ignored
 #if defined(QBBEVENTTHREAD_DEBUG)
@@ -511,18 +515,27 @@ void QBBScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
 void QBBScreenEventHandler::handleCloseEvent(screen_event_t event)
 {
-    // Query the window that was closed
-    void *qnxWindow;
-    int result = screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, &qnxWindow);
-    if (result != 0) {
-        qFatal("QBB: failed to query event window, errno=%d", errno);
-    }
+    screen_window_t window = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+        qFatal("QBB: failed to query event window property, errno=%d", errno);
+
+    emit windowClosed(window);
 
     // map window to top-level widget
-    QWidget* w = QWidget::find( (WId)qnxWindow );
-    if (w != NULL) {
+    QWidget* w = QWidget::find( (WId)window );
+    if (w != NULL)
         QWindowSystemInterface::handleCloseEvent(w);
-    }
 }
+
+void QBBScreenEventHandler::handleCreateEvent(screen_event_t event)
+{
+    screen_window_t window = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+        qFatal("QBB: failed to query event window property, errno=%d", errno);
+
+    emit newWindowCreated(window);
+}
+
+#include "moc_qbbscreeneventhandler.cpp"
 
 QT_END_NAMESPACE

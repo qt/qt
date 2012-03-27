@@ -44,6 +44,7 @@
 #include "qbbwindow.h"
 
 #include <QDebug>
+#include <QtCore/QThread>
 #include <QtGui/QWindowSystemInterface>
 
 #include <errno.h>
@@ -133,6 +134,31 @@ void QBBScreen::ensureDisplayCreated()
 {
     if (!mRootWindow)
         mRootWindow = QSharedPointer<QBBRootWindow>(new QBBRootWindow(this));
+}
+
+void QBBScreen::newWindowCreated(screen_window_t window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    screen_display_t display = 0;
+    if (screen_get_window_property_pv(window, SCREEN_PROPERTY_DISPLAY, (void**)&display) != 0) {
+        qWarning("QBBScreen: Failed to get screen for window, errno=%d", errno);
+        return;
+    }
+
+    if (display == nativeDisplay()) {
+        // A window was created on this screen. If we don't know about this window yet, it means
+        // it was not created by Qt, but by some foreign library like the multimedia renderer, which
+        // creates an overlay window when playing a video.
+        // Treat all foreign windows as overlays here.
+        if (!findWindow(window))
+            addOverlayWindow(window);
+    }
+}
+
+void QBBScreen::windowClosed(screen_window_t window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    removeOverlayWindow(window);
 }
 
 QRect QBBScreen::availableGeometry() const
@@ -269,6 +295,15 @@ void QBBScreen::updateHierarchy()
         (*it)->updateZorder(topZorder);
     }
 
+    topZorder++;
+    Q_FOREACH (screen_window_t overlay, mOverlays) {
+        // Do nothing when this fails. This can happen if we have stale windows in mOverlays,
+        // which in turn can happen because a window was removed but we didn't get a notification
+        // yet.
+        screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder);
+        topZorder++;
+    }
+
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
     screen_flush_context( mContext, 0 );
@@ -295,6 +330,19 @@ void QBBScreen::keyboardHeightChanged(int height)
     mKeyboardHeight = height;
 
     QWindowSystemInterface::handleScreenAvailableGeometryChange(mScreenIndex);
+}
+
+void QBBScreen::addOverlayWindow(screen_window_t window)
+{
+    mOverlays.append(window);
+    updateHierarchy();
+}
+
+void QBBScreen::removeOverlayWindow(screen_window_t window)
+{
+    const int numOverlaysRemoved = mOverlays.removeAll(window);
+    if (numOverlaysRemoved > 0)
+        updateHierarchy();
 }
 
 QT_END_NAMESPACE

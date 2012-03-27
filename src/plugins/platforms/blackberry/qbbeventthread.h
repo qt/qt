@@ -40,18 +40,18 @@
 #ifndef QBBEVENTTHREAD_H
 #define QBBEVENTTHREAD_H
 
-#include "qbbscreeneventhandler.h"
-
 #include <QThread>
 
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
 
+class QBBScreenEventHandler;
+
 class QBBEventThread : public QThread
 {
 public:
-    explicit QBBEventThread(screen_context_t context);
+    QBBEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler);
     virtual ~QBBEventThread();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
@@ -63,7 +63,7 @@ protected:
 private:
     screen_context_t mContext;
     bool mQuit;
-    QBBScreenEventHandler mEventHandler;
+    QBBScreenEventHandler *mEventHandler;
 
     void shutdown();
 };
