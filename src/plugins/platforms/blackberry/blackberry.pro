@@ -20,7 +20,8 @@ SOURCES =   main.cpp \
             qbblocalethread.cpp \
             qbbrootwindow.cpp \
             qbbscreeneventhandler.cpp \
-            qbbabstractvirtualkeyboard.cpp
+            qbbabstractvirtualkeyboard.cpp \
+            qbbnativeinterface.cpp
 
 HEADERS =   qbbbuffer.h \
             qbbeventthread.h \
@@ -37,7 +38,8 @@ HEADERS =   qbbbuffer.h \
             qbblocalethread.h \
             qbbrootwindow.h \
             qbbscreeneventhandler.h \
-            qbbabstractvirtualkeyboard.h
+            qbbabstractvirtualkeyboard.h \
+            qbbnativeinterface.h
 
 QMAKE_CXXFLAGS += -I./private
 

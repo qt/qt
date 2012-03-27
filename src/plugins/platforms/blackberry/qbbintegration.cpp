@@ -54,6 +54,7 @@
 #include "qbbclipboard.h"
 #include "qbbglcontext.h"
 #include "qbblocalethread.h"
+#include "qbbnativeinterface.h"
 
 #include "qapplication.h"
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -76,7 +77,8 @@ QBBIntegration::QBBIntegration() :
     mFontDb(new QGenericUnixFontDatabase()),
     mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
-    mVirtualKeyboard(0)
+    mVirtualKeyboard(0),
+    mNativeInterface(new QBBNativeInterface(this))
 {
     qRegisterMetaType<screen_window_t>();
 
@@ -145,6 +147,8 @@ QBBIntegration::~QBBIntegration()
     qDebug() << "QBB: platform plugin shutdown begin";
 #endif
 
+
+    delete mNativeInterface;
 
     // destroy the keyboard class.
     delete mVirtualKeyboard;
@@ -215,6 +219,11 @@ QWindowSurface *QBBIntegration::createWindowSurface(QWidget *widget, WId winId) 
         return new QBBRasterWindowSurface(widget);
 }
 
+QPlatformNativeInterface *QBBIntegration::nativeInterface() const
+{
+    return mNativeInterface;
+}
+
 void QBBIntegration::moveToScreen(QWidget *window, int screen)
 {
 #if defined(QBBINTEGRATION_DEBUG)
@@ -248,6 +257,24 @@ QPlatformClipboard *QBBIntegration::clipboard() const
     return clipboard;
 }
 #endif
+
+
+QBBScreen *QBBIntegration::screenForWindow(screen_window_t window) const
+{
+    screen_display_t display = 0;
+    if (screen_get_window_property_pv(window, SCREEN_PROPERTY_DISPLAY, (void**)&display) != 0) {
+        qWarning("QBBIntegration: Failed to get screen for window, errno=%d", errno);
+        return 0;
+    }
+
+    Q_FOREACH (QPlatformScreen *screen, mScreens) {
+        QBBScreen * const bbScreen = static_cast<QBBScreen*>(screen);
+        if (bbScreen->nativeDisplay() == display)
+            return bbScreen;
+    }
+
+    return 0;
+}
 
 QBBScreen *QBBIntegration::primaryDisplay() const
 {

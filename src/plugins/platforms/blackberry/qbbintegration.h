@@ -52,6 +52,7 @@ class QBBLocaleThread;
 class QBBAbstractVirtualKeyboard;
 class QBBScreen;
 class QBBScreenEventHandler;
+class QBBNativeInterface;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -64,6 +65,7 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    virtual QPlatformNativeInterface *nativeInterface() const;
 
     virtual QList<QPlatformScreen *> screens() const;
     virtual void moveToScreen(QWidget *window, int screen);
@@ -76,6 +78,8 @@ public:
 #endif
 
     bool paintUsingOpenGL() const { return mPaintUsingOpenGL; }
+
+    QBBScreen *screenForWindow(screen_window_t window) const;
 
 private:
     QBBScreen *primaryDisplay() const;
@@ -91,6 +95,7 @@ private:
     QBBScreenEventHandler *mScreenEventHandler;
     bool mPaintUsingOpenGL;
     QBBAbstractVirtualKeyboard *mVirtualKeyboard;
+    QBBNativeInterface *mNativeInterface;
 };
 
 QT_END_NAMESPACE
