@@ -233,6 +233,7 @@ public:
     bool chunkedTransferEncoding;
     bool connectionCloseEnabled;
     bool forceConnectionCloseEnabled;
+    bool lastChunkRead;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;
