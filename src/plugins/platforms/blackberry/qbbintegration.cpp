@@ -95,7 +95,7 @@ QBBIntegration::QBBIntegration() :
     QBBScreen::createDisplays(mContext);
 
     // create/start event thread
-    mEventThread = new QBBEventThread(mContext, *QBBScreen::primaryDisplay());
+    mEventThread = new QBBEventThread(mContext);
     mEventThread->start();
 
     // Create/start navigator event handler

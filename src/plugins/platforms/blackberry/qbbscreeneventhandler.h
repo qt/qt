@@ -37,37 +37,45 @@
 **
 ****************************************************************************/
 
-#ifndef QBBEVENTTHREAD_H
-#define QBBEVENTTHREAD_H
+#ifndef QBBSCREENEVENTHANDLER_H
+#define QBBSCREENEVENTHANDLER_H
 
-#include "qbbscreeneventhandler.h"
-
-#include <QThread>
+#include <QWindowSystemInterface>
 
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
 
-class QBBEventThread : public QThread
+class QBBScreenEventHandler
 {
 public:
-    explicit QBBEventThread(screen_context_t context);
-    virtual ~QBBEventThread();
+    QBBScreenEventHandler();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
     void injectPointerMoveEvent(int x, int y);
 
-protected:
-    virtual void run();
+    bool handleEvent(screen_event_t event);
+    bool handleEvent(screen_event_t event, int qnxType);
 
 private:
-    screen_context_t mContext;
-    bool mQuit;
-    QBBScreenEventHandler mEventHandler;
+    void handleKeyboardEvent(screen_event_t event);
+    void handlePointerEvent(screen_event_t event);
+    void handleTouchEvent(screen_event_t event, int type);
+    void handleCloseEvent(screen_event_t event);
 
-    void shutdown();
+private:
+    enum {
+        MAX_TOUCH_POINTS = 10
+    };
+
+    QPoint mLastGlobalMousePoint;
+    QPoint mLastLocalMousePoint;
+    Qt::MouseButtons mLastButtonState;
+    void* mLastMouseWindow;
+
+    QWindowSystemInterface::TouchPoint mTouchPoints[MAX_TOUCH_POINTS];
 };
 
 QT_END_NAMESPACE
 
-#endif // QBBEVENTTHREAD_H
+#endif // QBBSCREENEVENTHANDLER_H
