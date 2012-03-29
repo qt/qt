@@ -1203,8 +1203,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             window->setFocusSafely(false);
             window->MakeVisible(false);
         } else if (window && oldstate & Qt::WindowMinimized) {
-            window->setFocusSafely(true);
             window->MakeVisible(true);
+            window->setFocusSafely(true);
         }
 
 #ifdef Q_WS_S60
