@@ -49,7 +49,7 @@
 
 #include <qbbeventthread.h>
 #include <qbbinputcontext.h>
-#include <qbbvirtualkeyboard.h>
+#include <qbbabstractvirtualkeyboard.h>
 
 #include <QAction>
 #include <QCoreApplication>
@@ -678,7 +678,7 @@ static bool imfAvailable()
 
 QT_BEGIN_NAMESPACE
 
-QBBInputContext::QBBInputContext(QBBVirtualKeyboard &keyboard, QObject* parent):
+QBBInputContext::QBBInputContext(QBBAbstractVirtualKeyboard &keyboard, QObject* parent):
          QInputContext(parent),
          mLastCaretPos(0),
          mIsComposing(false),

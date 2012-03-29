@@ -40,14 +40,14 @@
 // #define QBBINPUTCONTEXT_DEBUG
 
 #include <qbbinputcontext.h>
-#include <qbbvirtualkeyboard.h>
+#include <qbbabstractvirtualkeyboard.h>
 
 #include <QDebug>
 #include <QAbstractSpinBox>
 
 QT_BEGIN_NAMESPACE
 
-QBBInputContext::QBBInputContext(QBBVirtualKeyboard &keyboard, QObject* parent)
+QBBInputContext::QBBInputContext(QBBAbstractVirtualKeyboard &keyboard, QObject* parent)
     : QInputContext(parent),
       mVirtualKeyboard(keyboard)
 {
@@ -112,9 +112,9 @@ void QBBInputContext::setFocusWidget(QWidget *w)
 
     if (w) {
         if (qobject_cast<QAbstractSpinBox*>(w))
-            mVirtualKeyboard.setKeyboardMode(QBBVirtualKeyboard::Phone);
+            mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Phone);
         else
-            mVirtualKeyboard.setKeyboardMode(QBBVirtualKeyboard::Default);
+            mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Default);
 
         mVirtualKeyboard.showKeyboard();
     } else {

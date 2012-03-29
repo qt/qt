@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 **
 ** Contact: Research In Motion <blackberry-qt@qnx.com>
 ** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
@@ -37,54 +37,70 @@
 **
 ****************************************************************************/
 
-#ifndef QBBINTEGRATION_H
-#define QBBINTEGRATION_H
-
-#include <QtGui/QPlatformIntegration>
-
-#include <screen/screen.h>
+#include "qbbabstractvirtualkeyboard.h"
 
 QT_BEGIN_NAMESPACE
 
-class QBBEventThread;
-class QBBNavigatorEventHandler;
-class QBBLocaleThread;
-class QBBAbstractVirtualKeyboard;
-
-class QBBIntegration : public QPlatformIntegration
+QBBAbstractVirtualKeyboard::QBBAbstractVirtualKeyboard(QObject *parent)
+    : QObject(parent)
+    , mHeight(0)
+    , mKeyboardMode(Default)
+    , mVisible(false)
+    , mLanguageId(QString::fromLatin1("en"))
+    , mCountryId(QString::fromLatin1("US"))
 {
-public:
-    QBBIntegration();
-    virtual ~QBBIntegration();
+}
 
-    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+void QBBAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
+{
+    if (mode == mKeyboardMode)
+        return;
 
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    mKeyboardMode = mode;
 
-    virtual QList<QPlatformScreen *> screens() const;
-    virtual void moveToScreen(QWidget *window, int screen);
-    virtual void setCursorPos(int x, int y);
+    applyKeyboardMode(mode);
+}
 
-    virtual QPlatformFontDatabase *fontDatabase() const { return mFontDb; }
+void QBBAbstractVirtualKeyboard::setVisible(bool visible)
+{
+    if (visible == mVisible)
+        return;
 
-#ifndef QT_NO_CLIPBOARD
-    virtual QPlatformClipboard *clipboard() const;
-#endif
+    const int effectiveHeight = getHeight();
 
-    bool paintUsingOpenGL() const { return mPaintUsingOpenGL; }
+    mVisible = visible;
 
-private:
-    screen_context_t mContext;
-    QBBEventThread *mEventThread;
-    QBBNavigatorEventHandler *mNavigatorEventHandler;
-    QBBLocaleThread *mLocaleThread;
-    QPlatformFontDatabase *mFontDb;
-    bool mPaintUsingOpenGL;
-    QBBAbstractVirtualKeyboard *mVirtualKeyboard;
-};
+    if (effectiveHeight != getHeight())
+        emit heightChanged(getHeight());
+}
+
+void QBBAbstractVirtualKeyboard::setHeight(bool height)
+{
+    if (height == mHeight)
+        return;
+
+    const int effectiveHeight = getHeight();
+
+    mHeight = height;
+
+    if (effectiveHeight != getHeight())
+        emit heightChanged(getHeight());
+}
+
+void QBBAbstractVirtualKeyboard::setLanguage(const QString &language)
+{
+    if (language == mLanguageId)
+        return;
+
+    mLanguageId = language;
+}
+
+void QBBAbstractVirtualKeyboard::setCountry(const QString &country)
+{
+    if (country == mCountryId)
+        return;
+
+    mCountryId = country;
+}
 
 QT_END_NAMESPACE
-
-#endif // QBBINTEGRATION_H
