@@ -41,6 +41,7 @@
 
 #include <qurl.h>
 #include <bps/navigator.h>
+#include <qdir.h>
 
 QT_BEGIN_NAMESPACE
 
