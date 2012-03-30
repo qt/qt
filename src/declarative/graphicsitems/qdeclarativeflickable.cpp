@@ -809,7 +809,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                     rejectY = false;
                 }
             }
-            if (!rejectY && stealMouse) {
+            if (!rejectY && stealMouse && dy != 0) {
                 vData.move.setValue(qRound(newY));
                 vMoved = true;
             }
@@ -841,7 +841,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                     rejectX = false;
                 }
             }
-            if (!rejectX && stealMouse) {
+            if (!rejectX && stealMouse && dx != 0) {
                 hData.move.setValue(qRound(newX));
                 hMoved = true;
             }
