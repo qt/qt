@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_DIRECTPAINTER
 class QDirectPainterPrivate;
-class QWSEmbedEvent;
+struct QWSEmbedEvent;
 
 class Q_GUI_EXPORT QDirectPainter : public QObject {
     Q_OBJECT
