@@ -331,7 +331,7 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
         d->used_mmap = false;
 #endif
         d->mmapStart = new uchar[d->mmapLength];
-        if (QT_READ(fd, d->mmapStart, d->mmapLength) != d->mmapLength)
+        if (QT_READ(fd, d->mmapStart, d->mmapLength) != (qint64)d->mmapLength)
             qFatal("Failed to read '%s'", QFile::encodeName(fn).constData());
     }
     QT_CLOSE(fd);

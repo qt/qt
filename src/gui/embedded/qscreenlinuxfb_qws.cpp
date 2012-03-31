@@ -383,9 +383,9 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         dh=h;
         int xxoff, yyoff;
         if (sscanf(qwssize, "%*dx%*d+%d+%d", &xxoff, &yyoff) == 2) {
-            if (xxoff < 0 || xxoff + w > vinfo.xres)
+            if (xxoff < 0 || xxoff + w > (int)vinfo.xres)
                 xxoff = vinfo.xres - w;
-            if (yyoff < 0 || yyoff + h > vinfo.yres)
+            if (yyoff < 0 || yyoff + h > (int)vinfo.yres)
                 yyoff = vinfo.yres - h;
             xoff += xxoff;
             yoff += yyoff;
