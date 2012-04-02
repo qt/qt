@@ -2420,11 +2420,19 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if ((flags & DrawAsRoot) && !(q->autoFillBackground() && autoFillBrush.isOpaque())) {
         const QBrush bg = q->palette().brush(QPalette::Window);
-#ifdef Q_WS_QWS
-        if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
-            painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
-#endif
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+        if (!(flags & DontSetCompositionMode)) {
+            //copy alpha straight in
+            QPainter::CompositionMode oldMode = painter->compositionMode();
+            painter->setCompositionMode(QPainter::CompositionMode_Source);
+            fillRegion(painter, rgn, bg);
+            painter->setCompositionMode(oldMode);
+        } else {
+            fillRegion(painter, rgn, bg);
+        }
+#else
         fillRegion(painter, rgn, bg);
+#endif
     }
 
     if (q->autoFillBackground())
@@ -5707,7 +5715,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     else
         flags |= DontSubtractOpaqueChildren;
 
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     flags |= DontSetCompositionMode;
 #endif
 
