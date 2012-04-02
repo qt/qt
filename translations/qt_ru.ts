@@ -3055,6 +3055,13 @@ Please verify the correct directory name was given.</source>
     </message>
 </context>
 <context>
+    <name>QGroupBox</name>
+    <message>
+        <source>Toggle</source>
+        <translation>Вкл/выкл</translation>
+    </message>
+</context>
+<context>
     <name>QHostInfo</name>
     <message>
         <source>Unknown error</source>
@@ -3086,6 +3093,10 @@ Please verify the correct directory name was given.</source>
     <message>
         <source>Invalid hostname</source>
         <translation>Некорректное имя узла</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>Неизвестная ошибка (%1)</translation>
     </message>
 </context>
 <context>
@@ -4180,6 +4191,46 @@ Please verify the correct directory name was given.</source>
         <source>Host not found</source>
         <translation>Узел не найден</translation>
     </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>Не удалось прочитать данные изображения</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
+        <translation>Не поддерживается чтения изображений из последовательных устройств (например сокета)</translation>
+    </message>
+    <message>
+        <source>Seek file/device for image read failed</source>
+        <translation>Не удалось произвести перемещение по файлу/устройству для чтения изображения</translation>
+    </message>
+    <message>
+        <source>Image mHeader read failed</source>
+        <translation>Не удалось прочитать mHeader изображения</translation>
+    </message>
+    <message>
+        <source>Image type not supported</source>
+        <translation>Тип изображения не поддерживается</translation>
+    </message>
+    <message>
+        <source>Image depth not valid</source>
+        <translation>Недопустимая глубина цвета изображения</translation>
+    </message>
+    <message>
+        <source>Could not seek to image read footer</source>
+        <translation>Не удалось переместиться к концу изображения</translation>
+    </message>
+    <message>
+        <source>Could not read footer</source>
+        <translation>Не удалось прочитать окончание изображения</translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation>Тип изображения (отличный от TrueVision 2.0) не поддерживается</translation>
+    </message>
+    <message>
+        <source>Could not reset to start position</source>
+        <translation>Не удалось сбросить в исходную позицию</translation>
+    </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
@@ -5066,6 +5117,10 @@ Please choose a different file name.</source>
     <message>
         <source>Unable to execute statement</source>
         <translation>Невозможно выполнить выражение</translation>
+    </message>
+    <message>
+        <source>Unable to execute multiple statements at a time</source>
+        <translation>Невозможно одновременно запустить несколько операторов</translation>
     </message>
     <message>
         <source>Unable to reset statement</source>
@@ -6947,6 +7002,26 @@ Please choose a different file name.</source>
     <message>
         <source>Scroll Right</source>
         <translation>Прокрутить вправо</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation>Активировать</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>Нажать</translation>
+    </message>
+    <message>
+        <source>Close the tab</source>
+        <translation>Закрыть вкладку</translation>
+    </message>
+    <message>
+        <source>Activate the tab</source>
+        <translation>Активировать вкладку</translation>
     </message>
 </context>
 <context>
@@ -10189,7 +10264,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Field %1 has no simple type.</source>
-        <translation type="unfinished">Поле %1 имеет не простой тип.</translation>
+        <translation>Поле %1 не имеет простого типа.</translation>
     </message>
     <message>
         <source>ID value &apos;%1&apos; is not unique.</source>
