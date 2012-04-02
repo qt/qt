@@ -81,7 +81,7 @@ public:
 
     EventRef lastKeydownEvent() { return keydownEvent; }
     void setLastKeydownEvent(EventRef);
-
+    QWidget *lastFocusWidget() const { return lastFocusWid; }
 protected:
     void mouseHandler(int pos, QMouseEvent *);
 private:
@@ -90,6 +90,7 @@ private:
     TSMDocumentID textDocument;
     QString currentText;
     EventRef keydownEvent;
+    QWidget *lastFocusWid;
 };
 
 QT_END_NAMESPACE

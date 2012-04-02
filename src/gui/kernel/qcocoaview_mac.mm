@@ -1022,12 +1022,17 @@ static int qCocoaViewCount = 0;
     // 256 to the key events handling process.
     if (([aString length] && (composing || commitText.at(0).unicode() > 0xff)) || !fromKeyDownEvent) {
         // Send the commit string to the widget.
-        composing = false;
-        sendKeyEvents = false;
         QInputMethodEvent e;
         e.setCommitString(commitText);
-        if (QWidget *widgetToGetKey = qt_mac_getTargetForKeyEvent(qwidget))
+        QWidget *widgetToGetKey = 0;
+        if (!composing || qApp->focusWidget())
+            widgetToGetKey = qt_mac_getTargetForKeyEvent(qwidget);
+        else if (QMacInputContext *mic = qobject_cast<QMacInputContext *>(qApp->inputContext()))
+            widgetToGetKey = mic->lastFocusWidget();
+        if (widgetToGetKey)
             qt_sendSpontaneousEvent(widgetToGetKey, &e);
+        composing = false;
+        sendKeyEvents = false;
     } else {
         // The key sequence "`q" on a French Keyboard will generate two calls to insertText before
         // it returns from interpretKeyEvents. The first call will turn off 'composing' and accept

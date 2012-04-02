@@ -58,7 +58,7 @@ extern bool qt_sendSpontaneousEvent(QObject*, QEvent*);
 
 QMacInputContext::QMacInputContext(QObject *parent)
     : QInputContext(parent), composing(false), recursionGuard(false), textDocument(0),
-      keydownEvent(0)
+      keydownEvent(0), lastFocusWid(0)
 {
 //    createTextDocument();
 }
@@ -141,6 +141,8 @@ bool QMacInputContext::isComposing() const
 
 void QMacInputContext::setFocusWidget(QWidget *w)
 {
+    if (!w)
+        lastFocusWid = focusWidget();
     createTextDocument();
 #ifndef QT_MAC_USE_COCOA
     if(w)
