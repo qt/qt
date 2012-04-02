@@ -19,4 +19,4 @@ wince*: {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-428
