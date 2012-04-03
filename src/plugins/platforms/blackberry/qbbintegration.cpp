@@ -99,22 +99,20 @@ QBBIntegration::QBBIntegration() :
         qFatal("QBB: failed to connect to composition manager, errno=%d", errno);
     }
 
+    // Create/start navigator event handler
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+    mNavigatorEventHandler = new QBBNavigatorEventHandler;
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(mNavigatorEventHandler, "start", Qt::QueuedConnection);
+
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
 
     // create/start event thread
     mEventThread = new QBBEventThread(mContext, mScreenEventHandler);
     mEventThread->start();
-
-    // Create/start navigator event handler
-    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
-#ifndef Q_OS_BLACKBERRY
-    mNavigatorEventHandler = new QBBNavigatorEventHandler(*primaryDisplay());
-
-    // delay invocation of start() to the time the event loop is up and running
-    // needed to have the QThread internals of the main thread properly initialized
-    QMetaObject::invokeMethod(mNavigatorEventHandler, "start", Qt::QueuedConnection);
-#endif
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // Start the locale change monitoring thread.
@@ -313,6 +311,8 @@ void QBBIntegration::createDisplays()
                          screen, SLOT(newWindowCreated(screen_window_t)));
         QObject::connect(mScreenEventHandler, SIGNAL(windowClosed(screen_window_t)),
                          screen, SLOT(windowClosed(screen_window_t)));
+
+        QObject::connect(mNavigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
     }
 }
 

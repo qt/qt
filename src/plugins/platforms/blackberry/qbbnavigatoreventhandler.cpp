@@ -41,7 +41,6 @@
 
 
 #include "qbbnavigatoreventhandler.h"
-#include "qbbscreen.h"
 
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/QApplication>
@@ -61,8 +60,8 @@
 #define NAV_CONTROL_PATH    "/pps/services/navigator/control"
 #define PPS_BUFFER_SIZE     4096
 
-QBBNavigatorEventHandler::QBBNavigatorEventHandler(QBBScreen& primaryScreen)
-    : mPrimaryScreen(primaryScreen),
+QBBNavigatorEventHandler::QBBNavigatorEventHandler(QObject *parent)
+    : QObject(parent),
       mFd(-1),
       mReadNotifier(0)
 {
@@ -201,8 +200,7 @@ void QBBNavigatorEventHandler::handleMessage(const QByteArray &msg, const QByteA
 #if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: orientation, o=" << dat;
 #endif
-        mPrimaryScreen.setRotation( dat.toInt() );
-        QWindowSystemInterface::handleScreenGeometryChange(0);
+        emit rotationChanged(dat.toInt());
         replyPPS(msg, id, "");
 
     } else if (msg == "SWIPE_DOWN") {

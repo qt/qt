@@ -44,15 +44,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QBBScreen;
 class QSocketNotifier;
 
 class QBBNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QBBNavigatorEventHandler(QBBScreen& primaryScreen);
-    virtual ~QBBNavigatorEventHandler();
+    explicit QBBNavigatorEventHandler(QObject *parent = 0);
+    ~QBBNavigatorEventHandler();
+
+Q_SIGNALS:
+    void rotationChanged(int angle);
 
 public Q_SLOTS:
     void start();
@@ -61,7 +63,6 @@ private Q_SLOTS:
     void readData();
 
 private:
-    QBBScreen& mPrimaryScreen;
     int mFd;
     QSocketNotifier *mReadNotifier;
 

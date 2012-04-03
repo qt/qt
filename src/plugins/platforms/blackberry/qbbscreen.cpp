@@ -222,6 +222,12 @@ void QBBScreen::setRotation(int rotation)
 
         // save new rotation
         mCurrentRotation = rotation;
+
+        // TODO: check if other screens are supposed to rotate as well and/or whether this depends
+        // on if clone mode is being used.
+        // Rotating only the primary screen is what we had in the navigator event handler before refactoring
+        if (mPrimaryDisplay)
+            QWindowSystemInterface::handleScreenGeometryChange(mScreenIndex);
     }
 }
 

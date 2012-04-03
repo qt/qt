@@ -64,7 +64,6 @@ public:
     virtual QSize physicalSize() const { return mCurrentPhysicalSize; }
 
     int rotation() const { return mCurrentRotation; }
-    void setRotation(int rotation);
 
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return mDisplay; }
@@ -86,6 +85,7 @@ public:
     QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
 
 public Q_SLOTS:
+    void setRotation(int rotation);
     void newWindowCreated(screen_window_t window);
     void windowClosed(screen_window_t window);
 
