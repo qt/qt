@@ -1815,14 +1815,6 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
-        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation>неможливо завантажити модуль &quot;%1&quot;: Регістр імені файлу не збігається для &quot;%2&quot;</translation>
-    </message>
-    <message>
-        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>неможливо прочитати визначення &quot;%2&quot; модуля &quot;%1&quot;</translation>
-    </message>
-    <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
         <translation>неможливо завантажити додаток для модуля &quot;%1&quot;: %2</translation>
     </message>
@@ -1875,8 +1867,8 @@ to
         <translation>не є типом</translation>
     </message>
     <message>
-        <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation>Регістр імені файлу не збігається для &quot;%2&quot;</translation>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>Регістр імені файлу не збігається для &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -3062,6 +3054,13 @@ Do you want to delete it anyway?</source>
     </message>
 </context>
 <context>
+    <name>QGroupBox</name>
+    <message>
+        <source>Toggle</source>
+        <translation>Перемкнути</translation>
+    </message>
+</context>
+<context>
     <name>QHostInfo</name>
     <message>
         <source>No host name given</source>
@@ -3093,6 +3092,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Unknown error</source>
         <translation>Невідома помилка</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>Невідома помилка (%1)</translation>
     </message>
 </context>
 <context>
@@ -4186,6 +4189,46 @@ Do you want to delete it anyway?</source>
         <source>Host not found</source>
         <translation>Вузол не знайдено</translation>
     </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>Не вдалося прочитати дані зображення</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
+        <translation>Не підтримується читання зображень з послідовних пристроїв (наприклад, сокетів)</translation>
+    </message>
+    <message>
+        <source>Seek file/device for image read failed</source>
+        <translation>Збій переміщення файлу/пристрою при читанні зображення</translation>
+    </message>
+    <message>
+        <source>Image mHeader read failed</source>
+        <translation>Збій читання mHeader зображення</translation>
+    </message>
+    <message>
+        <source>Image type not supported</source>
+        <translation>Тип зображення не підтримується</translation>
+    </message>
+    <message>
+        <source>Image depth not valid</source>
+        <translation>Неправильна глибина кольору зображення</translation>
+    </message>
+    <message>
+        <source>Could not seek to image read footer</source>
+        <translation>Не вдалось переміститись до кінцівки зображення</translation>
+    </message>
+    <message>
+        <source>Could not read footer</source>
+        <translation>Не вдалося прочитати кінцівку</translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation>Тип зображення (відмінний від TrueVision 2.0) не підтримується</translation>
+    </message>
+    <message>
+        <source>Could not reset to start position</source>
+        <translation>Не вдалося скинути до початкової позиції</translation>
+    </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
@@ -4978,6 +5021,10 @@ Do you want to overwrite it?</source>
         <translation>неправильний синтаксис &quot;lookahead&quot;</translation>
     </message>
     <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>lookbehinds не підтримується, див. QTBUG-2371</translation>
+    </message>
+    <message>
         <source>bad repetition syntax</source>
         <translation>неправильний синтаксис повторення</translation>
     </message>
@@ -5072,6 +5119,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>Unable to execute statement</source>
         <translation>Неможливо виконати вираз</translation>
+    </message>
+    <message>
+        <source>Unable to execute multiple statements at a time</source>
+        <translation>Неможливо виконати декілька виразів водночас</translation>
     </message>
     <message>
         <source>Unable to reset statement</source>
@@ -6949,6 +7000,26 @@ Do you want to overwrite it?</source>
     <message>
         <source>Scroll Right</source>
         <translation>Прокрутити вправо</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрити</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation>Активувати</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>Натиснути</translation>
+    </message>
+    <message>
+        <source>Close the tab</source>
+        <translation>Закрити вкладку</translation>
+    </message>
+    <message>
+        <source>Activate the tab</source>
+        <translation>Активувати вкладку</translation>
     </message>
 </context>
 <context>
