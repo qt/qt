@@ -42,6 +42,8 @@
 #ifndef ACCESSIBLE_ITEMVIEWS_H
 #define ACCESSIBLE_ITEMVIEWS_H
 
+#include "QtCore/qpointer.h"
+
 #include <QtGui/qabstractitemview.h>
 #include <QtGui/qheaderview.h>
 #include <QtGui/qaccessible.h>
@@ -66,7 +68,6 @@ public:
 
     virtual ~QAccessibleTable2();
 
-    QObject *object() const { return view; }
     Role role(int child) const;
     State state(int child) const;
     QString text(Text t, int child) const;
@@ -110,6 +111,8 @@ public:
     virtual bool unselectRow(int row);
     virtual bool unselectColumn(int column);
 
+    QAbstractItemView *view() const;
+
 protected:
     virtual void modelReset();
     virtual void rowsInserted(const QModelIndex &parent, int first, int last);
@@ -120,7 +123,6 @@ protected:
     virtual void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column);
 
 protected:
-    QAbstractItemView* view;
     QAccessible2::TableModelChange lastChange;
     inline QAccessibleTable2Cell *cell(const QModelIndex &index) const;
     inline QAccessible::Role cellRole() const {
@@ -218,7 +220,7 @@ public:
 private:
     QHeaderView *verticalHeader() const;
     QHeaderView *horizontalHeader() const;
-    QAbstractItemView *view;
+    QPointer<QAbstractItemView > view;
     QModelIndex m_index;
     QAccessible::Role m_role;
 
