@@ -411,8 +411,10 @@ void tst_QSslCertificate::alternateSubjectNames()
 
 void tst_QSslCertificate::utf8SubjectNames()
 {
-    QSslCertificate cert = QSslCertificate::fromPath("certificates/cert-ss-san-utf8.pem", QSsl::Pem,
-                                                     QRegExp::FixedString).first();
+    QList<QSslCertificate> certs = QSslCertificate::fromPath("certificates/cert-ss-san-utf8.pem", QSsl::Pem,
+                                                     QRegExp::FixedString);
+    QVERIFY(!certs.isEmpty());
+    QSslCertificate cert = certs.first();
     QVERIFY(!cert.isNull());
 
     // O is "Heavy Metal Records" with heavy use of "decorations" like accents, umlauts etc.,
@@ -676,8 +678,10 @@ void tst_QSslCertificate::certInfo()
         "dc:c2:eb:b7:bb:50:18:05:ba:ad:af:08:49:fe:98:63"
         "55:ba:e7:fb:95:5d:91";
 
-    QSslCertificate cert =  QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
-                                                      QRegExp::FixedString).first();
+    QList<QSslCertificate> certs = QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
+                                                      QRegExp::FixedString);
+    QVERIFY(!certs.isEmpty());
+    QSslCertificate cert =  certs.first();
     QVERIFY(!cert.isNull());
 
     QCOMPARE(cert.issuerInfo(QSslCertificate::Organization), QString("CryptSoft Pty Ltd"));
@@ -733,8 +737,10 @@ void tst_QSslCertificate::certInfo()
 
 void tst_QSslCertificate::certInfoQByteArray()
 {
-    QSslCertificate cert =  QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
-                                                      QRegExp::FixedString).first();
+    QList<QSslCertificate> certs = QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
+                                                      QRegExp::FixedString);
+    QVERIFY(!certs.isEmpty());
+    QSslCertificate cert = certs.first();
     QVERIFY(!cert.isNull());
 
     // in this test, check the bytearray variants before the enum variants to see if
