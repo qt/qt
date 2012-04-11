@@ -1243,7 +1243,7 @@ void qt_init(QApplicationPrivate *priv, int)
 
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
-    NSApplication *cocoaApp = [QNSApplication sharedApplication];
+    NSApplication *cocoaApp = [QT_MANGLE_NAMESPACE(QNSApplication) sharedApplication];
     qt_redirectNSApplicationSendEvent();
 
     QMacCocoaAutoReleasePool pool;

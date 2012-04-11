@@ -155,7 +155,7 @@ QT_USE_NAMESPACE
 
 @end
 
-@implementation QNSApplication
+@implementation QT_MANGLE_NAMESPACE(QNSApplication)
 
 - (void)qt_sendEvent_original:(NSEvent *)event
 {

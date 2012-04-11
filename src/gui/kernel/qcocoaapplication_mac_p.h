@@ -104,7 +104,7 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 - (BOOL)qt_filterEvent:(NSEvent *)event;
 @end
 
-@interface QNSApplication : NSApplication {
+@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
 }
 @end
 
