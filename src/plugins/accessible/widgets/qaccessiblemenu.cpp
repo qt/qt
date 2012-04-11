@@ -623,7 +623,7 @@ QAccessible::State QAccessibleMenuItem::state(int child ) const
         s = Normal;
         QWidget *own = owner();
 
-        if (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
+        if (own && own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
             s |= Invisible;
         }
 
@@ -636,7 +636,7 @@ QAccessible::State QAccessibleMenuItem::state(int child ) const
                 s |= Focused;
 #endif
         }
-        if (own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
+        if (own && own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
             s |= HotTracked;
         if (m_action->isSeparator() || !m_action->isEnabled())
             s |= Unavailable;
