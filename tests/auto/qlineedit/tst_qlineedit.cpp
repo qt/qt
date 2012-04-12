@@ -282,6 +282,7 @@ private slots:
     void taskQTBUG_7395_readOnlyShortcut();
     void QTBUG697_paletteCurrentColorGroup();
     void QTBUG13520_textNotVisible();
+    void QTBUG7174_inputMaskCursorBlink();
 
 #ifdef QT3_SUPPORT
     void validateAndSet_data();
@@ -3823,6 +3824,30 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
 
 }
 
+class UpdateRegionLineEdit : public QLineEdit
+{
+public:
+    QRegion updateRegion;
+protected:
+    void paintEvent(QPaintEvent *event)
+    {
+        updateRegion = event->region();
+    }
+};
+
+void tst_QLineEdit::QTBUG7174_inputMaskCursorBlink()
+{
+    UpdateRegionLineEdit edit;
+    edit.setInputMask(QLatin1String("AAAA"));
+    edit.setFocus();
+    edit.setText(QLatin1String("AAAA"));
+    edit.show();
+    QRect cursorRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QTest::qWaitForWindowShown(&edit);
+    edit.updateRegion = QRegion();
+    QTest::qWait(QApplication::cursorFlashTime());
+    QVERIFY(edit.updateRegion.contains(cursorRect));
+}
 
 void tst_QLineEdit::bidiVisualMovement_data()
 {
