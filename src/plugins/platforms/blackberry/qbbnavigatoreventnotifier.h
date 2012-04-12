@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2011 - 2012 Research In Motion
 **
 ** Contact: Research In Motion <blackberry-qt@qnx.com>
 ** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
@@ -37,65 +37,39 @@
 **
 ****************************************************************************/
 
-//#define QBBNAVIGATOREVENTHANDLER_DEBUG
+#ifndef QBBNAVIGATOREVENTNOTIFIER_H
+#define QBBNAVIGATOREVENTNOTIFIER_H
 
-#include "qbbnavigatoreventhandler.h"
-
-#include <QApplication>
-#include <QDebug>
-#include <QWidget>
-#include <QWindowSystemInterface>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-QBBNavigatorEventHandler::QBBNavigatorEventHandler(QObject *parent)
-    : QObject(parent)
+class QBBNavigatorEventHandler;
+class QSocketNotifier;
+
+class QBBNavigatorEventNotifier : public QObject
 {
-}
+    Q_OBJECT
+public:
+    explicit QBBNavigatorEventNotifier(QBBNavigatorEventHandler *eventHandler, QObject *parent = 0);
+    ~QBBNavigatorEventNotifier();
 
-bool QBBNavigatorEventHandler::handleOrientationCheck(int angle)
-{
-#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "angle=" << angle;
-#else
-    Q_UNUSED(angle);
-#endif
+public Q_SLOTS:
+    void start();
 
-    // reply to navigator that (any) orientation is acceptable
-    // TODO: check if top window flags prohibit orientation change
-    return true;
-}
+private Q_SLOTS:
+    void readData();
 
-void QBBNavigatorEventHandler::handleOrientationChange(int angle)
-{
-    // update screen geometry and reply to navigator that we're ready
-#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "angle=" << angle;
-#endif
+private:
+    QBBNavigatorEventHandler *mEventHandler;
+    int mFd;
+    QSocketNotifier *mReadNotifier;
 
-    emit rotationChanged(angle);
-}
-
-void QBBNavigatorEventHandler::handleSwipeDown()
-{
-    // simulate menu key press
-#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-
-    QWidget *w = QApplication::activeWindow();
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyPress, Qt::Key_Menu, Qt::NoModifier);
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyRelease, Qt::Key_Menu, Qt::NoModifier);
-}
-
-void QBBNavigatorEventHandler::handleExit()
-{
-    // shutdown everything
-#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-
-    QApplication::quit();
-}
+    void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
+    void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
+    void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
+};
 
 QT_END_NAMESPACE
+
+#endif // QBBNAVIGATOREVENTNOTIFIER_H

@@ -12,6 +12,7 @@ SOURCES =   main.cpp \
             qbbinputcontext.cpp \
             qbbintegration.cpp \
             qbbnavigatoreventhandler.cpp \
+            qbbnavigatoreventnotifier.cpp \
             qbbscreen.cpp \
             qbbwindow.cpp \
             qbbrasterwindowsurface.cpp \
@@ -28,6 +29,7 @@ HEADERS =   qbbbuffer.h \
             qbbinputcontext.h \
             qbbintegration.h \
             qbbnavigatoreventhandler.h \
+            qbbnavigatoreventnotifier.h \
             qbbglcontext.h \
             qbbglwindowsurface.h \
             qbbscreen.h \

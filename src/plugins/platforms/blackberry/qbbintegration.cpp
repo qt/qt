@@ -45,6 +45,7 @@
 #include "qbbglcontext.h"
 #include "qbbglwindowsurface.h"
 #include "qbbnavigatoreventhandler.h"
+#include "qbbnavigatoreventnotifier.h"
 #include "qbbrasterwindowsurface.h"
 #include "qbbscreen.h"
 #include "qbbscreeneventhandler.h"
@@ -74,6 +75,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_METATYPE(screen_window_t);
 
 QBBIntegration::QBBIntegration() :
+    mNavigatorEventHandler(new QBBNavigatorEventHandler()),
     mFontDb(new QGenericUnixFontDatabase()),
     mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
@@ -99,13 +101,12 @@ QBBIntegration::QBBIntegration() :
         qFatal("QBB: failed to connect to composition manager, errno=%d", errno);
     }
 
-    // Create/start navigator event handler
-    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
-    mNavigatorEventHandler = new QBBNavigatorEventHandler;
+    // Create/start navigator event notifier
+    mNavigatorEventNotifier = new QBBNavigatorEventNotifier(mNavigatorEventHandler);
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
-    QMetaObject::invokeMethod(mNavigatorEventHandler, "start", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(mNavigatorEventNotifier, "start", Qt::QueuedConnection);
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
@@ -159,7 +160,8 @@ QBBIntegration::~QBBIntegration()
     // stop/destroy event thread
     delete mEventThread;
 
-    // stop/destroy navigator thread
+    // stop/destroy navigator event handling classes
+    delete mNavigatorEventNotifier;
     delete mNavigatorEventHandler;
 
     delete mScreenEventHandler;

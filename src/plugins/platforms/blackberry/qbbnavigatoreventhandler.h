@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 **
 ** Contact: Research In Motion <blackberry-qt@qnx.com>
 ** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
@@ -44,31 +44,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-
 class QBBNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit QBBNavigatorEventHandler(QObject *parent = 0);
-    ~QBBNavigatorEventHandler();
+
+    bool handleOrientationCheck(int angle);
+    void handleOrientationChange(int angle);
+    void handleSwipeDown();
+    void handleExit();
 
 Q_SIGNALS:
     void rotationChanged(int angle);
-
-public Q_SLOTS:
-    void start();
-
-private Q_SLOTS:
-    void readData();
-
-private:
-    int mFd;
-    QSocketNotifier *mReadNotifier;
-
-    void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
-    void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
-    void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
 };
 
 QT_END_NAMESPACE

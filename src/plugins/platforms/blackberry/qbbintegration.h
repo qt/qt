@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 class QBBEventThread;
 class QBBNavigatorEventHandler;
+class QBBNavigatorEventNotifier;
 class QBBLocaleThread;
 class QBBAbstractVirtualKeyboard;
 class QBBScreen;
@@ -89,6 +90,7 @@ private:
     screen_context_t mContext;
     QBBEventThread *mEventThread;
     QBBNavigatorEventHandler *mNavigatorEventHandler;
+    QBBNavigatorEventNotifier *mNavigatorEventNotifier;
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen*> mScreens;
