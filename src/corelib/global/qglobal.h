@@ -1629,7 +1629,8 @@ public:
         SV_SF_3 = 50,
         SV_SF_4 = 60,  // Deprecated
         SV_API_5_3 = 70,
-        SV_API_5_4 = 80
+        SV_API_5_4 = 80,
+        SV_API_5_5 = 90
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1641,7 +1642,8 @@ public:
         SV_S60_5_1 = SV_SF_2,  // Deprecated
         SV_S60_5_2 = SV_SF_3,
         SV_S60_5_3 = SV_API_5_3,
-        SV_S60_5_4 = SV_API_5_4
+        SV_S60_5_4 = SV_API_5_4,
+        SV_S60_5_5 = SV_API_5_5
     };
     static S60Version s60Version();
 #endif
