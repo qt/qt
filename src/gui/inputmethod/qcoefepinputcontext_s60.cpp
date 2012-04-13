@@ -1501,9 +1501,10 @@ void QCoeFepInputContext::CancelFepInlineEdit()
         m_inlinePosition = 0;
         sendEvent(event);
 
-        // Sync with native side editor state. Native side can then do various operations
-        // based on editor state, such as removing 'exact word bubble'.
-        if (!m_pendingInputCapabilitiesChanged)
+        // Prior to S60 5.4 need to sync with native side editor state so that native side can then do
+        // various operations based on editor state, such as removing 'exact word bubble'.
+        // Starting with S60 5.4 this sync request is not needed and can actually lead to a crash.
+        if (QSysInfo::s60Version() < QSysInfo::SV_S60_5_4 && !m_pendingInputCapabilitiesChanged)
             ReportAknEdStateEvent(MAknEdStateObserver::EAknSyncEdwinState);
     } QT_CATCH(const std::exception&) {
         m_preeditString.clear();
