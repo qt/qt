@@ -488,10 +488,14 @@ bool QAccessibleTable2::doAction(int, int, const QVariantList &)
 
 QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
 {
-    if (!view())
+    if (!isValid())
         return QModelIndex();
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
+    if (treeView->d_func()->viewItems.count() <= row) {
+        qWarning() << "QAccessibleTree::indexFromLogical: invalid index: " << row << column << " for " << treeView;
+        return QModelIndex();
+    }
     QModelIndex modelIndex = treeView->d_func()->viewItems.at(row).index;
 
     if (modelIndex.isValid() && column > 0) {
@@ -585,11 +589,13 @@ int QAccessibleTree::navigate(RelationFlag relation, int index, QAccessibleInter
             *iface = cell(modelIndex);
             return 0;
         }
+        *iface = 0;
         return -1;
     }
     default:
         break;
     }
+    // handle everything except child
     return QAccessibleTable2::navigate(relation, index, iface);
 }
 
