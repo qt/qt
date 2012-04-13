@@ -2,6 +2,7 @@ TEMPLATE = app
 CONFIG += console qt_no_compat_warning
 win32-msvc*:CONFIG += no_batch # otherwise the wrong main.cpp may be picked up
 CONFIG -= app_bundle
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
