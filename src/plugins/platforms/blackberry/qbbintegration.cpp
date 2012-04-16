@@ -56,8 +56,12 @@
 #include "qbbglcontext.h"
 #include "qbblocalethread.h"
 #include "qbbnativeinterface.h"
+#if defined(Q_OS_BLACKBERRY)
+#include "qbbbpseventfilter.h"
+#endif
 
-#include "qapplication.h"
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtGui/QApplication>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -80,7 +84,8 @@ QBBIntegration::QBBIntegration() :
     mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
     mVirtualKeyboard(0),
-    mNativeInterface(new QBBNativeInterface(this))
+    mNativeInterface(new QBBNativeInterface(this)),
+    mBpsEventFilter(0)
 {
     qRegisterMetaType<screen_window_t>();
 
@@ -123,6 +128,8 @@ QBBIntegration::QBBIntegration() :
 
 #if defined(Q_OS_BLACKBERRY)
     bps_initialize();
+    mBpsEventFilter = new QBBBpsEventFilter;
+    mBpsEventFilter->installOnEventDispatcher(QAbstractEventDispatcher::instance());
 #endif
 
     // create/start the keyboard class.
@@ -176,6 +183,7 @@ QBBIntegration::~QBBIntegration()
     QBBGLContext::shutdown();
 
 #if defined(Q_OS_BLACKBERRY)
+    delete mBpsEventFilter;
     bps_shutdown();
 #endif
 

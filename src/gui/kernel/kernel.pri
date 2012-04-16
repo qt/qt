@@ -261,6 +261,13 @@ qpa {
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
             LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
+
+        blackberry {
+            SOURCES += \
+                kernel/qeventdispatcher_blackberry_qpa.cpp
+            HEADERS += \
+                kernel/qeventdispatcher_blackberry_qpa_p.h
+        }
 }
 
 !embedded:!qpa:!x11:mac {

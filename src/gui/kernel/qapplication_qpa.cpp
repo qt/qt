@@ -42,10 +42,14 @@
 #include "qapplication_p.h"
 #include "qcolormap.h"
 #include "qpixmapcache.h"
+#if defined(Q_OS_BLACKBERRY)
+#include "qeventdispatcher_blackberry_qpa_p.h"
+#else
 #if !defined(QT_NO_GLIB)
 #include "qeventdispatcher_glib_qpa_p.h"
 #endif
 #include "qeventdispatcher_qpa_p.h"
+#endif
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif
@@ -147,12 +151,16 @@ QString QApplicationPrivate::appName() const
 void QApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QApplication);
+#if defined(Q_OS_BLACKBERRY)
+    eventDispatcher = new QEventDispatcherBlackberryQPA(q);
+#else
 #if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QPAEventDispatcherGlib(q);
     else
 #endif
     eventDispatcher = new QEventDispatcherQPA(q);
+#endif
 }
 
 static bool qt_try_modal(QWidget *widget, QEvent::Type type)

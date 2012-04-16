@@ -43,6 +43,12 @@ HEADERS =   qbbbuffer.h \
             qbbabstractvirtualkeyboard.h \
             qbbnativeinterface.h
 
+blackberry {
+    SOURCES += qbbbpseventfilter.cpp
+
+    HEADERS += qbbbpseventfilter.h
+}
+
 QMAKE_CXXFLAGS += -I./private
 
 LIBS += -lpps -lscreen -lEGL -lclipboard

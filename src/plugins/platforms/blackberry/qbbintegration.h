@@ -54,6 +54,7 @@ class QBBAbstractVirtualKeyboard;
 class QBBScreen;
 class QBBScreenEventHandler;
 class QBBNativeInterface;
+class QBBBpsEventFilter;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -98,6 +99,7 @@ private:
     bool mPaintUsingOpenGL;
     QBBAbstractVirtualKeyboard *mVirtualKeyboard;
     QBBNativeInterface *mNativeInterface;
+    QBBBpsEventFilter *mBpsEventFilter;
 };
 
 QT_END_NAMESPACE
