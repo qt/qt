@@ -503,3 +503,8 @@
     \externalpage ftp://ftp.qt.nokia.com/pub/qt/solutions/lgpl/qtmotifextension-2.7_1-opensource.tar.gz
     \title Motif Extension
 */
+
+/*!
+    \externalpage https://developer.apple.com/library/mac/#releasenotes/General/SubmittingToMacAppStore/_index.html#//apple_ref/doc/uid/TP40010572
+    \title Submitting to the Mac App Store
+*/

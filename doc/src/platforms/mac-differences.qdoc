@@ -280,6 +280,54 @@
     metal windows can also be created by using the
     Qt::WA_MacMetalStyle window attribute.
 
+    \section1 Preparing a Qt application for Mac App Store submission
+
+    \section2 Changing the location of global Qt settings
+
+    By default, global Qt settings are stored in the file com.trolltech.plist,
+    which does not conform with Mac App Store file system usage requirements.
+    Instructions for changing the location can be found in the
+    \l{QSettings#Changing the location of global Qt settings on Mac OS X}{QSettings documentation}.
+
+    \section2 Storage location paths
+
+    If you are using QDesktopServices::storageLocation() to find locations
+    for data or cache files, you should ensure that the application and
+    organization names used by Qt match the values in iTunes Connect. If
+    the values do not match, the paths that storageLocation() returns will
+    not conform with the Mac App Store file system usage requirements.
+    You can set the application and organization names that Qt uses by
+    calling QCoreApplication::setOrganizationName() and QCoreApplication::setApplicationName().
+
+    \section2 Info.plist and application icon
+
+    A custom Info.plist file instead of the qmake-generated one is needed,
+    since the Mac App Store requires some specific keys to be set that
+    are not present in the generated file. See \l{qmake Variable Reference#QMAKE_INFO_PLIST}{QMAKE_INFO_PLIST} for details.
+
+    Information about the required Info.plist contents can be found in
+    Apple's \l{Submitting to the Mac App Store} document.
+
+    You'll also need to provide an icon for your application, as
+    described in \l{Setting the Application Icon#Setting the Application Icon on Mac OS X}{Setting the Application Icon on Mac OS X}.
+
+    \section2 Debug symbols
+
+    To generate the debug symbol information needed for the Mac App Store
+    submission in a release build, add these settings to your .pro file:
+
+    \code
+    QMAKE_CFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+    QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+    QMAKE_OBJECTIVE_CFLAGS_RELEASE = $$QMAKE_OBJECTIVE_CFLAGS_RELEASE_WITH_DEBUGINFO
+    QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+    \endcode
+
+    The debug symbols can be extracted with the dsymutil command as follows:
+
+    \code
+    dsymutil MyApp.app/Contents/MacOS/MyApp -o MyApp.app.dSYM
+    \endcode
 */
 
 /*!
