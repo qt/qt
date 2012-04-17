@@ -173,7 +173,7 @@ namespace JSC {
 
 #if OS(SYMBIAN)
         // Allocates collector blocks with correct alignment
-        WTF::AlignedBlockAllocator m_blockallocator; 
+        WTF::AlignedBlockAllocator& m_blockallocator;
 #endif
         
         JSGlobalData* m_globalData;
