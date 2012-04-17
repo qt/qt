@@ -31,7 +31,7 @@
 #if OS(SYMBIAN)
 
 #include "BlockAllocatorSymbian.h"
-
+#include <e32atomics.h>
 
 namespace WTF {
 
@@ -43,40 +43,56 @@ AlignedBlockAllocator::AlignedBlockAllocator(TUint32 reservationSize, TUint32 bl
     : m_reservation(reservationSize), 
       m_blockSize(blockSize)
 {
+    TInt err = m_lock.CreateLocal();
+    __ASSERT_ALWAYS(m_map.bits, User::Panic(_L("AlignedBlkAlloc0"), err));
 
-     // Get system's page size value.
-     SYMBIAN_PAGESIZE(m_pageSize); 
-     
-     // We only accept multiples of system page size for both initial reservation and the alignment/block size
-     m_reservation = SYMBIAN_ROUNDUPTOMULTIPLE(m_reservation, m_pageSize);
-     __ASSERT_ALWAYS(SYMBIAN_ROUNDUPTOMULTIPLE(m_blockSize, m_pageSize), User::Panic(_L("AlignedBlockAllocator1"), KErrArgument));
-     
-     // Calculate max. bit flags we need to carve a reservationSize range into blockSize-sized blocks
-     m_map.numBits = m_reservation / m_blockSize;   
-     const TUint32 bitsPerWord = 8*sizeof(TUint32); 
-     const TUint32 numWords = (m_map.numBits + bitsPerWord -1) / bitsPerWord; 
-   
-     m_map.bits = new TUint32[numWords];
-     __ASSERT_ALWAYS(m_map.bits, User::Panic(_L("AlignedBlockAllocator2"), KErrNoMemory));
-     m_map.clearAll();
-     
-     // Open a Symbian RChunk, and reserve requested virtual address range   
-     // Any thread in this process can operate this rchunk due to EOwnerProcess access rights. 
-     TInt ret = m_chunk.CreateDisconnectedLocal(0 , 0, (TInt)m_reservation , EOwnerProcess);  
-     if (ret != KErrNone) 
-         User::Panic(_L("AlignedBlockAllocator3"), ret);
-       
-     // This is the offset to m_chunk.Base() required to make it m_blockSize-aligned
-     m_offset = SYMBIAN_ROUNDUPTOMULTIPLE(TUint32(m_chunk.Base()), m_blockSize) - TUint(m_chunk.Base()); 
+    // Get system's page size value.
+    SYMBIAN_PAGESIZE(m_pageSize);
 
+    // We only accept multiples of system page size for both initial reservation and the alignment/block size
+    m_reservation = SYMBIAN_ROUNDUPTOMULTIPLE(m_reservation, m_pageSize);
+    __ASSERT_ALWAYS(SYMBIAN_ROUNDUPTOMULTIPLE(m_blockSize, m_pageSize), User::Panic(_L("AlignedBlkAlloc1"), KErrArgument));
+
+    // Calculate max. bit flags we need to carve a reservationSize range into blockSize-sized blocks
+    m_map.numBits = m_reservation / m_blockSize;
+    const TUint32 bitsPerWord = 8*sizeof(TUint32);
+    const TUint32 numWords = (m_map.numBits + bitsPerWord -1) / bitsPerWord;
+
+    m_map.bits = new TUint32[numWords];
+    __ASSERT_ALWAYS(m_map.bits, User::Panic(_L("AlignedBlkAlloc2"), KErrNoMemory));
+    m_map.clearAll();
+
+    // Open a Symbian RChunk, and reserve requested virtual address range
+    // Any thread in this process can operate this rchunk due to EOwnerProcess access rights.
+    TInt ret = m_chunk.CreateDisconnectedLocal(0 , 0, (TInt)m_reservation , EOwnerProcess);
+    if (ret != KErrNone)
+        User::Panic(_L("AlignedBlkAlloc3"), ret);
+
+    // This is the offset to m_chunk.Base() required to make it m_blockSize-aligned
+    m_offset = SYMBIAN_ROUNDUPTOMULTIPLE(TUint32(m_chunk.Base()), m_blockSize) - TUint(m_chunk.Base());
 }
+
+struct AlignedBlockAllocatorScopeLock
+{
+    RFastLock& lock;
+    AlignedBlockAllocatorScopeLock(RFastLock& aLock) : lock(aLock)
+    {
+        lock.Wait();
+    }
+    ~AlignedBlockAllocatorScopeLock()
+    {
+        lock.Signal();
+    }
+};
 
 void* AlignedBlockAllocator::alloc()
 {
-
     TInt  freeRam = 0; 
     void* address = 0;
-    
+
+    // lock until this function returns
+    AlignedBlockAllocatorScopeLock lock(m_lock);
+
     // Look up first free slot in bit map
     const TInt freeIdx = m_map.findFree();
         
@@ -100,11 +116,14 @@ void* AlignedBlockAllocator::alloc()
 
 void AlignedBlockAllocator::free(void* block)
 {
+    // lock until this function returns
+    AlignedBlockAllocatorScopeLock lock(m_lock);
+
     // Calculate index of block to be freed
     TInt idx = TUint(static_cast<TUint8*>(block) - m_chunk.Base() - m_offset) / m_blockSize;
     
-    __ASSERT_DEBUG(idx >= 0 && idx < m_map.numBits, User::Panic(_L("AlignedBlockAllocator4"), KErrCorrupt)); // valid index check
-    __ASSERT_DEBUG(m_map.get(idx), User::Panic(_L("AlignedBlockAllocator5"), KErrCorrupt)); // in-use flag check    
+    __ASSERT_DEBUG(idx >= 0 && idx < m_map.numBits, User::Panic(_L("AlignedBlkAlloc4"), KErrCorrupt)); // valid index check
+    __ASSERT_DEBUG(m_map.get(idx), User::Panic(_L("AlignedBlkAlloc5"), KErrCorrupt)); // in-use flag check
     
     // Return committed region to system RAM pool (the physical RAM becomes usable by others)
     TInt ret = m_chunk.Decommit(m_offset + m_blockSize * idx, m_blockSize);
@@ -125,6 +144,33 @@ AlignedBlockAllocator::~AlignedBlockAllocator()
     destroy();
     m_chunk.Close();
     delete [] m_map.bits;
+}
+
+struct AlignedBlockAllocatorPtr
+{
+    AlignedBlockAllocator* ptr;
+    ~AlignedBlockAllocatorPtr()
+    {
+        delete ptr;
+        ptr = 0;
+    }
+};
+
+AlignedBlockAllocator& AlignedBlockAllocator::instance(TUint32 reservationSize, TUint32 blockSize)
+{
+    // static cleanup for plugin unload case where leaking this much address space would not be good.
+    static AlignedBlockAllocatorPtr pAllocator;
+    // static data is zero initialized, so using zero to indicate not-yet-created.
+    if (!pAllocator.ptr)
+    {
+        AlignedBlockAllocator* newAllocator = new AlignedBlockAllocator(reservationSize, blockSize);
+        AlignedBlockAllocator* expected = 0;
+        // atomic if (pAllocator == 0) pAllocator = newAllocator; else delete newAllocator;
+        if (!__e32_atomic_cas_ord_ptr(&pAllocator.ptr, &expected, newAllocator))
+            delete newAllocator;
+        __ASSERT_ALWAYS(pAllocator.ptr, User::Panic(_L("AlignedBlkAlloc6"), KErrNoMemory));
+    }
+    return *pAllocator.ptr;
 }
 
 } // end of namespace

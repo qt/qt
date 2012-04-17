@@ -135,10 +135,10 @@ Heap::Heap(JSGlobalData* globalData)
     , m_registeredThreads(0)
     , m_currentThreadRegistrar(0)
 #endif
-    , m_globalData(globalData)
 #if OS(SYMBIAN)
-    , m_blockallocator(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE)
+    , m_blockallocator(WTF::AlignedBlockAllocator::instance(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE))
 #endif
+    , m_globalData(globalData)
 {
     ASSERT(globalData);
     memset(&m_heap, 0, sizeof(CollectorHeap));
@@ -182,9 +182,6 @@ void Heap::destroy()
         delete t;
         t = next;
     }
-#endif
-#if OS(SYMBIAN)
-    m_blockallocator.destroy();
 #endif
     m_globalData = 0;
 }

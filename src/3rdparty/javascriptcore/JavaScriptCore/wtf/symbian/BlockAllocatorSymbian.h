@@ -60,18 +60,22 @@ namespace WTF {
  */
 class AlignedBlockAllocator {
     public:
+        static AlignedBlockAllocator& instance(TUint32 reservationSize, TUint32 blockSize);
+        void* alloc();
+        void free(void* data);
+
+    private:
         AlignedBlockAllocator(TUint32 reservationSize, TUint32 blockSize);
         ~AlignedBlockAllocator();
         void destroy();
-        void* alloc();
-        void free(void* data);
-    
-    private: 
+
+    private:
         RChunk   m_chunk; // Symbian chunk that lets us reserve/commit/decommit
         TUint    m_offset; // offset of first committed region from base 
         TInt     m_pageSize; // cached value of system page size, typically 4K on Symbian
         TUint32  m_reservation;
-        TUint32  m_blockSize;  
+        TUint32  m_blockSize;
+        RFastLock m_lock;
 
         // Tracks comitted/decommitted state of a blockSize region
         struct {
@@ -111,6 +115,7 @@ class AlignedBlockAllocator {
             
         } m_map;  
 
+        friend class AlignedBlockAllocatorPtr;
 };
  
 }
