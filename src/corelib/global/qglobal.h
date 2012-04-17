@@ -1771,6 +1771,10 @@ Q_CORE_EXPORT_INLINE QDebug qCritical();
 inline QNoDebug qDebug();
 #endif
 
+#ifdef QT_NO_WARNING_OUTPUT
+inline QNoDebug qWarning();
+#endif
+
 #define QT_NO_QDEBUG_MACRO while (false) qDebug
 #ifdef QT_NO_DEBUG_OUTPUT
 #  define qDebug QT_NO_QDEBUG_MACRO
