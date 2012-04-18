@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_POSIX_IPC
 #include <QtCore/QAtomicInt>
+#include <QByteArray>
 
 static QBasicAtomicInt localUniqueId = Q_BASIC_ATOMIC_INITIALIZER(1);
 
