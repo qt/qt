@@ -190,7 +190,7 @@ void RemoteControl::handleCommandString(const QString &cmdString)
          else if (cmd == QLatin1String("unregister"))
             handleUnregisterCommand(arg);
          else
-            return;
+            break;
 
         ++it;
     }
