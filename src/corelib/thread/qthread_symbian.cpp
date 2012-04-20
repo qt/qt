@@ -53,6 +53,7 @@
 #include <hal_data.h>
 #include <e32math.h>
 
+#include <QRegExp>
 // This can be manually enabled if debugging thread problems
 #ifdef QT_USE_RTTI_IN_THREAD_CLASSNAME
 #include <typeinfo>
@@ -533,8 +534,16 @@ void QThread::start(Priority priority)
         className = QLatin1String(rttiName);
 #endif
     QString threadNameBase = QString(QLatin1String("%1_%2_v=0x%3_")).arg(objectName()).arg(className).arg(*(uint*)this,8,16,QLatin1Char('0'));
+    // Thread name can contain only characters allowed by User::ValidateName() otherwise RThread::Create fails.
+    // Not allowed characters are:
+    // - any character outside range 0x20 - 0x7e
+    // - or asterisk, question mark or colon
+    const QRegExp notAllowedChars(QLatin1String("[^\\x20-\\x7e]|\\*|\\?|\\:"));
+    threadNameBase.replace(notAllowedChars, QLatin1String("_"));
+
     TPtrC threadNameBasePtr(qt_QString2TPtrC(threadNameBase));
-    TName name;
+    // max thread name length is KMaxKernelName
+    TBuf<KMaxKernelName> name;
     threadNameBasePtr.Set(threadNameBasePtr.Left(qMin(threadNameBasePtr.Length(), name.MaxLength() - 8)));
     const int MaxRetries = 10;
     for (int i=0; i<MaxRetries && code == KErrAlreadyExists; i++) {
