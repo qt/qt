@@ -4755,11 +4755,10 @@ QString QUrl::host() const
     if (!d) return QString();
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
 
-    if (d->host.isEmpty() || d->host.at(0) != QLatin1Char('['))
-        return d->canonicalHost();
-    QString tmp = d->host.mid(1);
-    tmp.truncate(tmp.length() - 1);
-    return tmp;
+    QString result = d->canonicalHost();
+    if (result.startsWith(QLatin1Char('[')))
+        return result.mid(1, result.length() - 2);
+    return result;
 }
 
 /*!
