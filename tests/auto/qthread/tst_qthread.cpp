@@ -119,6 +119,9 @@ private slots:
     void startAndQuitCustomEventLoop();
 
     void stressTest();
+#ifdef Q_OS_SYMBIAN
+    void threadNameTest();
+#endif
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1271,6 +1274,149 @@ void tst_QThread::startAndQuitCustomEventLoop()
    }
 }
 
+#ifdef Q_OS_SYMBIAN
+#include <QRegExp>
+
+namespace testNamespace {
+class TestThread : public QThread
+{
+    Q_OBJECT
+public:
+    TestThread();
+    void run();
+public:
+    bool runCalled;
+    QString threadName;
+};
+
+TestThread::TestThread() : runCalled(false)
+{
+}
+
+void TestThread::run()
+{
+    runCalled = true;
+    RThread t;
+    TName name = t.Name();
+    threadName = QString((QChar*)name.Ptr(), name.Length());
+}
+}
+
+void tst_QThread::threadNameTest()
+{
+// On Symbian thread name consist of objectName, className and variable part.
+// RThread::Create sets limitations on what are allowed characters in thread name.
+// Allowed characters include chars in 0x20 - 0x7e range but not '*','?',':'
+// If thread thread name contains not allowed characters RThread::Create fails.
+// In addition, max thread name length is 80 chars on Symbian.
+
+    // Reqular expression used in QThread::start for removing not allowed characters
+    const QRegExp notAllowedChars(QLatin1String("[^\\x20-\\x7e]|\\*|\\?|\\:"));
+
+    // objectName contains all allowed characters
+    {
+        testNamespace::TestThread thread;
+        QString name;
+        for (int i = 0x20; i < 0x7f; i++) {
+            if (i != '*' && i != '?' && i != ':') {
+                name.append(QLatin1Char(i));
+            }
+        }
+
+        thread.setObjectName(name);
+        thread.start();
+        thread.wait();
+        QCOMPARE(thread.runCalled, true);
+
+        QString expectedResult = name;
+        QString result = name.replace(notAllowedChars, QLatin1String("_"));
+        QCOMPARE(result, expectedResult);
+        // objectName part can be max 72 chars in thread name
+        QCOMPARE(thread.threadName.left(72), expectedResult.left(72));
+    }
+
+    // objectName contains all characters from range including characters deemed
+    // not valid by RThread::Create (*?:)
+    {
+        testNamespace::TestThread thread;
+        QString name;
+        for (int i = 0x20; i < 0x7f; i++) {
+            name.append(QLatin1Char(i));
+        }
+
+        thread.setObjectName(name);
+        thread.start();
+        thread.wait();
+        QCOMPARE(thread.runCalled, true);
+
+        QString expectedResult = name;
+        expectedResult = expectedResult.replace(QLatin1Char('*'), QLatin1Char('_'));
+        expectedResult = expectedResult.replace(QLatin1Char('?'), QLatin1Char('_'));
+        expectedResult = expectedResult.replace(QLatin1Char(':'), QLatin1Char('_'));
+        QString result = name.replace(notAllowedChars, QLatin1String("_"));
+        QCOMPARE(result, expectedResult);
+
+        // objectName part can be max 72 chars in thread name
+        QCOMPARE(thread.threadName.left(72), expectedResult.left(72));
+    }
+
+    // objectName contains only invalid characters
+    {
+        testNamespace::TestThread thread;
+        QString name;
+        for (int i = 0; i < 0x20; i++) {
+            name.append(QLatin1Char(i));
+        }
+        for (int i = 0x7f; i < 0xff; i++) {
+            name.append(QLatin1Char(i));
+        }
+
+        thread.setObjectName(name);
+        thread.start();
+        thread.wait();
+        QCOMPARE(thread.runCalled, true);
+
+        QString expectedResult;
+        expectedResult.fill(QLatin1Char('_'), name.size());
+        QString result = name.replace(notAllowedChars, QLatin1String("_"));
+        QCOMPARE(result, expectedResult);
+
+        // objectName part can be max 72 chars in thread name
+        QCOMPARE(thread.threadName.left(72), expectedResult.left(72));
+    }
+
+    // objectName longer than max thread name length (80 chars)
+    {
+        testNamespace::TestThread thread;
+        QString name;
+        for (int i = 0; i < 0xff; i++) {
+            name.append(QLatin1Char(i));
+        }
+
+        thread.setObjectName(name);
+        thread.start();
+        thread.wait();
+        QCOMPARE(thread.runCalled, true);
+    }
+
+    // className contains not allowed characters (':')
+    {
+        testNamespace::TestThread thread;
+        thread.start();
+        thread.wait();
+        QCOMPARE(thread.runCalled, true);
+        QString className(QLatin1String(thread.metaObject()->className()));
+        QCOMPARE(className, QLatin1String("testNamespace::TestThread"));
+
+        QString expectedResult = className;
+        expectedResult = className.replace(QLatin1Char(':'), QLatin1Char('_'));
+        QString result = className.replace(notAllowedChars, QLatin1String("_"));
+        QCOMPARE(result, expectedResult);
+
+        QVERIFY(thread.threadName.contains(expectedResult));
+    }
+}
+#endif // Q_OS_SYMBIAN
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"
