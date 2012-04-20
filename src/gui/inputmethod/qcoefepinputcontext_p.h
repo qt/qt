@@ -132,6 +132,7 @@ private:
     void commitTemporaryPreeditString();
     bool isWidgetVisible(QWidget *widget, int offset = 0);
     bool isPartialKeyboardSupported();
+    bool vietCharConversion(const QEvent *event);
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
