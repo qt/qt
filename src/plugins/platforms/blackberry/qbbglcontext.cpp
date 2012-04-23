@@ -123,7 +123,6 @@ QBBGLContext::QBBGLContext(QBBWindow* platformWindow)
     format.setRedBufferSize(redSize);
     format.setGreenBufferSize(greenSize);
     format.setBlueBufferSize(blueSize);
-    format.setSamples(2);
 
     // select EGL config based on requested window format
     sEglConfig = q_configFromQPlatformWindowFormat(sEglDisplay, format);
