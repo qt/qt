@@ -4891,4 +4891,5 @@ EXPORTS
 	?activeObjectError@QEventDispatcherSymbian@@QAEXH@Z @ 4890 NONAME ; void QEventDispatcherSymbian::activeObjectError(int)
 	?timerFired@QEventDispatcherSymbian@@QAEXHPAVQTimerActiveObject@@@Z @ 4891 NONAME ; void QEventDispatcherSymbian::timerFired(int, class QTimerActiveObject *)
 	?wakeUpWasCalled@QEventDispatcherSymbian@@QAEXPAVQWakeUpActiveObject@@@Z @ 4892 NONAME ; void QEventDispatcherSymbian::wakeUpWasCalled(class QWakeUpActiveObject *)
-
+	?qmljsDebugArguments@QCoreApplicationPrivate@@SA?AVQString@@XZ @ 4893 NONAME ; class QString QCoreApplicationPrivate::qmljsDebugArguments(void)
+	?processCommandLineArguments@QCoreApplicationPrivate@@QAEXXZ @ 4894 NONAME ; void QCoreApplicationPrivate::processCommandLineArguments(void)

@@ -4171,4 +4171,6 @@ EXPORTS
 	_ZNK21QSymbianSocketManager17activeConnectionsEv @ 4170 NONAME
 	_ZN23QEventDispatcherSymbian10timerFiredEiP18QTimerActiveObject @ 4171 NONAME
 	_ZN23QEventDispatcherSymbian15wakeUpWasCalledEP19QWakeUpActiveObject @ 4172 NONAME
+	_ZN23QCoreApplicationPrivate19qmljsDebugArgumentsEv @ 4173 NONAME
+	_ZN23QCoreApplicationPrivate27processCommandLineArgumentsEv @ 4174 NONAME
 

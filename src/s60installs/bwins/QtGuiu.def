@@ -12894,8 +12894,8 @@ EXPORTS
 	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@PAVQGraphicsItem@@@Z @ 12893 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(class QGraphicsItem *) const
 	?maxTextureHeight@QTextureGlyphCache@@UBEHXZ @ 12894 NONAME ; int QTextureGlyphCache::maxTextureHeight(void) const
 	?maxTextureWidth@QTextureGlyphCache@@UBEHXZ @ 12895 NONAME ; int QTextureGlyphCache::maxTextureWidth(void) const
-	?qmljs_debug_arguments@QApplicationPrivate@@2VQString@@A @ 12896 NONAME ; class QString QApplicationPrivate::qmljs_debug_arguments
-	?qmljsDebugArgumentsString@QApplicationPrivate@@SA?AVQString@@XZ @ 12897 NONAME ; class QString QApplicationPrivate::qmljsDebugArgumentsString(void)
+	?qmljs_debug_arguments@QApplicationPrivate@@2VQString@@A @ 12896 NONAME ABSENT ; class QString QApplicationPrivate::qmljs_debug_arguments
+	?qmljsDebugArgumentsString@QApplicationPrivate@@SA?AVQString@@XZ @ 12897 NONAME ABSENT ; class QString QApplicationPrivate::qmljsDebugArgumentsString(void)
 	?convertToPostscriptFontFamilyName@QFontEngine@@SA?AVQByteArray@@ABV2@@Z @ 12898 NONAME ; class QByteArray QFontEngine::convertToPostscriptFontFamilyName(class QByteArray const &)
 	?lastResortFont@QFont@@QBE?AVQString@@XZ @ 12899 NONAME ; class QString QFont::lastResortFont(void) const
 	?setFontEngine@QStaticTextItem@@QAEXPAVQFontEngine@@@Z @ 12900 NONAME ; void QStaticTextItem::setFontEngine(class QFontEngine *)
