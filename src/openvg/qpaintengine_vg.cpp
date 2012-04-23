@@ -3441,7 +3441,7 @@ void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
     if (canVgWritePixels(image)) {
         // Optimization for straight blits, no blending
         bool inverted = (d->imageTransform.m22() < 0);
-        const uchar *bits = inverted ? image.constBits() + image.byteCount() : image.constBits();
+        const uchar *bits = inverted ? image.constBits() + image.byteCount() - image.bytesPerLine() : image.constBits();
         int bpl = inverted ? -image.bytesPerLine() : image.bytesPerLine();
 
         QPointF mapped = d->imageTransform.map(pos);
