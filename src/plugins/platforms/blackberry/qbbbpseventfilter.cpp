@@ -40,18 +40,22 @@
 //#define QBBBPSEVENTFILTER_DEBUG
 
 #include "qbbbpseventfilter.h"
+#include "qbbscreen.h"
+#include "qbbscreeneventhandler.h"
 
 #include <QAbstractEventDispatcher>
 #include <QDebug>
 
 #include <bps/event.h>
+#include <bps/screen.h>
 
 QT_BEGIN_NAMESPACE
 
 static QBBBpsEventFilter *sInstance;
 
-QBBBpsEventFilter::QBBBpsEventFilter(QObject *parent)
+QBBBpsEventFilter::QBBBpsEventFilter(QBBScreenEventHandler *screenEventHandler, QObject *parent)
     : QObject(parent)
+    , mScreenEventHandler(screenEventHandler)
 {
     Q_ASSERT(sInstance == 0);
 
@@ -81,6 +85,18 @@ void QBBBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *dispa
     Q_UNUSED(previousEventFilter);
 }
 
+void QBBBpsEventFilter::registerForScreenEvents(QBBScreen *screen)
+{
+    if (screen_request_events(screen->nativeContext()) != BPS_SUCCESS)
+        qWarning("QBB: failed to register for screen events on screen %p", screen->nativeContext());
+}
+
+void QBBBpsEventFilter::unregisterForScreenEvents(QBBScreen *screen)
+{
+    if (screen_stop_events(screen->nativeContext()) != BPS_SUCCESS)
+        qWarning("QBB: failed to unregister for screen events on screen %p", screen->nativeContext());
+}
+
 bool QBBBpsEventFilter::dispatcherEventFilter(void *message)
 {
 #if defined(QBBBPSEVENTFILTER_DEBUG)
@@ -95,11 +111,16 @@ bool QBBBpsEventFilter::dispatcherEventFilter(void *message)
 
 bool QBBBpsEventFilter::bpsEventFilter(bps_event_t *event)
 {
+    const int eventDomain = bps_event_get_domain(event);
+
 #if defined(QBBBPSEVENTFILTER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << bps_event_get_domain(event);
-#else
-    Q_UNUSED(event);
+    qDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << eventDomain;
 #endif
+
+    if (eventDomain == screen_get_domain()) {
+        screen_event_t screenEvent = screen_event_get_event(event);
+        return mScreenEventHandler->handleEvent(screenEvent);
+    }
 
     return false;
 }

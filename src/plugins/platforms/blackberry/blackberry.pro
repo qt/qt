@@ -6,7 +6,7 @@ QT += opengl
 
 SOURCES =   main.cpp \
             qbbbuffer.cpp \
-            qbbeventthread.cpp \
+            qbbscreeneventthread.cpp \
             qbbglcontext.cpp \
             qbbglwindowsurface.cpp \
             qbbinputcontext.cpp \
@@ -25,7 +25,7 @@ SOURCES =   main.cpp \
             qbbnativeinterface.cpp
 
 HEADERS =   qbbbuffer.h \
-            qbbeventthread.h \
+            qbbscreeneventthread.h \
             qbbinputcontext.h \
             qbbintegration.h \
             qbbnavigatoreventhandler.h \

@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QBBEventThread;
+class QBBScreenEventThread;
 class QBBNavigatorEventHandler;
 class QBBNavigatorEventNotifier;
 class QBBLocaleThread;
@@ -89,7 +89,7 @@ private:
     void destroyDisplays();
 
     screen_context_t mContext;
-    QBBEventThread *mEventThread;
+    QBBScreenEventThread *mScreenEventThread;
     QBBNavigatorEventHandler *mNavigatorEventHandler;
     QBBNavigatorEventNotifier *mNavigatorEventNotifier;
     QBBLocaleThread *mLocaleThread;

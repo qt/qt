@@ -41,7 +41,7 @@
 
 #include "qbbintegration.h"
 #include "qbbinputcontext.h"
-#include "qbbeventthread.h"
+#include "qbbscreeneventthread.h"
 #include "qbbglcontext.h"
 #include "qbbglwindowsurface.h"
 #include "qbbnavigatoreventhandler.h"
@@ -117,8 +117,11 @@ QBBIntegration::QBBIntegration() :
     createDisplays();
 
     // create/start event thread
-    mEventThread = new QBBEventThread(mContext, mScreenEventHandler);
-    mEventThread->start();
+    // Not on BlackBerry, it has specialised event dispatcher which also handles screen events
+#if !defined(Q_OS_BLACKBERRY)
+    mScreenEventThread = new QBBScreenEventThread(mContext, mScreenEventHandler);
+    mScreenEventThread->start();
+#endif
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // Start the locale change monitoring thread.
@@ -128,7 +131,12 @@ QBBIntegration::QBBIntegration() :
 
 #if defined(Q_OS_BLACKBERRY)
     bps_initialize();
-    mBpsEventFilter = new QBBBpsEventFilter;
+    mBpsEventFilter = new QBBBpsEventFilter(mScreenEventHandler);
+    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+        mBpsEventFilter->registerForScreenEvents(screen);
+    }
+
     mBpsEventFilter->installOnEventDispatcher(QAbstractEventDispatcher::instance());
 #endif
 
@@ -165,11 +173,20 @@ QBBIntegration::~QBBIntegration()
 #endif
 
     // stop/destroy event thread
-    delete mEventThread;
+    delete mScreenEventThread;
 
     // stop/destroy navigator event handling classes
     delete mNavigatorEventNotifier;
     delete mNavigatorEventHandler;
+
+#if defined(Q_OS_BLACKBERRY)
+    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+        mBpsEventFilter->unregisterForScreenEvents(screen);
+    }
+
+    delete mBpsEventFilter;
+#endif
 
     delete mScreenEventHandler;
 
@@ -291,7 +308,7 @@ QBBScreen *QBBIntegration::primaryDisplay() const
 
 void QBBIntegration::setCursorPos(int x, int y)
 {
-    mEventThread->injectPointerMoveEvent(x, y);
+    mScreenEventThread->injectPointerMoveEvent(x, y);
 }
 
 void QBBIntegration::createDisplays()

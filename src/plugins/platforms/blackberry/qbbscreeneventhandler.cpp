@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+//#define QBBSCREENEVENTHANDLER_DEBUG
+
 #include "qbbscreeneventhandler.h"
 
 #include "qbbinputcontext.h"
@@ -111,7 +113,7 @@ bool QBBScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
 
     default:
         // event ignored
-#if defined(QBBEVENTTHREAD_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
         qDebug() << "QBB: QNX unknown event";
 #endif
         return false;
@@ -323,14 +325,14 @@ void QBBScreenEventHandler::handlePointerEvent(screen_event_t event)
 
         if (wOld) {
             QWindowSystemInterface::handleLeaveEvent(wOld);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
             qDebug() << "QBB: Qt leave, w=" << wOld;
 #endif
         }
 
         if (w) {
             QWindowSystemInterface::handleEnterEvent(w);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
             qDebug() << "QBB: Qt enter, w=" << w;
 #endif
         }
@@ -368,7 +370,7 @@ void QBBScreenEventHandler::handlePointerEvent(screen_event_t event)
             mLastLocalMousePoint != localPoint ||
             mLastButtonState != buttons) {
             QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
             qDebug() << "QBB: Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << (int)buttons;
 #endif
         }
@@ -377,7 +379,7 @@ void QBBScreenEventHandler::handlePointerEvent(screen_event_t event)
             // Screen only supports a single wheel, so we will assume Vertical orientation for
             // now since that is pretty much standard.
             QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, wheelDelta, Qt::Vertical);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
             qDebug() << "QBB: Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << (int)wheelDelta;
 #endif
         }
@@ -434,14 +436,14 @@ void QBBScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             if (wOld) {
                 QWindowSystemInterface::handleLeaveEvent(wOld);
-    #if defined(QBBScreenEventHandler_DEBUG)
+    #if defined(QBBSCREENEVENTHANDLER_DEBUG)
                 qDebug() << "QBB: Qt leave, w=" << wOld;
     #endif
             }
 
             if (w) {
                 QWindowSystemInterface::handleEnterEvent(w);
-    #if defined(QBBScreenEventHandler_DEBUG)
+    #if defined(QBBSCREENEVENTHANDLER_DEBUG)
                 qDebug() << "QBB: Qt enter, w=" << w;
     #endif
             }
@@ -461,7 +463,7 @@ void QBBScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
                 // inject event into Qt
                 QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
                 qDebug() << "QBB: Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << buttons;
 #endif
             }
@@ -506,7 +508,7 @@ void QBBScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             // inject event into Qt
             QWindowSystemInterface::handleTouchEvent(w, type, QTouchEvent::TouchScreen, pointList);
-#if defined(QBBScreenEventHandler_DEBUG)
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
             qDebug() << "QBB: Qt touch, w=" << w << ", p=(" << pos[0] << "," << pos[1] << "), t=" << type;
 #endif
         }

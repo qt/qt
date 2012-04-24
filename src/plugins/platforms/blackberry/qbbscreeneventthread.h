@@ -48,11 +48,11 @@ QT_BEGIN_NAMESPACE
 
 class QBBScreenEventHandler;
 
-class QBBEventThread : public QThread
+class QBBScreenEventThread : public QThread
 {
 public:
-    QBBEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler);
-    virtual ~QBBEventThread();
+    QBBScreenEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler);
+    virtual ~QBBScreenEventThread();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
     void injectPointerMoveEvent(int x, int y);

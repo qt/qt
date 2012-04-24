@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-// #define QBBEVENTTHREAD_DEBUG
+// #define QBBSCREENEVENTTHREAD_DEBUG
 
-#include "qbbeventthread.h"
+#include "qbbscreeneventthread.h"
 #include "qbbscreeneventhandler.h"
 
 #include <QDebug>
@@ -48,30 +48,30 @@
 
 QT_BEGIN_NAMESPACE
 
-QBBEventThread::QBBEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler)
+QBBScreenEventThread::QBBScreenEventThread(screen_context_t context, QBBScreenEventHandler *eventHandler)
     : mContext(context),
       mQuit(false),
       mEventHandler(eventHandler)
 {
 }
 
-QBBEventThread::~QBBEventThread()
+QBBScreenEventThread::~QBBScreenEventThread()
 {
     // block until thread terminates
     shutdown();
 }
 
-void QBBEventThread::injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap)
+void QBBScreenEventThread::injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap)
 {
     QBBScreenEventHandler::injectKeyboardEvent(flags, sym, mod, scan, cap);
 }
 
-void QBBEventThread::injectPointerMoveEvent(int x, int y)
+void QBBScreenEventThread::injectPointerMoveEvent(int x, int y)
 {
     mEventHandler->injectPointerMoveEvent(x, y);
 }
 
-void QBBEventThread::run()
+void QBBScreenEventThread::run()
 {
     screen_event_t event;
 
@@ -79,10 +79,10 @@ void QBBEventThread::run()
     errno = 0;
     int result = screen_create_event(&event);
     if (result)
-        qFatal("QBB: failed to create event, errno=%d", errno);
+        qFatal("QBB: failed to create screen event, errno=%d", errno);
 
-#if defined(QBBEVENTTHREAD_DEBUG)
-    qDebug() << "QBB: event loop started";
+#if defined(QBBSCREENEVENTTHREAD_DEBUG)
+    qDebug() << "QBB: screen event thread started";
 #endif
 
     // loop indefinitely
@@ -92,19 +92,19 @@ void QBBEventThread::run()
         errno = 0;
         result = screen_get_event(mContext, event, -1);
         if (result)
-            qFatal("QBB: failed to get event, errno=%d", errno);
+            qFatal("QBB: failed to get screen event, errno=%d", errno);
 
         // process received event
         errno = 0;
         int qnxType;
         int result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType);
         if (result)
-            qFatal("QBB: failed to query event type, errno=%d", errno);
+            qFatal("QBB: failed to query screen event type, errno=%d", errno);
 
         if (qnxType == SCREEN_EVENT_USER) {
-            // treat all user events as shutdown requests
-            #if defined(QBBEVENTTHREAD_DEBUG)
-            qDebug() << "QBB: QNX user event";
+            // treat all screen user events as shutdown requests
+            #if defined(QBBSCREENEVENTTHREAD_DEBUG)
+            qDebug() << "QBB: QNX screen user event";
             #endif
             mQuit = true;
         } else {
@@ -112,15 +112,15 @@ void QBBEventThread::run()
         }
     }
 
-#if defined(QBBEVENTTHREAD_DEBUG)
-    qDebug() << "QBB: event loop stopped";
+#if defined(QBBSCREENEVENTTHREAD_DEBUG)
+    qDebug() << "QBB: screen event thread stopped";
 #endif
 
     // cleanup
     screen_destroy_event(event);
 }
 
-void QBBEventThread::shutdown()
+void QBBScreenEventThread::shutdown()
 {
     screen_event_t event;
 
@@ -128,14 +128,14 @@ void QBBEventThread::shutdown()
     errno = 0;
     int result = screen_create_event(&event);
     if (result)
-        qFatal("QBB: failed to create event, errno=%d", errno);
+        qFatal("QBB: failed to create screen event, errno=%d", errno);
 
     // set the event type as user
     errno = 0;
     int type = SCREEN_EVENT_USER;
     result = screen_set_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type);
     if (result)
-        qFatal("QBB: failed to set event type, errno=%d", errno);
+        qFatal("QBB: failed to set screen event type, errno=%d", errno);
 
     // NOTE: ignore SCREEN_PROPERTY_USER_DATA; treat all user events as shutdown events
 
@@ -143,20 +143,20 @@ void QBBEventThread::shutdown()
     errno = 0;
     result = screen_send_event(mContext, event, getpid());
     if (result)
-        qFatal("QBB: failed to set event type, errno=%d", errno);
+        qFatal("QBB: failed to set screen event type, errno=%d", errno);
 
     // cleanup
     screen_destroy_event(event);
 
-#if defined(QBBEVENTTHREAD_DEBUG)
-    qDebug() << "QBB: event loop shutdown begin";
+#if defined(QBBSCREENEVENTTHREAD_DEBUG)
+    qDebug() << "QBB: screen event thread shutdown begin";
 #endif
 
     // block until thread terminates
     wait();
 
-#if defined(QBBEVENTTHREAD_DEBUG)
-    qDebug() << "QBB: event loop shutdown end";
+#if defined(QBBSCREENEVENTTHREAD_DEBUG)
+    qDebug() << "QBB: screen event thread shutdown end";
 #endif
 }
 
