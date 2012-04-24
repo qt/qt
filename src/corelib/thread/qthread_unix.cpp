@@ -94,6 +94,10 @@
 # endif
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+#include <sys/prctl.h>
+#endif
+
 #if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
 // from linux/sched.h
 # define SCHED_IDLE    5
@@ -276,6 +280,21 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
 
 #ifndef QT_NO_THREAD
 
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
+static void setCurrentThreadName(pthread_t threadId, const char *name)
+{
+#  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+    Q_UNUSED(threadId);
+    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
+#  elif defined(Q_OS_MAC)
+    Q_UNUSED(threadId);
+    pthread_setname_np(name);
+#  elif defined(Q_OS_QNX)
+    pthread_setname_np(threadId, name);
+#  endif
+}
+#endif
+
 void *QThreadPrivate::start(void *arg)
 {
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -300,6 +319,17 @@ void *QThreadPrivate::start(void *arg)
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
+
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
+    // sets the name of the current thread.
+    QString objectName = thr->objectName();
+
+    if (Q_LIKELY(objectName.isEmpty()))
+        setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
+    else
+        setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
+
+#endif
 
     emit thr->started();
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
