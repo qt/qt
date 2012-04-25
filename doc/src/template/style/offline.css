@@ -285,11 +285,13 @@ font: 500 16px/1.2 Arial;
 font-weight:100;
 background-color:#F2F3F4;
 padding:4px;
+padding-left: 14px;
 margin-bottom:30px;
 margin-top:30px;
+margin-left: -10px;
+margin-right: -5px;
 border-top:#E0E0DE 1px solid;
 border-bottom: #E0E0DE 1px solid;
-max-width: 99%;
 }
 
 h3{
@@ -586,7 +588,6 @@ padding-left:5px;
 width:160px;
 padding-left:10px;
 padding-right:5px;
-padding-bottom:10px;
 padding-top:10px;
 }
 
