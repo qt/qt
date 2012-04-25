@@ -3942,6 +3942,7 @@ static inline int closestMatch(QRgb pixel, const QVector<QRgb> &clut) {
 static QImage convertWithPalette(const QImage &src, QImage::Format format,
                                  const QVector<QRgb> &clut) {
     QImage dest(src.size(), format);
+    QIMAGE_SANITYCHECK_MEMORY(dest);
     dest.setColorTable(clut);
 
 #if !defined(QT_NO_IMAGE_TEXT)
@@ -4294,6 +4295,7 @@ QImage QImage::convertBitOrder(Endian bitOrder) const
         return *this;
 
     QImage image(d->width, d->height, d->format == Format_Mono ? Format_MonoLSB : Format_Mono);
+    QIMAGE_SANITYCHECK_MEMORY(image);
 
     const uchar *data = d->data;
     const uchar *end = data + d->nbytes;
@@ -4921,6 +4923,7 @@ QImage QImage::rgbSwapped() const
     case Format_MonoLSB:
     case Format_Indexed8:
         res = copy();
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < res.d->colortable.size(); i++) {
             QRgb c = res.d->colortable.at(i);
             res.d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
@@ -6176,6 +6179,10 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
 
     } else {
         const QImage sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
+        if (sourceImage.isNull()) {
+            qWarning("QImage::setAlphaChannel: out of memory");
+            return;
+        }
         const uchar *src_data = sourceImage.d->data;
         const uchar *dest_data = d->data;
         for (int y=0; y<h; ++y) {
@@ -6228,6 +6235,7 @@ QImage QImage::alphaChannel() const
     int h = d->height;
 
     QImage image(w, h, Format_Indexed8);
+    QIMAGE_SANITYCHECK_MEMORY(image);
     image.setColorCount(256);
 
     // set up gray scale table.
@@ -6257,6 +6265,7 @@ QImage QImage::alphaChannel() const
         QImage alpha32 = *this;
         if (d->format != Format_ARGB32 && d->format != Format_ARGB32_Premultiplied)
             alpha32 = convertToFormat(Format_ARGB32);
+        QIMAGE_SANITYCHECK_MEMORY(alpha32);
 
         const uchar *src_data = alpha32.d->data;
         uchar *dest_data = image.d->data;
@@ -6400,6 +6409,7 @@ static QImage smoothScaled(const QImage &source, int w, int h) {
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    QIMAGE_SANITYCHECK_MEMORY(out);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -6459,6 +6469,7 @@ static QImage rotated180(const QImage &image) {
 
 static QImage rotated270(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
+    QIMAGE_SANITYCHECK_MEMORY(out);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
