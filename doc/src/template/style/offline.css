@@ -161,7 +161,7 @@ margin:0px;
 }
 
 
-.naviNextPrevious > a:first-child{
+.naviNextPrevious > a.prevPage {
 background-image:url(../images/btn_prev.png);
 background-repeat:no-repeat;
 background-position:left;
@@ -170,7 +170,7 @@ height:20px;
 padding-left:20px;
 }
 
-.naviNextPrevious > a:last-child{
+.naviNextPrevious > a.nextPage {
 background-image:url(../images/btn_next.png);
 background-repeat:no-repeat;
 background-position:right;

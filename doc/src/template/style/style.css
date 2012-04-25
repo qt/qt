@@ -1208,26 +1208,30 @@
         color: red;
     }
 
-    .naviNextPrevious > a:first-child
+    .naviNextPrevious > a.prevPage
     {
         background-image:url(../images/btn_prev_green.png);
         background-repeat:no-repeat;
         background-position:left;
         padding-left:20px;
         height:20px;
-        padding-left:20px;
     }
 
-    .naviNextPrevious > a:last-child
+    .naviNextPrevious > a.nextPage
     {
         background-image:url(../images/btn_next_green.png);
         background-repeat:no-repeat;
         background-position:right;
         padding-right:20px;
         height:20px;
-        margin-left:30px;
+        float:right;
     }
 
+    .naviNextPrevious + p
+    {
+        display:inline-block;
+        clear:both;
+    }
 
     .qmltype
     {
