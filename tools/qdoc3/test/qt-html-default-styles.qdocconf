@@ -13,7 +13,7 @@ HTML.scripts     =
 # directory prefixes.
 
 extraimages.HTML        = qt-logo.png \
-                          arrow.png \
+                          arrow_bc.png \
                           arrow_down.png \
                           bgrContent.png \
                           breadcrumb.png \
