@@ -68,8 +68,8 @@ class Q_AUTOTEST_EXPORT QAuthenticatorPrivate
 public:
     enum Method { None, Basic, Plain, Login, Ntlm, CramMd5, DigestMd5 };
     QAuthenticatorPrivate();
+    ~QAuthenticatorPrivate();
 
-    QAtomicInt ref;
     QString user;
     QString extractedUser;
     QString password;
@@ -107,7 +107,7 @@ public:
     void parseHttpResponse(const QHttpResponseHeader &, bool isProxy);
 #endif
     void parseHttpResponse(const QList<QPair<QByteArray, QByteArray> >&, bool isProxy);
-
+    void updateCredentials();
 };
 
 
