@@ -73,7 +73,7 @@ inline QString qt_NSStringToQString(const NSString *nsstr)
 { return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
 
 inline NSString *qt_QStringToNSString(const QString &qstr)
-{ return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
+{ return [const_cast<NSString *>(reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr))) autorelease]; }
 
 
 @interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject
