@@ -107,11 +107,14 @@ QBBIntegration::QBBIntegration() :
     }
 
     // Create/start navigator event notifier
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+#if !defined(Q_OS_BLACKBERRY)
     mNavigatorEventNotifier = new QBBNavigatorEventNotifier(mNavigatorEventHandler);
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(mNavigatorEventNotifier, "start", Qt::QueuedConnection);
+#endif
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
@@ -131,7 +134,7 @@ QBBIntegration::QBBIntegration() :
 
 #if defined(Q_OS_BLACKBERRY)
     bps_initialize();
-    mBpsEventFilter = new QBBBpsEventFilter(mScreenEventHandler);
+    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler, mScreenEventHandler);
     Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
         QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
         mBpsEventFilter->registerForScreenEvents(screen);
@@ -177,7 +180,6 @@ QBBIntegration::~QBBIntegration()
 
     // stop/destroy navigator event handling classes
     delete mNavigatorEventNotifier;
-    delete mNavigatorEventHandler;
 
 #if defined(Q_OS_BLACKBERRY)
     Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
@@ -188,6 +190,7 @@ QBBIntegration::~QBBIntegration()
     delete mBpsEventFilter;
 #endif
 
+    delete mNavigatorEventHandler;
     delete mScreenEventHandler;
 
     // destroy all displays
