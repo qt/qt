@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const char  *QBBVirtualKeyboard::sPPSPath = "/pps/services/input/control?wait";
+const char  *QBBVirtualKeyboard::sPPSPath = "/pps/services/input/control";
 const size_t QBBVirtualKeyboard::sBufferSize = 2048;
 
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
@@ -184,6 +184,11 @@ void QBBVirtualKeyboard::ppsDataReady()
         connect(); // reconnect
         return;
     }
+
+    // We sometimes get spurious read notifications when no data is available.
+    // Bail out early in this case
+    if (nread == 0)
+        return;
 
     // nread is the real space necessary, not the amount read.
     if (static_cast<size_t>(nread) > sBufferSize - 1) {
