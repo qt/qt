@@ -547,7 +547,7 @@ bool QDeclarativeTextEditPrivate::determineHorizontalAlignment()
     Q_Q(QDeclarativeTextEdit);
     if (hAlignImplicit && q->isComponentComplete()) {
         bool alignToRight;
-        if (text.isEmpty()) {
+        if (text.isEmpty() && !control->textCursor().isNull()) {
             const QString preeditText = control->textCursor().block().layout()->preeditAreaText();
             alignToRight = preeditText.isEmpty()
                     ? QApplication::keyboardInputDirection() == Qt::RightToLeft
