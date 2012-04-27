@@ -968,7 +968,8 @@ bool QODBCResult::reset (const QString& query)
         return true;
     }
 
-    SQLINTEGER isScrollable, bufferLength;
+    SQLULEN isScrollable = 0;
+    SQLINTEGER bufferLength;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
