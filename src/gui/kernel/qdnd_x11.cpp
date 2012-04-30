@@ -1465,8 +1465,10 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                 if (type) {
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need an && here so that in the case one is set and the other is not we still get the correct result.
-#if !defined(Q_OS_SOLARIS)
+#if defined(ShapeInput) && defined(ShapeBounding)
                     windowContainsMouse = windowInteractsWithPosition(pos, w, ShapeInput) && windowInteractsWithPosition(pos, w, ShapeBounding);
+#elif defined(ShapeBounding)
+                    windowContainsMouse = windowInteractsWithPosition(pos, w, ShapeBounding);
 #endif
                     if (windowContainsMouse)
                         return w;
