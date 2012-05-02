@@ -16,7 +16,7 @@ SOURCES =   main.cpp \
             qbbscreen.cpp \
             qbbwindow.cpp \
             qbbrasterwindowsurface.cpp \
-            qbbvirtualkeyboard.cpp \
+            qbbvirtualkeyboardpps.cpp \
             qbbclipboard.cpp \
             qbblocalethread.cpp \
             qbbrootwindow.cpp \
@@ -35,7 +35,7 @@ HEADERS =   qbbbuffer.h \
             qbbscreen.h \
             qbbwindow.h \
             qbbrasterwindowsurface.h \
-            qbbvirtualkeyboard.h \
+            qbbvirtualkeyboardpps.h \
             qbbclipboard.h \
             qbblocalethread.h \
             qbbrootwindow.h \
@@ -44,9 +44,11 @@ HEADERS =   qbbbuffer.h \
             qbbnativeinterface.h
 
 blackberry {
-    SOURCES += qbbbpseventfilter.cpp
+    SOURCES += qbbbpseventfilter.cpp \
+               qbbvirtualkeyboardbps.cpp
 
-    HEADERS += qbbbpseventfilter.h
+    HEADERS += qbbbpseventfilter.h \
+               qbbvirtualkeyboardbps.h
 }
 
 QMAKE_CXXFLAGS += -I./private

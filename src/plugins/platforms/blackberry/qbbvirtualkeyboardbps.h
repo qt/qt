@@ -37,47 +37,34 @@
 **
 ****************************************************************************/
 
-#ifndef QBBBPSEVENTFILTER_H
-#define QBBBPSEVENTFILTER_H
+#ifndef QBBVIRTUALKEYBOARDBPS_H
+#define QBBVIRTUALKEYBOARDBPS_H
 
-#include <QObject>
+#include "qbbabstractvirtualkeyboard.h"
 
 struct bps_event_t;
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-class QBBNavigatorEventHandler;
-class QBBScreen;
-class QBBScreenEventHandler;
-class QBBVirtualKeyboardBps;
-
-class QBBBpsEventFilter : public QObject
+class QBBVirtualKeyboardBps : public QBBAbstractVirtualKeyboard
 {
     Q_OBJECT
 public:
-    QBBBpsEventFilter(QBBNavigatorEventHandler *navigatorEventHandler,
-                      QBBScreenEventHandler *screenEventHandler,
-                      QBBVirtualKeyboardBps *virtualKeyboard, QObject *parent = 0);
-    ~QBBBpsEventFilter();
+    explicit QBBVirtualKeyboardBps(QObject *parent = 0);
 
-    void installOnEventDispatcher(QAbstractEventDispatcher *dispatcher);
+    bool handleEvent(bps_event_t *event);
 
-    void registerForScreenEvents(QBBScreen *screen);
-    void unregisterForScreenEvents(QBBScreen *screen);
+    bool showKeyboard();
+    bool hideKeyboard();
 
-private:
-    static bool dispatcherEventFilter(void *message);
-    bool bpsEventFilter(bps_event_t *event);
-
-    bool handleNavigatorEvent(bps_event_t *event);
+protected:
+    void applyKeyboardMode(KeyboardMode mode);
 
 private:
-    QBBNavigatorEventHandler *mNavigatorEventHandler;
-    QBBScreenEventHandler *mScreenEventHandler;
-    QBBVirtualKeyboardBps *mVirtualKeyboard;
+    bool handleLocaleEvent(bps_event_t *event);
+    bool handleVirtualKeyboardEvent(bps_event_t *event);
 };
 
 QT_END_NAMESPACE
 
-#endif // QBBBPSEVENTFILTER_H
+#endif // QBBVIRTUALKEYBOARDBPS_H

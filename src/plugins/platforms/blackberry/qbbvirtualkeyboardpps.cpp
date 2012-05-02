@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#define QBBVIRTUALKEYBOARD_DEBUG
+//#define QBBVIRTUALKEYBOARD_DEBUG
 
-#include "qbbvirtualkeyboard.h"
+#include "qbbvirtualkeyboardpps.h"
 
 #include <QDebug>
 #include <QSocketNotifier>
@@ -61,13 +61,13 @@
 
 QT_BEGIN_NAMESPACE
 
-const char  *QBBVirtualKeyboard::sPPSPath = "/pps/services/input/control";
-const size_t QBBVirtualKeyboard::sBufferSize = 2048;
+const char  *QBBVirtualKeyboardPps::sPPSPath = "/pps/services/input/control";
+const size_t QBBVirtualKeyboardPps::sBufferSize = 2048;
 
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
 #define KEYBOARD_SHADOW_HEIGHT 8
 
-QBBVirtualKeyboard::QBBVirtualKeyboard()
+QBBVirtualKeyboardPps::QBBVirtualKeyboardPps()
     : mEncoder(0),
       mDecoder(0),
       mBuffer(0),
@@ -76,12 +76,12 @@ QBBVirtualKeyboard::QBBVirtualKeyboard()
 {
 }
 
-QBBVirtualKeyboard::~QBBVirtualKeyboard()
+QBBVirtualKeyboardPps::~QBBVirtualKeyboardPps()
 {
     close();
 }
 
-void QBBVirtualKeyboard::start()
+void QBBVirtualKeyboardPps::start()
 {
 #ifdef QBBVIRTUALKEYBOARD_DEBUG
     qDebug() << "QBB: starting keyboard event processing";
@@ -91,12 +91,12 @@ void QBBVirtualKeyboard::start()
         return;
 }
 
-void QBBVirtualKeyboard::applyKeyboardMode(KeyboardMode mode)
+void QBBVirtualKeyboardPps::applyKeyboardMode(KeyboardMode mode)
 {
     applyKeyboardModeOptions(mode);
 }
 
-void QBBVirtualKeyboard::close()
+void QBBVirtualKeyboardPps::close()
 {
     delete mReadNotifier;
     mReadNotifier = 0;
@@ -123,7 +123,7 @@ void QBBVirtualKeyboard::close()
     mBuffer = 0;
 }
 
-bool QBBVirtualKeyboard::connect()
+bool QBBVirtualKeyboardPps::connect()
 {
     close();
 
@@ -157,7 +157,7 @@ bool QBBVirtualKeyboard::connect()
     return true;
 }
 
-bool QBBVirtualKeyboard::queryPPSInfo()
+bool QBBVirtualKeyboardPps::queryPPSInfo()
 {
     // Request info, requires id to regenerate res message.
     pps_encoder_add_string(mEncoder, "msg", "info");
@@ -173,7 +173,7 @@ bool QBBVirtualKeyboard::queryPPSInfo()
     return true;
 }
 
-void QBBVirtualKeyboard::ppsDataReady()
+void QBBVirtualKeyboardPps::ppsDataReady()
 {
     ssize_t nread = qt_safe_read(mFd, mBuffer, sBufferSize - 1);
 
@@ -230,7 +230,7 @@ void QBBVirtualKeyboard::ppsDataReady()
     }
 }
 
-void QBBVirtualKeyboard::handleKeyboardInfoMessage()
+void QBBVirtualKeyboardPps::handleKeyboardInfoMessage()
 {
     int newHeight = 0;
     const char* value;
@@ -268,7 +268,7 @@ void QBBVirtualKeyboard::handleKeyboardInfoMessage()
 #endif
 }
 
-bool QBBVirtualKeyboard::showKeyboard()
+bool QBBVirtualKeyboardPps::showKeyboard()
 {
 #ifdef QBBVIRTUALKEYBOARD_DEBUG
     qDebug() << "QBB: showKeyboard()";
@@ -299,7 +299,7 @@ bool QBBVirtualKeyboard::showKeyboard()
     return true;
 }
 
-bool QBBVirtualKeyboard::hideKeyboard()
+bool QBBVirtualKeyboardPps::hideKeyboard()
 {
 #ifdef QBBVIRTUALKEYBOARD_DEBUG
     qDebug() << "QBB: hideKeyboard()";
@@ -331,7 +331,7 @@ bool QBBVirtualKeyboard::hideKeyboard()
     return true;
 }
 
-void QBBVirtualKeyboard::applyKeyboardModeOptions(KeyboardMode mode)
+void QBBVirtualKeyboardPps::applyKeyboardModeOptions(KeyboardMode mode)
 {
     // Try to connect.
     if (mFd == -1 && !connect())
@@ -377,49 +377,49 @@ void QBBVirtualKeyboard::applyKeyboardModeOptions(KeyboardMode mode)
     pps_encoder_reset(mEncoder);
 }
 
-void QBBVirtualKeyboard::addDefaultModeOptions()
+void QBBVirtualKeyboardPps::addDefaultModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "default");
 }
 
-void QBBVirtualKeyboard::addUrlModeOptions()
+void QBBVirtualKeyboardPps::addUrlModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "url");
 }
 
-void QBBVirtualKeyboard::addEmailModeOptions()
+void QBBVirtualKeyboardPps::addEmailModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "email");
 }
 
-void QBBVirtualKeyboard::addWebModeOptions()
+void QBBVirtualKeyboardPps::addWebModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "web");
 }
 
-void QBBVirtualKeyboard::addNumPuncModeOptions()
+void QBBVirtualKeyboardPps::addNumPuncModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "numPunc");
 }
 
-void QBBVirtualKeyboard::addPhoneModeOptions()
+void QBBVirtualKeyboardPps::addPhoneModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "phone");
 }
 
-void QBBVirtualKeyboard::addPinModeOptions()
+void QBBVirtualKeyboardPps::addPinModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "pin");
 }
 
-void QBBVirtualKeyboard::addSymbolModeOptions()
+void QBBVirtualKeyboardPps::addSymbolModeOptions()
 {
     pps_encoder_add_string(mEncoder, "enter", "enter.default");
     pps_encoder_add_string(mEncoder, "type", "symbol");

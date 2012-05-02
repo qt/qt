@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef VIRTUALKEYBOARD_H_
-#define VIRTUALKEYBOARD_H_
+#ifndef QBBVIRTUALKEYBOARDPPS_H_
+#define QBBVIRTUALKEYBOARDPPS_H_
 
 #include "qbbabstractvirtualkeyboard.h"
 
@@ -49,12 +49,12 @@ QT_BEGIN_NAMESPACE
 class QSocketNotifier;
 
 /* Shamelessly copied from the browser - this should be rewritten once we have a proper PPS wrapper class */
-class QBBVirtualKeyboard : public QBBAbstractVirtualKeyboard
+class QBBVirtualKeyboardPps : public QBBAbstractVirtualKeyboard
 {
     Q_OBJECT
 public:
-    QBBVirtualKeyboard();
-    ~QBBVirtualKeyboard();
+    QBBVirtualKeyboardPps();
+    ~QBBVirtualKeyboardPps();
 
     bool showKeyboard();
     bool hideKeyboard();
@@ -96,4 +96,4 @@ private:
     void addPinModeOptions();
 };
 
-#endif /* VIRTUALKEYBOARD_H_ */
+#endif /* QBBVIRTUALKEYBOARDPPS_H_ */

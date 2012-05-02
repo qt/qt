@@ -43,6 +43,7 @@
 #include "qbbnavigatoreventhandler.h"
 #include "qbbscreen.h"
 #include "qbbscreeneventhandler.h"
+#include "qbbvirtualkeyboardbps.h"
 
 #include <QAbstractEventDispatcher>
 #include <QDebug>
@@ -56,10 +57,12 @@ QT_BEGIN_NAMESPACE
 static QBBBpsEventFilter *sInstance;
 
 QBBBpsEventFilter::QBBBpsEventFilter(QBBNavigatorEventHandler *navigatorEventHandler,
-                                     QBBScreenEventHandler *screenEventHandler, QObject *parent)
+                                     QBBScreenEventHandler *screenEventHandler,
+                                     QBBVirtualKeyboardBps *virtualKeyboard, QObject *parent)
     : QObject(parent)
     , mNavigatorEventHandler(navigatorEventHandler)
     , mScreenEventHandler(screenEventHandler)
+    , mVirtualKeyboard(virtualKeyboard)
 {
     Q_ASSERT(sInstance == 0);
 
@@ -130,6 +133,9 @@ bool QBBBpsEventFilter::bpsEventFilter(bps_event_t *event)
 
     if (eventDomain == navigator_get_domain())
         return handleNavigatorEvent(event);
+
+    if (mVirtualKeyboard->handleEvent(event))
+        return true;
 
     return false;
 }

@@ -50,7 +50,7 @@
 #include "qbbscreen.h"
 #include "qbbscreeneventhandler.h"
 #include "qbbwindow.h"
-#include "qbbvirtualkeyboard.h"
+#include "qbbvirtualkeyboardpps.h"
 #include "qgenericunixfontdatabase.h"
 #include "qbbclipboard.h"
 #include "qbbglcontext.h"
@@ -58,6 +58,7 @@
 #include "qbbnativeinterface.h"
 #if defined(Q_OS_BLACKBERRY)
 #include "qbbbpseventfilter.h"
+#include "qbbvirtualkeyboardbps.h"
 #endif
 
 #include <QtCore/QAbstractEventDispatcher>
@@ -134,21 +135,26 @@ QBBIntegration::QBBIntegration() :
 
 #if defined(Q_OS_BLACKBERRY)
     bps_initialize();
-    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler, mScreenEventHandler);
+
+    QBBVirtualKeyboardBps *virtualKeyboardBps = new QBBVirtualKeyboardBps;
+
+    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler, mScreenEventHandler, virtualKeyboardBps);
     Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
         QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
         mBpsEventFilter->registerForScreenEvents(screen);
     }
 
     mBpsEventFilter->installOnEventDispatcher(QAbstractEventDispatcher::instance());
-#endif
 
+    mVirtualKeyboard = virtualKeyboardBps;
+#else
     // create/start the keyboard class.
-    mVirtualKeyboard = new QBBVirtualKeyboard();
+    mVirtualKeyboard = new QBBVirtualKeyboardPps();
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(mVirtualKeyboard, "start", Qt::QueuedConnection);
+#endif
 
     // TODO check if we need to do this for all screens or only the primary one
     QObject::connect(mVirtualKeyboard, SIGNAL(heightChanged(int)),
@@ -166,9 +172,6 @@ QBBIntegration::~QBBIntegration()
 
 
     delete mNativeInterface;
-
-    // destroy the keyboard class.
-    delete mVirtualKeyboard;
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // stop/destroy the locale thread.
@@ -189,6 +192,9 @@ QBBIntegration::~QBBIntegration()
 
     delete mBpsEventFilter;
 #endif
+
+    // destroy the keyboard class.
+    delete mVirtualKeyboard;
 
     delete mNavigatorEventHandler;
     delete mScreenEventHandler;
