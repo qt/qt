@@ -2767,10 +2767,10 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
         fi
         ;;
     QNX:*)
-        [ -z "$PLATFORM" ] && PLATFORM=unsupported/qws/qnx-generic-g++
+        [ -z "$PLATFORM" ] && PLATFORM=qws/qnx-generic-g++
         if [ -z "$XPLATFORM" ]; then
             [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
-            XPLATFORM="unsupported/qws/qnx-$CFG_EMBEDDED-g++"
+            XPLATFORM="qws/qnx-$CFG_EMBEDDED-g++"
         fi
         ;;
     CYGWIN*:*)
