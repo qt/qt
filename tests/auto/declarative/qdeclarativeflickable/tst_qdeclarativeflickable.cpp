@@ -79,6 +79,7 @@ private slots:
     void testQtQuick11Attributes_data();
     void wheel();
     void flickVelocity();
+    void disabled();
 
 private:
     QDeclarativeEngine engine;
@@ -527,6 +528,40 @@ void tst_qdeclarativeflickable::flick(QGraphicsView *canvas, const QPoint &from,
 
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(to));
 }
+
+void tst_qdeclarativeflickable::disabled()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeFlickable *flick = canvas->rootObject()->findChild<QDeclarativeFlickable*>("flickable");
+    QVERIFY(flick != 0);
+
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50,90)));
+
+    QMouseEvent moveEvent(QEvent::MouseMove, canvas->mapFromScene(QPoint(50, 80)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    moveEvent = QMouseEvent(QEvent::MouseMove, canvas->mapFromScene(QPoint(50, 70)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    moveEvent = QMouseEvent(QEvent::MouseMove, canvas->mapFromScene(QPoint(50, 60)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas, &moveEvent);
+
+    QVERIFY(flick->isMoving() == false);
+
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 60)));
+
+    // verify that mouse clicks on other elements still work (QTBUG-20584)
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 10)));
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 10)));
+
+    QVERIFY(canvas->rootObject()->property("clicked").toBool() == true);
+}
+
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)
