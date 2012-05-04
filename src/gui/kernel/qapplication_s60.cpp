@@ -1053,7 +1053,7 @@ TKeyResponse QSymbianControl::sendSymbianKeyEvent(const TKeyEvent &keyEvent, QEv
     int keyCode;
     if (s60Keysym == EKeyNull){ //some key events have 0 in iCode, for them iScanCode should be used
         keyCode = qt_keymapper_private()->mapS60ScanCodesToQt(keyEvent.iScanCode);
-    } else if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
+    } else if ((s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) || s60Keysym >= (ENonCharacterKeyBase + ENonCharacterKeyCount)) {
         // Normal characters keys.
         keyCode = s60Keysym;
     } else {
