@@ -1546,7 +1546,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
 {
     QString &s = *str;
 
-    if (s.length() - from < 2)
+    if (from < 0 || s.length() - from < 2)
         return;
 
     // the loop can partly ignore high Unicode as all ligatures are in the BMP
@@ -1565,12 +1565,13 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         const QUnicodeTables::Properties *p = qGetProp(uc);
         if (p->unicodeVersion == QChar::Unicode_Unassigned || p->unicodeVersion > version) {
             starter = -1; // to prevent starter == pos - 1
-            lastCombining = 0;
+            lastCombining = 255; // to prevent combining > lastCombining
             ++pos;
             continue;
         }
         int combining = p->combiningClass;
         if (starter == pos - 1 || combining > lastCombining) {
+            Q_ASSERT(starter >= from);
             // allowed to form ligature with S
             QChar ligature = ligatureHelper(s.at(starter).unicode(), uc);
             if (ligature.unicode()) {
