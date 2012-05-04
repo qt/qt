@@ -103,7 +103,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
             Q_Q(QNetworkReplyImpl);
 
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
-                             q, SLOT(_q_networkSessionFailed()));
+                             q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
 
             if (!session->isOpen())
                 session->open();
