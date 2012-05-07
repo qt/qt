@@ -88,6 +88,8 @@ public Q_SLOTS:
     void setRotation(int rotation);
     void newWindowCreated(screen_window_t window);
     void windowClosed(screen_window_t window);
+    void activateWindowGroup(const QByteArray &id);
+    void deactivateWindowGroup(const QByteArray &id);
 
 private Q_SLOTS:
     void keyboardHeightChanged(int height);

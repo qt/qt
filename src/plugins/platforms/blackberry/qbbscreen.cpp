@@ -351,4 +351,34 @@ void QBBScreen::removeOverlayWindow(screen_window_t window)
         updateHierarchy();
 }
 
+void QBBScreen::activateWindowGroup(const QByteArray &id)
+{
+#if defined(QBBSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    if (!mChildren.isEmpty()) {
+        // We're picking up the last window of the list here
+        // because this list is ordered by stacking order.
+        // Last window is effectively the one on top.
+        QWidget * const window = mChildren.last()->widget();
+        QWindowSystemInterface::handleWindowActivated(window);
+    }
+}
+
+void QBBScreen::deactivateWindowGroup(const QByteArray &id)
+{
+#if defined(QBBSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    QWindowSystemInterface::handleWindowActivated(0);
+}
+
 QT_END_NAMESPACE
