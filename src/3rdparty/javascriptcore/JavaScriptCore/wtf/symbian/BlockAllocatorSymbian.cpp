@@ -44,7 +44,7 @@ AlignedBlockAllocator::AlignedBlockAllocator(TUint32 reservationSize, TUint32 bl
       m_blockSize(blockSize)
 {
     TInt err = m_lock.CreateLocal();
-    __ASSERT_ALWAYS(m_map.bits, User::Panic(_L("AlignedBlkAlloc0"), err));
+    __ASSERT_ALWAYS(err == KErrNone, User::Panic(_L("AlignedBlkAlloc0"), err));
 
     // Get system's page size value.
     SYMBIAN_PAGESIZE(m_pageSize);
