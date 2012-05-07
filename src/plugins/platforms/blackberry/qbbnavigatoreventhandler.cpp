@@ -98,4 +98,22 @@ void QBBNavigatorEventHandler::handleExit()
     QApplication::quit();
 }
 
+void QBBNavigatorEventHandler::handleWindowGroupActivated(const QByteArray &id)
+{
+#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupActivated(id);
+}
+
+void QBBNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id)
+{
+#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupDeactivated(id);
+}
+
 QT_END_NAMESPACE

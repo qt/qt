@@ -190,6 +190,26 @@ bool QBBBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
         mNavigatorEventHandler->handleExit();
         break;
 
+    case NAVIGATOR_WINDOW_ACTIVE: {
+        #if defined(QBBBPSEVENTFILTER_DEBUG)
+        qDebug() << "QBB: Navigator WINDOW ACTIVE event";
+        #endif
+
+        const QByteArray id(navigator_event_get_groupid(event));
+        mNavigatorEventHandler->handleWindowGroupActivated(id);
+        break;
+    }
+
+    case NAVIGATOR_WINDOW_INACTIVE: {
+        #if defined(QBBBPSEVENTFILTER_DEBUG)
+        qDebug() << "QBB: Navigator WINDOW INACTIVE event";
+        #endif
+
+        const QByteArray id(navigator_event_get_groupid(event));
+        mNavigatorEventHandler->handleWindowGroupDeactivated(id);
+        break;
+    }
+
     default:
         #if defined(QBBBPSEVENTFILTER_DEBUG)
         qDebug() << "QBB: Unhandled navigator event. code=" << bps_event_get_code(event);
