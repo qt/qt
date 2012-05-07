@@ -279,7 +279,7 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
         if (symbol) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
                 if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                     glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
             }
