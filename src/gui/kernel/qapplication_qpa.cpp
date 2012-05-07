@@ -885,9 +885,6 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 void QApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
-    if (!e->activated)
-        return;
-
     QApplication::setActiveWindow(e->activated.data());
 }
 
