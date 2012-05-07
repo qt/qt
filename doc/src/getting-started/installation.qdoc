@@ -1471,8 +1471,6 @@ We hope you will enjoy using Qt.
     \row   \o \c {-no-gif} \o Do not compile GIF reading support.
     \o This option denotes a default value and needs to be evaluated.
     If the evaluation succeeds, the feature is included.
-    \row   \o \c {-qt-gif} \o Compile GIF reading support. \o See also
-    src/gui/image/qgifhandler_p.h
     \row   \o \c {-no-libpng} \o Do not compile PNG support. \o
     \row   \o \c {-qt-libpng} \o Use the libpng bundled with Qt.
     \o This option denotes a default value and needs to be evaluated.
