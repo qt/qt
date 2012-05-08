@@ -58,7 +58,7 @@
 #include <private/qfunctions_p.h>
 #include <private/qguiplatformplugin_p.h>
 
-#if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
+#if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>
 #  include <private/qt_x11_p.h>
 #endif
