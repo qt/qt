@@ -128,7 +128,10 @@ public:
     bool readAnyAvailable() const;
     QByteArray readAny();
     QByteArray readAll();
+    QByteArray read(qint64 amount);
+    qint64 sizeNextBlock();
     void setDownstreamLimited(bool t);
+    void setReadBufferSize(qint64 size);
 
     bool supportsUserProvidedDownloadBuffer();
     void setUserProvidedDownloadBuffer(char*);
@@ -236,6 +239,7 @@ public:
     bool lastChunkRead;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
+    qint64 readBufferMaxSize;
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
     bool initInflate;

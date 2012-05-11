@@ -84,6 +84,8 @@ public:
 
     virtual void downstreamReadyWrite();
     virtual void setDownstreamLimited(bool b);
+    virtual void setReadBufferSize(qint64 size);
+    virtual void emitReadBufferFreed(qint64 size);
 
     virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
@@ -105,6 +107,8 @@ signals:
     // To HTTP thread:
     void startHttpRequest();
     void abortHttpRequest();
+    void readBufferSizeChanged(qint64 size);
+    void readBufferFreed(qint64 size);
 
     void startHttpRequestSynchronously();
 

@@ -164,6 +164,18 @@ void QNetworkAccessBackend::setDownstreamLimited(bool b)
     // do nothing
 }
 
+void QNetworkAccessBackend::setReadBufferSize(qint64 size)
+{
+    Q_UNUSED(size);
+    // do nothing
+}
+
+void QNetworkAccessBackend::emitReadBufferFreed(qint64 size)
+{
+    Q_UNUSED(size);
+    // do nothing
+}
+
 void QNetworkAccessBackend::copyFinished(QIODevice *)
 {
     // do nothing

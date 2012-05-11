@@ -946,8 +946,10 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 
     QNetworkReply::setReadBufferSize(size);
 
-    if (d->backend)
+    if (d->backend) {
         d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
+        d->backend->setReadBufferSize(size);
+    }
 }
 
 #ifndef QT_NO_OPENSSL
@@ -1009,11 +1011,16 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
     if (maxlen == 1) {
         // optimization for getChar()
         *data = d->readBuffer.getChar();
+        if (d->backend && readBufferSize())
+            d->backend->emitReadBufferFreed(1);
         return 1;
     }
 
     maxlen = qMin<qint64>(maxlen, d->readBuffer.byteAmount());
-    return d->readBuffer.read(data, maxlen);
+    qint64 bytesRead = d->readBuffer.read(data, maxlen);
+    if (d->backend && readBufferSize())
+        d->backend->emitReadBufferFreed(bytesRead);
+    return bytesRead;
 }
 
 /*!

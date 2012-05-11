@@ -116,6 +116,8 @@ public:
     // slot-like:
     virtual void downstreamReadyWrite();
     virtual void setDownstreamLimited(bool b);
+    virtual void setReadBufferSize(qint64 size);
+    virtual void emitReadBufferFreed(qint64 size);
     virtual void copyFinished(QIODevice *);
     virtual void ignoreSslErrors();
     virtual void ignoreSslErrors(const QList<QSslError> &errors);
