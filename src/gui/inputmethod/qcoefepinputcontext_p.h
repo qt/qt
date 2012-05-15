@@ -65,6 +65,8 @@
 #include <aknedsts.h>
 #include <eikccpu.h>
 
+class CAknExtendedInputCapabilities;
+
 QT_BEGIN_NAMESPACE
 
 class QCoeFepInputMaskHandler
@@ -220,6 +222,8 @@ private:
     QAction *m_pasteAction;
     QPointer<QWidget> m_lastFocusedEditor;
     QPointer<QObject> m_lastFocusedObject;
+
+    CAknExtendedInputCapabilities *m_extendedInputCapabilities;
 
     friend class tst_QInputContext;
 };

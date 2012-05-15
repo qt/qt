@@ -63,6 +63,7 @@
 #include <coeinput.h>
 #include <w32std.h>
 #include <akndiscreetpopup.h>
+#include <aknextendedinputcapabilities.h>
 
 #include <qtextedit.h>
 #include <qplaintextedit.h>
@@ -432,7 +433,8 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_splitViewResizeBy(0),
       m_splitViewPreviousWindowStates(Qt::WindowNoState),
       m_splitViewPreviousFocusItem(0),
-      m_ccpu(0)
+      m_ccpu(0),
+      m_extendedInputCapabilities(0)
 {
     m_fepState->SetObjectProvider(this);
     int defaultFlags = EAknEditorFlagDefault;
@@ -464,6 +466,8 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
             pasteLabel = qt_TDesC2QString(*pasteBuf);
             CleanupStack::PopAndDestroy(pasteBuf);
         }
+
+        m_extendedInputCapabilities = CAknExtendedInputCapabilities::NewL();
     )
 
     m_copyAction = new QAction(copyLabel, QApplication::desktop());
@@ -486,6 +490,7 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
     delete m_fepState;
     delete m_ccpu;
+    delete m_extendedInputCapabilities;
 }
 
 void QCoeFepInputContext::reset()
@@ -907,7 +912,22 @@ void QCoeFepInputContext::mouseHandler(int x, QMouseEvent *event)
             && (x > 0 && x < m_preeditString.length())) {
             m_pointerHandler->HandlePointerEventInInlineTextL(TPointerEvent::EButton1Up, 0, 0);
         } else {
-            commitCurrentString(true);
+            // Notify FEP about pointer event via CAknExtendedInputCapabilities::ReporEventL().
+            // FEP will then commit the string and cancel inline edit state properly.
+            // FEP does not really use the pointer event parameter, so it is ok to pass NULL.
+            if (m_extendedInputCapabilities) {
+                TRAP_IGNORE(
+                    m_extendedInputCapabilities->ReportEventL(
+                       CAknExtendedInputCapabilities::MAknEventObserver::EPointerEventReceived,
+                       NULL));
+            } else {
+                // In practice m_extendedInputCapabilities should always exist.
+                // If it does not, commit current string directly here.
+                // This will cancel inline edit in FEP but VKB might still think that
+                // inline edit is ongoing.
+                commitCurrentString(true);
+            }
+
             int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 
             QList<QInputMethodEvent::Attribute> attributes;
@@ -924,7 +944,9 @@ TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
         return TCoeInputCapabilities(TCoeInputCapabilities::ENone, 0, 0);
     }
 
-    return TCoeInputCapabilities(m_textCapabilities, this, 0);
+    TCoeInputCapabilities inputCapabilities(m_textCapabilities, this, 0);
+    inputCapabilities.SetObjectProvider(this);
+    return inputCapabilities;
 }
 
 void QCoeFepInputContext::resetSplitViewWidget(bool keepInputWidget)
@@ -2115,8 +2137,12 @@ void QCoeFepInputContext::paste()
     QT_TRAP_THROWING(CcpuPasteL());
 }
 
-TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(TTypeUid /*id*/)
+TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(TTypeUid id)
 {
+    if (m_extendedInputCapabilities
+        && id.iUid == CAknExtendedInputCapabilities::ETypeId)
+        return id.MakePtr(m_extendedInputCapabilities);
+
     return TTypeUid::Null();
 }
 
