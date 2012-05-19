@@ -107,6 +107,8 @@ private slots:
     void QTBUG_7049_data();
     void QTBUG_7049();
     void interval();
+    void validityCheck_data();
+    void validityCheck();
 };
 
 // Testing get/set functions
@@ -1452,6 +1454,32 @@ void tst_QRegExp::interval()
     }
 }
 
+void tst_QRegExp::validityCheck_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<bool>("validity");
+    QTest::newRow("validity01") << QString() << true;
+    QTest::newRow("validity02") << QString("abc.*abc") << true;
+    QTest::newRow("validity03") << QString("[a-z") << false;
+    QTest::newRow("validity04") << QString("a(b") << false;
+}
+
+void tst_QRegExp::validityCheck()
+{
+    QFETCH(QString, pattern);
+
+    QRegExp rx(pattern);
+    QTEST(rx.isValid(), "validity");
+    QCOMPARE(rx.matchedLength(), -1);
+    QCOMPARE(rx.pos(), -1);
+    QCOMPARE(rx.cap(), QString(""));
+
+    QRegExp rx2(rx);
+    QTEST(rx2.isValid(), "validity");
+    QCOMPARE(rx2.matchedLength(), -1);
+    QCOMPARE(rx2.pos(), -1);
+    QCOMPARE(rx2.cap(), QString(""));
+}
 
 QTEST_APPLESS_MAIN(tst_QRegExp)
 #include "tst_qregexp.moc"

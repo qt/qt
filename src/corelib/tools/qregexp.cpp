@@ -3799,6 +3799,7 @@ static void invalidateEngine(QRegExpPrivate *priv)
 QRegExp::QRegExp()
 {
     priv = new QRegExpPrivate;
+    prepareEngine(priv);
 }
 
 /*!
@@ -3814,6 +3815,7 @@ QRegExp::QRegExp()
 QRegExp::QRegExp(const QString &pattern, Qt::CaseSensitivity cs, PatternSyntax syntax)
 {
     priv = new QRegExpPrivate(QRegExpEngineKey(pattern, syntax, cs));
+    prepareEngine(priv);
 }
 
 /*!
