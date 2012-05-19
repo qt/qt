@@ -170,12 +170,10 @@ void tst_QRegExp::indexIn_data()
 			       << QStringList();
         QTest::newRow( stri + "anc09" ) << QString("a(?:(?!)|b)z") << QString("abz") << 0 << 3
 			       << QStringList();
-#if 0
-        QTest::newRow( stri + "anc10" ) << QString("a?(?=^b$)") << QString("ab") << 0 << 1
+        QTest::newRow( stri + "anc10" ) << QString("a?(?=^b$)") << QString("ab") << -1 << -1
 			       << QStringList();
         QTest::newRow( stri + "anc11" ) << QString("a?(?=^b$)") << QString("b") << 0 << 0
 			       << QStringList();
-#endif
 
         // back-references
         QTest::newRow( stri + "bref00" ) << QString("(a*)(\\1)") << QString("aaaaa") << 0 << 4
