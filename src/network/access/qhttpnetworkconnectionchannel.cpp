@@ -1080,7 +1080,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 // in memory and we will not recieve more data on the socket.
                 reply->setReadBufferSize(0);
                 _q_receiveReply();
-#ifndef QT_NO_SSL
+#ifndef QT_NO_OPENSSL
                 if (ssl) {
                     // QT_NO_OPENSSL. The QSslSocket can still have encrypted bytes in the plainsocket.
                     // So we need to check this if the socket is a QSslSocket. When the socket is flushed
