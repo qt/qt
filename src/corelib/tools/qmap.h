@@ -634,6 +634,10 @@ Q_INLINE_TEMPLATE QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
     return *this;
 }
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4189)
+#endif
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::freeData(QMapData *x)
 {
@@ -643,19 +647,16 @@ Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::freeData(QMapData *x)
         while (next != x) {
             cur = next;
             next = cur->forward[0];
-#if defined(_MSC_VER)
-#pragma warning(disable:4189)
-#endif
             Node *concreteNode = concrete(reinterpret_cast<QMapData::Node *>(cur));
             concreteNode->key.~Key();
             concreteNode->value.~T();
-#if defined(_MSC_VER)
-#pragma warning(default:4189)
-#endif
         }
     }
     x->continueFreeData(payload());
 }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE int QMap<Key, T>::remove(const Key &akey)
