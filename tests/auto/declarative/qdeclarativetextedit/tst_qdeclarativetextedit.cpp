@@ -1895,7 +1895,7 @@ void tst_qdeclarativetextedit::navigation()
 
     QVERIFY(canvas->rootObject() != 0);
 
-    QDeclarativeItem *input = qobject_cast<QDeclarativeItem *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
+    QDeclarativeTextEdit *input = qobject_cast<QDeclarativeTextEdit *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasActiveFocus() == true);
@@ -1909,6 +1909,16 @@ void tst_qdeclarativetextedit::navigation()
     QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasActiveFocus() == true);
+
+    // Test left and right navigation works if the TextEdit is empty (QTBUG-25447).
+    input->setText(QString());
+    QCOMPARE(input->cursorPosition(), 0);
+    simulateKey(canvas, Qt::Key_Right);
+    QCOMPARE(input->hasActiveFocus(), false);
+    simulateKey(canvas, Qt::Key_Left);
+    QCOMPARE(input->hasActiveFocus(), true);
+    simulateKey(canvas, Qt::Key_Left);
+    QCOMPARE(input->hasActiveFocus(), false);
 
     delete canvas;
 }
