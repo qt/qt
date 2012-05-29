@@ -136,6 +136,7 @@ private:
 private slots:
     void showBookmarksDockWidget();
     void hideBookmarksDockWidget();
+    void aboutToShowFileMenu();
 
 private:
     QWidget *m_bookmarkWidget;

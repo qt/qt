@@ -440,6 +440,7 @@ void MainWindow::setupActions()
 #endif
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
+    connect(menu, SIGNAL(aboutToShow()), this, SLOT(aboutToShowFileMenu()));
 
     OpenPagesManager * const openPages = OpenPagesManager::instance();
     m_newTabAction
@@ -1094,6 +1095,15 @@ void MainWindow::registerDocumentation(const QString &component,
                 << absFileName;
         helpEngine.setQtDocInfo(component, docInfo);
     }
+}
+
+void MainWindow::aboutToShowFileMenu()
+{
+    OpenPagesManager * const openPages = OpenPagesManager::instance();
+    if (openPages->pageCount() > 1)
+        m_closeTabAction->setEnabled(true);
+    else
+        m_closeTabAction->setEnabled(false);
 }
 
 QT_END_NAMESPACE
