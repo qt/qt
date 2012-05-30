@@ -257,8 +257,8 @@ namespace WTF {
 
     using std::swap;
 
-#if !COMPILER(MSVC) && !OS(QNX)
-    // The Dinkumware C++ library (used by MSVC and QNX) has a swap for pairs defined.
+#if !COMPILER(MSVC) && !OS(QNX) && !defined(_LIBCPP_VERSION)
+    // The Dinkumware C++ library (used by MSVC and QNX) and clang's libc++ have a swap for pairs defined.
 
     // swap pairs by component, in case of pair members that specialize swap
     template<typename T, typename U> inline void swap(pair<T, U>& a, pair<T, U>& b)

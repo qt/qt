@@ -52,6 +52,8 @@
 #include <mach/task.h>
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
+// clang's libc++ headers does not pull in pthread.h (but libstdc++ does)
+#include <pthread.h>
 
 #elif OS(WINDOWS)
 
