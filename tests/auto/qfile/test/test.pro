@@ -1,6 +1,11 @@
 load(qttest_p4)
 SOURCES  += ../tst_qfile.cpp
 
+# Activate this define to be able to run the test without test network infrastructure.
+# DEFINES += NO_NETWORK_TEST
+
+CONFIG -= app_bundle
+
 wince*|symbian {
     QT = core gui
     files.files += ..\\dosfile.txt ..\\noendofline.txt ..\\testfile.txt \
@@ -40,5 +45,3 @@ win32 {
 symbian {
     LIBS+=-lefsrv
 }
-
-mac*|win32:CONFIG+=insignificant_test # QTQAINFRA-428

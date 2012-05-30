@@ -76,7 +76,10 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include "../network-settings.h"
+
+#ifndef NO_NETWORK_TEST
+#  include "../network-settings.h"
+#endif
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
@@ -164,7 +167,7 @@ private slots:
     void writeTextFile_data();
     void writeTextFile();
     /* void largeFileSupport(); */
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
     void largeUncFileSupport();
 #endif
     void tailFile();
@@ -362,9 +365,34 @@ private:
     RFs rfs_;
     RFile rfile_;
 #endif
+
+    const QString m_srcDir;
+    const QString m_stdinProcess;
 };
 
+static inline QString findStdinProcess()
+{
+    QString result = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_WIN
+    // cd up from debug/release paths
+    if (result.endsWith(QLatin1String("debug"), Qt::CaseInsensitive)
+        || result.endsWith(QLatin1String("release"), Qt::CaseInsensitive)) {
+        result.truncate(result.lastIndexOf(QLatin1Char('/')));
+    }
+#endif
+    result += QLatin1String("/stdinprocess/stdinprocess");
+#ifdef Q_OS_WIN
+    result += QLatin1String(".exe");
+#endif
+    const QFileInfo fi(result);
+    if (fi.exists() && fi.isExecutable())
+        return fi.absoluteFilePath();
+    return QString();
+}
+
 tst_QFile::tst_QFile()
+    : m_srcDir(QLatin1String(SRCDIR))
+    , m_stdinProcess(findStdinProcess())
 {
 }
 
@@ -416,6 +444,12 @@ void tst_QFile::cleanup()
 
 void tst_QFile::initTestCase()
 {
+    QDir srcDir(m_srcDir);
+    QVERIFY2(srcDir.exists(), qPrintable(m_srcDir + QLatin1String(" does not exist.")));
+    QDir::setCurrent(srcDir.absolutePath());
+    QVERIFY2(!m_stdinProcess.isEmpty(),
+             qPrintable("Cannot locate stdinprocess from " + QCoreApplication::applicationDirPath()));
+
     QFile::remove("noreadfile");
 
     // create a file and make it read-only
@@ -493,7 +527,7 @@ void tst_QFile::exists()
     file.remove();
     QVERIFY(!file.exists());
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
     QFile unc("//" + QtNetworkSettings::winServerName() + "/testshare/readme.txt");
     QVERIFY(unc.exists());
 #endif
@@ -546,10 +580,19 @@ void tst_QFile::open_data()
     QTest::newRow("noreadfile") << QString("noreadfile") << int(QIODevice::ReadOnly)
                                 << (bool)FALSE << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
-                                        << (bool)TRUE << QFile::NoError;
+    const QString drive0 = QLatin1String("//./PhysicalDrive0");
+    const QFileInfo drive0Fi(drive0);
+    if (drive0Fi.exists() && drive0Fi.isReadable()) {
+        QTest::newRow(qPrintable(drive0))
+            << drive0 << int(QIODevice::ReadOnly)
+            << (bool)TRUE << QFile::NoError;
+    } else {
+        qWarning("Skipping '%s' (requires administrative permissions)", qPrintable(drive0));
+    }
+#  ifndef NO_NETWORK_TEST
     QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
+#  endif
 #endif
 }
 
@@ -577,7 +620,13 @@ void tst_QFile::open()
     if (filename.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, "QFSFileEngine::open: No file name specified");
 
-    QCOMPARE(f.open( QIODevice::OpenMode(mode) ), ok);
+    if (ok) {
+        QVERIFY2(f.open(QIODevice::OpenMode(mode)),
+                 qPrintable(QString::fromLatin1("Cannot open %1 in mode %2: %3")
+                            .arg(filename).arg(mode).arg(f.errorString())));
+    } else {
+        QVERIFY(!f.open(QIODevice::OpenMode(mode)));
+    }
 
     QTEST( f.error(), "status" );
 }
@@ -618,7 +667,7 @@ void tst_QFile::size_data()
     QTest::addColumn<qint64>("size");
 
     QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
     // Only test UNC on Windows./
     QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
@@ -959,7 +1008,7 @@ void tst_QFile::readAllStdin()
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
-    process.start("stdinprocess/stdinprocess all");
+    process.start(m_stdinProcess + QLatin1String(" all"));
     QVERIFY( process.waitForStarted() );
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -994,7 +1043,7 @@ void tst_QFile::readLineStdin()
 
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(m_stdinProcess + QString::fromLatin1(" line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
         for (int i = 0; i < 5; ++i) {
             QTest::qWait(1000);
             process.write(lotsOfData);
@@ -1028,7 +1077,7 @@ void tst_QFile::readLineStdin_lineByLine()
 #else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(m_stdinProcess + QString::fromLatin1(" line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY(process.waitForStarted());
 
         for (int j = 0; j < 3; ++j) {
@@ -1591,7 +1640,7 @@ void tst_QFile::writeTextFile()
     QCOMPARE(file.readAll(), out);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
 void tst_QFile::largeUncFileSupport()
 {
     qint64 size = Q_INT64_C(8589934592);
@@ -2325,7 +2374,7 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-RFile")  << "./largeblockfile.txt" << (int)OpenRFile;
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
     // Some semi-randomness to avoid collisions.
     QTest::newRow("unc file")
         << QString("//" + QtNetworkSettings::winServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")
@@ -2647,7 +2696,7 @@ void tst_QFile::appendAndRead()
 
 void tst_QFile::miscWithUncPathAsCurrentDir()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(NO_NETWORK_TEST)
     QString current = QDir::currentPath();
     QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testshare"));
     QFile file("test.pri");
