@@ -144,6 +144,11 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     if (openMode & QIODevice::Truncate)
         q->setSize(0);
 
+    // Seek to the end when in Append mode.
+    if (openMode & QFile::Append) {
+        ::SetFilePointer(fileHandle, 0, 0, FILE_END);
+    }
+
     return true;
 }
 

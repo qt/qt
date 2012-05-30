@@ -1036,8 +1036,11 @@ bool QFile::open(OpenMode mode)
 #endif
     {
         QIODevice::open(mode);
-        if (mode & Append)
-            seek(size());
+        if (mode & Append) {
+            //The file engine should have done this in open(),
+            //this is a workaround for backward compatibility
+            fileEngine()->seek(size());
+        }
         return true;
     }
     QFile::FileError err = d->fileEngine->error();
