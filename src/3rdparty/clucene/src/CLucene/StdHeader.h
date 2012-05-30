@@ -463,7 +463,15 @@ void CLDebugBreak(); //define a debugbreak function
 
 //use std namespace
 #ifndef LUCENE_NO_STDC_NAMESPACE
+#ifdef _LIBCPP_VERSION
+// clang's libc++ pulls in cwchar, clucene pulls in wchar.h and the entire std
+// namespace which causes ambiguity between ::wcschar() and std::wcschar(), but
+// clucene is only using std::min() and std::max()
+using std::min;
+using std::max;
+#else
 using namespace std;
+#endif
 #endif
 
 
