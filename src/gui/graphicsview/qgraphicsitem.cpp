@@ -2318,16 +2318,16 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         if (hasFocus && scene) {
             // Hiding the closest non-panel ancestor of the focus item
             QGraphicsItem *focusItem = scene->focusItem();
-            bool clear = true;
             if (isWidget && !focusItem->isPanel()) {
                 do {
                     if (focusItem == q_ptr) {
-                        clear = !static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
+                        static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
                         break;
                     }
                 } while ((focusItem = focusItem->parentWidget()) && !focusItem->isPanel());
             }
-            if (clear)
+            // Clear focus if previous steps didn't move it to another widget
+            if (q_ptr->hasFocus())
                 clearFocusHelper(/* giveFocusToParent = */ false);
         }
         if (q_ptr->isSelected())
@@ -2506,16 +2506,16 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
             // Disabling the closest non-panel ancestor of the focus item
             // causes focus to pop to the next item, otherwise it's cleared.
             QGraphicsItem *focusItem = scene->focusItem();
-            bool clear = true;
             if (isWidget && !focusItem->isPanel() && q_ptr->isAncestorOf(focusItem)) {
                 do {
                     if (focusItem == q_ptr) {
-                        clear = !static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
+                        static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
                         break;
                     }
                 } while ((focusItem = focusItem->parentWidget()) && !focusItem->isPanel());
             }
-            if (clear)
+            // Clear focus if previous steps didn't move it to another widget
+            if (q_ptr->hasFocus())
                 q_ptr->clearFocus();
         }
         if (q_ptr->isSelected())
