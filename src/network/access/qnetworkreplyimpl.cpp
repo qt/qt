@@ -97,7 +97,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->networkSession.data();
+        QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
 
         if (session) {
             Q_Q(QNetworkReplyImpl);
@@ -268,7 +268,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (manager.isNull())
         return;
 
-    QNetworkSession *session = manager->d_func()->networkSession.data();
+    QSharedPointer<QNetworkSession> session = manager->d_func()->getNetworkSession();
     if (!session)
         return;
 
@@ -746,7 +746,7 @@ void QNetworkReplyImplPrivate::finished()
 
     if (!manager.isNull()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QNetworkSession *session = manager->d_func()->networkSession.data();
+        QSharedPointer<QNetworkSession> session (manager->d_func()->getNetworkSession());
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
             // only content with a known size will fail with a temporary network failure error
