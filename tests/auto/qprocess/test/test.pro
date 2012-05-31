@@ -18,6 +18,8 @@ win32: {
 
 
 QT = core
+CONFIG += console
+CONFIG -= app-bundle
 
 !symbian: {
     QT += network

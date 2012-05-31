@@ -177,6 +177,15 @@ private:
     qint64 bytesAvailable;
 };
 
+static inline QByteArray msgStartProcessFailed(const QString &binary,
+                                               const QString &errorMessage)
+{
+    const QString message =
+            QString::fromLatin1("Unable to start '%1' from '%2': %3")
+            .arg(binary, QDir::currentPath(), errorMessage);
+    return message.toLocal8Bit();
+}
+
 // Testing get/set functions
 void tst_QProcess::getSetCheck()
 {
@@ -200,6 +209,16 @@ void tst_QProcess::getSetCheck()
 
 tst_QProcess::tst_QProcess()
 {
+#ifdef Q_OS_WIN
+    // Set current directory such that the test binaries are found.
+    QDir workingDir(QDir::current());
+    const QString workingDirPath = workingDir.absolutePath();
+    if (workingDirPath.endsWith(QLatin1String("debug"), Qt::CaseInsensitive)
+            || workingDirPath.endsWith(QLatin1String("release"), Qt::CaseInsensitive)) {
+        workingDir.cdUp();
+        QDir::setCurrent(workingDir.absolutePath());
+    }
+#endif
 }
 
 tst_QProcess::~tst_QProcess()
@@ -265,7 +284,8 @@ void tst_QProcess::simpleStart()
     /* valgrind dislike SUID binaries(those that have the `s'-flag set), which
      * makes it fail to start the process. For this reason utilities like `ping' won't
      * start, when the auto test is run through `valgrind'. */
-    process->start("testProcessNormal/testProcessNormal");
+    const QString binary = QLatin1String("testProcessNormal/testProcessNormal");
+    process->start(binary);
     if (process->state() != QProcess::Starting)
         QCOMPARE(process->state(), QProcess::Running);
     QVERIFY2(process->waitForStarted(5000), qPrintable(process->errorString()));
@@ -326,8 +346,10 @@ void tst_QProcess::crashTest()
 #endif
     process = new QProcess;
     QSignalSpy stateSpy(process, SIGNAL(stateChanged(QProcess::ProcessState)));
-    process->start("testProcessCrash/testProcessCrash");
-    QVERIFY(process->waitForStarted(5000));
+    const QString binary = QLatin1String("testProcessCrash/testProcessCrash");
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
@@ -361,8 +383,10 @@ void tst_QProcess::crashTest2()
     QSKIP("This test opens a crash dialog on Windows", SkipSingle);
 #endif
     process = new QProcess;
-    process->start("testProcessCrash/testProcessCrash");
-    QVERIFY(process->waitForStarted(5000));
+    const QString binary = QLatin1String("testProcessCrash/testProcessCrash");
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
@@ -419,12 +443,14 @@ void tst_QProcess::echoTest()
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
 
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-    QVERIFY(process->waitForStarted(5000));
 
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     process->write(input);
 
     QTime stopWatch;
@@ -477,12 +503,15 @@ void tst_QProcess::echoTest2()
     process = new QProcess;
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
 
+
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho2/testProcessEcho2.app");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    process->start("testProcessEcho2/testProcessEcho2");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
-    QVERIFY(process->waitForStarted(5000));
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     QVERIFY(!process->waitForReadyRead(250));
     QCOMPARE(process->error(), QProcess::Timedout);
 
@@ -530,10 +559,13 @@ void tst_QProcess::echoTest_performance()
 
     QProcess process;
 #ifdef Q_OS_MAC
-    process.start("testProcessLoopback/testProcessLoopback.app");
+    const QString binary = QLatin1String("testProcessLoopback/testProcessLoopback.app");
 #else
-    process.start("testProcessLoopback/testProcessLoopback");
+    const QString binary = QLatin1String("testProcessLoopback/testProcessLoopback");
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
 
     QByteArray array;
     array.resize(1024 * 1024);
@@ -587,8 +619,10 @@ void tst_QProcess::echoTestGui()
 
     QProcess process;
 
-    process.start("testProcessEchoGui/testProcessEchoGui");
-
+    const QString binary = QLatin1String("testProcessEchoGui/testProcessEchoGui");
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
 
     process.write("Hello");
     process.write("q");
@@ -623,6 +657,8 @@ void tst_QProcess::batFiles()
     QProcess proc;
 
     proc.start(batFile, QStringList());
+    QVERIFY2(proc.waitForStarted(5000),
+             msgStartProcessFailed(batFile, proc.errorString()).constData());
 
     QVERIFY(proc.waitForFinished(5000));
 
@@ -672,7 +708,8 @@ void tst_QProcess::exitStatus()
     QCOMPARE(exitStatus.count(), processList.count());
     for (int i = 0; i < processList.count(); ++i) {
         process->start(processList.at(i));
-        QVERIFY(process->waitForStarted(5000));
+        QVERIFY2(process->waitForStarted(5000),
+                 msgStartProcessFailed(processList.at(i), process->errorString()).constData());
         QVERIFY(process->waitForFinished(5000));
 
         QCOMPARE(process->exitStatus(), exitStatus.at(i));
@@ -693,12 +730,13 @@ void tst_QProcess::loopBackTest()
 
     process = new QProcess;
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-    QVERIFY(process->waitForStarted(5000));
-
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     for (int i = 0; i < 100; ++i) {
         process->write("Hello");
         do {
@@ -726,10 +764,11 @@ void tst_QProcess::readTimeoutAndThenCrash()
 
     process = new QProcess;
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
+    process->start(binary);
     if (process->state() != QProcess::Starting)
         QCOMPARE(process->state(), QProcess::Running);
 
@@ -759,10 +798,11 @@ void tst_QProcess::waitForFinished()
     QProcess process;
 
 #ifdef Q_OS_MAC
-    process.start("testProcessOutput/testProcessOutput.app");
+    const QString binary = QLatin1String("testProcessOutput/testProcessOutput.app");
 #else
-    process.start("testProcessOutput/testProcessOutput");
+    const QString binary = QLatin1String("testProcessOutput/testProcessOutput");
 #endif
+    process.start(binary);
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QVERIFY(process.waitForFinished(5000));
@@ -807,14 +847,16 @@ void tst_QProcess::deadWhileReading()
     QProcess process;
 
 #ifdef Q_OS_MAC
-    process.start("testProcessDeadWhileReading/testProcessDeadWhileReading.app");
+    const QString binary = QLatin1String("testProcessDeadWhileReading/testProcessDeadWhileReading.app");
 #else
-    process.start("testProcessDeadWhileReading/testProcessDeadWhileReading");
+    const QString binary = QLatin1String("testProcessDeadWhileReading/testProcessDeadWhileReading");
 #endif
 
     QString output;
 
-    QVERIFY(process.waitForStarted(5000));
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     while (process.waitForReadyRead(5000))
         output += process.readAll();
 
@@ -840,11 +882,13 @@ void tst_QProcess::restartProcessDeadlock()
     connect(process, SIGNAL(finished(int)), this, SLOT(restartProcess()));
 
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     QCOMPARE(process->write("", 1), qlonglong(1));
     QVERIFY(process->waitForFinished(5000));
 
@@ -857,10 +901,13 @@ void tst_QProcess::restartProcessDeadlock()
 void tst_QProcess::restartProcess()
 {
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
 }
 
 //-----------------------------------------------------------------------------
@@ -874,9 +921,10 @@ void tst_QProcess::closeWriteChannel()
 #endif
 
     QProcess more;
-    more.start("testProcessEOF/testProcessEOF");
-
-    QVERIFY(more.waitForStarted(5000));
+    const QString binary = QLatin1String("testProcessEOF/testProcessEOF");
+    more.start(binary);
+    QVERIFY2(more.waitForStarted(5000),
+             msgStartProcessFailed(binary, more.errorString()).constData());
     QVERIFY(!more.waitForReadyRead(250));
     QCOMPARE(more.error(), QProcess::Timedout);
 
@@ -911,11 +959,13 @@ void tst_QProcess::closeReadChannel()
 
         QProcess proc;
 #ifdef Q_OS_MAC
-        proc.start("testProcessEcho2/testProcessEcho2.app");
+        const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-        proc.start("testProcessEcho2/testProcessEcho2");
+        const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
-        QVERIFY(proc.waitForStarted(5000));
+        proc.start(binary);
+        QVERIFY2(proc.waitForStarted(5000),
+                 msgStartProcessFailed(binary, proc.errorString()).constData());
         proc.closeReadChannel(i&1 ? channel2 : channel1);
         proc.setReadChannel(i&1 ? channel2 : channel1);
         proc.write("Data");
@@ -949,11 +999,14 @@ void tst_QProcess::openModes()
     QVERIFY(!proc.isOpen());
     QVERIFY(proc.openMode() == QProcess::NotOpen);
 #ifdef Q_OS_MAC
-    proc.start("testProcessEcho3/testProcessEcho3.app");
+    const QString binary = QLatin1String("testProcessEcho3/testProcessEcho3.app");
 #else
-    proc.start("testProcessEcho3/testProcessEcho3");
+    const QString binary = QLatin1String("testProcessEcho3/testProcessEcho3");
+
 #endif
-    QVERIFY(proc.waitForStarted(5000));
+    proc.start(binary);
+    QVERIFY2(proc.waitForStarted(5000),
+             msgStartProcessFailed(binary, proc.errorString()).constData());
     QVERIFY(proc.isOpen());
     QVERIFY(proc.openMode() == QProcess::ReadWrite);
     QVERIFY(proc.isReadable());
@@ -1003,11 +1056,13 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
     QSignalSpy spy(&proc, SIGNAL(readyRead()));
 
 #ifdef Q_OS_MAC
-    proc.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    proc.start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-
+    proc.start(binary);
+    QVERIFY2(proc.waitForStarted(5000),
+             msgStartProcessFailed(binary, proc.errorString()).constData());
     QCOMPARE(spy.count(), 0);
 
     proc.write("A");
@@ -1033,25 +1088,28 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 //-----------------------------------------------------------------------------
 void tst_QProcess::hardExit()
 {
+#ifndef Q_OS_WINCE
+    const int timeOutMs = 5000;
+#else
+    const int timeOutMs = 10000;
+#endif
+
 #if defined(Q_OS_SYMBIAN)
     QSKIP("Killing started processes is not supported on Qt/Symbian due platform security", SkipAll);
 #endif
     QProcess proc;
 
 #if defined(Q_OS_MAC)
-    proc.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #elif defined(Q_OS_WINCE)
-    proc.start("testSoftExit/testSoftExit");
+    const QString binary = QLatin1String("testSoftExit/testSoftExit");
 #else
-    proc.start("testProcessEcho/testProcessEcho");
-#endif
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 
-#ifndef Q_OS_WINCE
-    QVERIFY(proc.waitForStarted(5000));
-#else
-    QVERIFY(proc.waitForStarted(10000));
 #endif
-
+    proc.start(binary);
+    QVERIFY2(proc.waitForStarted(timeOutMs),
+             msgStartProcessFailed(binary, proc.errorString()).constData());
     proc.kill();
 
     QVERIFY(proc.waitForFinished(5000));
@@ -1066,10 +1124,11 @@ void tst_QProcess::softExit()
     QSKIP("Terminating started processes is not supported on Qt/Symbian due platform security", SkipAll);
 #endif
     QProcess proc;
+    const QString binary = QLatin1String("testSoftExit/testSoftExit");
+    proc.start(binary);
+    QVERIFY2(proc.waitForStarted(10000),
+             msgStartProcessFailed(binary, proc.errorString()).constData());
 
-    proc.start("testSoftExit/testSoftExit");
-
-    QVERIFY(proc.waitForStarted(10000));
 #if !defined(Q_OS_WINCE)
     QVERIFY(proc.waitForReadyRead(10000));
 #endif
@@ -1221,12 +1280,13 @@ void tst_QProcess::mergedChannels()
     QCOMPARE(process.readChannelMode(), QProcess::MergedChannels);
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    process.start("testProcessEcho2/testProcessEcho2");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
-
-    QVERIFY(process.waitForStarted(5000));
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
 
     for (int i = 0; i < 100; ++i) {
         QCOMPARE(process.write("abc"), qlonglong(3));
@@ -1254,12 +1314,13 @@ void tst_QProcess::forwardedChannels()
     QCOMPARE(process.readChannelMode(), QProcess::ForwardedChannels);
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    process.start("testProcessEcho2/testProcessEcho2");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
-
-    QVERIFY(process.waitForStarted(5000));
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     QCOMPARE(process.write("forwarded\n"), qlonglong(10));
     QVERIFY(!process.waitForReadyRead(250));
     QCOMPARE(process.bytesAvailable(), qlonglong(0));
@@ -1282,10 +1343,13 @@ void tst_QProcess::atEnd()
     QProcess process;
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process.start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     process.write("abcdefgh\n");
 
     while (process.bytesAvailable() < 8)
@@ -1323,21 +1387,24 @@ protected:
         connect(&process, SIGNAL(finished(int)), this, SLOT(catchExitCode(int)),
                 Qt::DirectConnection);
 
+        QStringList args;
 #ifdef Q_OS_MAC
-        process.start("testProcessEcho/testProcessEcho.app");
+        const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #elif defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
     // WINSCW builds in Symbian do not allow multiple processes to load Qt libraries,
     // so use just a simple process instead of testDetached.
-    process.start("testProcessNormal");
+    const QString binary = QLatin1String("testProcessNormal");
 #elif defined(Q_OS_SYMBIAN)
         // testDetached used because it does something, but doesn't take too long.
         QFile infoFile(QString("c:\\logs\\detinfo%1").arg(serial));
-        QStringList args;
         args << infoFile.fileName();
-        process.start("testDetached", args);
+        const QString binary = QLatin1String("testDetached");
 #else
-        process.start("testProcessEcho/testProcessEcho");
+        const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
+        process.start(binary);
+        QVERIFY2(process.waitForStarted(5000),
+                 msgStartProcessFailed(binary, process.errorString()).constData());
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
         QCOMPARE(process.write("abc\0", 4), qint64(4));
@@ -1401,6 +1468,11 @@ void tst_QProcess::processesInMultipleThreads()
 //-----------------------------------------------------------------------------
 void tst_QProcess::waitForFinishedWithTimeout()
 {
+#if defined(Q_OS_SYMBIAN)
+    const int timeOutMs = 50;
+#else
+    const int timeOutMs = 5000;
+#endif
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
@@ -1408,18 +1480,18 @@ void tst_QProcess::waitForFinishedWithTimeout()
     process = new QProcess(this);
 
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #elif defined(Q_OS_SYMBIAN)
-    process->start("testProcessOutput");
+    const QString binary = QLatin1String("testProcessOutput");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(timeOutMs),
+             msgStartProcessFailed(binary, process->errorString()).constData());
 #if defined(Q_OS_SYMBIAN)
-    QVERIFY(process->waitForStarted(50));
     QVERIFY(!process->waitForFinished(1));
 #else
-    QVERIFY(process->waitForStarted(5000));
     QVERIFY(!process->waitForFinished(1));
 
     process->write("", 1);
@@ -1447,11 +1519,13 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     bytesAvailable = 0;
 
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-    QVERIFY(process->waitForStarted(5000));
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
 
     QSignalSpy spy(process, SIGNAL(readyRead()));
     process->write("foo");
@@ -1498,12 +1572,14 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     bytesAvailable = 0;
 
 #ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process->start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
-    QVERIFY(process->waitForStarted(5000));
 
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(5000),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     qRegisterMetaType<qint64>("qint64");
     QSignalSpy spy(process, SIGNAL(bytesWritten(qint64)));
     process->write("f");
@@ -1583,6 +1659,12 @@ void tst_QProcess::spaceArgsTest()
     QFETCH(QStringList, args);
     QFETCH(QString, stringArgs);
 
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    const int timeOutMs = 5000;
+#else
+    const int timeOutMs = 10000;
+#endif
+
     QStringList programs;
     programs << QString::fromLatin1("testProcessSpacesArgs/nospace")
 #if defined(Q_OS_SYMBIAN)
@@ -1597,12 +1679,12 @@ void tst_QProcess::spaceArgsTest()
     for (int i = 0; i < programs.size(); ++i) {
         QString program = programs.at(i);
         process->start(program, args);
+        QVERIFY2(process->waitForStarted(timeOutMs),
+                 msgStartProcessFailed(program, process->errorString()).constData());
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
-        QVERIFY(process->waitForStarted(5000));
         QVERIFY(process->waitForFinished(5000));
 #else
-        QVERIFY(process->waitForStarted(10000));
         QVERIFY(process->waitForFinished(10000));
 #endif
 
@@ -1633,7 +1715,8 @@ void tst_QProcess::spaceArgsTest()
 
         process->start(program);
 
-        QVERIFY(process->waitForStarted(5000));
+        QVERIFY2(process->waitForStarted(5000),
+                 msgStartProcessFailed(program, process->errorString()).constData());
         QVERIFY(process->waitForFinished(5000));
 
 #if defined(Q_OS_SYMBIAN)
@@ -1664,19 +1747,24 @@ void tst_QProcess::spaceArgsTest()
 //-----------------------------------------------------------------------------
 void tst_QProcess::nativeArguments()
 {
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    const int timeOutMs = 5000;
+#else
+    const int timeOutMs = 10000;
+#endif
     QProcess proc;
 
     // This doesn't actually need special quoting, so it is pointless to use
     // native arguments here, but that's not the point of this test.
     proc.setNativeArguments("hello kitty, \"*\"!");
 
-    proc.start(QString::fromLatin1("testProcessSpacesArgs/nospace"), QStringList());
-
+    const QString binary = QString::fromLatin1("testProcessSpacesArgs/nospace");
+    proc.start(binary, QStringList());
+    QVERIFY2(proc.waitForStarted(timeOutMs),
+             msgStartProcessFailed(binary, proc.errorString()).constData());
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
-    QVERIFY(proc.waitForStarted(5000));
     QVERIFY(proc.waitForFinished(5000));
 #else
-    QVERIFY(proc.waitForStarted(10000));
     QVERIFY(proc.waitForFinished(10000));
 #endif
 
@@ -1720,7 +1808,11 @@ void tst_QProcess::exitCodeTest()
     for (int i = 0; i < 255; ++i) {
 #endif
         QProcess process;
-        process.start("testExitCodes/testExitCodes " + QString::number(i));
+        const QString binary = QLatin1String("testExitCodes/testExitCodes");
+        process.start(binary, QStringList(QString::number(i)));
+        QVERIFY2(process.waitForStarted(5000),
+                 msgStartProcessFailed(binary, process.errorString()).constData());
+
         QVERIFY(process.waitForFinished(5000));
         QCOMPARE(process.exitCode(), i);
         QCOMPARE(process.error(), QProcess::UnknownError);
@@ -1855,12 +1947,14 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
 
     QProcess process;
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process.start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
 
-    QVERIFY(process.waitForStarted(5000));
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(5000),
+             msgStartProcessFailed(binary, process.errorString()).constData());
 
     QVERIFY(file.remove());
 
@@ -1919,7 +2013,8 @@ void tst_QProcess::setEnvironment()
         }
         process.setEnvironment(environment);
         process.start(executable, QStringList() << name);
-
+        QVERIFY2(process.waitForStarted(5000),
+                 msgStartProcessFailed(executable, process.errorString()).constData());
         QVERIFY(process.waitForFinished());
         if (value.isNull())
             QCOMPARE(process.exitCode(), 1);
@@ -1940,6 +2035,8 @@ void tst_QProcess::setEnvironment()
         process.setEnvironment(environment);
         process.start(executable, QStringList() << name);
 
+        QVERIFY2(process.waitForStarted(5000),
+                 msgStartProcessFailed(executable, process.errorString()).constData());
         QVERIFY(process.waitForFinished());
         if (!value.isEmpty())
             QCOMPARE(process.exitCode(), 0);
@@ -1980,7 +2077,8 @@ void tst_QProcess::setProcessEnvironment()
             environment.insert(name, value);
         process.setProcessEnvironment(environment);
         process.start(executable, QStringList() << name);
-
+        QVERIFY2(process.waitForStarted(5000),
+                 msgStartProcessFailed(executable, process.errorString()).constData());
         QVERIFY(process.waitForFinished());
         if (value.isNull())
             QCOMPARE(process.exitCode(), 1);
@@ -2016,8 +2114,10 @@ void tst_QProcess::spaceInName()
     QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
     QProcess process;
-    process.start("test Space In Name/testSpaceInName", QStringList());
-    QVERIFY(process.waitForStarted());
+    const QString binary = QLatin1String("test Space In Name/testSpaceInName");
+    process.start(binary, QStringList());
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     process.write("", 1);
     QVERIFY(process.waitForFinished());
 }
@@ -2050,10 +2150,13 @@ void tst_QProcess::atEnd2()
     QProcess process;
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process.start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     process.write("Foo\nBar\nBaz\nBodukon\nHadukan\nTorwukan\nend\n");
     process.putChar('\0');
     QVERIFY(process.waitForFinished());
@@ -2105,11 +2208,14 @@ void tst_QProcess::setStandardInputFile()
 
     process.setStandardInputFile("data");
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho.app");
 #else
-    process.start("testProcessEcho/testProcessEcho");
+    const QString binary = QLatin1String("testProcessEcho/testProcessEcho");
 #endif
 
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     QPROCESS_VERIFY(process, waitForFinished());
         QByteArray all = process.readAll();
     QCOMPARE(all.size(), int(sizeof data) - 1); // testProcessEcho drops the ending \0
@@ -2179,10 +2285,13 @@ void tst_QProcess::setStandardOutputFile()
         process.setStandardErrorFile("data", mode);
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    process.start("testProcessEcho2/testProcessEcho2");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     process.write(testdata, sizeof testdata);
     QPROCESS_VERIFY(process,waitForFinished());
 
@@ -2230,12 +2339,19 @@ void tst_QProcess::setStandardOutputProcess()
     source.setStandardOutputProcess(&sink);
 
 #ifdef Q_OS_MAC
-    source.start("testProcessEcho2/testProcessEcho2.app");
-    sink.start("testProcessEcho2/testProcessEcho2.app");
+
+    const QString sourceBinary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
+    const QString sinkBinary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    source.start("testProcessEcho2/testProcessEcho2");
-    sink.start("testProcessEcho2/testProcessEcho2");
+    const QString sourceBinary = QLatin1String("testProcessEcho2/testProcessEcho2");
+    const QString sinkBinary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
+    source.start(sourceBinary);
+    QVERIFY2(source.waitForStarted(),
+             msgStartProcessFailed(sourceBinary, source.errorString()).constData());
+    sink.start(sinkBinary);
+    QVERIFY2(sink.waitForStarted(),
+             msgStartProcessFailed(sinkBinary, sink.errorString()).constData());
 
     QByteArray data("Hello, World");
     source.write(data);
@@ -2269,8 +2385,10 @@ void tst_QProcess::fileWriterProcess()
     do {
         QFile::remove("fileWriterProcess.txt");
         QProcess process;
-        process.start("fileWriterProcess/fileWriterProcess",
-                      QIODevice::ReadWrite | QIODevice::Text);
+        const QString binary = QLatin1String("fileWriterProcess/fileWriterProcess");
+        process.start(binary, QIODevice::ReadWrite | QIODevice::Text);
+        QVERIFY2(process.waitForStarted(),
+                 msgStartProcessFailed(binary, process.errorString()).constData());
         process.write(stdinStr.toLatin1());
         process.closeWriteChannel();
         while (process.bytesToWrite()) {
@@ -2355,10 +2473,13 @@ void tst_QProcess::switchReadChannels()
     QProcess process;
 
 #ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2.app");
 #else
-    process.start("testProcessEcho2/testProcessEcho2");
+    const QString binary = QLatin1String("testProcessEcho2/testProcessEcho2");
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
     process.write(data);
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
@@ -2391,13 +2512,16 @@ void tst_QProcess::setWorkingDirectory()
     process = new QProcess;
     process->setWorkingDirectory("test");
 #ifdef Q_OS_MAC
-    process->start("testSetWorkingDirectory/testSetWorkingDirectory.app");
+    const QString binary = QLatin1String("testSetWorkingDirectory/testSetWorkingDirectory.app");
 #else
-    process->start("testSetWorkingDirectory/testSetWorkingDirectory");
+    const QString binary = QLatin1String("testSetWorkingDirectory/testSetWorkingDirectory");
 #endif
 #ifndef Q_OS_WIN
     QSKIP("setWorkingDirectory will chdir before starting the process on unices", SkipAll);
 #endif
+    process->start(binary);
+    QVERIFY2(process->waitForStarted(),
+             msgStartProcessFailed(binary, process->errorString()).constData());
     QVERIFY(process->waitForFinished());
 
     QByteArray workingDir = process->readAllStandardOutput();
@@ -2416,10 +2540,13 @@ void tst_QProcess::startFinishStartFinish()
         QCOMPARE(process.state(), QProcess::NotRunning);
 
 #ifdef Q_OS_MAC
-        process.start("testProcessOutput/testProcessOutput.app");
+        const QString binary = QLatin1String("testProcessOutput/testProcessOutput.app");
 #else
-        process.start("testProcessOutput/testProcessOutput");
+        const QString binary = QLatin1String("testProcessOutput/testProcessOutput");
 #endif
+        process.start(binary);
+        QVERIFY2(process.waitForStarted(),
+                 msgStartProcessFailed(binary, process.errorString()).constData());
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
         QVERIFY(process.waitForReadyRead(10000));
         QCOMPARE(QString::fromLatin1(process.readLine().trimmed()),
@@ -2472,7 +2599,11 @@ void tst_QProcess::onlyOneStartedSignal()
     QSignalSpy spyStarted(&process,  SIGNAL(started()));
     QSignalSpy spyFinished(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
 
-    process.start("testProcessNormal/testProcessNormal");
+    const QString binary = QLatin1String("testProcessNormal/testProcessNormal");
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(),
+             msgStartProcessFailed(binary, process.errorString()).constData());
+
     QVERIFY(process.waitForStarted(5000));
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(spyStarted.count(), 1);
@@ -2481,7 +2612,8 @@ void tst_QProcess::onlyOneStartedSignal()
     spyStarted.clear();
     spyFinished.clear();
 
-    process.start("testProcessNormal/testProcessNormal");
+    process.start(binary);
+    QVERIFY(process.waitForStarted(5000));
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(spyStarted.count(), 1);
     QCOMPARE(spyFinished.count(), 1);
