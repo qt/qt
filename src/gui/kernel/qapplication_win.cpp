@@ -813,7 +813,8 @@ void qt_init(QApplicationPrivate *priv, int)
     QColormap::initialize();
     QFont::initialize();
 #ifndef QT_NO_CURSOR
-    QCursorData::initialize();
+    if (QApplication::type() != QApplication::Tty)
+        QCursorData::initialize();
 #endif
     qApp->setObjectName(priv->appName());
 
@@ -906,7 +907,8 @@ void qt_cleanup()
     QPixmapCache::clear();
 
 #ifndef QT_NO_CURSOR
-    QCursorData::cleanup();
+    if (QApplication::type() != QApplication::Tty)
+        QCursorData::cleanup();
 #endif
     QFont::cleanup();
     QColormap::cleanup();

@@ -41,6 +41,7 @@
 
 
 #include <QtCore/QDir>
+#include <QtGui/QApplication>
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
@@ -184,7 +185,7 @@ QString tst_uic3::workingDir() const
     return QDir::cleanPath(SRCDIR);
 }
 
-QTEST_APPLESS_MAIN(tst_uic3)
+QTEST_MAIN(tst_uic3)
 #include "tst_uic3.moc"
 #else
 QTEST_NOOP_MAIN
