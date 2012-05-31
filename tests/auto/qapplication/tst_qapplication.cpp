@@ -235,9 +235,18 @@ static  char *argv0;
 
 tst_QApplication::tst_QApplication()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE)
     // Clean up environment previously to launching test
     qputenv("QT_PLUGIN_PATH", QByteArray());
+#elif defined(Q_OS_WIN)
+    // Set current directory such that the test binaries are found.
+    QDir workingDir(QDir::current());
+    const QString workingDirPath = workingDir.absolutePath();
+    if (workingDirPath.endsWith(QLatin1String("debug"), Qt::CaseInsensitive)
+        || workingDirPath.endsWith(QLatin1String("release"), Qt::CaseInsensitive)) {
+        workingDir.cdUp();
+        QDir::setCurrent(workingDir.absolutePath());
+    }
 #endif
 }
 
@@ -1626,6 +1635,15 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 #endif
 }
 
+static inline QByteArray msgStartProcessFailed(const QString &binary,
+                                               const QString &errorMessage)
+{
+    const QString message =
+        QString::fromLatin1("Unable to start '%1' from '%2': %3")
+        .arg(binary, QDir::currentPath(), errorMessage);
+    return message.toLocal8Bit();
+}
+
 /*
     Test for crash with QApplication::setDesktopSettingsAware(false).
 */
@@ -1633,30 +1651,31 @@ void tst_QApplication::desktopSettingsAware()
 {
 #ifndef QT_NO_PROCESS
     QProcess testProcess;
-#ifdef Q_OS_WINCE
+    QString binary = QLatin1String("desktopsettingsaware/desktopsettingsaware");
+#  ifdef Q_OS_WINCE
     int argc = 0;
     QApplication tmpApp(argc, 0, QApplication::GuiServer);
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
-#else
-#if defined(Q_OS_WIN) && defined(QT_DEBUG)
-    testProcess.start("desktopsettingsaware/debug/desktopsettingsaware");
-#elif defined(Q_OS_WIN)
-    testProcess.start("desktopsettingsaware/release/desktopsettingsaware");
-#elif defined(Q_OS_SYMBIAN)
-    testProcess.start("desktopsettingsaware");
-#if defined(Q_CC_NOKIAX86)
+#  elif defined(Q_OS_WIN)
+#    if defined(QT_DEBUG)
+    binary = QLatin1String("desktopsettingsaware/debug/desktopsettingsaware");
+#    else
+    binary = QLatin1String("desktopsettingsaware/release/desktopsettingsaware");
+#    endif // QT_DEBUG
+#  elif defined(Q_OS_SYMBIAN)
+    binary = QLatin1String("desktopsettingsaware");
+#    if defined(Q_CC_NOKIAX86)
     QEXPECT_FAIL("", "QProcess on Q_CC_NOKIAX86 cannot launch another Qt application, due to DLL conflicts.", Abort);
     // TODO: Remove XFAIL, as soon as we can launch Qt applications from within Qt applications on Symbian
     QVERIFY(testProcess.error() != QProcess::FailedToStart);
-#endif // defined(Q_CC_NOKIAX86)
-#else
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
-#endif
-#endif
+#    endif // defined(Q_CC_NOKIAX86)
+#  endif
+    testProcess.start(binary);
+    QVERIFY2(testProcess.waitForStarted(),
+             msgStartProcessFailed(binary, testProcess.errorString()).constData());
     QVERIFY(testProcess.waitForFinished(10000));
     QCOMPARE(int(testProcess.state()), int(QProcess::NotRunning));
     QVERIFY(int(testProcess.error()) != int(QProcess::Crashed));
-#endif
+#endif // QT_NO_PROCESS
 }
 
 void tst_QApplication::setActiveWindow()
@@ -1779,6 +1798,9 @@ void tst_QApplication::focusChanged()
 
     tab.simulate(now);
     if (!tabAllControls) {
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("", "QTQAINFRA-428", Abort);
+#endif
         QVERIFY(spy.count() == 0);
         QVERIFY(now == QApplication::focusWidget());
     } else {
@@ -2043,11 +2065,10 @@ void tst_QApplication::windowsCommandLine()
     QFETCH(QString, expected);
 
     QProcess testProcess;
-#if defined(QT_DEBUG)
-    testProcess.start("wincmdline/debug/wincmdline", QStringList(args));
-#else
-    testProcess.start("wincmdline/release/wincmdline", QStringList(args));
-#endif
+    const QString binary = QLatin1String("wincmdline/wincmdline");
+    testProcess.start(binary, QStringList(args));
+    QVERIFY2(testProcess.waitForStarted(),
+             msgStartProcessFailed(binary, testProcess.errorString()).constData());
     QVERIFY(testProcess.waitForFinished(10000));
     QByteArray error = testProcess.readAllStandardError();
     QString procError(error);
@@ -2360,17 +2381,21 @@ void tst_QApplication::qtbug_12673()
 {
 #ifdef Q_OS_SYMBIAN
     QSKIP("This might not make sense in Symbian, but since I do not know how to test it I'll just skip it for now.", SkipAll);
-#else
+#endif
+#ifndef QT_NO_PROCESS
     QProcess testProcess;
     QStringList arguments;
-#ifdef Q_OS_MAC
-    testProcess.start("modal/modal.app", arguments);
-#else
-    testProcess.start("modal/modal", arguments);
-#endif
+#  ifdef Q_OS_MAC
+    const QString binary =QLatin1String("modal/modal.app");
+#  else
+    const QString binary =QLatin1String("modal/modal");
+#  endif
+    testProcess.start(binary, arguments);
+    QVERIFY2(testProcess.waitForStarted(),
+             msgStartProcessFailed(binary, testProcess.errorString()).constData());
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
-#endif //  Q_OS_SYMBIAN
+#endif // QT_NO_PROCESS
 }
 
 /*

@@ -2,6 +2,7 @@ CONFIG += testcase
 
 TARGET = ../tst_qapplication
 QT += testlib
+CONFIG -= app-bundle
 SOURCES += ../tst_qapplication.cpp
 
 wince* {
@@ -30,4 +31,4 @@ win32 {
   }
 }
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+embedded:CONFIG+=insignificant_test # QTQAINFRA-428

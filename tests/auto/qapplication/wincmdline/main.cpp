@@ -38,11 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
+#include <QCoreApplication>
 #include <stdio.h>
 int main(int argc, char *argv[]) 
 {
-	QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
     if (argc > 1)
         fprintf(stderr, "%s", argv[1]);
     else
