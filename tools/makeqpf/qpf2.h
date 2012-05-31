@@ -61,7 +61,7 @@ public:
 
     struct CharacterRange
     {
-        inline CharacterRange() : start(0), end(0x10000) {}
+        inline CharacterRange() : start(0), end(0xffff) {}
         uint start;
         uint end;
     };

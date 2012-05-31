@@ -499,7 +499,7 @@ void QPF::addGlyphs(QFontEngine *fe, const QList<CharacterRange> &ranges)
         foreach (CharacterRange range, ranges) {
             if (debugVerbosity > 2)
                 qDebug() << "rendering range from" << range.start << "to" << range.end;
-            for (uint uc = range.start; uc < range.end; ++uc) {
+            for (uint uc = range.start; uc <= range.end; ++uc) {
                 QChar ch(uc);
                 int nglyphs = 10;
                 if (!fe->stringToCMap(&ch, 1, &layout, &nglyphs, /*flags*/ 0))

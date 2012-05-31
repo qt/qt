@@ -236,7 +236,7 @@ void MainWindow::on_sampleFile_editingFinished()
     foreach (QChar ch, sortedCoverage) {
         QPF::CharacterRange r;
         r.start = ch.unicode();
-        r.end = r.start + 1;
+        r.end = r.start;
         sampleFileRanges.append(r);
     }
 
