@@ -878,15 +878,16 @@ namespace DeliverInDefinedOrder_QTBUG19637 {
         void moveToThread(QThread *t) {
             QObject::moveToThread(t);
         }
+        void processEvents() {
+            // Process all events for this thread
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 30000);
+        }
     };
 
 }
 
 void tst_QEventLoop::deliverInDefinedOrder_QTBUG19637()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Causes test suite to crash - see QTBUG-23974", SkipAll);
-#endif
     using namespace DeliverInDefinedOrder_QTBUG19637;
     qMetaTypeId<QThread*>();
     QThread threads[NbThread];
@@ -907,8 +908,10 @@ void tst_QEventLoop::deliverInDefinedOrder_QTBUG19637()
         }
     }
 
-    QTest::qWait(30);
     for (int o = 0; o < NbObject; o++) {
+        // Wait until all events processed
+        QMetaObject::invokeMethod(&objects[o], "processEvents", Qt::BlockingQueuedConnection);
+        // Test event count
         QTRY_COMPARE(objects[o].count, int(NbEvent));
     }
 
