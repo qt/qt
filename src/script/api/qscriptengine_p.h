@@ -1019,6 +1019,8 @@ inline quint16 QScriptEnginePrivate::toUInt16(JSC::ExecState *exec, JSC::JSValue
 
 inline JSC::UString QScriptEnginePrivate::toString(JSC::ExecState *exec, JSC::JSValue value)
 {
+    if (!value)
+        return JSC::UString();
     JSC::JSValue savedException;
     saveException(exec, &savedException);
     JSC::UString str = value.toString(exec);

@@ -250,6 +250,7 @@ private slots:
     void dateRoundtripQtJSQt();
     void dateConversionJSQt();
     void dateConversionQtJS();
+    void stringListFromArrayWithEmptyElement();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -6139,6 +6140,14 @@ void tst_QScriptEngine::scriptValueFromQMetaObject()
         QVERIFY(model != 0);
         QCOMPARE(model->parent(), (QObject*)&eng);
     }
+}
+
+// QTBUG-21896
+void tst_QScriptEngine::stringListFromArrayWithEmptyElement()
+{
+    QScriptEngine eng;
+    QCOMPARE(qscriptvalue_cast<QStringList>(eng.evaluate("[,'hello']")),
+             QStringList() << "" << "hello");
 }
 
 QTEST_MAIN(tst_QScriptEngine)
