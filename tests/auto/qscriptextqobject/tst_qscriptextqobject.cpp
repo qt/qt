@@ -584,6 +584,7 @@ private slots:
     void nestedArrayAsSlotArgument();
     void nestedObjectAsSlotArgument_data();
     void nestedObjectAsSlotArgument();
+    void propertyAccessThroughActivationObject();
 
 private:
     QScriptEngine *m_engine;
@@ -3623,6 +3624,23 @@ void tst_QScriptExtQObject::nestedObjectAsSlotArgument()
         QCOMPARE(m_myObject->qtFunctionActuals().at(0).type(), QVariant::Map);
         QCOMPARE(m_myObject->qtFunctionActuals().at(0).toMap(), expected);
     }
+}
+
+// QTBUG-21760
+void tst_QScriptExtQObject::propertyAccessThroughActivationObject()
+{
+    QScriptContext *ctx = m_engine->pushContext();
+    ctx->setActivationObject(m_engine->newQObject(m_myObject));
+
+    QVERIFY(m_engine->evaluate("intProperty").isNumber());
+    QVERIFY(m_engine->evaluate("mySlot()").isUndefined());
+    QVERIFY(m_engine->evaluate("mySlotWithStringArg('test')").isUndefined());
+
+    QVERIFY(m_engine->evaluate("dynamicProperty").isError());
+    m_myObject->setProperty("dynamicProperty", 123);
+    QCOMPARE(m_engine->evaluate("dynamicProperty").toInt32(), 123);
+
+    m_engine->popContext();
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)
