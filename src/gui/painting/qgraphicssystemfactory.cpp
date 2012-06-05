@@ -65,7 +65,7 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     if (system.isEmpty()) {
         system = QLatin1String("opengl");
     }
-#elif defined (QT_GRAPHICSSYSTEM_OPENVG)
+#elif defined (QT_GRAPHICSSYSTEM_OPENVG) && !defined(Q_CC_NOKIAX86)
     if (system.isEmpty()) {
         system = QLatin1String("openvg");
     }
