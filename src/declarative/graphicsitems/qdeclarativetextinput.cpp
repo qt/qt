@@ -1200,7 +1200,17 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
         QGraphicsSceneMouseEvent *event, QEvent::Type eventType)
 {
 #if !defined QT_NO_IM
-    if (event->widget() && control->composeMode()) {
+    Q_Q(QDeclarativeTextInput);
+
+    QWidget *widget = event->widget();
+    // event->widget() is null, if this is delayed event from QDeclarativeFlickable.
+    if (!widget && qApp) {
+        QGraphicsView *view = qobject_cast<QGraphicsView*>(qApp->focusWidget());
+        if (view && view->scene() && view->scene() == q->scene())
+            widget = view->viewport();
+    }
+
+    if (widget && control->composeMode()) {
         int tmp_cursor = xToPos(event->pos().x());
         int mousePos = tmp_cursor - control->cursor();
         if (mousePos < 0 || mousePos > control->preeditAreaText().length()) {
@@ -1210,11 +1220,11 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
                 return true;
         }
 
-        QInputContext *qic = event->widget()->inputContext();
+        QInputContext *qic = widget->inputContext();
         if (qic) {
             QMouseEvent mouseEvent(
                     eventType,
-                    event->widget()->mapFromGlobal(event->screenPos()),
+                    widget->mapFromGlobal(event->screenPos()),
                     event->screenPos(),
                     event->button(),
                     event->buttons(),
