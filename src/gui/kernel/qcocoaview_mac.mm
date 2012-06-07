@@ -502,7 +502,7 @@ static int qCocoaViewCount = 0;
     // and not just the one on top. Therefore, to we cannot use qwidget
     // as native widget for this case. Instead, we let qt_mac_handleMouseEvent
     // resolve it (last argument set to 0):
-    qt_mac_handleMouseEvent(nsmoveEvent, QEvent::MouseMove, Qt::NoButton, 0);
+    qt_mac_handleMouseEvent(nsmoveEvent, QEvent::MouseMove, Qt::NoButton, 0, true);
 }
 
 - (void)mouseExited:(NSEvent *)event
