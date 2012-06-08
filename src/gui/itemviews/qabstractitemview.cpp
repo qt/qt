@@ -4133,6 +4133,10 @@ const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &
 {
     static QEditorInfo nullInfo;
 
+    // do not try to search to avoid slow implicit cast from QModelIndex to QPersistentModelIndex
+    if (indexEditorHash.isEmpty())
+        return nullInfo;
+
     QIndexEditorHash::const_iterator it = indexEditorHash.find(index);
     if (it == indexEditorHash.end())
         return nullInfo;
@@ -4142,7 +4146,11 @@ const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &
 
 QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
 {
-   QEditorIndexHash::const_iterator it = editorIndexHash.find(editor);
+    // do not try to search to avoid slow implicit cast from QModelIndex to QPersistentModelIndex
+    if (indexEditorHash.isEmpty())
+        return QModelIndex();
+
+    QEditorIndexHash::const_iterator it = editorIndexHash.find(editor);
     if (it == editorIndexHash.end())
         return QModelIndex();
 
