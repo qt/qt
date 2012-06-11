@@ -1422,6 +1422,7 @@ void QDragManager::cancel(bool deleteSource)
     global_accepted_action = Qt::IgnoreAction;
 }
 
+#ifndef QT_NO_SHAPE
 static
 bool windowInteractsWithPosition(const QPoint & pos, Window w, int shapeType)
 {
@@ -1435,6 +1436,7 @@ bool windowInteractsWithPosition(const QPoint & pos, Window w, int shapeType)
     }
     return interacts;
 }
+#endif
 
 static
 Window findRealWindow(const QPoint & pos, Window w, int md, bool ignoreNonXdndAwareWindows)
@@ -1462,6 +1464,9 @@ Window findRealWindow(const QPoint & pos, Window w, int md, bool ignoreNonXdndAw
                                    AnyPropertyType, &type, &f,&n,&a,&data);
                 if (data) XFree(data);
                 if (type) {
+#ifdef QT_NO_SHAPE
+                    return w;
+#else // !QT_NO_SHAPE
                     const QPoint relPos = pos - QPoint(attr.x,attr.y);
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need an && here so that in the case one is set and the other is not we still get the correct result.
@@ -1474,6 +1479,7 @@ Window findRealWindow(const QPoint & pos, Window w, int md, bool ignoreNonXdndAw
 #endif
                     if (windowContainsMouse)
                         return w;
+#endif // QT_NO_SHAPE
                 }
             }
 
