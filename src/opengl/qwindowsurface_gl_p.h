@@ -74,7 +74,6 @@ class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
 {
 public:
     QPaintEngine* paintEngine() const;
-    void endPaint();
     QSize size() const;
     int metric(PaintDeviceMetric m) const;
     QGLContext* context() const;
