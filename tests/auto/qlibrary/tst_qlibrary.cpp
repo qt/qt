@@ -165,6 +165,15 @@ tst_QLibrary::tst_QLibrary()
     int argc = 1;
     app = new QCoreApplication(argc,&argv);
 #endif
+#ifdef Q_OS_WIN
+    // cd up from debug/release paths
+    QString directory = QDir::currentPath();
+    if (directory.endsWith(QLatin1String("debug"), Qt::CaseInsensitive)
+        || directory.endsWith(QLatin1String("release"), Qt::CaseInsensitive)) {
+        directory.truncate(directory.lastIndexOf(QLatin1Char('/')));
+        QDir::setCurrent(directory);
+    }
+#endif
 }
 
 tst_QLibrary::~tst_QLibrary()
@@ -241,6 +250,13 @@ void tst_QLibrary::load_data()
 # endif  // Q_OS_UNIX
 }
 
+static inline QByteArray msgCannotLoad(const QString &lib, const QString &why)
+{
+    const QString result = QString::fromLatin1("Cannot load %1 (in %2): %3")
+                           .arg(lib, QDir::currentPath(), why);
+    return result.toLatin1();
+}
+
 void tst_QLibrary::load()
 {
     QFETCH( QString, lib );
@@ -249,8 +265,8 @@ void tst_QLibrary::load()
     QLibrary library( lib );
     bool ok = library.load();
     if ( result ) {
-	QVERIFY( ok );
-	QVERIFY(library.unload());
+        QVERIFY2(ok, msgCannotLoad(lib, library.errorString()));
+        QVERIFY(library.unload());
     } else {
 	QVERIFY( !ok );
     }

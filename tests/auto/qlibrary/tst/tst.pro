@@ -2,6 +2,7 @@ load(qttest_p4)
 SOURCES         += ../tst_qlibrary.cpp
 TARGET  = ../tst_qlibrary
 QT = core
+CONFIG -= app_bundle
 
 win32 {
   CONFIG(debug, debug|release) {
@@ -30,5 +31,3 @@ wince*: {
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
-
-win32:CONFIG+=insignificant_test # QTQAINFRA-428
