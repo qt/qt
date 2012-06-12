@@ -321,12 +321,6 @@ struct QGLWindowSurfacePrivate
 QGLFormat QGLWindowSurface::surfaceFormat;
 QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
 
-void QGLWindowSurfaceGLPaintDevice::endPaint()
-{
-    glFlush();
-    QGLPaintDevice::endPaint();
-}
-
 QSize QGLWindowSurfaceGLPaintDevice::size() const
 {
     return d->size;
