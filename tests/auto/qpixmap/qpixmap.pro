@@ -33,5 +33,3 @@ wince*: {
 }
 
 RESOURCES += qpixmap.qrc
-
-CONFIG+=insignificant_test # QTQAINFRA-428
