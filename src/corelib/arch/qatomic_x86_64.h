@@ -170,7 +170,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValu
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "cmpxchgq %3,%2\n"
+                 "cmpxchg %3,%2\n"
                  "sete %1\n"
                  : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
                  : "r" (newValue), "0" (expectedValue)
@@ -181,7 +181,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 {
-    asm volatile("xchgq %0,%1"
+    asm volatile("xchg %0,%1"
                  : "=r" (newValue), "+m" (_q_value)
                  : "0" (newValue)
                  : "memory");
@@ -192,7 +192,7 @@ template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
 {
     asm volatile("lock\n"
-                 "xaddq %0,%1"
+                 "xadd %0,%1"
                  : "=r" (valueToAdd), "+m" (_q_value)
                  : "0" (valueToAdd * sizeof(T))
                  : "memory");
