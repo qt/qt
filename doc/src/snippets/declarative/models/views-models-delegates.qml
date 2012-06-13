@@ -62,9 +62,10 @@ Rectangle {
     Component {
         id: fruitDelegate
         Row {
-                Text { text: " Fruit: " + name; color: ListView.view.fruit_color }
+                id: fruit
+                Text { text: " Fruit: " + name; color: fruit.ListView.view.fruit_color }
                 Text { text: " Cost: $" + cost }
-                Text { text: " Language: " + ListView.view.model.language }
+                Text { text: " Language: " + fruit.ListView.view.model.language }
         }
     }
 
