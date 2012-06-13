@@ -281,7 +281,7 @@ void QTimerActiveObject::DoCancel()
         // Cancel requires a signal to continue, we're in the wrong thread to use the RTimer
         if (m_threadData->symbian_thread_handle.ExitType() == EExitPending) {
             // owner thread is still running, it will receive a stray event if the timer fires now.
-            qFatal("QTimerActiveObject cancelled from wrong thread");
+            RDebug::Print(_L("QTimerActiveObject cancelled from wrong thread, owner thread will probably panic with stray signal"));
         }
         TRequestStatus *status = &iStatus;
         User::RequestComplete(status, KErrCancel);
