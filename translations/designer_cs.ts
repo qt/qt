@@ -52,7 +52,7 @@
     </message>
     <message>
         <source>Tristate</source>
-        <translation>Tristate</translation>
+        <translation>Trojstav</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -324,7 +324,7 @@
     </message>
     <message>
         <source>Reparent &apos;%1&apos;</source>
-        <translation>Přiřadit jiný prvek &apos;%1&apos;</translation>
+        <translation>Přiřadit jiný nadřazený prvek pro &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Promote to custom widget</source>
@@ -336,15 +336,15 @@
     </message>
     <message>
         <source>Lay out using grid</source>
-        <translation>Rozmístit předměty tabulkově</translation>
+        <translation>Rozmístit prvky tabulkově</translation>
     </message>
     <message>
         <source>Lay out vertically</source>
-        <translation>Rozmístit předměty svisle</translation>
+        <translation>Rozmístit prvky svisle</translation>
     </message>
     <message>
         <source>Lay out horizontally</source>
-        <translation>Rozmístit předměty vodorovně</translation>
+        <translation>Rozmístit prvky vodorovně</translation>
     </message>
     <message>
         <source>Break layout</source>
@@ -404,11 +404,11 @@
     </message>
     <message>
         <source>Change Form Layout Item Geometry</source>
-        <translation>Změnit uspořádání prvku rozvržení formuláře</translation>
+        <translation>Změnit uspořádání položky rozvržení formuláře</translation>
     </message>
     <message>
         <source>Change Layout Item Geometry</source>
-        <translation>Změnit uspořádání prvku rozvržení</translation>
+        <translation>Změnit uspořádání položky rozvržení</translation>
     </message>
     <message>
         <source>Change Table Contents</source>
@@ -657,7 +657,7 @@
     </message>
     <message>
         <source>This file contains top level spacers.&lt;br&gt;They have &lt;b&gt;NOT&lt;/b&gt; been saved into the form.</source>
-        <translation>Formulář obsahuje volně stojící prvky rozložení, které &lt;b&gt;NEBYLY&lt;/b&gt; uloženy do formuláře.</translation>
+        <translation>Formulář obsahuje volně stojící rozpínavé mezery, které &lt;b&gt;NEBYLY&lt;/b&gt; uloženy do formuláře.</translation>
     </message>
     <message>
         <source>Perhaps you forgot to create a layout?</source>
@@ -741,7 +741,7 @@
     </message>
     <message>
         <source>An invalid tag &lt;%1&gt; was encountered.</source>
-        <translation> Byl zjištěn neplatný prvek&apos;%1&apos;.</translation>
+        <translation>Byla zjištěna neplatná značka &lt;%1&gt;.</translation>
     </message>
 </context>
 <context>
@@ -819,7 +819,7 @@
     <message>
         <source>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Style&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Resolution&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</source>
         <extracomment>Format embedded device profile description</extracomment>
-        <translation>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Stil&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Rozlišení&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Font&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%1, %2&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Styl&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%3&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Rozlišení&lt;/b&gt;&lt;/td&gt;&lt;td&gt;%4 x %5&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -883,16 +883,12 @@
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values
 ----------
-Parsing layout stretch values
-----------
 Parsing layout stretch values</extracomment>
         <translation>Neplatná hodnota roztažení pro &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing grid layout minimum size values
-----------
-Parsing grid layout minimum size values
 ----------
 Parsing grid layout minimum size values</extracomment>
         <translation>Neplatná nejmenší velikost pro &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1005,7 +1001,7 @@ Parsing grid layout minimum size values</extracomment>
     </message>
     <message>
         <source>&amp;Include Hints</source>
-        <translation>&amp;Zahrnout rady</translation>
+        <translation>&amp;Zahrnuté hlavičky</translation>
     </message>
     <message>
         <source>&amp;Pixmap Function</source>
@@ -1166,7 +1162,7 @@ Parsing grid layout minimum size values</extracomment>
     </message>
     <message>
         <source>Style sheet</source>
-        <translation>Předlohový list</translation>
+        <translation>Stylový list</translation>
     </message>
     <message>
         <source>...</source>
@@ -1217,7 +1213,7 @@ Parsing grid layout minimum size values</extracomment>
     <message>
         <source>Attempt to add a layout to a widget &apos;%1&apos; (%2) which already has a layout of non-box type %3.
 This indicates an inconsistency in the ui-file.</source>
-        <translation>Pokus o přidání rozvržení na prvek &apos;%1&apos; (%2), který již má rozvržení typu %3 hat. Ukazuje to na nesrovnalost v souboru s rozhraním.</translation>
+        <translation>Pokus o přidání rozvržení na prvek &apos;%1&apos; (%2), který již má rozvržení typu %3. Ukazuje to na nesrovnalost v souboru s rozhraním.</translation>
     </message>
     <message>
         <source>Empty widget item in %1 &apos;%2&apos;.</source>
@@ -1310,7 +1306,7 @@ This indicates an inconsistency in the ui-file.</source>
     </message>
     <message>
         <source>Cannot set an empty include file.</source>
-        <translation>Název pro hlavičkový soubor nemůže zůstat prázdný.</translation>
+        <translation>Název pro zahrnutý soubor nemůže zůstat prázdný.</translation>
     </message>
     <message>
         <source>Exception at line %1: %2</source>
@@ -1807,7 +1803,7 @@ Kontejnerové stránky by měly být zadány výhradně v XML vrácené metodě 
     </message>
     <message>
         <source>Resource Browser</source>
-        <translation>Prohlížeč zdrojů</translation>
+        <translation>Prohlížeč prostředků</translation>
     </message>
     <message>
         <source>Signal/Slot Editor</source>
@@ -1911,10 +1907,8 @@ Kontejnerové stránky by měly být zadány výhradně v XML vrácené metodě 
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method
 ----------
-Empty class name passed to widget factory method
-----------
 Empty class name passed to widget factory method</extracomment>
-        <translation>Postupu %1 byl předán prázdný název třídy (název objektu &apos;%2&apos;).</translation>
+        <translation>Metodě %1 byl předán prázdný název třídy (název objektu &apos;%2&apos;).</translation>
     </message>
     <message>
         <source>QFormBuilder was unable to create a custom widget of the class &apos;%1&apos;; defaulting to base class &apos;%2&apos;.</source>
@@ -2288,7 +2282,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Radial</source>
-        <translation>Paprskovitý</translation>
+        <translation>Kruhový</translation>
     </message>
     <message>
         <source>Conical</source>
@@ -2336,11 +2330,11 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Gradient Stops Editor</source>
-        <translation>Editor bodů zastavení přechodu</translation>
+        <translation>Editor bodů přechodu</translation>
     </message>
     <message>
         <source>This area allows you to edit gradient stops. Double click on the existing stop handle to duplicate it. Double click outside of the existing stop handles to create a new stop. Drag &amp; drop the handle to reposition it. Use right mouse button to popup context menu with extra actions.</source>
-        <translation>Tato oblast slouží pro úpravy bodů zastavení přechodu. Dvakrát klepněte na orientační bod kvůli jeho zdvojení. Dvakrát klepněte na plochu kvůli vytvoření nového orientačního bodu. Použijte tažení &amp; upuštění pro posunutí bodu. Pravým tlačítkem myši se vyvolává nabídka s dalšími souvisejícími volbami.</translation>
+        <translation>Tato oblast slouží pro úpravy řídících bodů přechodu. Dvakrát klepněte na úchyt bodu kvůli jeho zdvojení. Nový řídící bod vytvoříte dvojím poklepnutím na plochu vně stávajících úchytů. Popotažením úchytu lze bod posunout. Pravým tlačítkem myši se vyvolává nabídka s dalšími souvisejícími volbami.</translation>
     </message>
     <message>
         <source>Zoom</source>
@@ -2352,7 +2346,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Hue</source>
-        <translation>Barevný odstín</translation>
+        <translation>Odstín</translation>
     </message>
     <message>
         <source>H</source>
@@ -2396,7 +2390,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Spread</source>
-        <translation>Rozšiřování</translation>
+        <translation>Rozprostření</translation>
     </message>
     <message>
         <source>Color</source>
@@ -2404,7 +2398,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Current stop&apos;s color</source>
-        <translation>Barva nynějšího zastavení</translation>
+        <translation>Barva nynějšího řídícího bodu</translation>
     </message>
     <message>
         <source>HSV</source>
@@ -2416,7 +2410,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Current stop&apos;s position</source>
-        <translation>Poloha nynějšího zastavení</translation>
+        <translation>Poloha nynějšího řídícího bodu</translation>
     </message>
     <message>
         <source>%</source>
@@ -2448,7 +2442,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Radial Type</source>
-        <translation>Paprskovitý typ</translation>
+        <translation>Kruhový typ</translation>
     </message>
     <message>
         <source>Conical Type</source>
@@ -2456,19 +2450,19 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Pad Spread</source>
-        <translation>Doplnit rozšiřování</translation>
+        <translation>Rozprostřít vyplněním</translation>
     </message>
     <message>
         <source>Repeat Spread</source>
-        <translation>Opakovat rozšiřování</translation>
+        <translation>Rozprostřít opakováním</translation>
     </message>
     <message>
         <source>Reflect Spread</source>
-        <translation>Zrcadlit rozšiřování</translation>
+        <translation>Rozprostřít zrcadlením</translation>
     </message>
     <message>
         <source>This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient&apos;s type such as start and final point, radius, etc. by drag &amp; drop.</source>
-        <translation>tato oblast ukazuje náhled právě upravovaného přechodu. Zde můžete upravovat proměnné příznačné pro přechod, jako začáteční a koncový bod, poloměr etd. pomocí tažení a pouštění.</translation>
+        <translation>Tato oblast ukazuje náhled právě upravovaného přechodu. Popotahováním zde můžete upravovat proměnné příznačné pro přechod, jako začáteční a koncový bod, poloměr atd.</translation>
     </message>
     <message>
         <source>Show HSV specification</source>
@@ -2487,7 +2481,7 @@ Empty class name passed to widget factory method</extracomment>
     <name>QtGradientStopsWidget</name>
     <message>
         <source>New Stop</source>
-        <translation>Nové zastavení</translation>
+        <translation>Nový řídící bod</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -2673,7 +2667,7 @@ Empty class name passed to widget factory method</extracomment>
     <name>QtResourceEditorDialog</name>
     <message>
         <source>Edit Resources</source>
-        <translation>Upravit zdroje</translation>
+        <translation>Upravit prostředky</translation>
     </message>
     <message>
         <source>New...</source>
@@ -2681,15 +2675,15 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>New Resource File</source>
-        <translation>Nový zdrojový soubor</translation>
+        <translation>Nový soubor s prostředky</translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;Upozornění:&lt;/b&gt;&lt;p&gt;Zvolený soubor: &lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;se nachází mimo adresář se nynějším zdrojovým souborem:&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;b&gt;Upozornění:&lt;/b&gt;&lt;p&gt;Zvolený soubor: &lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;se nachází mimo rodičovský adresář s nynějším souborem s prostředky:&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;p&gt;To resolve the issue, press:&lt;/p&gt;&lt;table&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy&lt;/th&gt;&lt;td&gt;to copy the file to the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Copy As...&lt;/th&gt;&lt;td&gt;to copy the file into a subdirectory of the resource file&apos;s parent directory.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Keep&lt;/th&gt;&lt;td&gt;to use its current location.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</source>
-        <translation>&lt;p&gt;Zvolte, prosím:&lt;/p&gt;&lt;table&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Kopírovat&lt;/th&gt;&lt;td&gt;pro zkopírování souboru do adresáře se zdrojovým souborem.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Kopírovat jako...&lt;/th&gt;&lt;td&gt;pro zkopírování souboru do podadresáře se zdrojovým souborem.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Zachovat&lt;/th&gt;&lt;td&gt;, aby se soubor používal ve svém nynějším adresáři.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</translation>
+        <translation>&lt;p&gt;Zvolte, prosím:&lt;/p&gt;&lt;table&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Kopírovat&lt;/th&gt;&lt;td&gt;pro zkopírování souboru do rodičovského adresáře se souborem s prostředky.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Kopírovat jako...&lt;/th&gt;&lt;td&gt;pro zkopírování souboru do podadresáře rodičovského adresáře se souborem s prostředky.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;th align=&quot;left&quot;&gt;Zachovat&lt;/th&gt;&lt;td&gt;, aby se soubor používal ve svém nynějším adresáři.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</translation>
     </message>
     <message>
         <source>Could not copy
@@ -2761,7 +2755,7 @@ zu:
     </message>
     <message>
         <source>Resource Warning</source>
-        <translation>Zdroje - Varování</translation>
+        <translation>Prostředky - Varování</translation>
     </message>
     <message>
         <source>Dialog</source>
@@ -2789,7 +2783,7 @@ zu:
     </message>
     <message>
         <source>New Resource</source>
-        <translation>Nový zdroj</translation>
+        <translation>Nové prostředky</translation>
     </message>
     <message>
         <source>A</source>
@@ -2797,7 +2791,7 @@ zu:
     </message>
     <message>
         <source>Remove Resource or File</source>
-        <translation>Odstranit zdroj nebo soubor</translation>
+        <translation>Odstranit prostředek nebo soubor</translation>
     </message>
     <message>
         <source>%1 already exists.
@@ -2807,7 +2801,7 @@ Chcete jej nahradit?</translation>
     </message>
     <message>
         <source>The file does not appear to be a resource file; element &apos;%1&apos; was found where &apos;%2&apos; was expected.</source>
-        <translation>Soubor zřejmě není zdrojovým souborem; Na místě, kde byl očekáván prvek &apos;%2&apos; byl nalezen prvek &apos;%1&apos;.</translation>
+        <translation>Soubor zřejmě není souborem s prostředky; Na místě, kde byl očekáván prvek &apos;%2&apos; byl nalezen prvek &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>%1 [read-only]</source>
@@ -2823,11 +2817,11 @@ Chcete jej nahradit?</translation>
     </message>
     <message>
         <source>Resource files (*.qrc)</source>
-        <translation>Zdrojové soubory (*.qrc)</translation>
+        <translation>Soubory s prostředky (*.qrc)</translation>
     </message>
     <message>
         <source>Import Resource File</source>
-        <translation>Zavést zdrojový soubor</translation>
+        <translation>Zavést soubor s prostředky</translation>
     </message>
     <message>
         <source>newPrefix</source>
@@ -2873,7 +2867,7 @@ Může to být například jazykové rozšíření &quot;_cs&quot;.</translation
     </message>
     <message>
         <source>&lt;p&gt;The selected file:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s directory:&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Please select another path within this directory.&lt;p&gt;</source>
-        <translation>&lt;p&gt;Vybraný soubor: &lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;se nachází mimo adresář se zdrojovým souborem:&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Zvolte, prosím, jinou cestu, která je obsažena v tomto adresáři.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;Vybraný soubor: &lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;se nachází mimo adresář se souborem s prostředky:&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Zvolte, prosím, jinou cestu, která je obsažena v tomto adresáři.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Could not overwrite %1.</source>
@@ -2881,7 +2875,7 @@ Může to být například jazykové rozšíření &quot;_cs&quot;.</translation
     </message>
     <message>
         <source>Save Resource File</source>
-        <translation>Uložit zdrojový soubor</translation>
+        <translation>Uložit soubor s prostředky</translation>
     </message>
     <message>
         <source>Could not write %1: %2</source>
@@ -2889,7 +2883,7 @@ Může to být například jazykové rozšíření &quot;_cs&quot;.</translation
     </message>
     <message>
         <source>Open Resource File</source>
-        <translation>Otevřít zdrojový soubor</translation>
+        <translation>Otevřít soubor s prostředky</translation>
     </message>
 </context>
 <context>
@@ -2902,7 +2896,7 @@ Může to být například jazykové rozšíření &quot;_cs&quot;.</translation
     </message>
     <message>
         <source>Edit Resources...</source>
-        <translation>Upravit zdroje...</translation>
+        <translation>Upravit prostředky...</translation>
     </message>
     <message>
         <source>Reload</source>
@@ -2917,7 +2911,7 @@ Může to být například jazykové rozšíření &quot;_cs&quot;.</translation
     <name>QtResourceViewDialog</name>
     <message>
         <source>Select Resource</source>
-        <translation>Vybrat zdroj</translation>
+        <translation>Vybrat prostředky</translation>
     </message>
 </context>
 <context>
@@ -3194,11 +3188,11 @@ Chcete tuto předlohu přepsat?</translation>
     <name>Spacer</name>
     <message>
         <source>Horizontal Spacer &apos;%1&apos;, %2 x %3</source>
-        <translation>Vodorovný vymezovač &apos;%1&apos;, %2 x %3</translation>
+        <translation>Vodorovná rozpínavá mezera &apos;%1&apos;, %2 x %3</translation>
     </message>
     <message>
         <source>Vertical Spacer &apos;%1&apos;, %2 x %3</source>
-        <translation>Svislý vymezovač &apos;%1&apos;, %2 x %3</translation>
+        <translation>Svislá rozpínavá mezera &apos;%1&apos;, %2 x %3</translation>
     </message>
 </context>
 <context>
@@ -3275,11 +3269,11 @@ Chcete tuto předlohu přepsat?</translation>
     <name>VideoPlayerTaskMenu</name>
     <message>
         <source>Available Mime Types</source>
-        <translation>Dostupné mime typy</translation>
+        <translation>Dostupné MIME typy</translation>
     </message>
     <message>
         <source>Display supported mime types...</source>
-        <translation>Zobrazit podporované mime typy...</translation>
+        <translation>Zobrazit podporované MIME typy...</translation>
     </message>
     <message>
         <source>Load...</source>
@@ -3435,7 +3429,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>An error occurred when reading the resource file &apos;%1&apos; at line %2, column %3: %4</source>
-        <translation>Chyba při čtení zdrojového souboru &apos;%1&apos; na řádku %2, sloupec %3: %4</translation>
+        <translation>Chyba při čtení souboru s prostředky &apos;%1&apos; na řádku %2, sloupec %3: %4</translation>
     </message>
 </context>
 <context>
@@ -3579,11 +3573,11 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::ComboBoxTaskMenu</name>
     <message>
         <source>Edit Items...</source>
-        <translation>Upravit záznamy...</translation>
+        <translation>Upravit položky...</translation>
     </message>
     <message>
         <source>Change Combobox Contents</source>
-        <translation>Změnit obsah skupinové krabice</translation>
+        <translation>Změnit obsah rozbalovacího seznamu</translation>
     </message>
 </context>
 <context>
@@ -3751,7 +3745,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>[Theme] %1</source>
-        <translation>[Téma] %1</translation>
+        <translation>[Motiv] %1</translation>
     </message>
     <message>
         <source>Horizontal</source>
@@ -3763,7 +3757,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Theme</source>
-        <translation>Téma</translation>
+        <translation>Motiv</translation>
     </message>
     <message>
         <source>Normal Off</source>
@@ -3958,7 +3952,7 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::FormEditor</name>
     <message>
         <source>Resource File Changed</source>
-        <translation>Zdrojový soubor byl změněn</translation>
+        <translation>Soubor s prostředky byl změněn</translation>
     </message>
     <message>
         <source>The file &quot;%1&quot; has changed outside Designer. Do you want to reload it?</source>
@@ -4134,43 +4128,43 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Lay Out &amp;Horizontally</source>
-        <translation>Uspořádat předměty &amp;vodorovně</translation>
+        <translation>Uspořádat prvky &amp;vodorovně</translation>
     </message>
     <message>
         <source>Lays out the selected widgets horizontally</source>
-        <translation>Uspořádá vybrané předměty vodorovně</translation>
+        <translation>Uspořádá vybrané prvky vodorovně</translation>
     </message>
     <message>
         <source>Lay Out &amp;Vertically</source>
-        <translation>Uspořádat předměty &amp;svisle</translation>
+        <translation>Uspořádat prvky &amp;svisle</translation>
     </message>
     <message>
         <source>Lays out the selected widgets vertically</source>
-        <translation>Uspořádá vybrané předměty svisle</translation>
+        <translation>Uspořádá vybrané prvky svisle</translation>
     </message>
     <message>
         <source>Lay Out in a &amp;Grid</source>
-        <translation>Uspořádat předměty &amp;tabulkově</translation>
+        <translation>Uspořádat prvky &amp;tabulkově</translation>
     </message>
     <message>
         <source>Lays out the selected widgets in a grid</source>
-        <translation>Uspořádá vybrané předměty tabulkově</translation>
+        <translation>Uspořádá vybrané prvky tabulkově</translation>
     </message>
     <message>
         <source>Lay Out Horizontally in S&amp;plitter</source>
-        <translation>Uspořádat předměty vodorovně okolo &amp;dělící příčky</translation>
+        <translation>Uspořádat prvky vodorovně okolo &amp;dělící příčky</translation>
     </message>
     <message>
         <source>Lays out the selected widgets horizontally in a splitter</source>
-        <translation>Uspořádá vybrané předměty vodorovně okolo dělící příčky</translation>
+        <translation>Uspořádá vybrané prvky vodorovně okolo dělící příčky</translation>
     </message>
     <message>
         <source>Lay Out Vertically in Sp&amp;litter</source>
-        <translation>Uspořádat předměty svisle okolo dě&amp;lící příčky</translation>
+        <translation>Uspořádat prvky svisle okolo dě&amp;lící příčky</translation>
     </message>
     <message>
         <source>Lays out the selected widgets vertically in a splitter</source>
-        <translation>Uspořádá vybrané předměty svisle okolo dělící příčky</translation>
+        <translation>Uspořádá vybrané prvky svisle okolo dělící příčky</translation>
     </message>
     <message>
         <source>&amp;Break Layout</source>
@@ -4215,11 +4209,11 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Lay Out in a &amp;Form Layout</source>
-        <translation>Uspořádat předměty v &amp;rozvržení formuláře</translation>
+        <translation>Uspořádat prvky v &amp;rozvržení formuláře</translation>
     </message>
     <message>
         <source>Lays out the selected widgets in a form layout</source>
-        <translation>Uspořádá vybrané předměty v dvousloupcovém rozvržení formuláře</translation>
+        <translation>Uspořádá vybrané prvky v dvousloupcovém rozvržení formuláře</translation>
     </message>
     <message>
         <source>Si&amp;mplify Grid Layout</source>
@@ -4338,7 +4332,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Choose Resource...</source>
-        <translation>Vybrat zdroj...</translation>
+        <translation>Vybrat prostředky...</translation>
     </message>
     <message>
         <source>Choose File...</source>
@@ -4361,11 +4355,11 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::IconThemeDialog</name>
     <message>
         <source>Set Icon From Theme</source>
-        <translation>Nastavit ikonu z tématu</translation>
+        <translation>Nastavit ikonu z motivu</translation>
     </message>
     <message>
         <source>Input icon name from the current theme:</source>
-        <translation>Název pro ikonu z nynějšího tématu:</translation>
+        <translation>Název pro ikonu z nynějšího motivu:</translation>
     </message>
 </context>
 <context>
@@ -4380,11 +4374,11 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Items List</source>
-        <translation>Seznam prvků</translation>
+        <translation>Seznam položek</translation>
     </message>
     <message>
         <source>New Item</source>
-        <translation>Nový prvek</translation>
+        <translation>Nová položka</translation>
     </message>
     <message>
         <source>&amp;New</source>
@@ -4392,7 +4386,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Delete Item</source>
-        <translation>Smazat prvek</translation>
+        <translation>Smazat položku</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
@@ -4400,7 +4394,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Move Item Up</source>
-        <translation>Posunout prvek nahoru</translation>
+        <translation>Posunout položku nahoru</translation>
     </message>
     <message>
         <source>U</source>
@@ -4408,7 +4402,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Move Item Down</source>
-        <translation>Posunout prvek dolů</translation>
+        <translation>Posunout položku dolů</translation>
     </message>
     <message>
         <source>D</source>
@@ -4419,7 +4413,7 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::LabelTaskMenu</name>
     <message>
         <source>Change rich text...</source>
-        <translation>Změnit bohatý text...</translation>
+        <translation>Změnit formátovaný text...</translation>
     </message>
     <message>
         <source>Change plain text...</source>
@@ -4430,7 +4424,7 @@ Chcete tuto předlohu přepsat?</translation>
     <name>qdesigner_internal::LanguageResourceDialog</name>
     <message>
         <source>Choose Resource</source>
-        <translation>Vybrat zdroj</translation>
+        <translation>Vybrat prostředky</translation>
     </message>
 </context>
 <context>
@@ -4448,18 +4442,18 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Edit Combobox</source>
-        <translation>Upravit skupinovou krabici</translation>
+        <translation>Upravit rozbalovací seznam</translation>
     </message>
     <message>
         <source>New Item</source>
-        <translation>Nový prvek</translation>
+        <translation>Nová položka</translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::ListWidgetTaskMenu</name>
     <message>
         <source>Edit Items...</source>
-        <translation>Upravit prvky...</translation>
+        <translation>Upravit položky...</translation>
     </message>
     <message>
         <source>Change List Contents</source>
@@ -4539,7 +4533,7 @@ Chcete tuto předlohu přepsat?</translation>
     </message>
     <message>
         <source>Icon th&amp;eme:</source>
-        <translation>&amp;Téma ikon:</translation>
+        <translation>&amp;Motiv ikon:</translation>
     </message>
     <message>
         <source>&amp;Checkable:</source>
@@ -4582,7 +4576,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>horizontalSpacer</source>
-        <translation>Vodorovný vymezovač</translation>
+        <translation>Vodorovná rozpínavá mezera</translation>
     </message>
 </context>
 <context>
@@ -4677,7 +4671,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>Global include</source>
-        <translation>Celkový hlavičkový soubor</translation>
+        <translation>Celkový zahrnutý soubor</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -4779,7 +4773,7 @@ Zvolte, prosím, jiný název.</translation>
     <name>qdesigner_internal::PaletteModel</name>
     <message>
         <source>Color Role</source>
-        <translation>Barevné kolo</translation>
+        <translation>Role barvy</translation>
     </message>
     <message>
         <source>Active</source>
@@ -4787,7 +4781,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>Inactive</source>
-        <translation>Nečinný</translation>
+        <translation>Nečinná</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -4806,7 +4800,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>Choose Resource...</source>
-        <translation>Vybrat zdroj...</translation>
+        <translation>Vybrat prostředky...</translation>
     </message>
     <message>
         <source>Choose File...</source>
@@ -4814,7 +4808,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>Set Icon From Theme...</source>
-        <translation>Nastavit ikonu z tématu...</translation>
+        <translation>Nastavit ikonu z motivu...</translation>
     </message>
     <message>
         <source>...</source>
@@ -4822,7 +4816,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>[Theme] %1</source>
-        <translation>[Téma] %1</translation>
+        <translation>[Motiv] %1</translation>
     </message>
 </context>
 <context>
@@ -4860,7 +4854,7 @@ Zvolte, prosím, jiný název.</translation>
     </message>
     <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
-        <translation>Programu Qt Designer se nepodařilo najít jakékoli přídavné moduly</translation>
+        <translation>Programu Qt Designer se nepodařilo najít žádné přídavné moduly</translation>
     </message>
     <message>
         <source>Qt Designer found the following plugins</source>
@@ -4957,12 +4951,12 @@ Zvolte, prosím, jiný název.</translation>
     <message>
         <source>Landscape (&amp;CCW)</source>
         <extracomment>Rotate form preview counter-clockwise</extracomment>
-        <translation>Formát na šířku (&amp;proti směru otáčení hodinových ručiček)</translation>
+        <translation>Na šířku (do&amp;leva)</translation>
     </message>
     <message>
         <source>&amp;Landscape (CW)</source>
         <extracomment>Rotate form preview clockwise</extracomment>
-        <translation>Formát na šířku (po směru &amp;otáčení hodinových ručiček)</translation>
+        <translation>Na šířku (do&amp;prava)</translation>
     </message>
     <message>
         <source>&amp;Close</source>
@@ -4994,15 +4988,15 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>LineEdit</source>
-        <translation>Úprava čáry</translation>
+        <translation>Upravitelný řádek</translation>
     </message>
     <message>
         <source>ComboBox</source>
-        <translation>Skupinová krabice</translation>
+        <translation>Rozbalovací seznam</translation>
     </message>
     <message>
         <source>PushButton</source>
-        <translation>Tlačítko na postrčení</translation>
+        <translation>Tlačítko</translation>
     </message>
     <message>
         <source>ButtonGroup2</source>
@@ -5010,11 +5004,11 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>CheckBox1</source>
-        <translation>Zaškrtnutelné políčko 1</translation>
+        <translation>Zaškrtávací pole 1</translation>
     </message>
     <message>
         <source>CheckBox2</source>
-        <translation>Zaškrtnutelné políčko 2</translation>
+        <translation>Zaškrtávací pole 2</translation>
     </message>
     <message>
         <source>ButtonGroup</source>
@@ -5022,15 +5016,15 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>RadioButton1</source>
-        <translation>Rozhlasové tlačítko 1</translation>
+        <translation>Přepínač 1</translation>
     </message>
     <message>
         <source>RadioButton2</source>
-        <translation>Rozhlasové tlačítko 2</translation>
+        <translation>Přepínač 2</translation>
     </message>
     <message>
         <source>RadioButton3</source>
-        <translation>Rozhlasové tlačítko 3</translation>
+        <translation>Přepínač 3</translation>
     </message>
 </context>
 <context>
@@ -5045,7 +5039,7 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>Global include</source>
-        <translation>Celkový hlavičkový soubor</translation>
+        <translation>Celkový</translation>
     </message>
     <message>
         <source>Usage</source>
@@ -5060,11 +5054,11 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>Promote to ...</source>
-        <translation>Stanovit jako zástupný symbol pro uživatelsky stanovenou třídu...</translation>
+        <translation>Stanovit zástupným pro vlastní prvek...</translation>
     </message>
     <message>
         <source>Promote to</source>
-        <translation>Stanovit jako zástupný symbol pro uživatelsky stanovenou třídu</translation>
+        <translation>Stanovit zástupným pro vlastní prvek</translation>
     </message>
     <message>
         <source>Demote to %1</source>
@@ -5091,7 +5085,7 @@ která byla volně puštěná.</translation>
     </message>
     <message>
         <source>Drop Down Button View</source>
-        <translation>Podrobný pohled</translation>
+        <translation>Rozbalovací pohled</translation>
     </message>
     <message>
         <source>Object: %1
@@ -5158,11 +5152,11 @@ Třída: %2</translation>
     <name>qdesigner_internal::QDesignerResource</name>
     <message>
         <source>Loading qrc file</source>
-        <translation>Nahrává se zdrojový soubor</translation>
+        <translation>Nahrává se soubor qrc s prostředky</translation>
     </message>
     <message>
         <source>The specified qrc file &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;could not be found. Do you want to update the file location?&lt;/p&gt;</source>
-        <translation>Zadaný zdrojový soubor &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt; se nepodařilo najít. Chcete zadat novou cestu k umístění souboru?&lt;/p&gt;</translation>
+        <translation>Zadaný soubor qrc s prostředky &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt; se nepodařilo najít. Chcete zadat novou cestu k umístění souboru?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>New location for %1</source>
@@ -5170,7 +5164,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Resource files (*.qrc)</source>
-        <translation>Zdrojové soubory (*.qrc)</translation>
+        <translation>Soubory s prostředky (*.qrc)</translation>
     </message>
 </context>
 <context>
@@ -5189,7 +5183,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Change styleSheet...</source>
-        <translation>Změnit předlohový list...</translation>
+        <translation>Změnit stylový list...</translation>
     </message>
     <message>
         <source>Create Menu Bar</source>
@@ -5332,7 +5326,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Unexpected end of file encountered when parsing widgets.</source>
-        <translation>Při čtení nastavení krabice s prvky se vyskytl předčasný konec souboru.</translation>
+        <translation>Při zpracování prvků rozhraní se vyskytl předčasný konec souboru.</translation>
     </message>
     <message>
         <source>A widget element could not be found.</source>
@@ -5355,7 +5349,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Hue</source>
-        <translation>Barevný odstín</translation>
+        <translation>Odstín</translation>
     </message>
     <message>
         <source>Sat</source>
@@ -5414,7 +5408,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Rich Text</source>
-        <translation>Bohatý text</translation>
+        <translation>Formátovaný text</translation>
     </message>
     <message>
         <source>Source</source>
@@ -5481,7 +5475,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Simplify Rich Text</source>
-        <translation>Zjednodušit bohatý text</translation>
+        <translation>Zjednodušit formátovaný text</translation>
     </message>
 </context>
 <context>
@@ -5496,7 +5490,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>&lt;html&gt;Enter a Qt Script snippet to be executed while loading the form.&lt;br&gt;The widget and its children are accessible via the variables &lt;i&gt;widget&lt;/i&gt; and &lt;i&gt;childWidgets&lt;/i&gt;, respectively.</source>
-        <translation>&lt;html&gt;Zadejte kousek Qt skriptu k provedení v průběhu nahrávání formuláře.&lt;br&gt;Prvek a jemu podřízené prvky jsou přístupné prostřednictvím proměnných &lt;i&gt;widget&lt;/i&gt; und &lt;i&gt;childWidgets&lt;/i&gt;.</translation>
+        <translation>&lt;html&gt;Zadejte kousek Qt skriptu, jenž bude spuštěn při nahrávání formuláře.&lt;br&gt;Prvek a jemu podřízené prvky jsou přístupné prostřednictvím proměnných &lt;i&gt;widget&lt;/i&gt; a &lt;i&gt;childWidgets&lt;/i&gt;.</translation>
     </message>
 </context>
 <context>
@@ -5561,19 +5555,19 @@ Třída: %2</translation>
     <name>qdesigner_internal::StyleSheetEditorDialog</name>
     <message>
         <source>Edit Style Sheet</source>
-        <translation>Upravit předlohový list</translation>
+        <translation>Upravit stylový list</translation>
     </message>
     <message>
         <source>Valid Style Sheet</source>
-        <translation>Platný předlohový list</translation>
+        <translation>Platný stylový list</translation>
     </message>
     <message>
         <source>Invalid Style Sheet</source>
-        <translation>Neplatný předlohový list</translation>
+        <translation>Neplatný stylový list</translation>
     </message>
     <message>
         <source>Add Resource...</source>
-        <translation>Přidat zdroj...</translation>
+        <translation>Přidat prostředky...</translation>
     </message>
     <message>
         <source>Add Gradient...</source>
@@ -5657,18 +5651,18 @@ Třída: %2</translation>
     </message>
     <message>
         <source>&amp;Items</source>
-        <translation>&amp;Prvky</translation>
+        <translation>&amp;Položky</translation>
     </message>
     <message>
         <source>Table Items</source>
-        <translation>Prvky tabulek</translation>
+        <translation>Položky tabulek</translation>
     </message>
 </context>
 <context>
     <name>qdesigner_internal::TableWidgetTaskMenu</name>
     <message>
         <source>Edit Items...</source>
-        <translation>Upravit prvky...</translation>
+        <translation>Upravit položky...</translation>
     </message>
 </context>
 <context>
@@ -5713,7 +5707,7 @@ Třída: %2</translation>
     <name>qdesigner_internal::TextEditor</name>
     <message>
         <source>Choose Resource...</source>
-        <translation>Vybrat zdroj...</translation>
+        <translation>Vybrat prostředky...</translation>
     </message>
     <message>
         <source>Choose File...</source>
@@ -5767,7 +5761,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>New Item</source>
-        <translation>Nový prvek</translation>
+        <translation>Nová položka</translation>
     </message>
     <message>
         <source>Properties &amp;&lt;&lt;</source>
@@ -5787,27 +5781,27 @@ Třída: %2</translation>
     </message>
     <message>
         <source>&amp;Items</source>
-        <translation>&amp;Prvky</translation>
+        <translation>&amp;Položky</translation>
     </message>
     <message>
         <source>Tree Items</source>
-        <translation>Stromové prvky</translation>
+        <translation>Stromové položky</translation>
     </message>
     <message>
         <source>New Subitem</source>
-        <translation>Nový podřízený prvek</translation>
+        <translation>Nová podpoložka</translation>
     </message>
     <message>
         <source>New &amp;Subitem</source>
-        <translation>Nový po&amp;dřízený prvek</translation>
+        <translation>Nová po&amp;dpoložka</translation>
     </message>
     <message>
         <source>Delete Item</source>
-        <translation>Smazat prvek</translation>
+        <translation>Smazat položku</translation>
     </message>
     <message>
         <source>Move Item Left (before Parent Item)</source>
-        <translation>Posunout prvek doleva (před nadřízený prvek)</translation>
+        <translation>Posunout položku doleva (před nadřízenou položku)</translation>
     </message>
     <message>
         <source>L</source>
@@ -5815,7 +5809,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Move Item Right (as a First Subitem of the Next Sibling Item)</source>
-        <translation>Posunout prvek doprava (jako první podřízený prvek dalšího rovnocenného prvku)</translation>
+        <translation>Posunout položku doprava (jako první podpoložku další rovnocenné položky)</translation>
     </message>
     <message>
         <source>R</source>
@@ -5823,7 +5817,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Move Item Up</source>
-        <translation>Posunout prvek nahoru</translation>
+        <translation>Posunout položku nahoru</translation>
     </message>
     <message>
         <source>U</source>
@@ -5831,7 +5825,7 @@ Třída: %2</translation>
     </message>
     <message>
         <source>Move Item Down</source>
-        <translation>Posunout prvek dolů</translation>
+        <translation>Posunout položku dolů</translation>
     </message>
     <message>
         <source>D</source>
@@ -5854,7 +5848,7 @@ Třída: %2</translation>
     <name>qdesigner_internal::TreeWidgetTaskMenu</name>
     <message>
         <source>Edit Items...</source>
-        <translation>Upravit prvky...</translation>
+        <translation>Upravit položky...</translation>
     </message>
 </context>
 <context>
@@ -5917,11 +5911,11 @@ Třída: %2</translation>
     <name>qdesigner_internal::WidgetFactory</name>
     <message>
         <source>The custom widget factory registered for widgets of class %1 returned 0.</source>
-        <translation>Závod pro uživatelsky stanovené prvky třídy %1 vrátil zpět 0.</translation>
+        <translation>Továrna pro uživatelsky stanovené prvky třídy %1 vrátila zpět 0.</translation>
     </message>
     <message>
         <source>A class name mismatch occurred when creating a widget using the custom widget factory registered for widgets of class %1. It returned a widget of class %2.</source>
-        <translation>Při vytváření prvku byly zjištěny odporující si názvy tříd: Závod pro uživatelsky stanovené prvky třídy %1 vrátil zpět prvek třídy %2.</translation>
+        <translation>Při vytváření prvku byly zjištěny odporující si názvy tříd: Továrna pro uživatelsky stanovené prvky třídy %1 vrátila zpět prvek třídy %2.</translation>
     </message>
     <message>
         <source>The current page of the container &apos;%1&apos; (%2) could not be determined while creating a layout.This indicates an inconsistency in the ui-file, probably a layout being constructed on a container widget.</source>

@@ -651,7 +651,7 @@ Volby:
     <message>
         <source>circular inclusion of %1
 </source>
-        <translation>Kruhové zařazení %1
+        <translation>Cyklické zařazení %1
 </translation>
     </message>
     <message>
@@ -859,61 +859,61 @@ Options:
     @lst-file
            Read additional file names (one per line) from lst-file.
 </source>
-        <translation type="unfinished">Použití:
+        <translation>Použití:
     lupdate [volby] [projektový-soubor]...
     lupdate [volby] [zdrojový-soubor|cesta|@lst-soubor]... -ts ts-soubory|@lst-soubor
 
 lupdate je částí řetězce nástrojů pro Qt Linguist. Vytahuje překládatelné zprávy
-ze souborů pro uživatelské rozhraní (UI) Qt UI, C++, Java a JavaScript/QtScript zdrojového kódu.
+ze souborů pro uživatelské rozhraní ze zdrojového kódu Qt UI, C++, Java a JavaScript/QtScript.
 Vytažené zprávy jsou ukládány do textových překladových zdrojových souborů (typicky
 Qt TS XML). Nové a změněné zprávy lze sloučit se stávajícími soubory TS.
 
 Volby:
-    -help  Display this information and exit.
+    -help  Zobrazit tuto informaci a ukončit.
     -no-obsolete
-           Drop all obsolete strings.
+           Vypustit všechny zastaralé řetězce.
     -extensions &lt;ext&gt;[,&lt;ext&gt;]...
-           Process files with the given extensions only.
-           The extension list must be separated with commas, not with whitespace.
-           Default: &apos;%1&apos;.
+           Zpracovat pouze soubory s danou příponou.
+           Přípony v seznamu přípon musí být odděleny čárkami, ne mezerami.
+           Výchozí: &apos;%1&apos;.
     -pluralonly
-           Only include plural form messages.
+           Zahrnout pouze zprávy s množným číslem.
     -silent
-           Do not explain what is being done.
+           Nevysvětlovat, co se právě dělá.
     -no-sort
-           Do not sort contexts in TS files.
+           Netřídit souvislosti v souborech TS.
     -no-recursive
-           Do not recursively scan the following directories.
+           Neprohledávat následující adresáře včetně podsložek.
     -recursive
-           Recursively scan the following directories (default).
+           Prohledávat následující adresáře včetně podsložek (výchozí).
     -I &lt;includepath&gt; or -I&lt;includepath&gt;
-           Additional location to look for include files.
-           May be specified multiple times.
+           Dodatečné umístění pro hledání zařazených souborů.
+           Lze stanovit vícekrát.
     -locations {absolute|relative|none}
-           Specify/override how source code references are saved in TS files.
-           Default is absolute.
+           Určit/Zrušit, jak jsou v souborech TS uloženy odkazy zdrojového kódu.
+           Výchozí je absolutní.
     -no-ui-lines
-           Do not record line numbers in references to UI files.
+           Nenahrávat do souborů UI čísla řádků v odkazech.
     -disable-heuristic {sametext|similartext|number}
-           Disable the named merge heuristic. Can be specified multiple times.
+           Zakázat uvedený slučovací heuristický postup. Lze stanovit vícekrát.
     -pro &lt;filename&gt;
-           Name of a .pro file. Useful for files with .pro file syntax but
-           different file suffix. Projects are recursed into and merged.
+           Název souboru .pro. Užitečné pro soubory se skladbou souboru .pro, ale
+           s odlišnou příponou souboru. Projekty jsou &quot;recursed into&quot; a sloučeny.
     -source-language &lt;language&gt;[_&lt;region&gt;]
-           Specify the language of the source strings for new files.
-           Defaults to POSIX if not specified.
+           Stanovit jazyk zdrojových řetězců pro nové soubory.
+           Výchozí je POSIX, pokud není určeno.
     -target-language &lt;language&gt;[_&lt;region&gt;]
-           Specify the language of the translations for new files.
-           Guessed from the file name if not specified.
+           Stanovit jazyk překladů pro nové soubory.
+           Odhadnuto z názvu souboru, pokud není stanoveno.
     -ts &lt;ts-file&gt;...
-           Specify the output file(s). This will override the TRANSLATIONS
-           and nullify the CODECFORTR from possibly specified project files.
+           Stanovit výstupní soubor(y). Toto potlačí TRANSLATIONS
+           a zruší CODECFORTR z možná určených projektových souborů.
     -codecfortr &lt;codec&gt;
-           Specify the codec assumed for tr() calls. Effective only with -ts.
+           Stanovit kodek předpokládaný pro volání tr() calls. Účinné pouze s -ts.
     -version
-           Display the version of lupdate and exit.
+           Zobrazit verzi lupdate a ukončit.
     @lst-file
-           Read additional file names (one per line) from lst-file.
+           Číst další názvy souborů (jeden na řádek) ze lst-file.
 </translation>
     </message>
     <message>
@@ -1168,7 +1168,7 @@ Volby:
     </message>
     <message>
         <source>Illegal escape sequence</source>
-        <translation type="unfinished"></translation>
+        <translation>Neplatná úniková posloupnost</translation>
     </message>
     <message>
         <source>Illegal unicode escape sequence</source>
@@ -1282,7 +1282,7 @@ Volby:
     </message>
     <message>
         <source>&amp;Toolbars</source>
-        <translation>&amp;Nástrojové lišty</translation>
+        <translation>&amp;Nástrojové panely</translation>
     </message>
     <message>
         <source>&amp;Help</source>
