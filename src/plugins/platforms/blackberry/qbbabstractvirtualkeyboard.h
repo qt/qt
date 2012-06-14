@@ -82,7 +82,7 @@ protected:
     virtual void applyKeyboardMode(KeyboardMode mode) = 0;
 
     void setVisible(bool visible);
-    void setHeight(bool height);
+    void setHeight(int height);
     void setLanguage(const QString &language);
     void setCountry(const QString &country);
 

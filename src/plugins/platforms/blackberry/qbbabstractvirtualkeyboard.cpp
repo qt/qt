@@ -74,7 +74,7 @@ void QBBAbstractVirtualKeyboard::setVisible(bool visible)
         emit heightChanged(getHeight());
 }
 
-void QBBAbstractVirtualKeyboard::setHeight(bool height)
+void QBBAbstractVirtualKeyboard::setHeight(int height)
 {
     if (height == mHeight)
         return;
