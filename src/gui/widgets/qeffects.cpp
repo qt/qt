@@ -532,7 +532,7 @@ void QRollEffect::scroll()
         setUpdatesEnabled(true);
         repaint();
     }
-    if (done) {
+    if (done || !widget) {
         anim.stop();
         qApp->removeEventFilter(this);
         if (widget) {
