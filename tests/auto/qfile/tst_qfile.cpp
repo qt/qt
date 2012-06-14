@@ -809,7 +809,7 @@ void tst_QFile::setSizeSeek()
 
 void tst_QFile::seekToSamePosition()
 {
-    QFile in("testfile.txt");
+    QFile in(SRCDIR "testfile.txt");
     QFile out("seekToSamePosition.txt");
     QVERIFY(in.open(QFile::ReadOnly));
     QVERIFY(out.open(QFile::WriteOnly));
