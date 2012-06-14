@@ -42,9 +42,6 @@ implml/qt_copy.implml             CRML_EXPORT_PATH(qt_copy.implml,uda_content)
 qt.sisx                           CRML_EXPORT_PATH(../content/sis/,uda_content)
 #endif
 
-/* export stub sis to enable eclipsing */
-qt_stub.sis                         /epoc32/data/z/system/install/qt_stub.sis
-
 //tools
 ../../bin/createpackage.bat         /epoc32/tools/createpackage.bat
 ../../bin/createpackage.pl          /epoc32/tools/createpackage.pl
@@ -127,4 +124,10 @@ OPTION QT_ROOT ..
 #endif
 
 OPTION OPTIONS -opensource -confirm-license -openvg QT_OPENGL_ES_CONFIG -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2 -debug -debug-and-release
+END
+
+/* create stub sis to enable eclipsing */
+START EXTENSION app-services.buildstubsis
+OPTION SISNAME qt_stub
+OPTION SRCDIR .
 END
