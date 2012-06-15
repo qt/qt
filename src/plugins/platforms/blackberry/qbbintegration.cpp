@@ -178,8 +178,10 @@ QBBIntegration::~QBBIntegration()
     delete mLocaleThread;
 #endif
 
+#if !defined(Q_OS_BLACKBERRY)
     // stop/destroy event thread
     delete mScreenEventThread;
+#endif
 
     // stop/destroy navigator event handling classes
     delete mNavigatorEventNotifier;
@@ -209,7 +211,6 @@ QBBIntegration::~QBBIntegration()
     QBBGLContext::shutdown();
 
 #if defined(Q_OS_BLACKBERRY)
-    delete mBpsEventFilter;
     bps_shutdown();
 #endif
 
