@@ -1478,12 +1478,18 @@ void tst_QPlainTextEdit::selectionChanged()
     QCOMPARE(ed->textCursor().position(), 4);
     QCOMPARE(selectionChangedSpy.count(), 3);
 
+#ifdef Q_WS_MAC
+    const int posAfterRight = 4; // cursor at end of former selection
+#else
+    const int posAfterRight = 5; // cursor was at end of former selection, moved right
+#endif
+
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 4);
+    QCOMPARE(ed->textCursor().position(), posAfterRight);
     QCOMPARE(selectionChangedSpy.count(), 4);
 
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 5);
+    QCOMPARE(ed->textCursor().position(), posAfterRight + 1);
     QCOMPARE(selectionChangedSpy.count(), 4);
 }
 
