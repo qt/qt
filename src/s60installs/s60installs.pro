@@ -15,7 +15,7 @@ symbian: {
         # Always use experimental UID for infixed configuration to avoid UID clash
         TARGET.UID3 = 0xE001E61C
     }
-    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
+    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}00
 
     DESTDIR = $$QMAKE_LIBDIR_QT
 
@@ -71,7 +71,7 @@ symbian: {
         ":\"Nokia, Qt\"" \
         " "
 
-    ru_header = "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$TARGET.UID3), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=SA,RU"
+    ru_header = "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$TARGET.UID3), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}00, TYPE=SA,RU"
 
     qtlibraries.pkg_prerules = ru_header vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
