@@ -4834,15 +4834,21 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     }
     XFreeDeviceState(s);
 #else
+    // We've been passed in data for a tablet device that handles this type
+    // of event, but it isn't necessarily the tablet device that originated
+    // the event.  Use the device id to find the originating device if we
+    // have it.
     QTabletDeviceDataList *tablet_list = qt_tablet_devices();
     for (int i = 0; i < tablet_list->size(); ++i) {
-        const QTabletDeviceData &t = tablet_list->at(i);
-        if (device_id == static_cast<XDevice *>(t.device)->device_id) {
-            deviceType = t.deviceType;
-            if (t.deviceType == QTabletEvent::XFreeEraser) {
+        QTabletDeviceData &tab = tablet_list->operator[](i);
+        if (device_id == static_cast<XDevice *>(tab.device)->device_id) {
+            // Replace the tablet passed in with this one.
+            tablet = &tab;
+            deviceType = tab.deviceType;
+            if (tab.deviceType == QTabletEvent::XFreeEraser) {
                 deviceType = QTabletEvent::Stylus;
                 pointerType = QTabletEvent::Eraser;
-            } else if (t.deviceType == QTabletEvent::Stylus) {
+            } else if (tab.deviceType == QTabletEvent::Stylus) {
                 pointerType = QTabletEvent::Pen;
             }
             break;
