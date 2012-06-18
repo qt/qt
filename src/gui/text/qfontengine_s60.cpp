@@ -298,8 +298,10 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QSymbianTypeFaceEx
 
 QFontEngineS60::~QFontEngineS60()
 {
-    releaseFont(m_originalFont);
-    releaseFont(m_scaledFont);
+    if (QThread::currentThread() == thread()) {
+        releaseFont(m_originalFont);
+        releaseFont(m_scaledFont);
+    }
 }
 
 QFixed QFontEngineS60::emSquareSize() const

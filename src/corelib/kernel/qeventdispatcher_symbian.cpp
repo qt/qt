@@ -1041,7 +1041,8 @@ void QEventDispatcherSymbian::closingDown()
 
     delete m_completeDeferredAOs;
     delete m_wakeUpAO;
-    if (m_activeScheduler) {
+    // only delete the active scheduler in its own thread
+    if (m_activeScheduler && QThread::currentThread() == thread()) {
         delete m_activeScheduler;
     }
 }
