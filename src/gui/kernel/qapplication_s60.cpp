@@ -2980,8 +2980,13 @@ QS60ThreadLocalData::~QS60ThreadLocalData()
         releaseFuncs[i]();
     releaseFuncs.clear();
     if (!usingCONEinstances) {
-        delete screenDevice;
-        wsSession.Close();
+        // wserv has a thread specific handle, do not close it, or delete the screenDevice, if it is not open in this thread
+        THandleInfo handleInfo;
+        wsSession.HandleInfo(&handleInfo);
+        if (handleInfo.iNumOpenInThread) {
+            delete screenDevice;
+            wsSession.Close();
+        }
     }
 }
 

@@ -264,19 +264,49 @@ private:
 QMutex QCAddAdoptedThread::adoptedThreadMonitorMutex;
 QCAddAdoptedThread* QCAddAdoptedThread::adoptedThreadAdder = 0;
 
-void QCAdoptedThreadMonitor::RunL()
+static void finishAdoptedThread(QThreadData* data, bool closeNativeHandle)
 {
     if (data->isAdopted) {
         QThread *thread = data->thread;
         Q_ASSERT(thread);
         QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
-        Q_ASSERT(!thread_p->finished);
-        thread_p->finish(thread);
+        if (!thread_p->finished)
+            thread_p->finish(thread, true, closeNativeHandle);
+        else if (closeNativeHandle && data->symbian_thread_handle.Handle())
+            data->symbian_thread_handle.Close();
     }
+}
+
+void QCAdoptedThreadMonitor::RunL()
+{
+    // clean up the thread, or close the handle if that's all that's left
+    finishAdoptedThread(data, true);
     data->deref();
     QCAddAdoptedThread::threadDied();
     delete this;
 }
+
+static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
+static pthread_key_t current_thread_data_key;
+
+static void pthread_in_thread_cleanup(void *p)
+{
+    QThreadData *data = static_cast<QThreadData *>(p);
+    // clean up the thread, but leave the handle for adoptedThreadMonitor
+    finishAdoptedThread(data, false);
+}
+
+static void create_current_thread_data_key()
+{
+    pthread_key_create(&current_thread_data_key, pthread_in_thread_cleanup);
+}
+
+static void destroy_current_thread_data_key()
+{
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_key_delete(current_thread_data_key);
+}
+Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 
 void QAdoptedThread::init()
 {
@@ -284,6 +314,8 @@ void QAdoptedThread::init()
     d->thread_id = RThread().Id();  // type operator to TUint
     init_symbian_thread_handle(d->data->symbian_thread_handle);
     QCAddAdoptedThread::add(this);
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_setspecific(current_thread_data_key, get_thread_data());
 }
 
 /*
