@@ -121,8 +121,7 @@ QBBIntegration::QBBIntegration() :
     createDisplays();
 
     // create/start event thread
-    // Not on BlackBerry, it has specialised event dispatcher which also handles screen events
-#if !defined(Q_OS_BLACKBERRY)
+#if defined(QBB_SCREENEVENTTHREAD)
     mScreenEventThread = new QBBScreenEventThread(mContext, mScreenEventHandler);
     mScreenEventThread->start();
 #endif
@@ -138,10 +137,14 @@ QBBIntegration::QBBIntegration() :
 
     QBBVirtualKeyboardBps *virtualKeyboardBps = new QBBVirtualKeyboardBps;
 
-    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler, mScreenEventHandler, virtualKeyboardBps);
-    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
-        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
-        mBpsEventFilter->registerForScreenEvents(screen);
+    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler,
+            (mScreenEventThread ? 0 : mScreenEventHandler), virtualKeyboardBps);
+
+    if (!mScreenEventThread) {
+        Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+            QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+            mBpsEventFilter->registerForScreenEvents(screen);
+        }
     }
 
     mBpsEventFilter->installOnEventDispatcher(QAbstractEventDispatcher::instance());
@@ -178,20 +181,20 @@ QBBIntegration::~QBBIntegration()
     delete mLocaleThread;
 #endif
 
-#if !defined(Q_OS_BLACKBERRY)
+#if defined(QBB_SCREENEVENTTHREAD)
     // stop/destroy event thread
     delete mScreenEventThread;
+#elif defined(Q_OS_BLACKBERRY)
+    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+        mBpsEventFilter->unregisterForScreenEvents(screen);
+    }
 #endif
 
     // stop/destroy navigator event handling classes
     delete mNavigatorEventNotifier;
 
 #if defined(Q_OS_BLACKBERRY)
-    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
-        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
-        mBpsEventFilter->unregisterForScreenEvents(screen);
-    }
-
     delete mBpsEventFilter;
 #endif
 

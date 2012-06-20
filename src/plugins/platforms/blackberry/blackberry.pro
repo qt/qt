@@ -4,6 +4,14 @@ include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 QT += opengl
 
+blackberry {
+    # Comment this to enable screen event
+    # handling through the event dispatcher.
+    DEFINES += QBB_SCREENEVENTTHREAD
+} else {
+    DEFINES += QBB_SCREENEVENTTHREAD
+}
+
 SOURCES =   main.cpp \
             qbbbuffer.cpp \
             qbbscreeneventthread.cpp \
