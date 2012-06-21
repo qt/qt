@@ -294,7 +294,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QPA" ]             = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "no";
-    dictionary[ "LARGE_FILE" ]      = "no";
+    dictionary[ "LARGE_FILE" ]      = "yes";
     dictionary[ "LITTLE_ENDIAN" ]   = "yes";
     dictionary[ "FONT_CONFIG" ]     = "no";
     dictionary[ "POSIX_IPC" ]       = "no";
