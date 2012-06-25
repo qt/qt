@@ -2089,7 +2089,13 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
             }
         }
     }
-    Q_ASSERT(slot && slot.isObject());
+    if (!slot) {
+        // This connection no longer exists (can happen if the signal is
+        // emitted from another thread and the call gets queued, but the
+        // connection is removed before the QMetaCallEvent gets processed).
+        return;
+    }
+    Q_ASSERT(slot.isObject());
 
     if (engine->isCollecting()) {
         qWarning("QtScript: can't execute signal handler during GC");

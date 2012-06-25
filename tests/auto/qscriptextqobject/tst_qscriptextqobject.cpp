@@ -585,6 +585,7 @@ private slots:
     void nestedObjectAsSlotArgument_data();
     void nestedObjectAsSlotArgument();
     void propertyAccessThroughActivationObject();
+    void connectionRemovedAfterQueuedCall();
 
 private:
     QScriptEngine *m_engine;
@@ -3641,6 +3642,38 @@ void tst_QScriptExtQObject::propertyAccessThroughActivationObject()
     QCOMPARE(m_engine->evaluate("dynamicProperty").toInt32(), 123);
 
     m_engine->popContext();
+}
+
+class SignalEmitterThread : public QThread
+{
+public:
+    SignalEmitterThread(MyQObject *sender)
+        : m_sender(sender)
+    { }
+
+    void run()
+    { m_sender->emitMySignal(); }
+
+private:
+    MyQObject *m_sender;
+};
+
+// QTBUG-26261
+void tst_QScriptExtQObject::connectionRemovedAfterQueuedCall()
+{
+    QVERIFY(m_engine->evaluate("var pass = true; function onMySignal() { pass = false; }").isUndefined());
+    QVERIFY(m_engine->evaluate("myObject.mySignal.connect(onMySignal)").isUndefined());
+
+    SignalEmitterThread thread(m_myObject);
+    QVERIFY(m_myObject->thread() != &thread); // Premise for queued call
+    thread.start();
+    QVERIFY(thread.wait());
+
+    QVERIFY(m_engine->evaluate("myObject.mySignal.disconnect(onMySignal)").isUndefined());
+    // Should not crash
+    QCoreApplication::processEvents();
+
+    QVERIFY(m_engine->evaluate("pass").toBool());
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)
