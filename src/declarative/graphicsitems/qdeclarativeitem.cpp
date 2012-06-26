@@ -2617,12 +2617,13 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 */
 QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
-    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
     if (!itemObj && !item.isNull()) {
         qmlInfo(this) << "mapFromItem() given argument \"" << item.toString() << "\" which is neither null nor an Item";
         return 0;
     }
+
+    QScriptValue sv = item.engine()->newObject();
 
     // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
@@ -2654,12 +2655,13 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qr
 */
 QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
-    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
     QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
     if (!itemObj && !item.isNull()) {
         qmlInfo(this) << "mapToItem() given argument \"" << item.toString() << "\" which is neither null nor an Item";
         return 0;
     }
+
+    QScriptValue sv = item.engine()->newObject();
 
     // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
