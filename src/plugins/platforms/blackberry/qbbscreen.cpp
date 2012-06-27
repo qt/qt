@@ -228,6 +228,10 @@ void QBBScreen::setRotation(int rotation)
         // Rotating only the primary screen is what we had in the navigator event handler before refactoring
         if (mPrimaryDisplay)
             QWindowSystemInterface::handleScreenGeometryChange(mScreenIndex);
+
+        // Flush everything, so that the windows rotations are applied properly.
+        // Needed for non-maximized windows
+        screen_flush_context(mContext, 0);
     }
 }
 
