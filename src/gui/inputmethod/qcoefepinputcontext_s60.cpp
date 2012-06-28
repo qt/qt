@@ -434,7 +434,9 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_splitViewPreviousWindowStates(Qt::WindowNoState),
       m_splitViewPreviousFocusItem(0),
       m_ccpu(0),
-      m_extendedInputCapabilities(0)
+      m_extendedInputCapabilities(0),
+      m_formAccessor(0),
+      m_dummyEditor(0)
 {
     m_fepState->SetObjectProvider(this);
     int defaultFlags = EAknEditorFlagDefault;
@@ -476,6 +478,14 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_pasteAction->setSoftKeyRole(QAction::NegativeSoftKey);
     connect(m_copyAction, SIGNAL(triggered()), this, SLOT(copy()));
     connect(m_pasteAction, SIGNAL(triggered()), this, SLOT(paste()));
+
+    // Use dummy editor to enable smiley support by default
+    m_dummyEditor.reset(new CEikEdwin());
+    TRAPD(err, m_dummyEditor->ConstructL(CEikEdwin::EAvkonEnableSmileySupport));
+    if (!err) {
+        m_formAccessor.reset(new CAknEdwinFormAccessor(m_dummyEditor.data()));
+        m_fepState->SetFormAccessor(m_formAccessor.data());
+    }
 }
 
 QCoeFepInputContext::~QCoeFepInputContext()
@@ -1328,6 +1338,8 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
 
+    bool enableSmileys = false;
+
     if (hints & ImhUrlCharactersOnly) {
         // URL characters is everything except space, so a superset of the other restrictions
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
@@ -1335,9 +1347,15 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+        enableSmileys = !(hints & ImhHiddenText);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(0);
     }
+
+    if (enableSmileys)
+        m_dummyEditor->AddFlagToUserFlags(CEikEdwin::EAvkonEnableSmileySupport);
+    else
+        m_dummyEditor->RemoveFlagFromUserFlags(CEikEdwin::EAvkonEnableSmileySupport);
 
     if (hints & ImhHiddenText) {
         m_textCapabilities = TCoeInputCapabilities::EAllText | TCoeInputCapabilities::ESecretText;
