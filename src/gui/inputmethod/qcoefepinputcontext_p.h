@@ -225,6 +225,9 @@ private:
 
     CAknExtendedInputCapabilities *m_extendedInputCapabilities;
 
+    QScopedPointer<CAknEdwinFormAccessor> m_formAccessor;
+    QScopedPointer<CEikEdwin> m_dummyEditor;
+
     friend class tst_QInputContext;
 };
 
