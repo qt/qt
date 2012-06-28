@@ -410,10 +410,9 @@ void QHttpThreadDelegate::readyReadSlot()
 
 void QHttpThreadDelegate::finishedSlot()
 {
-    if (!httpReply) {
-        qWarning("QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.");
+    if (!httpReply)
         return;
-    }
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::finishedSlot() thread=" << QThread::currentThreadId() << "result=" << httpReply->statusCode();
 #endif
@@ -446,6 +445,9 @@ void QHttpThreadDelegate::finishedSlot()
 
 void QHttpThreadDelegate::synchronousFinishedSlot()
 {
+    if (!httpReply)
+        return;
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::synchronousFinishedSlot() thread=" << QThread::currentThreadId() << "result=" << httpReply->statusCode();
 #endif
@@ -466,10 +468,9 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
 
 void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
-    if (!httpReply) {
-        qWarning("QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.");
+    if (!httpReply)
         return;
-    }
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::finishedWithErrorSlot() thread=" << QThread::currentThreadId() << "error=" << errorCode << detail;
 #endif
@@ -490,6 +491,9 @@ void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError erro
 
 void QHttpThreadDelegate::synchronousFinishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
+    if (!httpReply)
+        return;
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::synchronousFinishedWithErrorSlot() thread=" << QThread::currentThreadId() << "error=" << errorCode << detail;
 #endif
@@ -508,6 +512,9 @@ static void downloadBufferDeleter(char *ptr)
 
 void QHttpThreadDelegate::headerChangedSlot()
 {
+    if (!httpReply)
+        return;
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::headerChangedSlot() thread=" << QThread::currentThreadId();
 #endif
@@ -544,6 +551,9 @@ void QHttpThreadDelegate::headerChangedSlot()
 
 void QHttpThreadDelegate::synchronousHeaderChangedSlot()
 {
+    if (!httpReply)
+        return;
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::synchronousHeaderChangedSlot() thread=" << QThread::currentThreadId();
 #endif
@@ -576,6 +586,9 @@ void QHttpThreadDelegate::cacheCredentialsSlot(const QHttpNetworkRequest &reques
 #ifndef QT_NO_OPENSSL
 void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 {
+    if (!httpReply)
+        return;
+
     emit sslConfigurationChanged(httpReply->sslConfiguration());
 
     bool ignoreAll = false;
@@ -590,6 +603,9 @@ void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 
 void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetworkRequest &request, QAuthenticator *a)
 {
+    if (!httpReply)
+        return;
+
     Q_UNUSED(request);
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::synchronousAuthenticationRequiredSlot() thread=" << QThread::currentThreadId();
@@ -610,6 +626,9 @@ void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetwo
 #ifndef QT_NO_NETWORKPROXY
 void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNetworkProxy &p, QAuthenticator *a)
 {
+    if (!httpReply)
+        return;
+
 #ifdef QHTTPTHREADDELEGATE_DEBUG
     qDebug() << "QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot() thread=" << QThread::currentThreadId();
 #endif
