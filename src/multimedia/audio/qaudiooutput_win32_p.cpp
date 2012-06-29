@@ -51,6 +51,7 @@
 //
 
 #include "qaudiooutput_win32_p.h"
+#include <QtEndian>
 
 #ifndef SPEAKER_FRONT_LEFT
     #define SPEAKER_FRONT_LEFT            0x00000001
@@ -454,6 +455,30 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
 
     char* p = (char*)data;
     int l = (int)len;
+
+    QByteArray reverse;
+    if (settings.byteOrder() == QAudioFormat::BigEndian) {
+
+        switch (settings.sampleSize()) {
+            case 8:
+                // No need to convert
+                break;
+
+            case 16:
+                reverse.resize(l);
+                for (qint64 i = 0; i < (l >> 1); i++)
+                    *((qint16*)reverse.data() + i) = qFromBigEndian(*((qint16*)data + i));
+                p = reverse.data();
+                break;
+
+            case 32:
+                reverse.resize(l);
+                for (qint64 i = 0; i < (l >> 2); i++)
+                    *((qint32*)reverse.data() + i) = qFromBigEndian(*((qint32*)data + i));
+                p = reverse.data();
+                break;
+        }
+    }
 
     WAVEHDR* current;
     int remain;
