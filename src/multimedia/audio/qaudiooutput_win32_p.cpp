@@ -262,7 +262,7 @@ bool QAudioOutputPrivate::open()
     } else if (settings.sampleSize() <= 0) {
         qWarning("QAudioOutput: open error, invalid sample size (%d).",
                  settings.sampleSize());
-    } else if (settings.frequency() < 8000 || settings.frequency() > 48000) {
+    } else if (settings.frequency() < 8000 || settings.frequency() > 96000) {
         qWarning("QAudioOutput: open error, frequency out of range (%d).", settings.frequency());
     } else if (buffer_size == 0) {
         // Default buffer size, 200ms, default period size is 40ms

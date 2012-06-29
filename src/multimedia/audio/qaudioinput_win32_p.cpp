@@ -224,7 +224,7 @@ bool QAudioInputPrivate::open()
     } else if (settings.sampleSize() <= 0) {
         qWarning("QAudioInput: open error, invalid sample size (%d).",
                  settings.sampleSize());
-    } else if (settings.frequency() < 8000 || settings.frequency() > 48000) {
+    } else if (settings.frequency() < 8000 || settings.frequency() > 96000) {
         qWarning("QAudioInput: open error, frequency out of range (%d).", settings.frequency());
     } else if (buffer_size == 0) {
 
