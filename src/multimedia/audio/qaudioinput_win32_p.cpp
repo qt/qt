@@ -338,6 +338,13 @@ void QAudioInputPrivate::close()
 
     deviceState = QAudio::StoppedState;
     waveInReset(hWaveIn);
+
+    mutex.lock();
+    for (int i=0; i<waveFreeBlockCount; i++)
+        waveInUnprepareHeader(hWaveIn,&waveBlocks[i],sizeof(WAVEHDR));
+    freeBlocks(waveBlocks);
+    mutex.unlock();
+
     waveInClose(hWaveIn);
 
     int count = 0;
@@ -345,12 +352,6 @@ void QAudioInputPrivate::close()
         count++;
         Sleep(10);
     }
-
-    mutex.lock();
-    for(int i=0; i<waveFreeBlockCount; i++)
-        waveInUnprepareHeader(hWaveIn,&waveBlocks[i],sizeof(WAVEHDR));
-    freeBlocks(waveBlocks);
-    mutex.unlock();
 }
 
 int QAudioInputPrivate::bytesReady() const
