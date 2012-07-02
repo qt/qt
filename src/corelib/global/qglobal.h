@@ -849,6 +849,18 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
+#if defined(Q_OS_QNX) || defined(Q_OS_BLACKBERRY)
+#  include <utility>
+#  if defined(_YVALS) || defined(_LIBCPP_VER)
+// QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
+// header, so the feature is useless, even if the compiler supports
+// it. Disable.
+#    ifdef Q_COMPILER_INITIALIZER_LISTS
+#      undef Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#  endif
+#endif
+
 /*
    The window system, must be one of: (Q_WS_x)
 
