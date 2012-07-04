@@ -64,6 +64,8 @@
 #include <fepbase.h>
 #include <aknedsts.h>
 #include <eikccpu.h>
+#include <eikedwin.h>
+#include <aknedformaccessor.h>
 
 class CAknExtendedInputCapabilities;
 
