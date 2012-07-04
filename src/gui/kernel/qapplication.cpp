@@ -1951,8 +1951,14 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 QFont QApplication::font()
 {
     QMutexLocker locker(applicationFontMutex());
-    if (!QApplicationPrivate::app_font)
+    if (!QApplicationPrivate::app_font) {
+#if defined(Q_OS_BLACKBERRY)
+        QApplicationPrivate::app_font = new QFont(QLatin1String("Slate Pro"));
+        QApplicationPrivate::app_font->setPixelSize(21);
+#else
         QApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
+#endif
+    }
     return *QApplicationPrivate::app_font;
 }
 
