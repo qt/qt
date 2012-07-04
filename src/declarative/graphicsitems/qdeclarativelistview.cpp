@@ -217,6 +217,7 @@ public:
     void clear();
     FxListItem *createItem(int modelIndex);
     void releaseItem(FxListItem *item);
+    QDeclarativeItem *createComponentItem(QDeclarativeComponent *component);
 
     FxListItem *visibleItem(int modelIndex) const {
         if (modelIndex >= visibleIndex && modelIndex < visibleIndex + visibleItems.count()) {
@@ -677,6 +678,26 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
     return listItem;
 }
 
+QDeclarativeItem *QDeclarativeListViewPrivate::createComponentItem(QDeclarativeComponent *component)
+{
+    Q_Q(QDeclarativeListView);
+    QDeclarativeItem *item = 0;
+    QDeclarativeContext *creationContext = component->creationContext();
+    QDeclarativeContext *context = new QDeclarativeContext(
+                creationContext ? creationContext : qmlContext(q));
+    QObject *nobj = component->create(context);
+    if (nobj) {
+        QDeclarative_setParent_noEvent(context, nobj);
+        item = qobject_cast<QDeclarativeItem *>(nobj);
+        if (!item)
+            delete nobj;
+    } else {
+        delete context;
+    }
+
+    return item;
+}
+
 void QDeclarativeListViewPrivate::releaseItem(FxListItem *item)
 {
     Q_Q(QDeclarativeListView);
@@ -946,16 +967,7 @@ void QDeclarativeListViewPrivate::createHighlight()
     if (currentItem) {
         QDeclarativeItem *item = 0;
         if (highlightComponent) {
-            QDeclarativeContext *highlightContext = new QDeclarativeContext(qmlContext(q));
-            QObject *nobj = highlightComponent->create(highlightContext);
-            if (nobj) {
-                QDeclarative_setParent_noEvent(highlightContext, nobj);
-                item = qobject_cast<QDeclarativeItem *>(nobj);
-                if (!item)
-                    delete nobj;
-            } else {
-                delete highlightContext;
-            }
+            item = createComponentItem(highlightComponent);
         } else {
             item = new QDeclarativeItem;
         }
@@ -1198,17 +1210,7 @@ void QDeclarativeListViewPrivate::updateFooter()
 {
     Q_Q(QDeclarativeListView);
     if (!footer && footerComponent) {
-        QDeclarativeItem *item = 0;
-        QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
-        QObject *nobj = footerComponent->create(context);
-        if (nobj) {
-            QDeclarative_setParent_noEvent(context, nobj);
-            item = qobject_cast<QDeclarativeItem *>(nobj);
-            if (!item)
-                delete nobj;
-        } else {
-            delete context;
-        }
+        QDeclarativeItem *item = createComponentItem(footerComponent);
         if (item) {
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
@@ -1238,17 +1240,7 @@ void QDeclarativeListViewPrivate::updateHeader()
 {
     Q_Q(QDeclarativeListView);
     if (!header && headerComponent) {
-        QDeclarativeItem *item = 0;
-        QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
-        QObject *nobj = headerComponent->create(context);
-        if (nobj) {
-            QDeclarative_setParent_noEvent(context, nobj);
-            item = qobject_cast<QDeclarativeItem *>(nobj);
-            if (!item)
-                delete nobj;
-        } else {
-            delete context;
-        }
+        QDeclarativeItem *item = createComponentItem(headerComponent);
         if (item) {
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
