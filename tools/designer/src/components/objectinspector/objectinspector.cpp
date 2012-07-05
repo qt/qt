@@ -305,7 +305,7 @@ void ObjectInspector::ObjectInspectorPrivate::showContainersCurrentPage(QWidget 
     bool macroStarted = false;
     // Find a multipage container (tab widgets, etc.) in the hierarchy and set the right page.
     while (w != 0) {
-        if (fw->isManaged(w)) { // Rule out unmanaged internal scroll areas, for example, on QToolBoxes.
+        if (fw->isManaged(w) && !qobject_cast<QMainWindow *>(w)) { // Rule out unmanaged internal scroll areas, for example, on QToolBoxes.
             if (QDesignerContainerExtension *c = qt_extension<QDesignerContainerExtension*>(m_core->extensionManager(), w)) {
                 const int count = c->count();
                 if (count > 1 && !c->widget(c->currentIndex())->isAncestorOf(widget)) {
