@@ -483,10 +483,6 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->longPress = false;
         d->saveEvent(event);
-        if (d->drag) {
-            d->dragX = drag()->axis() & QDeclarativeDrag::XAxis;
-            d->dragY = drag()->axis() & QDeclarativeDrag::YAxis;
-        }
         if (d->drag)
             d->drag->setActive(false);
         setHovered(true);
@@ -540,7 +536,10 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (keepMouseGrab() && d->stealMouse)
             d->drag->setActive(true);
 
-        if (d->dragX && d->drag->active()) {
+        bool dragX = drag()->axis() & QDeclarativeDrag::XAxis;
+        bool dragY = drag()->axis() & QDeclarativeDrag::YAxis;
+
+        if (dragX && d->drag->active()) {
             qreal x = (curLocalPos.x() - startLocalPos.x()) + d->startX;
             if (x < drag()->xmin())
                 x = drag()->xmin();
@@ -548,7 +547,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 x = drag()->xmax();
             drag()->target()->setX(x);
         }
-        if (d->dragY && d->drag->active()) {
+        if (dragY && d->drag->active()) {
             qreal y = (curLocalPos.y() - startLocalPos.y()) + d->startY;
             if (y < drag()->ymin())
                 y = drag()->ymin();
@@ -558,9 +557,9 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
 
         if (!keepMouseGrab()) {
-            if ((!d->dragY && dy < dragThreshold && d->dragX && dx > dragThreshold)
-                || (!d->dragX && dx < dragThreshold && d->dragY && dy > dragThreshold)
-                || (d->dragX && d->dragY && (dx > dragThreshold || dy > dragThreshold))) {
+            if ((!dragY && dy < dragThreshold && dragX && dx > dragThreshold)
+                || (!dragX && dx < dragThreshold && dragY && dy > dragThreshold)
+                || (dragX && dragY && (dx > dragThreshold || dy > dragThreshold))) {
                 setKeepMouseGrab(true);
                 d->stealMouse = true;
             }

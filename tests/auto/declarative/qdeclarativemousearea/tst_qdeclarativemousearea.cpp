@@ -74,6 +74,7 @@ private slots:
 #ifndef QT_NO_CONTEXTMENU
     void preventContextMenu();
 #endif // QT_NO_CONTEXTMENU
+    void changeAxis();
 
 private:
     QDeclarativeView *createView();
@@ -700,6 +701,84 @@ void tst_QDeclarativeMouseArea::preventContextMenu()
     QCOMPARE(eventsReceived.read().toInt(), 1);
 }
 #endif // QT_NO_CONTEXTMENU
+
+void tst_QDeclarativeMouseArea::changeAxis()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/changeAxis.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QDeclarativeMouseArea *mouseRegion = canvas->rootObject()->findChild<QDeclarativeMouseArea*>("mouseregion");
+    QDeclarativeDrag *drag = mouseRegion->drag();
+    QVERIFY(mouseRegion != 0);
+    QVERIFY(drag != 0);
+
+    // target
+    QDeclarativeItem *blackRect = canvas->rootObject()->findChild<QDeclarativeItem*>("blackrect");
+    QVERIFY(blackRect != 0);
+    QVERIFY(blackRect == drag->target());
+
+    QVERIFY(!drag->active());
+
+    // Start a diagonal drag
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setScenePos(QPointF(106, 106));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    moveEvent.setScenePos(QPointF(110, 110));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    QVERIFY(drag->active());
+    QCOMPARE(blackRect->x(), 60.0);
+    QCOMPARE(blackRect->y(), 60.0);
+    QCOMPARE(drag->axis(), QDeclarativeDrag::XandYAxis);
+
+    /* When blackRect.x becomes bigger than 60, the drag axis is change to
+     * Drag.YAxis by the QML code. Verify that this happens, and that the drag
+     * movement is effectively constrained to the Y axis. */
+    moveEvent.setScenePos(QPointF(115, 115));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    QCOMPARE(blackRect->x(), 65.0);
+    QCOMPARE(blackRect->y(), 65.0);
+    QCOMPARE(drag->axis(), QDeclarativeDrag::YAxis);
+
+    moveEvent.setScenePos(QPointF(120, 120));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
+    QCOMPARE(blackRect->x(), 65.0);
+    QCOMPARE(blackRect->y(), 70.0);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(120, 120));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(!drag->active());
+    QCOMPARE(blackRect->x(), 65.0);
+    QCOMPARE(blackRect->y(), 70.0);
+
+    delete canvas;
+}
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)
 
