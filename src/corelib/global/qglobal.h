@@ -849,7 +849,8 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_QNX) || defined(Q_OS_BLACKBERRY)
+#ifdef __cplusplus
+# if defined(Q_OS_QNX) || defined(Q_OS_BLACKBERRY)
 #  include <utility>
 #  if defined(_YVALS) || defined(_LIBCPP_VER)
 // QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
@@ -859,6 +860,7 @@ namespace QT_NAMESPACE {}
 #      undef Q_COMPILER_INITIALIZER_LISTS
 #    endif
 #  endif
+# endif
 #endif
 
 /*
