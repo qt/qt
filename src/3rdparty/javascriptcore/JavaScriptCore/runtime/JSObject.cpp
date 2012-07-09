@@ -138,8 +138,8 @@ void JSObject::put(ExecState* exec, const Identifier& propertyName, JSValue valu
         PropertyDescriptor descriptor;
         if (obj->getPropertyDescriptor(exec, propertyName, descriptor)) {
             JSObject* setterFunc;
-            if ((descriptor.isAccessorDescriptor() && ((setterFunc = asObject(descriptor.setter())), true))
-                || (descriptor.value().isGetterSetter() && ((setterFunc = asGetterSetter(descriptor.value())->setter()), true))) {
+            if ((descriptor.isAccessorDescriptor() && !!descriptor.setter() && ((setterFunc = asObject(descriptor.setter())), true))
+                || (!!descriptor.value() && descriptor.value().isGetterSetter() && ((setterFunc = asGetterSetter(descriptor.value())->setter()), true))) {
 #else
         if (JSValue gs = obj->getDirect(propertyName)) {
             if (gs.isGetterSetter()) {
