@@ -80,6 +80,8 @@ bool QSqlTableModelPrivate::setRecord(int row, const QSqlRecord &record)
     if (strategy == QSqlTableModel::OnFieldChange)
         strategy = QSqlTableModel::OnRowChange;
     for (int i = 0; i < record.count(); ++i) {
+        if (!record.isGenerated(i))
+            continue;
         int idx = nameToIndex(record.fieldName(i));
         if (idx == -1)
             continue;
@@ -1353,7 +1355,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             if (idx == -1) {
                 isOk = false;
             } else {
-                QSqlTableModelPrivate::setGeneratedValue(mrow.rec, idx, record.value(i));
+                mrow.rec.setValue(idx, record.value(i));
+                mrow.rec.setGenerated(idx, record.isGenerated(i));
             }
         }
 

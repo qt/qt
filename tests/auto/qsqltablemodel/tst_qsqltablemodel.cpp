@@ -52,6 +52,7 @@ const QString test(qTableName("test", __FILE__)),
 //TESTED_FILES=
 
 Q_DECLARE_METATYPE(QModelIndex)
+Q_DECLARE_METATYPE(QSqlRecord)
 
 class tst_QSqlTableModel : public QObject
 {
@@ -522,6 +523,7 @@ void tst_QSqlTableModel::insertRow()
 
 void tst_QSqlTableModel::insertRecord()
 {
+    qRegisterMetaType<QSqlRecord>("QSqlRecord&");
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
@@ -534,6 +536,7 @@ void tst_QSqlTableModel::insertRecord()
 
     QSqlRecord rec = model.record();
     rec.setValue(0, 42);
+    rec.setGenerated(0, false);
     rec.setValue(1, QString("vohi"));
     rec.setValue(2, 1);
     QVERIFY(model.insertRecord(1, rec));
@@ -543,7 +546,29 @@ void tst_QSqlTableModel::insertRecord()
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
     QCOMPARE(model.data(model.index(1, 2)).toInt(), 1);
 
+    QSignalSpy spy(&model, SIGNAL(beforeInsert(QSqlRecord&)));
+
+    // Don't care if the database accepts the change.
+    // Just check the generated flags.
+    model.submitAll();
+
+    QCOMPARE(spy.count(), 1);
+    QSqlRecord r = spy.at(0).at(0).value<QSqlRecord>();
+    QCOMPARE(r.count(), rec.count());
+    QCOMPARE(r.isGenerated(0), false);
+    QCOMPARE(r.value(0).toInt(), 42);
+    QCOMPARE(r.isGenerated(1), true);
+    QCOMPARE(r.value(1).toString(), QString("vohi"));
+
     model.revertAll();
+    // Clean up
+    if (model.rowCount() == 4) {
+        QVERIFY_SQL(model, removeRow(1));
+        QVERIFY_SQL(model, submitAll());
+    }
+    QCOMPARE(model.rowCount(), 3);
+
+    rec.setGenerated(0, true);
     model.setEditStrategy(QSqlTableModel::OnRowChange);
 
     QVERIFY(model.insertRecord(-1, rec));
