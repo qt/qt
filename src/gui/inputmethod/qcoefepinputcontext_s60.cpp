@@ -743,7 +743,8 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
         if (keyEvent->type() == QEvent::KeyPress
             && currentHints & Qt::ImhHiddenText
-            && !keyEvent->text().isEmpty()) {
+            && !keyEvent->text().isEmpty()
+            && keyEvent->key() != Qt::Key_Enter) {
             // Send some temporary preedit text in order to make text visible for a moment.
             m_preeditString = keyEvent->text();
             QList<QInputMethodEvent::Attribute> attributes;
