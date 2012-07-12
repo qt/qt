@@ -5,5 +5,3 @@ QT += testlib
 SOURCES += tst_qtextscriptengine.cpp
 HEADERS += 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
-
-CONFIG+=insignificant_test # QTQAINFRA-428
