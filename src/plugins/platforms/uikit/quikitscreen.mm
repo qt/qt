@@ -54,7 +54,11 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     CGRect bounds = [uiScreen() bounds];
-    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+    CGFloat scale = [uiScreen() scale];
+    m_geometry = QRect(bounds.origin.x * scale,
+                       bounds.origin.y * scale,
+                       bounds.size.width * scale,
+                       bounds.size.height * scale);
 
     m_format = QImage::Format_ARGB32_Premultiplied;
 

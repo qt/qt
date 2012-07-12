@@ -262,7 +262,8 @@ private:
 {
     UITouch *touch = [touches anyObject];
     CGPoint locationInView = [touch locationInView:self];
-    QPoint p(locationInView.x, locationInView.y);
+    CGFloat scaleFactor = [self contentScaleFactor];
+    QPoint p(locationInView.x * scaleFactor, locationInView.y * scaleFactor);
     // TODO handle global touch point? for status bar?
     QWindowSystemInterface::handleMouseEvent(mWindow->widget(), (ulong)(event.timestamp*1000),
         p, p, buttons);
@@ -370,6 +371,7 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
         // view
         [mView deleteFramebuffer];
         mView.frame = CGRectMake(0, 0, mWindow.bounds.size.width, mWindow.bounds.size.height); // fill
+        [mView setContentScaleFactor:[mWindow.screen scale]];
         [mView setMultipleTouchEnabled:YES];
         [mView setWindow:this];
         [mWindow addSubview:mView];
@@ -413,6 +415,11 @@ void QUIKitWindow::updateGeometryAndOrientation()
         angle = +M_PI/2.;
         break;
     }
+
+    CGFloat scale = [mScreen->uiScreen() scale];
+    geom = QRect(geom.x() * scale, geom.y() * scale,
+                 geom.width() * scale, geom.height() * scale);
+
     if (angle != 0) {
         [mView layer].transform = CATransform3DMakeRotation(angle, 0, 0, 1.);
     } else {
