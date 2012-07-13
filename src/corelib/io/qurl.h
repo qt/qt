@@ -56,6 +56,7 @@ QT_MODULE(Core)
 
 class QUrlPrivate;
 class QDataStream;
+class QMutexLocker;
 
 class Q_CORE_EXPORT QUrl
 {
@@ -274,6 +275,7 @@ protected:
 #endif
 
 private:
+    void detach(QMutexLocker &locker);
     QUrlPrivate *d;
 public:
     typedef QUrlPrivate * DataPtr;
