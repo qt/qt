@@ -121,6 +121,13 @@ QBBWindow::QBBWindow(QWidget *window, screen_context_t context, QBBScreen *scree
 
     // Set the screen to the primary display (this is the default specified by screen).
     setScreen(screen);
+
+    // Qt somtimes doesn't call these setters after creating the window, so we need to do that
+    // ourselves here
+    if (window->parentWidget())
+        setParent(window->parentWidget()->platformWindow());
+    setGeometry(window->geometry());
+    setVisible(window->isVisible());
 }
 
 QBBWindow::~QBBWindow()
