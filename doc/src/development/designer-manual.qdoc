@@ -754,7 +754,7 @@
 
     \section2 Setting A Top Level Layout
 
-    The form's top level layout can be set by clearing the slection (click the
+    The form's top level layout can be set by clearing the selection (click the
     left mouse button on the form itself) and applying a layout. A top level
     layout is necessary to ensure that your widgets will resize correctly when
     its window is resized. To check if you have set a top level layout, preview
