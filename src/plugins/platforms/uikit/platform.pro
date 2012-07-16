@@ -9,7 +9,8 @@ OBJECTIVE_SOURCES = main.mm \
     quikitwindow.mm \
     quikitscreen.mm \
     quikiteventloop.mm \
-    quikitwindowsurface.mm
+    quikitwindowsurface.mm \
+    qcoretextfontdatabase.mm
 
 OBJECTIVE_HEADERS = quikitintegration.h \
     quikitwindow.h \
@@ -19,9 +20,6 @@ OBJECTIVE_HEADERS = quikitintegration.h \
 
 HEADERS = quikitsoftwareinputhandler.h \
     qcoretextfontdatabase.h
-
-SOURCES += \
-    qcoretextfontdatabase.cpp
 
 #needed for qcoretextfontengine even if it's not used
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
