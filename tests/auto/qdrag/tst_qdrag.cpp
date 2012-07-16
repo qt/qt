@@ -263,7 +263,7 @@ void tst_QDrag::testDragEnterNoShaping()
 
 void tst_QDrag::testDragEnterSomeShaping()
 {
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(ShapeInput)
     // Widget of 80x80 at 300, 300
     DragCounterAndCreatorWidget dw;
     QTest::qWaitForWindowShown(&dw);
@@ -307,7 +307,7 @@ void tst_QDrag::testDragEnterSomeShaping()
 
 void tst_QDrag::testDragEnterAllShaping()
 {
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(ShapeInput)
     // Widget of 80x80 at 300, 300
     DragCounterAndCreatorWidget dw;
     QTest::qWaitForWindowShown(&dw);
