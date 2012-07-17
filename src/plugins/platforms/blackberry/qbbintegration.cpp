@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_METATYPE(screen_window_t);
 
 QBBIntegration::QBBIntegration() :
+    mScreenEventThread(0),
     mNavigatorEventHandler(new QBBNavigatorEventHandler()),
     mFontDb(new QGenericUnixFontDatabase()),
     mScreenEventHandler(new QBBScreenEventHandler()),
