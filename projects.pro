@@ -141,7 +141,7 @@ CONFIG -= qt
 
 #qmake
 qmake.path=$$[QT_INSTALL_BINS]
-win32 {
+equals(QMAKE_HOST.os, Windows) {
    qmake.files=$$QT_BUILD_TREE/bin/qmake.exe
 } else {
    qmake.files=$$QT_BUILD_TREE/bin/qmake
