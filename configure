@@ -3641,7 +3641,7 @@ else
         if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
 	    if [ "$PLATFORM_MAC" = "yes" ]; then
 	        if [ "$CFG_FRAMEWORK" = "yes" ]; then
-		    QT_INSTALL_LIBS="/Libraries/Frameworks"
+                   QT_INSTALL_LIBS="/Library/Frameworks"
                 fi
             fi
         fi
