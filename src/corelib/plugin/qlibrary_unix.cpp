@@ -103,9 +103,9 @@ bool QLibraryPrivate::load_sys()
     else
         path += QLatin1Char('/');
 #endif
-    // The first filename we want to attempt to load is the filename as the callee specified.
-    // Thus, the first attempt we do must be with an empty prefix and empty suffix.
-    QStringList suffixes(QLatin1String("")), prefixes(QLatin1String(""));
+
+    QStringList suffixes;
+    QStringList prefixes;
     if (pluginState != IsAPlugin) {
 #if !defined(Q_OS_SYMBIAN)
         prefixes << QLatin1String("lib");
@@ -187,6 +187,23 @@ bool QLibraryPrivate::load_sys()
     }
 #endif
 #endif // QT_HPUX_LD
+    // If using the new search heuristics we do:
+    //
+    //   If the filename is an absolute path then we want to try that first as it is most likely
+    //   what the callee wants. If we have been given a non-absolute path then lets try the
+    //   native library name first to avoid unnecessary calls to dlopen().
+    //
+    // otherwise:
+    //
+    //   We use the old behaviour which is to always try the specified filename first
+    if ((loadHints & QLibrary::ImprovedSearchHeuristics) && !fsEntry.isAbsolute()) {
+        suffixes.append(QLatin1String(""));
+        prefixes.append(QLatin1String(""));
+    } else {
+        suffixes.prepend(QLatin1String(""));
+        prefixes.prepend(QLatin1String(""));
+    }
+
     bool retry = true;
     for(int prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
         for(int suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {
