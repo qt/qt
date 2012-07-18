@@ -124,6 +124,7 @@ public:
            selectReturnMutex(0),
            selectWorkerNeedsSync(true),
            selectWorkerHasResult(false),
+           selectWorker(0),
            m_integrationInitialised(false),
            m_hasIntegration(false),
            m_isEventLoopIntegrationRunning(false)
