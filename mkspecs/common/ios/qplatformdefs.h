@@ -1,10 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -35,53 +34,64 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#import <UIKit/UIKit.h>
+#ifndef QPLATFORMDEFS_H
+#define QPLATFORMDEFS_H
 
-#include "../share/qmlapplicationviewer/qmlapplicationviewer.h"
+// Get Qt defines/settings
 
-#include <QtGui/QApplication>
-#include <QtCore/QtPlugin>
-#include <QtDeclarative/QDeclarativeEngine>
+#include "qglobal.h"
 
-Q_IMPORT_PLUGIN(UIKit)
+// Set any POSIX/XOPEN defines at the top of this file to turn on specific APIs
 
-static QString qStringFromNSString(NSString *nsstring)
-{
-	return QString::fromUtf8([nsstring UTF8String]);
-}
+#include <unistd.h>
 
-static QString documentsDirectory()
-{
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	NSString *documentsDirectory = [paths objectAtIndex:0];
-	return qStringFromNSString(documentsDirectory);
-}
 
-int main(int argc, char *argv[]) {
+// We are hot - unistd.h should have turned on the specific APIs we requested
 
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
-    // force uikit platform plugin
-    QByteArray platform("-platform");
-    QByteArray uikit("uikit");
-    int ac = 3;
-    char *av[3];
-    av[0] = argv[0];
-    av[1] = platform.data();
-    av[2] = uikit.data();
+#include <pthread.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <grp.h>
+#include <pwd.h>
+#include <signal.h>
+#define QT_NO_LIBRARY_UNLOAD
 
-    QApplication app(ac, av);
-    QmlApplicationViewer viewer;
-    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-	viewer.engine()->setOfflineStoragePath(documentsDirectory());
-    NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
-    viewer.setMainQmlFile(qStringFromNSString([resourcePath stringByAppendingPathComponent:@"qml/main.qml"]));
-    viewer.showMaximized();
-    int retVal = app.exec();
-    [pool release];
-    return retVal;
-}
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/ipc.h>
+#include <sys/time.h>
+#include <sys/shm.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <netinet/in.h>
+#ifndef QT_NO_IPV6IFNAME
+#include <net/if.h>
+#endif
+
+#include "../../common/posix/qplatformdefs.h"
+
+#undef QT_OPEN_LARGEFILE
+#undef QT_SOCKLEN_T
+#undef QT_SIGNAL_IGNORE
+
+#define QT_OPEN_LARGEFILE       0
+
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
+#define QT_SOCKLEN_T            socklen_t
+#else
+#define QT_SOCKLEN_T            int
+#endif
+
+#define QT_SIGNAL_IGNORE        (void (*)(int))1
+
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
+
+#endif // QPLATFORMDEFS_H

@@ -65,7 +65,16 @@ int main(int argc, char *argv[]) {
     
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     
-    QApplication app(argc, argv);
+    // force uikit platform plugin
+    QByteArray platform("-platform");
+    QByteArray uikit("uikit");
+    int ac = 3;
+    char *av[3];
+    av[0] = argv[0];
+    av[1] = platform.data();
+    av[2] = uikit.data();
+
+    QApplication app(ac, av);
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
 	viewer.engine()->setOfflineStoragePath(documentsDirectory());

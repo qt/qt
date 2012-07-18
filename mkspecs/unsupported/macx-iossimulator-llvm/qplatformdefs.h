@@ -1,10 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -35,53 +34,9 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#import <UIKit/UIKit.h>
-
-#include "../share/qmlapplicationviewer/qmlapplicationviewer.h"
-
-#include <QtGui/QApplication>
-#include <QtCore/QtPlugin>
-#include <QtDeclarative/QDeclarativeEngine>
-
-Q_IMPORT_PLUGIN(UIKit)
-
-static QString qStringFromNSString(NSString *nsstring)
-{
-	return QString::fromUtf8([nsstring UTF8String]);
-}
-
-static QString documentsDirectory()
-{
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	NSString *documentsDirectory = [paths objectAtIndex:0];
-	return qStringFromNSString(documentsDirectory);
-}
-
-int main(int argc, char *argv[]) {
-
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-
-    // force uikit platform plugin
-    QByteArray platform("-platform");
-    QByteArray uikit("uikit");
-    int ac = 3;
-    char *av[3];
-    av[0] = argv[0];
-    av[1] = platform.data();
-    av[2] = uikit.data();
-
-    QApplication app(ac, av);
-    QmlApplicationViewer viewer;
-    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-	viewer.engine()->setOfflineStoragePath(documentsDirectory());
-    NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
-    viewer.setMainQmlFile(qStringFromNSString([resourcePath stringByAppendingPathComponent:@"qml/main.qml"]));
-    viewer.showMaximized();
-    int retVal = app.exec();
-    [pool release];
-    return retVal;
-}
+#include "../../common/ios/qplatformdefs.h"
