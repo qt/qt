@@ -2231,10 +2231,15 @@ bool Configure::checkAvailability(const QString &part)
             available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
-            // Symbian has multiple .lib/.dll files we need to find
-            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-                available = true; // There is sqlite_symbian plugin which exports the necessary stuff
-                dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
+            if (dictionary.contains("XQMAKESPEC")) {
+                // Symbian has multiple .lib/.dll files we need to find
+                if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                    available = true; // There is sqlite_symbian plugin which exports the necessary stuff
+                    dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
+                } else if (dictionary["XQMAKESPEC"].endsWith("qcc")) {
+                    available = true;
+                    dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3 -lz";
+                }
             } else {
                 available = findFile("sqlite3.h") && findFile("sqlite3.lib");
                 if (available)
