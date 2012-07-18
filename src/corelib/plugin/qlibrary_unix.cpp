@@ -43,8 +43,8 @@
 
 #include <qfile.h>
 #include "qlibrary_p.h"
-#include <qfileinfo.h>
 #include <qcoreapplication.h>
+#include <private/qfilesystementry_p.h>
 
 #ifndef QT_NO_LIBRARY
 
@@ -84,20 +84,20 @@ bool QLibraryPrivate::load_sys()
 {
     QString attempt;
 #if !defined(QT_NO_DYNAMIC_LIBRARY)
-    QFileInfo fi(fileName);
+    QFileSystemEntry fsEntry(fileName);
 
 #if defined(Q_OS_SYMBIAN)
     QString path; // In Symbian, always resolve with just the filename
     QString name;
 
     // Replace possible ".qtplugin" suffix with ".dll"
-    if (fi.suffix() == QLatin1String("qtplugin"))
-        name = fi.completeBaseName() + QLatin1String(".dll");
+    if (fsEntry.suffix() == QLatin1String("qtplugin"))
+        name = fsEntry.completeBaseName() + QLatin1String(".dll");
     else
-        name = fi.fileName();
+        name = fsEntry.fileName();
 #else
-    QString path = fi.path();
-    QString name = fi.fileName();
+    QString path = fsEntry.path();
+    QString name = fsEntry.fileName();
     if (path == QLatin1String(".") && !fileName.startsWith(path))
         path.clear();
     else
