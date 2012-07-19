@@ -45,7 +45,7 @@ wince* {
 }
 qpa:mac {
     DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
-    contains(QT_CONFIG, coreservices) {
+    !ios {
       LIBS_PRIVATE += -framework CoreServices
     } else {
       LIBS_PRIVATE += -framework CoreFoundation

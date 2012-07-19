@@ -93,7 +93,7 @@ public:
 private:
     friend class QTransform;
     // ### Qt 5;  remove the ifdef and just have the same order on all platforms.
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     int yp;
     int xp;
 #else

@@ -180,7 +180,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
     char *ret = 0;
-# if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+# if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
         ret = realpath(entry.nativeFilePath().constData(), (char*)0);

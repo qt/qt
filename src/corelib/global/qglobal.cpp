@@ -74,7 +74,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_MACX) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MACX) && !defined(Q_OS_IOS)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -1661,7 +1661,7 @@ QT_END_INCLUDE_NAMESPACE
 
 static QSysInfo::MacVersion macVersion()
 {
-#ifndef QT_NO_CORESERVICES
+#if !defined(Q_OS_IOS)
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);

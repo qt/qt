@@ -73,7 +73,7 @@ mac:LIBS += -framework IOKit \
     -framework Security
 !qpa:mac: LIBS += -framework ApplicationServices
 qpa:mac: {
-    contains(QT_CONFIG, coreservices) {
+    !ios {
       LIBS_PRIVATE += -framework CoreServices
     } else {
       LIBS_PRIVATE += -framework CoreFoundation

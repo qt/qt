@@ -87,7 +87,7 @@ QCFString::operator CFStringRef() const
 }
 
 
-#ifndef QT_NO_CORESERVICES
+#if !defined(Q_OS_IOS)
 void qt_mac_to_pascal_string(const QString &s, Str255 str, TextEncoding encoding, int len)
 {
     if(len == -1)
@@ -136,6 +136,6 @@ OSErr qt_mac_create_fsspec(const QString &file, FSSpec *spec)
         ret = FSGetCatalogInfo(&fsref, kFSCatInfoNone, 0, 0, spec, 0);
     return ret;
 }
-#endif // QT_NO_CORESERVICES
+#endif // !defined(Q_OS_IOS)
 
 QT_END_NAMESPACE

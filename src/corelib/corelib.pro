@@ -21,7 +21,7 @@ include(xml/xml.pri)
 
 !qpa:mac|darwin:LIBS_PRIVATE += -framework ApplicationServices
 qpa {
-    contains(QT_CONFIG, coreservices) {
+    !ios {
         LIBS_PRIVATE += -framework CoreServices -framework Security
     }
 } else:mac|darwin {

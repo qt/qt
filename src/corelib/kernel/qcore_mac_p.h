@@ -74,7 +74,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#ifndef QT_NO_CORESERVICES
+#if !defined(Q_OS_IOS)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -149,14 +149,14 @@ private:
 };
 
 
-#ifndef QT_NO_CORESERVICES
+#if !defined(Q_OS_IOS)
 Q_CORE_EXPORT void qt_mac_to_pascal_string(const QString &s, Str255 str, TextEncoding encoding = 0, int len = -1);
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr);
 
 Q_CORE_EXPORT OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
 // Don't use this function, it won't work in 10.5 (Leopard) and up
 Q_CORE_EXPORT OSErr qt_mac_create_fsspec(const QString &file, FSSpec *spec);
-#endif // QT_NO_CORESERVICES
+#endif // !defined(Q_OS_IOS)
 
 QT_END_NAMESPACE
 
