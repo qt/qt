@@ -3400,7 +3400,7 @@ fi
 
 SYSROOT_FLAG=
 if [ -n "$CFG_SYSROOT" ]; then
-    if compilerSupportsFlag --sysroot="$CFG_SYSROOT"; then
+    if compilerSupportsFlag -c --sysroot="$CFG_SYSROOT"; then
 	[ "$OPT_VERBOSE" = "yes" ] && echo "Setting sysroot to: $CFG_SYSROOT"
 	SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
     else
