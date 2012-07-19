@@ -113,7 +113,7 @@ void QMeeGoRuntime::initialize()
     Q_ASSERT(libraryPrivate);
 
     QLibrary library(libraryPrivate->fileName, libraryPrivate->fullVersion);
-
+    library.setLoadHints(QLibrary::ImprovedSearchHeuristics);
     bool success = library.load();
 
     if (success) {
