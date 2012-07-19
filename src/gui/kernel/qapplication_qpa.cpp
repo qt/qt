@@ -626,8 +626,6 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 
 void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
-
-    // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
     static QWeakPointer<QWidget> implicit_mouse_grabber;
 
     QEvent::Type type;
@@ -757,7 +755,6 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
     // Remember, we might enter a modal event loop when sending the event,
     // so think carefully before adding code below this point.
 
-    // qDebug() << "sending mouse ev." << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
     QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QApplication::keyboardModifiers());
 
@@ -766,6 +763,8 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
         if (cursor)
             cursor.data()->pointerEvent(ev);
     }
+
+    // qDebug() << "sending mouse event" << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
     int oldOpenPopupCount = openPopupCount;
     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
