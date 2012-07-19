@@ -76,6 +76,7 @@ bool qdbus_loadLibDBus()
     static int majorversions[] = { 3, 2, -1 };
     lib->unload();
     lib->setFileName(QLatin1String("dbus-1"));
+    lib->setLoadHints(QLibrary::ImprovedSearchHeuristics);
     for (uint i = 0; i < sizeof(majorversions) / sizeof(majorversions[0]); ++i) {
         lib->setFileNameAndVersion(lib->fileName(), majorversions[i]);
         if (lib->load() && lib->resolve("dbus_connection_open_private"))
