@@ -626,8 +626,6 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 
 void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
-    if (!e->widget)
-       return;
 
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
     static QWeakPointer<QWidget> implicit_mouse_grabber;
