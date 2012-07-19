@@ -96,6 +96,7 @@ static void resolveLibrary()
 {
 #ifndef QT_NO_LIBRARY
     QLibrary lib(QLatin1String("resolv"));
+    lib.setLoadHints(QLibrary::ImprovedSearchHeuristics);
     if (!lib.load())
         return;
 
