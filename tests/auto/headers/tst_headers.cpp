@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -78,7 +78,7 @@ private:
 };
 
 tst_Headers::tst_Headers() :
-    copyrightPattern("\\*\\* Copyright \\(C\\) 20[0-9][0-9] Nokia Corporation and/or its subsidiary\\(-ies\\)."),
+    copyrightPattern("\\*\\* Copyright \\(C\\) 20[0-9][0-9] .*"),
     licensePattern("\\*\\* \\$QT_BEGIN_LICENSE:(LGPL|BSD|3RDPARTY|LGPL-ONLY|FDL)\\$"),
     moduleTest(QLatin1String("\\*\\* This file is part of the .+ of the Qt Toolkit."))
 {
@@ -232,7 +232,28 @@ void tst_Headers::licenseCheck()
         return;
     }
 
+    // Files for QNX follow the Qt5 license header, so skipping them for now
+    if (sourceFile.contains("/src/plugins/platforms/blackberry/")) {
+        return;
+    }
+
+    if (sourceFile.endsWith("mkspecs/unsupported/blackberry-armv7le-qcc/qplatformdefs.h")
+        || sourceFile.endsWith("mkspecs/unsupported/blackberry-x86-qcc/qplatformdefs.h")
+        || sourceFile.endsWith("mkspecs/unsupported/qnx-armv7le-qcc/qplatformdefs.h")
+        || sourceFile.endsWith("mkspecs/unsupported/qnx-x86-qcc/qplatformdefs.h")
+        || sourceFile.endsWith("src/corelib/kernel/qeventdispatcher_blackberry.cpp")
+        || sourceFile.endsWith("src/corelib/kernel/qeventdispatcher_blackberry_p.h")
+        || sourceFile.endsWith("src/gui/kernel/qeventdispatcher_blackberry_qpa.cpp")
+        || sourceFile.endsWith("src/gui/kernel/qeventdispatcher_blackberry_qpa_p.h")
+        || sourceFile.endsWith("src/gui/util/qdesktopservices_blackberry.cpp")) {
+        return;
+    }
+
+    // Compare the licensePattern ($QT_BEGIN_LICENSE:(LGPL|BSD|3RDPARTY|LGPL-ONLY|FDL)) pattern
+    // with the file under test. This pattern can be found in either lines 5, 7 or 8 of the
+    // license header
     QVERIFY(licensePattern.exactMatch(content.value(8)) ||
+            licensePattern.exactMatch(content.value(7)) ||
             licensePattern.exactMatch(content.value(5)));
     QString licenseType = licensePattern.cap(1);
 
@@ -241,21 +262,26 @@ void tst_Headers::licenseCheck()
     QCOMPARE(content.at(i++), QString("/****************************************************************************"));
     if (licenseType != "3RDPARTY") {
         QCOMPARE(content.at(i++), QString("**"));
-        if (sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.cpp")
-            || sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.h")
-            || sourceFile.endsWith("/src/gui/itemviews/qidentityproxymodel.h")
+        if (sourceFile.endsWith("/doc/src/snippets/code/src_gui_itemviews_qidentityproxymodel.cpp")
             || sourceFile.endsWith("/src/gui/itemviews/qidentityproxymodel.cpp")
-            || sourceFile.endsWith("/doc/src/snippets/code/src_gui_itemviews_qidentityproxymodel.cpp")
-            || sourceFile.endsWith("/tests/auto/qidentityproxymodel/tst_qidentityproxymodel.cpp")
-            || sourceFile.endsWith("/src/network/kernel/qnetworkproxy_p.h"))
+            || sourceFile.endsWith("/src/gui/itemviews/qidentityproxymodel.h")
+            || sourceFile.endsWith("/src/network/kernel/qnetworkproxy_p.h")
+            || sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.cpp")
+            || sourceFile.endsWith("/tests/auto/modeltest/dynamictreemodel.h")
+            || sourceFile.endsWith("/tests/auto/qidentityproxymodel/tst_qidentityproxymodel.cpp"))
         {
             // These files are not copyrighted by Nokia.
             ++i;
         } else {
             QVERIFY(copyrightPattern.exactMatch(content.at(i++)));
         }
-        i++;
-        QCOMPARE(content.at(i++), QString("** Contact: Nokia Corporation (qt-info@nokia.com)"));
+        // The old-style Contact: line should be replaced with
+        // Contact: http://www.qt-project.org/
+        // but it's still allowed.
+        if (content.at(i++) != QString("** Contact: http://www.qt-project.org/")) {
+            // here this i++ assumes that 'All rights reserved' line still exists
+            QCOMPARE(content.at(i++), QString("** Contact: Nokia Corporation (qt-info@nokia.com)"));
+        }
     }
     QCOMPARE(content.at(i++), QString("**"));
     QVERIFY(moduleTest.exactMatch(content.at(i++)));
