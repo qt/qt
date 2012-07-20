@@ -131,6 +131,9 @@ void tst_QSharedPointer_and_QWidget::strong_weak()
 
 void tst_QSharedPointer_and_QWidget::strong_sharedptrDelete()
 {
+#ifndef Q_WS_QWS
+    QSKIP("QTBUG-26594", SkipAll);
+#endif
     QWidget *parent = new QWidget;
     QSharedPointer<QWidget> ptr(new QWidget(parent));
     QWeakPointer<QWidget> weak = ptr;
