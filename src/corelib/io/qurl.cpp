@@ -288,11 +288,11 @@ struct QUrlParseData
 {
     const char *scheme;
     int schemeLength;
-    
+
     const char *userInfo;
     int userInfoDelimIndex;
     int userInfoLength;
-    
+
     const char *host;
     int hostLength;
     int port;
@@ -400,7 +400,7 @@ static bool QT_FASTCALL _pctEncoded(const char **ptr)
     if (**ptr != '%')
         return false;
     ++(*ptr);
-    
+
     if (!_HEXDIG(ptr)) {
         *ptr = ptrBackup;
         return false;
@@ -455,7 +455,7 @@ static bool QT_FASTCALL _unreserved(const char **ptr)
         || ch == '-' || ch == '.' || ch == '_' || ch == '~') {
         ++(*ptr);
         return true;
-    } 
+    }
     return false;
 }
 
@@ -500,7 +500,7 @@ static bool QT_FASTCALL _IPvFuture(const char **ptr)
 
     const char *ptrBackup = *ptr;
     ++(*ptr);
-    
+
     if (!_HEXDIG(ptr)) {
         *ptr = ptrBackup;
         return false;
@@ -549,7 +549,7 @@ static bool QT_FASTCALL _decOctet(const char **ptr)
     const char *ptrBackup = *ptr;
     char c1 = **ptr;
 
-    if (c1 < '0' || c1 > '9') 
+    if (c1 < '0' || c1 > '9')
         return false;
 
     ++(*ptr);
@@ -611,7 +611,7 @@ static bool QT_FASTCALL _IPv4Address(const char **ptr)
 static bool QT_FASTCALL _ls32(const char **ptr)
 {
     const char *ptrBackup = *ptr;
-    if (_h16(ptr) && *((*ptr)++) == ':' && _h16(ptr)) 
+    if (_h16(ptr) && *((*ptr)++) == ':' && _h16(ptr))
         return true;
 
     *ptr = ptrBackup;
@@ -838,7 +838,7 @@ static void QT_FASTCALL _authority(const char **ptr, QUrlParseData *parseData)
     _userInfo(ptr, parseData);
     _host(ptr, parseData);
 
-    if (**ptr != ':') 
+    if (**ptr != ':')
         return;
 
     ++(*ptr);
@@ -887,7 +887,7 @@ static bool QT_FASTCALL _segmentNZ(const char **ptr)
 static void QT_FASTCALL _pathAbEmpty(const char **ptr)
 {
     for (;;) {
-        if (**ptr != '/') 
+        if (**ptr != '/')
             break;
         ++(*ptr);
 
@@ -2541,7 +2541,7 @@ static bool isBidirectionalL(uint uc)
     if (uc < 0xaa)
         return (uc >= 0x0041 && uc <= 0x005A)
             || (uc >= 0x0061 && uc <= 0x007A);
-    
+
     if (uc == 0x00AA
         || uc == 0x00B5
         || uc == 0x00BA
@@ -3374,7 +3374,7 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
             // so we're done
             if (!qt_check_std3rules(result.constData() + prevLen, labelLength))
                 return QString();
-        } else { 
+        } else {
             // Punycode encoding and decoding cannot be done in-place
             // That means we need one or two temporaries
             qt_nameprep(&result, prevLen);
@@ -3587,7 +3587,7 @@ void QUrlPrivate::setAuthority(const QString &auth)
 
     if (portIndex != -1) {
         port = 0;
-        for (int i = portIndex + 1; i < auth.length(); ++i) 
+        for (int i = portIndex + 1; i < auth.length(); ++i)
             port = (port * 10) + (auth.at(i).unicode() - '0');
     } else {
         port = -1;
@@ -3656,7 +3656,7 @@ QString QUrlPrivate::userInfo(QUrl::FormattingOptions options) const
         tmp += QLatin1Char(':');
         tmp += password;
     }
-    
+
     return tmp;
 }
 
@@ -3747,7 +3747,7 @@ static void removeDotsFromPath(QByteArray *path)
             in += 2;
             break;
         }
-        
+
         // otherwise, if the input buffer begins with a prefix
         // of "/../" or "/..", where ".." is a complete path
         // segment, then replace that prefix with "/" in the
@@ -3768,7 +3768,7 @@ static void removeDotsFromPath(QByteArray *path)
             in += 3;
             break;
         }
-        
+
         // otherwise move the first path segment in
         // the input buffer to the end of the output
         // buffer, including the initial "/" character
@@ -5107,10 +5107,10 @@ void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &que
     Inserts the pair \a key = \a value into the query string of the
     URL.
 
-    The key/value pair is encoded before it is added to the query. The 
-    pair is converted into separate strings internally. The \a key and 
-    \a value is first encoded into UTF-8 and then delimited by the 
-    character returned by valueDelimiter(). Each key/value pair is 
+    The key/value pair is encoded before it is added to the query. The
+    pair is converted into separate strings internally. The \a key and
+    \a value is first encoded into UTF-8 and then delimited by the
+    character returned by valueDelimiter(). Each key/value pair is
     delimited by the character returned by pairDelimiter().
 
     \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
