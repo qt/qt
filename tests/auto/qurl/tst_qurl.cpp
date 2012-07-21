@@ -2690,6 +2690,12 @@ void tst_QUrl::tolerantParser()
 
         url.setEncodedUrl("data:text/css,div%20{%20border-right:%20solid;%20}");
         QCOMPARE(url.toEncoded(), QByteArray("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
+
+        QUrl url2 = url;
+        url2.setEncodedUrl("http://www.example.com");
+        // Check that it detached
+        QCOMPARE(url.toEncoded(), QByteArray("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
+        QCOMPARE(url2.toEncoded(), QByteArray("http://www.example.com"));
     }
 
     {

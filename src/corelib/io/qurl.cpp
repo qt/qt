@@ -4400,8 +4400,8 @@ static inline char toHex(quint8 c)
 void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
 {
     QByteArray tmp = encodedUrl;
-    if (!d) d = new QUrlPrivate;
-    else d->clear();
+    detach();
+    d->clear();
     if ((d->parsingMode = parsingMode) == TolerantMode) {
         // Replace stray % with %25
         QByteArray copy = tmp;
