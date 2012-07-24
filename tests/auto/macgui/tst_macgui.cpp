@@ -99,13 +99,16 @@ void tst_MacGui::scrollbarPainting()
     colorWidget.raise();
     QTest::qWait(100);
 
-    QPixmap pixmap = grabWindowContents(&colorWidget);
+    QImage image = grabWindowContents(&colorWidget).toImage();
 
-    QVERIFY(isContent(pixmap.toImage(), verticalScrollbar.geometry(), GuiTester::Horizontal));
+    QVERIFY(isContent(image, verticalScrollbar.geometry(), GuiTester::Horizontal));
 #ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-26514", Abort);
+    // this test seems to be unstable on OS X 10.6 (Snow Leopard)
+    if (!isContent(image, horizontalScrollbar.geometry(), GuiTester::Vertical)) {
+        QEXPECT_FAIL("", "QTBUG-20984", Abort);
+    }
 #endif
-    QVERIFY(isContent(pixmap.toImage(), horizontalScrollbar.geometry(), GuiTester::Vertical));
+    QVERIFY(isContent(image, horizontalScrollbar.geometry(), GuiTester::Vertical));
 }
 
 // When running the auto-tests on scruffy, the first enter-the-event-loop-and-wait-for-a-click
