@@ -44,6 +44,7 @@
 #include <QScrollBar>
 #include <QStyleOptionSlider>
 #include <QScrollArea>
+#include <QSysInfo>
 
 class tst_QScrollBar : public QObject
 {
@@ -99,6 +100,11 @@ void tst_QScrollBar::scrollSingleStep()
     QTest::mouseClick(testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
     QTest::qWait(510); // initial delay is 500 for setRepeatAction
     disconnect(testWidget, SIGNAL(actionTriggered(int)), 0, 0);
+#ifdef Q_WS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "Fails on Mac OS X Lion. See: QTBUG-25272", Abort);
+    }
+#endif
     QCOMPARE(testWidget->value(), testWidget->singleStep());
 }
 
@@ -137,7 +143,9 @@ void tst_QScrollBar::task_209492()
 
     // Check that the action was triggered once.
 #ifdef Q_WS_MAC
-    QEXPECT_FAIL("", "Fix does does not work on Mac due to paint architechure differences.", Abort);
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "Fix does not work on Mac OS X Lion due to paint architechure differences. See: QTBUG-25272", Abort);
+    }
 #endif
     QCOMPARE(scrollArea.scrollCount, 1);
     QCOMPARE(spy.count(), 1);
