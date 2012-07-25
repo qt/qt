@@ -1082,6 +1082,10 @@ void Configure::parseCmdLine()
             qmakeLibs += QString("-l" + configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS=")) {
             opensslLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_DEBUG=")) {
+            opensslLibsDebug = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_RELEASE=")) {
+            opensslLibsRelease = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
@@ -3032,12 +3036,22 @@ void Configure::generateOutputVars()
         qmakeVars += QString("INCLUDEPATH    += ") + escapeSeparators(qmakeIncludes.join(" "));
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
-    else if (dictionary[ "OPENSSL" ] == "linked") {
-        if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian"))
-            qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
-        else
-            qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
+    if (dictionary[ "OPENSSL" ] == "linked") {
+        if (!opensslLibsDebug.isEmpty() || !opensslLibsRelease.isEmpty()) {
+            if (opensslLibsDebug.isEmpty() || opensslLibsRelease.isEmpty()) {
+                cout << "Error: either both or none of OPENSSL_LIBS_DEBUG/_RELEASE must be defined." << endl;
+                exit(1);
+            }
+            qmakeVars += opensslLibsDebug;
+            qmakeVars += opensslLibsRelease;
+        } else if (opensslLibs.isEmpty()) {
+            if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian")) {
+                qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
+            } else {
+                qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
+            }
         }
+    }
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
 
@@ -3806,11 +3820,18 @@ void Configure::displayConfig()
         cout << "WARNING: Using static linking will disable the use of plugins." << endl;
         cout << "         Make sure you compile ALL needed modules into the library." << endl;
     }
-    if (dictionary[ "OPENSSL" ] == "linked" && opensslLibs.isEmpty()) {
-        cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
-        cout << "library names through OPENSSL_LIBS." << endl;
-        cout << "For example:" << endl;
-        cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
+    if (dictionary[ "OPENSSL" ] == "linked") {
+        if (!opensslLibsDebug.isEmpty() || !opensslLibsRelease.isEmpty()) {
+            cout << "Using OpenSSL libraries:" << endl;
+            cout << "   debug  : " << opensslLibsDebug << endl;
+            cout << "   release: " << opensslLibsRelease << endl;
+            cout << "   both   : " << opensslLibs << endl;
+        } else if (opensslLibs.isEmpty()) {
+            cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
+            cout << "library names through OPENSSL_LIBS and optionally OPENSSL_LIBS_DEBUG/OPENSSL_LIBS_RELEASE" << endl;
+            cout << "For example:" << endl;
+            cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
+        }
     }
     if (dictionary[ "ZLIB_FORCED" ] == "yes") {
         QString which_zlib = "supplied";
