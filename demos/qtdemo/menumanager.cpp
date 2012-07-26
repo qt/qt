@@ -518,16 +518,28 @@ QString MenuManager::resolveExeFile(const QString &name)
     dir.cd(dirName);
     dir.cd(fileName);
 
-    fileName = fileName.split("/").last();
-    QFile unixFile(dir.path() + "/" + fileName);
-    if (unixFile.exists()) return unixFile.fileName();
-    QFile winR(dir.path() + "\\release\\" + fileName + ".exe");
-    if (winR.exists()) return winR.fileName();
-    QFile winD(dir.path() + "\\debug\\" + fileName + ".exe");
-    if (winD.exists()) return winD.fileName();
-    QFile mac(dir.path() + "/" + fileName + ".app");
-    if (mac.exists()) return mac.fileName();
-
+    fileName = fileName.split(QLatin1Char('/')).last();
+#ifdef Q_OS_WIN
+    fileName += QLatin1String(".exe");
+#endif
+    // UNIX, Mac non-framework and Windows installed builds.
+    const QFile installedFile(dir.path() + QLatin1Char('/') + fileName);
+    if (installedFile.exists())
+        return installedFile.fileName();
+    // Windows in-source builds
+#if defined(Q_OS_WIN)
+    const QFile winR(dir.path() + QLatin1String("/release/") + fileName);
+    if (winR.exists())
+        return winR.fileName();
+    const QFile winD(dir.path() + QLatin1String("/debug/") + fileName);
+    if (winD.exists())
+        return winD.fileName();
+#elif defined(Q_OS_MAC)
+    // Mac frameworks
+    const QFile mac(dir.path() + QLatin1Char('/') + fileName + QLatin1String(".app"));
+    if (mac.exists())
+        return mac.fileName();
+#endif
     if (Colors::verbose)
         qDebug() << "- WARNING: Could not resolve executable:" << dir.path() << fileName;
     return "__executable not found__";
