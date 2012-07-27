@@ -240,7 +240,7 @@ MyWindow::MyWindow()
 
 //! [18]
 int n = messages.count();
-showMessage(tr("%n message(s) saved", "", n));
+showMessage(tr("%n message(s) saved", 0, n));
 //! [18]
 
 
