@@ -1693,6 +1693,31 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
+    } else if (dictionary[ "XQMAKESPEC" ].contains("blackberry")) { //TODO actually wrong.
+        dictionary[ "STYLE_WINDOWSXP" ]     = "no";
+        dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
+        dictionary[ "STYLE_WINDOWSCE" ]     = "no";
+        dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
+        dictionary[ "STYLE_S60" ]           = "no";
+        dictionary[ "SSE" ]                 = "no";
+        dictionary[ "SSE2" ]                = "no";
+        dictionary[ "MMX" ]                 = "no";
+        dictionary[ "IWMMXT" ]              = "no";
+        dictionary[ "CE_CRT" ]              = "no";
+        dictionary[ "PHONON" ]              = "no";
+        dictionary[ "NIS" ]                 = "no";
+        dictionary[ "QT_CUPS" ]             = "no";
+        dictionary[ "WEBKIT" ]              = "no";
+        dictionary[ "ACCESSIBILITY" ]       = "no";
+        dictionary[ "POSIX_IPC" ]           = "yes";
+        dictionary[ "QPA" ]                 = "yes";
+        dictionary[ "QT_ICONV" ]            = "yes";
+        dictionary[ "LITTLE_ENDIAN" ]       = "yes";
+        dictionary[ "LARGE_FILE" ]          = "yes";
+        dictionary[ "XMLPATTERNS" ]         = "yes";
+        dictionary[ "FONT_CONFIG" ]         = "yes";
+        dictionary[ "FONT_CONFIG" ]         = "yes";
+        dictionary[ "FREETYPE" ]            = "system";
     }
 }
 
