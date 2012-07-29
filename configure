@@ -934,6 +934,9 @@ QT_LIBS_GLIB=
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
+# default qpa platform
+QT_QPA_DEFAULT_PLATFORM=
+
 #flag for Symbian fpu settings
 QT_CFLAGS_FPU=
 
@@ -1404,6 +1407,9 @@ while [ "$#" -gt 0 ]; do
         PLATFORM_MAC=no
         PLATFORM_QWS=no
         PLATFORM_QPA=yes
+        if [ "$VAL" != "auto" ]; then
+            QT_QPA_DEFAULT_PLATFORM="$VAL"
+        fi
         ;;
     nacl)
         ;;
@@ -3814,8 +3820,9 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
 
 Installation options:
 
-    -qpa ................ This will enable the QPA build.
+    -qpa [name] ......... This will enable the QPA build.
                           QPA is a window system agnostic implementation of Qt.
+                          If [name] is given, sets the default QPA platform (e.g xcb, cocoa).
 
  These are optional, but you may specify install directories.
 
@@ -8367,6 +8374,12 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 #ifndef QT_BOOTSTRAPPED
 
 EOF
+    # default QPA platform specified?
+    if [ -n "$QT_QPA_DEFAULT_PLATFORM" ] && [ "$QT_QPA_DEFAULT_PLATFORM" != "auto" ]; then
+        echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
+        echo >>"$outpath/src/corelib/global/qconfig.h.new"
+    fi
+
     for cfg in $QCONFIG_FLAGS; do
         cfgd=`echo $cfg | sed 's/=.*$//'` # trim pushed 'Foo=Bar' defines
         cfg=`echo $cfg | sed 's/=/ /'`    # turn first '=' into a space
