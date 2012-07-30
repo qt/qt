@@ -1,3 +1,10 @@
+2012-07-30  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt/Mac build fix: Use libWebKitSystemInterfaceMountainLion.a
+        on Mountain Lion.
+
+        * qt/QtWebKit.pro:
+
 2011-06-01  Jer Noble  <jer.noble@apple.com>
 
         Reviewed by Eric Carlson.
