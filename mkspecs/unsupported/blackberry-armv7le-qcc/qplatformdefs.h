@@ -40,3 +40,5 @@
 ****************************************************************************/
 
 #include "../qnx-armv7le-qcc/qplatformdefs.h"
+
+#define QT_QPA_DEFAULT_PLATFORM_NAME "blackberry"
