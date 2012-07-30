@@ -198,6 +198,9 @@ struct qt_token_info
 static int qt_tokenize(const char *s, ulong s_len, ulong *advance,
                         qt_token_info &token_info)
 {
+    if (!s)
+        return -1;
+
     ulong pos = 0, field = 0, fieldlen = 0;
     char current;
     int ret = -1;
