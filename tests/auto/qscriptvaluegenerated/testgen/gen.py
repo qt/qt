@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-#Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
-
+#############################################################################
+##
+## Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+## Contact: http://www.qt-project.org/
+##
+## This file is part of the test suite of the Qt Toolkit.
+##
 ## $QT_BEGIN_LICENSE:LGPL$
 ## GNU Lesser General Public License Usage
 ## This file may be used under the terms of the GNU Lesser General Public
@@ -32,7 +36,10 @@
 ##
 ##
 ##
+##
 ## $QT_END_LICENSE$
+##
+#############################################################################
 
 from __future__ import with_statement
 from string import Template
@@ -73,8 +80,7 @@ class Options():
 mainTempl = Template("""/****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -102,6 +108,7 @@ mainTempl = Template("""/*******************************************************
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
