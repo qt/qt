@@ -1789,6 +1789,9 @@ void tst_QMdiArea::tileSubWindows()
 
     QTRY_VERIFY(workspace.size() != QSize(150, 150));
     QTRY_VERIFY(!vBar->isVisible());
+#if defined(UBUNTU_LUCID) && !defined(Q_WS_QWS)
+    QEXPECT_FAIL("", "QTBUG-26726", Abort);
+#endif
     QTRY_VERIFY(!hBar->isVisible());
 }
 
