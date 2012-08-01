@@ -275,13 +275,7 @@ void tst_Headers::licenseCheck()
         } else {
             QVERIFY(copyrightPattern.exactMatch(content.at(i++)));
         }
-        // The old-style Contact: line should be replaced with
-        // Contact: http://www.qt-project.org/
-        // but it's still allowed.
-        if (content.at(i++) != QString("** Contact: http://www.qt-project.org/")) {
-            // here this i++ assumes that 'All rights reserved' line still exists
-            QCOMPARE(content.at(i++), QString("** Contact: Nokia Corporation (qt-info@nokia.com)"));
-        }
+        QCOMPARE(content.at(i++), QString("** Contact: http://www.qt-project.org/"));
     }
     QCOMPARE(content.at(i++), QString("**"));
     QVERIFY(moduleTest.exactMatch(content.at(i++)));
