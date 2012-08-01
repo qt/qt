@@ -177,21 +177,27 @@ struct ParseResults {
     QSet<const ParseResults *> includes;
 };
 
-typedef QHash<QString, const ParseResults *> ParseResultHash;
+struct IncludeCycle {
+    QSet<QString> fileNames;
+    QSet<const ParseResults *> results;
+};
+
+typedef QHash<QString, IncludeCycle *> IncludeCycleHash;
 typedef QHash<QString, const Translator *> TranslatorHash;
 
 class CppFiles {
 
 public:
-    static const ParseResults *getResults(const QString &cleanFile);
+    static QSet<const ParseResults *> getResults(const QString &cleanFile);
     static void setResults(const QString &cleanFile, const ParseResults *results);
     static const Translator *getTranslator(const QString &cleanFile);
     static void setTranslator(const QString &cleanFile, const Translator *results);
     static bool isBlacklisted(const QString &cleanFile);
     static void setBlacklisted(const QString &cleanFile);
+    static void addIncludeCycle(const QSet<QString> &fileNames);
 
 private:
-    static ParseResultHash &parsedFiles();
+    static IncludeCycleHash &includeCycles();
     static TranslatorHash &translatedFiles();
     static QSet<QString> &blacklistedFiles();
 };
@@ -203,8 +209,8 @@ public:
     void setInput(const QString &in);
     void setInput(QTextStream &ts, const QString &fileName);
     void setTranslator(Translator *_tor) { tor = _tor; }
-    void parse(const QString &initialContext, ConversionData &cd, QSet<QString> &inclusions);
-    void parseInternal(ConversionData &cd, QSet<QString> &inclusions);
+    void parse(const QString &initialContext, ConversionData &cd, const QStringList &includeStack, QSet<QString> &inclusions);
+    void parseInternal(ConversionData &cd, const QStringList &includeStack, QSet<QString> &inclusions);
     const ParseResults *recordResults(bool isHeader);
     void deleteResults() { delete results; }
 
@@ -251,7 +257,7 @@ private:
         bool utf8, bool plural);
 
     void processInclude(const QString &file, ConversionData &cd,
-                        QSet<QString> &inclusions);
+                        const QStringList &includeStack, QSet<QString> &inclusions);
 
     void saveState(SavedState *state);
     void loadState(const SavedState *state);
@@ -1253,11 +1259,11 @@ void CppParser::truncateNamespaces(NamespaceList *namespaces, int length)
   Functions for processing include files.
 */
 
-ParseResultHash &CppFiles::parsedFiles()
+IncludeCycleHash &CppFiles::includeCycles()
 {
-    static ParseResultHash parsed;
+    static IncludeCycleHash cycles;
 
-    return parsed;
+    return cycles;
 }
 
 TranslatorHash &CppFiles::translatedFiles()
@@ -1274,14 +1280,27 @@ QSet<QString> &CppFiles::blacklistedFiles()
     return blacklisted;
 }
 
-const ParseResults *CppFiles::getResults(const QString &cleanFile)
+QSet<const ParseResults *> CppFiles::getResults(const QString &cleanFile)
 {
-    return parsedFiles().value(cleanFile);
+    IncludeCycle * const cycle = includeCycles().value(cleanFile);
+
+    if (cycle)
+        return cycle->results;
+    else
+        return QSet<const ParseResults *>();
 }
 
 void CppFiles::setResults(const QString &cleanFile, const ParseResults *results)
 {
-    parsedFiles().insert(cleanFile, results);
+    IncludeCycle *cycle = includeCycles().value(cleanFile);
+
+    if (!cycle) {
+        cycle = new IncludeCycle;
+        includeCycles().insert(cleanFile, cycle);
+    }
+
+    cycle->fileNames.insert(cleanFile);
+    cycle->results.insert(results);
 }
 
 const Translator *CppFiles::getTranslator(const QString &cleanFile)
@@ -1304,19 +1323,42 @@ void CppFiles::setBlacklisted(const QString &cleanFile)
     blacklistedFiles().insert(cleanFile);
 }
 
+void CppFiles::addIncludeCycle(const QSet<QString> &fileNames)
+{
+    IncludeCycle * const cycle = new IncludeCycle;
+    cycle->fileNames = fileNames;
+
+    QSet<IncludeCycle *> intersectingCycles;
+    foreach (const QString &fileName, fileNames) {
+        IncludeCycle *intersectingCycle = includeCycles().value(fileName);
+
+        if (intersectingCycle && !intersectingCycles.contains(intersectingCycle)) {
+            intersectingCycles.insert(intersectingCycle);
+
+            cycle->fileNames.unite(intersectingCycle->fileNames);
+            cycle->results.unite(intersectingCycle->results);
+        }
+    }
+    qDeleteAll(intersectingCycles);
+
+    foreach (const QString &fileName, cycle->fileNames)
+        includeCycles().insert(fileName, cycle);
+}
+
 static bool isHeader(const QString &name)
 {
     QString fileExt = QFileInfo(name).suffix();
     return fileExt.isEmpty() || fileExt.startsWith(QLatin1Char('h'), Qt::CaseInsensitive);
 }
 
-void CppParser::processInclude(const QString &file, ConversionData &cd,
+void CppParser::processInclude(const QString &file, ConversionData &cd, const QStringList &includeStack,
                                QSet<QString> &inclusions)
 {
     QString cleanFile = QDir::cleanPath(file);
 
-    if (inclusions.contains(cleanFile)) {
-        yyMsg() << qPrintable(LU::tr("circular inclusion of %1\n").arg(cleanFile));
+    const int index = includeStack.indexOf(cleanFile);
+    if (index != -1) {
+        CppFiles::addIncludeCycle(includeStack.mid(index).toSet());
         return;
     }
 
@@ -1330,8 +1372,9 @@ void CppParser::processInclude(const QString &file, ConversionData &cd,
         && !CppFiles::isBlacklisted(cleanFile)
         && isHeader(cleanFile)) {
 
-        if (const ParseResults *res = CppFiles::getResults(cleanFile)) {
-            results->includes.insert(res);
+        QSet<const ParseResults *> res = CppFiles::getResults(cleanFile);
+        if (!res.isEmpty()) {
+            results->includes.unite(res);
             return;
         }
 
@@ -1357,7 +1400,9 @@ void CppParser::processInclude(const QString &file, ConversionData &cd,
                 break;
             }
         parser.setInput(ts, cleanFile);
-        parser.parse(cd.m_defaultContext, cd, inclusions);
+        QStringList stack = includeStack;
+        stack << cleanFile;
+        parser.parse(cd.m_defaultContext, cd, stack, inclusions);
         results->includes.insert(parser.recordResults(true));
     } else {
         CppParser parser(results);
@@ -1366,7 +1411,9 @@ void CppParser::processInclude(const QString &file, ConversionData &cd,
         parser.functionContextUnresolved = functionContextUnresolved;
         parser.pendingContext = pendingContext;
         parser.setInput(ts, cleanFile);
-        parser.parseInternal(cd, inclusions);
+        QStringList stack = includeStack;
+        stack << cleanFile;
+        parser.parseInternal(cd, stack, inclusions);
         // Avoid that messages obtained by direct scanning are used
         CppFiles::setBlacklisted(cleanFile);
     }
@@ -1548,7 +1595,7 @@ void CppParser::recordMessage(
     tor->append(msg);
 }
 
-void CppParser::parse(const QString &initialContext, ConversionData &cd,
+void CppParser::parse(const QString &initialContext, ConversionData &cd, const QStringList &includeStack,
                       QSet<QString> &inclusions)
 {
     if (tor)
@@ -1558,10 +1605,10 @@ void CppParser::parse(const QString &initialContext, ConversionData &cd,
     functionContext = namespaces;
     functionContextUnresolved = initialContext;
 
-    parseInternal(cd, inclusions);
+    parseInternal(cd, includeStack, inclusions);
 }
 
-void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
+void CppParser::parseInternal(ConversionData &cd, const QStringList &includeStack, QSet<QString> &inclusions)
 {
     static QString strColons(QLatin1String("::"));
 
@@ -1597,7 +1644,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             text = QDir(QFileInfo(yyFileName).absolutePath()).absoluteFilePath(yyWord);
             text.detach();
             if (QFileInfo(text).isFile()) {
-                processInclude(text, cd, inclusions);
+                processInclude(text, cd, includeStack, inclusions);
                 yyTok = getToken();
                 break;
             }
@@ -1607,14 +1654,14 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             QStringList cSources = cd.m_allCSources.values(yyWord);
             if (!cSources.isEmpty()) {
                 foreach (const QString &cSource, cSources)
-                    processInclude(cSource, cd, inclusions);
+                    processInclude(cSource, cd, includeStack, inclusions);
                 goto incOk;
             }
             foreach (const QString &incPath, cd.m_includePath) {
                 text = QDir(incPath).absoluteFilePath(yyWord);
                 text.detach();
                 if (QFileInfo(text).isFile()) {
-                    processInclude(text, cd, inclusions);
+                    processInclude(text, cd, includeStack, inclusions);
                     goto incOk;
                 }
             }
@@ -2200,7 +2247,7 @@ void fetchtrInlinedCpp(const QString &in, Translator &translator, const QString 
     ConversionData cd;
     QSet<QString> inclusions;
     parser.setTranslator(&translator);
-    parser.parse(context, cd, inclusions);
+    parser.parse(context, cd, QStringList(), inclusions);
     parser.deleteResults();
 }
 
@@ -2211,7 +2258,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
     QTextCodec *codec = QTextCodec::codecForName(codecName);
 
     foreach (const QString &filename, filenames) {
-        if (CppFiles::getResults(filename) || CppFiles::isBlacklisted(filename))
+        if (!CppFiles::getResults(filename).isEmpty() || CppFiles::isBlacklisted(filename))
             continue;
 
         QFile file(filename);
@@ -2231,7 +2278,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         tor->setCodecName(translator.codecName());
         parser.setTranslator(tor);
         QSet<QString> inclusions;
-        parser.parse(cd.m_defaultContext, cd, inclusions);
+        parser.parse(cd.m_defaultContext, cd, QStringList(), inclusions);
         parser.recordResults(isHeader(filename));
     }
 
