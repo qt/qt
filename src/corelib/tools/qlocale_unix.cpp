@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char *getSystemLocale()
+static QByteArray getSystemLocale()
 {
 #if defined(Q_OS_QNX)
     static char buff[257];
