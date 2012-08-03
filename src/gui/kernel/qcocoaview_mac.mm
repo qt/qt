@@ -1345,7 +1345,6 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     // Convert the image to NSImage:
     NSImage *image = (NSImage *)qt_mac_create_nsimage(pix);
-    [image retain];
 
     DnDParams *dndParams = macCurrentDnDParameters();
     QT_MANGLE_NAMESPACE(QCocoaView) *theView = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(dndParams->view);
