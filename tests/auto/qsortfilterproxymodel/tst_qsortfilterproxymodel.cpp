@@ -151,6 +151,7 @@ private slots:
     void mapSelectionFromSource();
     void testResetInternalData();
     void filteredColumns();
+    void hierarchyFilterInvalidation();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -3407,6 +3408,71 @@ void tst_QSortFilterProxyModel::testResetInternalData()
     // Cause the source model to reset.
     model.setStringList(QStringList() << "Spam" << "Eggs");
 
+}
+
+class FilterProxy : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    FilterProxy(QObject *parent = 0)
+      : QSortFilterProxyModel(parent),
+        mode(false)
+    {
+
+    }
+
+public slots:
+    void setMode(bool on)
+    {
+        mode = on;
+        invalidateFilter();
+    }
+
+protected:
+    virtual bool filterAcceptsRow ( int source_row, const QModelIndex & source_parent ) const
+    {
+        if (mode) {
+            if (!source_parent.isValid()) {
+                return true;
+            } else {
+                return (source_row % 2) != 0;
+            }
+        } else {
+            if (!source_parent.isValid()) {
+                return source_row >= 2 && source_row < 10;
+            } else {
+                return true;
+            }
+        }
+    }
+
+private:
+    bool mode;
+};
+
+void tst_QSortFilterProxyModel::hierarchyFilterInvalidation()
+{
+    QStandardItemModel model;
+    for (int i = 0; i < 10; ++i) {
+        QStandardItem *child = new QStandardItem(QString("Row %1").arg(i));
+        for (int j = 0; j < 1; ++j) {
+            child->appendRow(new QStandardItem(QString("Row %1/%2").arg(i).arg(j)));
+        }
+        model.appendRow(child);
+    }
+
+    FilterProxy proxy;
+    proxy.setSourceModel(&model);
+
+    QTreeView view;
+    view.setModel(&proxy);
+
+    view.setCurrentIndex(proxy.index(2, 0).child(0, 0));
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    proxy.setMode(true);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

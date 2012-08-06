@@ -1036,12 +1036,13 @@ void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_pare
     Mapping *m = it.value();
     QSet<int> rows_removed = handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
     QSet<int> columns_removed = handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
-    QVector<QModelIndex>::iterator it2 = m->mapped_children.end();
-    while (it2 != m->mapped_children.begin()) {
+    QVector<QModelIndex> mappedChildren = m->mapped_children;
+    QVector<QModelIndex>::iterator it2 = mappedChildren.end();
+    while (it2 != mappedChildren.begin()) {
         --it2;
         const QModelIndex source_child_index = *it2;
         if (rows_removed.contains(source_child_index.row()) || columns_removed.contains(source_child_index.column())) {
-            it2 = m->mapped_children.erase(it2);
+            it2 = mappedChildren.erase(it2);
             remove_from_mapping(source_child_index);
         } else {
             filter_changed(source_child_index);
