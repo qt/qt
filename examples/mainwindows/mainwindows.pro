@@ -1,5 +1,6 @@
 TEMPLATE      = subdirs
 SUBDIRS       = application \
+                dockwidgets \
                 mdi \
                 menus \
                 recentfiles \
