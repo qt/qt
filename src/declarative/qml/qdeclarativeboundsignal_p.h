@@ -54,6 +54,7 @@
 //
 
 #include "qdeclarativeexpression.h"
+#include "qdeclarativeguard_p.h"
 
 #include <QtCore/qmetaobject.h>
 
@@ -67,6 +68,10 @@ class QDeclarativeAbstractBoundSignal : public QObject
 public:
     QDeclarativeAbstractBoundSignal(QObject *parent = 0);
     virtual ~QDeclarativeAbstractBoundSignal() = 0;
+    virtual void disconnect() = 0;
+
+protected slots:
+    virtual void unregisterScopeObject() = 0;
 };
 
 class QDeclarativeBoundSignalParameters;
@@ -78,6 +83,8 @@ public:
                    const QMetaMethod &signal, QObject *parent);
     virtual ~QDeclarativeBoundSignal();
 
+    void disconnect();
+
     int index() const;
 
     QDeclarativeExpression *expression() const;
@@ -88,14 +95,35 @@ public:
     static QDeclarativeBoundSignal *cast(QObject *);
 
 protected:
+    void unregisterScopeObject();
     virtual int qt_metacall(QMetaObject::Call c, int id, void **a);
 
 private:
+    class ScopeGuard : public QDeclarativeGuard<QObject>
+    {
+    public:
+        ScopeGuard(QObject *object, QDeclarativeBoundSignal *signal)
+            : QDeclarativeGuard<QObject>(object), m_signal(signal)
+        {
+        }
+
+        void objectDestroyed(QObject *obj) {
+            Q_UNUSED(obj);
+            m_signal->unregisterScopeObject();
+        }
+
+    private:
+        QDeclarativeBoundSignal *m_signal;
+    };
+
+    void init(QObject *parent);
+
     QDeclarativeExpression *m_expression;
     QMetaMethod m_signal;
     bool m_paramsValid : 1;
     bool m_isEvaluating : 1;
     QDeclarativeBoundSignalParameters *m_params;
+    ScopeGuard m_scope;
 };
 
 QT_END_NAMESPACE

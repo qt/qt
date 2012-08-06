@@ -75,8 +75,11 @@ Bindings are free to implement their own memory management, so the delete operat
 necessarily safe.  The default implementation clears the binding, removes it from the object
 and calls delete.
 */
-void QDeclarativeAbstractBinding::destroy()
+void QDeclarativeAbstractBinding::destroy(DestroyMode mode)
 {
+    if (mode == DisconnectBinding)
+        disconnect(QDeclarativeAbstractBinding::DisconnectOne);
+
     removeFromObject();
     clear();
 
@@ -488,6 +491,12 @@ QString QDeclarativeBinding::expression() const
     return QDeclarativeExpression::expression();
 }
 
+void QDeclarativeBinding::disconnect(DisconnectMode disconnectMode)
+{
+    Q_UNUSED(disconnectMode);
+    setNotifyOnValueChanged(false);
+}
+
 QDeclarativeValueTypeProxyBinding::QDeclarativeValueTypeProxyBinding(QObject *o, int index)
 : m_object(o), m_index(index), m_bindings(0)
 {
@@ -537,6 +546,12 @@ void QDeclarativeValueTypeProxyBinding::recursiveDisable(QDeclarativeAbstractBin
 
 void QDeclarativeValueTypeProxyBinding::update(QDeclarativePropertyPrivate::WriteFlags)
 {
+}
+
+void QDeclarativeValueTypeProxyBinding::disconnect(DisconnectMode disconnectMode)
+{
+    Q_UNUSED(disconnectMode);
+    // Nothing to do
 }
 
 QDeclarativeAbstractBinding *QDeclarativeValueTypeProxyBinding::binding(int propertyIndex)

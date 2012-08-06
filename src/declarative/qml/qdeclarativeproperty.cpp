@@ -1626,12 +1626,16 @@ it connects any lazy "proxy" signal connections set up by QML.
 
 It is possible that this logic should be moved to QMetaObject::connect().
 */
-bool QDeclarativePropertyPrivate::connect(const QObject *sender, int signal_index,
+bool QDeclarativePropertyPrivate::connect(QObject *sender, int signal_index,
                                           const QObject *receiver, int method_index,
                                           int type, int *types)
 {
     flush_vme_signal(sender, signal_index);
     flush_vme_signal(receiver, method_index);
+
+    const QMetaMethod signal = sender->metaObject()->method(signal_index);
+    QObjectPrivate * const senderPriv = QObjectPrivate::get(sender);
+    senderPriv->connectNotify(signal.signature());
 
     return QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
 }

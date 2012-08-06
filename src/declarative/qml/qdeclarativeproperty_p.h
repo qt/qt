@@ -134,7 +134,7 @@ public:
     static int valueTypeCoreIndex(const QDeclarativeProperty &that);
     static int bindingIndex(const QDeclarativeProperty &that);
     static QMetaMethod findSignalByName(const QMetaObject *mo, const QByteArray &);
-    static bool connect(const QObject *sender, int signal_index,
+    static bool connect(QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);
     static const QMetaObject *metaObjectForProperty(const QMetaObject *, int);

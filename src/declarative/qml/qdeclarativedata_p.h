@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeGuardImpl;
 class QDeclarativeCompiledData;
 class QDeclarativeAbstractBinding;
+class QDeclarativeAbstractBoundSignal;
 class QDeclarativeContext;
 class QDeclarativePropertyCache;
 class QDeclarativeContextData;
@@ -154,9 +155,12 @@ public:
     bool hasExtendedData() const { return extendedData != 0; }
     QDeclarativeNotifier *objectNameNotifier() const;
     QHash<int, QObject *> *attachedProperties() const;
+    void addBoundSignal(QDeclarativeAbstractBoundSignal *signal);
+    void removeBoundSignal(QDeclarativeAbstractBoundSignal *signal);
+    void disconnectNotifiers();
 
 private:
-    // For objectNameNotifier and attachedProperties
+    // For objectNameNotifier, attachedProperties and bound signal list
     mutable QDeclarativeDataExtended *extendedData;
 };
 

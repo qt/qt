@@ -71,9 +71,38 @@ public:
 
     QDeclarativeAbstractBinding();
 
-    virtual void destroy();
+    enum DestroyMode {
+        // The binding should disconnect itself upon destroy
+        DisconnectBinding,
+
+        // The binding doesn't need to disconnect itself, but it can if it wants to.
+        //
+        // This is used in QDeclarativeData::destroyed() - at the point at which the bindings are
+        // destroyed, the notifiers are already disconnected, so no need to disconnect each
+        // binding again.
+        //
+        // Bindings can use this flag to speed up destruction, especially for compiled bindings
+        // disconnecting a single binding might be slow.
+        KeepBindingConnected
+    };
+
+    virtual void destroy(DestroyMode mode = DisconnectBinding);
 
     virtual QString expression() const;
+
+    enum DisconnectMode {
+
+        // Just this single binding is getting disconnected, other bindings remain connected and
+        // should not be changed.
+        DisconnectOne,
+
+        // All bindings of the same object are getting disconnected. As an optimization, it is
+        // therefore valid to disconnect all bindings in one go.
+        DisconnectAll
+    };
+
+    // disconnectMode can be ignored, it is just a hint for potential optimization
+    virtual void disconnect(DisconnectMode disconnectMode) = 0;
 
     enum Type { PropertyBinding, ValueTypeProxy };
     virtual Type bindingType() const { return PropertyBinding; }
@@ -123,6 +152,7 @@ public:
 
     virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags);
     virtual void update(QDeclarativePropertyPrivate::WriteFlags);
+    virtual void disconnect(DisconnectMode disconnectMode);
 
     QDeclarativeAbstractBinding *binding(int propertyIndex);
 
@@ -168,6 +198,7 @@ public:
     virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
     virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
     virtual QString expression() const;
+    virtual void disconnect(DisconnectMode disconnectMode);
 
     typedef int Identifier;
     static Identifier Invalid;

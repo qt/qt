@@ -43,6 +43,7 @@
 #define QDECLARATIVENOTIFIER_P_H
 
 #include "private/qdeclarativeguard_p.h"
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +78,12 @@ public:
 
     void connect(QObject *source, int sourceSignal);
     inline void connect(QDeclarativeNotifier *);
+
+    // Disconnects unconditionally, regardless of the refcount
     inline void disconnect();
+
+    // Decreases the refcount and disconnects when refcount reaches 0
+    inline void deref();
 
     void copyAndClear(QDeclarativeNotifierEndpoint &other);
 
@@ -109,6 +115,8 @@ private:
         } signal;
         Notifier notifier;
     };
+
+    quint16 refCount;
 
     inline Notifier *toNotifier();
     inline Notifier *asNotifier();
@@ -143,12 +151,12 @@ void QDeclarativeNotifier::notify()
 }
 
 QDeclarativeNotifierEndpoint::QDeclarativeNotifierEndpoint()
-: target(0), targetMethod(0), type(InvalidType) 
+    : target(0), targetMethod(0), type(InvalidType), refCount(0)
 {
 }
 
 QDeclarativeNotifierEndpoint::QDeclarativeNotifierEndpoint(QObject *t, int m)
-: target(t), targetMethod(m), type(InvalidType) 
+: target(t), targetMethod(m), type(InvalidType), refCount(0)
 {
 }
 
@@ -186,8 +194,10 @@ void QDeclarativeNotifierEndpoint::connect(QDeclarativeNotifier *notifier)
 {
     Notifier *n = toNotifier();
     
-    if (n->notifier == notifier)
+    if (n->notifier == notifier) {
+        refCount++;
         return;
+    }
 
     disconnect();
 
@@ -196,6 +206,7 @@ void QDeclarativeNotifierEndpoint::connect(QDeclarativeNotifier *notifier)
     notifier->endpoints = this;
     n->prev = &notifier->endpoints;
     n->notifier = notifier;
+    refCount++;
 }
 
 void QDeclarativeNotifierEndpoint::disconnect()
@@ -204,6 +215,9 @@ void QDeclarativeNotifierEndpoint::disconnect()
         Signal *s = asSignal();
         if (s->source) {
             QMetaObject::disconnectOne(s->source, s->sourceSignal, target, targetMethod);
+            QObjectPrivate * const priv = QObjectPrivate::get(s->source);
+            const QMetaMethod signal = s->source->metaObject()->method(s->sourceSignal);
+            priv->disconnectNotify(signal.signature());
             s->source = 0;
         }
     } else if (type == NotifierType) {
@@ -217,6 +231,14 @@ void QDeclarativeNotifierEndpoint::disconnect()
         n->disconnected = 0;
         n->notifier = 0;
     }
+    refCount = 0;
+}
+
+void QDeclarativeNotifierEndpoint::deref()
+{
+    refCount--;
+    if (refCount <= 0)
+        disconnect();
 }
 
 QDeclarativeNotifierEndpoint::Notifier *QDeclarativeNotifierEndpoint::toNotifier()

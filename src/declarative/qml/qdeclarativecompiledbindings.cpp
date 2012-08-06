@@ -216,7 +216,8 @@ public:
         // Inherited from QDeclarativeAbstractBinding
         virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
         virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
-        virtual void destroy();
+        virtual void destroy(DestroyMode mode);
+        virtual void disconnect(DisconnectMode disconnectMode);
 
         int index:30;
         bool enabled:1;
@@ -238,6 +239,7 @@ public:
     QDeclarativeRefCount *dataRef;
     Binding *m_bindings;
     quint32 *m_signalTable;
+    bool m_bindingsDisconnected;
 
     static int methodCount;
 
@@ -246,9 +248,10 @@ public:
              QDeclarativeDelayedError *error, QObject *scope, QObject *output, QDeclarativePropertyPrivate::WriteFlags storeFlags);
 
 
-    inline void unsubscribe(int subIndex);
     inline void subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex);
     inline void subscribe(QObject *o, int notifyIndex, int subIndex);
+    inline void disconnectAll();
+    inline void disconnectOne(Binding *bindingToDisconnect);
 
     QDeclarativePropertyCache::Data *findproperty(QObject *obj, 
                                                   const QScriptDeclarativeClass::Identifier &name,
@@ -268,7 +271,8 @@ public:
 };
 
 QDeclarativeCompiledBindingsPrivate::QDeclarativeCompiledBindingsPrivate()
-: subscriptions(0), identifiers(0), programData(0), dataRef(0), m_bindings(0), m_signalTable(0)
+    : subscriptions(0), identifiers(0), programData(0), dataRef(0), m_bindings(0), m_signalTable(0),
+      m_bindingsDisconnected(false)
 {
 }
 
@@ -343,12 +347,23 @@ void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPr
     QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Binding);
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
+void QDeclarativeCompiledBindingsPrivate::Binding::destroy(DestroyMode mode)
 {
+    if (mode == DisconnectBinding)
+        disconnect(QDeclarativeAbstractBinding::DisconnectOne);
+
     enabled = false;
     removeFromObject();
     clear();
     parent->q_func()->release();
+}
+
+void QDeclarativeCompiledBindingsPrivate::Binding::disconnect(DisconnectMode disconnectMode)
+{
+    if (disconnectMode == QDeclarativeAbstractBinding::DisconnectAll)
+        parent->disconnectAll();
+    else
+        parent->disconnectOne(this);
 }
 
 int QDeclarativeCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void **)
@@ -696,26 +711,20 @@ struct QDeclarativeBindingCompilerPrivate
     QByteArray buildExceptionData() const;
 };
 
-void QDeclarativeCompiledBindingsPrivate::unsubscribe(int subIndex)
-{
-    QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    sub->disconnect();
-}
-
 void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
-    unsubscribe(subIndex);
+    QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
+    sub->disconnect();
 
     if (p->idValues[idIndex]) {
-        QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
         sub->target = q;
         sub->targetMethod = methodCount + subIndex;
         sub->connect(&p->idValues[idIndex].bindings);
     }
 }
- 
+
 void QDeclarativeCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex, int subIndex)
 {
     Q_Q(QDeclarativeCompiledBindings);
@@ -727,6 +736,43 @@ void QDeclarativeCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex,
         sub->connect(o, notifyIndex);
     else
         sub->disconnect();
+}
+
+void QDeclarativeCompiledBindingsPrivate::disconnectAll()
+{
+    // This gets called multiple times in QDeclarativeData::disconnectNotifiers(), avoid unneeded
+    // work for all but the first call.
+    if (m_bindingsDisconnected)
+        return;
+
+    // We disconnect all subscriptions, so we can call disconnect() unconditionally if there is at
+    // least one connection
+    Program *program = (Program *)programData;
+    for (int subIndex = 0; subIndex < program->subscriptions; ++subIndex) {
+        Subscription * const sub = (subscriptions + subIndex);
+        if (sub->isConnected())
+            sub->disconnect();
+    }
+    m_bindingsDisconnected = true;
+}
+
+void QDeclarativeCompiledBindingsPrivate::disconnectOne(
+        QDeclarativeCompiledBindingsPrivate::Binding *bindingToDisconnect)
+{
+    // We iterate over the signal table to find all subscriptions for this binding. This is slowish,
+    // but disconnectOne() is only called when overwriting a binding, which is quite rare.
+    Program *program = (Program *)programData;
+    for (int subIndex = 0; subIndex < program->subscriptions; ++subIndex) {
+        Subscription * const sub = (subscriptions + subIndex);
+        quint32 *reeval = m_signalTable + m_signalTable[subIndex];
+        quint32 bindingCount = *reeval;
+        ++reeval;
+        for (quint32 bindingIndex = 0; bindingIndex < bindingCount; ++bindingIndex) {
+            Binding * const binding = m_bindings + reeval[bindingIndex];
+            if (binding == bindingToDisconnect)
+                sub->deref();
+        }
+    }
 }
 
 // Conversion functions - these MUST match the QtScript expression path

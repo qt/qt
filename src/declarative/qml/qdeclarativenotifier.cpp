@@ -71,8 +71,10 @@ void QDeclarativeNotifierEndpoint::connect(QObject *source, int sourceSignal)
 {
     Signal *s = toSignal();
     
-    if (s->source == source && s->sourceSignal == sourceSignal)
+    if (s->source == source && s->sourceSignal == sourceSignal) {
+        refCount++;
         return;
+    }
 
     disconnect();
 
@@ -80,6 +82,7 @@ void QDeclarativeNotifierEndpoint::connect(QObject *source, int sourceSignal)
 
     s->source = source;
     s->sourceSignal = sourceSignal;
+    refCount++;
 }
 
 void QDeclarativeNotifierEndpoint::copyAndClear(QDeclarativeNotifierEndpoint &other)

@@ -17,6 +17,7 @@ SUBDIRS += \
            qdeclarativelayoutitem \
            qdeclarativelistreference \
            qdeclarativemoduleplugin \
+           qdeclarativenotifier \
            qdeclarativeparticles \
            qdeclarativepixmapcache \
            qdeclarativeqt \
