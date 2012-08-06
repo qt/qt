@@ -135,7 +135,7 @@ void tst_Symbols::globalObjects()
 
         QProcess proc;
         proc.start("nm",
-           QStringList() << "-C" << "--format=posix"
+           QStringList() << "-C" << "--format=posix" << "--dynamic"
                          << dir.absolutePath() + "/" + lib);
         QVERIFY(proc.waitForFinished());
         QCOMPARE(proc.exitCode(), 0);
