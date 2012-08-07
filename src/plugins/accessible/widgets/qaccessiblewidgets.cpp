@@ -1621,6 +1621,7 @@ QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType 
         result.first = cursor.position();
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
         result.second = cursor.position();
+        break;
     case WordBoundary:
         cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
         result.first = cursor.position();
