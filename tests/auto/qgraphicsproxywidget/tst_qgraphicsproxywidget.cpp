@@ -51,6 +51,7 @@
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
+#include <QSysInfo>
 
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {
@@ -3386,6 +3387,11 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and hide.
     proxy->update();
     proxy->hide();
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26801", Abort);
+    }
+#endif
     QTRY_COMPARE(view.npaints, 1);
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
