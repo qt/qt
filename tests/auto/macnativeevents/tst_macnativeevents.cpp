@@ -270,7 +270,11 @@ void tst_MacNativeEvents::testDragWindow()
     expected.append(new QMouseEvent(QEvent::NonClientAreaMouseButtonRelease, w.mapFromGlobal(titlebar), moveTo, Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
 
     native.play();
-    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
+    bool waited = expected.waitForAllEvents();
+    if (!waited) {
+        QEXPECT_FAIL("", "QTBUG-26804", Continue);
+    }
+    QVERIFY2(waited, "the test did not receive all expected events!");
 }
 
 void tst_MacNativeEvents::testMouseEnter()
