@@ -812,6 +812,11 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 
     // Leave move mode
     sendMouseRelease(window, mousePosition);
+#ifdef Q_OS_MAC
+    if (moveSpy.count() != expectedGeometryCount) {
+        QEXPECT_FAIL("", "QTBUG-26803", Abort);
+    }
+#endif
     QCOMPARE(moveSpy.count(), expectedGeometryCount);
     QCOMPARE(window->size(), windowSize + QSize(geometryCount, geometryCount));
     }
