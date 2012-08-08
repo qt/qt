@@ -43,6 +43,7 @@
 #define QDECLARATIVEUTILMODULE_H
 
 #include <qdeclarative.h>
+#include <qapplication.h>
 
 QT_BEGIN_HEADER
 
@@ -53,7 +54,7 @@ QT_MODULE(Declarative)
 class QDeclarativeUtilModule
 {
 public:
-    static void defineModule();
+    static void defineModule(QApplication::Type appType);
 };
 
 QT_END_NAMESPACE

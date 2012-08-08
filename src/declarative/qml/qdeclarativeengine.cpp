@@ -87,6 +87,7 @@
 #include <QStack>
 #include <QMap>
 #include <QPluginLoader>
+#include <QtGui/qapplication.h>
 #include <QtGui/qfontdatabase.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
@@ -354,10 +355,14 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
-        QDeclarativeItemModule::defineModule();
-        QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
-        QDeclarativeValueTypeFactory::registerValueTypes();
+
+        const QApplication::Type appType = QApplication::type();
+        if (appType != QApplication::Tty) {
+            QDeclarativeItemModule::defineModule();
+            QDeclarativeValueTypeFactory::registerValueTypes();
+        }
+        QDeclarativeUtilModule::defineModule(appType);
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 }
