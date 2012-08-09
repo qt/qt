@@ -7512,10 +7512,11 @@ canBuildWebKit="$HAVE_STL"
 canBuildQtScript="$HAVE_STL"
 canBuildQtConcurrent="yes"
 
-# WebKit requires stdint.h
+# WebKit and QtScript require stdint.h
 "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
 if [ $? != "0" ]; then
     canBuildWebKit="no"
+    canBuildQtScript="no"
 fi
 
 case "$XPLATFORM" in
