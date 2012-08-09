@@ -7509,6 +7509,7 @@ fi
 #
 canBuildQtXmlPatterns="yes"
 canBuildWebKit="$HAVE_STL"
+canBuildQtScript="$HAVE_STL"
 canBuildQtConcurrent="yes"
 
 # WebKit requires stdint.h
@@ -7700,8 +7701,13 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
+if [ "$CFG_SCRIPT" = "yes" -a "$canBuildQtScript" = "no" ]; then
+    echo "Error: QtScript was requested, but it can't be built on this platform."
+    exit 1
+fi
+
 if [ "$CFG_SCRIPT" = "auto" ]; then
-    CFG_SCRIPT="yes"
+    CFG_SCRIPT="$canBuildQtScript"
 fi
 
 if [ "$CFG_SCRIPT" = "yes" ]; then
