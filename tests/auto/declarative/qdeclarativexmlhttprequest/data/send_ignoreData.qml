@@ -14,7 +14,7 @@ QtObject {
         // Test to the end
         x.onreadystatechange = function() {
             if (x.readyState == XMLHttpRequest.DONE) {
-                if (reqType == "HEAD")
+                if (reqType == "HEAD" || reqType == "DELETE")
                     dataOK = (x.responseText == "");
                 else
                     dataOK = (x.responseText == "QML Rocks!\n");

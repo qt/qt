@@ -1,0 +1,7 @@
+DELETE /testdocument.html HTTP/1.1
+ACCEPT-LANGUAGE: en-US
+Connection: Keep-Alive
+Accept-Encoding: gzip
+User-Agent: Mozilla/5.0
+Host: 127.0.0.1:14445
+

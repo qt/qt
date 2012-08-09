@@ -497,7 +497,7 @@ void tst_qdeclarativexmlhttprequest::send_alreadySent()
     delete object;
 }
 
-// Test that send for a GET or HEAD ignores data
+// Test that sends for GET, HEAD and DELETE ignore data
 void tst_qdeclarativexmlhttprequest::send_ignoreData()
 {
     {
@@ -522,7 +522,7 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
     {
         TestHTTPServer server(SERVER_PORT);
         QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_ignoreData_PUT.expect"), 
+        QVERIFY(server.wait(TEST_FILE("send_ignoreData_HEAD.expect"),
                             TEST_FILE("send_ignoreData.reply"), 
                             TEST_FILE("testdocument.html")));
 
@@ -530,6 +530,25 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
         object->setProperty("reqType", "HEAD");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+        component.completeCreate();
+
+        QTRY_VERIFY(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_ignoreData_DELETE.expect"),
+                            TEST_FILE("send_ignoreData.reply"),
+                            TEST_FILE("testdocument.html")));
+
+        QDeclarativeComponent component(&engine, TEST_FILE("send_ignoreData.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("reqType", "DELETE");
         object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
