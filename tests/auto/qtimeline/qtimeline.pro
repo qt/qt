@@ -4,4 +4,4 @@ QT = core testlib
 SOURCES  += tst_qtimeline.cpp
 CONFIG += parallel_test
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-428
