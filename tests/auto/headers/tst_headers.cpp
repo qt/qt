@@ -232,23 +232,6 @@ void tst_Headers::licenseCheck()
         return;
     }
 
-    // Files for QNX follow the Qt5 license header, so skipping them for now
-    if (sourceFile.contains("/src/plugins/platforms/blackberry/")) {
-        return;
-    }
-
-    if (sourceFile.endsWith("mkspecs/unsupported/blackberry-armv7le-qcc/qplatformdefs.h")
-        || sourceFile.endsWith("mkspecs/unsupported/blackberry-x86-qcc/qplatformdefs.h")
-        || sourceFile.endsWith("mkspecs/unsupported/qnx-armv7le-qcc/qplatformdefs.h")
-        || sourceFile.endsWith("mkspecs/unsupported/qnx-x86-qcc/qplatformdefs.h")
-        || sourceFile.endsWith("src/corelib/kernel/qeventdispatcher_blackberry.cpp")
-        || sourceFile.endsWith("src/corelib/kernel/qeventdispatcher_blackberry_p.h")
-        || sourceFile.endsWith("src/gui/kernel/qeventdispatcher_blackberry_qpa.cpp")
-        || sourceFile.endsWith("src/gui/kernel/qeventdispatcher_blackberry_qpa_p.h")
-        || sourceFile.endsWith("src/gui/util/qdesktopservices_blackberry.cpp")) {
-        return;
-    }
-
     // Compare the licensePattern ($QT_BEGIN_LICENSE:(LGPL|BSD|3RDPARTY|LGPL-ONLY|FDL)) pattern
     // with the file under test. This pattern can be found in either lines 5, 7 or 8 of the
     // license header
