@@ -3150,6 +3150,16 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(textIface->textAtOffset(5, QAccessible2::LineBoundary,&start,&end), cite);
     QCOMPARE(textIface->textAtOffset(5, QAccessible2::NoBoundary,&start,&end), cite);
 
+
+    // characterRect()
+    le3->show();
+    QTest::qWaitForWindowShown(le3);
+    const QRect lineEditRect = iface->rect(0);
+    // Only first 10 characters, check if they are within the bounds of line edit
+    for (int i = 0; i < 10; ++i) {
+        QVERIFY(lineEditRect.contains(textIface->characterRect(i, QAccessible2::RelativeToScreen)));
+    }
+
     delete iface;
     delete toplevel;
     QTestAccessibility::clearEvents();

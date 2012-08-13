@@ -273,6 +273,7 @@ Q_SIGNALS:
 
 private:
     friend class QAbstractSpinBox;
+    friend class QAccessibleLineEdit;
 #ifdef QT_KEYPAD_NAVIGATION
     friend class QDateTimeEdit;
 #endif

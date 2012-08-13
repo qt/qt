@@ -51,6 +51,7 @@
 #include <qgroupbox.h>
 #include <qlcdnumber.h>
 #include <qlineedit.h>
+#include <private/qlineedit_p.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 
@@ -876,10 +877,22 @@ int QAccessibleLineEdit::cursorPosition()
     return lineEdit()->cursorPosition();
 }
 
-QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/)
+QRect QAccessibleLineEdit::characterRect(int offset, CoordinateType coordType)
 {
-    // QLineEdit doesn't hand out character rects
-    return QRect();
+    int left, top, right, bottom;
+    lineEdit()->getTextMargins(&left, &top, &right, &bottom);
+    int x = lineEdit()->d_func()->control->cursorToX(offset);
+    int y = top;
+    QFontMetrics fm(lineEdit()->font());
+    const QString ch = text(offset, offset + 1);
+    int w = fm.width(ch);
+    int h = fm.height();
+
+    QRect r(x, y, w, h);
+    if (coordType == QAccessible2::RelativeToScreen)
+        r.moveTo(lineEdit()->mapToGlobal(r.topLeft()));
+
+    return r;
 }
 
 int QAccessibleLineEdit::selectionCount()
