@@ -46,6 +46,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QPoint>
 #include <QtCore/QSize>
+#include <QtCore/QPointer>
 #include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
@@ -75,7 +76,7 @@ namespace qdesigner_internal {
         Qt::Alignment alignment() const;
     private:
         QWidget *m_editorWidget;
-        QWidget *m_parentWidget;
+        QPointer<QWidget> m_parentWidget;
         const bool m_noChildEvent;
         QPoint m_posOffset;
         QSize m_sizeOffset;

@@ -65,7 +65,8 @@ namespace qdesigner_internal {
 
     InPlaceWidgetHelper::~InPlaceWidgetHelper()
     {
-        m_parentWidget->setAttribute(Qt::WA_NoChildEventsForParent, m_noChildEvent);
+        if (m_parentWidget)
+            m_parentWidget->setAttribute(Qt::WA_NoChildEventsForParent, m_noChildEvent);
     }
 
     Qt::Alignment InPlaceWidgetHelper::alignment() const {
