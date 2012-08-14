@@ -388,30 +388,6 @@ Return value:
             <numerusform>    Pominięto %n nieprzetłumaczonych tekstów źródłowy￼ch</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
-</source>
-        <translation type="obsolete">
-            <numerusform>Wygenerowano %n tłumaczenie (przetłumaczonych %1, nieprzetłumaczonych %2)
-</numerusform>
-            <numerusform>Wygenerowano %n tłumaczenia (przetłumaczonych %1, nieprzetłumaczonych %2)
-</numerusform>
-            <numerusform>Wygenerowano %n tłumaczeń (przetłumaczonych %1, nieprzetłumaczonych %2)
-</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>    Ignored %n untranslated source text(s)
-</source>
-        <translation type="obsolete">
-            <numerusform>Pominięto %n nieprzetłumaczony tekst źródłowy￼
-</numerusform>
-            <numerusform>Pominięto %n nieprzetłumaczone teksty źródłowe
-</numerusform>
-            <numerusform>Pominięto %n nieprzetłumaczonych tekstów źródłowy￼ch
-</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Usage:
     lrelease [options] project-file
@@ -535,12 +511,6 @@ Options:
         <source>Excess closing bracket in C++ code (or abuse of the C++ preprocessor)
 </source>
         <translation>Nadmiar zamykających nawiasów kwadratowych w kodzie C++ (lub nadużycie preprocesora C++)
-</translation>
-    </message>
-    <message>
-        <source>circular inclusion of %1
-</source>
-        <translation>cykliczne dołączenie %1
 </translation>
     </message>
     <message>
@@ -903,7 +873,7 @@ Options:
     <message>
         <source>lupdate warning: -target-language usually only makes sense with exactly one TS file.
 </source>
-        <translation>Ostrzeżenie lupdate: zwykle opcja -target-language ma sens z dokładnie jednym plikiem TS.
+        <translation>Ostrzeżenie lupdate: zwykle opcja -target-language ma sens tylko z dokładnie jednym plikiem TS.
 </translation>
     </message>
     <message>
@@ -915,7 +885,7 @@ Options:
     <message>
         <source>lupdate warning: no TS files specified. Only diagnostics will be produced.
 </source>
-        <translation>Ostrzeżenie lupdate: Brak podanych plików TS. Zostaną utworzone tylko wyniki diagnostyki.
+        <translation>Ostrzeżenie lupdate: Brak podanych plików TS. Utworzone zostaną tylko wyniki diagnostyki.
 </translation>
     </message>
     <message>

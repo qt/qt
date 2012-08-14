@@ -22,10 +22,6 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <source>Fake error !</source>
-        <translation type="obsolete">Fałszywy błąd!</translation>
-    </message>
-    <message>
         <source>Fake error!</source>
         <translation>Fałszywy błąd!</translation>
     </message>
@@ -487,10 +483,6 @@ zainstalowałeś libgstreamer-plugins-base.</translation>
     <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
         <translation>Użyj tego suwaka aby zmienić głośność. Skrajnie lewa pozycja to 0%. Skrajnie prawa to %1%</translation>
-    </message>
-    <message>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation type="obsolete">Użyj tego suwaka aby zmienić głośność. Skrajnie lewa pozycja to 0%, skrajnie prawa to %1%</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -1460,14 +1452,6 @@ na
         <translation>Niepoprawne przypisanie wartości: oczekiwano liczby całkowitej</translation>
     </message>
     <message>
-        <source>Invalid property assignment: float expected</source>
-        <translation type="obsolete">Niepoprawne przypisanie wartości: oczekiwano liczby zmiennoprzecinkowej</translation>
-    </message>
-    <message>
-        <source>Invalid property assignment: double expected</source>
-        <translation type="obsolete">Niepoprawne przypisanie wartości: oczekiwano liczby zmiennoprzecinkowej podwójnej precyzji</translation>
-    </message>
-    <message>
         <source>Invalid property assignment: number expected</source>
         <translation>Niepoprawne przypisanie wartości: oczekiwano liczby</translation>
     </message>
@@ -1756,10 +1740,6 @@ na
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="obsolete">Niepoprawna referencja aliasu. Referencja aliasu musi być podana jako &lt;id&gt; lub &lt;id&gt; &lt;property&gt;</translation>
-    </message>
-    <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
         <translation>Niepoprawna referencja aliasu. Nie można odnaleźć identyfikatora &quot;%1&quot;</translation>
     </message>
@@ -1773,25 +1753,6 @@ na
     <message>
         <source>createObject: value is not an object</source>
         <translation>&quot;createObject&quot;: wartość nie jest obiektem</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeCompositeTypeManager</name>
-    <message>
-        <source>Resource %1 unavailable</source>
-        <translation type="obsolete">Zasób %1 nie jest dostępny</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation type="obsolete">Przestrzeń nazw %1 nie może być użyta jako typ</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation type="obsolete">%1 %2</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation type="obsolete">Typ %1 nie jest dostępny</translation>
     </message>
 </context>
 <context>
@@ -1854,14 +1815,6 @@ na
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
-        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation>nie można załadować modułu &quot;%1&quot;: Niezgodność wielkości liter w &quot;%2&quot;</translation>
-    </message>
-    <message>
-        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>definicja &quot;%2&quot; modułu &quot;%1&quot; nie może zostać odczytana</translation>
-    </message>
-    <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
         <translation>wtyczka nie może zostać załadowana dla modułu &quot;%1&quot;: %2</translation>
     </message>
@@ -1914,8 +1867,8 @@ na
         <translation>nie jest typem</translation>
     </message>
     <message>
-        <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation>Niezgodność wielkości liter w &quot;%2&quot;</translation>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>Niezgodność wielkości liter w &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -2158,25 +2111,6 @@ na
     <message>
         <source>Cannot open: %1</source>
         <translation>Nie można otworzyć: %1</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativePixmapCache</name>
-    <message>
-        <source>Error decoding: %1: %2</source>
-        <translation type="obsolete">Błąd dekodowania: %1: %2</translation>
-    </message>
-    <message>
-        <source>Failed to get image from provider: %1</source>
-        <translation type="obsolete">Pobieranie obrazka od dostawcy zakończone błędem: %1</translation>
-    </message>
-    <message>
-        <source>Cannot open: %1</source>
-        <translation type="obsolete">Nie można otworzyć: %1</translation>
-    </message>
-    <message>
-        <source>Unknown Error loading %1</source>
-        <translation type="obsolete">Nieznany błąd ładowania %1</translation>
     </message>
 </context>
 <context>
@@ -3122,6 +3056,13 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
 </context>
 <context>
+    <name>QGroupBox</name>
+    <message>
+        <source>Toggle</source>
+        <translation>Przełącz</translation>
+    </message>
+</context>
+<context>
     <name>QHostInfo</name>
     <message>
         <source>Unknown error</source>
@@ -3153,6 +3094,10 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <source>Invalid hostname</source>
         <translation>Niepoprawna nazwa hosta</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>Nieznany błąd (%1)</translation>
     </message>
 </context>
 <context>
@@ -3454,14 +3399,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 </context>
 <context>
     <name>QLibrary</name>
-    <message>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">Nie można wykonać przypisania &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation type="obsolete">Nie można usunąć przypisania &apos;%1&apos;: %2</translation>
-    </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation>Niezgodność podczas weryfikacji danych we wtyczce &quot;%1&quot;</translation>
@@ -3960,10 +3897,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QNetworkAccessDataBackend</name>
     <message>
-        <source>Operation not supported on %1</source>
-        <translation type="obsolete">Operacja nieobsługiwana na %1</translation>
-    </message>
-    <message>
         <source>Invalid URI: %1</source>
         <translation>Niepoprawny URI: %1</translation>
     </message>
@@ -4257,6 +4190,46 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <source>Host not found</source>
         <translation>Host nie znaleziony</translation>
+    </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>Nie można odczytać danych obrazu</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
+        <translation>Brak obsługi odczytu obrazu z urządzenia sekwencyjnego (np. gniazda)</translation>
+    </message>
+    <message>
+        <source>Seek file/device for image read failed</source>
+        <translation>Przeszukiwanie pliku / urządzenia w celu odczytu obrazu zakończone błędem</translation>
+    </message>
+    <message>
+        <source>Image mHeader read failed</source>
+        <translation>Błąd odczytu pola mHeader w obrazie</translation>
+    </message>
+    <message>
+        <source>Image type not supported</source>
+        <translation>Nieobsługiwany typ obrazu</translation>
+    </message>
+    <message>
+        <source>Image depth not valid</source>
+        <translation>Niepoprawna głębokość obrazu</translation>
+    </message>
+    <message>
+        <source>Could not seek to image read footer</source>
+        <translation>Nie można odnaleźć nagłówka do odczytu obrazu</translation>
+    </message>
+    <message>
+        <source>Could not read footer</source>
+        <translation>Nie można odczytać nagłówka</translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation>Nieobsługiwany typ obrazu (inny od TrueVision 2.0)</translation>
+    </message>
+    <message>
+        <source>Could not reset to start position</source>
+        <translation>Nie można zresetować do pozycji startowej</translation>
     </message>
 </context>
 <context>
@@ -5042,6 +5015,10 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>niepoprawna składnia &quot;lookahead&quot;</translation>
     </message>
     <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>&quot;lookbehinds&quot; nie jest obsługiwane, zobacz QTBUG-2371</translation>
+    </message>
+    <message>
         <source>bad repetition syntax</source>
         <translation>niepoprawna składnia powtórzenia</translation>
     </message>
@@ -5148,6 +5125,10 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Unable to fetch row</source>
         <translation>Nie można pobrać wiersza danych</translation>
+    </message>
+    <message>
+        <source>Unable to execute multiple statements at a time</source>
+        <translation>Nie można wykonać wielu poleceń jednocześnie</translation>
     </message>
     <message>
         <source>Unable to reset statement</source>
@@ -5571,10 +5552,6 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>%1: niepoprawny rozmiar</translation>
     </message>
     <message>
-        <source>%1: key error</source>
-        <translation type="obsolete">%1: błąd klucza</translation>
-    </message>
-    <message>
         <source>%1: size query failed</source>
         <translation>%1: zapytanie o rozmiar zakończone błędem</translation>
     </message>
@@ -5638,7 +5615,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Toggle Media Play/Pause</source>
         <extracomment>Media player button to toggle between playing and paused</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Przełącz: odtwarzanie / pauza</translation>
     </message>
     <message>
         <source>Monitor Brightness Up</source>
@@ -6553,10 +6530,6 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <source>Ok</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -7030,6 +7003,26 @@ Proszę wybrać inną nazwę pliku.</translation>
         <source>Scroll Right</source>
         <translation>Przewiń w prawo</translation>
     </message>
+    <message>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation>Uaktywnij</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>Wciśnij</translation>
+    </message>
+    <message>
+        <source>Close the tab</source>
+        <translation>Zamknij kartę</translation>
+    </message>
+    <message>
+        <source>Activate the tab</source>
+        <translation>Uaktywnij kartę</translation>
+    </message>
 </context>
 <context>
     <name>QTcpServer</name>
@@ -7094,14 +7087,6 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QUndoGroup</name>
     <message>
-        <source>Redo</source>
-        <translation type="obsolete">Przywróć</translation>
-    </message>
-    <message>
-        <source>Undo</source>
-        <translation type="obsolete">Cofnij</translation>
-    </message>
-    <message>
         <source>Undo %1</source>
         <translation>Cofnij %1</translation>
     </message>
@@ -7129,14 +7114,6 @@ Proszę wybrać inną nazwę pliku.</translation>
 </context>
 <context>
     <name>QUndoStack</name>
-    <message>
-        <source>Redo</source>
-        <translation type="obsolete">Przywróć</translation>
-    </message>
-    <message>
-        <source>Undo</source>
-        <translation type="obsolete">Cofnij</translation>
-    </message>
     <message>
         <source>Undo %1</source>
         <translation>Cofnij %1</translation>
@@ -7739,10 +7716,6 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Osiągnięto limit przekierowań</translation>
     </message>
     <message>
-        <source>Bad HTTP request</source>
-        <translation type="obsolete">Niepoprawna komenda HTTP</translation>
-    </message>
-    <message>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
         <translation>To jest indeks wyszukiwawczy. Podaj słowa do wyszukania:</translation>
@@ -7890,10 +7863,6 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Move the cursor to the end of the document</source>
         <translation>Przesuń kursor do końca dokumentu</translation>
-    </message>
-    <message>
-        <source>Select all</source>
-        <translation type="obsolete">Zaznacz wszystko</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -8400,7 +8369,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <name>QmlJSDebugger::QmlToolBar</name>
     <message>
         <source>Inspector Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Tryb inspekcji</translation>
     </message>
     <message>
         <source>Play/Pause Animations</source>
@@ -8878,10 +8847,6 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>A stylesheet function must have a prefixed name.</source>
         <translation>Funkcja arkusza stylu musi zawierać nazwę z przedrostkiem.</translation>
-    </message>
-    <message>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation type="obsolete">Przestrzeń nazw dla funkcji zdefiniowanej przez użytkownika nie może być pusta (spróbuj predefiniowany przedrostek %1, który stworzono specjalnie do takich sytuacji)</translation>
     </message>
     <message>
         <source>An argument with name %1 has already been declared. Every argument name must be unique.</source>
@@ -9620,10 +9585,6 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>%1 nie może mieć złożonego typu podstawowego który ma %2.</translation>
     </message>
     <message>
-        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
-        <translation type="obsolete">Model zawartości typu złożonego %1 posiada element %2 więc nie może być on wywiedziony poprzez rozszerzenie niepustego typu.</translation>
-    </message>
-    <message>
         <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
         <translation>Model zawartości typu złożonego %1, posiada element %2, więc nie może być on wywiedziony poprzez rozszerzenie niepustego typu.</translation>
     </message>
@@ -10211,10 +10172,6 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <source>Fixed value constraint not allowed if element is nillable.</source>
         <translation>Ograniczenie stałej wartości jest niedozwolone gdy element jest zerowalny.</translation>
-    </message>
-    <message>
-        <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation type="obsolete">Element %1 nie może zawierać innych elementów ponieważ posiada on stałą zawartość.</translation>
     </message>
     <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
