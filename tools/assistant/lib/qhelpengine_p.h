@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtCore/QHash>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 #include <QtCore/QObject>
@@ -88,6 +89,7 @@ public:
     QMap<QString, QHelpDBReader*> fileNameReaderMap;
     QMultiMap<QString, QHelpDBReader*> virtualFolderMap;
     QStringList orderedFileNameList;
+    QHash<QString, QString> nameSpaceVirtualFolderMap;
 
     QHelpCollectionHandler *collectionHandler;
     QString currentFilter;

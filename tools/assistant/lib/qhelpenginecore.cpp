@@ -88,6 +88,7 @@ void QHelpEngineCorePrivate::clearMaps()
     fileNameReaderMap.clear();
     virtualFolderMap.clear();
     orderedFileNameList.clear();
+    nameSpaceVirtualFolderMap.clear();
 }
 
 bool QHelpEngineCorePrivate::setup()
@@ -128,6 +129,7 @@ bool QHelpEngineCorePrivate::setup()
         fileNameReaderMap.insert(absFileName, reader);
         virtualFolderMap.insert(info.folderName, reader);
         orderedFileNameList.append(absFileName);
+        nameSpaceVirtualFolderMap.insert(info.namespaceName, info.folderName);
     }
     q->currentFilter();
     emit q->setupFinished();
@@ -365,11 +367,11 @@ QString QHelpEngineCore::documentationFileName(const QString &namespaceName)
         foreach(const QHelpCollectionHandler::DocInfo &info, docList) {
             if (info.namespaceName == namespaceName) {
                 if (QDir::isAbsolutePath(info.fileName))
-                    return QDir::cleanPath(info.fileName);
+                    return info.fileName;
 
                 QFileInfo fi(d->collectionHandler->collectionFile());
                 fi.setFile(fi.absolutePath() + QDir::separator() + info.fileName);
-                return QDir::cleanPath(fi.absoluteFilePath());
+                return fi.absoluteFilePath();
             }
         }
     }
@@ -553,7 +555,7 @@ QUrl QHelpEngineCore::findFile(const QUrl &url) const
         return res;
 
     QString ns = url.authority();
-    QString filePath = QDir::cleanPath(url.path());
+    QString filePath = url.path();
     if (filePath.startsWith(QLatin1Char('/')))
         filePath = filePath.mid(1);
     QString virtualFolder = filePath.mid(0, filePath.indexOf(QLatin1Char('/'), 1));
@@ -603,7 +605,7 @@ QByteArray QHelpEngineCore::fileData(const QUrl &url) const
         return QByteArray();
 
     QString ns = url.authority();
-    QString filePath = QDir::cleanPath(url.path());
+    QString filePath = url.path();
     if (filePath.startsWith(QLatin1Char('/')))
         filePath = filePath.mid(1);
     QString virtualFolder = filePath.mid(0, filePath.indexOf(QLatin1Char('/'), 1));

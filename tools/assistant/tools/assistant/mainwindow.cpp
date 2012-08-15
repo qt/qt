@@ -1029,7 +1029,6 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
         else
             collectionPath = collectionPath + QDir::separator() + cacheDir;
     }
-    collectionPath = QDir::cleanPath(collectionPath);
     if (createDir) {
         QDir dir;
         if (!dir.exists(collectionPath))

@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-const QString HelpViewer::DocPath = QLatin1String("qthelp://com.trolltech.");
-
 const QString HelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 
@@ -68,7 +66,7 @@ const QString HelpViewer::LocalHelpFile = QLatin1String("qthelp://"
 
 const QString HelpViewer::PageNotFoundMessage =
     QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
-    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
+    "align=\"center\"><br><br><h1>The page could not be found.</h1><br><h3>'%1'"
     "</h3></div>");
 
 struct ExtensionMap {
@@ -177,6 +175,31 @@ bool HelpViewer::launchWithExternalApp(const QUrl &url)
         return QDesktopServices::openUrl(url);
     }
     return false;
+}
+
+QString HelpViewer::fixupVirtualFolderForUrl(const HelpEngineWrapper *engine, const QUrl &url, bool *fixed)
+{
+    TRACE_OBJ
+    Q_ASSERT(engine);
+
+    QString ret = url.toString();
+    const QString virtualFolder = engine->virtualFolderForNameSpace(url.host());
+    QString effectiveVirtualFolder = virtualFolder;
+    const QStringList tokens = url.path().split('/');
+    Q_FOREACH (const QString& token, tokens) {
+        if (!token.isEmpty()) {
+            effectiveVirtualFolder = token;
+            break;
+        }
+    }
+
+    if (QString::localeAwareCompare(effectiveVirtualFolder, virtualFolder)) {
+        ret = url.scheme() + QLatin1String("://") + url.host() + QLatin1Char('/')
+                + virtualFolder + QLatin1String("/..") + url.path();
+    }
+    if (fixed && engine->findFile(ret).isValid())
+        *fixed = true;
+    return ret;
 }
 
 // -- public slots

@@ -75,6 +75,8 @@ public:
 
 private:
     QHelpEnginePrivate *d;
+
+    friend class HelpEngineWrapper;
 };
 
 QT_END_NAMESPACE
