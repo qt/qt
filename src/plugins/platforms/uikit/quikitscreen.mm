@@ -65,17 +65,17 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     m_depth = 24;
 
     const qreal inch = 25.4;
-    qreal dpi = 160.;
-    int dragDistance = 12;
+    qreal unscaledDpi = 160.;
+    int dragDistance = 12 * scale;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        dpi = 132.;
-        dragDistance = 10;
+        unscaledDpi = 132.;
+        dragDistance = 10 * scale;
     }
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
+    m_physicalSize = QSize(qRound(bounds.size.width * inch / unscaledDpi), qRound(bounds.size.height * inch / unscaledDpi));
     qApp->setStartDragDistance(dragDistance);
 
     QFont font; // system font is helvetica, so that is fine already
-    font.setPixelSize([UIFont systemFontSize]);
+    font.setPixelSize([UIFont systemFontSize] * scale);
     qApp->setFont(font);
 
     [pool release];
