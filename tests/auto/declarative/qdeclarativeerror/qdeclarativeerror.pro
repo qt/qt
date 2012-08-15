@@ -10,4 +10,3 @@ wince*: {
 }
 
 CONFIG += parallel_test
-win32:CONFIG+=insignificant_test # QTQAINFRA-428
