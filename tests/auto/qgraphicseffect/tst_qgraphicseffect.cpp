@@ -53,6 +53,8 @@
 #include <private/qgraphicseffect_p.h>
 #include "../platformquirks.h"
 
+#include <QSysInfo>
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -690,6 +692,11 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26858", Abort);
+    }
+#endif
     QTRY_COMPARE(parent.nbPaint, 1);
     //we set an effect on the parent
     parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));
@@ -718,6 +725,11 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     else
         view.show();
     QTest::qWaitForWindowShown(&view);
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26858", Abort);
+    }
+#endif
     QTRY_COMPARE(item->nbPaint, 1);
 
     item->nbPaint = 0;
@@ -802,6 +814,11 @@ void tst_QGraphicsEffect::graphicsEffectUpdateShouldInvalidateParentGraphicsEffe
     QTest::qWaitForWindowShown(&view);
     //flush the events
     QApplication::processEvents();
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26858", Abort);
+    }
+#endif
     QTRY_COMPARE(parent.nbPaint, 1);
     QTRY_COMPARE(child.nbPaint, 1);
 
@@ -842,6 +859,11 @@ void tst_QGraphicsEffect::itemHasNoContents()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26858", Abort);
+    }
+#endif
     QTRY_COMPARE(child->nbPaint, 1);
 
     CustomEffect *effect = new CustomEffect;
