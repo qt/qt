@@ -55,10 +55,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     CGRect bounds = [uiScreen() bounds];
     CGFloat scale = [uiScreen() scale];
-    m_geometry = QRect(bounds.origin.x * scale,
-                       bounds.origin.y * scale,
-                       bounds.size.width * scale,
-                       bounds.size.height * scale);
+    updateInterfaceOrientation();
 
     m_format = QImage::Format_ARGB32_Premultiplied;
 
@@ -93,15 +90,17 @@ UIScreen *QUIKitScreen::uiScreen() const
 void QUIKitScreen::updateInterfaceOrientation()
 {
     CGRect bounds = [uiScreen() bounds];
+    CGFloat scale = [uiScreen() scale];
     switch ([[UIApplication sharedApplication] statusBarOrientation]) {
     case UIInterfaceOrientationPortrait:
     case UIInterfaceOrientationPortraitUpsideDown:
-        m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);;
+        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
+                           bounds.size.width * scale, bounds.size.height * scale);;
         break;
     case UIInterfaceOrientationLandscapeLeft:
     case UIInterfaceOrientationLandscapeRight:
-        m_geometry = QRect(bounds.origin.x, bounds.origin.y,
-                           bounds.size.height, bounds.size.width);
+        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
+                           bounds.size.height * scale, bounds.size.width * scale);
         break;
     }
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
