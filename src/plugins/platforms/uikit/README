@@ -39,18 +39,29 @@ configuration *and* the simulator specific target are active. To build for devic
 make sure that both the Device configuration *and* the device specific target are
 active.
 
-The setup is configured to use the iOS 4.3 SDKs, you might want to edit the mkspecs
-to fit your need.
+The setup tries to figure out the Xcode and SDK version itself. If the autodetection
+does not work for your setup, you can explicitly set values in
+mkspecs/common/ios/versions.conf
+
+You need to choose one of the iOS mkspecs:
+For Xcode 4.3 and later:   macx-ios*-clang
+                           macx-ios*-g++ (not installed by default)
+                           macx-ios*-llvm
+For Xcode 4.2 and earlier: macx-ios*-clang-legacy
+                           macx-ios*-g++-legacy (not installed by default in 4.2)
+                           macx-ios*-llvm-legacy
+
+The configure options below use macx-ios*-clang by default.
 
 After configuring and building Qt you need to also build src/plugins/platforms/uikit.
 
 Simulator:
 ----------
-configure -qpa -xplatform qpa/macx-iphonesimulator-g++ -arch i386 -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations -little-endian -host-little-endian
+configure -qpa uikit -xplatform unsupported/macx-iossimulator-clang -arch i386 -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations -little-endian -host-little-endian
 
 Device:
 -------
-configure -qpa -xplatform qpa/macx-iphonedevice-g++ -arch armv7 -no-neon -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations -little-endian -host-little-endian
+configure -qpa -xplatform unsupported/macx-iosdevice-clang -arch armv7 -no-neon -developer-build -release -opengl es2 -no-accessibility -no-qt3support -no-multimedia -no-phonon-backend -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations -little-endian -host-little-endian
 
 3) XCode setup:
 - there are examples in the examples subdirectory of the platform plugin
