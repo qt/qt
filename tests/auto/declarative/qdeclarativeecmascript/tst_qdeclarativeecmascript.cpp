@@ -48,6 +48,7 @@
 #include <QtDeclarative/private/qdeclarativeguard_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qnumeric.h>
+#include <QtTest/qsignalspy.h>
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativeglobalscriptclass_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
@@ -178,6 +179,7 @@ private slots:
     void pushCleanContext();
     void realToInt();
     void qtbug_20648();
+    void jsOwnedObjectsDeletedOnEngineDestroy();
 
     void include();
 
@@ -1388,7 +1390,7 @@ void tst_qdeclarativeecmascript::callQtInvokables()
 
     QDeclarativeEngine qmlengine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(&qmlengine);
-    QScriptEngine *engine = &ep->scriptEngine;
+    QScriptEngine *engine = ep->scriptEngine;
 
     QStringList names; QList<QScriptValue> values;
     names << QLatin1String("object"); values << ep->objectClass->newQObject(&o);
@@ -3098,6 +3100,38 @@ void tst_qdeclarativeecmascript::qtbug_20648()
     QVERIFY(o != 0);
     QCOMPARE(o->property("test").toInt(), 100);
     delete o;
+}
+
+void tst_qdeclarativeecmascript::jsOwnedObjectsDeletedOnEngineDestroy()
+{
+    QDeclarativeEngine *myEngine = new QDeclarativeEngine;
+
+    MyDeleteObject deleteObject;
+    deleteObject.setObjectName("deleteObject");
+    QObject * const object1 = new QObject;
+    QObject * const object2 = new QObject;
+    object1->setObjectName("object1");
+    object2->setObjectName("object2");
+    deleteObject.setObject1(object1);
+    deleteObject.setObject2(object2);
+
+    // Objects returned by function calls get marked as destructible, but objects returned by
+    // property getters do not - therefore we explicitly set the object as destructible.
+    QDeclarativeEngine::setObjectOwnership(object2, QDeclarativeEngine::JavaScriptOwnership);
+
+    myEngine->rootContext()->setContextProperty("deleteObject", &deleteObject);
+    QDeclarativeComponent component(myEngine, TEST_FILE("jsOwnedObjectsDeletedOnEngineDestroy.qml"));
+    QObject *object = component.create();
+    QVERIFY(object);
+
+    // Destroying the engine should delete all JS owned QObjects
+    QSignalSpy spy1(object1, SIGNAL(destroyed()));
+    QSignalSpy spy2(object2, SIGNAL(destroyed()));
+    delete myEngine;
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy2.count(), 1);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

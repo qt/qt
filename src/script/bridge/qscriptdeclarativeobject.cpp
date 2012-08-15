@@ -53,6 +53,11 @@ DeclarativeObjectDelegate::DeclarativeObjectDelegate(QScriptDeclarativeClass *c,
 
 DeclarativeObjectDelegate::~DeclarativeObjectDelegate()
 {
+    // When the engine is being destructed, delete the object now, instead of using deleteLater(),
+    // to not have memory leaks on exit.
+    if (m_class->engine() && QScriptEnginePrivate::get(m_class->engine())->inDestructor)
+        m_object->disposeNow();
+
     delete m_object;
 }
 

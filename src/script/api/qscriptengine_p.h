@@ -382,6 +382,7 @@ public:
     int processEventsInterval;
     QScriptValue abortResult;
     bool inEval;
+    bool inDestructor;
 
     JSC::UString cachedTranslationUrl;
     JSC::UString cachedTranslationContext;

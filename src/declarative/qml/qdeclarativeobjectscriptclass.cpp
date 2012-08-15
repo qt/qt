@@ -74,12 +74,26 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
         }
     }
 
-    virtual ~ObjectData() {
+    enum Disposal { Immediate, Deferred };
+
+    inline void disposeObject(Disposal disposal) {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount) 
-                object->deleteLater();
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount) {
+                if (disposal == Immediate)
+                    delete object;
+                else
+                    object->deleteLater();
+            }
         }
+    }
+
+    virtual void disposeNow() {
+        disposeObject(Immediate);
+    }
+
+    virtual ~ObjectData() {
+        disposeObject(Deferred);
     }
 
     QDeclarativeGuard<QObject> object;

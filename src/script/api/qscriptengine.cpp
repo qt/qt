@@ -962,7 +962,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
       qobjectPrototype(0), qmetaobjectPrototype(0), variantPrototype(0),
       activeAgent(0), agentLineNumber(-1),
       registeredScriptValues(0), freeScriptValues(0), freeScriptValuesCount(0),
-      registeredScriptStrings(0), processEventsInterval(-1), inEval(false)
+      registeredScriptStrings(0), processEventsInterval(-1), inEval(false), inDestructor(false)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -1015,6 +1015,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    inDestructor = true;
     QScript::APIShim shim(this);
 
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events

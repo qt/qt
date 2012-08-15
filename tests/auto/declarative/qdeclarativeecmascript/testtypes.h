@@ -903,6 +903,27 @@ protected:
     qreal m_p4;
 };
 
+class MyDeleteObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QObject *object2 READ object2 NOTIFY object2Changed)
+
+public:
+    MyDeleteObject() : m_object1(0), m_object2(0) {}
+
+    Q_INVOKABLE QObject *object1() const { return m_object1; }
+    Q_INVOKABLE QObject *object2() const { return m_object2; }
+    void setObject1(QObject *object) { m_object1 = object; }
+    void setObject2(QObject *object) { m_object2 = object; emit object2Changed(); }
+
+signals:
+    void object2Changed();
+
+private:
+    QObject *m_object1;
+    QObject *m_object2;
+};
+
 QML_DECLARE_TYPE(MyRevisionedBaseClassRegistered)
 QML_DECLARE_TYPE(MyRevisionedBaseClassUnregistered)
 QML_DECLARE_TYPE(MyRevisionedClass)
