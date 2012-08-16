@@ -378,10 +378,10 @@ namespace QtSharedPointer {
         inline void internalFinishConstruction(T *ptr)
         {
             Basic<T>::internalConstruct(ptr);
-            if (ptr) d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
             if (ptr) internalSafetyCheckAdd2(d, ptr);
 #endif
+            if (ptr) d->setQObjectShared(ptr, true);
         }
 
         inline ExternalRefCount() : d(0) { }
