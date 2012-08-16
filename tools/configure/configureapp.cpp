@@ -1703,6 +1703,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSCE" ]     = "no";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
         dictionary[ "STYLE_S60" ]           = "no";
+        dictionary[ "3DNOW" ]               = "no";
         dictionary[ "SSE" ]                 = "no";
         dictionary[ "SSE2" ]                = "no";
         dictionary[ "MMX" ]                 = "no";
