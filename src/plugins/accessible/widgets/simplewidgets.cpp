@@ -45,6 +45,7 @@
 #include <qcheckbox.h>
 #include <qpushbutton.h>
 #include <qprogressbar.h>
+#include <qstatusbar.h>
 #include <qradiobutton.h>
 #include <qtoolbutton.h>
 #include <qlabel.h>
@@ -524,6 +525,8 @@ QAccessible::Role QAccessibleDisplay::role(int child) const
     } else if (qobject_cast<QProgressBar*>(object())) {
         return ProgressBar;
 #endif
+    } else if (qobject_cast<QStatusBar*>(object())) {
+        return StatusBar;
     }
     return QAccessibleWidgetEx::role(child);
 }
@@ -546,6 +549,8 @@ QString QAccessibleDisplay::text(Text t, int child) const
                 else
                     str = QString::number(l->intValue());
 #endif
+            } else if (qobject_cast<QStatusBar*>(object())) {
+                return qobject_cast<QStatusBar*>(object())->currentMessage();
             }
         }
         break;
