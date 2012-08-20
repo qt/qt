@@ -33,5 +33,3 @@ wince* {
 contains(QT_CONFIG, qt3support): QT += qt3support
 
 CONFIG += parallel_test
-
-win32:CONFIG+=insignificant_test # QTBUG-25563
