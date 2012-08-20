@@ -93,6 +93,7 @@ TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QDialog *
     connect(ui.moveItemDownButton, SIGNAL(clicked()), this, SLOT(on_moveItemDownButton_clicked()));
     connect(ui.moveItemRightButton, SIGNAL(clicked()), this, SLOT(on_moveItemRightButton_clicked()));
     connect(ui.moveItemLeftButton, SIGNAL(clicked()), this, SLOT(on_moveItemLeftButton_clicked()));
+    connect(ui.deleteItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItemButton_clicked()));
     connect(ui.treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             this, SLOT(on_treeWidget_currentItemChanged()));
     connect(ui.treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
