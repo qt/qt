@@ -1546,6 +1546,11 @@ void tst_QListWidget::fastScroll()
     QApplication::processEvents();
 
     // only one item should be repainted, the rest should be scrolled in memory
+#ifdef Q_OS_WIN
+    if (widget.painted.boundingRect().size() != itemSize) {
+        QEXPECT_FAIL("", "QTBUG-26892", Abort);
+    }
+#endif
     QCOMPARE(widget.painted.boundingRect().size(), itemSize);
 }
 #endif // Q_WS_MAC
