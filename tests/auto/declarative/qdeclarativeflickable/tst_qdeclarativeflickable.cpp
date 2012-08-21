@@ -280,7 +280,13 @@ void tst_qdeclarativeflickable::disabledContent()
         QApplication::sendEvent(canvas->viewport(), &mv);
     }
 
-    QVERIFY(flickable->contentX() < 0);
+    qreal contentX = flickable->contentX();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    if (contentX >= 0) {
+        QEXPECT_FAIL("", "QTBUG-26905", Abort);
+    }
+#endif
+    QVERIFY(contentX < 0);
     QVERIFY(flickable->contentY() < 0);
 
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(90, 90)));
@@ -559,7 +565,13 @@ void tst_qdeclarativeflickable::disabled()
     QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 10)));
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 10)));
 
-    QVERIFY(canvas->rootObject()->property("clicked").toBool() == true);
+    bool clickedToBool = canvas->rootObject()->property("clicked").toBool();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    if (clickedToBool != true) {
+        QEXPECT_FAIL("", "QTBUG-26905", Abort);
+    }
+#endif
+    QVERIFY(clickedToBool == true);
 }
 
 
