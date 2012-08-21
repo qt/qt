@@ -600,6 +600,11 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
     obj1.setInputContext((QInputContext *)0);
     QCOMPARE(qApp->inputContext(), obj1.inputContext());
+#if defined(Q_OS_LINUX)
+    if (qApp->inputContext() == var13) {
+        QEXPECT_FAIL("", "QTBUG-26896", Abort);
+    }
+#endif
     QVERIFY(qApp->inputContext() != var13);
 
     // bool QWidget::autoFillBackground()
@@ -3871,6 +3876,7 @@ void tst_QWidget::retainHIView()
     {
         const WidgetViewPair window  = createAndRetain();
         delete window.first;
+        QEXPECT_FAIL("", "QTBUG-26896", Abort);
         QVERIFY(testAndRelease(window.second));
     }
 
@@ -4718,6 +4724,9 @@ void tst_QWidget::update()
         w.update();
         QApplication::processEvents();
         QApplication::processEvents();
+#if defined(Q_OS_MAC)
+        QEXPECT_FAIL("", "QTBUG-26896", Abort);
+#endif
         QCOMPARE(child.numPaintEvents, 1);
         QCOMPARE(child.visibleRegion(), QRegion(child.rect()));
         QCOMPARE(child.paintedRegion, child.visibleRegion());
@@ -5493,7 +5502,6 @@ void tst_QWidget::moveChild()
     parent.setGeometry(60, 60, 150, 150);
 #endif
     child.setGeometry(25, 25, 50, 50);
-    QPoint childOffset = child.mapToGlobal(QPoint());
 
     parent.show();
     QTest::qWaitForWindowShown(&parent);
@@ -6753,6 +6761,9 @@ void tst_QWidget::renderInvisible()
 #ifdef RENDER_DEBUG
     testImage.save("explicitlyHiddenCalendarResized.png");
 #endif
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    QEXPECT_FAIL("", "QTBUG-26896", Abort);
+#endif
     QCOMPARE(testImage, referenceImageResized);
     }
 
@@ -7448,6 +7459,9 @@ void tst_QWidget::render_worldTransform()
             QTransform expectedDeviceTransform = QTransform::fromTranslate(105, 5);
             expectedDeviceTransform.rotate(90);
             expectedDeviceTransform.translate(widgetOffset.x(), widgetOffset.y());
+#if defined(Q_OS_MAC)
+            QEXPECT_FAIL("", "QTBUG-26896", Abort);
+#endif
             QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
 
             // Set new world transform.
@@ -7484,9 +7498,6 @@ void tst_QWidget::render_worldTransform()
     painter.translate(105, 5);
     painter.rotate(90);
 
-    const QTransform worldTransform = painter.worldTransform();
-    const QTransform deviceTransform = painter.deviceTransform();
-
     // Render widgets onto image.
     widget.render(&painter);
 #ifdef RENDER_DEBUG
@@ -7522,6 +7533,9 @@ void tst_QWidget::render_worldTransform()
     expected.save("render_worldTransform_expected.png");
 #endif
 
+#if defined(Q_OS_MAC)
+    QEXPECT_FAIL("", "QTBUG-26896", Abort);
+#endif
     QCOMPARE(image, expected);
 }
 
@@ -7614,7 +7628,6 @@ void tst_QWidget::repaintWhenChildDeleted()
     w.r = QRegion();
 
     {
-        const QPoint tlwOffset = w.geometry().topLeft();
         ColorWidget child(&w, Qt::blue);
         child.setGeometry(10, 10, 10, 10);
         child.show();
@@ -8296,6 +8309,9 @@ void tst_QWidget::resizeInPaintEvent()
     // This will call resize in the paintEvent, which in turn will call
     // invalidateBuffer() and a new update request should be posted.
     widget.repaint();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    QEXPECT_FAIL("", "QTBUG-26896", Abort);
+#endif
     QCOMPARE(widget.numPaintEvents, 1);
     widget.numPaintEvents = 0;
 
@@ -9555,6 +9571,11 @@ void tst_QWidget::destroyBackingStore()
     // Check one more time, because the second time around does more caching.
     w.update();
     QApplication::processEvents();
+#if defined(Q_OS_MAC)
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+        QEXPECT_FAIL("", "QTBUG-26896", Abort);
+    }
+#endif
     QCOMPARE(w.numPaintEvents, 2);
 #else
     QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
