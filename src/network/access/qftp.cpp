@@ -466,13 +466,22 @@ void QFtpDTP::abortConnection()
         socket->abort();
 }
 
-static void _q_fixupDateTime(QDateTime *dateTime)
+static void _q_fixupDateTime(QDateTime *dateTime, bool leapYear = false)
 {
     // Adjust for future tolerance.
     const int futureTolerance = 86400;
     if (dateTime->secsTo(QDateTime::currentDateTime()) < -futureTolerance) {
         QDate d = dateTime->date();
-        d.setYMD(d.year() - 1, d.month(), d.day());
+        if (leapYear) {
+            int prevLeapYear = d.year() - 1;
+
+            while (!QDate::isLeapYear(prevLeapYear))
+               prevLeapYear--;
+
+            d.setYMD(prevLeapYear, d.month(), d.day());
+        } else {
+            d.setYMD(d.year() - 1, d.month(), d.day());
+        }
         dateTime->setDate(d);
     }
 }
@@ -542,6 +551,30 @@ static void _q_parseUnixDir(const QStringList &tokens, const QString &userName, 
     }
     if (dateTime.isValid())
         info->setLastModified(dateTime);
+    else if (dateString.startsWith("Feb 29")) {
+
+       // When the current year on the FTP server is a leap year and a
+       // file's last modified date is Feb 29th, and the current day on
+       // the FTP server is also Feb 29th, then the date can be in
+       // formats n==2 or n==4. toDateTime in that case defaults to 1900
+       // for the missing year. Feb 29 1900 is an invalid date and so
+       // wont be parsed. This adds an exception that handles it.
+
+       int recentLeapYear;
+       QString timeString = dateString.mid(7);
+
+       dateTime = QLocale::c().toDateTime(timeString, QLatin1String("hh:mm"));
+
+       recentLeapYear = QDate::currentDate().year();
+
+       while (!QDate::isLeapYear(recentLeapYear))
+           recentLeapYear--;
+
+       dateTime.setDate(QDate(recentLeapYear, 2, 29));
+
+       _q_fixupDateTime(&dateTime, true);
+       info->setLastModified(dateTime);
+    }
 
     // Resolve permissions
     int permissions = 0;
