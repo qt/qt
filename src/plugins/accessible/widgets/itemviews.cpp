@@ -415,7 +415,7 @@ int QAccessibleTable2::indexOfChild(const QAccessibleInterface *iface) const
         return cell->index + (verticalHeader() ? 1 : 0) + 1;
     } else if (iface->role(0) == QAccessible::RowHeader){
         const QAccessibleTable2HeaderCell* cell = static_cast<const QAccessibleTable2HeaderCell*>(iface);
-        return (cell->index+1) * (view()->model()->rowCount()+1)  + 1;
+        return (cell->index+1) * (view()->model()->columnCount()+1)  + 1;
     } else if (iface->role(0) == QAccessible::Pane) {
         return 1; // corner button
     } else {
