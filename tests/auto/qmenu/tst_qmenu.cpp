@@ -57,6 +57,10 @@
 #include <qstyle.h>
 #include <qdebug.h>
 
+#ifdef QT_MAC_USE_COCOA
+#include "tst_qmenu_mac_helpers.h"
+#endif
+
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -108,6 +112,11 @@ private slots:
     void QTBUG7907_submenus_autoselect();
     void QTBUG7411_submenus_activate();
     void QTBUG_10735_crashWithDialog();
+    void QTBUG_25544_macMenuState();
+    void QTBUG_25544_macMenuActionState();
+    void QTBUG_26399_macMenuActionVisible();
+    void QTBUG_7538_macAddItemToDisabledMenu();
+
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1025,6 +1034,89 @@ void tst_QMenu::QTBUG_10735_crashWithDialog()
  
 }
 
+void tst_QMenu::QTBUG_25544_macMenuState()
+{
+#ifndef QT_MAC_USE_COCOA
+    QSKIP("Applicable only on OS X Cocoa", SkipAll);
+#else
+    QMenuBar mb;
+    MyMenu2 menu;
+    menu.setTitle("Test menu");
+    menu.addAction("foo");
+    mb.addMenu(&menu);
+
+    menu.setEnabled(false);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QVERIFY(!menu.isNativeMenuEnabled());
+
+    menu.setEnabled(true);
+    QVERIFY(menu.isNativeMenuEnabled());
+#endif
+}
+
+void tst_QMenu::QTBUG_25544_macMenuActionState()
+{
+#ifndef QT_MAC_USE_COCOA
+    QSKIP("Applicable only on OS X Cocoa", SkipAll);
+#else
+    QMenuBar menubar;
+    MyMenu2 menu;
+    menu.setTitle("Test menu");
+    menu.addAction("foo");
+    menubar.addMenu(&menu);
+
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+
+    menu.menuAction()->setEnabled(false);
+    QVERIFY(!menu.isNativeMenuEnabled());
+
+    menu.menuAction()->setEnabled(true);
+    QVERIFY(menu.isNativeMenuEnabled());
+#endif
+}
+
+void tst_QMenu::QTBUG_26399_macMenuActionVisible()
+{
+#ifndef QT_MAC_USE_COCOA
+    QSKIP("Applicable only on OS X Cocoa", SkipAll);
+#else
+    QMenuBar menubar;
+    MyMenu2 menu;
+    menu.setTitle("Test menu");
+    menu.addAction("foo");
+    menubar.addMenu(&menu);
+
+    menu.show();
+    menu.menuAction()->setVisible(false);
+    QTest::qWaitForWindowShown(&menu);
+
+    QVERIFY(!menu.isNativeMenuEnabled());
+
+    menu.menuAction()->setVisible(true);
+    QVERIFY(menu.isNativeMenuEnabled());
+#endif
+}
+
+void tst_QMenu::QTBUG_7538_macAddItemToDisabledMenu()
+{
+#ifndef QT_MAC_USE_COCOA
+    QSKIP("Applicable only on OS X Cocoa", SkipAll);
+#else
+    QMenuBar menubar;
+    MyMenu2 menu;
+    menu.setTitle("Test menu");
+    menu.addAction("foo");
+    menubar.addMenu(&menu);
+
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    menu.setEnabled(false);
+    QAction *act = menu.addAction("bar");
+    QVERIFY(!menu.isNativeMenuItemEnabled(act));
+#endif
+}
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

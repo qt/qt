@@ -327,7 +327,9 @@ public:
         }
     } *mac_menu;
     OSMenuRef macMenu(OSMenuRef merge);
+#ifndef QT_MAC_USE_COCOA
     void setMacMenuEnabled(bool enable = true);
+#endif
     void syncSeparatorsCollapsible(bool collapsible);
     static QHash<OSMenuRef, OSMenuRef> mergeMenuHash;
     static QHash<OSMenuRef, QMenuMergeList*> mergeMenuItemsHash;

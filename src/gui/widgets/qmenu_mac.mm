@@ -1564,6 +1564,7 @@ QMenuPrivate::syncSeparatorsCollapsible(bool collapse)
 
 
 
+#ifndef QT_MAC_USE_COCOA
 /*!
   \internal
 */
@@ -1577,26 +1578,16 @@ void QMenuPrivate::setMacMenuEnabled(bool enable)
         for (int i = 0; i < mac_menu->actionItems.count(); ++i) {
             QMacMenuAction *menuItem = mac_menu->actionItems.at(i);
             if (menuItem && menuItem->action && menuItem->action->isEnabled()) {
-#ifndef QT_MAC_USE_COCOA
                 // Only enable those items which contains an enabled QAction.
                 // i == 0 -> the menu itself, hence i + 1 for items.
                 EnableMenuItem(mac_menu->menu, i + 1);
-#else
-                [menuItem->menuItem setEnabled:true];
-#endif
             }
         }
     } else {
-#ifndef QT_MAC_USE_COCOA
         DisableAllMenuItems(mac_menu->menu);
-#else
-        NSMenu *menu = mac_menu->menu;
-        for (NSMenuItem *item in [menu itemArray]) {
-            [item setEnabled:false];
-        }
-#endif
     }
 }
+#endif
 
 /*!
     \internal
@@ -1754,6 +1745,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
         [item setSubmenu: submenu];
         [submenu setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(action->action->text()))];
         syncNSMenuItemVisiblity(item, visible);
+        syncNSMenuItemEnabled(item, action->action->isEnabled());
 #endif
         if (release_submenu) { //no pointers to it
 #ifndef QT_MAC_USE_COCOA
@@ -1856,6 +1848,7 @@ OSMenuRef QMenuBarPrivate::macMenu()
         return 0;
     } else if (!mac_menubar->menu) {
         mac_menubar->menu = qt_mac_create_menu(q);
+        [mac_menubar->menu setAutoenablesItems:NO];
         ProcessSerialNumber mine, front;
         if (GetCurrentProcess(&mine) == noErr && GetFrontProcess(&front) == noErr) {
             if (!qt_mac_no_menubar_merge && !mac_menubar->apple_menu) {
