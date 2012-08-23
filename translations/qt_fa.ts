@@ -9,9 +9,24 @@
     </message>
 </context>
 <context>
+    <name>Debugger::JSAgentWatchData</name>
+    <message>
+        <source>[Array of length %1]</source>
+        <translation>[آرایه‌ای به اندازهٔ %1]</translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;تعریف‌نشده&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FakeReply</name>
     <message>
         <source>Fake error !</source>
+        <translation type="obsolete">خطای تقلبی!</translation>
+    </message>
+    <message>
+        <source>Fake error!</source>
         <translation>خطای تقلبی!</translation>
     </message>
     <message>
@@ -399,7 +414,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
-        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
         <translation>تأخیر بازتاب‌ها (میلی‌ثانیه)</translation>
     </message>
     <message>
@@ -414,7 +429,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>Reverb level (mB)</source>
-        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
         <translation>سطح انعکاس (میلی‌بل)</translation>
     </message>
     <message>
@@ -472,8 +487,12 @@ have libgstreamer-plugins-base installed.</source>
         <translation>حجم صدا:%1%</translation>
     </message>
     <message>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
+        <translation>از این لغزنده برای تنظیم صدا استفاده کنید. سمت چپ‌ترین حالت ٪ است و سمت راست‌ترین حالت %1%</translation>
+    </message>
+    <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation>این لغزنده را برای تنظیم صدا استفاده کنید. سمت چپ‌ترین حالت %، سمت راست‌ترین حالت %1%</translation>
+        <translation type="obsolete">این لغزنده را برای تنظیم صدا استفاده کنید. سمت چپ‌ترین حالت %، سمت راست‌ترین حالت %1%</translation>
     </message>
     <message>
         <source>Muted</source>
@@ -962,7 +981,7 @@ to
     <name>Q3UrlOperator</name>
     <message>
         <source>The protocol `%1&apos; is not supported</source>
-        <translation>پروتکل «%1» پشتیبانی نشده است</translation>
+        <translation>پروتکل «%1» پشتیبانی نمی‌شود</translation>
     </message>
     <message>
         <source>The protocol `%1&apos; does not support listing directories</source>
@@ -1068,6 +1087,14 @@ to
 </context>
 <context>
     <name>QAccessibleButton</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>رد</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>انتخاب</translation>
+    </message>
     <message>
         <source>Press</source>
         <translation>فشار دادن</translation>
@@ -1396,7 +1423,7 @@ to
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
-        <translation>نمی‌توان انیمیشنی را که به رفتار اختصاص یافته تغییر داد.</translation>
+        <translation>نمی‌توان انیمیشنی را که به یک رفتار اختصاص یافته تغییر داد.</translation>
     </message>
 </context>
 <context>
@@ -1804,11 +1831,11 @@ to
     <name>QDeclarativeImportDatabase</name>
     <message>
         <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
-        <translation>نمی‌توان ماژول «%1» را بارگذاری کرد: مورد نام پرونده با «%2» تطابق ندارد</translation>
+        <translation type="obsolete">نمی‌توان ماژول «%1» را بارگذاری کرد: مورد نام پرونده با «%2» تطابق ندارد</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>تعریف «%2» ماژول «%1»  قابل خواندن نیست</translation>
+        <translation type="obsolete">تعریف «%2» ماژول «%1»  قابل خواندن نیست</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
@@ -1863,8 +1890,12 @@ to
         <translation>یک نوع نیست</translation>
     </message>
     <message>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation>عدم تطابق حروف بزرگ و کوچک در نام پرونده برای «%1»</translation>
+    </message>
+    <message>
         <source>File name case mismatch for &quot;%2&quot;</source>
-        <translation>عدم تطابق حالت نام پرونده با «%2»</translation>
+        <translation type="obsolete">عدم تطابق حالت نام پرونده با «%2»</translation>
     </message>
 </context>
 <context>
@@ -2457,6 +2488,10 @@ to
         <source>Cannot create %1 for output</source>
         <translation>نمی‌توان %1 را برای خروجی باز کرد</translation>
     </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
+        <translation>موتور پرونده در دسترس نیست و یا موتور پرونده از UnMapExtension پشتیبانی نمی‌کند</translation>
+    </message>
 </context>
 <context>
     <name>QFileDialog</name>
@@ -2600,7 +2635,7 @@ Please verify the correct file name was given.</source>
     </message>
     <message>
         <source>New Folder</source>
-        <translation>پوشه جدید</translation>
+        <translation>پوشهٔ جدید</translation>
     </message>
     <message>
         <source>&apos;%1&apos; is write protected.
@@ -3046,6 +3081,13 @@ Do you want to delete it anyway?</source>
     </message>
 </context>
 <context>
+    <name>QGroupBox</name>
+    <message>
+        <source>Toggle</source>
+        <translation>ضامن</translation>
+    </message>
+</context>
+<context>
     <name>QHostInfo</name>
     <message>
         <source>No host name given</source>
@@ -3077,6 +3119,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Unknown error</source>
         <translation>خطای ناشناخته</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>خطای ناشناخته (%1)</translation>
     </message>
 </context>
 <context>
@@ -3418,6 +3464,18 @@ Do you want to delete it anyway?</source>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation>نمی‌توان درباره نماد «%1» در %2 تصمیم‌گیری کرد: %3</translation>
     </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation>«%1» یک شیء ELF نیست (%2)</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation>«%1» یک شیء ELF نیست</translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
+        <translation>«%1» یک شیء ELF نامعتبر است (%2)</translation>
+    </message>
 </context>
 <context>
     <name>QLineEdit</name>
@@ -3514,6 +3572,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>%1: Unknown error %2</source>
         <translation>%1: خطای ناشناخته %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: اجازهٔ دسترسی داده نشد</translation>
     </message>
 </context>
 <context>
@@ -3689,6 +3751,10 @@ Do you want to delete it anyway?</source>
         <source>Actions</source>
         <translation>عمل</translation>
     </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>نوار ابزار گوشه</translation>
+    </message>
 </context>
 <context>
     <name>QMessageBox</name>
@@ -3857,7 +3923,7 @@ Do you want to delete it anyway?</source>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>عملیات روی %1 پشتیبانی نمی‌شود</translation>
+        <translation type="obsolete">عملیات روی %1 پشتیبانی نمی‌شود</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
@@ -3952,6 +4018,10 @@ Do you want to delete it anyway?</source>
     <message>
         <source>Network session error.</source>
         <translation>خطای جلسهٔ شبکه.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>خطا در شروع پایانهٔ مدیریتی.</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
@@ -4145,6 +4215,50 @@ Do you want to delete it anyway?</source>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
         <translation>پرس‌وجوی نامعتبر: %1</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>میزبان یافت نشد</translation>
+    </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>نمی‌توان داده‌های تصویر را خواند</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
+        <translation>دستگاه ترتیبی (به‌عنوان مثال سوکت) برای خواندن تصویر پشتیبانی نمی‌شود</translation>
+    </message>
+    <message>
+        <source>Seek file/device for image read failed</source>
+        <translation>پویش روی پرونده/دستگاه برای خواندن تصویر با خطا مواجه شد</translation>
+    </message>
+    <message>
+        <source>Image mHeader read failed</source>
+        <translation>خواندن mHeader تصویر با خطا مواجه شد</translation>
+    </message>
+    <message>
+        <source>Image type not supported</source>
+        <translation>نوع تصویر پشتیبانی نمی‌شود</translation>
+    </message>
+    <message>
+        <source>Image depth not valid</source>
+        <translation>عمق تصویر معتبر نیست</translation>
+    </message>
+    <message>
+        <source>Could not seek to image read footer</source>
+        <translation>نمی‌توان به قسمت پاورقی تصویر مراجعه کرد</translation>
+    </message>
+    <message>
+        <source>Could not read footer</source>
+        <translation>نمی‌توان پاورقی را خواند</translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation>نوع تصویر (غیر از TrueVision 2.0) پشتیبانی نمی‌شود</translation>
+    </message>
+    <message>
+        <source>Could not reset to start position</source>
+        <translation>نمی‌توان به موقعیت ابتدایی بازنشانی کرد</translation>
     </message>
 </context>
 <context>
@@ -4836,7 +4950,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>P&amp;roperties</source>
-        <translation>و&amp;ژگی‌ها</translation>
+        <translation>وی&amp;ژگی‌ها</translation>
     </message>
     <message>
         <source>Location:</source>
@@ -4938,6 +5052,10 @@ Do you want to overwrite it?</source>
         <translation>نحو نامعتبر پیش‌رو</translation>
     </message>
     <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
+        <translation>عقبگردی پشتیبانی نمی‌شود. خطای گزارش شدهٔQTBUG-2371 را ببینید </translation>
+    </message>
+    <message>
         <source>bad repetition syntax</source>
         <translation>نحو نامعتبر تکرار</translation>
     </message>
@@ -5032,6 +5150,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>Unable to execute statement</source>
         <translation>نمی‌توان عبارت را اجرا کرد</translation>
+    </message>
+    <message>
+        <source>Unable to execute multiple statements at a time</source>
+        <translation>نمی‌توان چند عبارت را به‌طور همزمان اجرا کرد</translation>
     </message>
     <message>
         <source>Unable to reset statement</source>
@@ -5432,7 +5554,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1: key error</source>
-        <translation>%1: خطای کلید</translation>
+        <translation type="obsolete">%1: خطای کلید</translation>
     </message>
     <message>
         <source>%1: unable to make key</source>
@@ -5457,6 +5579,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: system-imposed size restrictions</source>
         <translation>%1: محدودیت اندازهٔ تحمیلی سیستم</translation>
+    </message>
+    <message>
+        <source>%1: bad name</source>
+        <translation>%1: نام نامناسب</translation>
     </message>
     <message>
         <source>%1: not attached</source>
@@ -6438,6 +6564,10 @@ Do you want to overwrite it?</source>
     <name>QSoftKeyManager</name>
     <message>
         <source>Ok</source>
+        <translation type="obsolete">تأیید</translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation>تأیید</translation>
     </message>
     <message>
@@ -6682,6 +6812,187 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>گزینهٔ نامعتبر: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>خطا در باز کردن پایگاه داده</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation>پیش از تعریف هرگونه POLICY دیگر، POLICY_DB_DEFAULT باید تعریف شود </translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>نمی‌توان تراکنش را شروع کرد</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>نمی‌توان تراکنش را ارسال کرد</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>نمی‌توان تراکنش را بازگرداند</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>خطا در بازیابی تعداد ستون‌ها</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>خطا در بازیابی نام ستون‌ها</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>خطا در بازیابی نوع ستون‌ها</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>نمی‌توان رکورد را واکشی کرد</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>نمی‌توان عبارت را اجرا کرد</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>عبارت آماده نشده است</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>نمی‌توان عبارت را بازنشانی کرد</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>نمی‌توان پارامترها را مقید کرد</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>تعداد پارامترها تطابق ندارد</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>نمی‌توان سوکت غیرمسدودکننده را آماده کرد</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>نمی‌توان سوکت پخش را آماده کرد</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>تلاش برای استفاده از سوکت IPv6 روی پلتفرم بدون پشتیبانی IPv6</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>میزبان کنترل از راه دور اتصال را بست</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>عملیات شبکه با وقفهٔ زمانی مواجه شد</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>خارج از منابع</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>عملیات پشتیبانی نشدهٔ سوکت</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>نوع پروتکل پشتیبانی نشده است</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>توصیف‌کنندهٔ سوکت نامعتبر</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>میزبان قابل دستیابی نیست</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>شبکه در دسترس نیست</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>اجازهٔ دسترسی رد شد</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>پایان زمان اتصال</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>اتصال پذیرفته نشد</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>آدرس مقید شده هم‌اکنون در حال استفاده است</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>این آدرس در دسترس نیست</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>این آدرس حفاظت‌شده است</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>اندازهٔ دیتاگرام برای ارسال خیلی بزرگ بود</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>نمی‌توان پیام را ارسال کرد</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>نمی‌توان پیام دریافت کرد</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>نمی‌توان نوشت</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>خطای شبکه</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>یک سوکت دیگر هم‌اکنون روی همان درگاه در حال شنود است</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation>عملیات روی غیرسوکت</translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>نوع پروکسی برای این عملیات غیرمعتبر است</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>این آدرس برای این عملیات غیرمعتبر است</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>جلسهٔ شبکهٔ مشخص شده باز نشده است</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>خطای ناشناخته</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: permission denied</source>
@@ -6698,6 +7009,10 @@ Do you want to overwrite it?</source>
     <message>
         <source>%1: out of resources</source>
         <translation>%1: خارج از منابع</translation>
+    </message>
+    <message>
+        <source>%1: name error</source>
+        <translation>%1: خطای نام</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
@@ -6724,6 +7039,26 @@ Do you want to overwrite it?</source>
     <message>
         <source>Scroll Right</source>
         <translation>لغزش به راست</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>بستن</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation>فعال‌سازی</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>فشار دادن</translation>
+    </message>
+    <message>
+        <source>Close the tab</source>
+        <translation>بستن برگه</translation>
+    </message>
+    <message>
+        <source>Activate the tab</source>
+        <translation>فعال‌سازی برگه</translation>
     </message>
 </context>
 <context>
@@ -6790,10 +7125,28 @@ Do you want to overwrite it?</source>
     <name>QUndoGroup</name>
     <message>
         <source>Undo</source>
-        <translation>خنثی‌سازی</translation>
+        <translation type="obsolete">خنثی‌سازی</translation>
     </message>
     <message>
         <source>Redo</source>
+        <translation type="obsolete">بازانجام</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>خنثی‌سازی %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>خنثی‌سازی</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>بازانجام %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>بازانجام</translation>
     </message>
 </context>
@@ -6808,10 +7161,28 @@ Do you want to overwrite it?</source>
     <name>QUndoStack</name>
     <message>
         <source>Undo</source>
-        <translation>خنثی‌سازی</translation>
+        <translation type="obsolete">خنثی‌سازی</translation>
     </message>
     <message>
         <source>Redo</source>
+        <translation type="obsolete">بازانجام</translation>
+    </message>
+    <message>
+        <source>Undo %1</source>
+        <translation>خنثی‌سازی %1</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>خنثی‌سازی</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>بازانجام %1</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <comment>Default text for redo action</comment>
         <translation>بازانجام</translation>
     </message>
 </context>
@@ -6869,6 +7240,10 @@ Do you want to overwrite it?</source>
         <translation>درخواست لغو شد</translation>
     </message>
     <message>
+        <source>Request canceled</source>
+        <translation>درخواست لغو شد</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
         <translation>درخواست بلوکه شد</translation>
     </message>
@@ -6888,6 +7263,10 @@ Do you want to overwrite it?</source>
         <source>File does not exist</source>
         <translation>پرونده وجود ندارد</translation>
     </message>
+    <message>
+        <source>Loading is handled by the media engine</source>
+        <translation>بارگذاری توسط موتور مدیا مدیریت می‌شود</translation>
+    </message>
 </context>
 <context>
     <name>QWebPage</name>
@@ -6897,7 +7276,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Bad HTTP request</source>
-        <translation>درخواست HTTP ناهنجار</translation>
+        <translation type="obsolete">درخواست HTTP ناهنجار</translation>
     </message>
     <message numerus="yes">
         <source>%n file(s)</source>
@@ -6937,6 +7316,11 @@ Do you want to overwrite it?</source>
         <translation>پرونده‌ای انتخاب نشد</translation>
     </message>
     <message>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>جزئیات</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>باز‌کردن در پنجرهٔ جدید</translation>
@@ -6965,6 +7349,61 @@ Do you want to overwrite it?</source>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
         <translation>کپی تصویر</translation>
+    </message>
+    <message>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>کپی آدرس تصویر</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>باز کردن ویدئو</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>باز کردن صدا</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>کپی ویدئو</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>کپی صدا</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>فعال/غیرفعال کردن کنترل‌ها</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>فعال/غیرفعال کردن حلقه</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>ورود به حالت تمام‌صفحه</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>شروع</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>توقف</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>بی‌صدا</translation>
     </message>
     <message>
         <source>Open Frame</source>
@@ -7005,6 +7444,11 @@ Do you want to overwrite it?</source>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>چسباندن</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>انتخاب همه</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
@@ -7473,7 +7917,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Select all</source>
-        <translation>انتخاب همه</translation>
+        <translation type="obsolete">انتخاب همه</translation>
     </message>
     <message>
         <source>Select to the next character</source>
@@ -7975,6 +8419,94 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>آیتم‌ها</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>حالت بررسی</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>انیمیشن شروع/توقف</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>انتخاب</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>اتتخاب (حالت سایه‌بان)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>بزرگ‌نمایی</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>بوم رنگ</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>اعمال تغییرات روی نمایشگر QML</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>اعمال تغییرات روی سند</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>ابزارها</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>۱×</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>۰٫۵ ×</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>۰٫۲۵ ×</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>۰٫۱۲۵ ×</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>۰٫۱ ×</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>کپی رنگ</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>بزرگ‌نمایی به &amp;۱۰۰٪</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>بزرگ‌نمایی به داخل</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>بزرگ‌نمایی به بیرون</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
@@ -8434,7 +8966,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>فضای‌نامی برای توابع تعریف شده توسط کاربر نمی‌تواند خالی باشد(پیشوند از پیش تعریف شدهٔ %1 را که برای این موارد وجود دارد امتحان کنید)</translation>
+        <translation type="obsolete">فضای‌نامی برای توابع تعریف شده توسط کاربر نمی‌تواند خالی باشد(پیشوند از پیش تعریف شدهٔ %1 را که برای این موارد وجود دارد امتحان کنید)</translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation>فضای نام برای تابع تعریف شده توسط کاربر نمی‌تواند تهی باشد. (پیشوند ازقبل تعریف‌شدهٔ %1 را که برای این‌گونه موارد درنظر گرفته شده، امتحان کنید)</translation>
     </message>
     <message>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
@@ -9278,7 +9814,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
-        <translation>محتویات مدل نوع پیچیدهٔ %1 شامل %2 است بنابراین نمی‌تواند با پسوند از نوع غیر‌تهی مشتق شود.</translation>
+        <translation type="obsolete">محتویات مدل نوع پیچیدهٔ %1 شامل %2 است بنابراین نمی‌تواند با پسوند از نوع غیر‌تهی مشتق شود.</translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
+        <translation>محتویات مدل نوع پیچیدهٔ %1 شامل %2 است، بنابراین نمی‌تواند با پسوند از نوع غیر‌تهی مشتق شود.</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
@@ -9685,8 +10225,12 @@ Do you want to overwrite it?</source>
         <translation>عنصر %1 شامل محتویات متن غیرمجاز است.</translation>
     </message>
     <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation>از آنجایی که عنصر %1 محتویات ثابت دارد، نمی‌تواند شامل تمام دیگر عنصرها باشد.</translation>
+    </message>
+    <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation>اگر عنصر %1 ثابت باشد نمی‌تواند شامل عناصر دیگر باشد.</translation>
+        <translation type="obsolete">اگر عنصر %1 ثابت باشد نمی‌تواند شامل عناصر دیگر باشد.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
