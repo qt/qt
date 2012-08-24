@@ -1782,6 +1782,7 @@ void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
             // QDBusConnectionPrivate::processFinishedCall() is called automatically
         }
         pcall->mutex.lock();
+        pcall->waitForFinishedCondition.wakeAll();
     }
 }
 
