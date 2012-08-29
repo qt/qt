@@ -76,8 +76,11 @@ static void initStandardTreeModel(QStandardItemModel *model)
     model->insertRow(2, item);
 }
 
+class tst_QTreeView;
 struct PublicView : public QTreeView
 {
+    friend class tst_QTreeView;
+
     inline void executeDelayedItemsLayout()
     { QTreeView::executeDelayedItemsLayout(); }
 
@@ -246,6 +249,10 @@ private slots:
     void taskQTBUG_11466_keyboardNavigationRegression();
     void taskQTBUG_13567_removeLastItemRegression();
     void taskQTBUG_25333_adjustViewOptionsForIndex();
+
+#ifndef QT_NO_ANIMATION
+    void quickExpandCollapse();
+#endif
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -4049,6 +4056,40 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 #endif
 
 }
+
+#ifndef QT_NO_ANIMATION
+void tst_QTreeView::quickExpandCollapse()
+{
+    //this unit tests makes sure the state after the animation is restored correctly
+    //after starting a 2nd animation while the first one was still on-going
+    //this tests that the stateBeforeAnimation is not set to AnimatingState
+    PublicView tree;
+    tree.setAnimated(true);
+    QStandardItemModel model;
+    QStandardItem *root = new QStandardItem("root");
+    root->appendRow(new QStandardItem("subnode"));
+    model.appendRow(root);
+    tree.setModel(&model);
+
+    QModelIndex rootIndex = root->index();
+    QVERIFY(rootIndex.isValid());
+
+    tree.show();
+    QTest::qWaitForWindowShown(&tree);
+
+    int initialState = tree.state();
+
+    tree.expand(rootIndex);
+    QCOMPARE(tree.state(), (int)PublicView::AnimatingState);
+
+    tree.collapse(rootIndex);
+    QCOMPARE(tree.state(), (int)PublicView::AnimatingState);
+
+    QTest::qWait(500); //the animation lasts for 250ms max so 500 should be enough
+
+    QCOMPARE(tree.state(), initialState);
+}
+#endif
 
 
 QTEST_MAIN(tst_QTreeView)

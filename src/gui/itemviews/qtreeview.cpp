@@ -2884,7 +2884,9 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (emitSignal && animationsEnabled)
         prepareAnimatedOperation(item, QVariantAnimation::Forward);
 #endif //QT_NO_ANIMATION
-    stateBeforeAnimation = state;
+     //if already animating, stateBeforeAnimation is set to the correct value
+    if (state != QAbstractItemView::AnimatingState)
+        stateBeforeAnimation = state;
     q->setState(QAbstractItemView::ExpandingState);
     const QModelIndex index = viewItems.at(item).index;
     storeExpanded(index);
@@ -2975,7 +2977,9 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
         prepareAnimatedOperation(item, QVariantAnimation::Backward);
 #endif //QT_NO_ANIMATION
 
-    stateBeforeAnimation = state;
+    //if already animating, stateBeforeAnimation is set to the correct value
+    if (state != QAbstractItemView::AnimatingState)
+        stateBeforeAnimation = state;
     q->setState(QAbstractItemView::CollapsingState);
     expandedIndexes.erase(it);
     viewItems[item].expanded = false;
