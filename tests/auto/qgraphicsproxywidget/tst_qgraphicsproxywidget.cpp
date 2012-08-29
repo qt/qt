@@ -3388,7 +3388,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     proxy->update();
     proxy->hide();
 #ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion == QSysInfo::MV_LION) {
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_LION) {
         QEXPECT_FAIL("", "QTBUG-26801", Abort);
     }
 #endif
