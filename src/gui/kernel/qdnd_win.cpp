@@ -690,6 +690,11 @@ void QOleDropTarget::sendDragEnterEvent(QWidget *dragEnterWidget, DWORD grfKeySt
 
 }
 
+static inline bool acceptsDrop(const QWidget *w)
+{
+    return w->testAttribute(Qt::WA_DropSiteRegistered) && w->acceptDrops();
+}
+
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
@@ -702,9 +707,15 @@ QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
         dragOverWidget = widget;
 
 
-    if (!QApplicationPrivate::tryModalHelper(dragOverWidget)
-            || !dragOverWidget->testAttribute(Qt::WA_DropSiteRegistered)
-            || !dragOverWidget->acceptDrops()) {
+    if (!QApplicationPrivate::tryModalHelper(dragOverWidget)) {
+        *pdwEffect = DROPEFFECT_NONE;
+        return NOERROR;
+    }
+
+    while (dragOverWidget && dragOverWidget != widget && !acceptsDrop(dragOverWidget))
+        dragOverWidget = dragOverWidget->parentWidget();
+
+    if (!dragOverWidget || !acceptsDrop(dragOverWidget)) {
         *pdwEffect = DROPEFFECT_NONE;
         return NOERROR;
     }
