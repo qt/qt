@@ -136,7 +136,7 @@ void QSqlQueryModelPrivate::initColOffsets(int size)
     data before showing it to the user, and how to create a
     read-write model based on QSqlQueryModel.
 
-    If the database doesn't return the amount of selected rows in
+    If the database doesn't return the number of selected rows in
     a query, the model will fetch rows incrementally.
     See fetchMore() for more information.
 
@@ -212,8 +212,8 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
     \since 4.1
 
     If the database supports returning the size of a query
-    (see QSqlDriver::hasFeature()), the amount of rows of the current
-    query is returned. Otherwise, returns the amount of rows
+    (see QSqlDriver::hasFeature()), the number of rows of the current
+    query is returned. Otherwise, returns the number of rows
     currently cached on the client.
 
     \a parent should always be an invalid QModelIndex.
