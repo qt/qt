@@ -1504,6 +1504,16 @@ QMenuPrivate::QMacMenuPrivate::removeAction(QMacMenuAction *action)
                 && action->menuItem != [loader preferencesMenuItem]) {
                 [[action->menuItem menu] removeItem:action->menuItem];
             }
+            if (QMenuMergeList *list = mergeMenuItemsHash.value(action->menu)) {
+                int i = 0;
+                while (i < list->size()) {
+                    const QMenuMergeItem &item = list->at(i);
+                    if (item.action == action)
+                        list->removeAt(i);
+                    else
+                        ++i;
+                }
+            }
         }
     } else {
         [[action->menuItem menu] removeItem:action->menuItem];
