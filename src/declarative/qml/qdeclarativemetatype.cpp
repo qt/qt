@@ -45,6 +45,9 @@
 #include "private/qdeclarativeproxymetaobject_p.h"
 #include "private/qdeclarativecustomparser_p.h"
 #include "private/qdeclarativeguard_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeitemsmodule_p.h"
+#include "private/qdeclarativeutilmodule_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
@@ -690,6 +693,23 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
 */
 bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
 {
+#ifndef QT_NO_IMPORT_QT47_QML
+    // "import Qt 4.7" should have died off, but unfortunately, it was in a
+    // major release. We don't register 4.7 types by default, as it's a
+    // performance penalty. Instead, register them on-demand.
+    if (strcmp(module.constData(), "Qt") == 0 && versionMajor == 4 && versionMinor == 7) {
+        static bool qt47Registered = false;
+        if (!qt47Registered) {
+            qWarning() << Q_FUNC_INFO << "Qt 4.7 import detected; please note that Qt 4.7 is directly reusable as QtQuick 1.x with no code changes. Continuing, but startup time will be slower.";
+            qt47Registered = true;
+            QDeclarativeEnginePrivate::defineModuleCompat();
+            QDeclarativeItemModule::defineModuleCompat();
+            QDeclarativeValueTypeFactory::registerValueTypesCompat();
+            QDeclarativeUtilModule::defineModuleCompat();
+        }
+    }
+#endif
+
     QDeclarativeMetaTypeData *data = metaTypeData();
     QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
     return it != data->modules.end()

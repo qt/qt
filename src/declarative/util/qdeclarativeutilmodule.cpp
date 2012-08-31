@@ -74,9 +74,9 @@
 #include "private/qdeclarativexmllistmodel_p.h"
 #endif
 
-void QDeclarativeUtilModule::defineModule(QApplication::Type appType)
+void QDeclarativeUtilModule::defineModule()
 {
-    if (appType != QApplication::Tty) {
+    if (QApplication::type() != QApplication::Tty) {
         qmlRegisterUncreatableType<QDeclarativeApplication>("QtQuick",1,1,"Application", QDeclarativeApplication::tr("Application is an abstract class"));
 
         qmlRegisterType<QDeclarativeAnchorAnimation>("QtQuick",1,0,"AnchorAnimation");
@@ -127,9 +127,12 @@ void QDeclarativeUtilModule::defineModule(QApplication::Type appType)
     qmlRegisterCustomType<QDeclarativeConnections>("QtQuick",1,0,"Connections", new QDeclarativeConnectionsParser);
     qmlRegisterCustomType<QDeclarativePropertyChanges>("QtQuick",1,0,"PropertyChanges", new QDeclarativePropertyChangesParser);
     qmlRegisterCustomType<QDeclarativeListModel>("QtQuick",1,0,"ListModel", new QDeclarativeListModelParser);
+}
 
+void QDeclarativeUtilModule::defineModuleCompat()
+{
 #ifndef QT_NO_IMPORT_QT47_QML
-    if (appType != QApplication::Tty) {
+    if (QApplication::type() != QApplication::Tty) {
         qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,7,"AnchorAnimation");
         qmlRegisterType<QDeclarativeAnchorChanges>("Qt",4,7,"AnchorChanges");
         qmlRegisterType<QDeclarativeBehavior>("Qt",4,7,"Behavior");
@@ -162,6 +165,7 @@ void QDeclarativeUtilModule::defineModule(QApplication::Type appType)
     qmlRegisterType<QDeclarativeState>("Qt",4,7,"State");
     qmlRegisterType<QDeclarativeStateChangeScript>("Qt",4,7,"StateChangeScript");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,7,"ListElement");
+
 #ifdef QT_NO_XMLPATTERNS
     qmlRegisterTypeNotAvailable("Qt",4,7,"XmlListModel",
         qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
@@ -176,3 +180,4 @@ void QDeclarativeUtilModule::defineModule(QApplication::Type appType)
     qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,7, "ListModel", new QDeclarativeListModelParser);
 #endif
 }
+

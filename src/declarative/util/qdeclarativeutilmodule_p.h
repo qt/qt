@@ -54,7 +54,8 @@ QT_MODULE(Declarative)
 class QDeclarativeUtilModule
 {
 public:
-    static void defineModule(QApplication::Type appType);
+    static void defineModule();
+    static void defineModuleCompat();
 };
 
 QT_END_NAMESPACE

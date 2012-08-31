@@ -44,6 +44,7 @@
 #include "private/qdeclarativemetatype_p.h"
 #include "private/qfont_p.h"
 
+#include <QtGui/qapplication.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -101,10 +102,15 @@ void QDeclarativeValueTypeFactory::registerValueTypes()
 {
     qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("QtQuick",1,0,"Easing");
     qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("QtQuick",1,0,"Font");
-#ifndef QT_NO_IMPORT_QT47_QML
+}
+
+void QDeclarativeValueTypeFactory::registerValueTypesCompat()
+{
+    if (QApplication::type() == QApplication::Tty)
+        return;
+
     qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("Qt",4,7,"Easing");
     qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Qt",4,7,"Font");
-#endif
 }
 
 QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)

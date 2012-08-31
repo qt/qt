@@ -96,6 +96,9 @@ static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject 
 
 void QDeclarativeItemModule::defineModule()
 {
+    if (QApplication::type() == QApplication::Tty)
+        return;
+
     QDeclarativePrivate::RegisterAutoParent autoparent = { 0, &qgraphicsobject_autoParent };
     QDeclarativePrivate::qmlregister(QDeclarativePrivate::AutoParentRegistration, &autoparent);
 #ifdef QT_NO_MOVIE
@@ -199,8 +202,13 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,0>("QtQuick",1,0);
     qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,1>("QtQuick",1,1);
     qmlRegisterUncreatableType<QDeclarativeLayoutMirroringAttached>("QtQuick",1,1,"LayoutMirroring", QDeclarativeLayoutMirroringAttached::tr("LayoutMirroring is only available via attached properties"));
+}
 
-#ifndef QT_NO_IMPORT_QT47_QML
+void QDeclarativeItemModule::defineModuleCompat()
+{
+    if (QApplication::type() == QApplication::Tty)
+        return;
+
 #ifdef QT_NO_MOVIE
     qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",
         qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
@@ -257,5 +265,4 @@ void QDeclarativeItemModule::defineModule()
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
-#endif
 }
