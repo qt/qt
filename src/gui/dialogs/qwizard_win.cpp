@@ -164,6 +164,7 @@ static PtrDrawThemeBackground pDrawThemeBackground = 0;
 static PtrGetThemePartSize pGetThemePartSize = 0;
 static PtrGetThemeColor pGetThemeColor = 0;
 
+int QVistaHelper::instanceCount = 0;
 bool QVistaHelper::is_vista = false;
 QVistaHelper::VistaState QVistaHelper::cachedVistaState = QVistaHelper::Dirty;
 
@@ -243,6 +244,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , wizard(wizard)
     , backButton_(0)
 {
+    ++instanceCount;
     is_vista = resolveSymbols();
     if (is_vista)
         backButton_ = new QVistaBackButton(wizard);
@@ -255,6 +257,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
 
 QVistaHelper::~QVistaHelper()
 {
+    --instanceCount;
 }
 
 bool QVistaHelper::isCompositionEnabled()
@@ -277,7 +280,7 @@ bool QVistaHelper::isThemeActive()
 
 QVistaHelper::VistaState QVistaHelper::vistaState()
 {
-    if (cachedVistaState == Dirty)
+    if (instanceCount == 0 || cachedVistaState == Dirty)
         cachedVistaState =
             isCompositionEnabled() ? VistaAero : isThemeActive() ? VistaBasic : Classic;
     return cachedVistaState;
