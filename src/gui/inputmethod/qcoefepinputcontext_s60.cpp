@@ -1339,20 +1339,16 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
 
-    bool enableSmileys = false;
-
     if (hints & ImhUrlCharactersOnly) {
         // URL characters is everything except space, so a superset of the other restrictions
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
+        m_fepState->SetExtensionFlags(EAknEditorExtFlagKeyboardUrl);
     } else if (hints & ImhEmailCharactersOnly) {
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else if (needsCharMap) {
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
-        enableSmileys = !(hints & ImhHiddenText);
+        m_fepState->SetExtensionFlags(EAknEditorExtFlagKeyboardEmail);
     } else {
-        m_fepState->SetSpecialCharacterTableResourceId(0);
+        m_fepState->SetExtensionFlags(0);
     }
 
+    bool enableSmileys = needsCharMap && !(hints & (ImhHiddenText | ImhUrlCharactersOnly | ImhEmailCharactersOnly));
     if (enableSmileys)
         m_dummyEditor->AddFlagToUserFlags(CEikEdwin::EAvkonEnableSmileySupport);
     else
