@@ -302,6 +302,19 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
     QMutexLocker locker(&mutex);
 
     QList<QNetworkProxy> result;
+
+    // don't look for proxies for a local connection
+    QHostAddress parsed;
+    QString hostname = query.url().host();
+    if (hostname == QLatin1String("localhost")
+        || hostname.startsWith(QLatin1String("localhost."))
+        || (parsed.setAddress(hostname)
+            && (parsed == QHostAddress::LocalHost
+                || parsed == QHostAddress::LocalHostIPv6))) {
+        result << QNetworkProxy(QNetworkProxy::NoProxy);
+        return result;
+    }
+
     if (!applicationLevelProxyFactory) {
         if (applicationLevelProxy
             && applicationLevelProxy->type() != QNetworkProxy::DefaultProxy)
