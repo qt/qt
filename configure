@@ -71,8 +71,10 @@ QTCONFIG_CONFIG=
 QT_CONFIG=
 SUPPORTED=
 QMAKE_VARS_FILE=.qmake.vars
+DEVICE_VARS_FILE=.device.vars
 
 :> "$QMAKE_VARS_FILE"
+:> "$DEVICE_VARS_FILE"
 
 #-------------------------------------------------------------------------------
 # utility functions
@@ -221,6 +223,23 @@ linkerSupportsFlag()
 	lflags=$lflags,$safe_flag
     done
     compilerSupportsFlag "$lflags" >/dev/null 2>&1
+}
+
+#-------------------------------------------------------------------------------
+# device options
+#-------------------------------------------------------------------------------
+DeviceVar()
+{
+    case "$1" in
+        set)
+            eq="="
+            ;;
+        *)
+            echo >&2 "BUG: wrong command to QMakeVar: $1"
+            ;;
+    esac
+
+    echo "$2" "$eq" "$3" >> "$DEVICE_VARS_FILE"
 }
 
 #-------------------------------------------------------------------------------
@@ -1122,7 +1141,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-device-option|-buildkey|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1666,6 +1685,11 @@ while [ "$#" -gt 0 ]; do
         case "$XPLATFORM" in *integrity*) XPLATFORM_INTEGRITY=yes;; esac
         case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
         case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
+        ;;
+    device-option)
+        DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
+        DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
+        DeviceVar set $DEV_VAR $DEV_VAL
         ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3297,6 +3321,17 @@ if [ "$OPT_VERBOSE" = "yes" ]; then
 fi
 
 #-------------------------------------------------------------------------------
+# write out device config before we run the test.
+#-------------------------------------------------------------------------------
+DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
+if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
+    rm -f "$DEVICE_VARS_FILE"
+else
+    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
+    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
+fi
+
+#-------------------------------------------------------------------------------
 # tests that don't need qmake (must be run before displaying help)
 #-------------------------------------------------------------------------------
 
@@ -4383,6 +4418,9 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
     cat << EOF
 
     -xplatform target ... The target platform when cross-compiling.
+
+    -device-option <key=value> ... Add device specific options for the device mkspec
+                                   (experimental)
 
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
