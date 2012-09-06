@@ -4173,4 +4173,5 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian15wakeUpWasCalledEP19QWakeUpActiveObject @ 4172 NONAME
 	_ZN23QCoreApplicationPrivate19qmljsDebugArgumentsEv @ 4173 NONAME
 	_ZN23QCoreApplicationPrivate27processCommandLineArgumentsEv @ 4174 NONAME
+	_ZN4QUrl6detachER12QMutexLocker @ 4175 NONAME
 
