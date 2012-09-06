@@ -2852,17 +2852,20 @@ void Configure::generateOutputVars()
 
     if (dictionary["OPENGL_ES_CM"] == "yes") {
         qtConfig += "opengles1";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["OPENGL_ES_2"] == "yes") {
         qtConfig += "opengles2";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["OPENVG"] == "yes") {
         qtConfig += "openvg";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["S60"] == "yes") {
@@ -3420,9 +3423,10 @@ void Configure::generateConfigfiles()
         if (dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
-        if (dictionary["OPENGL_ES_CM"] == "no" &&
-           dictionary["OPENGL_ES_2"]  == "no" &&
-           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
+        if ((dictionary["OPENGL_ES_CM"]   == "no"
+             && dictionary["OPENGL_ES_2"] == "no"
+             && dictionary["OPENVG"]      == "no")
+            || (dictionary["QPA"]         == "yes")) qconfigList += "QT_NO_EGL";
 
         if (dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
