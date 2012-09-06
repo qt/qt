@@ -4894,4 +4894,6 @@ EXPORTS
 	?qmljsDebugArguments@QCoreApplicationPrivate@@SA?AVQString@@XZ @ 4893 NONAME ; class QString QCoreApplicationPrivate::qmljsDebugArguments(void)
 	?processCommandLineArguments@QCoreApplicationPrivate@@QAEXXZ @ 4894 NONAME ; void QCoreApplicationPrivate::processCommandLineArguments(void)
 	?detach@QUrl@@AAEXAAVQMutexLocker@@@Z @ 4895 NONAME ; void QUrl::detach(class QMutexLocker &)
+	?disconnectNotify@QObjectPrivate@@QAEXPBD@Z @ 4896 NONAME ; void QObjectPrivate::disconnectNotify(char const *)
+	?connectNotify@QObjectPrivate@@QAEXPBD@Z @ 4897 NONAME ; void QObjectPrivate::connectNotify(char const *)
 
