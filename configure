@@ -3008,6 +3008,7 @@ fi
 if [ "$PLATFORM" != "$XPLATFORM" ]; then
     QT_CROSS_COMPILE=yes
     QMAKE_CONFIG="$QMAKE_CONFIG cross_compile"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG cross_compile"
 fi
 
 if [ "$PLATFORM_MAC" = "yes" ]; then

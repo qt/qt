@@ -2945,6 +2945,9 @@ void Configure::generateOutputVars()
     if (dictionary["QPA"] == "yes")
         qtConfig += "qpa";
 
+    if (dictionary["CROSS_COMPILE"] == "yes")
+        configStream << " cross_compile";
+
     if (dictionary["NIS"] == "yes")
         qtConfig += "nis";
 
@@ -2992,8 +2995,10 @@ void Configure::generateOutputVars()
         }
     }
 
-    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"]))
+    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"])) {
             qmakeConfig += "cross_compile";
+            dictionary["CROSS_COMPILE"] = "yes";
+    }
 
     // Directories and settings for .qmake.cache --------------------
 
