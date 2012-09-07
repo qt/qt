@@ -11,7 +11,7 @@ DEPLOYMENT += deploy
 
 wince*: {
     DEFINES += SRCDIR=\\\"\\\"
-} else:symbian: {
+} else:if(symbian|qnx) {
     DEFINES += SRCDIR=""
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
