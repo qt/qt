@@ -190,11 +190,11 @@ QBBIntegration::~QBBIntegration()
     }
 #endif
 
-    // stop/destroy navigator event handling classes
-    delete mNavigatorEventNotifier;
-
 #if defined(Q_OS_BLACKBERRY)
     delete mBpsEventFilter;
+#else
+    // stop/destroy navigator event handling classes
+    delete mNavigatorEventNotifier;
 #endif
 
     // destroy the keyboard class.
