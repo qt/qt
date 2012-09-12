@@ -153,7 +153,7 @@ namespace JSC {
         Register* m_buffer;
         Register* m_maxUsed;
 
-#if HAVE(VIRTUALALLOC)
+#if HAVE(VIRTUALALLOC) || OS(QNX)
         Register* m_commitEnd;
 #endif
 #if OS(SYMBIAN)
@@ -186,7 +186,23 @@ namespace JSC {
         ASSERT(isPageAligned(capacity));
 
         size_t bufferLength = (capacity + maxGlobals) * sizeof(Register);
-    #if HAVE(MMAP)
+    #if OS(QNX)
+        // First, reserve uncommitted memory
+        m_buffer = reinterpret_cast<Register*>(mmap(0, bufferLength, PROT_NONE, MAP_LAZY|MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0));
+        if (m_buffer == MAP_FAILED) {
+            fprintf(stderr, "Could not reserve register file memory: %d\n", errno);
+            CRASH();
+        }
+
+        // Now, commit as much as we need for the globals
+        size_t committedSize = roundUpAllocationSize(maxGlobals * sizeof(Register), commitSize);
+        if (mmap(m_buffer, committedSize, PROT_READ|PROT_WRITE, MAP_FIXED|MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0) == MAP_FAILED) {
+            fprintf(stderr, "Could not commit register file memory: %d\n", errno);
+            CRASH();
+        }
+        m_commitEnd = reinterpret_cast<Register*>(reinterpret_cast<char*>(m_buffer) + committedSize);
+
+    #elif HAVE(MMAP)
         m_buffer = reinterpret_cast<Register*>(mmap(0, bufferLength, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0));
         if (m_buffer == MAP_FAILED) {
 #if OS(WINCE)
@@ -262,7 +278,16 @@ namespace JSC {
         if (newEnd > m_max)
             return false;
 
-#if !HAVE(MMAP) && HAVE(VIRTUALALLOC)
+#if OS(QNX)
+        if (newEnd > m_commitEnd) {
+            size_t size = roundUpAllocationSize(reinterpret_cast<char*>(newEnd) - reinterpret_cast<char*>(m_commitEnd), commitSize);
+            if (mmap(m_commitEnd, size, PROT_READ|PROT_WRITE, MAP_FIXED|MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0) == MAP_FAILED) {
+                fprintf(stderr, "Could not grow committed register file memory: %d\n", errno);
+                CRASH();
+            }
+            m_commitEnd = reinterpret_cast<Register*>(reinterpret_cast<char*>(m_commitEnd) + size);
+        }
+#elif !HAVE(MMAP) && HAVE(VIRTUALALLOC)
         if (newEnd > m_commitEnd) {
             size_t size = roundUpAllocationSize(reinterpret_cast<char*>(newEnd) - reinterpret_cast<char*>(m_commitEnd), commitSize);
             if (!VirtualAlloc(m_commitEnd, size, MEM_COMMIT, PAGE_READWRITE)) {
