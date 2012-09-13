@@ -83,6 +83,10 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::resize(const QSize &size)
 {
+    if (size == QWindowSurface::size())
+        return;
+
+    QWindowSurface::resize(size);
     QDirectFbBlitter *blitter = new QDirectFbBlitter(size, m_dfbSurface.data());
     m_pmdata->setBlittable(blitter);
 }
