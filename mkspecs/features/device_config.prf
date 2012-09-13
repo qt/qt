@@ -1,5 +1,5 @@
 # Load generated qdevice.pri
-isEmpty(QT_BUILD_TREE): QT_BUILD_TREE = $$fromfile($$_QMAKE_CACHE_, QT_BUILD_TREE)
+isEmpty(QT_BUILD_TREE):exists($$_QMAKE_CACHE_): QT_BUILD_TREE = $$fromfile($$_QMAKE_CACHE_, QT_BUILD_TREE)
 isEmpty(QT_BUILD_TREE): QT_BUILD_TREE = $$[QT_INSTALL_DATA]
 
 DEVICE_PRI = $$QT_BUILD_TREE/mkspecs/qdevice.pri
