@@ -1104,11 +1104,14 @@ void tst_QFileInfo::fileTimes()
             RegCloseKey(key);
     }
 #endif
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE)
     QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
-#endif
-#ifdef Q_OS_SYMBIAN
-        QEXPECT_FAIL("simple", "Symbian implementation of stat doesn't return read time right", Abort);
+#elif defined(Q_OS_SYMBIAN)
+    QEXPECT_FAIL("simple", "Symbian implementation of stat doesn't return read time right", Abort);
+#elif defined(Q_OS_BLACKBERRY)
+    QEXPECT_FAIL("simple", "Blackberry OS uses the noatime filesystem option", Continue);
+    QEXPECT_FAIL("longfile", "Blackberry OS uses the noatime filesystem option", Continue);
+    QEXPECT_FAIL("longfile absolutepath", "Blackberry OS uses the noatime filesystem option", Continue);
 #endif
     QVERIFY(fileInfo.lastRead() > beforeRead);
     QVERIFY(fileInfo.lastModified() > beforeWrite);
