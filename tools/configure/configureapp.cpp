@@ -1344,7 +1344,8 @@ void Configure::parseCmdLine()
             qmakeSpec.endsWith("-msvc2003") ||
             qmakeSpec.endsWith("-msvc2005") ||
             qmakeSpec.endsWith("-msvc2008") ||
-            qmakeSpec.endsWith("-msvc2010")) {
+            qmakeSpec.endsWith("-msvc2010") ||
+            qmakeSpec.endsWith("-msvc2012")) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "nmake";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
         } else if (qmakeSpec.contains("win32-g++")) {
@@ -2346,7 +2347,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WEBKIT") {
         const QString qmakeSpec = dictionary.value("QMAKESPEC");
         available = qmakeSpec == "win32-msvc2005" || qmakeSpec == "win32-msvc2008" ||
-                qmakeSpec == "win32-msvc2010" || qmakeSpec.startsWith("win32-g++");
+                qmakeSpec == "win32-msvc2010" || qmakeSpec == "win32-msvc2012" || qmakeSpec.startsWith("win32-g++");
         if (dictionary[ "SHARED" ] == "no") {
             cout << endl << "WARNING: Using static linking will disable the WebKit module." << endl
                  << endl;
