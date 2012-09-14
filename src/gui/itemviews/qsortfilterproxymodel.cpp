@@ -1036,17 +1036,33 @@ void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_pare
     Mapping *m = it.value();
     QSet<int> rows_removed = handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
     QSet<int> columns_removed = handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
-    QVector<QModelIndex> mappedChildren = m->mapped_children;
-    QVector<QModelIndex>::iterator it2 = mappedChildren.end();
-    while (it2 != mappedChildren.begin()) {
-        --it2;
-        const QModelIndex source_child_index = *it2;
+
+    // We need to iterate over a copy of m->mapped_children because otherwise it may be changed by other code, invalidating
+    // the iterator it2.
+    // The m->mapped_children vector can be appended to with indexes which are no longer filtered
+    // out (in create_mapping) when this function recurses for child indexes.
+    const QVector<QModelIndex> mappedChildren = m->mapped_children;
+    QVector<int> indexesToRemove;
+    for (int i = 0; i < mappedChildren.size(); ++i) {
+        const QModelIndex source_child_index = mappedChildren.at(i);
         if (rows_removed.contains(source_child_index.row()) || columns_removed.contains(source_child_index.column())) {
-            it2 = mappedChildren.erase(it2);
+            indexesToRemove.push_back(i);
             remove_from_mapping(source_child_index);
         } else {
             filter_changed(source_child_index);
         }
+    }
+    QVector<int>::const_iterator removeIt = indexesToRemove.constEnd();
+    const QVector<int>::const_iterator removeBegin = indexesToRemove.constBegin();
+
+    // We can't just remove these items from mappedChildren while iterating above and then
+    // do something like m->mapped_children = mappedChildren, because mapped_children might
+    // be appended to in create_mapping, and we would lose those new items.
+    // Because they are always appended in create_mapping, we can still remove them by
+    // position here.
+    while (removeIt != removeBegin) {
+        --removeIt;
+        m->mapped_children.remove(*removeIt);
     }
 }
 
