@@ -24,7 +24,7 @@ symbian {
 # support for running test from shadow build directory
 wince* {
     DEFINES += SRCDIR=\\\"\\\"
-} else:symbian {
+} else:if(symbian|qnx) {
     DEFINES += SRCDIR=""
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
