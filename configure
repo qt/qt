@@ -5010,8 +5010,12 @@ else
 fi
 
 if [ -z "$PKG_CONFIG" ]; then
-    # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
+    # See if PKG_CONFIG is set in the mkspec or device options
+    (echo TEMPLATE = subdirs
+     echo 'message($$PKG_CONFIG)') > "$outpath/dummy.pro"
+    echo "QT_BUILD_TREE = $outpath" > "$outpath/.qmake.cache.pkgconfig"
+    PKG_CONFIG=`"$outpath/bin/qmake" -cache "$outpath/.qmake.cache.pkgconfig" -spec "$XQMAKESPEC" "$outpath/dummy.pro" -o /dev/null 2>&1 > /dev/null | sed -n -e 's,Project MESSAGE: \(.*\),\1,p'`
+    rm "$outpath/.qmake.cache.pkgconfig" "$outpath/dummy.pro"
 fi
 if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
