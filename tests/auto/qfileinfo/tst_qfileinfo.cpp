@@ -76,7 +76,6 @@
 #include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
 # define NO_SYMLINKS
 #endif
 

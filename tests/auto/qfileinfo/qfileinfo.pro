@@ -25,7 +25,7 @@ symbian {
 wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
-    # do not define SRCDIR at all
+    DEFINES += SRCDIR=""
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
