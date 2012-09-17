@@ -56,40 +56,40 @@ QT_BEGIN_NAMESPACE
    However, we can fix QStackedWidget by simply using a modified version of QStackedLayout
    that reimplements the hfw-related functions:
  */
-class QStackedLayoutHFW : public QStackedLayout 
-{ 
-public: 
-    QStackedLayoutHFW(QWidget *parent = 0) : QStackedLayout(parent) {} 
-    bool hasHeightForWidth() const; 
-    int heightForWidth(int width) const; 
-}; 
- 
-bool QStackedLayoutHFW::hasHeightForWidth() const 
-{ 
-    const int n = count(); 
- 
-    for (int i = 0; i < n; ++i) { 
-        if (QLayoutItem *item = itemAt(i)) { 
-            if (item->hasHeightForWidth()) 
-                return true; 
-        } 
-    } 
-    return false; 
-} 
- 
-int QStackedLayoutHFW::heightForWidth(int width) const 
-{ 
-    const int n = count(); 
- 
-    int hfw = 0; 
-    for (int i = 0; i < n; ++i) { 
-        if (QLayoutItem *item = itemAt(i)) { 
-            hfw = qMax(hfw, item->heightForWidth(width)); 
-        } 
-    } 
-    return hfw; 
-} 
- 
+class QStackedLayoutHFW : public QStackedLayout
+{
+public:
+    QStackedLayoutHFW(QWidget *parent = 0) : QStackedLayout(parent) {}
+    bool hasHeightForWidth() const;
+    int heightForWidth(int width) const;
+};
+
+bool QStackedLayoutHFW::hasHeightForWidth() const
+{
+    const int n = count();
+
+    for (int i = 0; i < n; ++i) {
+        if (QLayoutItem *item = itemAt(i)) {
+            if (item->hasHeightForWidth())
+                return true;
+        }
+    }
+    return false;
+}
+
+int QStackedLayoutHFW::heightForWidth(int width) const
+{
+    const int n = count();
+
+    int hfw = 0;
+    for (int i = 0; i < n; ++i) {
+        if (QLayoutItem *item = itemAt(i)) {
+            hfw = qMax(hfw, item->heightForWidth(width));
+        }
+    }
+    return hfw;
+}
+
 
 class QStackedWidgetPrivate : public QFramePrivate
 {
