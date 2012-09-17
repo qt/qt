@@ -2950,7 +2950,7 @@ void Configure::generateOutputVars()
         qtConfig += "qpa";
 
     if (dictionary["CROSS_COMPILE"] == "yes")
-        configStream << " cross_compile";
+        qtConfig << " cross_compile";
 
     if (dictionary["NIS"] == "yes")
         qtConfig += "nis";
