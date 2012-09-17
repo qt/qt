@@ -30,7 +30,8 @@ SOURCES =   main.cpp \
             qbbrootwindow.cpp \
             qbbscreeneventhandler.cpp \
             qbbabstractvirtualkeyboard.cpp \
-            qbbnativeinterface.cpp
+            qbbnativeinterface.cpp \
+            qbbbuttoneventnotifier.cpp
 
 HEADERS =   qbbbuffer.h \
             qbbscreeneventthread.h \
@@ -49,7 +50,8 @@ HEADERS =   qbbbuffer.h \
             qbbrootwindow.h \
             qbbscreeneventhandler.h \
             qbbabstractvirtualkeyboard.h \
-            qbbnativeinterface.h
+            qbbnativeinterface.h \
+            qbbbuttoneventnotifier.h
 
 blackberry {
     SOURCES += qbbbpseventfilter.cpp \

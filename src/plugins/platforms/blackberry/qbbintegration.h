@@ -53,6 +53,7 @@ class QBBScreen;
 class QBBScreenEventHandler;
 class QBBNativeInterface;
 class QBBBpsEventFilter;
+class QBBButtonEventNotifier;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -90,6 +91,7 @@ private:
     QBBScreenEventThread *mScreenEventThread;
     QBBNavigatorEventHandler *mNavigatorEventHandler;
     QBBNavigatorEventNotifier *mNavigatorEventNotifier;
+    QBBButtonEventNotifier *mButtonsNotifier;
     QBBLocaleThread *mLocaleThread;
     QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen*> mScreens;

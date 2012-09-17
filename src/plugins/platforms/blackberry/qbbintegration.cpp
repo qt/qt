@@ -54,6 +54,7 @@
 #include "qbbglcontext.h"
 #include "qbblocalethread.h"
 #include "qbbnativeinterface.h"
+#include "qbbbuttoneventnotifier.h"
 #if defined(Q_OS_BLACKBERRY)
 #include "qbbbpseventfilter.h"
 #include "qbbvirtualkeyboardbps.h"
@@ -80,6 +81,7 @@ Q_DECLARE_METATYPE(screen_window_t);
 QBBIntegration::QBBIntegration() :
     mScreenEventThread(0),
     mNavigatorEventHandler(new QBBNavigatorEventHandler()),
+    mButtonsNotifier(new QBBButtonEventNotifier()),
     mFontDb(new QGenericUnixFontDatabase()),
     mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
@@ -164,6 +166,10 @@ QBBIntegration::QBBIntegration() :
 
     // Set up the input context
     qApp->setInputContext(new QBBInputContext(*mVirtualKeyboard, qApp));
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(mButtonsNotifier, "start", Qt::QueuedConnection);
 }
 
 QBBIntegration::~QBBIntegration()
@@ -171,9 +177,10 @@ QBBIntegration::~QBBIntegration()
 #if defined(QBBINTEGRATION_DEBUG)
     qDebug() << "QBB: platform plugin shutdown begin";
 #endif
-
-
     delete mNativeInterface;
+
+    // Destroy the hardware button notifier
+    delete mButtonsNotifier;
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // stop/destroy the locale thread.
