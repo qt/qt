@@ -278,7 +278,13 @@ init_context:
     }
 
     // Enable all bug workarounds.
+#ifdef SSL_OP_NO_COMPRESSION
+    // If compression is available, then disable it to avoid the CRIME attack
+    // if it is not available then we're not vulnerable anyway.
+    q_SSL_CTX_set_options(ctx, SSL_OP_ALL|SSL_OP_NO_COMPRESSION);
+#else
     q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
+#endif
 
     // Initialize ciphers
     QByteArray cipherString;
