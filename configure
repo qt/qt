@@ -3418,6 +3418,11 @@ elif [ "$CFG_PRECOMPILE" = "yes" ] && [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ];
     CFG_PRECOMPILE=no
 fi
 
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    CFG_MAC_DWARF2=no
+    CFG_MAC_XARCH=no
+fi
+
 #auto-detect DWARF2 on the mac
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
     if "$mactests/dwarf2.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests" ; then
