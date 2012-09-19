@@ -371,6 +371,9 @@ private Q_SLOTS:
     void qtbug18232gzipContentLengthZero();
     void nb279420gzipNoContentLengthEmptyContentDisconnect();
 
+    void qtbug27161httpHeaderMayBeDamaged_data();
+    void qtbug27161httpHeaderMayBeDamaged();
+
     void synchronousRequest_data();
     void synchronousRequest();
 #ifndef QT_NO_OPENSSL
@@ -6426,6 +6429,79 @@ void tst_QNetworkReply::nb279420gzipNoContentLengthEmptyContentDisconnect()
     QCOMPARE(reply->size(), qint64(0));
     QVERIFY(!reply->header(QNetworkRequest::ContentLengthHeader).isValid());
     QCOMPARE(reply->readAll(), QByteArray());
+}
+
+class QtBug27161Helper : public QObject {
+    Q_OBJECT
+public:
+    QtBug27161Helper(MiniHttpServer & server, const QByteArray & data):
+        m_server(server),
+        m_data(data)
+    {
+        connect(&m_server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
+    }
+public slots:
+    void newConnectionSlot(){
+        connect(m_server.client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
+    }
+
+    void bytesWrittenSlot(){
+        disconnect(m_server.client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
+        m_Timer.singleShot(100, this, SLOT(timeoutSlot()));
+    }
+
+    void timeoutSlot(){
+        m_server.doClose = true;
+        // we need to emulate the bytesWrittenSlot call if the data is empty.
+        if (m_data.size() == 0)
+            QMetaObject::invokeMethod(&m_server, "bytesWrittenSlot", Qt::QueuedConnection);
+        else
+            m_server.client->write(m_data);
+    }
+
+private:
+    MiniHttpServer & m_server;
+    QByteArray m_data;
+    QTimer m_Timer;
+};
+
+void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged_data(){
+    QByteArray response("HTTP/1.0 200 OK\r\nServer: bogus\r\nContent-Length: 3\r\n\r\nABC");
+    QTest::addColumn<QByteArray>("firstPacket");
+    QTest::addColumn<QByteArray>("secondPacket");
+
+    for (int i = 1; i < response.size(); i++){
+        QByteArray dataTag("Iteration: ");
+        dataTag.append(QByteArray::number(i - 1));
+        QTest::newRow(dataTag.constData()) << response.left(i) << response.mid(i);
+    }
+}
+
+/*
+ * Purpose of this test is to check whether a content from server is parsed correctly
+ * if it is splitted into two parts.
+ */
+void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged(){
+    QFETCH(QByteArray, firstPacket);
+    QFETCH(QByteArray, secondPacket);
+    MiniHttpServer server(firstPacket);
+    server.doClose = false;
+    QtBug27161Helper helper(server, secondPacket);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(3));
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(3));
+    QCOMPARE(reply->rawHeader("Content-length"), QByteArray("3"));
+    QCOMPARE(reply->rawHeader("Server"), QByteArray("bogus"));
+    QCOMPARE(reply->readAll(), QByteArray("ABC"));
 }
 
 void tst_QNetworkReply::synchronousRequest_data()
