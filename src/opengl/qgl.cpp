@@ -5537,7 +5537,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= BGRATextureFormat;
 
     {
-        GLboolean srgbCapableFramebuffers;
+        GLboolean srgbCapableFramebuffers = false;
         glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
         if (srgbCapableFramebuffers)
             glExtensions |= SRGBFrameBuffer;
