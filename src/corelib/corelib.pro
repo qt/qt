@@ -20,7 +20,7 @@ include(statemachine/statemachine.pri)
 include(xml/xml.pri)
 
 !qpa:mac|darwin:LIBS_PRIVATE += -framework ApplicationServices
-qpa {
+qpa:mac {
     !ios {
         LIBS_PRIVATE += -framework CoreServices -framework Security
     }
