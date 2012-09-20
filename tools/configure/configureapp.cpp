@@ -1724,6 +1724,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "FONT_CONFIG" ]         = "yes";
         dictionary[ "FONT_CONFIG" ]         = "yes";
         dictionary[ "FREETYPE" ]            = "system";
+        dictionary[ "STACK_PROTECTOR_STRONG" ] = "auto";
     }
 }
 
@@ -2401,6 +2402,11 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+    } else if (part == "STACK_PROTECTOR_STRONG") {
+        QStringList compilerAndArgs;
+        compilerAndArgs += "qcc";
+        compilerAndArgs += "-fstack-protector-strong";
+        available = dictionary[ "XQMAKESPEC" ].contains("blackberry") && compilerSupportsFlag(compilerAndArgs);
     }
 
     return available;
@@ -2503,6 +2509,10 @@ void Configure::autoDetection()
     // Detection of IncrediBuild buildconsole
     if (dictionary["INCREDIBUILD_XGE"] == "auto")
         dictionary["INCREDIBUILD_XGE"] = checkAvailability("INCREDIBUILD_XGE") ? "yes" : "no";
+
+    // Detection of -fstack-protector-strong support
+    if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
+        dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2979,6 +2989,9 @@ void Configure::generateOutputVars()
 
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
+    if (dictionary["STACK_PROTECTOR_STRONG"] == "yes")
+        qtConfig += "stack-protector-strong";
+
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
 
@@ -4425,6 +4438,29 @@ void Configure::saveCmdLine()
     }
 }
 #endif // !EVAL
+
+bool Configure::compilerSupportsFlag(const QStringList &compilerAndArgs)
+{
+    QFile file("conftest.cpp");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        cout << "could not open temp file for writing" << endl;
+        return false;
+    }
+    if (!file.write("int main() { return 0; }\r\n")) {
+        cout << "could not write to temp file" << endl;
+        return false;
+    }
+    file.close();
+    // compilerAndArgs contains compiler because there is no way to query it
+    QStringList command = compilerAndArgs;
+    command += "-o";
+    command += "conftest-out.o";
+    command += "conftest.cpp";
+    int code = Environment::execute(command, QStringList(), QStringList());
+    file.remove();
+    QFile::remove("conftest-out.o");
+    return code == 0;
+}
 
 bool Configure::isDone()
 {
