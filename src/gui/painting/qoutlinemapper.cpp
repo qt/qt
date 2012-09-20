@@ -216,13 +216,6 @@ void QOutlineMapper::endOutline()
         elements = m_elements_dev.data();
     }
 
-    if (m_round_coords) {
-        // round coordinates to match outlines drawn with drawLine_midpoint_i
-        for (int i = 0; i < m_elements.size(); ++i)
-            elements[i] = QPointF(qFloor(elements[i].x() + aliasedCoordinateDelta),
-                                  qFloor(elements[i].y() + aliasedCoordinateDelta));
-    }
-
     controlPointRect = boundingRect(elements, element_count);
 
 #ifdef QT_DEBUG_CONVERT
