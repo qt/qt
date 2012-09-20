@@ -350,9 +350,9 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), isDebugging(false),
   outputWarningsToStdErr(true), contextClass(0), sharedContext(0), sharedScope(0),
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
-  inProgressCreations(0), scriptEngine(new QDeclarativeScriptEngine(this)),
-  workerScriptEngine(0), componentAttached(0), inBeginCreate(false), networkAccessManager(0),
-  networkAccessManagerFactory(0), typeLoader(e), importDatabase(e), uniqueId(1)
+  inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
+  inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
+  typeLoader(e), importDatabase(e), uniqueId(1)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -365,7 +365,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         }
         QDeclarativeUtilModule::defineModule(appType);
     }
-    globalClass = new QDeclarativeGlobalScriptClass(scriptEngine);
+    globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 }
 
 /*!
@@ -500,12 +500,6 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
         c->clear();
     }
 
-    // Destroy the script engine now, before object class is destroyed.
-    // This is needed here since destroying the script engine causes the
-    // JSC heap to be cleaned up, and that needs the object class intact
-    // to work.
-    delete scriptEngine;
-
     delete rootContext;
     rootContext = 0;
     delete contextClass;
@@ -595,7 +589,7 @@ void QDeclarativeEnginePrivate::init()
     rootContext = new QDeclarativeContext(q,true);
 
     QScriptValue applicationObject = objectClass->newQObject(new QDeclarativeApplication(q));
-    scriptEngine->globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
+    scriptEngine.globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QDeclarativeEngineDebugService::isDebuggingEnabled()) {
@@ -2117,11 +2111,11 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
         if (p->object) {
             return listClass->newList(p->property, p->propertyType);
         } else {
-            return scriptEngine->nullValue();
+            return scriptEngine.nullValue();
         }
     } else if (val.userType() == qMetaTypeId<QList<QObject *> >()) {
         const QList<QObject *> &list = *(QList<QObject *>*)val.constData();
-        QScriptValue rv = scriptEngine->newArray(list.count());
+        QScriptValue rv = scriptEngine.newArray(list.count());
         for (int ii = 0; ii < list.count(); ++ii) {
             QObject *object = list.at(ii);
             rv.setProperty(ii, objectClass->newQObject(object));
@@ -2136,7 +2130,7 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     if (objOk) {
         return objectClass->newQObject(obj);
     } else {
-        return scriptEngine->toScriptValue(val);
+        return scriptEngine.toScriptValue(val);
     }
 }
 
@@ -2303,13 +2297,13 @@ bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &ur
 void QDeclarativeEngine::setOfflineStoragePath(const QString& dir)
 {
     Q_D(QDeclarativeEngine);
-    d->scriptEngine->offlineStoragePath = dir;
+    d->scriptEngine.offlineStoragePath = dir;
 }
 
 QString QDeclarativeEngine::offlineStoragePath() const
 {
     Q_D(const QDeclarativeEngine);
-    return d->scriptEngine->offlineStoragePath;
+    return d->scriptEngine.offlineStoragePath;
 }
 
 static void voidptr_destructor(void *v)

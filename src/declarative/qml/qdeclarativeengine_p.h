@@ -181,7 +181,7 @@ public:
     QDeclarativeDelayedError *erroredBindings;
     int inProgressCreations;
 
-    QDeclarativeScriptEngine *scriptEngine;
+    QDeclarativeScriptEngine scriptEngine;
 
     QDeclarativeWorkerScriptEngine *getWorkerScriptEngine();
     QDeclarativeWorkerScriptEngine *workerScriptEngine;
@@ -311,7 +311,7 @@ public:
     static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
     static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);
 #endif
-    static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return e->d_func()->scriptEngine; }
+    static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return &e->d_func()->scriptEngine; }
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeEngine *e) { return e->d_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeContext *c) { return (c && c->engine()) ? QDeclarativeEnginePrivate::get(c->engine()) : 0; }

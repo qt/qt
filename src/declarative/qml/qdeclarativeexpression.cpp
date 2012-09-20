@@ -176,7 +176,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
                                                               int lineNumber, QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
-    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(ep->scriptEngine);
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     if (contextObject) {
         *contextObject = ep->contextClass->newContext(context, object);
         scriptContext->pushScope(*contextObject);
@@ -184,8 +184,8 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
         scriptContext->pushScope(ep->contextClass->newContext(context, object));
     }
     scriptContext->pushScope(ep->globalClass->staticGlobalObject());
-    QScriptValue rv = ep->scriptEngine->evaluate(program, fileName, lineNumber);
-    ep->scriptEngine->popContext();
+    QScriptValue rv = ep->scriptEngine.evaluate(program, fileName, lineNumber);
+    ep->scriptEngine.popContext();
     return rv;
 }
 
@@ -194,7 +194,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
                                                               QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
-    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(ep->scriptEngine);
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     if (contextObject) {
         *contextObject = ep->contextClass->newContext(context, object);
         scriptContext->pushScope(*contextObject);
@@ -202,8 +202,8 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
         scriptContext->pushScope(ep->contextClass->newContext(context, object));
     }
     scriptContext->pushScope(ep->globalClass->staticGlobalObject());
-    QScriptValue rv = ep->scriptEngine->evaluate(program);
-    ep->scriptEngine->popContext();
+    QScriptValue rv = ep->scriptEngine.evaluate(program);
+    ep->scriptEngine.popContext();
     return rv;
 }
 

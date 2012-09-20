@@ -77,14 +77,7 @@ public:
 
     typedef void* Identifier;
 
-    struct Object {
-        // Like the destructor, frees resources associated with this object. The difference is that
-        // the destructor might delay resource freeing with deleteLater(), while disposeNow() always
-        // deletes the resource straigt away.
-        virtual void disposeNow() {}
-
-        virtual ~Object() {}
-    };
+    struct Object { virtual ~Object() {} };
 
     static QScriptValue newObject(QScriptEngine *, QScriptDeclarativeClass *, Object *);
     static Value newObjectValue(QScriptEngine *, QScriptDeclarativeClass *, Object *);
