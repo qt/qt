@@ -1799,18 +1799,28 @@ void QWidgetPrivate::unregisterOleDnd(QWidget *widget, QOleDropTarget *dropTarge
     Q_ASSERT(widget->testAttribute(Qt::WA_WState_Created));
     if (!widget->internalWinId()) {
         QWidget *nativeParent = widget->nativeParentWidget();
-        Q_ASSERT(nativeParent);
-        QWExtra *nativeExtra = nativeParent->d_func()->extra;
-        Q_ASSERT(nativeExtra);
-        nativeExtra->oleDropWidgets.removeAll(widget);
-        nativeExtra->oleDropWidgets.removeAll(static_cast<QWidget *>(0));
-        if (nativeExtra->oleDropWidgets.isEmpty() && nativeExtra->dropTarget
+        while (nativeParent) {
+            QWExtra *nativeExtra = nativeParent->d_func()->extra;
+            if (!nativeExtra) {
+                nativeParent = nativeParent->nativeParentWidget();
+                continue;
+            }
+
+            const int removeCounter = nativeExtra->oleDropWidgets.removeAll(widget);
+            nativeExtra->oleDropWidgets.removeAll(static_cast<QWidget *>(0));
+            if (nativeExtra->oleDropWidgets.isEmpty() && nativeExtra->dropTarget
                 && !nativeParent->testAttribute(Qt::WA_DropSiteRegistered)) {
 #ifndef Q_OS_WINCE
-            CoLockObjectExternal(nativeExtra->dropTarget, false, true);
+                    CoLockObjectExternal(nativeExtra->dropTarget, false, true);
 #endif
-            RevokeDragDrop(nativeParent->internalWinId());
-            nativeExtra->dropTarget = 0;
+                    RevokeDragDrop(nativeParent->internalWinId());
+                    nativeExtra->dropTarget = 0;
+            }
+
+            if (removeCounter)
+                break;
+
+            nativeParent = nativeParent->nativeParentWidget();
         }
     } else {
 #ifndef Q_OS_WINCE
