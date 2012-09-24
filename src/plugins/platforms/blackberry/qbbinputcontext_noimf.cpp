@@ -42,6 +42,7 @@
 
 #include <QDebug>
 #include <QAbstractSpinBox>
+#include <QAbstractItemView>
 
 QT_BEGIN_NAMESPACE
 
@@ -109,11 +110,14 @@ void QBBInputContext::setFocusWidget(QWidget *w)
     QInputContext::setFocusWidget(w);
 
     if (w) {
+        // Special case for item view which should not show the keyboard when focused
+        if (qobject_cast<QAbstractItemView*>(w))
+            return;
+
         if (qobject_cast<QAbstractSpinBox*>(w))
             mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Phone);
         else
             mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Default);
-
         mVirtualKeyboard.showKeyboard();
     } else {
         mVirtualKeyboard.hideKeyboard();
