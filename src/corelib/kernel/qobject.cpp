@@ -2692,11 +2692,7 @@ bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
         return false;
     }
 
-    // Reconstructing SIGNAL() macro result for signal.signature() string
-    QByteArray signalSignature;
-    signalSignature.reserve(qstrlen(signal.signature())+1);
-    signalSignature.append((char)(QSIGNAL_CODE + '0'));
-    signalSignature.append(signal.signature());
+    QByteArray signalSignature = QObjectPrivate::signalSignature(signal);
 
     {
         QByteArray methodSignature;
@@ -2985,13 +2981,9 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
     }
 
-    // Reconstructing SIGNAL() macro result for signal.signature() string
     QByteArray signalSignature;
-    if (signal.mobj) {
-        signalSignature.reserve(qstrlen(signal.signature())+1);
-        signalSignature.append((char)(QSIGNAL_CODE + '0'));
-        signalSignature.append(signal.signature());
-    }
+    if (signal.mobj)
+        signalSignature = QObjectPrivate::signalSignature(signal);
 
     {
         QByteArray methodSignature;

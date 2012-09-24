@@ -105,30 +105,30 @@ protected:
     void connectNotify(const char *signal)
     {
         const QString signalName(signal);
-        if (signalName == "selfPropChanged()") selfPropConnections++;
-        if (signalName == "qmlObjectPropChanged()") qmlObjectPropConnections++;
-        if (signalName == "cppObjectPropChanged()") cppObjectPropConnections++;
-        if (signalName == "unboundPropChanged()") unboundPropConnections++;
-        if (signalName == "normalBindingPropChanged()") normalBindingPropConnections++;
-        if (signalName == "compiledBindingPropChanged()") compiledBindingPropConnections++;
-        if (signalName == "compiledBindingPropSharedChanged()") compiledBindingPropSharedConnections++;
-        if (signalName == "boundSignal()")   boundSignalConnections++;
-        if (signalName == "unusedSignal()") unusedSignalConnections++;
+        if (signalName == SIGNAL(selfPropChanged())) selfPropConnections++;
+        if (signalName == SIGNAL(qmlObjectPropChanged())) qmlObjectPropConnections++;
+        if (signalName == SIGNAL(cppObjectPropChanged())) cppObjectPropConnections++;
+        if (signalName == SIGNAL(unboundPropChanged())) unboundPropConnections++;
+        if (signalName == SIGNAL(normalBindingPropChanged())) normalBindingPropConnections++;
+        if (signalName == SIGNAL(compiledBindingPropChanged())) compiledBindingPropConnections++;
+        if (signalName == SIGNAL(compiledBindingPropSharedChanged())) compiledBindingPropSharedConnections++;
+        if (signalName == SIGNAL(boundSignal()))   boundSignalConnections++;
+        if (signalName == SIGNAL(unusedSignal())) unusedSignalConnections++;
         //qDebug() << Q_FUNC_INFO << this << signalName;
     }
 
     void disconnectNotify(const char *signal)
     {
         const QString signalName(signal);
-        if (signalName == "selfPropChanged()") selfPropConnections--;
-        if (signalName == "qmlObjectPropChanged()") qmlObjectPropConnections--;
-        if (signalName == "cppObjectPropChanged()") cppObjectPropConnections--;
-        if (signalName == "unboundPropChanged()") unboundPropConnections--;
-        if (signalName == "normalBindingPropChanged()") normalBindingPropConnections--;
-        if (signalName == "compiledBindingPropChanged()") compiledBindingPropConnections--;
-        if (signalName == "compiledBindingPropSharedChanged()") compiledBindingPropSharedConnections--;
-        if (signalName == "boundSignal()")   boundSignalConnections--;
-        if (signalName == "unusedSignal()") unusedSignalConnections--;
+        if (signalName == SIGNAL(selfPropChanged())) selfPropConnections--;
+        if (signalName == SIGNAL(qmlObjectPropChanged())) qmlObjectPropConnections--;
+        if (signalName == SIGNAL(cppObjectPropChanged())) cppObjectPropConnections--;
+        if (signalName == SIGNAL(unboundPropChanged())) unboundPropConnections--;
+        if (signalName == SIGNAL(normalBindingPropChanged())) normalBindingPropConnections--;
+        if (signalName == SIGNAL(compiledBindingPropChanged())) compiledBindingPropConnections--;
+        if (signalName == SIGNAL(compiledBindingPropSharedChanged())) compiledBindingPropSharedConnections--;
+        if (signalName == SIGNAL(boundSignal()))   boundSignalConnections--;
+        if (signalName == SIGNAL(unusedSignal())) unusedSignalConnections--;
         //qDebug() << Q_FUNC_INFO << this << signalName;
     }
 
@@ -166,6 +166,8 @@ private slots:
     void readProperty();
     void propertyChange();
     void disconnectOnDestroy();
+
+    void nonQmlConnect();
 
 private:
     void createObjects();
@@ -294,6 +296,15 @@ void tst_qdeclarativenotifier::disconnectOnDestroy()
     delete root;
     root = 0;
     QCOMPARE(exportedObject->cppObjectPropConnections, 0);
+}
+
+void tst_qdeclarativenotifier::nonQmlConnect()
+{
+    ExportedClass a;
+    connect(&a, SIGNAL(boundSignal()), &a, SIGNAL(compiledBindingPropChanged()));
+    QCOMPARE(a.boundSignalConnections, 1);
+    disconnect(&a, SIGNAL(boundSignal()), &a, SIGNAL(compiledBindingPropChanged()));
+    QCOMPARE(a.boundSignalConnections, 0);
 }
 
 QTEST_MAIN(tst_qdeclarativenotifier)

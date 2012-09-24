@@ -61,6 +61,7 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
+#include "QtCore/qmetaobject.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -184,6 +185,8 @@ public:
     inline void connectNotify(const char *signal);
     inline void disconnectNotify(const char *signal);
 
+    static inline QByteArray signalSignature(const QMetaMethod &signal);
+
 public:
     QString objectName;
     ExtraData *extraData;    // extra data set by the user
@@ -242,6 +245,15 @@ inline void QObjectPrivate::connectNotify(const char *signal)
 inline void QObjectPrivate::disconnectNotify(const char *signal)
 {
     q_ptr->disconnectNotify(signal);
+}
+
+inline QByteArray QObjectPrivate::signalSignature(const QMetaMethod &signal)
+{
+    QByteArray result;
+    result.reserve(qstrlen(signal.signature())+1);
+    result.append((char)(QSIGNAL_CODE + '0'));
+    result.append(signal.signature());
+    return result;
 }
 
 inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
