@@ -1740,9 +1740,9 @@ static QFontEngine *loadFc(const QFontPrivate *fp, int script, const QFontDef &r
         fe = new QFontEngineMultiFT(fe, match, pattern, fp->screen, request);
     } else {
         FcPatternDestroy(pattern);
-        if (match)
-            FcPatternDestroy(match);
     }
+    if (match)
+        FcPatternDestroy(match);
     return fe;
 }
 
