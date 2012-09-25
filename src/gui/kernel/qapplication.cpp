@@ -150,7 +150,10 @@ static void initResources()
     Q_INIT_RESOURCE_EXTERN(qprintdialog)
     Q_INIT_RESOURCE(qprintdialog);
 #endif
-
+#ifdef Q_WS_MAC
+    Q_INIT_RESOURCE_EXTERN(macresources)
+    Q_INIT_RESOURCE(macresources);
+#endif
 }
 
 QT_BEGIN_NAMESPACE
