@@ -19,11 +19,11 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "040904B0"
 			BEGIN
-				VALUE "CompanyName", "Nokia Corporation and/or its subsidiary(-ies)\0"
+                VALUE "CompanyName", "Digia Plc and/or its subsidiary(-ies)\0"
 				VALUE "FileDescription", "ActiveQt Test Container\0"
 				VALUE "FileVersion", "1,0,0,1\0"
 				VALUE "InternalName", "testcon\0"
-				VALUE "LegalCopyright", "Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).0"
+                VALUE "LegalCopyright", "Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).0"
 				VALUE "LegalTrademarks", "\0"
 				VALUE "OriginalFilename", "testcon.exe\0"
 				VALUE "ProductName", "ActiveQt Test Container\0"
