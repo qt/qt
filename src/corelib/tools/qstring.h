@@ -1172,7 +1172,7 @@ public:
     QStringRef appendTo(QString *string) const;
 
     inline const QChar at(int i) const
-        { Q_ASSERT(i >= 0 && i < size()); return m_string->at(i + m_position); }
+        { Q_ASSERT(uint(i) < uint(size())); return m_string->at(i + m_position); }
 
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;

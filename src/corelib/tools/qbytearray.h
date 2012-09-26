@@ -411,9 +411,9 @@ inline const char QByteArray::operator[](uint i) const
 { Q_ASSERT(i < uint(size())); return d->data[i]; }
 #else
 inline char QByteArray::at(int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
 inline char QByteArray::operator[](int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
 inline char QByteArray::operator[](uint i) const
 { Q_ASSERT(i < uint(size())); return d->data[i]; }
 #endif
