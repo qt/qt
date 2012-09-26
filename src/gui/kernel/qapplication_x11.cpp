@@ -602,6 +602,7 @@ public:
 
         // static gravity!
         XSizeHints sh;
+        memset(&sh, 0, sizeof(sh));
         long unused;
         XGetWMNormalHints(X11->display, internalWinId(), &sh, &unused);
         sh.flags |= USPosition | PPosition | USSize | PSize | PWinGravity;

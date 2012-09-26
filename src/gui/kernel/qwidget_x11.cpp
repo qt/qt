@@ -780,6 +780,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         // note: WM_TRANSIENT_FOR is set in QWidgetPrivate::show_sys()
 
         XSizeHints size_hints;
+        memset(&size_hints, 0, sizeof(size_hints));
         size_hints.flags = USSize | PSize | PWinGravity;
         size_hints.x = data.crect.left();
         size_hints.y = data.crect.top();
@@ -2298,7 +2299,7 @@ static void do_size_hints(QWidget* widget, QWExtra *x)
 {
     Q_ASSERT(widget->testAttribute(Qt::WA_WState_Created));
     XSizeHints s;
-    s.flags = 0;
+    memset(&s, 0, sizeof(s));
     if (x) {
         QRect g = widget->geometry();
         s.x = g.x();
