@@ -6629,7 +6629,7 @@ if [ "$CFG_ENDIAN" = "auto" ]; then
     elif [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
         true #leave as auto
     else
-        "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
+        "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$SYSROOT_FLAG"
 	F="$?"
         if [ "$F" -eq 0 ]; then
             CFG_ENDIAN="Q_LITTLE_ENDIAN"
