@@ -101,6 +101,20 @@ public:
     int compiledBindingProp() const { return 42; }
     int compiledBindingPropShared() const { return 42; }
     int cppObjectProp() const { return 42; }
+
+    void verifyReceiverCount()
+    {
+        QCOMPARE(receivers(SIGNAL(selfPropChanged())), selfPropConnections);
+        QCOMPARE(receivers(SIGNAL(qmlObjectPropChanged())), qmlObjectPropConnections);
+        QCOMPARE(receivers(SIGNAL(cppObjectPropChanged())), cppObjectPropConnections);
+        QCOMPARE(receivers(SIGNAL(unboundPropChanged())), unboundPropConnections);
+        QCOMPARE(receivers(SIGNAL(normalBindingPropChanged())), normalBindingPropConnections);
+        QCOMPARE(receivers(SIGNAL(compiledBindingPropChanged())), compiledBindingPropConnections);
+        QCOMPARE(receivers(SIGNAL(compiledBindingPropSharedChanged())), compiledBindingPropSharedConnections);
+        QCOMPARE(receivers(SIGNAL(boundSignal())), boundSignalConnections);
+        QCOMPARE(receivers(SIGNAL(unusedSignal())), unusedSignalConnections);
+    }
+
 protected:
     void connectNotify(const char *signal)
     {
@@ -223,6 +237,7 @@ void tst_qdeclarativenotifier::connectNotify()
     QCOMPARE(exportedClass->compiledBindingPropSharedConnections, 1);
     QCOMPARE(exportedClass->boundSignalConnections, 1);
     QCOMPARE(exportedClass->unusedSignalConnections, 0);
+    exportedClass->verifyReceiverCount();
 
     QCOMPARE(exportedObject->selfPropConnections, 0);
     QCOMPARE(exportedObject->qmlObjectPropConnections, 0);
@@ -233,6 +248,7 @@ void tst_qdeclarativenotifier::connectNotify()
     QCOMPARE(exportedObject->compiledBindingPropSharedConnections, 0);
     QCOMPARE(exportedObject->boundSignalConnections, 0);
     QCOMPARE(exportedObject->unusedSignalConnections, 0);
+    exportedObject->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::removeCompiledBinding()
@@ -242,6 +258,7 @@ void tst_qdeclarativenotifier::removeCompiledBinding()
     // Removing a binding should disconnect all of its guarded properties
     QVERIFY(QMetaObject::invokeMethod(root, "removeCompiledBinding"));
     QCOMPARE(exportedClass->compiledBindingPropConnections, 0);
+    exportedClass->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::removeCompiledBindingShared()
@@ -253,10 +270,12 @@ void tst_qdeclarativenotifier::removeCompiledBindingShared()
     // the subscription is shared between multiple bindings.
     QVERIFY(QMetaObject::invokeMethod(root, "removeCompiledBindingShared_1"));
     QCOMPARE(exportedClass->compiledBindingPropSharedConnections, 1);
+    exportedClass->verifyReceiverCount();
 
     // Removing the second binding should trigger a disconnect now.
     QVERIFY(QMetaObject::invokeMethod(root, "removeCompiledBindingShared_2"));
     QCOMPARE(exportedClass->compiledBindingPropSharedConnections, 0);
+    exportedClass->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::removeNormalBinding()
@@ -266,6 +285,7 @@ void tst_qdeclarativenotifier::removeNormalBinding()
     // Removing a binding should disconnect all of its guarded properties
     QVERIFY(QMetaObject::invokeMethod(root, "removeNormalBinding"));
     QCOMPARE(exportedClass->normalBindingPropConnections, 0);
+    exportedClass->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::readProperty()
@@ -275,6 +295,7 @@ void tst_qdeclarativenotifier::readProperty()
     // Reading a property should not connect to it
     QVERIFY(QMetaObject::invokeMethod(root, "readProperty"));
     QCOMPARE(exportedClass->unboundPropConnections, 0);
+    exportedClass->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::propertyChange()
@@ -285,8 +306,10 @@ void tst_qdeclarativenotifier::propertyChange()
     // For this, the new binding needs to be connected, and afterwards disconnected.
     QVERIFY(QMetaObject::invokeMethod(root, "changeState"));
     QCOMPARE(exportedClass->unboundPropConnections, 1);
+    exportedClass->verifyReceiverCount();
     QVERIFY(QMetaObject::invokeMethod(root, "changeState"));
     QCOMPARE(exportedClass->unboundPropConnections, 0);
+    exportedClass->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::disconnectOnDestroy()
@@ -298,6 +321,7 @@ void tst_qdeclarativenotifier::disconnectOnDestroy()
     delete root;
     root = 0;
     QCOMPARE(exportedObject->cppObjectPropConnections, 0);
+    exportedObject->verifyReceiverCount();
 }
 
 void tst_qdeclarativenotifier::nonQmlConnect()
@@ -305,8 +329,10 @@ void tst_qdeclarativenotifier::nonQmlConnect()
     ExportedClass a;
     connect(&a, SIGNAL(boundSignal()), &a, SIGNAL(compiledBindingPropChanged()));
     QCOMPARE(a.boundSignalConnections, 1);
+    a.verifyReceiverCount();
     disconnect(&a, SIGNAL(boundSignal()), &a, SIGNAL(compiledBindingPropChanged()));
     QCOMPARE(a.boundSignalConnections, 0);
+    a.verifyReceiverCount();
 }
 
 QTEST_MAIN(tst_qdeclarativenotifier)
