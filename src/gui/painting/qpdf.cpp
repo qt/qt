@@ -1686,6 +1686,7 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
         cupsTempFile = ret.second;
         outDevice = new QFile();
         static_cast<QFile *>(outDevice)->open(ret.first, QIODevice::WriteOnly);
+        fd = ret.first;
 #endif
 #ifndef QT_NO_LPR
     } else {
