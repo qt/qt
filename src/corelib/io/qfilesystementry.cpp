@@ -189,7 +189,7 @@ QString QFileSystemEntry::path() const
     if (m_lastSeparator == -1) {
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
         if (m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
-            return QFSFileEngine::currentPath(m_filePath.left(2));
+            return m_filePath.left(2);
 #endif
         return QString(QLatin1Char('.'));
     }
