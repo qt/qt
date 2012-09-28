@@ -114,6 +114,7 @@ protected:
         if (signalName == SIGNAL(compiledBindingPropSharedChanged())) compiledBindingPropSharedConnections++;
         if (signalName == SIGNAL(boundSignal()))   boundSignalConnections++;
         if (signalName == SIGNAL(unusedSignal())) unusedSignalConnections++;
+        verifyReceiverCount();
         //qDebug() << Q_FUNC_INFO << this << signalName;
     }
 
@@ -129,6 +130,7 @@ protected:
         if (signalName == SIGNAL(compiledBindingPropSharedChanged())) compiledBindingPropSharedConnections--;
         if (signalName == SIGNAL(boundSignal()))   boundSignalConnections--;
         if (signalName == SIGNAL(unusedSignal())) unusedSignalConnections--;
+        verifyReceiverCount();
         //qDebug() << Q_FUNC_INFO << this << signalName;
     }
 

@@ -1632,13 +1632,18 @@ bool QDeclarativePropertyPrivate::connect(QObject *sender, int signal_index,
     flush_vme_signal(sender, signal_index);
     flush_vme_signal(receiver, method_index);
 
+    const bool result =
+            QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
+
+    // connectNotify() needs to be called after the actual connect, as otherwise QObject::receivers()
+    // would return the wrong result inside connectNotify().
     const QMetaMethod signal = sender->metaObject()->method(signal_index);
     QObjectPrivate * const senderPriv = QObjectPrivate::get(sender);
     QVarLengthArray<char> signalSignature;
     QObjectPrivate::signalSignature(signal, &signalSignature);
     senderPriv->connectNotify(signalSignature.constData());
 
-    return QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
+    return result;
 }
 
 /*!
