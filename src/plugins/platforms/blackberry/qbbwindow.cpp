@@ -138,14 +138,12 @@ QBBWindow::~QBBWindow()
     qDebug() << "QBBWindow::~QBBWindow - w=" << widget();
 #endif
 
+    // Qt should have already deleted the children before deleting the parent.
+    Q_ASSERT(mChildren.size() == 0);
+
     // Remove from parent's Hierarchy.
     removeFromParent();
     mScreen->updateHierarchy();
-
-    // We shouldn't allow this case unless QT allows it. Does it? Or should we send the
-    // handleCloseEvent on all children when this window is deleted?
-    if (mChildren.size() > 0)
-        qFatal("QBBWindow: window destroyed before children!");
 
     // cleanup OpenGL/OpenVG context if it exists
     if (mPlatformGlContext != NULL) {
