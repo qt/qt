@@ -268,10 +268,12 @@ void tst_QFocusEvent::checkReason_Popup()
     Q3PopupMenu* popupMenu = new Q3PopupMenu( testFocusWidget );
     popupMenu->insertItem( "Test" );
     popupMenu->popup( QPoint(0,0) );
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowShown(popupMenu));
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventLostFocus);
-
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTQAINFRA-428", Abort);
+#endif
     QVERIFY( childFocusWidgetOne->hasFocus() );
     QVERIFY( !childFocusWidgetOne->focusInEventRecieved );
     QVERIFY( childFocusWidgetOne->focusOutEventRecieved );
@@ -293,7 +295,7 @@ void tst_QFocusEvent::checkReason_Popup()
     QMenu* popupMenu = new QMenu( testFocusWidget );
     popupMenu->addMenu( "Test" );
     popupMenu->popup( QPoint(0,0) );
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowShown(popupMenu));
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventLostFocus);
 
@@ -415,6 +417,8 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 
 #if defined(Q_OS_IRIX)
     QEXPECT_FAIL("", "IRIX requires explicit activateWindow(), so this test does not make any sense.", Abort);
+#elif defined(Q_OS_MAC)
+    QEXPECT_FAIL("", "QTQAINFRA-428", Abort);
 #endif
     QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);
