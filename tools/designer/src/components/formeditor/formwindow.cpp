@@ -2178,7 +2178,7 @@ void FormWindow::layoutContainer(QWidget *w, int type)
     // find managed widget children
     QWidgetList widgets;
     const QObjectList::const_iterator ocend = l.constEnd();
-    for (QObjectList::const_iterator it = l.constBegin(); it != l.constEnd(); ++it)
+    for (QObjectList::const_iterator it = l.constBegin(); it != ocend; ++it)
         if ( (*it)->isWidgetType() ) {
             QWidget *widget = static_cast<QWidget*>(*it);
             if (widget->isVisibleTo(this) && isManaged(widget))

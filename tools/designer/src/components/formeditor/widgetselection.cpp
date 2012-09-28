@@ -439,8 +439,6 @@ void WidgetHandle::changeGridLayoutItemSpan()
     if (!grid)
        return;
 
-    const QSize size = m_widget->parentWidget()->size();
-
     const int index = deco->indexOf(m_widget);
     const QRect info = deco->itemInfo(index);
     const int top = deco->findItemAt(info.top() - 1, info.left());

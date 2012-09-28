@@ -872,7 +872,6 @@ void QDesignerMenuBar::showMenu(int index)
             } else {
                 // The position is not initially correct due to the unknown width,
                 // causing it to overlap a bit the first time it is invoked.
-                const QSize menuSize = menu->size();
                 QPoint point = g.bottomRight() - QPoint(menu->width(), 0);
                 menu->move(mapToGlobal(point));
             }

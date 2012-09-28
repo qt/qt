@@ -148,7 +148,6 @@ void QtColorLinePrivate::setColor(const QColor &color)
         return;
     m_color = color;
     checkColor();
-    QColor c = colorFromPoint(m_point);
     m_point = pointFromColor(m_color);
     q_ptr->update();
 }
@@ -664,7 +663,6 @@ void QtColorLinePrivate::paintEvent(QPaintEvent *)
 
     QVector<QRect> r = rects(m_point);
 
-    QColor cBack = q_ptr->palette().color(QPalette::Active, QPalette::Window);
     QColor c = colorFromPoint(m_point);
     if (!m_combiningAlpha && m_component != QtColorLine::Alpha)
         c.setAlpha(0xFF);
@@ -922,8 +920,6 @@ void QtColorLinePrivate::mousePressEvent(QMouseEvent *event)
     QVector<QRect> r = rects(m_point);
     QPoint clickPos = event->pos();
 
-    QSize fieldSize = q_ptr->geometry().size() -
-            QSize(m_indicatorSize + 2 * m_indicatorSpace - 1, m_indicatorSize + 2 * m_indicatorSpace - 1);
     QPoint posOnField = r[1].topLeft() - QPoint(m_indicatorSpace, m_indicatorSpace);
     m_clickOffset = posOnField - clickPos;
 

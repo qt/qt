@@ -1085,7 +1085,6 @@ void QDesignerMenu::slotShowSubMenuNow()
             } else {
                 // The position is not initially correct due to the unknown width,
                 // causing it to overlap a bit the first time it is invoked.
-                const QSize menuSize = menu->size();
                 QPoint point = g.topLeft() - QPoint(menu->width() + 10, 0);
                 menu->move(mapToGlobal(point));
             }

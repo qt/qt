@@ -78,7 +78,6 @@ void QDesignerDnDItem::init(DomUI *ui, QWidget *widget, QWidget *decoration,
     m_widget = widget;
     m_decoration = decoration;
 
-    const QRect geometry = m_decoration->geometry();
     m_hot_spot = global_mouse_pos - m_decoration->geometry().topLeft();
 }
 

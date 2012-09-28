@@ -875,7 +875,6 @@ void QDesignerWorkbench::bringAllToFront()
 void QDesignerWorkbench::resizeForm(QDesignerFormWindow *fw, const QWidget *mainContainer) const
 {
     const QSize containerSize = mainContainer->size();
-    const QSize containerMinimumSize = mainContainer->minimumSize();
     const QSize containerMaximumSize = mainContainer->maximumSize();
     if (m_mode != DockedMode) {
         fw->resize(containerSize);

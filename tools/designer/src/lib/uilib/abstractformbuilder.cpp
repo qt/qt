@@ -919,10 +919,6 @@ QLayoutItem *QAbstractFormBuilder::create(DomLayoutItem *ui_layoutItem, QLayout 
         bool isVspacer = false;
 
         const DomSpacer *ui_spacer = ui_layoutItem->elementSpacer();
-
-        const QMetaEnum sizePolicy_enum  = metaEnum<QAbstractFormBuilderGadget>("sizeType");
-        const QMetaEnum orientation_enum =  metaEnum<QAbstractFormBuilderGadget>("orientation");
-
         const QList<DomProperty *> spacerProperties =  ui_spacer->elementProperty();
         if (!spacerProperties.empty()) {
             const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
@@ -2448,8 +2444,6 @@ void QAbstractFormBuilder::loadListWidgetExtraInfo(DomWidget *ui_widget, QListWi
 {
     Q_UNUSED(parentWidget);
     const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
-    const QMetaEnum itemFlags_enum = metaEnum<QAbstractFormBuilderGadget>("itemFlags");
-
     foreach (DomItem *ui_item, ui_widget->elementItem()) {
         const DomPropertyHash properties = propertyMap(ui_item->elementProperty());
         QListWidgetItem *item = new QListWidgetItem(listWidget);

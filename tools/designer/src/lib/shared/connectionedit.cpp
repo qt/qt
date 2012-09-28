@@ -909,7 +909,6 @@ void Connection::checkWidgets()
         if (r != m_source_rect) {
             if (m_source_pos != QPoint(-1, -1) && !r.contains(m_source_pos)) {
                 QPoint offset = m_source_pos - m_source_rect.topLeft();
-                QPoint old_pos = m_source_pos;
                 m_source_pos = pointInsideRect(r, r.topLeft() + offset);
             }
             m_edit->update(m_source_rect);
@@ -923,7 +922,6 @@ void Connection::checkWidgets()
         if (r != m_target_rect) {
             if (m_target_pos != QPoint(-1, -1) && !r.contains(m_target_pos)) {
                 const QPoint offset = m_target_pos - m_target_rect.topLeft();
-                const QPoint old_pos = m_target_pos;
                 m_target_pos = pointInsideRect(r, r.topLeft() + offset);
             }
             m_edit->update(m_target_rect);

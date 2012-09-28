@@ -1783,15 +1783,12 @@ QtBrowserItem *QtAbstractPropertyBrowser::insertProperty(QtProperty *property,
     QList<QtProperty *> pendingList = properties();
     int pos = 0;
     int newPos = 0;
-    QtProperty *properAfterProperty = 0;
     while (pos < pendingList.count()) {
         QtProperty *prop = pendingList.at(pos);
         if (prop == property)
             return 0;
-        if (prop == afterProperty) {
+        if (prop == afterProperty)
             newPos = pos + 1;
-            properAfterProperty = afterProperty;
-        }
         pos++;
     }
     d_ptr->createBrowserIndexes(property, 0, afterProperty);
