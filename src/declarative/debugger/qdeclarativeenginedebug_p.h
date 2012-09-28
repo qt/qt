@@ -244,12 +244,14 @@ public:
     QDeclarativeDebugObjectReference &operator=(const QDeclarativeDebugObjectReference &);
 
     int debugId() const;
+    int parentId() const;
     QString className() const;
     QString idString() const;
     QString name() const;
 
     QDeclarativeDebugFileReference source() const;
     int contextDebugId() const;
+    bool needsMoreData() const;
 
     QList<QDeclarativeDebugPropertyReference> properties() const;
     QList<QDeclarativeDebugObjectReference> children() const;
@@ -257,11 +259,13 @@ public:
 private:
     friend class QDeclarativeEngineDebugPrivate;
     int m_debugId;
+    int m_parentId;
     QString m_class;
     QString m_idString;
     QString m_name;
     QDeclarativeDebugFileReference m_source;
     int m_contextDebugId;
+    bool m_needsMoreData;
     QList<QDeclarativeDebugPropertyReference> m_properties;
     QList<QDeclarativeDebugObjectReference> m_children;
 };

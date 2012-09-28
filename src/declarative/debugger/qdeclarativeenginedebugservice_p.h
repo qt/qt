@@ -82,10 +82,11 @@ public:
         QString objectType;
         int objectId;
         int contextId;
+        int parentId;
     };
 
     struct QDeclarativeObjectProperty {
-        enum Type { Unknown, Basic, Object, List, SignalProperty };
+        enum Type { Unknown, Basic, Object, List, SignalProperty, Variant };
         Type type;
         QString name;
         QVariant value;

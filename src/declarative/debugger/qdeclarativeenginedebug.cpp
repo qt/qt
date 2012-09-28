@@ -96,7 +96,7 @@ public:
 
 QDeclarativeEngineDebugClient::QDeclarativeEngineDebugClient(QDeclarativeDebugConnection *client,
                                            QDeclarativeEngineDebugPrivate *p)
-: QDeclarativeDebugClient(QLatin1String("QDeclarativeEngine"), client), priv(p)
+: QDeclarativeDebugClient(QLatin1String("DeclarativeDebugger"), client), priv(p)
 {
 }
 
@@ -217,6 +217,8 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
     o.m_source.m_lineNumber = data.lineNumber;
     o.m_source.m_columnNumber = data.columnNumber;
     o.m_contextDebugId = data.contextId;
+    o.m_parentId = data.parentId;
+    o.m_needsMoreData = simple;
 
     if (simple)
         return;
@@ -246,6 +248,7 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
             case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Basic:
             case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::List:
             case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::SignalProperty:
+            case QDeclarativeEngineDebugService::QDeclarativeObjectProperty::Variant:
             {
                 prop.m_value = data.value;
                 break;
@@ -646,7 +649,8 @@ bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QStri
     if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue << source << line;
+        ds << QByteArray("SET_BINDING") << d->getId() << objectDebugId << propertyName <<
+              bindingExpression << isLiteralValue << source << line;
         d->client->sendMessage(message);
         return true;
     } else {
@@ -661,7 +665,7 @@ bool QDeclarativeEngineDebug::resetBindingForObject(int objectDebugId, const QSt
     if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("RESET_BINDING") << objectDebugId << propertyName;
+        ds << QByteArray("RESET_BINDING") << d->getId() << objectDebugId << propertyName;
         d->client->sendMessage(message);
         return true;
     } else {
@@ -677,7 +681,8 @@ bool QDeclarativeEngineDebug::setMethodBody(int objectDebugId, const QString &me
     if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("SET_METHOD_BODY") << objectDebugId << methodName << methodBody;
+        ds << QByteArray("SET_METHOD_BODY") << d->getId() << objectDebugId << methodName
+           << methodBody;
         d->client->sendMessage(message);
         return true;
     } else {
@@ -866,27 +871,28 @@ QString QDeclarativeDebugEngineReference::name() const
 }
 
 QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference()
-: m_debugId(-1), m_contextDebugId(-1)
+    : m_debugId(-1), m_parentId(-1), m_contextDebugId(-1), m_needsMoreData(false)
 {
 }
 
 QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference(int debugId)
-: m_debugId(debugId), m_contextDebugId(-1)
+: m_debugId(debugId), m_parentId(-1), m_contextDebugId(-1), m_needsMoreData(false)
 {
 }
 
 QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference(const QDeclarativeDebugObjectReference &o)
-: m_debugId(o.m_debugId), m_class(o.m_class), m_idString(o.m_idString),
+: m_debugId(o.m_debugId), m_parentId(o.m_parentId), m_class(o.m_class), m_idString(o.m_idString),
   m_name(o.m_name), m_source(o.m_source), m_contextDebugId(o.m_contextDebugId),
-  m_properties(o.m_properties), m_children(o.m_children)
+  m_needsMoreData(o.m_needsMoreData), m_properties(o.m_properties), m_children(o.m_children)
 {
 }
 
 QDeclarativeDebugObjectReference &
 QDeclarativeDebugObjectReference::operator=(const QDeclarativeDebugObjectReference &o)
 {
-    m_debugId = o.m_debugId; m_class = o.m_class; m_idString = o.m_idString;
-    m_name = o.m_name; m_source = o.m_source; m_contextDebugId = o.m_contextDebugId;
+    m_debugId = o.m_debugId; m_parentId = o.m_parentId; m_class = o.m_class;
+    m_idString = o.m_idString; m_name = o.m_name; m_source = o.m_source;
+    m_contextDebugId = o.m_contextDebugId; m_needsMoreData = o.m_needsMoreData;
     m_properties = o.m_properties; m_children = o.m_children;
     return *this;
 }
@@ -894,6 +900,11 @@ QDeclarativeDebugObjectReference::operator=(const QDeclarativeDebugObjectReferen
 int QDeclarativeDebugObjectReference::debugId() const
 {
     return m_debugId;
+}
+
+int QDeclarativeDebugObjectReference::parentId() const
+{
+    return m_parentId;
 }
 
 QString QDeclarativeDebugObjectReference::className() const
@@ -919,6 +930,11 @@ QDeclarativeDebugFileReference QDeclarativeDebugObjectReference::source() const
 int QDeclarativeDebugObjectReference::contextDebugId() const
 {
     return m_contextDebugId;
+}
+
+bool QDeclarativeDebugObjectReference::needsMoreData() const
+{
+    return m_needsMoreData;
 }
 
 QList<QDeclarativeDebugPropertyReference> QDeclarativeDebugObjectReference::properties() const
