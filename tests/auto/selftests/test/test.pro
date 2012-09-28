@@ -12,6 +12,3 @@ win32 {
 }
 
 RESOURCES += ../selftests.qrc
-
-
-win32:CONFIG+=insignificant_test # QTQAINFRA-428

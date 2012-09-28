@@ -27,5 +27,3 @@ symbian {
 
    DEPLOYMENT += binDep
 }
-
-win32:CONFIG+=insignificant_test # QTQAINFRA-428

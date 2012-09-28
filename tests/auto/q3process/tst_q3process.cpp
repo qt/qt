@@ -44,6 +44,7 @@
 
 #include <q3process.h>
 #include <qregexp.h>
+#include <qdir.h>
 #include <qdebug.h>
 
 QT_FORWARD_DECLARE_CLASS(Q3Process)
@@ -57,10 +58,9 @@ class tst_Q3Process : public QObject
 
 public:
     tst_Q3Process();
-    virtual ~tst_Q3Process();
-
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -93,8 +93,17 @@ tst_Q3Process::tst_Q3Process()
 {
 }
 
-tst_Q3Process::~tst_Q3Process()
+void tst_Q3Process::initTestCase()
 {
+#ifdef Q_OS_WIN
+    // cd up to be able to locate the binary of the sub-process.
+    QDir workingDirectory = QDir::current();
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
 }
 
 void tst_Q3Process::init()

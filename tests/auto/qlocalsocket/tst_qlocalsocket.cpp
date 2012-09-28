@@ -45,6 +45,7 @@
 #include <qtextstream.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
+#include <QtCore/QDir>
 #include "../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -64,11 +65,8 @@ class tst_QLocalSocket : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QLocalSocket();
-    virtual ~tst_QLocalSocket();
-
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -122,20 +120,28 @@ private slots:
 private:
     void unlink(QString serverName);
 #endif
+
+private:
+    QString m_lackey;
 };
 
-tst_QLocalSocket::tst_QLocalSocket()
+void tst_QLocalSocket::initTestCase()
 {
-    if (!QFile::exists("lackey/lackey"
+    QDir workingDirectory = QDir::current();
+    QString lackey = QLatin1String("lackey/lackey");
+    // Windows: cd up to be able to locate the binary of the sub-process.
 #ifdef Q_OS_WIN
-    ".exe"
+    lackey.append(QLatin1String(".exe"));
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
 #endif
-                ))
-        qWarning() << "lackey executable doesn't exists!";
-}
-
-tst_QLocalSocket::~tst_QLocalSocket()
-{
+    m_lackey = workingDirectory.absoluteFilePath(lackey);
+    QVERIFY2(QFileInfo(m_lackey).exists(),
+             qPrintable(QString::fromLatin1("Lackey executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_lackey))));
 }
 
 void tst_QLocalSocket::init()
@@ -806,7 +812,7 @@ void tst_QLocalSocket::processConnection()
     serverArguments << "-qws";
 #endif
     QList<QProcess*> consumers;
-    producer.start("lackey/lackey", serverArguments);
+    producer.start(m_lackey, serverArguments);
     QVERIFY(producer.waitForStarted(-1));
     QTest::qWait(2000);
     for (int i = 0; i < processes; ++i) {
@@ -817,7 +823,7 @@ void tst_QLocalSocket::processConnection()
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
-        p->start("lackey/lackey", arguments);
+        p->start(m_lackey, arguments);
     }
 
     while (!consumers.isEmpty()) {

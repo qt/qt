@@ -51,21 +51,23 @@ class tst_QScriptExtensionPlugin : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QScriptExtensionPlugin();
-    virtual ~tst_QScriptExtensionPlugin();
-
 private slots:
+    void initTestCase();
     void importSimplePlugin();
     void importStaticPlugin();
 };
 
-tst_QScriptExtensionPlugin::tst_QScriptExtensionPlugin()
+void tst_QScriptExtensionPlugin::initTestCase()
 {
-}
-
-tst_QScriptExtensionPlugin::~tst_QScriptExtensionPlugin()
-{
+#ifdef Q_OS_WIN
+    // cd up to be able to locate the plugins.
+    QDir workingDirectory = QDir::current();
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
 }
 
 void tst_QScriptExtensionPlugin::importSimplePlugin()

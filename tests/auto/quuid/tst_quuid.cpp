@@ -60,6 +60,7 @@ public:
     tst_QUuid();
 
 private slots:
+    void initTestCase();
     void fromChar();
     void toString();
     void fromString();
@@ -95,6 +96,19 @@ tst_QUuid::tst_QUuid()
 
     //"{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
     uuidB = QUuid(0x1ab6e93a ,0xb1cb ,0x4a87 ,0xba ,0x47 ,0xec ,0x7e ,0x99 ,0x03 ,0x9a ,0x7b);
+}
+
+void tst_QUuid::initTestCase()
+{
+#ifdef Q_OS_WIN
+    // cd up to be able to locate the binary of the sub-process.
+    QDir workingDirectory = QDir::current();
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
 }
 
 void tst_QUuid::fromChar()
@@ -294,29 +308,33 @@ void tst_QUuid::threadUniqueness()
     qDeleteAll(threads);
 }
 
+static inline QByteArray msgCannotStartProcess(const QString &binary, const QString &why)
+{
+    return QString::fromLatin1("Cannot start '%1' from '%2': %3")
+                               .arg(QDir::toNativeSeparators(binary),
+                                    QDir::toNativeSeparators(QDir::currentPath()),
+                                    why).toLocal8Bit();
+}
+
 void tst_QUuid::processUniqueness()
 {
     QProcess process;
-    QString processOneOutput;
-    QString processTwoOutput;
-
     // Start it once
 #ifdef Q_OS_MAC
-    process.start("testProcessUniqueness/testProcessUniqueness.app");
+    const QString binary = "testProcessUniqueness/testProcessUniqueness.app";
 #else
-    process.start("testProcessUniqueness/testProcessUniqueness");
+    const QString binary = "testProcessUniqueness/testProcessUniqueness";
 #endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(), msgCannotStartProcess(binary, process.errorString()).constData());
     QVERIFY(process.waitForFinished());
-    processOneOutput = process.readAllStandardOutput();
+    const QByteArray processOneOutput = process.readAllStandardOutput();
 
     // Start it twice
-#ifdef Q_OS_MAC
-    process.start("testProcessUniqueness/testProcessUniqueness.app");
-#else
-    process.start("testProcessUniqueness/testProcessUniqueness");
-#endif
+    process.start(binary);
+    QVERIFY2(process.waitForStarted(), msgCannotStartProcess(binary, process.errorString()).constData());
     QVERIFY(process.waitForFinished());
-    processTwoOutput = process.readAllStandardOutput();
+    const QByteArray processTwoOutput = process.readAllStandardOutput();
 
     // They should be *different*!
     QVERIFY(processOneOutput != processTwoOutput);

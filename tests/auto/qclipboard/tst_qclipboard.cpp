@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>
+#include <QtCore/QDir>
 #include <QtGui/QApplication>
 #include <QtGui/QClipboard>
 #ifdef Q_WS_MAC
@@ -63,7 +64,7 @@ class tst_QClipboard : public QObject
 {
     Q_OBJECT
 private slots:
-
+    void initTestCase();
     void copy_exit_paste();
     void capabiliyFunctions();
     void modes();
@@ -78,8 +79,36 @@ private slots:
 
 private:
     bool nativeClipboardWorking();
+
+    QString m_copier;
+    QString m_paster;
 };
 
+void tst_QClipboard::initTestCase()
+{
+    QDir workingDirectory = QDir::current();
+    QString copier = QLatin1String("copier/copier");
+    QString paster = QLatin1String("paster/paster");
+    // Windows: cd up to be able to locate the binary of the sub-process.
+#ifdef Q_OS_WIN
+    const QString suffix = QLatin1String(".exe");
+    copier.append(suffix);
+    paster.append(suffix);
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
+    m_copier = workingDirectory.absoluteFilePath(copier);
+    m_paster = workingDirectory.absoluteFilePath(paster);
+    QVERIFY2(QFileInfo(m_copier).exists(),
+             qPrintable(QString::fromLatin1("Copier executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_copier))));
+    QVERIFY2(QFileInfo(m_paster).exists(),
+             qPrintable(QString::fromLatin1("Paster executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_paster))));
+}
 
 bool tst_QClipboard::nativeClipboardWorking()
 {
@@ -215,12 +244,12 @@ void tst_QClipboard::copy_exit_paste()
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup", SkipAll);
     const QStringList stringArgument = QStringList() << "Test string.";
-    QCOMPARE(QProcess::execute("copier/copier", stringArgument), 0);
+    QCOMPARE(QProcess::execute(m_copier, stringArgument), 0);
 #ifdef Q_WS_MAC
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
 #endif
-    QCOMPARE(QProcess::execute("paster/paster", stringArgument), 0);
+    QCOMPARE(QProcess::execute(m_paster, stringArgument), 0);
 #endif
 }
 

@@ -49,6 +49,7 @@ class tst_Selftests: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void runSubTest_data();
     void runSubTest();
     void cleanupTestCase();
@@ -179,6 +180,19 @@ static QList<Logger> allLoggers()
         << Logger("xunitxml",   "xunitxml", QStringList() << "-xunitxml")
         << Logger("lightxml",   "lightxml", QStringList() << "-lightxml")
     ;
+}
+
+void tst_Selftests::initTestCase()
+{
+#ifdef Q_OS_WIN
+    // cd up to be able to locate the binaries of the sub-processes.
+    QDir workingDirectory = QDir::current();
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+            || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
 }
 
 void tst_Selftests::runSubTest_data()
@@ -323,6 +337,14 @@ void tst_Selftests::runSubTest_data()
     }
 }
 
+static inline QByteArray msgCannotStartProcess(const QString &binary, const QString &why)
+{
+    return QString::fromLatin1("Cannot start '%1' from '%2': %3")
+                               .arg(QDir::toNativeSeparators(binary),
+                                    QDir::toNativeSeparators(QDir::currentPath()),
+                                    why).toLocal8Bit();
+}
+
 void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments )
 {
     // For the plain text logger, we'll read straight from standard output.
@@ -338,7 +360,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
 
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, QStringList() << arguments << extraArguments);
+    const QString binary = subdir + QLatin1Char('/') + subdir;
+    proc.start(binary, QStringList() << arguments << extraArguments);
+    QVERIFY2(proc.waitForStarted(), msgCannotStartProcess(binary, proc.errorString()));
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     QByteArray out;

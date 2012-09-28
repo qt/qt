@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <math.h>
 #include <qglobal.h>
+#include <qdir.h>
 #include <qtextcodec.h>
 #include <qdatetime.h>
 #include <float.h>
@@ -88,6 +89,7 @@ public:
     tst_QLocale();
 
 private slots:
+    void initTestCase();
     void windowsDefaultLocale();
     void macDefaultLocale();
 
@@ -148,11 +150,31 @@ private slots:
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
+    QString m_sysLocaleApp;
 };
 
 tst_QLocale::tst_QLocale()
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
+}
+
+void tst_QLocale::initTestCase()
+{
+    QDir workingDirectory = QDir::current();
+    QString sysLocaleApp = QLatin1String("syslocaleapp/syslocaleapp");
+    // Windows: cd up to be able to locate the binary of the sub-process.
+#ifdef Q_OS_WIN
+    sysLocaleApp.append(QLatin1String(".exe"));
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
+    m_sysLocaleApp = workingDirectory.absoluteFilePath(sysLocaleApp);
+    QVERIFY2(QFileInfo(m_sysLocaleApp).exists(),
+             qPrintable(QString::fromLatin1("SysLocalApp executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_sysLocaleApp))));
 }
 
 void tst_QLocale::ctor()
@@ -383,7 +405,8 @@ void tst_QLocale::emptyCtor()
     /* because of caching of the system locale. */ \
     QProcess process; \
     process.setEnvironment(QStringList(env) << QString("LANG=%1").arg(req_lc)); \
-    process.start("syslocaleapp/syslocaleapp"); \
+    process.start(m_sysLocaleApp); \
+    QVERIFY(process.waitForStarted()); \
     process.waitForReadyRead(); \
     QString ret = QString(process.readAll()); \
     process.waitForFinished(); \
