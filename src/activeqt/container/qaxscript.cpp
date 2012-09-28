@@ -561,6 +561,7 @@ long QAxScriptEngine::queryInterface(const QUuid &uuid, void **iface) const
 #ifndef QT_NO_QAXSCRIPT
     return engine->QueryInterface(uuid, iface);
 #else
+    Q_UNUSED(uuid)
     return E_NOTIMPL;
 #endif
 }
@@ -593,6 +594,8 @@ void QAxScriptEngine::setState(State st)
         return;
     
     engine->SetScriptState((SCRIPTSTATE)st);
+#else
+    Q_UNUSED(st)
 #endif
 }
 
@@ -607,6 +610,8 @@ void QAxScriptEngine::addItem(const QString &name)
         return;
     
     engine->AddNamedItem((wchar_t*)name.utf16(), SCRIPTITEM_ISSOURCE|SCRIPTITEM_ISVISIBLE);
+#else
+    Q_UNUSED(name)
 #endif
 }
 

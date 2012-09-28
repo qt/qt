@@ -474,6 +474,8 @@ QMatchData QCompletionEngine::filterHistory()
         return QMatchData();
     bool isDirModel = false;
     bool isFsModel = false;
+    Q_UNUSED(isDirModel)
+    Q_UNUSED(isFsModel)
 #ifndef QT_NO_DIRMODEL
     isDirModel = (qobject_cast<QDirModel *>(source) != 0);
 #endif

@@ -48,7 +48,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QTreeView>
 
-const quint32 VERSION = 0xe53798;
+const qint32 VERSION = 0xe53798;
 const QLatin1String MIMETYPE("application/bookmarks.assistant");
 
 BookmarkModel::BookmarkModel()

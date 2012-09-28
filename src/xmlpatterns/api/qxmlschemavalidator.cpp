@@ -206,7 +206,6 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) c
         return false;
     }
 
-    QXmlNodeModelIndex index = item.asNode();
     const QAbstractXmlNodeModel *model = item.asNode().model();
 
     QPatternist::XsdValidatedXmlNodeModel *validatedModel = new QPatternist::XsdValidatedXmlNodeModel(model);

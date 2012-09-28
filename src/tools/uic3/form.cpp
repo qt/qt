@@ -197,20 +197,8 @@ void Ui3Reader::createFormDecl(const QDomElement &e)
     }
     out << endl;
 
-    bool dbForm = false;
     registerDatabases(e);
     dbConnections = unique(dbConnections);
-    if (dbForms[QLatin1String("(default)")].count())
-        dbForm = true;
-    bool subDbForms = false;
-    for (it = dbConnections.constBegin(); it != dbConnections.constEnd(); ++it) {
-        if (!(*it).isEmpty() && (*it) != QLatin1String("(default)")) {
-            if (dbForms[(*it)].count()) {
-                subDbForms = true;
-                break;
-            }
-        }
-    }
 
     // some typedefs, maybe
     typeDefs = unique(typeDefs);

@@ -1731,12 +1731,9 @@ void XsdSchemaParser::parseUnion(const XsdSimpleType::Ptr &ptr)
 
     // The memberTypes attribute is not allowed to be empty,
     // so we keep track of that
-    bool hasMemberTypesAttribute = false;
     bool hasMemberTypesSpecified = false;
 
     if (hasAttribute(QString::fromLatin1("memberTypes"))) {
-        hasMemberTypesAttribute = true;
-
         const QStringList memberTypes = readAttribute(QString::fromLatin1("memberTypes")).split(QLatin1Char(' '), QString::SkipEmptyParts);
         QList<QXmlName> typeNames;
 

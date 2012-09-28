@@ -756,6 +756,7 @@ QString QAccessibleGroupBox::localizedName(int actionIndex)
 
 QStringList QAccessibleGroupBox::keyBindings(int actionIndex)
 {
+    Q_UNUSED(actionIndex)
     return QStringList();
 }
 

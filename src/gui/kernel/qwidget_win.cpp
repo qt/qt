@@ -1471,7 +1471,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     data.crect.setRect(x, y, w, h);
                 } else {
                     GetClientRect(q->internalWinId(), &rect);
-                    RECT rcNormalPosition ={0};
+                    RECT rcNormalPosition ={0, 0, 0, 0};
                     // Use (0,0) as window position for embedded ActiveQt controls.
                     if (!tlwExtra || !tlwExtra->embedded)
                         GetWindowRect(q->internalWinId(), &rcNormalPosition);

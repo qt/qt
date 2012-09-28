@@ -1109,13 +1109,11 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     QList<Section>::ConstIterator s;
 
     const ClassNode *classe = 0;
-    const NamespaceNode *namespasse = 0;
 
     QString title;
     QString rawTitle;
     QString fullTitle;
     if (inner->type() == Node::Namespace) {
-        namespasse = static_cast<const NamespaceNode *>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Namespace";

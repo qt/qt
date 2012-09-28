@@ -344,27 +344,27 @@ void Semantic::parseDeclaration(AST *funSpec, AST *storageSpec, TypeSpecifierAST
 void Semantic::parseFunctionDeclaration(AST *funSpec, AST *storageSpec,
                                         TypeSpecifierAST * typeSpec, InitDeclaratorAST * initDeclarator)
 {
-    bool isFriend = false;
     bool isVirtual = false;
     bool isStatic = false;
-    bool isInline = false;
     bool isPure = initDeclarator->initializer() != 0;
 
     if (funSpec){
         List<AST*> l = *funSpec->children();
         foreach (AST *current, l) {
-            QByteArray text = textOf(current);
-            if (text == "virtual") isVirtual = true;
-            else if (text == "inline") isInline = true;
+            if (textOf(current) == "virtual") {
+                isVirtual = true;
+                break;
+            }
         }
     }
 
     if (storageSpec){
         List<AST*> l = *storageSpec->children();
         foreach (AST *current, l) {
-            QByteArray text = textOf(current);
-            if (text == "friend") isFriend = true;
-            else if (text == "static") isStatic = true;
+            if (textOf(current) == "static") {
+                isStatic = true;
+                break;
+            }
         }
     }
     DeclaratorAST *declarator = initDeclarator->declarator();

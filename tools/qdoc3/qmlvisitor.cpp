@@ -227,7 +227,7 @@ void QmlDocVisitor::endVisit(QDeclarativeJS::AST::UiPublicMember *definition)
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
-bool QmlDocVisitor::visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty)
+bool QmlDocVisitor::visit(QDeclarativeJS::AST::IdentifierPropertyName *)
 {
     return true;
 }

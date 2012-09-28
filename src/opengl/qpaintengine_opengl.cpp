@@ -1561,8 +1561,6 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
     bool has_mirrored_repeat = QGLExtensions::glExtensions() & QGLExtensions::MirroredRepeat;
     Qt::BrushStyle style = brush.style();
 
-    QTransform m = brush.transform();
-
     if (has_mirrored_repeat && style == Qt::LinearGradientPattern) {
         const QLinearGradient *g = static_cast<const QLinearGradient *>(brush.gradient());
         QTransform m = brush.transform();
@@ -3781,7 +3779,6 @@ void QOpenGLPaintEngine::drawLines(const QLineF *lines, int lineCount)
             } else {
                 QVarLengthArray<GLfloat> vertexArray(4 * lineCount);
                 for (int i = 0; i < lineCount; ++i) {
-                    const QPointF a = lines[i].p1();
                     vertexArray[4*i]   = lines[i].x1();
                     vertexArray[4*i+1] = lines[i].y1();
                     vertexArray[4*i+2] = lines[i].x2();

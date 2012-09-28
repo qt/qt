@@ -661,7 +661,7 @@ void QEventDispatcherWin32Private::doWsaAsyncSelect(int socket)
         sn_event |= FD_OOB;
     // BoundsChecker may emit a warning for WSAAsyncSelect when sn_event == 0
     // This is a BoundsChecker bug and not a Qt bug
-    WSAAsyncSelect(socket, internalHwnd, sn_event ? WM_QT_SOCKETNOTIFIER : 0, sn_event);
+    WSAAsyncSelect(socket, internalHwnd, sn_event ? unsigned(WM_QT_SOCKETNOTIFIER) : unsigned(0), sn_event);
 }
 
 void QEventDispatcherWin32::createInternalHwnd()
@@ -808,7 +808,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
-            } else if (waitRet >= WAIT_OBJECT_0 && waitRet < WAIT_OBJECT_0 + nCount) {
+            } else if (waitRet < WAIT_OBJECT_0 + nCount) {
                 d->activateEventNotifier(d->winEventNotifierList.at(waitRet - WAIT_OBJECT_0));
             } else {
                 // nothing todo so break
@@ -830,7 +830,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             emit aboutToBlock();
             waitRet = MsgWaitForMultipleObjectsEx(nCount, pHandles, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
             emit awake();
-            if (waitRet >= WAIT_OBJECT_0 && waitRet < WAIT_OBJECT_0 + nCount) {
+            if (waitRet < WAIT_OBJECT_0 + nCount) {
                 d->activateEventNotifier(d->winEventNotifierList.at(waitRet - WAIT_OBJECT_0));
                 retVal = true;
             }

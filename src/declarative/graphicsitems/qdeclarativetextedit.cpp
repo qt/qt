@@ -534,7 +534,6 @@ bool QDeclarativeTextEditPrivate::setHAlign(QDeclarativeTextEdit::HAlignment ali
 {
     Q_Q(QDeclarativeTextEdit);
     if (hAlign != alignment || forceAlign) {
-        QDeclarativeTextEdit::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(alignment);
         return true;

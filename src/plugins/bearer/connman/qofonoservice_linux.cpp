@@ -932,11 +932,8 @@ void QOfonoSmsInterface::sendMessage(const QString &to, const QString &message)
     QDBusReply<QString> reply =  this->call(QLatin1String("SendMessage"),
                                             QVariant::fromValue(to),
                                             QVariant::fromValue(message));
-    bool ok = true;
-    if(reply.error().type() == QDBusError::InvalidArgs) {
+    if (reply.error().type() == QDBusError::InvalidArgs)
         qWarning() << reply.error().message();
-        ok = false;
-    }
 }
 
 QT_END_NAMESPACE

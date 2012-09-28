@@ -1106,7 +1106,6 @@ bool QDeclarativeTextPrivate::setHAlign(QDeclarativeText::HAlignment alignment, 
 {
     Q_Q(QDeclarativeText);
     if (hAlign != alignment || forceAlign) {
-        QDeclarativeText::HAlignment oldEffectiveHAlign = q->effectiveHAlign();
         hAlign = alignment;
         emit q->horizontalAlignmentChanged(hAlign);
         return true;

@@ -266,7 +266,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::PointF:
             {
             bool ok;
-            QPointF point = QDeclarativeStringConverters::pointFFromString(string, &ok);
+            QDeclarativeStringConverters::pointFFromString(string, &ok);
             if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: point expected"));
             }
             break;
@@ -274,7 +274,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::SizeF:
             {
             bool ok;
-            QSizeF size = QDeclarativeStringConverters::sizeFFromString(string, &ok);
+            QDeclarativeStringConverters::sizeFFromString(string, &ok);
             if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: size expected"));
             }
             break;
@@ -282,7 +282,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::RectF:
             {
             bool ok;
-            QRectF rect = QDeclarativeStringConverters::rectFFromString(string, &ok);
+            QDeclarativeStringConverters::rectFFromString(string, &ok);
             if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: rect expected"));
             }
             break;

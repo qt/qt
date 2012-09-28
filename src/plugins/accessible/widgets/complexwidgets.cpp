@@ -1627,6 +1627,8 @@ QString QAccessibleTabBar::actionText(int action, Text t, int child) const
                 return QTabBar::tr("Activate the tab");
         }
         break;
+    default:
+        break;
     }
     return QString();
 }

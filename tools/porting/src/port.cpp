@@ -144,7 +144,6 @@ int runPort(int argc, char**argv)
     bool enableCppParsing = true;
     bool useBuildtinQt3Headers = true;
     bool showMissingFilesWarnings = false;
-    bool alwaysOverwrite = false;
     int currentArg = 1;
 
     const Option helpOption(QLatin1String("-h"), QLatin1String("Display this help."));
@@ -205,7 +204,6 @@ int runPort(int argc, char**argv)
         } else if (missingFileWarningsOption.checkArgument(argText)) {
             showMissingFilesWarnings = true;
         } else if (alwaysOverwriteOption.checkArgument(argText)) {
-            alwaysOverwrite = true;
             FileWriter::instance()->setOverwriteFiles(FileWriter::AlwaysOverWrite);
         } else if (argText[0]  == QLatin1Char('-')) {
             printf("Unknown option %s\n", argText.toLocal8Bit().constData());

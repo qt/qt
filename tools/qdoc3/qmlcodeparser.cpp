@@ -137,7 +137,7 @@ void QmlCodeParser::parseSourceFile(const Location& location,
     }
 }
 
-void QmlCodeParser::doneParsingSourceFiles(Tree *tree)
+void QmlCodeParser::doneParsingSourceFiles(Tree *)
 {
 }
 

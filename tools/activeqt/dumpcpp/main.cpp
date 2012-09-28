@@ -371,7 +371,6 @@ void generateClassDecl(QTextStream &out, const QString &controlID, const QMetaOb
         
         if (property.isWritable()) {
             QByteArray setter(propertyName);
-            QChar firstChar = QLatin1Char(setter.at(0));
             if (isupper(setter.at(0))) {
                 setter = "Set" + setter;
             } else {

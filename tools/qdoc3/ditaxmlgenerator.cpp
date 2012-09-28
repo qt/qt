@@ -3447,7 +3447,6 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
             i += 2;
-            bool handled = false;
             for (int k = 0; k != 6; ++k) {
                 if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
                     const Node* n = 0;
@@ -3502,7 +3501,6 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                             addLink(link, arg);
                         }
                     }
-                    handled = true;
                     break;
                 }
             }
@@ -4526,12 +4524,10 @@ QString DitaXmlGenerator::fullQualification(const Node* n)
 void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
 {
     QList<RelatedClass>::ConstIterator r;
-    int index;
 
     if (!cn->baseClasses().isEmpty()) {
         writeStartTag(DT_cxxClassDerivations);
         r = cn->baseClasses().begin();
-        index = 0;
         while (r != cn->baseClasses().end()) {
             writeStartTag(DT_cxxClassDerivation);
             writeStartTag(DT_cxxClassDerivationAccessSpecifier);

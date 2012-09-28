@@ -101,9 +101,6 @@ int QPageSetupDialog::exec()
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     psd.hwndOwner = parent ? parent->winId() : 0;
 
-    QRect paperRect = d->printer->paperRect();
-    QRect pageRect = d->printer->pageRect();
-
     psd.Flags = PSD_MARGINS;
     double multiplier = 1;
     switch (QLocale::system().measurementSystem()) {

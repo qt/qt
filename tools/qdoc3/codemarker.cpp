@@ -527,7 +527,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
         break;
     case Node::Function:
         {
-            bool isMacro = false;
             const FunctionNode *func = static_cast<const FunctionNode *>(node);
 
             // overloads are too clever for the Xcode documentation browser
@@ -537,7 +536,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
             if (func->metaness() == FunctionNode::MacroWithParams
                 || func->metaness() == FunctionNode::MacroWithoutParams) {
                 result += QLatin1String("macro/");
-                isMacro = true;
 #if 0
             }
             else if (!func->templateStuff().isEmpty()) {

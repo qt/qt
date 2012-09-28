@@ -3188,6 +3188,7 @@ void QTableView::selectionChanged(const QItemSelection &selected,
 {
 #ifndef QT_NO_ACCESSIBILITY
     Q_D(QTableView);
+    Q_UNUSED(d)
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);

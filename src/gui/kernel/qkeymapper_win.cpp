@@ -819,10 +819,10 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
 
     // Get the modifier states (may be altered later, depending on key code)
     int state = 0;
-    state |= (nModifiers & ShiftAny ? Qt::ShiftModifier : 0);
-    state |= (nModifiers & ControlAny ? Qt::ControlModifier : 0);
-    state |= (nModifiers & AltAny ? Qt::AltModifier : 0);
-    state |= (nModifiers & MetaAny ? Qt::MetaModifier : 0);
+    state |= (nModifiers & ShiftAny ? int(Qt::ShiftModifier) : 0);
+    state |= (nModifiers & ControlAny ? int(Qt::ControlModifier) : 0);
+    state |= (nModifiers & AltAny ? int(Qt::AltModifier) : 0);
+    state |= (nModifiers & MetaAny ? int(Qt::MetaModifier) : 0);
 
     // Now we know enough to either have MapVirtualKey or our own keymap tell us if it's a deadkey
     bool isDeadKey = isADeadKey(msg.wParam, state)
@@ -966,7 +966,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
             case Qt::Key_9:
                 state |= ((msg.wParam >= '0' && msg.wParam <= '9')
                          || (msg.wParam >= VK_OEM_PLUS && msg.wParam <= VK_OEM_3))
-                            ? 0 : Qt::KeypadModifier;
+                            ? 0 : int(Qt::KeypadModifier);
             default:
                 if ((uint)msg.lParam == 0x004c0001 || (uint)msg.lParam == 0xc04c0001)
                     state |= Qt::KeypadModifier;

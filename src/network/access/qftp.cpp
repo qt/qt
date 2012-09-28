@@ -551,7 +551,7 @@ static void _q_parseUnixDir(const QStringList &tokens, const QString &userName, 
     }
     if (dateTime.isValid())
         info->setLastModified(dateTime);
-    else if (dateString.startsWith("Feb 29")) {
+    else if (dateString.startsWith(QLatin1String("Feb 29"))) {
 
        // When the current year on the FTP server is a leap year and a
        // file's last modified date is Feb 29th, and the current day on

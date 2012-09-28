@@ -235,7 +235,6 @@ void QScriptSyntaxHighlighter::highlightBlock(const QString &text)
     QChar lastChar;
 
     int firstNonSpace = -1;
-    int lastNonSpace = -1;
 
     for (;;) {
         const QChar c = text.at(i);
@@ -337,11 +336,8 @@ void QScriptSyntaxHighlighter::highlightBlock(const QString &text)
             }
         }
 
-        if (input != InputSpace) {
-            if (firstNonSpace < 0)
-                firstNonSpace = i;
-            lastNonSpace = i;
-        }
+        if (input != InputSpace && firstNonSpace < 0)
+            firstNonSpace = i;
 
         lastWasBackSlash = !lastWasBackSlash && c == QLatin1Char('\\');
 
