@@ -194,7 +194,7 @@ bool QBBButtonEventNotifier::parsePPS(const QByteArray &ppsData, QHash<QByteArra
     QList<QByteArray> lines = ppsData.split('\n');
 
     // validate pps object
-    if (lines.size() == 0 || lines.at(0) != QByteArray("@status")) {
+    if (lines.size() == 0 || !lines.at(0).contains(QByteArray("@status"))) {
         qWarning("QQNX: unrecognized pps object, data=%s", ppsData.constData());
         return false;
     }
