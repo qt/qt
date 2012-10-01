@@ -118,10 +118,7 @@ void QBBInputContext::setFocusWidget(QWidget *w)
         if (qobject_cast<QAbstractItemView*>(w))
             return;
 
-        if (qobject_cast<QAbstractSpinBox*>(w))
-            mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Phone);
-        else
-            mVirtualKeyboard.setKeyboardMode(QBBAbstractVirtualKeyboard::Default);
+        mVirtualKeyboard.setInputHintsFromWidget(w);
         mVirtualKeyboard.showKeyboard();
     } else {
         mVirtualKeyboard.hideKeyboard();

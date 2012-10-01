@@ -71,6 +71,7 @@ public:
     int  getHeight() const { return mVisible ? mHeight : 0; }
 
     void setKeyboardMode(KeyboardMode mode);
+    void setInputHintsFromWidget(QWidget *focusWidget);
     KeyboardMode keyboardMode() const { return mKeyboardMode; }
 
     bool isVisible() const { return mVisible; }

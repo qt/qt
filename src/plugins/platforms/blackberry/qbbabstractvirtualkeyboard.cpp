@@ -41,6 +41,8 @@
 
 #include "qbbabstractvirtualkeyboard.h"
 
+#include <QWidget>
+
 QT_BEGIN_NAMESPACE
 
 QBBAbstractVirtualKeyboard::QBBAbstractVirtualKeyboard(QObject *parent)
@@ -61,6 +63,25 @@ void QBBAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
     mKeyboardMode = mode;
 
     applyKeyboardMode(mode);
+}
+
+void QBBAbstractVirtualKeyboard::setInputHintsFromWidget(QWidget *focusWidget)
+{
+    if (focusWidget) {
+        const Qt::InputMethodHints hints = focusWidget->inputMethodHints();
+        if (hints & Qt::ImhEmailCharactersOnly)
+            setKeyboardMode(QBBAbstractVirtualKeyboard::Email);
+        else if (hints & Qt::ImhDialableCharactersOnly)
+            setKeyboardMode(QBBAbstractVirtualKeyboard::Phone);
+        else if (hints & Qt::ImhUrlCharactersOnly)
+            setKeyboardMode(QBBAbstractVirtualKeyboard::Web);
+        else if (hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhDigitsOnly)
+            setKeyboardMode(QBBAbstractVirtualKeyboard::NumPunc);
+        else
+            setKeyboardMode(QBBAbstractVirtualKeyboard::Default);
+    } else {
+        setKeyboardMode(QBBAbstractVirtualKeyboard::Default);
+    }
 }
 
 void QBBAbstractVirtualKeyboard::setVisible(bool visible)
