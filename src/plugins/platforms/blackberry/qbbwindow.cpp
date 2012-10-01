@@ -518,10 +518,9 @@ void QBBWindow::raise()
     qDebug() << "QBBWindow::raise - w=" << widget();
 #endif
 
-    QBBWindow* oldParent = mParent;
-    if (oldParent) {
-        removeFromParent();
-        oldParent->mChildren.push_back(this);
+    if (mParent) {
+        mParent->mChildren.removeAll(this);
+        mParent->mChildren.push_back(this);
     } else {
         mScreen->raiseWindow(this);
     }
@@ -535,10 +534,9 @@ void QBBWindow::lower()
     qDebug() << "QBBWindow::lower - w=" << widget();
 #endif
 
-    QBBWindow* oldParent = mParent;
-    if (oldParent) {
-        removeFromParent();
-        oldParent->mChildren.push_front(this);
+    if (mParent) {
+        mParent->mChildren.removeAll(this);
+        mParent->mChildren.push_front(this);
     } else {
         mScreen->lowerWindow(this);
     }
