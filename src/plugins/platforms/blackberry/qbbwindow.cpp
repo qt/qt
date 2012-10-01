@@ -126,7 +126,7 @@ QBBWindow::QBBWindow(QWidget *window, screen_context_t context, QBBScreen *scree
 
     // Qt somtimes doesn't call these setters after creating the window, so we need to do that
     // ourselves here
-    if (window->parentWidget())
+    if (window->parentWidget() && window->parentWidget()->platformWindow())
         setParent(window->parentWidget()->platformWindow());
     setGeometry(window->geometry());
     setVisible(window->isVisible());
