@@ -80,11 +80,7 @@
 #elif defined(Q_OS_WIN)
 # undef dll_VALID
 # define dll_VALID      true
-# ifdef QT_NO_DEBUG
-#  define SUFFIX         ".dll"
-# else
-#  define SUFFIX         "d.dll"
-# endif
+# define SUFFIX         ".dll"
 # define PREFIX         ""
 
 #elif defined(Q_OS_SYMBIAN)
@@ -100,12 +96,6 @@
 # define PREFIX         "lib"
 #endif
 
-static QString sys_qualifiedLibraryName(const QString &fileName)
-{
-    QString currDir = QDir::currentPath();
-    return currDir + "/bin/" + PREFIX + fileName + SUFFIX;
-}
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -114,27 +104,50 @@ class tst_QPluginLoader : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QPluginLoader();
-    virtual ~tst_QPluginLoader();
-
 private slots:
+    void initTestCase();
     void errorString();
     void loadHints();
     void deleteinstanceOnUnload();
     void checkingStubsFromDifferentDrives();
     void loadDebugObj();
+    void loadCorruptElf_data();
     void loadCorruptElf();
     void loadGarbage();
+
+private:
+    QString qualifiedLibraryName(const QString &fileName) const;
+
+    QString m_bin;
 };
 
-tst_QPluginLoader::tst_QPluginLoader()
-
+void tst_QPluginLoader::initTestCase()
 {
+    QDir workingDirectory = QDir::current();
+#ifdef Q_OS_WIN
+    // cd up to be able to locate the binaries of the sub-processes.
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+            || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
+    m_bin = workingDirectory.absoluteFilePath(QLatin1String("bin"));
+    QVERIFY(QFileInfo(m_bin).isDir());
 }
 
-tst_QPluginLoader::~tst_QPluginLoader()
+QString tst_QPluginLoader::qualifiedLibraryName(const QString &fileName) const
 {
+    return m_bin + QLatin1Char('/') + QLatin1String(PREFIX)
+           + fileName + QLatin1String(SUFFIX);
+}
+
+static inline QByteArray msgCannotLoadPlugin(const QString &plugin, const QString &why)
+{
+    return QString::fromLatin1("Cannot load plugin '%1' from '%2': %3")
+                               .arg(QDir::toNativeSeparators(plugin),
+                                    QDir::toNativeSeparators(QDir::currentPath()),
+                                    why).toLocal8Bit();
 }
 
 //#define SHOW_ERRORS 1
@@ -172,7 +185,7 @@ void tst_QPluginLoader::errorString()
     QCOMPARE(loader.errorString(), unknown);
     }
     {
-    QPluginLoader loader( sys_qualifiedLibraryName("tst_qpluginloaderlib"));     //not a plugin
+    QPluginLoader loader(qualifiedLibraryName(QLatin1String("tst_qpluginloaderlib")));     //not a plugin
     bool loaded = loader.load();
 #ifdef SHOW_ERRORS
     qDebug() << loader.errorString();
@@ -196,7 +209,7 @@ void tst_QPluginLoader::errorString()
     }
 
     {
-    QPluginLoader loader( sys_qualifiedLibraryName("nosuchfile"));     //not a file
+    QPluginLoader loader(qualifiedLibraryName(QLatin1String("nosuchfile")));     //not a file
     bool loaded = loader.load();
 #ifdef SHOW_ERRORS
     qDebug() << loader.errorString();
@@ -221,7 +234,7 @@ void tst_QPluginLoader::errorString()
 
 #if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX && !defined Q_OS_SYMBIAN && !defined Q_OS_QNX
     {
-    QPluginLoader loader( sys_qualifiedLibraryName("almostplugin"));     //a plugin with unresolved symbols
+    QPluginLoader loader(qualifiedLibraryName(QLatin1String("almostplugin")));     //a plugin with unresolved symbols
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
     QCOMPARE(loader.load(), false);
 #ifdef SHOW_ERRORS
@@ -244,8 +257,9 @@ void tst_QPluginLoader::errorString()
 #endif
 
     {
-    QPluginLoader loader( sys_qualifiedLibraryName("theplugin"));     //a plugin
-    QCOMPARE(loader.load(), true);
+    const QString plugin = qualifiedLibraryName(QLatin1String("theplugin"));
+    QPluginLoader loader(plugin);     //a plugin
+    QVERIFY2(loader.load(), msgCannotLoadPlugin(plugin, loader.errorString()).constData());
     QCOMPARE(loader.errorString(), unknown);
 
     QVERIFY(loader.instance() !=  static_cast<QObject*>(0));
@@ -266,7 +280,7 @@ void tst_QPluginLoader::loadHints()
     QPluginLoader loader;
     QCOMPARE(loader.loadHints(), (QLibrary::LoadHints)0);   //Do not crash
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
-    loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
+    loader.setFileName(qualifiedLibraryName(QLatin1String("theplugin")));     //a plugin
     QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);
 }
 
@@ -274,15 +288,16 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 {
     for (int pass = 0; pass < 4; ++pass) {
         QPluginLoader loader1;
-        loader1.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
+        const QString plugin = qualifiedLibraryName(QLatin1String("theplugin"));
+        loader1.setFileName(plugin);     //a plugin
         if (pass < 2)
             loader1.load(); // not recommended, instance() should do the job.
         PluginInterface *instance1 = qobject_cast<PluginInterface*>(loader1.instance());
-        QVERIFY(instance1);
+        QVERIFY2(instance1, msgCannotLoadPlugin(plugin, loader1.errorString()).constData());
         QCOMPARE(instance1->pluginName(), QLatin1String("Plugin ok"));
 
         QPluginLoader loader2;
-        loader2.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
+        loader2.setFileName(qualifiedLibraryName(QLatin1String("theplugin")));     //a plugin
         if (pass < 2)
             loader2.load(); // not recommended, instance() should do the job.
         PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader2.instance());
@@ -366,45 +381,69 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
 
 void tst_QPluginLoader::loadDebugObj()
 {
-#if defined (__ELF__)
-    QVERIFY(QFile::exists(SRCDIR "elftest/debugobj.so"));
-    QPluginLoader lib1(SRCDIR "elftest/debugobj.so");
+#ifdef __ELF__
+    const QString file = QString::fromLatin1(SRCDIR "elftest/debugobj.so");
+    QVERIFY(QFile::exists(file));
+    QPluginLoader lib1(file);
     QCOMPARE(lib1.load(), false);
+#else
+    QSKIP("Test requires __ELF", SkipAll);
+#endif
+}
+
+/* loadCorruptElf() verifies that the library loader returns the correct error message.
+ * Note that Qt's plugin cache interferes here: on a fresh checkout, the "real" error
+ * message will be reported, since no cache exists or the timestamp is different. When
+ * run for the 2nd time, "not a valid Qt plugin" will be reported from the plugin cache.
+ * "Plugin verification data mismatch" has also been observed.
+ * This could arguably be fixed by copying the file to a temporary file each time, but
+ * that would grow the cache on the target machine. */
+
+void tst_QPluginLoader::loadCorruptElf_data()
+{
+#ifdef __ELF__
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("error");
+    const QString folder = QLatin1String(SRCDIR "elftest/");
+    const QString invalidElfMessage = QLatin1String("is an invalid ELF object");
+    if (sizeof(void*) == 8) {
+        QTest::newRow("64bit-corrupt1")
+            << (folder + QLatin1String("corrupt1.elf64.so"))
+            << QString::fromLatin1("is not an ELF object");
+        QTest::newRow("64bit-corrupt2")
+            << (folder + QLatin1String("corrupt2.elf64.so")) << invalidElfMessage;
+        QTest::newRow("64bit-corrupt3")
+            << (folder + QLatin1String("corrupt3.elf64.so")) << invalidElfMessage;
+    } else if (sizeof(void*) == 4) {
+        QTest::newRow("32bit-corrupt3")
+            << (folder + QLatin1String("corrupt3.elf64.so"))
+            << QString::fromLatin1("architecture");
+    } else {
+        Q_ASSERT_X(false, Q_FUNC_INFO, "Please port QElfParser to this platform or blacklist this test.");
+    }
 #endif
 }
 
 void tst_QPluginLoader::loadCorruptElf()
 {
-#if defined (__ELF__)
-if (sizeof(void*) == 8) {
-    QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
+#ifdef __ELF__
+    QFETCH(QString, file);
+    QFETCH(QString, error);
 
-    QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
-    QCOMPARE(lib1.load(), false);
-    QVERIFY(lib1.errorString().contains("not a valid Qt plugin"));
-
-    QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
-    QCOMPARE(lib2.load(), false);
-    QVERIFY(lib2.errorString().contains("not a valid Qt plugin"));
-
-    QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
-    QCOMPARE(lib3.load(), false);
-    QVERIFY(lib3.errorString().contains("not a valid Qt plugin"));
-} else if (sizeof(void*) == 4) {
-    QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
-    QCOMPARE(libW.load(), false);
-    QVERIFY(libW.errorString().contains("architecture"));
-} else {
-    QFAIL("Please port QElfParser to this platform or blacklist this test.");
-}
+    QVERIFY(QFile::exists(file));
+    QPluginLoader lib(file);
+    QCOMPARE(lib.load(), false);
+    const QString errorString = lib.errorString();
+    QVERIFY2(errorString.contains(error) || errorString.contains("not a valid Qt plugin") || errorString.contains("Plugin verification data mismatch"),
+             qPrintable(lib.errorString()));
 #endif
 }
 
 void tst_QPluginLoader::loadGarbage()
 {
 #if defined (Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    for (int i=0; i<5; i++) {
-        QPluginLoader lib(QString(SRCDIR "elftest/garbage%1.so").arg(i));
+    for (int i = 1; i <= 5; ++i) {
+        QPluginLoader lib(QString::fromLatin1(SRCDIR "elftest/garbage%1.so").arg(i));
         QCOMPARE(lib.load(), false);
 #ifdef SHOW_ERRORS
         qDebug() << lib.errorString();

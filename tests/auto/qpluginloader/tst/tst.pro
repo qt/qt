@@ -2,6 +2,8 @@ load(qttest_p4)
 SOURCES         += ../tst_qpluginloader.cpp
 TARGET  = ../tst_qpluginloader
 QT = core
+CONFIG += console
+CONFIG -= app_bundle
 HEADERS += ../theplugin/plugininterface.h
 
 win32 {
@@ -29,5 +31,3 @@ symbian: {
 }
 
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
-
-CONFIG+=insignificant_test # QTQAINFRA-428
