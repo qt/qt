@@ -62,6 +62,7 @@
 #include <qtcpserver.h>
 #include <qhostaddress.h>
 #include <qprocess.h>
+#include <qdir.h>
 #include <qstringlist.h>
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
@@ -122,6 +123,7 @@ private:
     QNetworkSession *networkSession;
     QNetworkConfigurationManager *netConfMan;
 #endif
+    QString m_crashingServer;
 };
 
 // Testing get/set functions
@@ -158,6 +160,23 @@ void tst_QTcpServer::initTestCase_data()
 
 void tst_QTcpServer::initTestCase()
 {
+    if (m_crashingServer.isEmpty()) {
+        QString crashingServer = QLatin1String("crashingServer/crashingServer");
+        QDir workingDirectory = QDir::current();
+        // Windows: cd up to be able to locate the binary of the sub-process.
+#ifdef Q_OS_WIN
+        crashingServer.append(QLatin1String(".exe"));
+        if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+            || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+            QVERIFY(workingDirectory.cdUp());
+            QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+        }
+#endif
+        m_crashingServer = workingDirectory.absoluteFilePath(crashingServer);
+        QVERIFY2(QFileInfo(m_crashingServer).exists(),
+                 qPrintable(QString::fromLatin1("Crashing server executable '%1' does not exist!")
+                            .arg(QDir::toNativeSeparators(m_crashingServer))));
+    }
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     netConfMan->updateConfigurations();
@@ -537,7 +556,7 @@ void tst_QTcpServer::addressReusable()
     QFile::remove(signalName);
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
-    process.start("crashingServer/crashingServer");
+    process.start(m_crashingServer);
     int waitCount = 5;
     while (waitCount-- && !QFile::exists(signalName))
         QTest::qWait(1000);
@@ -546,7 +565,7 @@ void tst_QTcpServer::addressReusable()
 #else
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
-    process.start("crashingServer/crashingServer");
+    process.start(m_crashingServer);
     QVERIFY(process.waitForReadyRead(5000));
 #endif
 

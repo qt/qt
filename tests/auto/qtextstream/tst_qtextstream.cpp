@@ -89,6 +89,7 @@ public:
     virtual ~tst_QTextStream();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -342,6 +343,9 @@ private:
     QBuffer *inBuffer;
     QString *inString;
     bool file_is_empty;
+    QString m_readAllStdinProcess;
+    QString m_stdinProcess;
+    QString m_readLineStdinProcess;
 };
 
 // Testing get/set functions
@@ -482,6 +486,38 @@ tst_QTextStream::tst_QTextStream()
 
 tst_QTextStream::~tst_QTextStream()
 {
+}
+
+void tst_QTextStream::initTestCase()
+{
+    QDir workingDirectory = QDir::current();
+    QString readAllStdinProcess = QLatin1String("readAllStdinProcess/readAllStdinProcess");
+    QString stdinProcess = QLatin1String("stdinProcess/stdinProcess");
+    QString readLineStdinProcess = QLatin1String("readLineStdinProcess/readLineStdinProcess");
+    // Windows: cd up to be able to locate the binary of the sub-process.
+#ifdef Q_OS_WIN
+    const QString suffix = QLatin1String(".exe");
+    readAllStdinProcess.append(suffix);
+    stdinProcess.append(suffix);
+    readLineStdinProcess.append(suffix);
+    if (workingDirectory.absolutePath().endsWith(QLatin1String("/debug"), Qt::CaseInsensitive)
+        || workingDirectory.absolutePath().endsWith(QLatin1String("/release"), Qt::CaseInsensitive)) {
+        QVERIFY(workingDirectory.cdUp());
+        QVERIFY(QDir::setCurrent(workingDirectory.absolutePath()));
+    }
+#endif
+    m_readAllStdinProcess = workingDirectory.absoluteFilePath(readAllStdinProcess);
+    m_readLineStdinProcess = workingDirectory.absoluteFilePath(readLineStdinProcess);
+    m_stdinProcess = workingDirectory.absoluteFilePath(stdinProcess);
+    QVERIFY2(QFileInfo(m_readAllStdinProcess).exists(),
+             qPrintable(QString::fromLatin1("ReadAllStdinProcess executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_readAllStdinProcess))));
+    QVERIFY2(QFileInfo(m_readLineStdinProcess).exists(),
+             qPrintable(QString::fromLatin1("ReadLineStdinProcess executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_readLineStdinProcess))));
+    QVERIFY2(QFileInfo(m_stdinProcess).exists(),
+             qPrintable(QString::fromLatin1("StdinProcess executable '%1' does not exist!")
+                        .arg(QDir::toNativeSeparators(m_stdinProcess))));
 }
 
 void tst_QTextStream::init()
@@ -1544,7 +1580,7 @@ void tst_QTextStream::readStdin()
     QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
-    stdinProcess.start("stdinProcess/stdinProcess");
+    stdinProcess.start(m_stdinProcess);
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     QTextStream stream(&stdinProcess);
@@ -1570,7 +1606,7 @@ void tst_QTextStream::readAllFromStdin()
     QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
-    stdinProcess.start("readAllStdinProcess/readAllStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
+    stdinProcess.start(m_readAllStdinProcess, QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     QTextStream stream(&stdinProcess);
@@ -1591,7 +1627,7 @@ void tst_QTextStream::readLineFromStdin()
     QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
-    stdinProcess.start("readLineStdinProcess/readLineStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
+    stdinProcess.start(m_readLineStdinProcess, QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     stdinProcess.write("abc\n");
