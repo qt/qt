@@ -137,7 +137,9 @@ QDeclarativeBoundSignal::~QDeclarativeBoundSignal()
 void QDeclarativeBoundSignal::disconnect()
 {
     QObjectPrivate * const priv = QObjectPrivate::get(m_scope);
-    priv->disconnectNotify(QObjectPrivate::signalSignature(m_signal));
+    QVarLengthArray<char> signalSignature;
+    QObjectPrivate::signalSignature(m_signal, &signalSignature);
+    priv->disconnectNotify(signalSignature.constData());
 }
 
 int QDeclarativeBoundSignal::index() const 

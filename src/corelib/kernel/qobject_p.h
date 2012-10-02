@@ -62,6 +62,7 @@
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qmetaobject.h"
+#include "QtCore/qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -185,7 +186,8 @@ public:
     inline void connectNotify(const char *signal);
     inline void disconnectNotify(const char *signal);
 
-    static inline QByteArray signalSignature(const QMetaMethod &signal);
+    static inline void signalSignature(const QMetaMethod &signal,
+                                       QVarLengthArray<char> *result);
 
 public:
     QString objectName;
@@ -247,13 +249,18 @@ inline void QObjectPrivate::disconnectNotify(const char *signal)
     q_ptr->disconnectNotify(signal);
 }
 
-inline QByteArray QObjectPrivate::signalSignature(const QMetaMethod &signal)
+inline void QObjectPrivate::signalSignature(const QMetaMethod &signal,
+                                                  QVarLengthArray<char> *result)
 {
-    QByteArray result;
-    result.reserve(qstrlen(signal.signature())+1);
-    result.append((char)(QSIGNAL_CODE + '0'));
-    result.append(signal.signature());
-    return result;
+    Q_ASSERT(result);
+    const int signatureLength = qstrlen(signal.signature());
+    if (signatureLength == 0) {
+        result->append((char)0);
+        return;
+    }
+    result->reserve(signatureLength + 2);
+    result->append((char)(QSIGNAL_CODE + '0'));
+    result->append(signal.signature(), signatureLength + 1);
 }
 
 inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,

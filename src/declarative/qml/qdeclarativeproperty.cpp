@@ -1634,7 +1634,9 @@ bool QDeclarativePropertyPrivate::connect(QObject *sender, int signal_index,
 
     const QMetaMethod signal = sender->metaObject()->method(signal_index);
     QObjectPrivate * const senderPriv = QObjectPrivate::get(sender);
-    senderPriv->connectNotify(QObjectPrivate::signalSignature(signal));
+    QVarLengthArray<char> signalSignature;
+    QObjectPrivate::signalSignature(signal, &signalSignature);
+    senderPriv->connectNotify(signalSignature.constData());
 
     return QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
 }

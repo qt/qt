@@ -54,7 +54,6 @@
 #include <qdebug.h>
 #include <qhash.h>
 #include <qpair.h>
-#include <qvarlengtharray.h>
 #include <qset.h>
 #include <qsemaphore.h>
 #include <qsharedpointer.h>
@@ -2692,7 +2691,8 @@ bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
         return false;
     }
 
-    QByteArray signalSignature = QObjectPrivate::signalSignature(signal);
+    QVarLengthArray<char> signalSignature;
+    QObjectPrivate::signalSignature(signal, &signalSignature);
 
     {
         QByteArray methodSignature;
@@ -2981,9 +2981,9 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
     }
 
-    QByteArray signalSignature;
+    QVarLengthArray<char> signalSignature;
     if (signal.mobj)
-        signalSignature = QObjectPrivate::signalSignature(signal);
+        QObjectPrivate::signalSignature(signal, &signalSignature);
 
     {
         QByteArray methodSignature;
