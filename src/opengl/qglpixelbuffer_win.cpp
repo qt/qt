@@ -303,12 +303,13 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     // a 2D RGBA texture target.
     int pb_attribs[] = {WGL_TEXTURE_FORMAT_ARB, WGL_TEXTURE_RGBA_ARB,
                         WGL_TEXTURE_TARGET_ARB, WGL_TEXTURE_2D_ARB, 0};
+    int pb_attribs_null[] = {0};
 
     pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(),
-                               has_render_texture ? pb_attribs : 0);
+                               has_render_texture ? pb_attribs : pb_attribs_null);
     if (!pbuf) {
         // try again without the render_texture extension
-        pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(), 0);
+        pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(), pb_attribs_null);
         has_render_texture = false;
         if (!pbuf) {
             qWarning("QGLPixelBuffer: Unable to create pbuffer [w=%d, h=%d] - giving up.", size.width(), size.height());
