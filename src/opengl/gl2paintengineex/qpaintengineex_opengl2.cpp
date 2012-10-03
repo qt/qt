@@ -1449,8 +1449,7 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
     const qreal pixelSize = fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(det) < QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
-        det < 0.25f || det > 4.f) {
+    if (pixelSize * pixelSize * qAbs(det) < QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE && det >= 0.25f && det <= 4.f) {
         QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
