@@ -131,6 +131,10 @@
 #include <aknappui.h>
 #endif
 
+#ifdef Q_OS_BLACKBERRY
+#include <bps/navigator.h>
+#endif
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -11011,6 +11015,16 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                     setAttribute_internal(orientations[i], false, data, d);
             }
         }
+
+#ifdef Q_OS_BLACKBERRY
+        if (testAttribute(Qt::WA_AutoOrientation)) {
+            navigator_rotation_lock(false);
+        } else {
+            navigator_set_orientation_mode((testAttribute(Qt::WA_LockPortraitOrientation) ?
+                                            NAVIGATOR_PORTRAIT : NAVIGATOR_LANDSCAPE), 0);
+            navigator_rotation_lock(true);
+        }
+#endif
 
 #ifdef Q_WS_S60
         CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
