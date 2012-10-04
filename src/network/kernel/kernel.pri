@@ -30,6 +30,8 @@ qpa:mac:!ios:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:!qpa:mac:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
 else:symbian:SOURCES += kernel/qnetworkproxy_symbian.cpp
+else:blackberry:SOURCES += kernel/qnetworkproxy_blackberry.cpp
 else:SOURCES += kernel/qnetworkproxy_generic.cpp
 
 symbian: LIBS += -lcommsdat
+blackberry: LIBS_PRIVATE += -lbps
