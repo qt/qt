@@ -1,0 +1,158 @@
+Qt 4.8.4 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 4.8.0, 4.8.1, 4.8.2 and 4.8.3.
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://qt-project.org/doc/4.8
+
+The Qt version 4.8 series is binary compatible with the 4.7.x series.
+Applications compiled for 4.7 will continue to run with 4.8.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker or the Merge Request queue
+of the public source repository.
+
+Qt Bug Tracker: http://bugreports.qt-project.org
+Merge Request:  http://codereview.qt-project.org
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+General Improvements
+--------------------
+- Copyrights changed to Digia Plc
+- Add msvc2012 support
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtGui
+-----
+- Fixed outline / fill inconsistencies in raster paint engine [QTBUG-26013]
+- Avoid crash caused by drag and drop and winId() [QTBUG-27263]
+- Cleanup CUPS tmp files [QTBUG-14724]
+- Fixed inconsistent rounding of square cap pens [QTBUG-26013]
+- Rotate non maximized windows
+- Fix crash when invalidating a QSortFilterProxyModel [QTBUG-27122]
+- Fix regression in QTextDocument::toHtml() with font pixel size [QTBUG-25778]
+- qpa: improve DirectFB performance
+- qpa: extend drawPixmap capabilities
+- qpa: add non-opaque fill support
+- Fix calculation of logical child index for row headers
+
+QtNetwork
+---------
+- Disable SSL compression by default
+- HTTP header may be damaged - fix, unit test [QTBUG-27161]
+- Bypass proxy for local connections
+
+QtCore
+------
+- Include the signal code in the argument of (dis)connectNotify()
+- QElapsedTimer: Fix typo in restart() documentation
+
+QtSql
+-----
+- Fix error when inserting to tables with datetime fields with QODBC [QTBUG-2192]
+
+Declarative
+-----------
+- EngineDebug: Updated and renamed service
+- Ensure child items are updated even if the parent item has no content [QTBUG-26846]
+
+OpenGL
+------
+- Fixed text drawing in OpenGL 2 paint engine [QTBUG-24453]
+- Fixed potential use of uninitialized variable in qgl.cpp [QTBUG-26952]
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+- clear XSizeHints before use [QTBUG-15418]
+- Don't mouse-wheel-scroll QScrollBar when disabled [QTBUG-27308][QTBUG-21534]
+- Fix realpath() call to older POSIX platforms
+- When x-compiling on Linux the host tools doesn't have Windows' executable suffix
+
+Qt for Windows
+--------------
+- Add msvc2012 support
+- Fix g++/MinGW compiler warnings
+- fix examples/script/qscript for MSVC [QTBUG-13496]
+- Fix MinGW-w64 compilation
+- Partial Revert "Disable pkg-config, when x-compiling for mingw"
+- Never compile QPA with EGL support on Windows
+
+Qt for Mac OS X
+---------------
+- Update the state of native menus correctly on Mac [QTBUG-25544,QTBUG-26399,QTBUG-7538]
+- Enable HiDPI mode for retina displays
+- Fix issue with mispositioned family name i QFontComboBox [QTBUG-26691]
+- Load Mac specific resources in a static build [QTBUG-25391]
+- Fixed float->int error in OS X Mouse Event Handling [QTBUG-27273]
+- Refactor coreservices -> ios & QT_NO_CORESERVICES -> Q_OS_IOS
+- Ensure that QApplication is cleaned up after itself on Mac [QTBUG-24248]
+- Prevent a crash when a merged action is removed [QTBUG-24917]
+
+Qt for Symbian
+--------------
+- Move SRCDIR definition to .pro file
+- Fix symbian QtCore deffile (for QObjectPrivate)
+- Fix symbian QtCore deffiles (for QUrl::detach)
+- Handle Qt input hints for email and url editors
+
+Qt for QNX
+----------
+- Change suffix for separate debug files
+- Fix bug on window hierarchy list
+- Use assert on QBBWindow destructor
+- Don't show the virtual keyboard when focusing an item view
+- Enable support for hardware buttons in QPA plugin
+- Add some optional debug output to event dispatcher
+- Do not initially commit all memory used in RegisterFile
+
+Qt for Blackberry
+-----------------
+- Support input method hints
+- Fix hardware button detection on the BB Dev Alpha
+- Fixed crash in blackberry platform plugin shutdown
+
+Other
+-----
+- Fix build for platforms that use QPA other than IOS
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+Assistant
+---------
+- Fixed window raise issue when handling remote commands [QTBUG-25407]
+
+Designer
+--------
+- Fix gcc 4.6 warnings about assigned/unused variables in Qt Designer
+
+Configure
+---------
+- Mac features don't belong on cross mingw target
+- Use qmake to get PKG_CONFIG in configure script
+- Postpone pkg-config detection until after qmake is built
+- Undo variable renaming in backport
+- Unscramble option help text
+- Smuggle QT_BUILD_TREE to device_config.prf even during tests
+- Find qdevice.pri even for installed qt builds
+
+qmake
+-----
+- Add -pipe option of win32-g++'s QMAKE_CFLAGS
+
+Other
+-----
+- Register Qt 4.7 import on-demand, instead of at startup
+- Update Traditional Chinese translation

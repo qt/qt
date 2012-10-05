@@ -1,5 +1,5 @@
 ********* Start testing of MaxWarnings *********
-Config: Using QTest library 4.8.3, Qt 4.8.3
+Config: Using QTest library 4.8.4, Qt 4.8.4
 PASS   : MaxWarnings::initTestCase()
 QWARN  : MaxWarnings::warn() 0
 QWARN  : MaxWarnings::warn() 1
