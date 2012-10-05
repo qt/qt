@@ -360,7 +360,7 @@ static inline bool isQtMainWindow(HWND hwnd)
     if (!(windowInfo.dwWindowStatus & WS_ACTIVECAPTION))
         return false;
     // Check the style for a real mainwindow
-    const DWORD excluded = WS_DISABLED | WS_POPUP;
+    const DWORD excluded = WS_DISABLED;
     const DWORD required = WS_CAPTION | WS_SYSMENU | WS_VISIBLE;    
     return (windowInfo.dwStyle & excluded) == 0
             && (windowInfo.dwStyle & required) == required;
