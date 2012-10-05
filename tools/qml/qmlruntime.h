@@ -174,11 +174,10 @@ private:
     QAction *recordAction;
     RecordingDialog *recdlg;
 
-    void senseImageMagick();
     void senseFfmpeg();
     QWidget *ffmpegHelpWindow;
     bool ffmpegAvailable;
-    bool convertAvailable;
+    const bool convertAvailable;
 
     QAction *rotateAction;
     QActionGroup *orientation;

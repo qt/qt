@@ -50,7 +50,7 @@ Rectangle {
     Column {
         //! [anchor fill]
         Rectangle {
-            id: button
+            id: button1
             width: 100; height: 100
 
             MouseArea {
@@ -65,7 +65,7 @@ Rectangle {
         //! [anchor fill]
 
         Rectangle {
-            id: button
+            id: button2
             width: 100; height: 100
 
         //! [enable handlers]
@@ -79,7 +79,7 @@ Rectangle {
         }
 
         Rectangle {
-            id: button
+            id: button3
             width: 100; height: 100
 
         //! [mouse handlers]
