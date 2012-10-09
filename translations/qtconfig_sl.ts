@@ -95,8 +95,8 @@
         <translation>Izberite mapo</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Različica %2&lt;br/&gt;&lt;br/&gt;Avtorske pravice © 2012 Nokia Corporation in/ali njene podružnice.&lt;br/&gt;&lt;br/&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Različica %2&lt;br/&gt;&lt;br/&gt;Avtorske pravice © 2012 Digia Plc in/ali njene podružnice.&lt;br/&gt;&lt;br/&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;</translation>
     </message>
     <message>
         <source>Qt Configuration</source>
@@ -716,13 +716,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
 &lt;/p&gt;</source>
         <translation>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org/&quot;&gt;www.kde.org&lt;/a&gt;

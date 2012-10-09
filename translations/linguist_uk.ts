@@ -1652,8 +1652,8 @@ lupdate - це частина набору програм Qt Linguist. Вона 
         <translation>Про Qt</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation>Показати інформацію про інструментарій Qt від Nokia.</translation>
+        <source>Display information about the Qt toolkit by Digia.</source>
+        <translation>Показати інформацію про інструментарій Qt від Digia.</translation>
     </message>
     <message>
         <source>&amp;What&apos;s This?</source>
@@ -1991,8 +1991,8 @@ All files (*)</source>
         <translation>Версія %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - це засіб для додавання перекладів до програм на Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Корпорація Nokia та/або її дочірні компанії.</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - це засіб для додавання перекладів до програм на Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Корпорація Digia та/або її дочірні компанії.</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>

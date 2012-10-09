@@ -4698,12 +4698,12 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
-        <translation>%1&lt;br/&gt;%2&lt;br/&gt;版权所有 2012 Nokia Corporation and/or its subsidiary(-ies)。所有权利已被保留。&lt;br/&gt;&lt;br/&gt;本程序是在&lt;b&gt;没有任何担保（其中包括任何特定目的的设计、商业和适当性的担保）&lt;/b&gt;的条件下提供的。&lt;br/&gt; </translation>
+        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <translation>%1&lt;br/&gt;%2&lt;br/&gt;版权所有 2012 Digia Plc and/or its subsidiary(-ies)。所有权利已被保留。&lt;br/&gt;&lt;br/&gt;本程序是在&lt;b&gt;没有任何担保（其中包括任何特定目的的设计、商业和适当性的担保）&lt;/b&gt;的条件下提供的。&lt;br/&gt; </translation>
     </message>
     <message>
-        <source>This version of Qt Designer is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel.html&lt;/a&gt; for an overview of Qt licensing.&lt;br/&gt;</source>
-        <translation type="obsolete">这个版本的 Qt 设计师是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。&lt;br/&gt;&lt;br/&gt;开发商业（闭源）应用程序，您需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;tt&gt;http://qt.nokia.com/company/about/businessmodel&lt;/tt&gt;。</translation>
+        <source>This version of Qt Designer is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/about/businessmodel&quot;&gt;http://qt.digia.com/company/about/businessmodel.html&lt;/a&gt; for an overview of Qt licensing.&lt;br/&gt;</source>
+        <translation type="obsolete">这个版本的 Qt 设计师是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。&lt;br/&gt;&lt;br/&gt;开发商业（闭源）应用程序，您需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;tt&gt;http://qt.digia.com/company/about/businessmodel&lt;/tt&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.&lt;br/&gt;</source>

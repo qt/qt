@@ -524,8 +524,8 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDDEV" ] = "yes";
         else if (configCmdLine.at(i) == "-nokia-developer") {
             cout << "Detected -nokia-developer option" << endl;
-            cout << "Nokia employees and agents are allowed to use this software under" << endl;
-            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
+            cout << "Digia employees and agents are allowed to use this software under" << endl;
+            cout << "the authority of Digia Plc and/or its subsidiary(-ies)" << endl;
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";

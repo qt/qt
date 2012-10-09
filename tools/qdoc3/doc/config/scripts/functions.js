@@ -75,7 +75,7 @@ var qturl = "";
 
 // Process data sent back from the server. The data is structured as a XML.
 /*
-XML structure handled by function processNokiaData()
+XML structure handled by function processDigiaData()
 <page> - container for each page returned
 <pageWords/> - contains keywords
 <pageTitle/> - contains page title/header content 
@@ -85,7 +85,7 @@ XML structure handled by function processNokiaData()
 */
 
 
-function processNokiaData(response){
+function processDigiaData(response){
 /* fetch the responce from the server using page as the root element */
 	var propertyTags = response.getElementsByTagName('page');
 	/* reset counters */	
@@ -238,7 +238,7 @@ function CheckEmptyAndLoadList()
 				$('.searching').remove(); 
 				$('#pageType').removeClass('loading');
 
-                processNokiaData(response);
+                processDigiaData(response);
 
  }     
               });

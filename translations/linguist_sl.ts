@@ -1407,7 +1407,7 @@ Options:
         <translation>O Qt</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
+        <source>Display information about the Qt toolkit by Digia.</source>
         <translation>Prikaže podatke o ogrodju Qt.</translation>
     </message>
     <message>
@@ -1748,8 +1748,8 @@ Vse datoteke (*)</translation>
         <translation>Različica %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist je orodje za dodajanje prevodov programom Qt..&lt;/p&gt;&lt;p&gt;Avtorske pravice © 2012 Nokia Corporation in/ali njene podružnice.&lt;/p&gt;&lt;p&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;&lt;/p&gt;</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist je orodje za dodajanje prevodov programom Qt..&lt;/p&gt;&lt;p&gt;Avtorske pravice © 2012 Digia Plc in/ali njene podružnice.&lt;/p&gt;&lt;p&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>

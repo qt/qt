@@ -3248,8 +3248,8 @@ Do you want overwrite the template?</source>
         <translation>&lt;br/&gt;Qt Designer - це дизайнер графічного інтерфейсу користувача для програм Qt.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2012 Корпорація Nokia та/або її дочірні компанії.</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;Copyright (C) 2012 Корпорація Digia та/або її дочірні компанії.</translation>
     </message>
 </context>
 <context>

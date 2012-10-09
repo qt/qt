@@ -122,8 +122,8 @@
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -887,13 +887,13 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
 &lt;/p&gt;</source>
         <translation>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;

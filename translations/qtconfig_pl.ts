@@ -72,7 +72,7 @@
         <translation>Wybierz katalog</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1239,9 +1239,9 @@ p, li { white-space: pre-wrap; }
         <translation>PushButton</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
+        <translation>&lt;p&gt;&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
 </context>
@@ -1293,13 +1293,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
 &lt;/p&gt;</source>
         <translation type="obsolete">&lt;p&gt;
-&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
+&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;

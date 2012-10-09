@@ -37,9 +37,9 @@ qhp.Qt.subprojects.examples.selectors = fake:example
 
 dita.metadata.default.author      = Qt Development Frameworks
 dita.metadata.default.permissions = all
-dita.metadata.default.publisher   = Nokia
+dita.metadata.default.publisher   = Digia
 dita.metadata.default.copyryear = 2012
-dita.metadata.default.copyrholder = Nokia
+dita.metadata.default.copyrholder = Digia
 dita.metadata.default.audience = programmer
 
 language                = Cpp

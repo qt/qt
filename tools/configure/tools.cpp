@@ -59,7 +59,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
                          const QString &path)
 {
     if (dictionary[ "BUILDNOKIA" ] == "yes") {
-        dictionary["EDITION"] = "NokiaInternalBuild";
+        dictionary["EDITION"] = "DigiaInternalBuild";
         dictionary["LICENSE_FILE"] = ""; // No License for nokia developers
         dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
         return; // No license key checking in internal builds
@@ -206,7 +206,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
     if (dictionary.value("DONE") == "error") {
         cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-        cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
+        cout << "Please contact http://www.qt-project.org/legal to upgrade your license" << endl;
         cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
         cout << "Qt Open Source Edition if you intend to develop free software." << endl;
         return;

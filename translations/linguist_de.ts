@@ -1643,7 +1643,7 @@ Alle Dateien (*)</translation>
         <translation>Version %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1867,8 +1867,8 @@ Alle Dateien (*)</translation>
         <translation>Längenvarianten</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation>Zeigt Informationen über das Qt-Toolkit von Nokia an.</translation>
+        <source>Display information about the Qt toolkit by Digia.</source>
+        <translation>Zeigt Informationen über das Qt-Toolkit von Digia an.</translation>
     </message>
 </context>
 <context>

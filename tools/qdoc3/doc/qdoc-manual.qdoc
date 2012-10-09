@@ -3723,11 +3723,11 @@
         \l{GNU Lesser General Public License (LGPL)} or the
         \l{Qt Commercial Edition}{Qt Commercial License Agreement}, but rather under
         specific licenses from the original authors. Some pieces of code were developed
-        by Nokia and others originated from third parties.
+        by Digia and others originated from third parties.
         This page lists the licenses used, names the authors, and links
         to the places where it is used.
 
-        Nokia gratefully acknowledges these and other contributions
+        Digia gratefully acknowledges these and other contributions
         to Qt. We recommend that programs that use Qt also acknowledge
         these contributions, and quote these license statements in an
         appendix to the documentation.
@@ -4080,10 +4080,10 @@
        <shortdesc>the QWidget class is the base class of all user interface objects.</shortdesc>
        <prolog>
            <author>Qt Development Frameworks</author>
-           <publisher>Nokia</publisher>
+           <publisher>Digia</publisher>
            <copyright>
                <copyryear year="2011"/>
-               <copyrholder>Nokia</copyrholder>
+               <copyrholder>Digia</copyrholder>
            </copyright>
            <permissions view="all"/>
            <metadata>
@@ -7019,9 +7019,9 @@
     \code
     dita.metadata.default.author      = Qt Development Frameworks
     dita.metadata.default.permissions = all
-    dita.metadata.default.publisher   = Nokia
+    dita.metadata.default.publisher   = Digia
     dita.metadata.default.copyryear = 2011
-    dita.metadata.default.copyrholder = Nokia
+    dita.metadata.default.copyrholder = Digia
     dita.metadata.default.audience = programmer
     \endcode
 

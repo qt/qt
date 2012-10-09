@@ -3256,8 +3256,8 @@ Do you want overwrite the template?</source>
         <translation>&lt;br/&gt;Qt Designer는 Qt 프로그램의 그래픽 사용자 인터페이스 디자이너입니다.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;저작권자 (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;저작권자 (C) 2012 Digia Plc and/or its subsidiary(-ies).</translation>
     </message>
 </context>
 <context>

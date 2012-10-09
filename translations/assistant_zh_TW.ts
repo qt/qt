@@ -756,8 +756,8 @@
         <translation type="obsolete">此版本的 Qt 小幫手是 Qt 開放源碼版本的一部份，只能用於開發開放源碼的應用程式。Qt 為一個跨平台的，強大的 C++ 應用程式開發框架。</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt;。</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/model.html&quot;&gt;qt.digia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.digia.com/company/model.html&quot;&gt;qt.digia.com/company/model.html&lt;/a&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
@@ -807,8 +807,8 @@
         <translation type="obsolete">移除</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt;。</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/about/businessmodel&quot;&gt;http://qt.digia.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.digia.com/company/about/businessmodel&quot;&gt;http://qt.digia.com/company/about/businessmodel&lt;/a&gt;。</translation>
     </message>
     <message>
         <location line="-136"/>
