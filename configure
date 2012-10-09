@@ -917,6 +917,7 @@ CFG_ICD=auto
 CFG_NOPROCESS=no
 CFG_ICU=auto
 CFG_SYSTEM_PROXIES=no
+CFG_SLOG2=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2096,6 +2097,13 @@ while [ "$#" -gt 0 ]; do
     glib)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_GLIB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    slog2)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SLOG2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -4349,6 +4357,16 @@ Qt/X11 only:
 EOF
 fi
 
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    cat << EOF
+
+    -no-slog2 .......... Do not compile with slog2 support.
+    -slog2 ............. Compile with slog2 support.
+
+EOF
+
+fi
+
 if [ "$PLATFORM_MAC" = "yes" ]; then
     cat << EOF
 
@@ -5311,6 +5329,17 @@ if [ "$CFG_ZLIB" = "auto" ]; then
        CFG_ZLIB=system
     else
        CFG_ZLIB=yes
+    fi
+fi
+
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    if [ "$CFG_SLOG2" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/slog2 "slog2" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+            CFG_SLOG2=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG slog2"
+        else
+            CFG_SLOG2=no
+        fi
     fi
 fi
 
@@ -8929,6 +8958,9 @@ if [ "$CFG_MNG" = "no" ]; then
     echo "MNG support ............ $CFG_MNG"
 else
     echo "MNG support ............ $CFG_MNG ($CFG_LIBMNG)"
+fi
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    echo "SLOG2 support .......... $CFG_SLOG2"
 fi
 echo "zlib support ........... $CFG_ZLIB"
 echo "Session management ..... $CFG_SM"

@@ -401,6 +401,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
+    dictionary[ "SLOG2" ]           = "no";
 }
 
 Configure::~Configure()
@@ -1018,6 +1019,10 @@ void Configure::parseCmdLine()
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if (configCmdLine.at(i) == "-plugin-manifests") {
             dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-slog2") {
+            dictionary[ "SLOG2" ] = "no";
+        } else if (configCmdLine.at(i) == "-slog2") {
+            dictionary[ "SLOG2" ] = "yes";
         }
 
         // Work around compiler nesting limitation
@@ -1715,7 +1720,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
-    } else if (dictionary[ "XQMAKESPEC" ].contains("blackberry")) { //TODO actually wrong.
+    } else if (platform() == QNX || platform() == BLACKBERRY) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "no";
@@ -1742,6 +1747,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "FONT_CONFIG" ]         = "yes";
         dictionary[ "FREETYPE" ]            = "system";
         dictionary[ "STACK_PROTECTOR_STRONG" ] = "auto";
+        dictionary[ "SLOG2" ]                 = "auto";
     }
 }
 
@@ -1982,6 +1988,11 @@ bool Configure::displayHelp()
         desc("LIBJPEG", "no",    "-no-libjpeg",         "Do not compile JPEG support.");
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
         desc("LIBJPEG", "system","-system-libjpeg",     "Use libjpeg from the operating system.\nSee http://www.ijg.org\n");
+
+        if (platform() == QNX || platform() == BLACKBERRY) {
+            desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
+            desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
+        }
 
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
@@ -2427,6 +2438,8 @@ bool Configure::checkAvailability(const QString &part)
         compilerAndArgs += "qcc";
         compilerAndArgs += "-fstack-protector-strong";
         available = dictionary[ "XQMAKESPEC" ].contains("blackberry") && compilerSupportsFlag(compilerAndArgs);
+    } else if (part == "SLOG2") {
+        available = findFile("slog2.h");
     }
 
     return available;
@@ -2533,6 +2546,10 @@ void Configure::autoDetection()
     // Detection of -fstack-protector-strong support
     if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
         dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
+
+    if ((platform() == QNX || platform == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
+        dictionary[ "SLOG2" ] = checkAvailability("SLOG2") ? "yes" : "no";
+    }
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -3268,6 +3285,9 @@ void Configure::generateCachefile()
         if (dictionary["FONT_CONFIG"] == "yes")
             configStream << " fontconfig";
 
+        if (dictionary[ "SLOG2" ] == "yes")
+            configStream << " slog2";
+
         if (dictionary.contains("SYMBIAN_DEFFILES")) {
             if (dictionary["SYMBIAN_DEFFILES"] == "yes") {
                 configStream << " def_files";
@@ -3785,6 +3805,8 @@ void Configure::displayConfig()
     cout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     cout << "    MNG support............." << dictionary[ "MNG" ] << endl;
     cout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
+    if (platform() == QNX || platform() == BLACKBERRY)
+        cout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
 
     cout << "Styles:" << endl;
     cout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
