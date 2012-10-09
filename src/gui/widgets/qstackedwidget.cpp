@@ -84,9 +84,12 @@ int QStackedLayoutHFW::heightForWidth(int width) const
     int hfw = 0;
     for (int i = 0; i < n; ++i) {
         if (QLayoutItem *item = itemAt(i)) {
-            hfw = qMax(hfw, item->heightForWidth(width));
+            if (QWidget *w = item->widget())
+                hfw = qMax(hfw, w->heightForWidth(width));
         }
     }
+
+    hfw = qMax(hfw, minimumSize().height());
     return hfw;
 }
 
