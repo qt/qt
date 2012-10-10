@@ -235,7 +235,7 @@ void tst_QClipboard::testSignals()
 void tst_QClipboard::copy_exit_paste()
 {
 #ifndef QT_NO_PROCESS
-#if defined Q_WS_X11 || defined Q_WS_QWS || defined (Q_WS_QPA)
+#if defined Q_WS_X11 || defined Q_WS_QWS || (!defined (Q_OS_QNX) && defined (Q_WS_QPA))
     QSKIP("This test does not make sense on X11 and embedded, copied data disappears from the clipboard when the application exits ", SkipAll);
     // ### It's still possible to test copy/paste - just keep the apps running
 #elif defined (Q_OS_SYMBIAN) && defined (Q_CC_NOKIAX86)
