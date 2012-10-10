@@ -137,6 +137,10 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
     case QWindowSystemInterfacePrivate::LocaleChange:
         QApplicationPrivate::reportLocaleChange();
         break;
+    case QWindowSystemInterfacePrivate::PlatformPanel:
+        QApplicationPrivate::processPlatformPanelEvent(
+                static_cast<QWindowSystemInterfacePrivate::PlatformPanelEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -185,6 +189,7 @@ static bool qt_try_modal(QWidget *widget, QEvent::Type type)
     case QEvent::MouseMove:
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
+    case QEvent::PlatformPanel:
         block_event         = true;
         break;
     default:
@@ -777,6 +782,19 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 #endif // QT_NO_CONTEXTMENU
 }
 
+void QApplicationPrivate::processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e)
+{
+    if (!e->widget)
+        return;
+
+    if (app_do_modal && !qt_try_modal(e->widget.data(), QEvent::PlatformPanel)) {
+        // a modal window is blocking this window, don't allow events through
+        return;
+    }
+
+    QEvent ev(QEvent::PlatformPanel);
+    QApplication::sendSpontaneousEvent(e->widget.data(), &ev);
+}
 
 //### there's a lot of duplicated logic here -- refactoring required!
 

@@ -288,6 +288,9 @@ public:
         Gesture = 198,
         GestureOverride = 202,
 #endif
+
+        PlatformPanel = 212,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

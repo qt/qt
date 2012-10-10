@@ -487,6 +487,7 @@ public:
     static void processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e);
     static void processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e);
     static void processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e);
+    static void processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e);
 
     static void processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e);
 

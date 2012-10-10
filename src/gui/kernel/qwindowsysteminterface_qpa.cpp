@@ -298,5 +298,11 @@ void QWindowSystemInterface::handleLocaleChange()
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handlePlatformPanelEvent(QWidget *w)
+{
+    QWindowSystemInterfacePrivate::PlatformPanelEvent *e =
+            new QWindowSystemInterfacePrivate::PlatformPanelEvent(w);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
 
 QT_END_NAMESPACE

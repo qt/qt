@@ -102,6 +102,8 @@ public:
     static void handleScreenCountChange(int count);
 
     static void handleLocaleChange();
+
+    static void handlePlatformPanelEvent(QWidget *w);
 };
 
 QT_END_NAMESPACE

@@ -62,7 +62,8 @@ public:
         ScreenGeometry,
         ScreenAvailableGeometry,
         ScreenCountChange,
-        LocaleChange
+        LocaleChange,
+        PlatformPanel
     };
 
     class WindowSystemEvent {
@@ -200,6 +201,12 @@ public:
             : WindowSystemEvent(LocaleChange) { }
     };
 
+   class PlatformPanelEvent : public WindowSystemEvent {
+   public:
+        explicit PlatformPanelEvent(QWidget *w)
+            : WindowSystemEvent(PlatformPanel), widget(w) { }
+        QWeakPointer<QWidget> widget;
+    };
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;
     static QMutex queueMutex;

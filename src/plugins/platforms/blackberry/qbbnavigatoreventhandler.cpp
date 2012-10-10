@@ -80,14 +80,12 @@ void QBBNavigatorEventHandler::handleOrientationChange(int angle)
 
 void QBBNavigatorEventHandler::handleSwipeDown()
 {
-    // simulate menu key press
 #if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
     qDebug() << Q_FUNC_INFO;
 #endif
-
     QWidget *w = QApplication::activeWindow();
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyPress, Qt::Key_Menu, Qt::NoModifier);
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyRelease, Qt::Key_Menu, Qt::NoModifier);
+    if (w)
+        QWindowSystemInterface::handlePlatformPanelEvent(w);
 }
 
 void QBBNavigatorEventHandler::handleExit()
