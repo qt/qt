@@ -56,7 +56,8 @@ QBBNativeInterface::QBBNativeInterface(QBBIntegration *integration)
 void *QBBNativeInterface::nativeResourceForWidget(const QByteArray &resource, QWidget *widget)
 {
     if (resource == "windowGroup" && widget) {
-        const QWidget * const nativeWidget = widget->nativeParentWidget();
+        const QWidget * const nativeWidget =
+                widget->parentWidget() ? widget->nativeParentWidget() : widget;
         const screen_window_t window = reinterpret_cast<screen_window_t>(nativeWidget->winId());
         const QBBScreen * const screen = mIntegration->screenForWindow(window);
         if (screen) {
