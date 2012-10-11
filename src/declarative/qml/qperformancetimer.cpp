@@ -81,8 +81,16 @@ void QPerformanceTimer::start()
 
 qint64 QPerformanceTimer::elapsed() const
 {
-    uint64_t cpu_time = mach_absolute_time();
+    qint64 cpu_time = mach_absolute_time();
     return absoluteToNSecs(cpu_time - t1);
+}
+
+// return number of nsecs elapsed from timer start time till absoluteMonotonicTimeNs
+// elapsedToAbsoluteTime(0) returns negative value of absolute time (ns) when the timer was started
+qint64 QPerformanceTimer::elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const
+{
+    qint64 absolute_t1_ns = absoluteToNSecs(t1);
+    return absoluteMonotonicTimeNs - absolute_t1_ns;
 }
 
 ////////////////////////////// Symbian //////////////////////////////
@@ -107,6 +115,12 @@ qint64 QPerformanceTimer::elapsed() const
     return getTimeFromTick(User::FastCounter() - t1);
 }
 
+
+qint64 QPerformanceTimer::elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const
+{
+    qint64 absolute_t1_ns = getTimeFromTick(t1);
+    return absoluteMonotonicTimeNs - absolute_t1_ns;
+}
 
 ////////////////////////////// Unix //////////////////////////////
 #elif defined(Q_OS_UNIX)
@@ -182,6 +196,16 @@ qint64 QPerformanceTimer::elapsed() const
     return sec * Q_INT64_C(1000000000) + frac;
 }
 
+qint64 QPerformanceTimer::elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const
+{
+    qint64 sec = absoluteMonotonicTimeNs / Q_INT64_C(1000000000);
+    qint64 frac = absoluteMonotonicTimeNs % Q_INT64_C(1000000000);
+    sec = sec - t1;
+    frac = frac - t2;
+
+    return sec * Q_INT64_C(1000000000) + frac;
+}
+
 ////////////////////////////// Windows //////////////////////////////
 #elif defined(Q_OS_WIN)
 
@@ -207,6 +231,12 @@ qint64 QPerformanceTimer::elapsed() const
     return getTimeFromTick(li.QuadPart - t1);
 }
 
+qint64 QPerformanceTimer::elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const
+{
+    qint64 absolute_t1_ns = getTimeFromTick(t1);
+    return absoluteMonotonicTimeNs - absolute_t1_ns;
+}
+
 ////////////////////////////// Default //////////////////////////////
 #else
 
@@ -217,6 +247,12 @@ void QPerformanceTimer::start()
 
 qint64 QPerformanceTimer::elapsed() const
 {
+    return 0;
+}
+
+qint64 QPerformanceTimer::elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const
+{
+    Q_UNUSED(absoluteMonotonicTimeNs);
     return 0;
 }
 

@@ -44,6 +44,7 @@
 
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qperformancetimer_p.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
@@ -63,7 +64,7 @@ struct QDeclarativeDebugData
 };
 
 class QUrl;
-class Q_AUTOTEST_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
+class Q_DECLARATIVE_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
 {
 public:
     enum Message {
@@ -105,6 +106,21 @@ public:
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
+#ifdef CUSTOM_DECLARATIVE_DEBUG_TRACE_INSTANCE
+public:
+    static QDeclarativeDebugTrace* globalInstance();
+    static void setGlobalInstance(QDeclarativeDebugTrace *custom_instance);
+protected:
+    virtual void messageReceived(const QByteArray &);
+protected:
+    virtual void addEventImpl(EventType);
+    virtual void startRangeImpl(RangeType);
+    virtual void rangeDataImpl(RangeType, const QString &);
+    virtual void rangeDataImpl(RangeType, const QUrl &);
+    virtual void rangeLocationImpl(RangeType, const QString &, int);
+    virtual void rangeLocationImpl(RangeType, const QUrl &, int);
+    virtual void endRangeImpl(RangeType);
+#else
 protected:
     virtual void messageReceived(const QByteArray &);
 private:
@@ -115,6 +131,7 @@ private:
     void rangeLocationImpl(RangeType, const QString &, int);
     void rangeLocationImpl(RangeType, const QUrl &, int);
     void endRangeImpl(RangeType);
+#endif
     void processMessage(const QDeclarativeDebugData &);
     void sendMessages();
     QPerformanceTimer m_timer;

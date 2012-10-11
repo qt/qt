@@ -58,9 +58,21 @@ void tst_qperformancetimer::units()
 {
     QPerformanceTimer timer;
     timer.start();
-    QTest::qWait(300);
-    qint64 elapsed = timer.elapsed();
-    QVERIFY(elapsed > 300000000 && elapsed < 310000000);
+    {
+        QTest::qWait(300);
+        qint64 elapsed = timer.elapsed();
+        QVERIFY(elapsed > 300000000 && elapsed < 310000000);
+    }
+    {
+        timer.start();
+        qint64 monotonic_start = -timer.elapsedToAbsoluteTime(0);
+        qint64 wait_ms = 300;
+        QTest::qWait(wait_ms);
+        qint64 elapsed1 = timer.elapsed();
+        qint64 elapsed2 = timer.elapsedToAbsoluteTime(monotonic_start + elapsed1);
+        qint64 diff = elapsed1 - elapsed2;
+        QVERIFY(diff == 0);
+    }
 }
 
 QTEST_MAIN(tst_qperformancetimer)

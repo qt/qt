@@ -44,8 +44,68 @@
 #include <QtCore/qdatastream.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qtimer.h>
+#include <QDebug>
 
+#ifdef CUSTOM_DECLARATIVE_DEBUG_TRACE_INSTANCE
+
+namespace {
+
+    class GlobalInstanceDeleter
+    {
+    private:
+        QBasicAtomicPointer<QDeclarativeDebugTrace> &m_pointer;
+    public:
+        GlobalInstanceDeleter(QBasicAtomicPointer<QDeclarativeDebugTrace> &p)
+        : m_pointer(p)
+        {}
+        ~GlobalInstanceDeleter()
+        {
+            delete m_pointer;
+            m_pointer = 0;
+        }
+    };
+
+    QBasicAtomicPointer<QDeclarativeDebugTrace> s_globalInstance = Q_BASIC_ATOMIC_INITIALIZER(0);
+}
+
+
+static QDeclarativeDebugTrace *traceInstance()
+{
+    return QDeclarativeDebugTrace::globalInstance();
+}
+
+QDeclarativeDebugTrace *QDeclarativeDebugTrace::globalInstance()
+{
+    if (!s_globalInstance) {
+        // create default QDeclarativeDebugTrace instance if it is not explicitly set by setGlobalInstance(QDeclarativeDebugTrace *instance)
+        // thread safe implementation
+        QDeclarativeDebugTrace *x = new QDeclarativeDebugTrace();
+        if (!s_globalInstance.testAndSetOrdered(0, x))
+            delete x;
+        else
+            static GlobalInstanceDeleter cleanup(s_globalInstance);
+    }
+    return s_globalInstance;
+}
+
+/*!
+ *  Set custom QDeclarativeDebugTrace instance \a custom_instance.
+ *  Function fails if QDeclarativeDebugTrace::globalInstance() was called before.
+ *  QDeclarativeDebugTrace framework takes ownership of the custom instance.
+ */
+void QDeclarativeDebugTrace::setGlobalInstance(QDeclarativeDebugTrace *custom_instance)
+{
+    if (!s_globalInstance.testAndSetOrdered(0, custom_instance)) {
+        qWarning() << "QDeclarativeDebugTrace::setGlobalInstance() - instance already set.";
+        delete custom_instance;
+    } else {
+        static GlobalInstanceDeleter cleanup(s_globalInstance);
+    }
+}
+
+#else // CUSTOM_DECLARATIVE_DEBUG_TRACE_INSTANCE
 Q_GLOBAL_STATIC(QDeclarativeDebugTrace, traceInstance);
+#endif
 
 // convert to a QByteArray that can be sent to the debug client
 // use of QDataStream can skew results if m_deferredSend == false

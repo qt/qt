@@ -61,12 +61,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_AUTOTEST_EXPORT QPerformanceTimer
+class Q_DECLARATIVE_EXPORT QPerformanceTimer
 {
 public:
     void start();
     qint64 elapsed() const;
-
+    qint64 elapsedToAbsoluteTime(qint64 absoluteMonotonicTimeNs) const;
 private:
     qint64 t1;
     qint64 t2;
