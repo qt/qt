@@ -86,6 +86,10 @@ public:
 
     QBBScreen *screenForWindow(screen_window_t window) const;
 
+    QBBScreen *screenForNative(screen_display_t screen) const;
+
+    void createDisplay(screen_display_t display, bool isPrimary);
+    void removeDisplay(QBBScreen *screen);
 private:
     QBBScreen *primaryDisplay() const;
     void createDisplays();

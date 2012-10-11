@@ -43,6 +43,8 @@
 
 #include "qbbscreeneventhandler.h"
 
+#include "qbbscreen.h"
+#include "qbbintegration.h"
 #include "qbbinputcontext.h"
 #include "qbbkeytranslator.h"
 
@@ -54,8 +56,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QBBScreenEventHandler::QBBScreenEventHandler()
-    : mLastButtonState(Qt::NoButton)
+QBBScreenEventHandler::QBBScreenEventHandler(QBBIntegration *integration)
+    : mBBIntegration(integration)
+    , mLastButtonState(Qt::NoButton)
     , mLastMouseWindow(0)
 {
     // initialize array of touch points
@@ -111,6 +114,10 @@ bool QBBScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
 
     case SCREEN_EVENT_CREATE:
         handleCreateEvent(event);
+        break;
+
+    case SCREEN_EVENT_DISPLAY:
+        handleDisplayEvent(event);
         break;
 
     default:
@@ -538,6 +545,33 @@ void QBBScreenEventHandler::handleCreateEvent(screen_event_t event)
         qFatal("QBB: failed to query event window property, errno=%d", errno);
 
     emit newWindowCreated(window);
+}
+
+void QBBScreenEventHandler::handleDisplayEvent(screen_event_t event)
+{
+    screen_display_t nativeDisplay = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_DISPLAY, (void **)&nativeDisplay) != 0) {
+        qWarning("QBB: failed to query display property, errno=%d", errno);
+        return;
+    }
+
+    int isAttached = 0;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_ATTACHED, &isAttached) != 0) {
+        qWarning("QBB: failed to query display attached property, errno=%d", errno);
+        return;
+    }
+
+#if defined(QBBSCREENEVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << "display attachment is now:" << isAttached;
+#endif
+    QBBScreen *screen = mBBIntegration->screenForNative(nativeDisplay);
+    if (!screen) {
+        if (isAttached)
+            mBBIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
+    } else if (!isAttached) {
+        // libscreen display is deactivated, let's remove the QBBScreen / QScreen
+        mBBIntegration->removeDisplay(screen);
+    }
 }
 
 #include "moc_qbbscreeneventhandler.cpp"

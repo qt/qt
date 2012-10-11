@@ -87,7 +87,7 @@ QBBIntegration::QBBIntegration() :
     mNavigatorEventHandler(new QBBNavigatorEventHandler()),
     mButtonsNotifier(new QBBButtonEventNotifier()),
     mFontDb(new QGenericUnixFontDatabase()),
-    mScreenEventHandler(new QBBScreenEventHandler()),
+    mScreenEventHandler(new QBBScreenEventHandler(this)),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
     mVirtualKeyboard(0),
     mNativeInterface(new QBBNativeInterface(this)),
@@ -351,27 +351,58 @@ void QBBIntegration::createDisplays()
         qFatal("QBBIntegration: failed to query displays, errno=%d", errno);
 
     for (int i=0; i<displayCount; i++) {
-#if defined(QBBINTEGRATION_DEBUG)
-        qDebug() << "QBBIntegration: Creating screen for display " << i;
-#endif
-        QBBScreen *screen = new QBBScreen(mContext, displays[i], i);
-        mScreens.push_back(screen);
+        int isAttached = 0;
+        result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED, &isAttached);
+        if (result != 0) {
+            qWarning("QBBIntegration: failed to query display attachment, errno=%d", errno);
+            isAttached = 1; // assume attached
+        }
 
-        QObject::connect(mScreenEventHandler, SIGNAL(newWindowCreated(screen_window_t)),
-                         screen, SLOT(newWindowCreated(screen_window_t)));
-        QObject::connect(mScreenEventHandler, SIGNAL(windowClosed(screen_window_t)),
-                         screen, SLOT(windowClosed(screen_window_t)));
+        if (!isAttached)
+            continue;
 
-        QObject::connect(mNavigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
-        QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
-        QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupDeactivated(QByteArray)), screen, SLOT(deactivateWindowGroup(QByteArray)));
-    }
+        createDisplay(displays[i], i == 0);
+    } // of displays iteration
+}
+
+void QBBIntegration::createDisplay(screen_display_t display, bool isPrimary)
+{
+    QBBScreen *screen = new QBBScreen(mContext, display, isPrimary);
+    mScreens.append(screen);
+
+    QObject::connect(mScreenEventHandler, SIGNAL(newWindowCreated(screen_window_t)),
+                  screen, SLOT(newWindowCreated(screen_window_t)));
+    QObject::connect(mScreenEventHandler, SIGNAL(windowClosed(screen_window_t)),
+                  screen, SLOT(windowClosed(screen_window_t)));
+
+    QObject::connect(mNavigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
+    QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
+    QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupDeactivated(QByteArray)), screen, SLOT(deactivateWindowGroup(QByteArray)));
+}
+
+void QBBIntegration::removeDisplay(QBBScreen *screen)
+{
+    Q_CHECK_PTR(screen);
+    Q_ASSERT(mScreens.contains(screen));
+    mScreens.removeAll(screen);
+    screen->deleteLater();
 }
 
 void QBBIntegration::destroyDisplays()
 {
     qDeleteAll(mScreens);
     mScreens.clear();
+}
+
+QBBScreen *QBBIntegration::screenForNative(screen_display_t nativeScreen) const
+{
+    Q_FOREACH (QPlatformScreen *screen, mScreens) {
+        QBBScreen *bbScreen = static_cast<QBBScreen*>(screen);
+        if (bbScreen->nativeDisplay() == nativeScreen)
+            return bbScreen;
+    }
+
+    return 0;
 }
 
 QT_END_NAMESPACE

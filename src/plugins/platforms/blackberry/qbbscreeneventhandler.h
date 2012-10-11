@@ -48,11 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QBBIntegration;
+
 class QBBScreenEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QBBScreenEventHandler();
+    explicit QBBScreenEventHandler(QBBIntegration *integration);
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
     void injectPointerMoveEvent(int x, int y);
@@ -70,12 +72,14 @@ private:
     void handleTouchEvent(screen_event_t event, int type);
     void handleCloseEvent(screen_event_t event);
     void handleCreateEvent(screen_event_t event);
+    void handleDisplayEvent(screen_event_t event);
 
 private:
     enum {
         MAX_TOUCH_POINTS = 10
     };
 
+    QBBIntegration *mBBIntegration;
     QPoint mLastGlobalMousePoint;
     QPoint mLastLocalMousePoint;
     Qt::MouseButtons mLastButtonState;
