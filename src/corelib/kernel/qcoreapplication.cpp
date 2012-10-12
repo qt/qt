@@ -376,6 +376,35 @@ struct QCoreApplicationData {
            data->deref(); // deletes the data and the adopted thread
        }
     }
+
+#ifdef Q_OS_BLACKBERRY
+    //The QCoreApplicationData struct is only populated on demand, because it is rarely needed and would
+    //affect startup time
+    void loadManifest() {
+        static bool manifestLoadAttempt = false;
+        if (manifestLoadAttempt)
+            return;
+
+        manifestLoadAttempt = true;
+
+        QFile metafile(QLatin1String("app/META-INF/MANIFEST.MF"));
+        if (!metafile.open(QIODevice::ReadOnly)) {
+            qWarning() << Q_FUNC_INFO << "Could not open application metafile for reading";
+        } else {
+            while (!metafile.atEnd() && (application.isEmpty() || applicationVersion.isEmpty() || orgName.isEmpty())) {
+                QByteArray line = metafile.readLine();
+                if (line.startsWith("Application-Name:"))
+                    application = QString::fromUtf8(line.mid(18).trimmed());
+                else if (line.startsWith("Application-Version:"))
+                    applicationVersion = QString::fromUtf8(line.mid(21).trimmed());
+                else if (line.startsWith("Package-Author:"))
+                    orgName = QString::fromUtf8(line.mid(16).trimmed());
+            }
+            metafile.close();
+        }
+    }
+#endif
+
     QString orgName, orgDomain, application;
     QString applicationVersion;
 
@@ -2067,6 +2096,15 @@ QString QCoreApplication::applicationFilePath()
 #if defined(Q_WS_WIN)
     d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
+#elif defined(Q_OS_BLACKBERRY)
+    QDir dir(QLatin1String("./app/native/"));
+    QStringList executables = dir.entryList(QDir::Executable | QDir::Files);
+    if (!executables.empty()) {
+        //We assume that there is only one executable in the folder
+        return dir.absoluteFilePath(executables.first());
+    } else {
+        return QString();
+    }
 #elif defined(Q_WS_MAC)
     QString qAppFileName_str = qAppFileName();
     if(!qAppFileName_str.isEmpty()) {
@@ -2301,6 +2339,9 @@ void QCoreApplication::setOrganizationName(const QString &orgName)
 
 QString QCoreApplication::organizationName()
 {
+#ifdef Q_OS_BLACKBERRY
+    coreappdata()->loadManifest();
+#endif
     return coreappdata()->orgName;
 }
 
@@ -2346,6 +2387,9 @@ void QCoreApplication::setApplicationName(const QString &application)
 
 QString QCoreApplication::applicationName()
 {
+#ifdef Q_OS_BLACKBERRY
+    coreappdata()->loadManifest();
+#endif
     return coreappdata()->application;
 }
 
@@ -2363,6 +2407,9 @@ void QCoreApplication::setApplicationVersion(const QString &version)
 
 QString QCoreApplication::applicationVersion()
 {
+#ifdef Q_OS_BLACKBERRY
+    coreappdata()->loadManifest();
+#endif
     return coreappdata()->applicationVersion;
 }
 
