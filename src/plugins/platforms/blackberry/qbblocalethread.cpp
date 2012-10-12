@@ -81,7 +81,7 @@ void QBBLocaleThread::run()
 
     // open connection to Locale
     errno = 0;
-    mFd = open(NAV_CONTROL_PATH, O_RDWR);
+    mFd = open(NAV_CONTROL_PATH, O_RDONLY);
     if (mFd == -1) {
         qWarning("QBB: failed to open Locale pps, errno=%d", errno);
         return;
