@@ -9,7 +9,7 @@ wince*|symbian {
   DEPLOYMENT += DirFiles
 }
 
-wince* {
+if (wince*|qnx) {
   DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
   TARGET.CAPABILITY += AllFiles
