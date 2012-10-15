@@ -274,6 +274,7 @@ public:
     QDBusConnection::ConnectionCapabilities capabilities;
     QString name;               // this connection's name
     QString baseService;        // this connection's base service
+    QStringList serverConnectionNames;
 
     ConnectionMode mode;
 
