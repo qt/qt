@@ -62,6 +62,14 @@
 
 QT_BEGIN_NAMESPACE
 
+enum Platforms {
+    WINDOWS,
+    WINDOWS_CE,
+    QNX,
+    BLACKBERRY,
+    SYMBIAN
+};
+
 std::ostream &operator<<(std::ostream &s, const QString &val) {
     s << val.toLocal8Bit().data();
     return s;
@@ -3543,6 +3551,9 @@ void Configure::generateConfigfiles()
         if (dictionary[ "QT_SXE" ] == "no")
           tmpStream<<"#define QT_NO_SXE"<<endl;
 
+        if (dictionary[ "QPA" ] == "yes")
+          tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
+
         tmpStream.flush();
         tmpFile.flush();
 
@@ -4335,15 +4346,7 @@ bool Configure::showLicense(QString orgLicenseFile)
 
 void Configure::readLicense()
 {
-   if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/src/corelib/kernel/qfunctions_wince.h") &&
-       (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
-        dictionary["PLATFORM NAME"] = "Qt for Windows CE";
-    else if (dictionary.value("XQMAKESPEC").startsWith("symbian"))
-        dictionary["PLATFORM NAME"] = "Qt for Symbian";
-    else if (dictionary["QPA"] == "yes")
-        dictionary["PLATFORM NAME"] = "Qt for QPA";
-    else
-        dictionary["PLATFORM NAME"] = "Qt for Windows";
+    dictionary["PLATFORM NAME"] = platformName();
     dictionary["LICENSE FILE"] = sourcePath;
 
     bool openSource = false;
@@ -4470,6 +4473,57 @@ bool Configure::isDone()
 bool Configure::isOk()
 {
     return (dictionary[ "DONE" ] != "error");
+}
+
+QString Configure::platformName() const
+{
+    switch (platform()) {
+    default:
+    case WINDOWS:
+        return QLatin1String("Qt for Windows");
+    case WINDOWS_CE:
+        return QLatin1String("Qt for Windows CE");
+    case QNX:
+        return QLatin1String("Qt for QNX");
+    case BLACKBERRY:
+        return QLatin1String("Qt for Blackberry");
+    case SYMBIAN:
+        return QLatin1String("Qt for Symbian");
+    }
+}
+
+QString Configure::qpaPlatformName() const
+{
+    switch (platform()) {
+    default:
+    case WINDOWS:
+    case WINDOWS_CE:
+        return QLatin1String("windows");
+    case QNX:
+        return QLatin1String("qnx");
+    case BLACKBERRY:
+        return QLatin1String("blackberry");
+    }
+}
+
+int Configure::platform() const
+{
+    const QString qMakeSpec = dictionary.value("QMAKESPEC");
+    const QString xQMakeSpec = dictionary.value("XQMAKESPEC");
+
+    if ((qMakeSpec.startsWith("wince") || xQMakeSpec.startsWith("wince")))
+        return WINDOWS_CE;
+
+    if (xQMakeSpec.contains("qnx"))
+        return QNX;
+
+    if (xQMakeSpec.contains("blackberry"))
+        return BLACKBERRY;
+
+    if (xQMakeSpec.startsWith("symbian"))
+        return SYMBIAN;
+
+    return WINDOWS;
 }
 
 bool
