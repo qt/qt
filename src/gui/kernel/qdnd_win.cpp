@@ -712,7 +712,9 @@ QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
         return NOERROR;
     }
 
-    while (dragOverWidget && dragOverWidget != widget && !acceptsDrop(dragOverWidget))
+    // Try to find a drop-enabled target in the hierarchy. Go beyond 'widget' in case
+    // it is a native child window which has its own drop site registered (QTBUG-27265).
+    while (dragOverWidget && !dragOverWidget->isWindow() && !acceptsDrop(dragOverWidget))
         dragOverWidget = dragOverWidget->parentWidget();
 
     if (!dragOverWidget || !acceptsDrop(dragOverWidget)) {
