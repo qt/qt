@@ -258,8 +258,12 @@ void QApplicationPrivate::setMaxWindowRect(const QScreen *screen, int screenNo,
     for (int i = 0; i < l.size(); ++i) {
         QWidget *w = l.at(i);
         QScreen *s = w->d_func()->getScreen();
-        if (w->isMaximized() && s == screen)
-            w->d_func()->setMaxWindowState_helper();
+        if (s == screen) {
+            if (w->isMaximized())
+                w->d_func()->setMaxWindowState_helper();
+            else if (w->isFullScreen())
+                w->d_func()->setFullScreenSize_helper();
+        }
     }
 
     if ( qt_desktopWidget ) // XXX workaround crash
