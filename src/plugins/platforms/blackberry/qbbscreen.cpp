@@ -54,6 +54,56 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(QBB_PHYSICAL_SCREEN_WIDTH) && QBB_PHYSICAL_SCREEN_WIDTH > 0 \
+    && defined(QBB_PHYSICAL_SCREEN_HEIGHT) && QBB_PHYSICAL_SCREEN_HEIGHT > 0
+#define QBB_PHYSICAL_SCREEN_SIZE_DEFINED
+#elif defined(QBB_PHYSICAL_SCREEN_WIDTH) || defined(QBB_PHYSICAL_SCREEN_HEIGHT)
+#error Please define QBB_PHYSICAL_SCREEN_WIDTH and QBB_PHYSICAL_SCREEN_HEIGHT to values greater than zero
+#endif
+
+QT_BEGIN_NAMESPACE
+
+static QSize determineScreenSize(screen_display_t display, bool primaryScreen)
+{
+    int val[2];
+
+    errno = 0;
+    const int result = screen_get_display_property_iv(display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
+    if (result != 0) {
+        qFatal("QBBScreen: failed to query display physical size, errno=%d", errno);
+        return QSize(150, 90);
+    }
+
+    if (val[0] > 0 && val[1] > 0)
+        return QSize(val[0], val[1]);
+
+    qWarning("QBBScreen: screen_get_display_property_iv() reported an invalid physical screen size (%dx%d). Falling back to QBB_PHYSICAL_SCREEN_SIZE environment variable.", val[0], val[1]);
+
+    const QString envPhySizeStr = qgetenv("QBB_PHYSICAL_SCREEN_SIZE");
+    if (!envPhySizeStr.isEmpty()) {
+        const QStringList envPhySizeStrList = envPhySizeStr.split(QLatin1Char(','));
+        const int envWidth = envPhySizeStrList.size() == 2 ? envPhySizeStrList[0].toInt() : -1;
+        const int envHeight = envPhySizeStrList.size() == 2 ? envPhySizeStrList[1].toInt() : -1;
+
+        if (envWidth <= 0 || envHeight <= 0) {
+            qFatal("QBBScreen: The value of QBB_PHYSICAL_SCREEN_SIZE must be in the format \"width,height\" in mm, with width, height > 0. Example: QBB_PHYSICAL_SCREEN_SIZE=150,90");
+            return QSize(150, 90);
+        }
+
+        return QSize(envWidth, envHeight);
+    }
+
+#if defined(QBB_PHYSICAL_SCREEN_SIZE_DEFINED)
+    const QSize defSize(QBB_PHYSICAL_SCREEN_WIDTH, QBB_PHYSICAL_SCREEN_HEIGHT);
+    qWarning("QBBScreen: QBB_PHYSICAL_SCREEN_SIZE variable not set. Falling back to defines QBB_PHYSICAL_SCREEN_WIDTH/QBB_PHYSICAL_SCREEN_HEIGHT (%dx%d)", defSize.width(), defSize.height());
+    return defSize;
+#else
+    if (primaryScreen)
+        qFatal("QBBScreen: QBB_PHYSICAL_SCREEN_SIZE variable not set. Could not determine physical screen size.");
+    return QSize(150, 90);
+#endif
+}
+
 QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, int screenIndex)
     : mContext(context),
       mDisplay(display),
@@ -88,23 +138,10 @@ QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, int scr
 
     mCurrentGeometry = mStartGeometry = QRect(0, 0, val[0], val[1]);
 
-    // cache size of this display in millimeters
-    errno = 0;
-    result = screen_get_display_property_iv(mDisplay, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
-    if (result != 0) {
-        qFatal("QBBScreen: failed to query display physical size, errno=%d", errno);
-    }
+    // Cache size of this display in millimeters
+    const QSize screenSize = determineScreenSize(mDisplay, mPrimaryDisplay);
 
-    // Peg the DPI to 96 (for now) so fonts are a reasonable size. We'll want to match
-    // everything with a QStyle later, and at that point the physical size can be used
-    // instead.
-    {
-        static const int dpi = 96;
-        int width = mCurrentGeometry.width() / dpi * qreal(25.4) ;
-        int height = mCurrentGeometry.height() / dpi * qreal(25.4) ;
-
-        mCurrentPhysicalSize = mStartPhysicalSize = QSize(width,height);
-    }
+    mCurrentPhysicalSize = mStartPhysicalSize = screenSize;
 
     // We only create the root window if we are not the primary display.
     if (mPrimaryDisplay)
