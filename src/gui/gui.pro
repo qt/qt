@@ -60,7 +60,7 @@ symbian {
     QMAKE_LFLAGS.GCCE += -Tdata 0x800000
 }
 
-neon:*-g++*|*-qcc* {
+neon:if(*-g++*|*-qcc*) {
     DEFINES += QT_HAVE_NEON
     HEADERS += $$NEON_HEADERS
     SOURCES += $$NEON_ASM
