@@ -61,7 +61,7 @@ is responsible for deleting the returned data.
 */
 static QSet<QString> *qmlFilesInDirectory(const QString &path)
 {
-    QDirIterator dir(path, QDir::Files);
+    QDirIterator dir(path, QDir::Files | QDir::NoDotAndDotDot);
     if (!dir.hasNext())
         return 0;
     QSet<QString> *files = new QSet<QString>;
