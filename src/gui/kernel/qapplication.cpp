@@ -1956,8 +1956,10 @@ QFont QApplication::font()
     QMutexLocker locker(applicationFontMutex());
     if (!QApplicationPrivate::app_font) {
 #if defined(Q_OS_BLACKBERRY)
+        // See http://docs.blackberry.com/en/developers/deliverables/41577/typography.jsp
+        // which recommends using font family "Slate Pro" and normal font size of 8 points
         QApplicationPrivate::app_font = new QFont(QLatin1String("Slate Pro"));
-        QApplicationPrivate::app_font->setPixelSize(21);
+        QApplicationPrivate::app_font->setPointSize(8);
 #else
         QApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
 #endif
