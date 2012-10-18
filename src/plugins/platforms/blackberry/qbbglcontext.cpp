@@ -317,6 +317,7 @@ void QBBGLContext::resizeSurface(const QSize &size)
     // make context current again
     if (restoreCurrent) {
         makeCurrent();
+        mPlatformWindow->widget()->update();
     }
 }
 
