@@ -8382,6 +8382,11 @@ if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "runtime" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RUNTIME"
 fi
 
+# On Windows codec plugins are used (hardcoded in .pro files)
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_CODEC_PLUGINS"
+fi
+
 # X11/Unix/Mac only configs
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
