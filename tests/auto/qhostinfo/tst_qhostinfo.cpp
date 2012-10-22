@@ -281,7 +281,7 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
 
-    QTest::newRow("notfound") << "this-name-does-not-exist-hopefully." << "" << int(QHostInfo::HostNotFound);
+    QTest::newRow("notfound") << "this-name-does-not-exist-hopefully.invalid" << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("idn-ace") << "xn--alqualond-34a.troll.no" << "10.3.3.55" << int(QHostInfo::NoError);
     QTest::newRow("idn-unicode") << QString::fromLatin1("alqualond\353.troll.no") << "10.3.3.55" << int(QHostInfo::NoError);
@@ -369,7 +369,7 @@ void tst_QHostInfo::reverseLookup_data()
     QTest::addColumn<QStringList>("hostNames");
     QTest::addColumn<int>("err");
 
-    QTest::newRow("trolltech.com") << QString("62.70.27.69") << QStringList(QString("diverse.troll.no")) << 0;
+    QTest::newRow("qt-project.org") << QString("87.238.53.172") << QStringList(QString("tufsla.qtproject.c.bitbit.net")) << 0;
 
     // ### Use internal DNS instead. Discussed with Andreas.
     //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
