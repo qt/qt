@@ -305,8 +305,8 @@ public:
         randomLocation += (1 << 24);
         randomLocation <<= 21;
 #endif
-        m_base = mmap(reinterpret_cast<void*>(randomLocation), m_totalHeapSize, INITIAL_PROTECTION_FLAGS, MAP_PRIVATE | MAP_ANON, VM_TAG_FOR_EXECUTABLEALLOCATOR_MEMORY, 0);
-        if (!m_base)
+        m_base = mmap(reinterpret_cast<void*>(randomLocation), m_totalHeapSize, INITIAL_PROTECTION_FLAGS, MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, VM_TAG_FOR_EXECUTABLEALLOCATOR_MEMORY, 0);
+        if (m_base == MAP_FAILED)
             CRASH();
 
         // For simplicity, we keep all memory in m_freeList in a 'released' state.
