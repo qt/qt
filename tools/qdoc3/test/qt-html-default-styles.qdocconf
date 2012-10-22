@@ -36,7 +36,7 @@ extraimages.HTML        = qt-logo.png \
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
 
-HTML.headerscripts = 
+HTML.headerscripts =
 
 HTML.endheader = \
     "</head>\n" \
