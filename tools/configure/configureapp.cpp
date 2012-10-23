@@ -400,6 +400,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LTCG" ]            = "no";
     dictionary[ "NATIVE_GESTURES" ] = "yes";
     dictionary[ "MSVC_MP" ] = "no";
+    dictionary[ "SYSTEM_PROXIES" ]  = "no";
 }
 
 Configure::~Configure()
@@ -1309,6 +1310,14 @@ void Configure::parseCmdLine()
             dictionary["POSIX_IPC"] = "yes";
         }
 
+        else if (configCmdLine.at(i) == "-no-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "yes";
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1929,6 +1938,9 @@ bool Configure::displayHelp()
         desc("FONT_CONFIG",   "no",    "-no-fontconfig","Do not build with FontConfig support.");
 
         desc("POSIX_IPC",     "yes",   "-posix-ipc",    "Enable POSIX IPC.");
+
+        desc("SYSTEM_PROXIES", "yes",  "-system-proxies",    "Use system network proxies by default.");
+        desc("SYSTEM_PROXIES", "no",   "-no-system-proxies", "Do not use system network proxies by default.");
 
 #if !defined(EVAL)
         desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
@@ -3000,6 +3012,9 @@ void Configure::generateOutputVars()
     if (dictionary["STACK_PROTECTOR_STRONG"] == "yes")
         qtConfig += "stack-protector-strong";
 
+    if (dictionary["SYSTEM_PROXIES"] == "yes")
+        qtConfig += "system-proxies";
+
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
 
@@ -3759,7 +3774,8 @@ void Configure::displayConfig()
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
     cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
-    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
+    cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
+    cout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;

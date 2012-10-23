@@ -916,6 +916,7 @@ CFG_COREWLAN=auto
 CFG_ICD=auto
 CFG_NOPROCESS=no
 CFG_ICU=auto
+CFG_SYSTEM_PROXIES=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1102,6 +1103,14 @@ while [ "$#" -gt 0 ]; do
     --*)
         VAR=`echo $1 | sed "s,^--\(.*\),\1,"`
         VAL=yes
+        ;;
+    -system-proxies)
+        VAR=system-proxies
+        VAL=yes
+        ;;
+    -no-system-proxies)
+        VAR=system-proxies
+        VAL=no
         ;;
     #Qt plugin options
     -no-*-*|-plugin-*-*|-qt-*-*)
@@ -2488,6 +2497,13 @@ while [ "$#" -gt 0 ]; do
     icu)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_ICU="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    system-proxies)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SYSTEM_PROXIES="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3911,6 +3927,9 @@ Configure options:
 
     -no-largefile ...... Disables large file support.
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
+
+ *  -no-system-proxies . Do not use system network proxies by default.
+    -system-proxies .... Use system network proxies by default.
 
 EOF
 if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
@@ -7312,6 +7331,7 @@ fi
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 [ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
+[ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
 if [ "$CFG_IPV6" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG ipv6"
 fi
@@ -8995,6 +9015,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 echo "ICD support ............ $CFG_ICD"
 echo "libICU support ......... $CFG_ICU"
+echo "Use system proxies ..... $CFG_SYSTEM_PROXIES"
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
