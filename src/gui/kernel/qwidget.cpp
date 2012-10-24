@@ -135,6 +135,10 @@
 #include <bps/navigator.h>
 #endif
 
+#ifdef Q_OS_BLACKBERRY_TABLET
+#include <bps/orientation.h>
+#endif
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -11023,11 +11027,35 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (testAttribute(Qt::WA_AutoOrientation)) {
             navigator_rotation_lock(false);
         } else {
+#ifdef Q_OS_BLACKBERRY_TABLET
+            const bool portraitLocked = testAttribute(Qt::WA_LockPortraitOrientation);
+
+            orientation_direction_t direction;
+            orientation_get(&direction, 0);
+
+            int rotation = 0;
+
+            switch (direction) {
+            case ORIENTATION_TOP_UP:
+            case ORIENTATION_RIGHT_UP:
+                rotation = portraitLocked ? 90 : 0;
+                break;
+            case ORIENTATION_BOTTOM_UP:
+            case ORIENTATION_LEFT_UP:
+                rotation = portraitLocked ? 270 : 180;
+                break;
+            default:
+                break;
+            }
+
+            navigator_set_orientation(rotation, 0);
+#else
             navigator_set_orientation_mode((testAttribute(Qt::WA_LockPortraitOrientation) ?
                                             NAVIGATOR_PORTRAIT : NAVIGATOR_LANDSCAPE), 0);
+#endif // Q_OS_BLACKBERRY_TABLET
             navigator_rotation_lock(true);
         }
-#endif
+#endif // Q_OS_BLACKBERRY
 
 #ifdef Q_WS_S60
         CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
