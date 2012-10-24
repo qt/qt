@@ -72,7 +72,10 @@ QBBRasterWindowSurface::~QBBRasterWindowSurface()
 
 QPaintDevice *QBBRasterWindowSurface::paintDevice()
 {
-    return mPlatformWindow->renderBuffer().image();
+    if (mPlatformWindow->hasBuffers())
+        return mPlatformWindow->renderBuffer().image();
+
+    return 0;
 }
 
 void QBBRasterWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
