@@ -2744,7 +2744,7 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->text(QAccessible::Value, 6), QString());
     QCOMPARE(iface->textInterface()->characterCount(), 31);
     QFontMetrics fm(edit.font());
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(UBUNTU_ONEIRIC)
     QEXPECT_FAIL("", "QTBUG-26499", Abort);
 #endif
     QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
