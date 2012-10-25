@@ -1630,6 +1630,30 @@ static void getXDefault(const char *group, const char *key, bool *val)
 }
 #endif
 
+#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+// Find out if our parent process is gdb by looking at the 'exe' symlink under /proc,.
+// or, for older Linuxes, read out 'cmdline'.
+bool runningUnderDebugger()
+{
+    const QString parentProc = QLatin1String("/proc/") + QString::number(getppid());
+    const QFileInfo parentProcExe(parentProc + QLatin1String("/exe"));
+    if (parentProcExe.isSymLink())
+        return parentProcExe.symLinkTarget().endsWith(QLatin1String("/gdb"));
+    QFile f(parentProc + QLatin1String("/cmdline"));
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray s;
+    char c;
+    while (f.getChar(&c) && c) {
+        if (c == '/')
+            s.clear();
+        else
+            s += c;
+    }
+    return s == "gdb";
+}
+#endif
+
 // ### This should be static but it isn't because of the friend declaration
 // ### in qpaintdevice.h which then should have a static too but can't have
 // ### it because "storage class specifiers invalid in friend function
@@ -1854,26 +1878,10 @@ void qt_init(QApplicationPrivate *priv, int,
     priv->argc = j;
 
 #if defined(QT_DEBUG) && defined(Q_OS_LINUX)
-    if (!appNoGrab && !appDoGrab) {
-        QString s;
-        s.sprintf("/proc/%d/cmdline", getppid());
-        QFile f(s);
-        if (f.open(QIODevice::ReadOnly)) {
-            s.clear();
-            char c;
-            while (f.getChar(&c) && c) {
-                if (c == '/')
-                    s.clear();
-                else
-                    s += QLatin1Char(c);
-            }
-            if (s == QLatin1String("gdb")) {
-                appNoGrab = true;
-                qDebug("Qt: gdb: -nograb added to command-line options.\n"
-                       "\t Use the -dograb option to enforce grabbing.");
-            }
-            f.close();
-        }
+    if (!appNoGrab && !appDoGrab && runningUnderDebugger()) {
+        appNoGrab = true;
+        qDebug("Qt: gdb: -nograb added to command-line options.\n"
+               "\t Use the -dograb option to enforce grabbing.");
     }
 #endif
 
