@@ -1184,9 +1184,11 @@ void QFileDialog::selectNameFilter(const QString &filter)
         d->selectNameFilter_sys(filter);
         return;
     }
-    int i;
+    int i = -1;
     if (testOption(HideNameFilterDetails)) {
-        i = d->qFileDialogUi->fileTypeCombo->findText(qt_strip_filters(qt_make_filter_list(filter)).first());
+        const QStringList filters = qt_strip_filters(qt_make_filter_list(filter));
+        if (!filters.isEmpty())
+            i = d->qFileDialogUi->fileTypeCombo->findText(filters.first());
     } else {
         i = d->qFileDialogUi->fileTypeCombo->findText(filter);
     }
@@ -1793,7 +1795,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
 
     // create a qt dialog
     QFileDialog dialog(args);
-    if (selectedFilter)
+    if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
@@ -1886,7 +1888,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
 
     // create a qt dialog
     QFileDialog dialog(args);
-    if (selectedFilter)
+    if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
@@ -1981,7 +1983,7 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     // create a qt dialog
     QFileDialog dialog(args);
     dialog.setAcceptMode(AcceptSave);
-    if (selectedFilter)
+    if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
