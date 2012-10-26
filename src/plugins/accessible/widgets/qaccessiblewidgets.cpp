@@ -1433,8 +1433,13 @@ QRect QAccessibleTextWidget::characterRect(int offset, CoordinateType coordType)
 
             r.setWidth(averageCharWidth);
         }
+        int height = line.height();
+
+        // make sure that height does not include leading. (only ascent + descent + 1)
+        if (line.leadingIncluded())
+            height -= qRound(line.leading());
         r = QRect(layoutPosition.x() + x, layoutPosition.y() + line.y(),
-                  w, line.height());
+                  w, height);
 
         if (coordType == RelativeToScreen) {
             r.moveTo(viewport()->mapToGlobal(r.topLeft()));
