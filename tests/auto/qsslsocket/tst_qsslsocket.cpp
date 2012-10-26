@@ -55,7 +55,9 @@
 #include <QAuthenticator>
 
 #include "private/qhostinfo_p.h"
+#ifndef QT_NO_OPENSSL
 #include "private/qsslsocket_openssl_p.h"
+#endif
 
 #include "../network-settings.h"
 
