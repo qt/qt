@@ -887,6 +887,13 @@ void QHeaderView::resizeSection(int logical, int size)
     if (size != oldSize)
         d->createSectionSpan(visual, visual, size, d->headerSectionResizeMode(visual));
 
+    if (!updatesEnabled()) {
+        if (d->hasAutoResizeSections())
+            d->doDelayedResizeSections();
+        emit sectionResized(logical, oldSize, size);
+        return;
+    }
+
     int w = d->viewport->width();
     int h = d->viewport->height();
     int pos = sectionViewportPosition(logical);
