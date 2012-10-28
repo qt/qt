@@ -197,6 +197,7 @@ private slots:
     void QTBUG14242_hideSectionAutoSize();
 
     void initialSortOrderRole();
+    void ensureNoIndexAtLength();
 
 protected:
     QWidget *topLevel;
@@ -2161,6 +2162,18 @@ void tst_QHeaderView::initialSortOrderRole()
     QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), 0);
     QCOMPARE(view.horizontalHeader()->sortIndicatorOrder(), Qt::AscendingOrder);
 }
+
+void tst_QHeaderView::ensureNoIndexAtLength()
+{
+    QTableView qtv;
+    QStandardItemModel amodel(4, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.verticalHeader();
+    QVERIFY(hv->visualIndexAt(hv->length()) == -1);
+    hv->resizeSection(hv->count() - 1, 0);
+    QVERIFY(hv->visualIndexAt(hv->length()) == -1);
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"
