@@ -53,7 +53,8 @@
 QT_BEGIN_NAMESPACE
 
 QBBRasterWindowSurface::QBBRasterWindowSurface(QWidget *window)
-    : QWindowSurface(window)
+    : QWindowSurface(window),
+      mUseFrontBuffer(false)
 {
 #if defined(QBBRASTERWINDOWSURFACE_DEBUG)
     qDebug() << "QBBRasterWindowSurface::QBBRasterWindowSurface - w=" << window;
@@ -73,7 +74,8 @@ QBBRasterWindowSurface::~QBBRasterWindowSurface()
 QPaintDevice *QBBRasterWindowSurface::paintDevice()
 {
     if (mPlatformWindow->hasBuffers())
-        return mPlatformWindow->renderBuffer().image();
+        return (mUseFrontBuffer) ? mPlatformWindow->frontBuffer().image()
+                                : mPlatformWindow->renderBuffer().image();
 
     return 0;
 }
@@ -169,6 +171,21 @@ void QBBRasterWindowSurface::endPaint(const QRegion &region)
 #if defined(QBBRASTERWINDOWSURFACE_DEBUG)
     qDebug() << "QBBRasterWindowSurface::endPaint - w=" << window();
 #endif
+}
+
+QPixmap QBBRasterWindowSurface::grabWidget(const QWidget *widget, const QRect &rectangle) const
+{
+    // mUseFrontBuffer is used as a workaround to tell
+    // QBBRasterWindowSurface::paintDevice() to return the
+    // front buffer instead of the renderBuffer. grabWidget()
+    // is the only use case.
+    mUseFrontBuffer = true;
+
+    QPixmap pixmap = QWindowSurface::grabWidget(widget, rectangle);
+
+    mUseFrontBuffer = false;
+
+    return pixmap;
 }
 
 QT_END_NAMESPACE

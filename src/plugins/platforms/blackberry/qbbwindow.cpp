@@ -336,6 +336,24 @@ QBBBuffer &QBBWindow::renderBuffer()
     qDebug() << "QBBWindow::renderBuffer - w=" << widget();
 #endif
 
+    return buffer(BACK_BUFFER);
+}
+
+QBBBuffer &QBBWindow::frontBuffer()
+{
+#if defined(QBBWINDOW_DEBUG)
+    qDebug() << "QBBWindow::frontBuffer - w=" << widget();
+#endif
+
+    return buffer(FRONT_BUFFER);
+}
+
+QBBBuffer &QBBWindow::buffer(QBBWindow::Buffer bufferIndex)
+{
+#if defined(QBBWINDOW_DEBUG)
+    qDebug() << "QBBWindow::buffer - w=" << widget();
+#endif
+
     // check if render buffer is invalid
     if (mCurrentBufferIndex == -1) {
         // check if there are any buffers available
@@ -368,6 +386,20 @@ QBBBuffer &QBBWindow::renderBuffer()
         mPreviousBufferIndex = -1;
     }
 
+    if (bufferIndex == BACK_BUFFER) {
+        return mBuffers[mCurrentBufferIndex];
+    } else if (bufferIndex == FRONT_BUFFER) {
+        int buf = mCurrentBufferIndex - 1;
+
+        if (buf < 0)
+            buf = MAX_BUFFER_COUNT - 1;
+
+        return mBuffers[buf];
+    }
+
+    qFatal("QBBWindow::buffer() - invalid buffer index. Aborting");
+
+    // never happens
     return mBuffers[mCurrentBufferIndex];
 }
 

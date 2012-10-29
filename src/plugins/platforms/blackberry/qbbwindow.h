@@ -52,9 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// all surfaces double buffered
-#define MAX_BUFFER_COUNT    2
-
 class QPlatformWindowFormat;
 class QBBGLContext;
 class QBBScreen;
@@ -77,6 +74,8 @@ public:
     bool hasBuffers() const { return !mBufferSize.isEmpty(); }
 
     QBBBuffer &renderBuffer();
+    QBBBuffer &frontBuffer();
+
     void scroll(const QRegion &region, int dx, int dy, bool flush=false);
     void post(const QRegion &dirty);
 
@@ -97,6 +96,15 @@ public:
     QBBWindow *findWindow(screen_window_t windowHandle);
 
 private:
+
+    enum Buffer {
+        BACK_BUFFER,
+        FRONT_BUFFER,
+        MAX_BUFFER_COUNT
+    };
+
+    QBBBuffer &buffer(QBBWindow::Buffer bufferIndex);
+
     screen_context_t mContext;
     screen_window_t mWindow;
     QSize mBufferSize;

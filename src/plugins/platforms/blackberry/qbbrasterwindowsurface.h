@@ -63,6 +63,8 @@ public:
     virtual void beginPaint(const QRegion &region);
     virtual void endPaint(const QRegion &region);
 
+    virtual QPixmap grabWidget(const QWidget *widget, const QRect &rectangle) const;
+
 private:
     class ScrollOp {
     public:
@@ -71,6 +73,8 @@ private:
         int dx;
         int dy;
     };
+
+    mutable bool mUseFrontBuffer;
 
     QBBWindow *mPlatformWindow;
     QList<ScrollOp> mScrollOpList;
