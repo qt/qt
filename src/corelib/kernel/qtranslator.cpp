@@ -58,6 +58,7 @@
 #include "qhash.h"
 #include "qtranslator_p.h"
 #include "qlocale.h"
+#include "qresource.h"
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
@@ -224,7 +225,7 @@ public:
     enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88 };
 
     QTranslatorPrivate()
-        : used_mmap(0), unmapPointer(0), unmapLength(0),
+        : used_mmap(0), unmapPointer(0), unmapLength(0), resource(0),
           messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
@@ -232,6 +233,9 @@ public:
     bool used_mmap : 1;
     char *unmapPointer;
     unsigned int unmapLength;
+
+    // The resource object in case we loaded the translations from a resource
+    QResource *resource;
 
     // for squeezed but non-file data, this is what needs to be deleted
     const uchar *messageArray;
@@ -499,6 +503,23 @@ bool QTranslatorPrivate::do_load(const QString &realname)
     QTranslatorPrivate *d = this;
     bool ok = false;
 
+    const bool isResourceFile = realname.startsWith(QLatin1Char(':'));
+    if (isResourceFile) {
+        // If the translation is in a non-compressed resource file, the data is already in
+        // memory, so no need to use QFile to copy it again.
+        Q_ASSERT(!d->resource);
+        d->resource = new QResource(realname);
+        if (d->resource->isValid() && !d->resource->isCompressed()) {
+            d->unmapLength = d->resource->size();
+            d->unmapPointer = reinterpret_cast<char *>(const_cast<uchar *>(d->resource->data()));
+            d->used_mmap = false;
+            ok = true;
+        } else {
+            delete d->resource;
+            d->resource = 0;
+        }
+    }
+
 #ifdef QT_USE_MMAP
 
 #ifndef MAP_FILE
@@ -508,32 +529,33 @@ bool QTranslatorPrivate::do_load(const QString &realname)
 #define MAP_FAILED -1
 #endif
 
-    int fd = -1;
-    if (!realname.startsWith(QLatin1Char(':')))
-        fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY,
+    else {
+        int fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY,
 #if defined(Q_OS_WIN)
                      _S_IREAD | _S_IWRITE
 #else
                      0666
 #endif
             );
-    if (fd >= 0) {
-        QT_STATBUF st;
-        if (!QT_FSTAT(fd, &st)) {
-            char *ptr;
-            ptr = reinterpret_cast<char *>(
-                mmap(0, st.st_size,             // any address, whole file
-                     PROT_READ,                 // read-only memory
-                     MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                     fd, 0));                   // from offset 0 of fd
-            if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
-                d->used_mmap = true;
-                d->unmapPointer = ptr;
-                d->unmapLength = st.st_size;
-                ok = true;
+
+        if (fd >= 0) {
+            QT_STATBUF st;
+            if (!QT_FSTAT(fd, &st)) {
+                char *ptr;
+                ptr = reinterpret_cast<char *>(
+                    mmap(0, st.st_size,             // any address, whole file
+                         PROT_READ,                 // read-only memory
+                         MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                         fd, 0));                   // from offset 0 of fd
+                if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
+                    d->used_mmap = true;
+                    d->unmapPointer = ptr;
+                    d->unmapLength = st.st_size;
+                    ok = true;
+                }
             }
+            ::close(fd);
         }
-        ::close(fd);
     }
 #endif // QT_USE_MMAP
 
@@ -947,9 +969,12 @@ void QTranslatorPrivate::clear()
             munmap(unmapPointer, unmapLength);
         else
 #endif
+        if (!resource)
             delete [] unmapPointer;
     }
 
+    delete resource;
+    resource = 0;
     unmapPointer = 0;
     unmapLength = 0;
     messageArray = 0;
