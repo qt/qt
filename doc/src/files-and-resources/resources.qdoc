@@ -165,7 +165,7 @@
     argument.
 
     \code
-        rcc -no-compress myresources.qrc 
+        rcc -no-compress myresources.qrc
     \endcode
 
     \c rcc also gives you some control over the compression. You can

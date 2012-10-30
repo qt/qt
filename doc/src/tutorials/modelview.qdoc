@@ -103,8 +103,8 @@
     Let's have a closer look at a standard table widget. A table widget is a 2D
     array of the data elements that the user can change. The table widget can be
     integrated into a program flow by reading and writing the data elements that
-    the table widget provides. 
-    This method is very intuitive and useful in many applications, but displaying 
+    the table widget provides.
+    This method is very intuitive and useful in many applications, but displaying
     and editing a database table with a standard table widget can be problematic.
     Two copies of the data have to be coordinated: one outside the
     widget; one inside the widget. The developer is responsible for
@@ -183,12 +183,12 @@
 
 
     \section1 2. A Simple Model/View Application
-    If you want to develop a model/view application, where should you start? 
-    We recommend starting with a simple example and extending it step-by-step. 
-    This makes understanding the architecture a lot easier. Trying to understand 
-    the model/view architecture in detail before invoking the IDE has proven 
-    to be less convenient for many developers. It is substantially easier to 
-    start with a simple model/view application that has demo data. Give it a 
+    If you want to develop a model/view application, where should you start?
+    We recommend starting with a simple example and extending it step-by-step.
+    This makes understanding the architecture a lot easier. Trying to understand
+    the model/view architecture in detail before invoking the IDE has proven
+    to be less convenient for many developers. It is substantially easier to
+    start with a simple model/view application that has demo data. Give it a
     try! Simply replace the data in the examples below with your own.
 
     Below are 7 very simple and independent applications that show different
@@ -205,7 +205,7 @@
 
     We have the usual \l {modelview-part2-main-cpp.html}{main()} function:
 
-    Here is the interesting part: We create an instance of MyModel and use 
+    Here is the interesting part: We create an instance of MyModel and use
     \l{QTableView::setModel()}{tableView.setModel(&myModel);} to pass a
     pointer of it to to \l{QTableView}{tableView}. \l{QTableView}{tableView}
     will invoke the methods of the pointer it has received to find out two
@@ -569,28 +569,6 @@
     \o \l{QItemDelegate}{QItemDelegate Class Reference}
     \endlist
 
-
-    \section2 3.5 Debugging with ModelTest
-
-    The passive nature of models provides new challenges for programmers.
-    Inconsistencies in the model can cause the application to crash. Since the
-    model is hit by numerous calls from the view, it is hard to find out which
-    call has crashed the application and which operation has introduced the
-    problem.
-
-    Qt Labs provides software called
-    \l{http://labs.qt.nokia.com/page/Projects/Itemview/Modeltest}{ModelTest},
-    which checks models while your programming is running. Every time the model
-    is changed, ModelTest scans the model and reports errors with an assert.
-    This is especially important for tree models, since their hierarchical
-    nature leaves many possibilities for subtle inconsistencies.
-
-    Unlike view classes, ModelTest uses out of range indexes to test the model.
-    This means your application may crash with ModelTest even if it runs
-    perfectly without it. So you also need to handle all of the indexes that are
-    out of range when using ModelTest.
-
-
     \section1 4. Good Sources of Additional Information
 
     \section2 4.1 Books
@@ -608,12 +586,9 @@
           Translated from \bold{Qt 4, Einführung in die Applikationsentwicklung},
           \e{Open Source Press}, ISBN 3-937514-12-0.
        \o \bold{Foundations of Qt Development} / Johan Thelin, \e{Apress}, ISBN 1-59059-831-8.
-       \o \bold{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6. 
-          This book covers Model/View programming on more than 150 pages. 
+       \o \bold{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6.
+          This book covers Model/View programming on more than 150 pages.
     \endlist
-
-    More information about these books is available on the
-    \l{Books about Qt Programming}{Qt Web site}.
 
     The following list provides an overview of example programs contained in the first three
     books listed above. Some of them make very good templates for developing similar

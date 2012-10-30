@@ -1702,9 +1702,6 @@ static const Qt::WindowFlags DefaultWindowFlags =
     during the execution of the program. Use setCustomColor() to set
     the custom colors, and use customColor() to get them.
 
-    Additional widgets that allow users to pick colors are available
-    as \l{Qt Solutions}.
-
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
     how to use QColorDialog as well as other built-in Qt dialogs.
 

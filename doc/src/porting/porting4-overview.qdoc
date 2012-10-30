@@ -254,10 +254,10 @@
 
     \section1 Significantly Changed Features
 
-    Some Qt 3 features have changed significantly for Qt 4. 
+    Some Qt 3 features have changed significantly for Qt 4.
     and the recommended way of using them has therefore changed
-    significantly, too. This is most notably true for the drag 
-    and drop API. 
+    significantly, too. This is most notably true for the drag
+    and drop API.
 
     Additionally, some of the more specialized features in Qt 3 are
     often used to help customize widgets and add extra polish to an
@@ -296,12 +296,6 @@
     flicker when painting custom widgets. This approach is
     unnecessary with Qt 4 because double buffering is
     automatically performed by the paint engine.
-
-    It still makes sense to use double buffering in
-    Qt 4 in certain contexts. For example, in
-    Chapter 5 of \l{GUI Programming with Qt 3}, double buffering
-    was presented as a speed optimization and not just as a means
-    of reducing flicker.
 
     \section2 Data-Aware Forms
 
@@ -354,6 +348,6 @@
     \section2 Events
     In Qt 3, QCloseEvents were not accepted by default. In Qt 4,
     the event handler QWidget::closeEvent() receives QCloseEvents,
-    and accepts them by default closing the application. To avoid 
-    this, please reimplement QWidget::closeEvent().  
+    and accepts them by default closing the application. To avoid
+    this, please reimplement QWidget::closeEvent().
 */

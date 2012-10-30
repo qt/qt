@@ -84,11 +84,6 @@
          \o Custom types can easily be added to the test data and test output.
     \endtable
 
-    \note For higher-level GUI and application testing needs, please
-    see the \l{Partner Directory} for Qt testing products provided by
-    Nokia partners.
-
-
     \section1 QTestLib API
 
     All public methods are in the \l QTest namespace. In addition, the
@@ -755,7 +750,7 @@
     \section1 External Tools
 
     Tools for handling and visualizing test data are available as part of
-    the \l {qtestlib-tools} project in the \l{Qt Labs} web site.
+    the \l {qtestlib-tools} project in gitorious.org.
     These include a tool for comparing performance data obtained from test
     runs and a utility to generate Web-based graphs of performance data.
 
@@ -763,6 +758,3 @@
     for more information on these tools and a simple graphing example.
 
 */
-
-
-
