@@ -21,5 +21,4 @@ wince*|symbian: {
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
-CONFIG += parallel_test
-
+win32:CONFIG+=insignificant_test # QTQAINFRA-574
