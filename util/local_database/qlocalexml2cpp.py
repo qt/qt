@@ -816,6 +816,7 @@ def main():
     # special cases for norwegian. we really need to make it right at some point.
     qlocaleh_temp_file.write("        NorwegianBokmal = Norwegian,\n")
     qlocaleh_temp_file.write("        NorwegianNynorsk = Nynorsk,\n")
+    qlocaleh_temp_file.write("        Kurundi = Rundi,\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
     qlocaleh_temp_file.write("    };\n")
 

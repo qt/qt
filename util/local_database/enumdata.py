@@ -113,7 +113,7 @@ language_list = {
     65 : [ "Kirghiz",             "ky" ],
     66 : [ "Korean",              "ko" ],
     67 : [ "Kurdish",             "ku" ],
-    68 : [ "Kurundi",             "rn" ],
+    68 : [ "Rundi",               "rn" ],
     69 : [ "Laothian",            "lo" ],
     70 : [ "Latin",               "la" ],
     71 : [ "Latvian",             "lv" ],
@@ -260,7 +260,26 @@ language_list = {
     212 : [ "Central Morocco Tamazight", "tzm" ],
     213 : [ "Koyraboro Senni",    "ses" ],
     214 : [ "Shambala",           "ksb" ],
-    215 : [ "Bodo",               "brx" ]
+    215 : [ "Bodo",               "brx" ],
+    216 : [ "Aghem",              "agq" ],
+    217 : [ "Basaa",              "bas" ],
+    218 : [ "Zarma",              "dje" ],
+    219 : [ "Duala",              "dua" ],
+    220 : [ "JolaFonyi",          "dyo" ],
+    221 : [ "Ewondo",             "ewo" ],
+    222 : [ "Bafia",              "ksf" ],
+    223 : [ "LubaKatanga",        "lu" ],
+    224 : [ "MakhuwaMeetto",      "mgh" ],
+    225 : [ "Mundang",            "mua" ],
+    226 : [ "Kwasio",             "nmg" ],
+    227 : [ "Nuer",               "nus" ],
+    228 : [ "Sakha",              "sah" ],
+    229 : [ "Sangu",              "sbp" ],
+    230 : [ "Congo Swahili",      "swc" ],
+    231 : [ "Tasawaq",            "twq" ],
+    232 : [ "Vai",                "vai" ],
+    233 : [ "Walser",             "wae" ],
+    234 : [ "Yangben",            "yav" ]
 }
 
 country_list = {
