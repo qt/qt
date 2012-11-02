@@ -755,6 +755,10 @@ void tst_QLocalSocket::threadedConnection_data()
 
 void tst_QLocalSocket::threadedConnection()
 {
+#if defined(Q_OS_WIN)
+    QSKIP("This test is flaky on Windows. See QTBUG-27816 and QTQAINFRA-574.", SkipAll);
+#endif
+
 #ifdef Q_OS_SYMBIAN
     unlink("qlocalsocket_threadtest");
 #endif
