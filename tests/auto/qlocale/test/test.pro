@@ -1,7 +1,7 @@
 CONFIG += testcase
 
 TARGET = ../tst_qlocale
-QT = core network testlib
+QT = core testlib
 embedded: QT += gui
 SOURCES += ../tst_qlocale.cpp
 
