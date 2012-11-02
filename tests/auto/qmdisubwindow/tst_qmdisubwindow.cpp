@@ -65,6 +65,7 @@
 
 #include "../../shared/util.h"
 
+#include <QSysInfo>
 
 QT_BEGIN_NAMESPACE
 #if defined(Q_WS_X11)
@@ -775,7 +776,12 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 
     // Leave resize mode
     sendMouseRelease(mouseReceiver, mousePosition);
-    QCOMPARE(resizeSpy.count(), expectedGeometryCount);
+    int resizeSpyCount = resizeSpy.count();
+#ifdef Q_OS_MAC
+    if ((QSysInfo::MacintoshVersion == QSysInfo::MV_10_6) && (resizeSpyCount != expectedGeometryCount))
+        QEXPECT_FAIL("", "QTBUG-26803", Continue);
+#endif
+    QCOMPARE(resizeSpyCount, expectedGeometryCount);
     QCOMPARE(window->size(), windowSize + QSize(geometryCount, geometryCount));
     }
 
