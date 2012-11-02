@@ -242,7 +242,7 @@ def findEntry(base, path, draft=None, attribute=None):
         if result:
             return result
         if not aliaspath:
-            raise Error("findEntry: fatal error: %s: did not found key %s" % (filename, path))
+            raise Error("findEntry: fatal error: %s: can not find key %s" % (filename, path))
         path = aliaspath
 
     return result

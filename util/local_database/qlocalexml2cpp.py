@@ -792,6 +792,7 @@ def main():
     data_temp_file.close()
     qlocaledata_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
     os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
 
     # qlocale.h
@@ -853,6 +854,7 @@ def main():
     qlocaleh_temp_file.close()
     qlocaleh_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.h")
     os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
 
     # qlocale.qdoc
@@ -871,6 +873,7 @@ def main():
     qlocaleqdoc_temp_file.close()
     qlocaleqdoc_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
     os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
 
 if __name__ == "__main__":
