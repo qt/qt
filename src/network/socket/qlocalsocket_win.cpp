@@ -604,7 +604,7 @@ bool QLocalSocket::waitForReadyRead(int msecs)
         case WAIT_OBJECT_0:
             d->_q_notified();
             // We just noticed that the pipe is gone.
-            if (d->pipeClosed) {
+            if (d->pipeClosed && !bytesAvailable()) {
                 close();
                 return false;
             }
