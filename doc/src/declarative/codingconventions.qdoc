@@ -76,10 +76,8 @@ can be written like this:
 
 QML and JavaScript do not enforce private properties like C++. There is a need
 to hide these private properties, for example, when the properties are part of
-the implementation. As a convention, private properties begin with two
-\e underscore characters. For example, \c __area, is a property that is
-accessible but is not meant for public use. Note that QML and JavaScript will
-grant the user access to these properties.
+the implementation. To effectively gain private properties in a QML Item, the
+convention is to add a QtObject{} child to contain the properties. This shields them from being accessed outside the file in QML and JavaScript. As it involves the creation of another object, it is more expensive than just creating a property. To minimize the performance cost, try to group all private properties in one file into the same QtObject.
 
 \snippet doc/src/snippets/declarative/codingconventions/private.qml 0
 
