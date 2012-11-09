@@ -140,6 +140,7 @@ private slots:
     void saveState();
     void restoreState();
     void restoreStateFromPreviousVersion();
+    void restoreStateDockWidgetBug();
     void createPopupMenu();
     void iconSizeChanged();
     void toolButtonStyleChanged();
@@ -1283,6 +1284,46 @@ void tst_QMainWindow::restoreState()
     state = mw.saveState(1);
     QVERIFY(!mw.restoreState(state));
     QVERIFY(mw.restoreState(state, 1));
+}
+
+/*
+    QWidget::setStylesheet() generates QEvent::StyleChange event, which will
+    cause the function QDockAreaLayout::fitLayout() to be called before the layout
+    of MainWindow is activated. This will force the size of dock widgets
+    and the central widget to be calculated using the wrong geometry, which will
+    break the state restored by QMainWindow::restoreState().
+*/
+void tst_QMainWindow::restoreStateDockWidgetBug()
+{
+    QByteArray state;
+
+    //save state
+    {
+        QMainWindow mw1;
+        QDockWidget *dw1 = new  QDockWidget();
+        dw1->setObjectName("Left DockWidget");
+        mw1.addDockWidget(Qt::LeftDockWidgetArea, dw1);
+        mw1.setCentralWidget(new QTextEdit());
+        mw1.show();
+        QApplication::processEvents();
+        dw1->setFixedWidth(101);
+        QApplication::processEvents();
+
+        state = mw1.saveState();
+    }
+
+    //restore state
+    QMainWindow mw2;
+    QDockWidget *dw2 = new  QDockWidget();
+    dw2->setObjectName("Left DockWidget");
+    mw2.addDockWidget(Qt::LeftDockWidgetArea, dw2);
+    mw2.setCentralWidget(new QTextEdit());
+    mw2.restoreState(state);
+    mw2.setStyleSheet("color:red");
+    mw2.show();
+    QApplication::processEvents();
+
+    QCOMPARE(dw2->width(), 101);
 }
 
 //tests the restoration of the previous versions of window settings
