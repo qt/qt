@@ -91,7 +91,9 @@ public:
 private slots:
     void initTestCase();
     void windowsDefaultLocale();
+#ifdef Q_OS_MAC
     void macDefaultLocale();
+#endif
 
     void ctor();
     void emptyCtor();
@@ -1106,12 +1108,9 @@ void tst_QLocale::toDateTime()
         QCOMPARE(l.toDateTime(string, QLocale::LongFormat), result);
 }
 
+#ifdef Q_OS_MAC
 void tst_QLocale::macDefaultLocale()
 {
-#ifndef Q_OS_MAC
-    QSKIP("This is a Mac OS X-only test", SkipAll);
-#endif
-
     QLocale locale = QLocale::system();
     if (locale.name() != QLatin1String("en_US")) {
         QSKIP("This test only tests for en_US", SkipAll);
@@ -1128,7 +1127,10 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.decimalPoint(), QChar('.'));
     QCOMPARE(locale.groupSeparator(), QChar(','));
     QCOMPARE(locale.dateFormat(QLocale::ShortFormat), QString("M/d/yy"));
-    QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, yyyy"));
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6)
+        QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, y"));
+    else
+        QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, yyyy"));
     QCOMPARE(locale.timeFormat(QLocale::ShortFormat), QString("h:mm AP"));
     QCOMPARE(locale.timeFormat(QLocale::LongFormat), QString("h:mm:ss AP t"));
 
@@ -1154,6 +1156,7 @@ void tst_QLocale::macDefaultLocale()
 	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
+    // System Preferences->Language & Text, Region Tab, should choose "United States" for Region field
     QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234.00"));
     QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("($1,234.00)"));
     QCOMPARE(locale.toCurrencyString(double(1234.56)), QString("$1,234.56"));
@@ -1190,6 +1193,7 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.weekdays(), days);
 
 }
+#endif
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
