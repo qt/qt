@@ -1433,6 +1433,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         } else {
             [item setSubmenu:subMenu];
         }
+        [item setAction:nil];
 #endif
     } else { //respect some other items
 #ifndef QT_MAC_USE_COCOA
@@ -1447,6 +1448,8 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         }
 #else
         [item setSubmenu:0];
+        if ([item action] == nil)
+            [item setAction:@selector(qtDispatcherToQAction:)];
         // No key equivalent set for multiple key QKeySequence.
         if (accel.count() == 1) {
             [item setKeyEquivalent:keySequenceToKeyEqivalent(accel)];
