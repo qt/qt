@@ -15,4 +15,4 @@ symbian: {
   INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
 }
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+CONFIG+=insignificant_test # QTQAINFRA-574
