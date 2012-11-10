@@ -359,6 +359,9 @@ void tst_ExceptionSafety_Objects::objects()
         || tag == QLatin1String("QThreadPool"))
         QSKIP("This type of object is not currently strongly exception safe", SkipSingle);
 
+    if (tag == QLatin1String("QWidget"))
+        QSKIP("QTBUG-18927", SkipAll);
+
     QFETCH(AbstractTester *, objectCreator);
 
     doOOMTest(*objectCreator, 0);
