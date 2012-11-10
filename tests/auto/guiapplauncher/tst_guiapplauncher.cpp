@@ -381,6 +381,25 @@ void tst_GuiAppLauncher::run()
     const bool rc = runApp(data, &errorMessage);
     if (!rc) // Wait for windows to disappear after kill
         WindowManager::sleepMS(500);
+#if defined(Q_OS_LINUX) && defined(__i386__) // Ubuntu 10.04 x86
+    QEXPECT_FAIL("Qt Designer", "QTBUG-27938", Continue);
+#endif
+#if defined(Q_OS_LINUX) && defined(__x86_64__) // Ubuntu 11.10 x64
+    QEXPECT_FAIL("Qt Designer", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("Qt Linguist", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("Qt Demo", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("Browser Demo", "QTBUG-27938", Continue);
+#endif
+#if defined(Q_OS_WIN)
+    QEXPECT_FAIL("Qt Demo", "QTBUG-27938", Continue);
+#endif
+#if defined(Q_OS_WIN) && defined(QT_BUILD_INTERNAL)
+    QEXPECT_FAIL("Qt Demo", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("Composition Demo", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("Sub-Attac Demo", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("graphicsview/padnavigator Example", "QTBUG-27938", Continue);
+    QEXPECT_FAIL("painting/svgviewer Example", "QTBUG-27938", Continue);
+#endif
     QVERIFY2(rc, qPrintable(errorMessage));
 }
 
