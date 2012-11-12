@@ -1848,7 +1848,9 @@ OSMenuRef QMenuBarPrivate::macMenu()
         return 0;
     } else if (!mac_menubar->menu) {
         mac_menubar->menu = qt_mac_create_menu(q);
+#ifdef QT_MAC_USE_COCOA
         [mac_menubar->menu setAutoenablesItems:NO];
+#endif
         ProcessSerialNumber mine, front;
         if (GetCurrentProcess(&mine) == noErr && GetFrontProcess(&front) == noErr) {
             if (!qt_mac_no_menubar_merge && !mac_menubar->apple_menu) {
