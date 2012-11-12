@@ -299,6 +299,7 @@ void tst_QWidget_window::tst_showWithoutActivating()
     QLineEdit *lineEdit = new QLineEdit;
     lineEdit->setAttribute(Qt::WA_ShowWithoutActivating, true);
     lineEdit->show();
+    QTest::qWaitForWindowShown(lineEdit);
     lineEdit->setAttribute(Qt::WA_ShowWithoutActivating, false);
     lineEdit->raise();
     lineEdit->activateWindow();
