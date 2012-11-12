@@ -2547,7 +2547,7 @@ void Configure::autoDetection()
     if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
         dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
 
-    if ((platform() == QNX || platform == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
         dictionary[ "SLOG2" ] = checkAvailability("SLOG2") ? "yes" : "no";
     }
 
