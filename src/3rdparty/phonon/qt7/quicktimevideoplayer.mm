@@ -452,7 +452,7 @@ float QuickTimeVideoPlayer::percentageLoaded()
 
 void QuickTimeVideoPlayer::waitStatePlayable()
 {
-#if defined(QT_MAC_USE_COCOA)
+#if defined(QT_MAC_USE_COCOA) && !defined(Q_OS_MAC32)
     long state = [[m_QTMovie attributeForKey:@"QTMovieLoadStateAttribute"] longValue];
     while (state != QTMovieLoadStateError && state < QTMovieLoadStatePlayable)
         state = [[m_QTMovie attributeForKey:@"QTMovieLoadStateAttribute"] longValue];
