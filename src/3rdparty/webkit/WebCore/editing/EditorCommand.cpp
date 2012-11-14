@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)
  * Copyright (C) 2009 Igalia S.L.
  *
  * Redistribution and use in source and binary forms, with or without

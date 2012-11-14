@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008,2009 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)
     Copyright (C) 2007 Staikos Computing Services Inc.
 
     This library is free software; you can redistribute it and/or

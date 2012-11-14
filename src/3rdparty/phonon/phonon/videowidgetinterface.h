@@ -1,5 +1,5 @@
 /*  This file is part of the KDE project
-    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies). <thierry.bastian@trolltech.com>
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies). <thierry.bastian@trolltech.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

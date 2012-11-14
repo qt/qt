@@ -3291,7 +3291,7 @@ Ali želite nadomestiti predlogo?</translation>
         <translation>&lt;br/&gt;Qt Designer je snovalnik grafičnih uporabniških vmesnikov za Qt programe.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
         <translation>%1&lt;br/&gt;Avtorske pravice © 2009 Nokia Corporation in/ali njene podružnice.</translation>
     </message>
 </context>
