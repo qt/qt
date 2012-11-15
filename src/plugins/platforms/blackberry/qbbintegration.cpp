@@ -361,13 +361,13 @@ void QBBIntegration::createDisplays()
         if (!isAttached)
             continue;
 
-        createDisplay(displays[i], i == 0);
+        createDisplay(displays[i], i);
     } // of displays iteration
 }
 
-void QBBIntegration::createDisplay(screen_display_t display, bool isPrimary)
+void QBBIntegration::createDisplay(screen_display_t display, int screenIndex)
 {
-    QBBScreen *screen = new QBBScreen(mContext, display, isPrimary);
+    QBBScreen *screen = new QBBScreen(mContext, display, screenIndex);
     mScreens.append(screen);
 
     QObject::connect(mScreenEventHandler, SIGNAL(newWindowCreated(screen_window_t)),
