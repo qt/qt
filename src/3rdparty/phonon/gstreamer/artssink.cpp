@@ -1,6 +1,6 @@
 /*  This file is part of the KDE project.
 
-Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 
 This library is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -198,7 +198,7 @@ static void arts_sink_base_init (gpointer g_class) {
     static gchar longname[] = "Experimental aRts sink",
                     klass[] = "Sink/Audio",
               description[] = "aRts Audio Output Device",
-                   author[] = "Nokia Corporation and/or its subsidiary(-ies) <qt-info@nokia.com>";
+                   author[] = "Digia Plc and/or its subsidiary(-ies)";
     GstElementDetails details = GST_ELEMENT_DETAILS (longname,
                                           klass,
                                           description,

@@ -6,7 +6,7 @@
  * Copyright (C) 2006 Allan Sandfeld Jensen <sandfeld@kde.org>
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+ * Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
  * Copyright (C) 2008 Dirk Schulze <vbs85@gmx.de>
  *
  * All rights reserved.
