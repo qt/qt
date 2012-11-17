@@ -226,10 +226,18 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 {
     int originalValue;
+#ifndef QT_NO_ARM_EABI
     asm volatile("swp %0,%2,[%3]"
                  : "=&r"(originalValue), "=m" (_q_value)
                  : "r"(newValue), "r"(&_q_value)
                  : "cc", "memory");
+#else
+    while (q_atomic_swp(&q_atomic_lock, ~0) != 0)
+        qt_atomic_yield(&count);
+    originalValue=_q_value;
+    _q_value = newValue;
+    q_atomic_swp(&q_atomic_lock, 0);
+#endif
     return originalValue;
 }
 
@@ -355,10 +363,18 @@ template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 {
     T *originalValue;
+#ifndef QT_NO_ARM_EABI
     asm volatile("swp %0,%2,[%3]"
                  : "=&r"(originalValue), "=m" (_q_value)
                  : "r"(newValue), "r"(&_q_value)
                  : "cc", "memory");
+#else
+    while (q_atomic_swp(&q_atomic_lock, ~0) != 0)
+        qt_atomic_yield(&count);
+    originalValue=_q_value;
+    _q_value = newValue;
+    q_atomic_swp(&q_atomic_lock, 0);
+#endif
     return originalValue;
 }
 
