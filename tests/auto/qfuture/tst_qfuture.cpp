@@ -1282,32 +1282,18 @@ void tst_QFuture::throttling()
 
 void tst_QFuture::voidConversions()
 {
-    {
-        QFutureInterface<int> iface;
-        iface.reportStarted();
+    QFutureInterface<int> iface;
+    iface.reportStarted();
 
-        QFuture<int> intFuture(&iface);
-        int value = 10;
-        iface.reportFinished(&value);
+    QFuture<int> intFuture(&iface);
 
-        QFuture<void> voidFuture(intFuture);
-        voidFuture = intFuture;
+    int value = 10;
+    iface.reportFinished(&value);
 
-        QVERIFY(voidFuture == intFuture);
-    }
+    QFuture<void> voidFuture(intFuture);
+    voidFuture = intFuture;
 
-    {
-        QFuture<void> voidFuture;
-        {
-            QFutureInterface<QList<int> > iface;
-            iface.reportStarted();
-
-            QFuture<QList<int> > listFuture(&iface);
-            iface.reportResult(QList<int>() << 1 << 2 << 3);
-            voidFuture = listFuture;
-        }
-        QCOMPARE(voidFuture.resultCount(), 0);
-    }
+    QVERIFY(voidFuture == intFuture);
 }
 
 

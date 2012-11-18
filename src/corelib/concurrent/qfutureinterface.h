@@ -132,8 +132,6 @@ public:
 
 protected:
     bool referenceCountIsOne() const;
-    bool refT() const;
-    bool derefT() const;
 public:
 
 #ifndef QFUTURE_TEST
@@ -152,17 +150,13 @@ class QFutureInterface : public QFutureInterfaceBase
 public:
     QFutureInterface(State initialState = NoState)
         : QFutureInterfaceBase(initialState)
-    {
-        refT();
-    }
+    { }
     QFutureInterface(const QFutureInterface &other)
         : QFutureInterfaceBase(other)
-    {
-        refT();
-    }
+    { }
     ~QFutureInterface()
     {
-        if (!derefT())
+        if (referenceCountIsOne())
             resultStore().clear();
     }
 
@@ -171,8 +165,7 @@ public:
 
     QFutureInterface &operator=(const QFutureInterface &other)
     {
-        other.refT();
-        if (!derefT())
+        if (referenceCountIsOne())
             resultStore().clear();
         QFutureInterfaceBase::operator=(other);
         return *this;
