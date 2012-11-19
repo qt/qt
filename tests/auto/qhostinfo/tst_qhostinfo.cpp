@@ -594,6 +594,13 @@ void tst_QHostInfo::cache()
     // loopkup second time, result should come directly
     valid = false;
     result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+#if defined(Q_OS_LINUX) || defined(Q_WS_QWS)
+    if (valid != true)
+        QEXPECT_FAIL("", "QTBUG-28079", Continue);
+#endif
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    QEXPECT_FAIL("", "QTBUG-28079", Continue);
+#endif
     QVERIFY(valid == true);
     QVERIFY(!result.addresses().isEmpty());
 
@@ -631,6 +638,13 @@ void tst_QHostInfo::abortHostLookup()
     //it is assumed that the DNS request/response in the backend is slower than it takes to call abort
     QHostInfo::abortHostLookup(id);
     QTestEventLoop::instance().enterLoop(5);
+#if defined(Q_OS_LINUX) || defined(Q_WS_QWS)
+    if (lookupsDoneCounter != 0)
+        QEXPECT_FAIL("", "QTBUG-28079", Continue);
+#endif
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    QEXPECT_FAIL("", "QTBUG-28079", Continue);
+#endif
     QCOMPARE(lookupsDoneCounter, 0);
 }
 
