@@ -32,5 +32,3 @@ wince*|symbian: {
 
    DEPLOYMENT += addFiles patternistFiles
 }
-
-CONFIG+=insignificant_test # QTQAINFRA-574
