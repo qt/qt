@@ -1707,7 +1707,12 @@ void tst_qdeclarativetextedit::cursorDelegate()
     textEditObject->setCursorPosition(0);
     const QPoint point1 = view->mapFromScene(textEditObject->positionToRectangle(5).center());
     QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, point1);
-    QVERIFY(textEditObject->cursorPosition() != 0);
+    int textEditObjectCursorPosition = textEditObject->cursorPosition();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    if (textEditObjectCursorPosition == 0)
+        QEXPECT_FAIL("", "QTBUG-28109", Continue);
+#endif
+    QVERIFY(textEditObjectCursorPosition != 0);
     QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
     QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
 
@@ -2413,7 +2418,12 @@ void tst_qdeclarativetextedit::implicitSizePreedit()
     QInputMethodEvent event(text, QList<QInputMethodEvent::Attribute>());
     QCoreApplication::sendEvent(&view, &event);
 
-    QVERIFY(textObject->width() < textObject->implicitWidth());
+    bool widthLessThanImplicitWidth = textObject->width() < textObject->implicitWidth();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    if (!widthLessThanImplicitWidth)
+        QEXPECT_FAIL("", "QTBUG-28109", Continue);
+#endif
+    QVERIFY(widthLessThanImplicitWidth);
     QVERIFY(textObject->height() == textObject->implicitHeight());
     qreal wrappedHeight = textObject->height();
 
@@ -2512,7 +2522,12 @@ void tst_qdeclarativetextedit::preeditMicroFocus()
         ic.updateReceived = false;
         ic.sendPreeditText(preeditText, i);
         currentRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
-        QVERIFY(previousRect.left() < currentRect.left());
+        bool previousRectLessThanCurrentRect = previousRect.left() < currentRect.left();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+        if (!previousRectLessThanCurrentRect)
+            QEXPECT_FAIL("", "QTBUG-28109", Continue);
+#endif
+        QVERIFY(previousRectLessThanCurrentRect);
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
         QCOMPARE(ic.updateReceived, true);
 #endif
@@ -2679,7 +2694,12 @@ void tst_qdeclarativetextedit::inputMethodComposing()
     QCOMPARE(edit.isInputMethodComposing(), false);
 
     ic.sendEvent(QInputMethodEvent(text.mid(3), QList<QInputMethodEvent::Attribute>()));
-    QCOMPARE(edit.isInputMethodComposing(), true);
+    bool editIsInputMethodComposing = edit.isInputMethodComposing();
+#if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
+    if (!editIsInputMethodComposing)
+        QEXPECT_FAIL("", "QTBUG-28109", Continue);
+#endif
+    QCOMPARE(editIsInputMethodComposing, true);
     QCOMPARE(spy.count(), 1);
 
     ic.sendEvent(QInputMethodEvent(text.mid(12), QList<QInputMethodEvent::Attribute>()));
