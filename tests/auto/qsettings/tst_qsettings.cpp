@@ -431,11 +431,11 @@ void tst_QSettings::ctor()
         QVERIFY(settings3.applicationName() == "KillerAPP");
         QVERIFY(settings4.applicationName().isEmpty());
 
+#if !defined(Q_OS_BLACKBERRY)
         /*
             Go forwards.
         */
         settings4.setValue("key 1", QString("doodah"));
-
         QCOMPARE(settings1.value("key 1").toString(), QString("doodah"));
         QCOMPARE(settings2.value("key 1").toString(), QString("doodah"));
         QCOMPARE(settings3.value("key 1").toString(), QString("doodah"));
@@ -488,6 +488,22 @@ void tst_QSettings::ctor()
         QCOMPARE(settings2.value("key 1").toString(), QString("bilboh"));
         QCOMPARE(settings3.value("key 1").toString(), QString("catha"));
         QCOMPARE(settings4.value("key 1").toString(), QString("quirko"));
+#else
+        /*
+            No fallback mechanism and a single scope on Blackberry OS
+        */
+        settings2.setValue("key 1", QString("whoa"));
+        QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
+        QCOMPARE(settings4.value("key 1").toString(), QString("whoa"));
+        QVERIFY(!settings1.contains("key 1"));
+        QVERIFY(!settings3.contains("key 1"));
+
+        settings1.setValue("key 1", QString("blah"));
+        QCOMPARE(settings1.value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
+        QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings4.value("key 1").toString(), QString("whoa"));
+#endif
 
         /*
             Test the copies again.
@@ -524,10 +540,17 @@ void tst_QSettings::ctor()
         QSettings settings3(format, QSettings::SystemScope, "software.org", "KillerAPP");
         QSettings settings4(format, QSettings::SystemScope, "software.org");
 
+#if !defined(Q_OS_BLACKBERRY)
         QCOMPARE(settings1.value("key 1").toString(), QString("gurgle"));
         QCOMPARE(settings2.value("key 1").toString(), QString("bilboh"));
         QCOMPARE(settings3.value("key 1").toString(), QString("catha"));
         QCOMPARE(settings4.value("key 1").toString(), QString("quirko"));
+#else
+        QCOMPARE(settings1.value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
+        QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings4.value("key 1").toString(), QString("whoa"));
+#endif
 
         /*
             Test problem keys.
@@ -1299,6 +1322,8 @@ void tst_QSettings::remove()
     settings1.setValue("key 1", "gurgle");
     QCOMPARE(settings1.value("key 1").toString(), QString("gurgle"));
     QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
+
+#if !defined(Q_OS_BLACKBERRY)
     QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
     QCOMPARE(settings4.value("key 1").toString(), QString("doodah"));
 
@@ -1325,6 +1350,14 @@ void tst_QSettings::remove()
     QVERIFY(!settings2.contains("key 1"));
     QVERIFY(!settings3.contains("key 1"));
     QVERIFY(!settings4.contains("key 1"));
+#else
+    settings1.remove("key 1");
+    QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
+
+    settings2.remove("key 1");
+    QVERIFY(!settings1.contains("key 1"));
+    QVERIFY(!settings2.contains("key 1"));
+#endif
 
     /*
       Get ready for the next part of the test.
@@ -1622,6 +1655,7 @@ void tst_QSettings::setFallbacksEnabled()
         main associated file when fallbacks are turned off.
     */
 
+#if !defined(Q_OS_BLACKBERRY)
     QCOMPARE(settings1.value("key 1").toString(), QString("alpha"));
     QCOMPARE(settings2.value("key 1").toString(), QString("beta"));
     QCOMPARE(settings3.value("key 1").toString(), QString("gamma"));
@@ -1651,6 +1685,22 @@ void tst_QSettings::setFallbacksEnabled()
     QCOMPARE(settings1.value("key 5").toString(), QString(""));
     QVERIFY(settings1.contains("key 1"));
     QVERIFY(!settings1.contains("key 5"));
+#else
+    QCOMPARE(settings1.value("key 1").toString(), QString("gamma"));
+    QCOMPARE(settings2.value("key 1").toString(), QString("delta"));
+    QCOMPARE(settings3.value("key 1").toString(), QString("gamma"));
+    QCOMPARE(settings4.value("key 1").toString(), QString("delta"));
+
+    QCOMPARE(settings1.value("key 2").toString(), QString("gamma"));
+    QCOMPARE(settings2.value("key 2").toString(), QString("beta"));
+    QCOMPARE(settings3.value("key 2").toString(), QString("gamma"));
+    QCOMPARE(settings4.value("key 2").toString(), QString("beta"));
+
+    QCOMPARE(settings1.value("key 3").toString(), QString("gamma"));
+    QCOMPARE(settings2.value("key 3").toString(), QString("delta"));
+    QCOMPARE(settings3.value("key 3").toString(), QString("gamma"));
+    QCOMPARE(settings4.value("key 3").toString(), QString("delta"));
+#endif
 }
 
 void tst_QSettings::testChildKeysAndGroups_data()
@@ -2322,6 +2372,7 @@ void tst_QSettings::testArrays()
     }
     settings2.endArray();
 
+#if !defined (Q_OS_BLACKBERRY)
     size1 = settings1.beginReadArray("strings");
     QCOMPARE(size1, 3);
 
@@ -2332,6 +2383,7 @@ void tst_QSettings::testArrays()
         QCOMPARE(str, fiveStrings.at(i));
     }
     settings1.endArray();
+#endif
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -3642,6 +3694,7 @@ void tst_QSettings::setPath()
         path checks that it has no bad side effects.
     */
     for (int i = 0; i < 2; ++i) {
+#if !defined(Q_OS_BLACKBERRY)
 #if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
         TEST_PATH(i == 0, "conf", NativeFormat, UserScope, "alpha")
         TEST_PATH(i == 0, "conf", NativeFormat, SystemScope, "beta")
@@ -3652,6 +3705,12 @@ void tst_QSettings::setPath()
         TEST_PATH(i == 0, "custom1", CustomFormat1, SystemScope, "zeta")
         TEST_PATH(i == 0, "custom2", CustomFormat2, UserScope, "eta")
         TEST_PATH(i == 0, "custom2", CustomFormat2, SystemScope, "iota")
+#else // Q_OS_BLACKBERRY: no system scope
+        TEST_PATH(i == 0, "conf", NativeFormat, UserScope, "alpha")
+        TEST_PATH(i == 0, "ini", IniFormat, UserScope, "gamma")
+        TEST_PATH(i == 0, "custom1", CustomFormat1, UserScope, "epsilon")
+        TEST_PATH(i == 0, "custom2", CustomFormat2, UserScope, "eta")
+#endif
     }
 }
 
