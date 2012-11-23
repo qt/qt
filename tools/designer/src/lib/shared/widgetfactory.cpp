@@ -825,6 +825,7 @@ static bool isTabBarInteractor(const QTabBar *tabBar)
 bool WidgetFactory::isPassiveInteractor(QWidget *widget)
 {
     static const QString qtPassive = QLatin1String("__qt__passive_");
+    static const QString qtMainWindowSplitter = QLatin1String("qt_qmainwindow_extended_splitter");
     if (m_lastPassiveInteractor != 0 && (QWidget*)(*m_lastPassiveInteractor) == widget)
         return m_lastWasAPassiveInteractor;
 
@@ -867,8 +868,11 @@ bool WidgetFactory::isPassiveInteractor(QWidget *widget)
         return (m_lastWasAPassiveInteractor = true);
     else if (qstrcmp(widget->metaObject()->className(), "QWorkspaceTitleBar") == 0)
         return (m_lastWasAPassiveInteractor = true);
-    else if (widget->objectName().startsWith(qtPassive))
-        return (m_lastWasAPassiveInteractor = true);
+    const QString name = widget->objectName();
+    if (name.startsWith(qtPassive) || name == qtMainWindowSplitter) {
+        m_lastWasAPassiveInteractor = true;
+        return m_lastWasAPassiveInteractor;
+    }
     return m_lastWasAPassiveInteractor;
 }
 
