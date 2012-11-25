@@ -167,6 +167,7 @@ Elements that animate properties based on data types
 \o \l {WorkerScript} - Enables the use of threads in QML
 \o \l {Loader} - Controls the loading of items or components
 \o \l {LayoutItem} - Allows declarative UI elements inside Qt's Graphics View layouts
+\o \l {LayoutMirroring} - Used to mirror layout behavior
 \endlist
 
 \section1 Graphical Effects
