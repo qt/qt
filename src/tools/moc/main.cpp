@@ -187,6 +187,10 @@ int runMoc(int _argc, char **_argv)
     Moc moc;
     pp.macros["Q_MOC_RUN"];
     pp.macros["__cplusplus"];
+
+    // Workaround a bug while parsing the boost/type_traits/has_operator.hpp header. See QTBUG-22829
+    pp.macros["BOOST_TT_HAS_OPERATOR_HPP_INCLUDED"];
+
     QByteArray filename;
     QByteArray output;
     FILE *in = 0;
