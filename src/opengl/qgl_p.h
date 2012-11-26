@@ -696,7 +696,8 @@ int QGLTextureCache::maxCost()
 
 QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
 {
-    QReadLocker locker(&m_lock);
+    // Can't be a QReadLocker since QCache::object() modifies the cache (reprioritizes the object)
+    QWriteLocker locker(&m_lock);
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
     return m_cache.object(cacheKey);
 }
