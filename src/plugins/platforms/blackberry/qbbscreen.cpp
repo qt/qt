@@ -139,9 +139,13 @@ QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, int scr
     mCurrentGeometry = mStartGeometry = QRect(0, 0, val[0], val[1]);
 
     // Cache size of this display in millimeters
-    const QSize screenSize = determineScreenSize(mDisplay, mPrimaryDisplay);
+    mStartPhysicalSize = determineScreenSize(mDisplay, mPrimaryDisplay);
 
-    mCurrentPhysicalSize = mStartPhysicalSize = screenSize;
+    // swap physical dimensions when rotated orthogonally
+    if (mStartRotation == 90 || mStartRotation == 270)
+        mStartPhysicalSize.transpose();
+
+    mCurrentPhysicalSize = mStartPhysicalSize;
 
     // We only create the root window if we are not the primary display.
     if (mPrimaryDisplay)
