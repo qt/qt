@@ -552,21 +552,28 @@ void QDeclarativeDataLoader::load(QDeclarativeDataBlob *blob)
 
         blob->m_manager = this;
         QNetworkReply *reply = m_engine->networkAccessManager()->get(QNetworkRequest(blob->m_url));
-        QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)), 
-                         this, SLOT(networkReplyProgress(qint64,qint64)));
-        QObject::connect(reply, SIGNAL(finished()), 
-                         this, SLOT(networkReplyFinished()));
-        m_networkReplies.insert(reply, blob);
 
+        m_networkReplies.insert(reply, blob);
         blob->addref();
+
+        if (reply->isFinished()) {
+            // Short-circuit synchronous replies.
+            qint64 size = reply->size();
+            networkReplyProgress(reply, size, size);
+            networkReplyFinished(reply);
+        } else {
+            QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                             this, SLOT(networkReplyProgress(qint64,qint64)));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(networkReplyFinished()));
+        }
     }
 }
 
 #define DATALOADER_MAXIMUM_REDIRECT_RECURSION 16
 
-void QDeclarativeDataLoader::networkReplyFinished()
+void QDeclarativeDataLoader::networkReplyFinished(QNetworkReply *reply)
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
 
     QDeclarativeDataBlob *blob = m_networkReplies.take(reply);
@@ -598,9 +605,14 @@ void QDeclarativeDataLoader::networkReplyFinished()
     blob->release();
 }
 
-void QDeclarativeDataLoader::networkReplyProgress(qint64 bytesReceived, qint64 bytesTotal)
+void QDeclarativeDataLoader::networkReplyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    networkReplyFinished(reply);
+}
+
+void QDeclarativeDataLoader::networkReplyProgress(QNetworkReply *reply, qint64 bytesReceived, qint64 bytesTotal)
+{
     QDeclarativeDataBlob *blob = m_networkReplies.value(reply);
 
     Q_ASSERT(blob);
@@ -609,6 +621,12 @@ void QDeclarativeDataLoader::networkReplyProgress(qint64 bytesReceived, qint64 b
         blob->m_progress = bytesReceived / bytesTotal;
         blob->downloadProgressChanged(blob->m_progress);
     }
+}
+
+void QDeclarativeDataLoader::networkReplyProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    networkReplyProgress(reply, bytesReceived, bytesTotal);
 }
 
 /*!

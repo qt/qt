@@ -172,6 +172,8 @@ private slots:
 
 private:
     void setData(QDeclarativeDataBlob *, const QByteArray &);
+    void networkReplyFinished(QNetworkReply *);
+    void networkReplyProgress(QNetworkReply *, qint64, qint64);
 
     QDeclarativeEngine *m_engine;
     typedef QHash<QNetworkReply *, QDeclarativeDataBlob *> NetworkReplies;
