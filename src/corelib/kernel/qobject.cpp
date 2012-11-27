@@ -3536,8 +3536,23 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0)
                     qt_signal_spy_callback_set.slot_begin_callback(receiver, c->method(), argv ? argv : empty_argv);
 
+#if defined(QT_NO_EXCEPTIONS)
                 callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv ? argv : empty_argv);
+#else
+                QT_TRY {
+                    callFunction(receiver, QMetaObject::InvokeMetaMethod, method_relative, argv ? argv : empty_argv);
+                } QT_CATCH(...) {
+                    locker.relock();
+                    if (receiverInSameThread)
+                        QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 
+                    --connectionLists->inUse;
+                    Q_ASSERT(connectionLists->inUse >= 0);
+                    if (connectionLists->orphaned && !connectionLists->inUse)
+                        delete connectionLists;
+                    QT_RETHROW;
+                }
+#endif
                 if (qt_signal_spy_callback_set.slot_end_callback != 0)
                     qt_signal_spy_callback_set.slot_end_callback(receiver, c->method());
                 locker.relock();
