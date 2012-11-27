@@ -48,6 +48,7 @@
 
 #if defined(Q_OS_QNX)
 #include <QtCore/private/qcore_unix_p.h>
+#include <QCoreApplication>
 
 #include <unistd.h>
 #include <errno.h>
@@ -113,9 +114,11 @@ void QBBLocaleData::readPPSLocale()
         return;
     }
 
-    ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
     updateMesurementSystem();
-    QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMesurementSystem()));
+    if (QCoreApplication::instance()) {
+        ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
+        QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMesurementSystem()));
+    }
 }
 #endif
 
