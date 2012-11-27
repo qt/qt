@@ -5943,7 +5943,6 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
                                                 firstTouchPoint.scenePos(),
                                                 touchEvent->widget());
     }
-    Q_ASSERT(cachedItemsUnderMouse.first() == origin);
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
