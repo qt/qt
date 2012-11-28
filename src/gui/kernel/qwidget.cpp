@@ -5308,6 +5308,9 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 
     \note This function will apply the effect on itself and all its children.
 
+    \note Graphics effects are not supported on Mac, so they will not cause any difference
+    to the rendering of the widget.
+
     \since 4.6
 
     \sa graphicsEffect()
@@ -5493,7 +5496,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
 
     Q_Q(QWidget);
-#ifndef QT_NO_GRAPHICSEFFECT
+#if !defined(QT_NO_GRAPHICSEFFECT) && !defined(Q_WS_MAC)
     if (graphicsEffect && graphicsEffect->isEnabled()) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
