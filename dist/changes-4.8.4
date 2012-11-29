@@ -3,7 +3,7 @@ compatibility (source and binary) with Qt 4.8.0, 4.8.1, 4.8.2 and 4.8.3.
 For more details, refer to the online documentation included in this
 distribution. The documentation is also available online:
 
-  http://qt-project.org/doc/4.8
+http://qt-project.org/doc/4.8
 
 The Qt version 4.8 series is binary compatible with the 4.7.x series.
 Applications compiled for 4.7 will continue to run with 4.8.
@@ -13,10 +13,10 @@ corresponding to tasks in the Qt Bug Tracker or the Merge Request queue
 of the public source repository.
 
 Qt Bug Tracker: http://bugreports.qt-project.org
-Merge Request:  http://codereview.qt-project.org
+Merge Request: http://codereview.qt-project.org
 
 ****************************************************************************
-*                           General                                        *
+* General *
 ****************************************************************************
 
 General Improvements
@@ -24,9 +24,8 @@ General Improvements
 - Copyrights changed to Digia Plc
 - Add msvc2012 support
 
-
 ****************************************************************************
-*                          Library                                         *
+* Library *
 ****************************************************************************
 
 QtGui
@@ -42,34 +41,100 @@ QtGui
 - qpa: extend drawPixmap capabilities
 - qpa: add non-opaque fill support
 - Fix calculation of logical child index for row headers
+- qpa: Fix rendering issue in blitter paint engine
+- Introducing the PlatformPanel event type
+- Pass NEON_ASM directly to SOURCES
+- Enable NEON compilation on qcc compilers
+- Fix number of available printers in CUPS support
+- Mangle QNSApplication into a namespace when Qt is configured as such
+- Mangle QNSApplication and methods into a namespace
+- QComboBox::currentText: correct documentation
+- QComboBox: mention insert policy in context of editable property
+- Fixed cosmetic line drawing where begin and end points are equal [QTBUG-25153]
+- Fix a regression with regards to hfw behavior in QStackedWidget [QTBUG-24758]
+- Close popups on non-client area mouse press [QTBUG-1894, QTBUG-26120, QTBUG-26465, QTBUG-26827]
+- Use the right properties when checking the frame's margins [QTBUG-22173]
+- qpa: Fix drawPixmap rendering using CompositionMode_Source in DirectFB
+- Fixed crash on destruction of animating QDockWidget in a QMainWindow
+- Fixed GCC 3.4 build with sse2 enabled
+- QHeaderView - no big update work if updates are disabled
+- QHeaderView - length returns wrong value fix
+- QHeaderView - fix minor bug in visualIndexAt
+- Fixing font database memoryleak
+- Fix a crash in QFileDialog when selecting an invalid name filter
+- QHeaderView - correct drop on manual QHeaderView sectionmove [QTBUG-14814]
+- Fix submenu navigation [QTBUG-20094]
+- QWindowsVistaStyle: Restore altered brush origin [QTBUG-27828]
+- HeaderView - call invalidateCachedSizeHint() on clear [QTBUG-22528]
+- Fix GIF image decoding: do not zero transparent pixels
+- qpa: Fix rendering issue in blitter engine (negative scaling factors)
+- Windows: Fixed handling of key events containing ctrl modifier [QTBUG-10781]
+- Fix scrolldown arrow not showing on popup for QMenu [QTBUG-27445]
+- Fix zero-duration animations running Backwards [QTBUG-27969]
 
 QtNetwork
 ---------
 - Disable SSL compression by default
 - HTTP header may be damaged - fix, unit test [QTBUG-27161]
 - Bypass proxy for local connections
+- Implementation of the BlackBerry Qt Proxy support
+- introduce configure switch to use system proxies by default
+- fix bug in QLocalSocket::waitForReadyRead on Windows [QTBUG-27816]
+- Fix compile issue with building with openssl and in a namespace [QTBUG-25207]
+
 
 QtCore
 ------
 - Include the signal code in the argument of (dis)connectNotify()
 - QElapsedTimer: Fix typo in restart() documentation
+- Prevent an overflow warning in assertions
+- QTranslator: Use resource memory instead of copying it
+- Fix for memory leak in ResultStore [QTBUG-27224]
+- QString doesn't work with old ABI on ARM [QTBUG-15784]
+- Make the qatomic classes work in ARMv5 OABI
+- Fix regression introduced in QFileSystemEntry::path()[QTBUG-27356]
+
+
+QtDBus
+------
+- Make QtDBus work again with D-Bus 1.0 and 1.1
+- Fix QDBusServer with more than one connection [QTBUG-24921]
 
 QtSql
 -----
 - Fix error when inserting to tables with datetime fields with QODBC [QTBUG-2192]
+- QtSql: Correct documented default precision policy [QTBUG-27482]
+- fix binding of bool type in mysql driver [QTBUG-27763]
 
 Declarative
 -----------
 - EngineDebug: Updated and renamed service
 - Ensure child items are updated even if the parent item has no content [QTBUG-26846]
+- Use QVarLengthArray when creating the connectNotify() argument
+- Fix QObject::receivers() within connectNotify()
+- QDeclarativeTrace patch for a custom trace instance
+- Fix access to uninitialised memory that might lead to crashes [QTBUG-23214]
+- QDeclarativeTypeLoader: Avoid stat() calls to . and ..
+- Make the rules for redirects a bit stricter
 
 OpenGL
 ------
 - Fixed text drawing in OpenGL 2 paint engine [QTBUG-24453]
 - Fixed potential use of uninitialized variable in qgl.cpp [QTBUG-26952]
+- QGLTextureGlyphCache: Fix text rendering artifacts on NVIDIA [QTBUG-26444]
+- Fixed memory leak in assign operator of QGLBuffer
+
+Plugins
+-------
+- Accessibility: itemviews check for valid model
+
+3rdParty
+--------
+- Fix mmap usage (ExecitableAllocatorFixedVMPool.cpp)
+- Quicktime: On 32bit applications it would not get out of the waiting state
 
 ****************************************************************************
-*                      Platform Specific Changes                           *
+* Platform Specific Changes *
 ****************************************************************************
 
 Qt for Linux/X11
@@ -78,6 +143,7 @@ Qt for Linux/X11
 - Don't mouse-wheel-scroll QScrollBar when disabled [QTBUG-27308][QTBUG-21534]
 - Fix realpath() call to older POSIX platforms
 - When x-compiling on Linux the host tools doesn't have Windows' executable suffix
+- Fix debugger detection when running on Linux [QTBUG-27632]
 
 Qt for Windows
 --------------
@@ -87,6 +153,8 @@ Qt for Windows
 - Fix MinGW-w64 compilation
 - Partial Revert "Disable pkg-config, when x-compiling for mingw"
 - Never compile QPA with EGL support on Windows
+- Fixed potential crash in wglCreatePbufferARB() on Windows [QTBUG-27331]
+- Fix Drag and Drop with Native Widgets [QTBUG-27265]
 
 Qt for Mac OS X
 ---------------
@@ -98,6 +166,11 @@ Qt for Mac OS X
 - Refactor coreservices -> ios & QT_NO_CORESERVICES -> Q_OS_IOS
 - Ensure that QApplication is cleaned up after itself on Mac [QTBUG-24248]
 - Prevent a crash when a merged action is removed [QTBUG-24917]
+- Add Proxy Auto Config support (PAC) on Mac [QTBUG-2069, QTIFW-28]
+- Mac: Correct writingSystem check value for Chinese[QTBUG-27130]
+- Cocoa: QPrintDialog does not show/closes down immediatly
+- Don't use Cocoa code unconditionally [QTBUG-27960]
+- When clicking on a menu item which has a sub menu it should not close [QTBUG-10706]
 
 Qt for Symbian
 --------------
@@ -106,8 +179,8 @@ Qt for Symbian
 - Fix symbian QtCore deffiles (for QUrl::detach)
 - Handle Qt input hints for email and url editors
 
-Qt for QNX
-----------
+Qt for Blackberry\QNX
+---------------------
 - Change suffix for separate debug files
 - Fix bug on window hierarchy list
 - Use assert on QBBWindow destructor
@@ -115,19 +188,42 @@ Qt for QNX
 - Enable support for hardware buttons in QPA plugin
 - Add some optional debug output to event dispatcher
 - Do not initially commit all memory used in RegisterFile
-
-Qt for Blackberry
------------------
+- QNX: Remove the busy loop work around for bps ignoring timeout bug
+- QNX: Remove workaround for BPS bug
+- QNX: Fix input lag
+- QNX: Fix crash in QBBNativeInterface::nativeResourceForWidget()
 - Support input method hints
 - Fix hardware button detection on the BB Dev Alpha
 - Fixed crash in blackberry platform plugin shutdown
+- Blackberry platform plugin: Open locale object read-only
+- BlackBerry: Use real DPI instead of hardcoded value
+- QNX: Add and remove screens dynamically
+- Blackberry: Emit aboutToBlock() and awake() correctly in the dispatcher
+- Blackberry: Populating the QCoreApplicationData
+- GL Window needs to update after an orientation change
+- Blackberry: implemented "orientation lock" widget attribute
+- QNX: only enable NEON instructions for supported architectures (ARM)
+- BlackBerry: Change base font sizes from pixels to points
+- Blackberry: Fix QCoreApplication::applicationFilePath() performance
+- QNX: Use inotify on QNX systems that support it
+- BlackBerry: Query dynamic buffer count at runtime
+- Blackberry: Fix for slowness of touch move events
+- Blackberry: Fixes QWindowSurface::grabWidget
+- QNX: Use extra information in dirent to avoid stat() calls
+- QNX: Remember information on whether a file is a link
+- Blackberry bearer plugin: Only Report working interfaces as active
+- Removed usage of pipe in Blackberry event dispatcher
+- Adding PAC and exclusion list support to BlackBerry Qt proxy implementation.
+- QNX: Fix build with QNX SDP 6.5
+- Use slogger2 for logging on Blackberry instead of writing to stderr
+- Blackberry fixed crash when plugging in a secondary display
 
 Other
 -----
 - Fix build for platforms that use QPA other than IOS
 
 ****************************************************************************
-*                          Tools                                           *
+* Tools *
 ****************************************************************************
 
 Assistant
@@ -147,12 +243,32 @@ Configure
 - Unscramble option help text
 - Smuggle QT_BUILD_TREE to device_config.prf even during tests
 - Find qdevice.pri even for installed qt builds
+- configure: state compiler explicitly when testing for supported flags
+- Support other platform names on configure.exe
+- x-compile with mingw: fix codec linker errors [QTBUG-27618]
+- Fix syntax error on configure.exe source code.
+
+mkspecs
+--------
+- Blackberry mkspecs: Refine compiler options
+- optimize loading of qconfig.pri & qdevice.pri somewhat
+- Remove the -falign-stack option from ICC's mkspec
+- don't set QT_BUILD_DIR as a side effect
 
 qmake
 -----
 - Add -pipe option of win32-g++'s QMAKE_CFLAGS
+- Fix XCode generator for qmake when generating for XCode 4.5 and later
+- Revert "qmake vcxproj generator: map TARGET_EXT to $(TargetExt)" [QTBUG-26782, QTBUG-27554]
+- qmake: fix .pc install target dir separators on windows
+- Updated and fixed win32-icc mkspec for ICC 12.1 or better
 
 Other
 -----
 - Register Qt 4.7 import on-demand, instead of at startup
 - Update Traditional Chinese translation
+- Doc: Update QThread class ref to reflect changes since Qt 4.4 [QTBUG-16358]
+- Minor fixes to the QLocale data parser/generator
+- Update Qlocale data with CLDR 1.9.1
+- Update Qlocale data with CLDR 2.0.0
+- Fix code convention docs [QTBUG-27852]
