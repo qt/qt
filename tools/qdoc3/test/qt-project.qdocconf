@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.8
-version                 = 4.8.4
+version                 = 4.8.5
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
@@ -15,14 +15,14 @@ naturallanguage         = en_US
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.484
+qhp.Qt.namespace           = com.trolltech.qt.485
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
 qhp.Qt.indexRoot           =
 
-qhp.Qt.filterAttributes    = qt 4.8.4 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.8.4
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.4
+qhp.Qt.filterAttributes    = qt 4.8.5 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.8.5
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.5
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
