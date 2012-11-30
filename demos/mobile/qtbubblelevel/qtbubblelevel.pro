@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Nokia Corporation.
+# Copyright (C) 2012 Digia Plc.
 
 QT       += core gui declarative
 CONFIG   += mobility

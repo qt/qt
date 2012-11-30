@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2004 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

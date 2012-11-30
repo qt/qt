@@ -1,6 +1,6 @@
 /* * This file is part of libgq *
  *
- * Copyright (C) 2009 Nokia Corporation.
+ * Copyright (C) 2012 Digia Plc.
  *
  * Contact: Marius Vollmer <marius.vollmer@nokia.com>
  *

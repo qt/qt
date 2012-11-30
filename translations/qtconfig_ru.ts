@@ -108,7 +108,7 @@
         <translation>Выбор каталога</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версия %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2011 Корпорация Nokia и/или её дочерние подразделения.</translation>
     </message>
     <message>

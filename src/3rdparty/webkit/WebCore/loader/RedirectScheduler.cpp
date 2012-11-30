@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  * Copyright (C) 2009 Adam Barth. All rights reserved.
  *

@@ -3975,8 +3975,8 @@ Voulez-vous le remplacer ?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2011 Nokia Corporation et/ou ses filiales.</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc et/ou ses filiales.</translation>
     </message>
 </context>
 <context>

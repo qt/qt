@@ -1,26 +1,27 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** GNU Free Documentation License
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
 ** Alternatively, this file may be used under the terms of the GNU Free
 ** Documentation License version 1.3 as published by the Free Software
 ** Foundation and appearing in the file included in the packaging of
-** this file.
-**
-** Other Usage
-** Alternatively, this file may be used in accordance with the terms
-** and conditions contained in a signed written agreement between you
-** and Nokia.
-**
-**
-**
-**
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -551,8 +552,8 @@
     Copyright (C) 2004-2009 Matthias Kretz <kretz@kde.org> \BR
     Copyright (C) 2008 Ian Monroe <ian@monroe.nu> \BR
     Copyright (C) 2007-2008 Trolltech ASA \BR
-    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies). \BR
-    Contact: Nokia Corporation (qt-info@nokia.com)
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies). \BR
+    Contact: http://www.qt-project.org/legal
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -697,7 +698,7 @@
 
     \legalese
     Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team \BR
-    Changes are Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+    Changes are Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -762,7 +763,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -811,7 +812,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -903,7 +904,7 @@
     the following license.
     
     \legalese
-    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)
@@ -941,9 +942,9 @@
     distributed under the following license.
     
     \legalese
-    Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).\br
     All rights reserved.\br
-    Contact: Nokia Corporation (qt-info@nokia.com)
+    Contact: http://www.qt-project.org/legal
 
     This file is part of the Symbian application wrapper of the Qt Toolkit.
 

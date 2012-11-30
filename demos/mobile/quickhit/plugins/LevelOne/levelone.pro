@@ -1,5 +1,5 @@
 
-# Copyright (c) 2010 Nokia Corporation.
+# Copyright (C) 2012 Digia Plc.
 
 TEMPLATE        = lib
 

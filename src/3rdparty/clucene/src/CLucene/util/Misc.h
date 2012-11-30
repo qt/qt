@@ -4,7 +4,7 @@
  * Distributable under the terms of either the Apache License (Version 2.0) or 
  * the GNU Lesser General Public License, as specified in the COPYING file.
  *
- * Changes are Copyright(C) 2007, 2008 by Nokia Corporation and/or its subsidiary(-ies), all rights reserved.
+ * Changes are Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies), all rights reserved.
 */
 #ifndef _lucene_util_Misc_H
 #define _lucene_util_Misc_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ * Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
  * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http//www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
