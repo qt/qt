@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Nokia Inc. All Rights Reserved.
+ * Copyright (C) 2012 Digia Plc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

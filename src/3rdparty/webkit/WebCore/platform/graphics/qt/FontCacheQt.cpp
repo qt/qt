@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)
     Copyright (C) 2008 Holger Hans Peter Freyther
     Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
     Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
