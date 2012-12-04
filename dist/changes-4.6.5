@@ -1,0 +1,236 @@
+Qt 4.6.5 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 4.6.0.  For more details,
+refer to the online documentation included in this distribution. The
+documentation is also available online:
+
+  http://qt.nokia.com/doc/4.6
+
+The Qt version 4.6 series is binary compatible with the 4.5.x series.
+Applications compiled for 4.5 will continue to run with 4.6.
+
+The changes listed in this file include issue tracking numbers corresponding
+to tasks in the Qt Bug Tracker (http://bugreports.qt.nokia.com).
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+    - Copyrights changed for Qt 4.6.5.
+    - Disable SSL compression by default.
+
+Rest of the changes are from Qt 4.6.3 to Qt 4.6.4:
+
+    Building/configuration
+    ----------------------
+    - [QTBUG-8967]      Fix compiler warning in QT_REQUIRE_VERSION
+    - [QTBUG-11058]     The configure script doesn't support OPENSSL_LIBS as an argument
+    - [QTBUG-14017]     fix moc argument quoting on mingw
+    
+    QtCore
+    ------
+    - [QTBUG-8478]      Wrong arguments order in a warning in QObject::moveToThread
+    - [QTBUG-7049]      QRegExp::pos() should return -1 for empty/non-matching captures
+    - [QTBUG-6295]      Don't write byte-order-mark after seek()
+    - [QTBUG-9085]      _close(fd) closes the associated handle and not the other way around
+    - [QTBUG-10404]     QString: Fix severals bugs when comparing with QStringRef
+    - [QTBUG-11730]     Fix a crash when recursing into QSharedPointer from QSharedPointer::clear()
+    - [QTBUG-9281]      Fix QString::arg: When specifying %L1, the group separator would be added
+                        even if the local specify QLocale::OmitGroupSeparator
+    - [QTBUG-16115]     Fix QMutex can deadlock when calling tryLock
+
+    QtGui
+    -----
+    - [QTBUG-9072]      Transparent parts of QPixmaps are sometimes displayed as black
+    - [QTBUG-10400]     QGraphicsItem does not scroll when ItemCoordinateCache is enabled
+    - [QTBUG-10817]     minor improvement for qgraphicsite
+    - [QTBUG-6395]      QGradient's setCoordinateMode method does nothing when drawing text
+    - [QTBUG-13721]     Some Bezier curves are not drawn
+    - [QTBUG-9425]      QScrollArea: ensureVisible and ensureWidgetVisible use a big default 
+                        value for xmargin and ymargin, which makes the result of focusRect very wrong
+    - [QTBUG-10780]     QApplication::setInputContext does not guard against self-assignment
+    - [QTBUG-8270]      QAbstractItemView accept() Qt::Key_Delete erroneously.
+    - [QTBUG-7115]      There should be a way to tell an item view that the number of children of an item has changed
+    - [QTBUG-1726]      Qt displays all scalable dual-width fonts spaced with the same spacing
+    - [QTBUG-11506]     There is a typo in qcleanlooksstyle.cpp
+    - [QTBUG-8885]      Slow QTreeViewPrivate::layout()
+    - [QTBUG-9850]      Inefficient pixmap cache 'key' generation in QPixmapIconEngine::pixmap()
+    - [QTBUG-15266]     Incorrect code in qgrayraster.c causing slow rendering
+    - [QTBUG-6855]      QPushButton: Using a stylesheet to add padding will cut of text.
+    - [QTBUG-11204]     Regression: Direction change no longer implies alignment change
+    - [QTBUG-10806]     setModel on the header(s) of a QAbstractItemView leads to a memory leak
+    - [QTBUG-13318]     QCleanLooksStyle doesn't fully support QProxyStyle
+    - [QTBUG-7537]      QSortFilterProxyModel: Fix dynamic sorting when severals rows are added.
+    - [QTBUG-7716]      QSortFilterProxyModel: Sorting occured unnecessarily when the dynamicSortFilter is turned off
+    - [QTBUG-7833]      QHeaderView: fixes sectionClicked() emitted with wrong section index      
+    - [QTBUG-8650]      Fixed a potential crash in headerview when inserting a section
+    - [QTBUG-8750]      Fix QGraphicsEffect cache when the item is not visible by the view.
+    - [QTBUG-7438]      Fixes wrong QGraphicsView's viewport cursor reset
+    - [QTBUG-10052]     QTabBar: Widgets inside the tab bar where not properly laid out after moveTab()
+    - [QTBUG-10169]     Fixed the sizehint for cols/rows in qtableview
+    - [QTBUG-11264]     Fix QTransform::map(const QPainterPath &) not working with paths that have
+                        only one element
+    - [QTBUG-7150]      QWidget::childAt for masked child widgets doesn't work properly
+    - [QTBUG-11823]     Fixed a crash in menubar with invisible actions
+    - [QTBUG-11282]     Fix an Assert in QTextTable
+    - [QTBUG-12308]     Fix crash when all the items in a QListView are hidden
+    - [QTBUG-13429]     Fixed scaled point drawing with square cap in raster paint engine.
+    
+    QtOpenGL
+    --------
+    - [QTBUG-7832]      OpenGL: When stroking a path that has a dashed style cosmetic pen it can run out of memory if it is scaled rather considerably
+    - [QTBUG-13622]     crash in QGLWidget::renderText() when renderPixmap() is called in the QGraphicsItem::paint()
+    
+    OpenVG
+    --------    
+    - [QTBUG-14907]     Painting artifacts in OpenVG paint engine after restoreState() is called and clipping is in use
+        
+    QtScript
+    --------
+    - [QTBUG-9433]      Fix QScriptEngine::abortEvaluation.
+
+    QtSvg
+    -----
+    - [QTBUG-8733]      Fixed bounds calculation in QtSvg.
+    - [QTBUG-8227]      Total makeover of SVG image reader
+    - [QTBUG-10022]     QImageReader.size() crashes or aborts with SVG
+    - [QTBUG-8264]      Wrong svg rendering for rx/ry attributes
+            
+    QtXml
+    -----
+    - [QTBUG-12259]     QXmlStreamReader - High Memory Consumption with QByteArray
+
+    QtMultimedia
+    -------------
+    - [QTBUG-11755]     QAudioInput push mode does not work
+    - [QTBUG-12337]     Fixed QVideoSurfaceFormat::isValid()
+
+    QtNetwork
+    -------------
+
+    - [QTBUG-13427]     infinite loop in QSslSocketBackendPrivate::transmit()
+    - [QTBUG-4455]      SSL wildcard verification too broad
+    - [QTBUG-7054]      QNativeSocketEngine: Fix some error handling related to waitFor*()
+    - [QTBUG-9037]      QNetworkReply: Fix canReadLine()
+    - [QTBUG-9618]      Secure Cookies should only be sent over secure connections.
+    - [QTBUG-9973]      QSslCertificate: support large serial numbers
+    - [QTBUG-12489]     QSslCertificate: support expiration dates > 2049
+    - [QTBUG-13265]     QSslConfiguration: fix crash when accessing null pointer
+    - [QTBUG-18338]     QSslCertificate: report fraudulent certificates as invalid
+    
+    QtSql
+    -----
+    - [QTBUG-13109]     Unicode detection of ODBC drivers broken in point release
+
+    Tools
+    ------
+    - [QTBUG-7764]      QDesignerPropertyEditorInterface::propertyChanged() not emitted / invalid docs - 
+                        Signal name now propertyValueChanged ... and QVariant not valid!!!
+    - [QTBUG-8213]      Designer crashes on Ctrl + Arrow Key (moving widget by keyboard)
+    - [QTBUG-9603]      Unable to set value of default dynamic properties in Designer's property editor
+    - [QTBUG-9351]      Qt Designer writes duplicate verticalHeaderVisible entries in its *.ui file
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+
+    QtGui
+    -----
+    - [QTBUG-9560]      QMainWindow hides menus with QMdiArea in Qt::RightToLeft direction
+    - [QTBUG-10396]     "Clicked" state of scrollbars not respected by GTK style
+    - [QTBUG-8986]      GtkStyle slider filled allways right to left
+    - [QTBUG-11209]     QGtkStyle item view selections are styled incorrectly
+    - [QTBUG-8644]      clipboard INCR transfer to X applications doesn't work, even if they support INCR
+    - [QTBUG-9215]      Widgets yet to be shown shouldn't get a WinId() just because their parent have one.
+    - [QTBUG-10758]     QStyleFactory::create ("gtk+") Seg fault
+    - [QTBUG-12826]     Crash in QX11PaintEngine::drawPixmap (probably when image conversion failed)
+    - [QTBUG-8157]      QClipboard doesn't detect loss of clipboard in another application (X11)
+
+
+Qt for Windows
+--------------
+
+    Building/configuration
+    ----------------------
+    - [QTBUG-8684]      Useless Q_ASSERT in dialogs/qprintdialog
+    - [QTBUG-9254]      qt3support/network/q3socketdevice_win.cpp big include order mistake
+    - [QTBUG-12851]     qmake asserts !isEmpty when using DESTDIR=
+    - [QTBUG-12959]     QMake generates invalid ar object script on Win32/MinGW when path to object is absolute
+    - [QTBUG-4586]      syncqt makes invalid headers.pri for ActiveQt
+
+    QtCore
+    ------
+    - [QTBUG-7036]      QFileInfo::canonicalPath() produces wrong results for NTFS junction points
+    - [QTBUG-12721]     Qt application freezes until mouse event occurs
+
+    QtGui
+    -----
+    - [QTBUG-8465]      drawPoints not plotting when cap style is Qt::RoundCap
+    - [QTBUG-8381]      QMessageBox, Button Text "Show Details..." get cut off in Windows 7 (x64)
+    - [QTBUG-7172]      An uncheckable QToolButton gets checked after opening a modal dialog
+    - [QTBUG-9295]      Using QGraphicsItem::setScale on a QGraphicsItem with flag ItemIgnoresTransformations results in wrong item movement
+    - [QTBUG-7596]      Anti-aliased fonts with Clear type on Windows looks ugly on Windows XP
+    - [QTBUG-10391]     Docking a QDockWidget with a fixed width causes a gray space to appear
+    - [QTBUG-11028]     Text rendering artefacts in OpenGL, with some combinations of flags, sizes and transforms
+    - [QTBUG-7552]      Only "..." is displayed for some elements in a QComboBox
+    - [QTBUG-7637]      WM_MOUSEMOVE gets wrong coordinate in some cases
+    - [QTBUG-11582]     QMenu makes void enterEvent(QEvent *) and void leaveEvent(QEvent *) broken
+    - [QTBUG-13065]     QPrinter: incorrect color count returned / color printing not working correctly
+    - [QTBUG-15973]     Resizing(to least minimum) a QTableWidget column where a cell contains Qprogressbar makes it to crash
+    - [QTBUG-11432]     UpdateGL fails after 9999 calls for multiple QGLWidgets
+    - [QTBUG-10203]     QWizard creates memory leak via QVistaHelper
+    
+    QtMultimedia
+    -------------
+    - [QTBUG-11883]     Segmentation Fault in QAudioOutputPrivate::freeBlocks() caused by wrong pointer increment
+    - [QTBUG-11900]     QWS: Audio device factory always needs QFactoryLoader even if audio is disabled
+
+
+Qt for Mac
+----------
+
+    Building/configuration
+    ----------------------
+    - [QTBUG-10384]     qmake generates incorrect Xcode project when TARGET has spaces in it
+
+    QtCore
+    ------
+    - [QTBUG-12533]     infinit loop at QKQueueFileSystemWatcher - Mac OS X
+
+    QtGui
+    -----
+    - [QTBUG-8198]      Reusing a modal dialog can produce painting artifacts on Snow Leopard. Carbon.
+    - [QTBUG-5100]      Mac: Modal sheets lose their transparency on 2nd open
+    - [QTBUG-6296]      Qt Cocoa Applications won't quit correctly on Log Out or Shutdown
+    - [QTBUG-8791]      Changing text color using QTextCursor causes fixed width fonts to become misaligned
+    - [QTBUG-6444]      QLineEdit causes a system beep when it has the focus and return is pressed
+    - [QTBUG-7540]      The ampersand sign comming from the bundle name is not shown in the application menu on Mac
+    - [QTBUG-6384]      QWidget resizing bug on Mac OS X
+    - [QTBUG-10585]     QFont::setStretch() has no effect on Cocoa, the font does not appear stretched at all
+    - [QTBUG-11140]     QTextEdit/QLineEdit and special character composition does not work correctly
+    - [QTBUG-12042]     QFontDialog::DontUseNativeDialog sometimes opens a native font dialog on Mac
+    - [QTBUG-6563]      Raster graphics system on Mac: Many Opengl examples are broken
+    - [QTBUG-8439]      QFileDialog does not support combining setNameFilterDetailsVisible(false) and selectNameFilter on the mac
+    - [QTBUG-12870]     QFileDialog::HideNameFilterDetails breaks Cocoa QFileDIalog filter
+    - [QTBUG-11138]     Window flags example crashes on Mac Cocoa
+    - [QTBUG-13772]     Returning form fullscreen mode causes assertion failure
+    - [QTBUG-11430]     Print/Page setup dialogs leak
+    - [QTBUG-11550]     CGContextRef leak in qt_mac_cg_context    
+
+    QtMultimedia
+    ------------
+    - [QTBUG-9068]      Phonon::MediaObject playback costs 100% of CPU-Usage
+    - [QTBUG-10010]     QAudioOutput sound output glitches on Mac OS X Snow Leopard
+    - [QTBUG-10009]     QAudioInput push mode and suspend/resume do not work on Mac OS X Snow Leopard
+    - [QTBUG-8878]      QAudioOutput does not work for frequencies 8000, 16000, 24000 on Mac OS X
+
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+    - [QTBUG-13782]     qmake: source files not properly quoted in moc calls
+
