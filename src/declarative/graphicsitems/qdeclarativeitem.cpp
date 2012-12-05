@@ -2623,10 +2623,17 @@ QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qr
         return 0;
     }
 
-    QScriptValue sv = item.engine()->newObject();
-
     // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
+
+    // Use the script engine from the passed item, if available. Use this item's one otherwise.
+    QScriptEngine* const se = itemObj ? item.engine() : QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this));
+
+    // Engine-less items are unlikely, but nevertheless possible. Handle them.
+    if (0 == se)
+        return QScriptValue(QScriptValue::UndefinedValue);
+
+    QScriptValue sv = se->newObject();
     sv.setProperty(QLatin1String("x"), p.x());
     sv.setProperty(QLatin1String("y"), p.y());
     return sv;
@@ -2661,10 +2668,17 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
         return 0;
     }
 
-    QScriptValue sv = item.engine()->newObject();
-
     // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
     QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
+
+    // Use the script engine from the passed item, if available. Use this item's one otherwise.
+    QScriptEngine* const se = itemObj ? item.engine() : QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this));
+
+    // Engine-less items are unlikely, but nevertheless possible. Handle them.
+    if (0 == se)
+        return QScriptValue(QScriptValue::UndefinedValue);
+
+    QScriptValue sv = se->newObject();
     sv.setProperty(QLatin1String("x"), p.x());
     sv.setProperty(QLatin1String("y"), p.y());
     return sv;
