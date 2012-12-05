@@ -1055,19 +1055,6 @@ void QDeclarativeTypeData::resolveTypes()
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(m_typeLoader->engine());
     QDeclarativeImportDatabase *importDatabase = &ep->importDatabase;
 
-    // For local urls, add an implicit import "." as first (most overridden) lookup. 
-    // This will also trigger the loading of the qmldir and the import of any native 
-    // types from available plugins.
-    if (QDeclarativeQmldirData *qmldir = qmldirForUrl(finalUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
-        m_imports.addImport(importDatabase, QLatin1String("."),
-                            QString(), -1, -1, QDeclarativeScriptParser::Import::File, 
-                            qmldir->dirComponents(), 0);
-    } else {
-        m_imports.addImport(importDatabase, QLatin1String("."), 
-                            QString(), -1, -1, QDeclarativeScriptParser::Import::File, 
-                            QDeclarativeDirComponents(), 0);
-    }
-
     foreach (const QDeclarativeScriptParser::Import &import, scriptParser.imports()) {
         QDeclarativeDirComponents qmldircomponentsnetwork;
         if (import.type == QDeclarativeScriptParser::Import::Script)
@@ -1107,6 +1094,7 @@ void QDeclarativeTypeData::resolveTypes()
         }
     }
 
+    bool implicitImportLoaded = false;
     foreach (QDeclarativeScriptParser::TypeReference *parserRef, scriptParser.referencedTypes()) {
         QByteArray typeName = parserRef->name.toUtf8();
 
@@ -1123,23 +1111,49 @@ void QDeclarativeTypeData::resolveTypes()
             // Known to not be a type:
             //  - known to be a namespace (Namespace {})
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
-            QDeclarativeError error;
-            error.setUrl(m_imports.baseUrl());
-            QString userTypeName = parserRef->name;
-            userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
-            if (typeNamespace)
-                error.setDescription(QDeclarativeTypeLoader::tr("Namespace %1 cannot be used as a type").arg(userTypeName));
-            else
-                error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(errorString));
+            bool typeFound = false;
 
-            if (!parserRef->refObjects.isEmpty()) {
-                QDeclarativeParser::Object *obj = parserRef->refObjects.first();
-                error.setLine(obj->location.start.line);
-                error.setColumn(obj->location.start.column);
+            if (!typeNamespace && !implicitImportLoaded) {
+                implicitImportLoaded = true;
+                // For local urls, add an implicit import "." as most overridden lookup.
+                // This will also trigger the loading of the qmldir and the import of any native
+                // types from available plugins.
+                // This is only done if the type is not otherwise found, side effects of plugin loading may be avoided
+                // ### This should be an acceptable variation because A) It's only side effects (and img providers) B) You shouldn't be doing that in "." anyways!
+                if (QDeclarativeQmldirData *qmldir = qmldirForUrl(finalUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
+                    m_imports.addImport(importDatabase, QLatin1String("."),
+                                        QString(), -1, -1, QDeclarativeScriptParser::Import::Implicit,
+                                        qmldir->dirComponents(), 0);
+                } else {
+                    m_imports.addImport(importDatabase, QLatin1String("."),
+                                        QString(), -1, -1, QDeclarativeScriptParser::Import::Implicit,
+                                        QDeclarativeDirComponents(), 0);
+                }
+                if (m_imports.resolveType(typeName, &ref.type, &url, &majorVersion, &minorVersion,
+                                           &typeNamespace, &errorString) || typeNamespace) {
+                    typeFound = true;
+                }
             }
-            
-            setError(error);
-            return;
+
+            if (!typeFound) {
+                QDeclarativeError error;
+                error.setUrl(m_imports.baseUrl());
+                QString userTypeName = parserRef->name;
+                userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
+                if (typeNamespace)
+                    error.setDescription(QDeclarativeTypeLoader::tr("Namespace %1 cannot be used as a type").arg(userTypeName));
+                else
+                    error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(errorString));
+
+                if (!parserRef->refObjects.isEmpty()) {
+                    QDeclarativeParser::Object *obj = parserRef->refObjects.first();
+                    error.setLine(obj->location.start.line);
+                    error.setColumn(obj->location.start.column);
+                }
+
+                setError(error);
+                return;
+            }
         }
 
         if (ref.type) {

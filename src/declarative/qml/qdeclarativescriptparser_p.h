@@ -75,7 +75,7 @@ public:
     public:
         Import() : type(Library) {}
 
-        enum Type { Library, File, Script };
+        enum Type { Library, File, Script, Implicit }; //Implicit is only used internally
         Type type;
 
         QString uri;

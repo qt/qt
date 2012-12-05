@@ -452,6 +452,13 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
             set.insert(prefix,(s=new QDeclarativeImportedNamespace));
     }
 
+    bool appendInstead = false;
+    if (importType == QDeclarativeScriptParser::Import::Implicit) {
+        //Treat same as a File import, but lower precedence
+        appendInstead = true;
+        importType = QDeclarativeScriptParser::Import::File;
+    }
+
     QString url = uri;
     bool versionFound = false;
     if (importType == QDeclarativeScriptParser::Import::Library) {
@@ -599,12 +606,21 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         }
     }
 
-    s->uris.prepend(uri);
-    s->urls.prepend(url);
-    s->majversions.prepend(vmaj);
-    s->minversions.prepend(vmin);
-    s->isLibrary.prepend(importType == QDeclarativeScriptParser::Import::Library);
-    s->qmlDirComponents.prepend(qmldircomponents);
+    if (appendInstead) {
+        s->uris.append(uri);
+        s->urls.append(url);
+        s->majversions.append(vmaj);
+        s->minversions.append(vmin);
+        s->isLibrary.append(importType == QDeclarativeScriptParser::Import::Library);
+        s->qmlDirComponents.append(qmldircomponents);
+    } else {
+        s->uris.prepend(uri);
+        s->urls.prepend(url);
+        s->majversions.prepend(vmaj);
+        s->minversions.prepend(vmin);
+        s->isLibrary.prepend(importType == QDeclarativeScriptParser::Import::Library);
+        s->qmlDirComponents.prepend(qmldircomponents);
+    }
     return true;
 }
 
