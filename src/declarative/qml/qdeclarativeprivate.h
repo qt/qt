@@ -55,6 +55,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_HEADER
 
@@ -233,13 +234,52 @@ namespace QDeclarativePrivate
         AutoParentFunction function;
     };
 
+    struct RegisterComponent {
+        const QUrl &url;
+        const char *uri;
+        const char *typeName;
+        int majorVersion;
+        int minorVersion;
+    };
+
     enum RegistrationType {
         TypeRegistration       = 0, 
         InterfaceRegistration  = 1,
-        AutoParentRegistration = 2
+        AutoParentRegistration = 2,
+        ComponentRegistration  = 3
     };
 
     int Q_DECLARATIVE_EXPORT qmlregister(RegistrationType, void *);
+
+
+    /*!
+      \internal
+      \fn int qmlRegisterType(const char *url, const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+      \relates QDeclarativeEngine
+
+      This function registers a type in the QML system with the name \a qmlName, in the library imported from \a uri having the
+      version number composed from \a versionMajor and \a versionMinor. The type is defined by the QML file located at \a url.
+
+      Normally QML files can be loaded as types directly from other QML files, or using a qmldir file. This function allows
+      registration of files to types from a C++ module, such as when the type mapping needs to be procedurally determined at startup.
+
+      Returns non-zero if the registration was sucessful.
+
+      This function is added to QtQuick 1 in Qt 5, and is here as private API for developers needing compatibility.
+    */
+    inline int qmlRegisterType(const QUrl &url, const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+    {
+        RegisterComponent type = {
+            url,
+            uri,
+            qmlName,
+            versionMajor,
+            versionMinor
+        };
+
+        return qmlregister(QDeclarativePrivate::ComponentRegistration, &type);
+    }
+
 }
 
 QT_END_NAMESPACE

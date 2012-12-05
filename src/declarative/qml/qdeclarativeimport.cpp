@@ -529,6 +529,9 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
         if (QDeclarativeMetaType::isModule(uri.toUtf8(), vmaj, vmin))
             versionFound = true;
 
+        //Load any type->file mappings registered for this uri
+        qmldircomponents << QDeclarativeMetaType::qmlComponents(uri.toUtf8(), vmaj, vmin);
+
         if (!versionFound && qmldircomponents.isEmpty()) {
             if (errorString) {
                 bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), -1, -1);

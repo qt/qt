@@ -54,6 +54,8 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qbitarray.h>
 #include <QtCore/qreadwritelock.h>
+#include <qfileinfo.h>
+#include <qdir.h>
 #include <qmetatype.h>
 #include <qobjectdefs.h>
 #include <qdatetime.h>
@@ -121,6 +123,14 @@ struct QDeclarativeMetaTypeData
 };
 Q_GLOBAL_STATIC(QDeclarativeMetaTypeData, metaTypeData)
 Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock)
+
+struct QDeclarativeRegisteredComponentData
+{
+    QMap<QByteArray, QDeclarativeDirComponents*> registeredComponents;
+};
+
+Q_GLOBAL_STATIC(QDeclarativeRegisteredComponentData, registeredComponentData)
+Q_GLOBAL_STATIC(QReadWriteLock, registeredComponentDataLock)
 
 QDeclarativeMetaTypeData::~QDeclarativeMetaTypeData()
 {
@@ -667,6 +677,45 @@ int registerType(const QDeclarativePrivate::RegisterType &type)
     return index;
 }
 
+int registerComponent(const QDeclarativePrivate::RegisterComponent& data)
+{
+    if (data.typeName) {
+        for (int ii = 0; data.typeName[ii]; ++ii) {
+            if (!isalnum(data.typeName[ii])) {
+                qWarning("qmlRegisterType(): Invalid QML type name \"%s\"", data.typeName);
+                return 0;
+            }
+        }
+    } else {
+        qWarning("qmlRegisterType(): No QML type name for \"%s\"", data.url.toString().toLatin1().constData());
+        return 0;
+    }
+
+    QWriteLocker lock(registeredComponentDataLock());
+    QString path;
+    // Relative paths are relative to application working directory
+    if (data.url.isRelative() || data.url.scheme() == QLatin1String("file")) // Workaround QTBUG-11929
+        path = QUrl::fromLocalFile(QDir::currentPath()+QLatin1String("/")).resolved(data.url).toString();
+    else
+        path = data.url.toString();
+    QDeclarativeRegisteredComponentData *d = registeredComponentData();
+    QDeclarativeDirParser::Component comp(
+        QString::fromUtf8(data.typeName),
+        path,
+        data.majorVersion,
+        data.minorVersion
+    );
+
+    QDeclarativeDirComponents* comps = d->registeredComponents.value(QByteArray(data.uri), 0);
+    if (!comps)
+        d->registeredComponents.insert(QByteArray(data.uri), comps = new QDeclarativeDirComponents);
+
+    // Types added later should take precedence, like registerType
+    comps->prepend(comp);
+
+    return 1;
+}
+
 /*
 This method is "over generalized" to allow us to (potentially) register more types of things in
 the future without adding exported symbols.
@@ -679,6 +728,8 @@ int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
         return registerInterface(*reinterpret_cast<RegisterInterface *>(data));
     } else if (type == AutoParentRegistration) {
         return registerAutoParentFunction(*reinterpret_cast<RegisterAutoParent *>(data));
+    } else if (type == ComponentRegistration) {
+        return registerComponent(*reinterpret_cast<RegisterComponent *>(data));
     }
     return -1;
 }
@@ -982,6 +1033,29 @@ QDeclarativeType *QDeclarativeMetaType::qmlType(int userType)
     else
         return 0;
 }
+
+/*!
+    Returns the component(s) that have been registered for the module specified by \a uri and the version specified
+    by \a version_major and \a version_minor.  Returns an empty list if no such components were registered.
+*/
+QDeclarativeDirComponents QDeclarativeMetaType::qmlComponents(const QByteArray &module, int version_major, int version_minor)
+{
+    QReadLocker lock(registeredComponentDataLock());
+    QDeclarativeRegisteredComponentData *data = registeredComponentData();
+
+    QDeclarativeDirComponents* comps = data->registeredComponents.value(module, 0);
+    if (!comps)
+        return QDeclarativeDirComponents();
+    QDeclarativeDirComponents ret = *comps;
+    for (int i = ret.count() - 1; i >= 0; i--) {
+        QDeclarativeDirParser::Component &c = ret[i];
+        if (version_major >= 0 && (c.majorVersion != version_major || c.minorVersion > version_minor))
+            ret.removeAt(i);
+    }
+
+    return ret;
+}
+
 
 /*!
     Returns the list of registered QML type names.
