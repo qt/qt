@@ -3023,6 +3023,9 @@ void Configure::generateOutputVars()
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";
 
+    if (dictionary["QT_INOTIFY"] == "yes")
+        qtConfig += "inotify";
+
     if (dictionary["NEON"] == "yes")
         qtConfig += "neon";
 
