@@ -216,19 +216,19 @@ void QGLContext::makeCurrent()
                     d->workaround_brokenTexSubImage = true;
 
                     // this is a bit complicated; 1.4 version SGX drivers from
-                    // Nokia have fixed the brokenFBOReadBack problem, but
+                    // Digia have fixed the brokenFBOReadBack problem, but
                     // official drivers from TI haven't, meaning that things
                     // like the beagleboard are broken unless we hack around it
                     // - but at the same time, we want to not reduce performance
                     // by not enabling this elsewhere.
                     //
-                    // so, let's check for a Nokia-specific addon, and only
+                    // so, let's check for a Digia-specific addon, and only
                     // enable if it isn't present.
                     // (see MeeGo bug #5616)
                     if (!QEgl::hasExtension("EGL_NOK_image_shared")) {
-                        // no Nokia extension, this is probably a standard SGX
+                        // no Digia extension, this is probably a standard SGX
                         // driver, so enable the workaround
-                        qDebug() << "Found non-Nokia v1.4 driver, enabling brokenFBOReadBack";
+                        qDebug() << "Found non-Digia v1.4 driver, enabling brokenFBOReadBack";
                         d->workaround_brokenFBOReadBack = true;
                     }
                 }

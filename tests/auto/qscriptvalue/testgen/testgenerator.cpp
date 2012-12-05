@@ -1,8 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Digia Plc and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Digia Plc (http://www.qt-project.org/legal)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -110,9 +110,9 @@ static QString generateLicence()
 {
     return  "/****************************************************************************\n"
             "**\n"
-            "** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
+            "** Copyright (C) 2011 Digia Plc and/or its subsidiary(-ies).\n"
             "** All rights reserved.\n"
-            "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
+            "** Contact: Digia Plc (http://www.qt-project.org/legal)\n"
             "**\n"
             "** This file is part of the test suite of the Qt Toolkit.\n"
             "**\n"

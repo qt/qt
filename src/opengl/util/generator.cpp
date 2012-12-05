@@ -1,8 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Digia Plc and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Digia Plc (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -15,8 +15,8 @@
 ** General Public License version 2.1 requirements will be met:
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain additional
-** rights. These rights are described in the Nokia Qt LGPL Exception
+** In addition, as a special exception, Digia gives you certain additional
+** rights. These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** GNU General Public License Usage
@@ -29,7 +29,7 @@
 **
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
-** conditions contained in a signed written agreement between you and Nokia.
+** conditions contained in a signed written agreement between you and Digia.
 **
 **
 **
@@ -287,9 +287,9 @@ void writeIncludeFile(const QSet<QString> &variables,
 
     out << "/****************************************************************************\n"
            "**\n"
-           "** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
+           "** Copyright (C) 2011 Digia Plc and/or its subsidiary(-ies).\n"
            "** All rights reserved.\n"
-           "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
+           "** Contact: Digia Plc (qt-info@nokia.com)\n"
            "**\n"
            "** This file is part of the QtOpenGL module of the Qt Toolkit.\n"
            "**\n"
@@ -302,8 +302,8 @@ void writeIncludeFile(const QSet<QString> &variables,
            "** General Public License version 2.1 requirements will be met:\n"
            "** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
            "**\n"
-           "** In addition, as a special exception, Nokia gives you certain additional\n"
-           "** rights. These rights are described in the Nokia Qt LGPL Exception\n"
+           "** In addition, as a special exception, Digia gives you certain additional\n"
+           "** rights. These rights are described in the Digia Qt LGPL Exception\n"
            "** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.\n"
            "**\n"
            "** GNU General Public License Usage\n"
@@ -316,7 +316,7 @@ void writeIncludeFile(const QSet<QString> &variables,
            "**\n"
            "** Other Usage\n"
            "** Alternatively, this file may be used in accordance with the terms and\n"
-           "** conditions contained in a signed written agreement between you and Nokia.\n"
+           "** conditions contained in a signed written agreement between you and Digia.\n"
            "**\n"
            "**\n"
            "**\n"

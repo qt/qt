@@ -173,7 +173,7 @@ void tst_QHelpProjectData::metaData()
 
     QCOMPARE(data.metaData().count(), 2);
     QCOMPARE(data.metaData().value("author").toString(),
-        QString("Nokia Corporation and/or its subsidiary(-ies)"));
+        QString("Digia Plc and/or its subsidiary(-ies)"));
 }
 
 void tst_QHelpProjectData::rootPath()

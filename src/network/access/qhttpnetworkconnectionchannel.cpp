@@ -725,7 +725,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
             && (serverHeaderField = reply->headerField("Server"), !serverHeaderField.contains("Microsoft-IIS/4."))
             && (!serverHeaderField.contains("Microsoft-IIS/5."))
             && (!serverHeaderField.contains("Netscape-Enterprise/3."))
-            // this is adpoted from the knowledge of the Nokia 7.x browser team (DEF143319)
+            // this is adpoted from the knowledge of the Digia 7.x browser team (DEF143319)
             && (!serverHeaderField.contains("WebLogic"))
             ) {
         pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningProbablySupported;

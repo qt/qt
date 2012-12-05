@@ -772,10 +772,10 @@ QDeclarativeText::~QDeclarativeText()
     \snippet doc/src/snippets/declarative/text/onLinkActivated.qml 0
 
     The example code will display the text 
-    "The main website is at \l{http://qt.nokia.com}{Nokia Qt DF}."
+    "The main website is at \l{http://qt.digia.com}{Digia Qt DF}."
 
     Clicking on the highlighted link will output 
-    \tt{http://qt.nokia.com link activated} to the console.
+    \tt{http://qt.digia.com link activated} to the console.
 */
 
 /*!

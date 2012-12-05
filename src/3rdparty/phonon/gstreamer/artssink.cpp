@@ -198,7 +198,7 @@ static void arts_sink_base_init (gpointer g_class) {
     static gchar longname[] = "Experimental aRts sink",
                     klass[] = "Sink/Audio",
               description[] = "aRts Audio Output Device",
-                   author[] = "Nokia Corporation and/or its subsidiary(-ies) <qt-info@nokia.com>";
+                   author[] = "Digia Plc and/or its subsidiary(-ies) <qt-info@nokia.com>";
     GstElementDetails details = GST_ELEMENT_DETAILS (longname,
                                           klass,
                                           description,

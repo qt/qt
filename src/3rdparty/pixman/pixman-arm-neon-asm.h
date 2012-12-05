@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Nokia Corporation
+ * Copyright © 2009 Digia Plc
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),

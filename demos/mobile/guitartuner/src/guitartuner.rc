@@ -8,7 +8,7 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "CompanyName",      "Nokia Corporation\0"
+            VALUE "CompanyName",      "Digia Plc\0"
             VALUE "FileDescription",  "Qt Quick example application.\0"
             VALUE "FileVersion",      "1.2.0\0"
             VALUE "LegalCopyright",   "Copyright 2012 Digia Plc. All rights reserved.\0"

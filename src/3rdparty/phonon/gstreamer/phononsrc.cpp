@@ -71,7 +71,7 @@ static void phonon_src_base_init (gpointer g_class) {
     static gchar longname[] = "Phonon Stream Source",
                     klass[] = "Source/File",
               description[] = "Read from a Phonon StreamInterface",
-                   author[] = "Nokia Corporation and/or its subsidiary(-ies) <qt-info@nokia.com>";
+                   author[] = "Digia Plc and/or its subsidiary(-ies) <qt-info@nokia.com>";
     GstElementDetails details = GST_ELEMENT_DETAILS (longname,
                                           klass,
                                           description,

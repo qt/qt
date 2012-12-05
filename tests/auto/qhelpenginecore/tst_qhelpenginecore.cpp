@@ -450,7 +450,7 @@ void tst_QHelpEngineCore::setAutoSaveFilter()
 void tst_QHelpEngineCore::metaData()
 {
     QCOMPARE(QHelpEngineCore::metaData(m_path + "/data/test.qch", "author").toString(),
-        QString("Nokia Corporation and/or its subsidiary(-ies)"));
+        QString("Digia Plc and/or its subsidiary(-ies)"));
     QCOMPARE(QHelpEngineCore::metaData(m_path + "/data/test.qch", "notExisting").isValid(),
         false);
 }
