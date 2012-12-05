@@ -106,7 +106,7 @@
         \o  Documents related to Qt for Embedded Platforms.
         \o  A description of issues with Qt that are specific to Mac OS X.
         \o  An explanation of Qt's native features on Mac OS X.
-        \o  The platforms supported by Nokia for Qt.
+        \o  The platforms supported by Digia for Qt.
         \o  Describes the use and license of the qtmain helper library.
         \o  Collections of notes about Qt implementations on different window systems.
     \endlist

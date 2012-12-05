@@ -37,7 +37,7 @@
     \image drilldown-example.png Screenshot of the Drill Down Example
 
     When running the example application, a user can retrieve
-    information about each of Nokia's Qt offices by clicking the
+    information about each of Digia's Qt offices by clicking the
     corresponding image. The application pops up an information window
     displaying the data, and allows the users to alter the location
     description as well as the image. The main view will be updated
@@ -280,7 +280,7 @@
     \snippet examples/sql/drilldown/view.h 1
 
     The QGraphicsView class is part of the \l {Graphics View
-    Framework} which we will use to display the images of Nokia's
+    Framework} which we will use to display the images of Digia's
     Qt offices. To be able to respond to user interaction;
     i.e., showing the
     appropriate information window whenever the user clicks one of the

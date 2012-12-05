@@ -62,7 +62,7 @@ to application testing and deployment.
 
 \keyword qt-platform-support
 \section2 Qt Platform Support
-Alternatively, Qt may be installed on its own without the Nokia Qt SDK.
+Alternatively, Qt may be installed on its own without the Digia Qt SDK.
 
 Information regarding Qt Support on Different Platforms:
 \list

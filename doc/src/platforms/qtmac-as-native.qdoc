@@ -141,6 +141,6 @@
 
     Qt does not entirely interact with the development environment (for
     example plugins to set a file to "mocable" from within the Xcode
-    user interface). Nokia is actively working on improving Qt's
+    user interface). Digia is actively working on improving Qt's
     interoperability with various IDEs.
 */

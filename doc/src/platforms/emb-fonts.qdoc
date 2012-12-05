@@ -49,7 +49,7 @@
 
     Support for other font formats can be added. To make a suggestion,
     please create a task in our bug tracker at \l
-    {http://bugreports.qt.nokia.com}{http://bugreports.qt.nokia.com}.
+    {http://bugreports.qt-project.org/}{http://bugreports.qt-project.org/}.
 
     \tableofcontents
 
@@ -118,7 +118,7 @@
     The Qt Prerendered Font (QPF2) is an architecture-independent,
     light-weight and non-scalable font format specific to \l{Qt for Embedded Linux}.
 
-    Nokia provides the cross-platform \l makeqpf tool, included in the
+    Digia provides the cross-platform \l makeqpf tool, included in the
     \c tools directory of both \l {Qt} and \l{Qt for Embedded Linux}, which allows
     generation of QPF2 files from system fonts.
 
@@ -130,7 +130,7 @@
     \target QPF
     \section1 Legacy Qt Prerendered Font (QPF)
 
-    Nokia provides support for the legacy QPF format for compatibility
+    Digia provides support for the legacy QPF format for compatibility
     reasons. QPF is based on the internal font engine data structure of Qt/Embedded
     versions 2 and 3.
 

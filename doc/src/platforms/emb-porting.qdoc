@@ -36,7 +36,7 @@
     the standard C library and some POSIX functions, but only a Linux
     implementation is publically available. If you are looking for a
     non-Linux commercial implementation, it is worth contacting \l
-    {mailto:qt-info@nokia.com}{qt-info@nokia.com} to see if we can
+    {mailto:http://www.qt-project.org/legal}{http://www.qt-project.org/legal} to see if we can
     help.
 
     There are several issues to be aware of if you plan to do your own

@@ -36,7 +36,7 @@
 
     \keyword qtestlib
 
-    The QTestLib framework, provided by Nokia, is a tool for unit
+    The QTestLib framework, provided by Digia, is a tool for unit
     testing Qt based applications and libraries. QTestLib provides
     all the functionality commonly found in unit testing frameworks as
     well as extensions for testing graphical user interfaces.
@@ -87,7 +87,7 @@
 
     \note For higher-level GUI and application testing needs, please
     see the \l{Partner Directory} for Qt testing products provided by
-    Nokia partners.
+    Digia partners.
 
 
     \section1 QTestLib API

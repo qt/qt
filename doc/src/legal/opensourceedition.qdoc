@@ -40,7 +40,7 @@
     money. The Free Software Foundation, the creator of the GNU GPL, speaks
     of free in this context as in "free speech", not as in "no cost".
 
-    Nokia supports the free software concept by providing the Qt Open Source
+    Digia supports the free software concept by providing the Qt Open Source
     Edition, which is licensed under the \l{GNU General Public License (GPL)}
     (version 3) and the \l{GNU Lesser General Public License (LGPL)} (version 2.1).
     You can use this edition of Qt to create and distribute software with licenses
@@ -75,5 +75,5 @@
     the sales department at http://qt.nokia.com/contact.
 
     If you are in doubt what edition of Qt is right for your project,
-    please contact \l{mailto:qt-info@nokia.com}{qt-info@nokia.com}.
+    please contact \l{mailto:http://www.qt-project.org/legal}{http://www.qt-project.org/legal}.
 */

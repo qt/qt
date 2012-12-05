@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 //! [imports]
-import QtQuick 1.0 as Nokia
-import Ovi 1.0 as Nokia
+import QtQuick 1.0 as Digia
+import Ovi 1.0 as Digia
 //! [imports]
 
 Item {

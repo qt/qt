@@ -94,7 +94,7 @@
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -156,13 +156,13 @@
         \o \l{Qt Assistant Manual}{Qt Assistant} is a customizable HTML help
         file reader providing the complete Qt documentation offline.
         \o Integration with
-        \l{http://doc.qt.nokia.com/qt-eclipse-1.6/index.html}{Eclipse}
+        \l{http://doc.qt.Digia.com/qt-eclipse-1.6/index.html}{Eclipse}
         and KDevelop IDEs are also available.
     \endlist
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -247,7 +247,7 @@
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -503,7 +503,7 @@
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -590,7 +590,7 @@
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -670,7 +670,7 @@
 
     \section2 Cross-Platform Development using Qt Creator
 
-    \l{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}{Qt Creator} is
+    \l{http://doc.qt.Digia.com/qtcreator-snapshot/index.html}{Qt Creator} is
     a complete Cross-platform IDE included in the Qt SDK. The IDE allows
     programmers to create, build, debug and run Qt applications accross all
     supported platforms.
@@ -682,7 +682,7 @@
 /*!
     \page supported-platforms.html
     \title Supported Platforms
-    \brief The platforms supported by Nokia for Qt.
+    \brief The platforms supported by Digia for Qt.
     \ingroup platform-specific
     \group platform-details
 
@@ -724,7 +724,7 @@
     Qt is supported on a variety of 32-bit and 64-bit platforms, and can
     usually be built on each platform with GCC, a vendor-supplied compiler, or
     a third party compiler. Although Qt may be built on a range of platform-compiler
-    combinations, only a subset of these are actively supported by Nokia.
+    combinations, only a subset of these are actively supported by Digia.
 
     \tableofcontents
 
@@ -810,9 +810,9 @@
 
     \note The PPC architecture on Mac has been downgraded from tier 1 to tier 2 for 4.7.
 
-    \section1 Tier 3 Platforms (Not Supported by Nokia)
+    \section1 Tier 3 Platforms (Not Supported by Digia)
 
-    All platforms not specifically listed above are not supported by Nokia. Nokia does
+    All platforms not specifically listed above are not supported by Digia. Digia does
     not run its unit test suite or perform any other internal tests on platforms not
     listed above.
 
@@ -823,13 +823,13 @@
 
     Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
-    platforms not supported by Nokia.
+    platforms not supported by Digia.
 
     \section1 General Legal Disclaimer
 
     Please note that Qt is offered on an "as is" basis without warranty
     of any kind and that our products are not error or bug free. To the maximum extent
-    permitted by applicable law, Nokia on behalf of itself and its suppliers, disclaims all
+    permitted by applicable law, Digia on behalf of itself and its suppliers, disclaims all
     warranties and conditions, either express or implied, including, but not limited to,
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.

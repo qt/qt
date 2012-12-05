@@ -31,9 +31,9 @@
 
     \title Trademarks
     \ingroup licensing
-    \brief Information about trademarks owned by Nokia and other organisations.
+    \brief Information about trademarks owned by Digia and other organisations.
 
-    Nokia, the Nokia logo, Qt, and the Qt logo are trademarks of Nokia
+    Digia, the Digia logo, Qt, and the Qt logo are trademarks of Digia
     Corporation and/or its subsidiaries in Finland and other countries.
 
     \list
@@ -57,6 +57,6 @@
     \o All other company, product, or service names may be trademarks or
        service marks of others and are the property of their respective owners.
        The use of the word partner does not imply a partnership relationship
-       between Nokia and any other company.
+       between Digia and any other company.
     \endlist
 */
