@@ -3261,7 +3261,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2011 Корпорация Nokia и/или её дочерние подразделения.</translation>
+        <translation>%1&lt;br/&gt;Copyright (C) 2011 Корпорация Digia и/или её дочерние подразделения.</translation>
     </message>
 </context>
 <context>

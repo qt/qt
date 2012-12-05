@@ -2135,7 +2135,7 @@ Všechny soubory (*)</translation>
         <translation>Varianty délky</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
+        <source>Display information about the Qt toolkit by Digia.</source>
         <translation>Zobrazit informace o sadě nástrojů Qt od Nokie.</translation>
     </message>
 </context>

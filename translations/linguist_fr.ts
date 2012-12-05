@@ -1461,7 +1461,7 @@ All files (*)</source>
     </message>
     <message>
         <location/>
-        <source>Display information about the Qt toolkit by Nokia.</source>
+        <source>Display information about the Qt toolkit by Digia.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

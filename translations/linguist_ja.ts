@@ -2068,8 +2068,8 @@ All files (*)</source>
         <translation>&quot;%&quot; の数や番号のチェックを行うかどうかを切り替えます</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation>Nokia の Qt ツールキットについての情報を表示します。</translation>
+        <source>Display information about the Qt toolkit by Digia.</source>
+        <translation>Digia の Qt ツールキットについての情報を表示します。</translation>
     </message>
     <message>
         <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</source>

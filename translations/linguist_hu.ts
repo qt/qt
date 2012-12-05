@@ -1550,8 +1550,8 @@ Minden fájl (*)</translation>
     </message>
     <message>
         <location/>
-        <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation>Információk a Nokia Qt eszközkészletéről.</translation>
+        <source>Display information about the Qt toolkit by Digia.</source>
+        <translation>Információk a Digia Qt eszközkészletéről.</translation>
     </message>
 </context>
 <context>

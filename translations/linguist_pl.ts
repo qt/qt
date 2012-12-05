@@ -1968,7 +1968,7 @@ Wszystkie pliki (*)</translation>
         <translation>Warianty tłumaczeń</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
+        <source>Display information about the Qt toolkit by Digia.</source>
         <translation>Pokaż informacje o pakiecie narzędziowym Qt oferowanym przez Nokię.</translation>
     </message>
 </context>

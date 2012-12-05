@@ -1079,7 +1079,7 @@ Grund:
     </message>
     <message>
         <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Verze %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Autorské právo (C) 2009 Nokia Corporation a/nebo její dceřinná společnost(i).&lt;/p&gt;</translation>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Verze %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Autorské právo (C) 2009 Digia Corporation a/nebo její dceřinná společnost(i).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About %1</source>

@@ -3259,7 +3259,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2011 Корпорація Nokia та/або її дочірні компанії.</translation>
+        <translation>%1&lt;br/&gt;Copyright (C) 2011 Корпорація Digia та/або її дочірні компанії.</translation>
     </message>
 </context>
 <context>

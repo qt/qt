@@ -1867,8 +1867,8 @@ Alle Dateien (*)</translation>
         <translation>Längenvarianten</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation>Zeigt Informationen über das Qt-Toolkit von Nokia an.</translation>
+        <source>Display information about the Qt toolkit by Digia.</source>
+        <translation>Zeigt Informationen über das Qt-Toolkit von Digia an.</translation>
     </message>
 </context>
 <context>
