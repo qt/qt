@@ -654,6 +654,8 @@ public:
     QOpenGLPaintEnginePrivate()
         : opacity(1)
         , composition_mode(QPainter::CompositionMode_SourceOver)
+        , has_pen(false)
+        , has_brush(false)
         , has_fast_pen(false)
         , use_stencil_method(false)
         , dirty_drawable_texture(false)
