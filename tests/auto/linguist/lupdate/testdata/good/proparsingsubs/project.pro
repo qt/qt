@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = win mac unix common
+comm.subdir = common
+SUBDIRS = win mac unix comm
