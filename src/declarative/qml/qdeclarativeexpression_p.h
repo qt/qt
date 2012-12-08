@@ -153,7 +153,7 @@ public:
 private:
     void clearGuards();
     QScriptValue eval(QObject *secondaryScope, bool *isUndefined);
-    void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties);
+    void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty, 16> &properties);
 
     bool trackChange;
 

@@ -157,7 +157,7 @@ public:
         int notifyIndex;
     };
     bool captureProperties;
-    QPODVector<CapturedProperty> capturedProperties;
+    QPODVector<CapturedProperty, 16> capturedProperties;
 
     QDeclarativeContext *rootContext;
     bool isDebugging;
