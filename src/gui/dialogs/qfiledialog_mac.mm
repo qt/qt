@@ -448,6 +448,8 @@ QT_USE_NAMESPACE
     if ([path isEqualToString:mCurrentDir])
         return;
 
+    if ([mSavePanel respondsToSelector:@selector(isVisible)] && ![mSavePanel isVisible])
+        return;
     [mCurrentDir release];
     mCurrentDir = [path retain];
     mPriv->QNSOpenSavePanelDelegate_directoryEntered(QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString(mCurrentDir)));
