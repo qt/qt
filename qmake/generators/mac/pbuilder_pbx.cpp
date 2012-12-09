@@ -1328,10 +1328,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";" << "\n";
     if(!project->isEmpty("QMAKE_IPHONEOS_DEPLOYMENT_TARGET"))
         t << "\t\t\t\t" << writeSettings("IPHONEOS_DEPLOYMENT_TARGET", project->first("QMAKE_IPHONEOS_DEPLOYMENT_TARGET")) << ";" << "\n";
-    if(pbVersion >= 38) {
-        if(!project->isEmpty("OBJECTS_DIR"))
-            t << "\t\t\t\t" << writeSettings("OBJROOT", fixForOutput(project->first("OBJECTS_DIR"))) << ";" << "\n";
-    }
 #if 0
     if(!project->isEmpty("DESTDIR"))
         t << "\t\t\t\t" << writeSettings("SYMROOT", fixForOutput(project->first("DESTDIR"))) << ";" << "\n";
@@ -1586,6 +1582,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             if (!archs.isEmpty())
                                 t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
                         }
+                        if (!project->isEmpty("OBJECTS_DIR"))
+                            t << "\t\t\t\t" << writeSettings("OBJROOT", escapeFilePath(project->first("OBJECTS_DIR"))) << ";" << "\n";
                     } else {
                         if (project->first("TEMPLATE") == "app") {
                             if (pbVersion < 38 && project->isActiveConfig("app_bundle"))
