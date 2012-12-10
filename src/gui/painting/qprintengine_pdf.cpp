@@ -948,7 +948,7 @@ void QPdfEnginePrivate::writeInfo()
         array.append((*(utf16Creator + i)) >> 8);
         array.append((*(utf16Creator + i)) & 0xff);
     }
-    array.append(")\n/Producer (Qt " QT_VERSION_STR " (C) 2010 Nokia Corporation and/or its subsidiary(-ies))\n");
+    array.append(")\n/Producer (Qt " QT_VERSION_STR " (C) 2010 Digia Plc)\n");
     write(array);
 
     QDateTime now = QDateTime::currentDateTime().toUTC();

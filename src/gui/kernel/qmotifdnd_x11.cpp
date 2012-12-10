@@ -65,7 +65,7 @@ in doc/dnd.doc, where the documentation system can see it. */
 /* Only requires Xlib layer - not MT safe */
 /* Author: Daniel Dardailler, daniel@x.org */
 /* Adapted by: Matt Koss, koss@napri.sk */
-/* Further adaptions by: Nokia Corporation and/or its subsidiary(-ies) */
+/* Further adaptions by: Digia Plc */
 /***********************************************************/
 
 #include "qplatformdefs.h"

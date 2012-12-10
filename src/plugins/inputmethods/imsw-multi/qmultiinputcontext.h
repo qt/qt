@@ -46,7 +46,7 @@
 **
 ** Copyright (C) 2004 immodule for Qt Project.  All rights reserved.
 **
-** This file is written to contribute to Nokia Corporation and/or its subsidiary(-ies) under their own
+** This file is written to contribute to Digia Plc under their own
 ** licence. You may use this file under your Qt license. Following
 ** description is copied from their original file headers. Contact
 ** immodule-qt@freedesktop.org if any conditions of this licensing are

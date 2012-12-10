@@ -80,7 +80,7 @@ QString SystemPropertyFN::retrieveProperty(const QXmlName name)
              */
             return QString::number(1.20);
         case StandardLocalNames::vendor:
-            return QLatin1String("Nokia Corporation and/or its subsidiary(-ies), a Nokia Company");
+            return QLatin1String("Digia Plc");
         case StandardLocalNames::vendor_url:
             return QLatin1String("http://qt.nokia.com/");
         case StandardLocalNames::product_name:

@@ -15,7 +15,7 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Nokia Corporation and/or its subsidiary(-ies)"
+            VALUE "CompanyName", "Digia Plc"
             VALUE "FileDescription", "Wrapper Example (ActiveQt)"
             VALUE "FileVersion", "1.0.0.0"
             VALUE "LegalCopyright", "Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)."
