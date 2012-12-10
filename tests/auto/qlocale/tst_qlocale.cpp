@@ -140,6 +140,10 @@ private slots:
     void queryDateTime();
     void queryMeasureSystem_data();
     void queryMeasureSystem();
+
+    // defaultNumberingSystem test
+    void defaultNumeringSystem();
+
 #if defined(Q_OS_SYMBIAN)
     void symbianSystemLocale();
 #endif
@@ -1751,6 +1755,42 @@ void tst_QLocale::queryMeasureSystem()
 #endif
 }
 #endif // QT_NO_SYSTEMLOCALE
+
+void tst_QLocale::defaultNumeringSystem()
+{
+    QLocale sk("sk_SK");
+    QCOMPARE(sk.toString(123), QLatin1String("123"));
+
+    QLocale ta("ta_IN");
+    QCOMPARE(ta.toString(123), QLatin1String("123"));
+
+    QLocale te("te_IN");
+    QCOMPARE(te.toString(123), QLatin1String("123"));
+
+    QLocale hi("hi_IN");
+    QCOMPARE(hi.toString(123), QLatin1String("123"));
+
+    QLocale gu("gu_IN");
+    QCOMPARE(gu.toString(123), QLatin1String("123"));
+
+    QLocale kn("kn_IN");
+    QCOMPARE(kn.toString(123), QLatin1String("123"));
+
+    QLocale pa("pa_IN");
+    QCOMPARE(pa.toString(123), QLatin1String("123"));
+
+    QLocale ne("ne_IN");
+    QCOMPARE(ne.toString(123), QLatin1String("123"));
+
+    QLocale mr("mr_IN");
+    QCOMPARE(mr.toString(123), QLatin1String("123"));
+
+    QLocale ml("ml_IN");
+    QCOMPARE(ml.toString(123), QLatin1String("123"));
+
+    QLocale kok("kok_IN");
+    QCOMPARE(kok.toString(123), QLatin1String("123"));
+}
 
 void tst_QLocale::ampm()
 {
