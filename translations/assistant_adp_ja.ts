@@ -555,7 +555,7 @@ Assistant は動きません!</translation>
     </message>
     <message>
         <location/>
-        <source>Qt Assistant by Nokia</source>
+        <source>Qt Assistant by Digia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -867,8 +867,8 @@ Assistant は動きません!</translation>
         <translation type="obsolete">この Qt Assistant は Qt オープンソース版の一部であり、オープンソースのアプリケーションの開発を目的としたものです。Qt は、複数のプラットフォームに対応するアプリケーションを開発するための C++ のわかりやすいフレームワークです。</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">著作権のある（ソースを公開しない）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt; をご覧ください。</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/model.html&quot;&gt;qt.digia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">著作権のある（ソースを公開しない）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;a href=&quot;http://qt.digia.com/company/model.html&quot;&gt;qt.digia.com/company/model.html&lt;/a&gt; をご覧ください。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
@@ -924,7 +924,7 @@ Assistant は動きません!</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
-        <source>Qt Assistant by Nokia</source>
+        <source>Qt Assistant by Digia</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

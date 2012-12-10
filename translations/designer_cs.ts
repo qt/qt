@@ -3926,7 +3926,7 @@ Chcete tuto předlohu přepsat?</translation>
     <message>
         <location line="+2"/>
         <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Autorské právo (C) 2009 Nokia Corporation a/nebo její dceřinná společnost(i).</translation>
+        <translation>%1&lt;br/&gt;Autorské právo (C) 2009 Digia Corporation a/nebo její dceřinná společnost(i).</translation>
     </message>
 </context>
 <context>

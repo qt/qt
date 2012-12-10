@@ -516,8 +516,8 @@ Assistent ist nicht einsatzbereit!</translation>
     </message>
     <message>
         <location/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Qt Assistant von Nokia</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Qt Assistant von Digia</translation>
     </message>
     <message>
         <location/>
@@ -850,8 +850,8 @@ Assistent ist nicht einsatzbereit!</translation>
     <name>QObject</name>
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Qt Assistant von Nokia</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Qt Assistant von Digia</translation>
     </message>
 </context>
 <context>

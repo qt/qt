@@ -207,7 +207,7 @@ void tst_QHelpGenerator::checkMetaData()
     m_query->exec("SELECT Value FROM MetaDataTable WHERE Name=\'author\'");
     if (!m_query->next())
         QFAIL("Meta Data Error");
-    QCOMPARE(m_query->value(0).toString(), QString("Nokia Corporation and/or its subsidiary(-ies)"));
+    QCOMPARE(m_query->value(0).toString(), QString("Digia Plc"));
 }
 
 QTEST_MAIN(tst_QHelpGenerator)

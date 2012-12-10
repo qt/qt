@@ -130,7 +130,7 @@ while (pos >= 0) {
 
 
 //! [10]
-str = "Nokia Corporation\tqt.nokia.com\tNorway";
+str = "Digia Plc\tqt.nokia.com\tNorway";
 QString company, web, country;
 rx.setPattern("^([^\t]+)\t([^\t]+)\t([^\t]+)$");
 if (rx.indexIn(str) != -1) {

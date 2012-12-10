@@ -1356,8 +1356,8 @@ All files (*)</source>
         <translation type="obsolete"> 開放源碼版本</translation>
     </message>
     <message>
-        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">此版本的 Qt 語言家是 Qt 開放源碼版本的一部份，只能用於開發開放源碼的應用程式。Qt 為一個跨平台的，強大的 C++ 應用程式開發框架。&lt;br/&gt;&lt;br/&gt;您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt;。</translation>
+        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">此版本的 Qt 語言家是 Qt 開放源碼版本的一部份，只能用於開發開放源碼的應用程式。Qt 為一個跨平台的，強大的 C++ 應用程式開發框架。&lt;br/&gt;&lt;br/&gt;您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
@@ -2688,8 +2688,8 @@ All files (*)</source>
         <translation type="obsolete"> 開放源碼版本</translation>
     </message>
     <message>
-        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">此版本的 Qt 語言家是 Qt 開放源碼版本的一部份，只能用於開發開放源碼的應用程式。Qt 為一個跨平台的，強大的 C++ 應用程式開發框架。&lt;br/&gt;&lt;br/&gt;您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt;。</translation>
+        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">此版本的 Qt 語言家是 Qt 開放源碼版本的一部份，只能用於開發開放源碼的應用程式。Qt 為一個跨平台的，強大的 C++ 應用程式開發框架。&lt;br/&gt;&lt;br/&gt;您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>

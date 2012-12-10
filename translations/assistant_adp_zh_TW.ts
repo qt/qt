@@ -587,8 +587,8 @@ Assistant will not work!</source>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Nokia 提供的 Qt 小幫手</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Digia 提供的 Qt 小幫手</translation>
     </message>
     <message>
         <location/>
@@ -861,8 +861,8 @@ Assistant will not work!</source>
         <translation>字型設定...</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt;。</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/model&quot;&gt;qt.digia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">您需要商業版的 Qt 授權才能發展私有（封閉）應用程式軟體。關於 Qt 授權的概要，請參考 &lt;a href=&quot;http://qt.digia.com/company/model&quot;&gt;qt.digia.com/company/model&lt;/a&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
@@ -877,8 +877,8 @@ Assistant will not work!</source>
     </message>
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Nokia 提供的 Qt 小幫手</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Digia 提供的 Qt 小幫手</translation>
     </message>
 </context>
 <context>

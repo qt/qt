@@ -3091,20 +3091,20 @@ Do you want to delete it anyway?</source>
         <translation>OK</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qtopia Core.&lt;/p&gt;&lt;p&gt;Qt is a Trolltech product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qtopia Core.&lt;/p&gt;&lt;p&gt;Qt is a Trolltech product. See &lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
         <translation type="obsolete">&lt;h3&gt;Qt について&lt;/h3&gt;%1
 &lt;p&gt;QtはクロスプラットフォームのC++ アプリケーション開発ツールキットです。&lt;/p&gt;
 &lt;p&gt;Qt は MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, 商用のUnix派生版でソースコード互換を実現します。また、Qtopia Coreのように、内蔵デバイスでも利用可能です。&lt;/p&gt;
-&lt;p&gt;QtはTrolltechの商品です。詳細は&lt;tt&gt;http://qt.nokia.com/&lt;/tt&gt;を参照してください。&lt;/p&gt;</translation>
+&lt;p&gt;QtはTrolltechの商品です。詳細は&lt;tt&gt;http://qt.digia.com/&lt;/tt&gt;を参照してください。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
         <translation type="obsolete">&lt;p&gt;このプログラムは Qt バージョン %1 を使用しています。&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>&lt;p&gt;This program uses Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition is intended for the development of Open Source applications. You need a commercial Qt license for development of proprietary (closed source) applications.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/company/model/&quot;&gt;qt.nokia.com/company/model/&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;</source>
+        <source>&lt;p&gt;This program uses Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition is intended for the development of Open Source applications. You need a commercial Qt license for development of proprietary (closed source) applications.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.digia.com/company/model/&quot;&gt;qt.digia.com/company/model/&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;</source>
         <translation type="obsolete">&lt;p&gt;このプログラムは Qt オープンソース版バージョン %1 を使用しています。&lt;/p&gt;
-&lt;p&gt;Qt オープンソース版はオープンソースのアプリケーションの開発用です。ソースコードを公開しない商用アプリケーションを開発するには商用版のライセンスが必要です。&lt;/p&gt;&lt;p&gt;Qtのライセンスについては&lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt;を参照してください。&lt;/p&gt;</translation>
+&lt;p&gt;Qt オープンソース版はオープンソースのアプリケーションの開発用です。ソースコードを公開しない商用アプリケーションを開発するには商用版のライセンスが必要です。&lt;/p&gt;&lt;p&gt;Qtのライセンスについては&lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt;を参照してください。&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+509"/>
@@ -3123,7 +3123,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="+1570"/>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.digia.com/products/licensing&quot;&gt;qt.digia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Digia product. See &lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Qtについて&lt;/h3&gt;
 &lt;p&gt;このプログラムは Qt バージョン %1 を使用しています。&lt;/p&gt;
 &lt;p&gt;Qt は、クロスプラットホームのアプリケーション開発に使用される C++ のツールキットです。&lt;/p&gt;
@@ -3143,10 +3143,10 @@ Qt GNU General Public License バージョン 3.0 ライセンスは、GNU GPL �
 この場合は、GNU GPL バージョン 3.0 に従う必要があります。
 &lt;/p&gt;
 &lt;p&gt;
-ライセンスの詳細については、&lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt;
+ライセンスの詳細については、&lt;a href=&quot;http://qt.digia.com/products/licensing&quot;&gt;qt.digia.com/products/licensing&lt;/a&gt;
 を参照してください。&lt;/p&gt;
 &lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;
-&lt;p&gt;Qt は Nokia の製品です。詳細については&lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; を参照してください。&lt;/p&gt;
+&lt;p&gt;Qt は Digia の製品です。詳細については&lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; を参照してください。&lt;/p&gt;
 &lt;p&gt;
 訳注: ライセンスはここにある翻訳は参考のためのものであり、オリジナルの(英語の)ものが正式なものとなります。
 &lt;/p&gt;</translation>

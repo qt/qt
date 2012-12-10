@@ -664,7 +664,7 @@ All files (*)</source>
     <message>
         <location line="+3"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Корпорация Nokia и/или её дочерние подразделения.</translation>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Корпорация Digia и/или её дочерние подразделения.</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -1364,7 +1364,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Показать информацию об инструментарии Qt от Nokia.</translation>
+        <translation>Показать информацию об инструментарии Qt от Digia.</translation>
     </message>
     <message>
         <location/>

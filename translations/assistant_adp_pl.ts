@@ -508,7 +508,7 @@ Assistant nie będzie działał!</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
-        <source>Qt Assistant by Nokia</source>
+        <source>Qt Assistant by Digia</source>
         <translation>Qt Assistant Nokii</translation>
     </message>
     <message>
@@ -851,7 +851,7 @@ Assistant nie będzie działał!</translation>
     <name>QObject</name>
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
-        <source>Qt Assistant by Nokia</source>
+        <source>Qt Assistant by Digia</source>
         <translation>Qt Assistant Nokii</translation>
     </message>
 </context>

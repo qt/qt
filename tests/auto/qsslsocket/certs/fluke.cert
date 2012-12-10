@@ -3,11 +3,11 @@ Certificate:
         Version: 3 (0x2)
         Serial Number: 0 (0x0)
         Signature Algorithm: sha1WithRSAEncryption
-        Issuer: C=NO, ST=Oslo, L=Nydalen, O=Nokia Corporation and/or its subsidiary(-ies), OU=Development, CN=fluke.troll.no/emailAddress=ahanssen@trolltech.com
+        Issuer: C=NO, ST=Oslo, L=Nydalen, O=Digia Plc, OU=Development, CN=fluke.troll.no/emailAddress=ahanssen@trolltech.com
         Validity
             Not Before: Dec  4 01:10:32 2007 GMT
             Not After : Apr 21 01:10:32 2035 GMT
-        Subject: C=NO, ST=Oslo, O=Nokia Corporation and/or its subsidiary(-ies), OU=Development, CN=fluke.troll.no
+        Subject: C=NO, ST=Oslo, O=Digia Plc, OU=Development, CN=fluke.troll.no
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
             RSA Public Key: (1024 bit)
@@ -30,7 +30,7 @@ Certificate:
             X509v3 Subject Key Identifier: 
                 21:85:04:3D:23:01:66:E5:F7:9F:1A:84:24:8A:AF:0A:79:F4:E5:AC
             X509v3 Authority Key Identifier: 
-                DirName:/C=NO/ST=Oslo/L=Nydalen/O=Nokia Corporation and/or its subsidiary(-ies)/OU=Development/CN=fluke.troll.no/emailAddress=ahanssen@trolltech.com
+                DirName:/C=NO/ST=Oslo/L=Nydalen/O=Digia Plc/OU=Development/CN=fluke.troll.no/emailAddress=ahanssen@trolltech.com
                 serial:8E:A8:B4:E8:91:B7:54:2E
 
     Signature Algorithm: sha1WithRSAEncryption

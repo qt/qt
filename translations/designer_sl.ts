@@ -3930,7 +3930,7 @@ Ali želite nadomestiti predlogo?</translation>
     <message>
         <location line="+2"/>
         <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Avtorske pravice © 2009 Nokia Corporation in/ali njene podružnice.</translation>
+        <translation>%1&lt;br/&gt;Avtorske pravice © 2009 Digia Corporation in/ali njene podružnice.</translation>
     </message>
 </context>
 <context>

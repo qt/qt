@@ -627,8 +627,8 @@ Qt Assistant не будет работать!</translation>
     </message>
     <message>
         <location/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Qt Assistant от Nokia</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Qt Assistant от Digia</translation>
     </message>
     <message>
         <location/>
@@ -851,8 +851,8 @@ Qt Assistant не будет работать!</translation>
     <name>QObject</name>
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
-        <source>Qt Assistant by Nokia</source>
-        <translation>Qt Assistant от Nokia</translation>
+        <source>Qt Assistant by Digia</source>
+        <translation>Qt Assistant от Digia</translation>
     </message>
 </context>
 <context>

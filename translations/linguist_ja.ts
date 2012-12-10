@@ -1155,8 +1155,8 @@ All files (*)</source>
         <translation type="obsolete"> オープンソース版</translation>
     </message>
     <message>
-        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
+        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
@@ -2567,8 +2567,8 @@ All files (*)</source>
         <translation type="obsolete">このプログラムは、Qt 商用ライセンス契約書の定める条件の下であなたの利用が認められています。詳細は、ソフトウェアと一緒に配布される LICENSE ファイルを参照してください。</translation>
     </message>
     <message>
-        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qt.nokia.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
+        <source>This version of Qt Linguist is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">このバージョンの Qt Linguist は、 オープンソースアプリケーションを開発するための Qt オープンソース版の一部です。Qt は、クロスプラットフォームなアプリケーションを開発するための包括的な C++ のフレームワークです。&lt;br/&gt;&lt;br/&gt;独占的な（ソースが隠された）アプリケーションを開発するには、Qt の商用ライセンスが必要です。Qt のライセンスの概要については &lt;tt&gt;http://qt.digia.com/company/model.html&lt;/tt&gt; をご覧ください。</translation>
     </message>
     <message>
         <source>Translate</source>
