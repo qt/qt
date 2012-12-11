@@ -105,7 +105,7 @@
                     </property>
                     <property name="text">
                         <string>The license could not be found in the package. The package might be corrupted.
-Please contact qt-info@nokia.com to resolve the problem.</string>
+Please contact http://www.qt-project.org/legal to resolve the problem.</string>
                     </property>
                 </widget>
                 <widget class="QLayoutWidget">

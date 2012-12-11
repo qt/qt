@@ -500,7 +500,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for the $Platform platform."
             echo
-            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "Please contact http://www.qt-project.org/legal to upgrade your license to"
             echo "include the $Platform platform, or install the Qt Open Source Edition"
             echo "if you intend to develop free software."
             exit 1
@@ -2662,7 +2662,7 @@ if [ "$CFG_RTOS_ENABLED" = "no" ]; then
             echo ""
             echo "You are not licensed for Qt for `basename $XPLATFORM`."
             echo ""
-            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "Please contact http://www.qt-project.org/legal to upgrade your license to"
             echo "include this platform, or install the Qt Open Source Edition"
             echo "if you intend to develop free software."
             exit 1
@@ -4029,7 +4029,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  Your support and upgrade period has expired."
                     echo
                     echo "  You are no longer licensed to use this version of Qt."
-                    echo "  Please contact qt-info@nokia.com to renew your support"
+                    echo "  Please contact http://www.qt-project.org/legal to renew your support"
                     echo "  and upgrades for this license."
                     echo
                     echo "NOTICE  NOTICE  NOTICE  NOTICE"
@@ -4047,7 +4047,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  support, nor are you entitled to use any more recent"
                     echo "  Qt releases."
                     echo
-                    echo "  Please contact qt-info@nokia.com to renew your"
+                    echo "  Please contact http://www.qt-project.org/legal to renew your"
                     echo "  support and upgrades for this license."
                     echo
                     echo "WARNING  WARNING  WARNING  WARNING"
@@ -4062,7 +4062,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                 echo "  Your Evaluation license has expired."
                 echo
                 echo "  You are no longer licensed to use this software. Please"
-                echo "  contact qt-info@nokia.com to purchase license, or install"
+                echo "  contact http://www.qt-project.org/legal to purchase license, or install"
                 echo "  the Qt Open Source Edition if you intend to develop free"
                 echo "  software."
                 echo
