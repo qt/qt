@@ -1454,6 +1454,25 @@ void tst_QMenuBar::check_shortcutPress()
 #endif
 }
 
+class LayoutDirectionSaver
+{
+    Q_DISABLE_COPY(LayoutDirectionSaver)
+public:
+    explicit LayoutDirectionSaver(Qt::LayoutDirection direction)
+        : m_oldDirection(qApp->layoutDirection())
+    {
+       qApp->setLayoutDirection(direction);
+    }
+
+    ~LayoutDirectionSaver()
+    {
+        qApp->setLayoutDirection(m_oldDirection);
+    }
+
+private:
+    const Qt::LayoutDirection m_oldDirection;
+};
+
 void tst_QMenuBar::check_menuPosition()
 {
 #ifdef Q_WS_MAC
@@ -1516,10 +1535,9 @@ void tst_QMenuBar::check_menuPosition()
         menu.close();
     }
 
-    //in RTL, the menu should be stuck at the right of the action geometry
+    // QTBUG-2596: in RTL, the menu should be stuck at the right of the action geometry
     {
-        Qt::LayoutDirection dir = qApp->layoutDirection();
-        qApp->setLayoutDirection(Qt::RightToLeft);
+        LayoutDirectionSaver directionSaver(Qt::RightToLeft);
         menu.clear();
         QObject::connect(&menu, SIGNAL(aboutToShow()), &menu, SLOT(addActions()));
         QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
@@ -1528,9 +1546,23 @@ void tst_QMenuBar::check_menuPosition()
         QVERIFY(menu.isActiveWindow());
         QCOMPARE(menu.geometry().right(), mbItemRect.right());
         menu.close();
-        qApp->setLayoutDirection(dir);
     }
 
+#ifndef QT_NO_CURSOR
+    // QTBUG-28031: Click at bottom-right corner.
+    {
+        mw->move(400, 200);
+        LayoutDirectionSaver directionSaver(Qt::RightToLeft);
+        QMenuBar *mb = mw->menuBar();
+        const QPoint localPos = mb->actionGeometry(menu.menuAction()).bottomRight() - QPoint(1, 1);
+        const QPoint globalPos = mb->mapToGlobal(localPos);
+        QCursor::setPos(globalPos);
+        QTest::mouseClick(mb, Qt::LeftButton, 0, localPos);
+        QTRY_VERIFY(menu.isActiveWindow());
+        QCOMPARE(menu.geometry().right() - 1, globalPos.x());
+        menu.close();
+    }
+#  endif // QT_NO_CURSOR
 }
 
 void tst_QMenuBar::task223138_triggered()
