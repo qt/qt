@@ -216,5 +216,5 @@ ALIASES = \
         "x11=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#3\">X11</a>" \
         "gpl=<a href=\"http://www.fsf.org/licensing/licenses/gpl.html#SEC1\">GPL</a>" \
         "lgpl=<a href=\"http://www.fsf.org/licensing/licenses/lgpl.html#SEC1\">LGPL</a>" \
-        "qpl=<a href=\"http://qt.nokia.com/products/licensing\">QPL</a>"
+        "qpl=<a href=\"http://qt.digia.com/product/licensing\">QPL</a>"
 
