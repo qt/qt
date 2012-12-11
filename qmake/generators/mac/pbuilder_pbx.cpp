@@ -1256,15 +1256,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t\t" << writeSettings("SECTORDER_FLAGS", QStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("WARNING_CFLAGS", QStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("PREBINDING", QStringList((project->isEmpty("QMAKE_DO_PREBINDING") ? "NO" : "YES")), SettingsNoQuote) << ";" << "\n";
-    if(!project->isEmpty("PRECOMPILED_HEADER")) {
-        if(pbVersion >= 38) {
-            t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
-              << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
-        } else {
-            t << "\t\t\t\t" << writeSettings("PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
-              << "\t\t\t\t" << writeSettings("PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
-        }
-    }
     if((project->first("TEMPLATE") == "app" && project->isActiveConfig("app_bundle")) ||
        (project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib") &&
         project->isActiveConfig("lib_bundle"))) {
@@ -1534,6 +1525,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 for (QMap<QString, QString>::Iterator set_it = settings.begin(); set_it != settings.end(); ++set_it)
                     t << "\t\t\t\t" << writeSettings(set_it.key(), set_it.value()) << ";\n";
                 if (pbVersion >= 46) {
+                    if (!project->isEmpty("PRECOMPILED_HEADER")) {
+                        t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
+                          << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
+                    }
                     if (buildConfigGroups.at(i) == QLatin1String("PROJECT")) {
                         t << "\t\t\t\t" << writeSettings("HEADER_SEARCH_PATHS", fixListForOutput("INCLUDEPATH") + QStringList(fixForOutput(specdir())), SettingsAsList, 5) << ";" << "\n"
                           << "\t\t\t\t" << writeSettings("LIBRARY_SEARCH_PATHS", fixListForOutput("QMAKE_PBX_LIBPATHS"), SettingsAsList, 5) << ";" << "\n"
