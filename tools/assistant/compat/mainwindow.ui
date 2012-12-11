@@ -51,7 +51,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>Qt Assistant by Nokia</string>
+   <string>Qt Assistant by Digia Plc</string>
   </property>
   <widget class="QWidget" name="__qt_central_widget" />
   <widget class="QToolBar" name="Toolbar" >

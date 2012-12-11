@@ -348,7 +348,7 @@ QString Config::title() const
 {
     QString s = profil->props[QLatin1String("title")];
     if (s.isEmpty())
-        s = QObject::tr("Qt Assistant by Nokia");
+        s = QObject::tr("Qt Assistant by Digia Plc");
     return s;
 }
 
