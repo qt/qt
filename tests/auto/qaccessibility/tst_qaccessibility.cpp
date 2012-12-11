@@ -436,7 +436,15 @@ void tst_QAccessibility::eventTest()
     button->hide();
     QVERIFY_EVENT(button, 0, QAccessible::ObjectHide);
 
+    // Destroy a visible widget
+    QTestAccessibility::clearEvents();
+    button->show();
+    QVERIFY_EVENT(button, 0, QAccessible::ObjectShow);
+
     delete button;
+
+    QVERIFY_EVENT(button, 0, QAccessible::ObjectHide);
+    QVERIFY_EVENT(button, 0, QAccessible::ObjectDestroyed);
 }
 
 void tst_QAccessibility::customWidget()
