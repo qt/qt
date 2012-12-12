@@ -162,6 +162,7 @@ void QDeclarativePathViewPrivate::clear()
         releaseItem(p);
     }
     items.clear();
+    tl.clear();
 }
 
 void QDeclarativePathViewPrivate::updateMappedRange()
@@ -473,6 +474,8 @@ QDeclarativePathView::~QDeclarativePathView()
     For large or dynamic datasets the model is usually provided by a C++ model object.
     Models can also be created directly in QML, using the ListModel element.
 
+    \note changing the model will reset the offset and currentIndex to 0.
+
     \sa {qmlmodels}{Data Models}
 */
 QVariant QDeclarativePathView::model() const
@@ -493,11 +496,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         disconnect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
-        for (int i=0; i<d->items.count(); i++){
-            QDeclarativeItem *p = d->items[i];
-            d->model->release(p);
-        }
-        d->items.clear();
+        d->clear();
     }
 
     d->modelVariant = model;
@@ -517,6 +516,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
             dataModel->setModel(model);
     }
+    int oldModelCount = d->modelCount;
     d->modelCount = 0;
     if (d->model) {
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
@@ -525,14 +525,20 @@ void QDeclarativePathView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         d->modelCount = d->model->count();
-        if (d->model->count())
-            d->offset = qmlMod(d->offset, qreal(d->model->count()));
-        if (d->offset < 0)
-            d->offset = d->model->count() + d->offset;
-}
+    }
+    if (isComponentComplete()) {
+        if (d->currentIndex != 0) {
+            d->currentIndex = 0;
+            emit currentIndexChanged();
+        }
+        if (d->offset != 0.0) {
+            d->offset = 0;
+            emit offsetChanged();
+        }
+    }
     d->regenerate();
-    d->fixOffset();
-    emit countChanged();
+    if (d->modelCount != oldModelCount)
+        emit countChanged();
     emit modelChanged();
 }
 
@@ -590,8 +596,17 @@ int QDeclarativePathView::currentIndex() const
 void QDeclarativePathView::setCurrentIndex(int idx)
 {
     Q_D(QDeclarativePathView);
-    if (d->model && d->modelCount)
-        idx = qAbs(idx % d->modelCount);
+    if (!isComponentComplete()) {
+        if (idx != d->currentIndex) {
+            d->currentIndex = idx;
+            emit currentIndexChanged();
+        }
+        return;
+    }
+
+    idx = d->modelCount
+        ? ((idx % d->modelCount) + d->modelCount) % d->modelCount
+        : 0;
     if (d->model && idx != d->currentIndex) {
         if (d->modelCount) {
             int itemIndex = (d->currentIndex - d->firstIndex + d->modelCount) % d->modelCount;
@@ -647,13 +662,8 @@ void QDeclarativePathView::incrementCurrentIndex()
 void QDeclarativePathView::decrementCurrentIndex()
 {
     Q_D(QDeclarativePathView);
-    if (d->model && d->modelCount) {
-        int idx = currentIndex()-1;
-        if (idx < 0)
-            idx = d->modelCount - 1;
-        d->moveDirection = QDeclarativePathViewPrivate::Negative;
-        setCurrentIndex(idx);
-    }
+    d->moveDirection = QDeclarativePathViewPrivate::Negative;
+    setCurrentIndex(currentIndex()-1);
 }
 
 /*!
@@ -1321,15 +1331,20 @@ void QDeclarativePathView::componentComplete()
 {
     Q_D(QDeclarativePathView);
     QDeclarativeItem::componentComplete();
-    d->createHighlight();
-    // It is possible that a refill has already happended to to Path
-    // bindings being handled in the componentComplete().  If so
-    // don't do it again.
-    if (d->items.count() == 0 && d->model) {
+
+    if (d->model) {
         d->modelCount = d->model->count();
-        d->regenerate();
+        if (d->modelCount && d->currentIndex != 0) // an initial value has been provided for currentIndex
+            d->offset = qmlMod(d->modelCount - d->currentIndex, d->modelCount);
     }
+
+    d->createHighlight();
+    d->regenerate();
     d->updateHighlight();
+    d->updateCurrent();
+
+    if (d->modelCount)
+        emit countChanged();
 }
 
 void QDeclarativePathView::refill()
@@ -1520,6 +1535,10 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     }
 
     d->modelCount -= count;
+
+    if (d->currentIndex == -1)
+        d->currentIndex = d->calcCurrentIndex();
+
     if (!d->modelCount) {
         while (d->itemCache.count())
             d->releaseItem(d->itemCache.takeLast());
@@ -1546,19 +1565,19 @@ void QDeclarativePathView::itemsMoved(int /*from*/, int /*to*/, int /*count*/)
     if (!d->isValid() || !isComponentComplete())
         return;
 
+    int oldCurrent = d->currentIndex;
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem)
+        d->currentIndex = d->model->indexOf(d->currentItem, this);
+
     QList<QDeclarativeItem *> removedItems = d->items;
     d->items.clear();
     d->regenerate();
     while (removedItems.count())
         d->releaseItem(removedItems.takeLast());
 
-    // Fix current index
-    if (d->currentIndex >= 0 && d->currentItem) {
-        int oldCurrent = d->currentIndex;
-        d->currentIndex = d->model->indexOf(d->currentItem, this);
-        if (oldCurrent != d->currentIndex)
-            emit currentIndexChanged();
-    }
+    if (oldCurrent != d->currentIndex)
+        emit currentIndexChanged();
     d->updateCurrent();
 }
 
@@ -1621,7 +1640,7 @@ void QDeclarativePathView::movementEnding()
 // find the item closest to the snap position
 int QDeclarativePathViewPrivate::calcCurrentIndex()
 {
-    int current = -1;
+    int current = 0;
     if (modelCount && model && items.count()) {
         offset = qmlMod(offset, modelCount);
         if (offset < 0)
@@ -1642,7 +1661,7 @@ void QDeclarativePathViewPrivate::updateCurrent()
         return;
 
     int idx = calcCurrentIndex();
-    if (model && idx != currentIndex) {
+    if (model && (idx != currentIndex || !currentItem)) {
         int itemIndex = (currentIndex - firstIndex + modelCount) % modelCount;
         if (itemIndex < items.count()) {
             if (QDeclarativeItem *item = items.at(itemIndex)) {
@@ -1650,6 +1669,7 @@ void QDeclarativePathViewPrivate::updateCurrent()
                     att->setIsCurrentItem(false);
             }
         }
+        int oldCurrentIndex = currentIndex;
         currentIndex = idx;
         currentItem = 0;
         itemIndex = (idx - firstIndex + modelCount) % modelCount;
@@ -1659,7 +1679,8 @@ void QDeclarativePathViewPrivate::updateCurrent()
             if (QDeclarativePathViewAttached *att = attached(currentItem))
                 att->setIsCurrentItem(true);
         }
-        emit q->currentIndexChanged();
+        if (oldCurrentIndex != currentIndex)
+            emit q->currentIndexChanged();
     }
 }
 

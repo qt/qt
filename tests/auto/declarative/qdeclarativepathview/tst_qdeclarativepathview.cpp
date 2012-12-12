@@ -63,6 +63,33 @@
 #define SRCDIR "."
 #endif
 
+template<typename T>
+static void qdeclarativepathview_move(int from, int to, int n, T *items)
+{
+    if (from > to) {
+        // Only move forwards - flip if backwards moving
+        int tfrom = from;
+        int tto = to;
+        from = tto;
+        to = tto+n;
+        n = tfrom-tto;
+    }
+
+    T replaced;
+    int i=0;
+    typename T::ConstIterator it=items->begin(); it += from+n;
+    for (; i<to-from; ++i,++it)
+        replaced.append(*it);
+    i=0;
+    it=items->begin(); it += from;
+    for (; i<n; ++i,++it)
+        replaced.append(*it);
+    typename T::ConstIterator f=replaced.begin();
+    typename T::Iterator t=items->begin(); t += from;
+    for (; f != replaced.end(); ++f, ++t)
+        *t = *f;
+}
+
 static void initStandardTreeModel(QStandardItemModel *model)
 {
     QStandardItem *item;
@@ -94,6 +121,13 @@ private slots:
     void dataModel();
     void pathview2();
     void pathview3();
+    void initialCurrentIndex();
+    void insertModel_data();
+    void insertModel();
+    void removeModel_data();
+    void removeModel();
+    void moveModel_data();
+    void moveModel();
     void path();
     void pathMoved();
     void setCurrentIndex();
@@ -190,16 +224,39 @@ public:
         endInsertRows();
     }
 
+    void insertItems(int index, const QList<QPair<QString, QString> > &items)
+    {
+        emit beginInsertRows(QModelIndex(), index, index+items.count()-1);
+        for (int i=0; i<items.count(); i++)
+            list.insert(index + i, QPair<QString,QString>(items[i].first, items[i].second));
+        emit endInsertRows();
+    }
+
     void removeItem(int index) {
         beginRemoveRows(QModelIndex(), index, index);
         list.removeAt(index);
         endRemoveRows();
     }
 
+    void removeItems(int index, int count)
+    {
+        emit beginRemoveRows(QModelIndex(), index, index+count-1);
+        while (count--)
+            list.removeAt(index);
+        emit endRemoveRows();
+    }
+
     void moveItem(int from, int to) {
         beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
         list.move(from, to);
         endMoveRows();
+    }
+
+    void moveItems(int from, int to, int count)
+    {
+        emit beginMoveRows(QModelIndex(), from, from+count-1, QModelIndex(), to > from ? to+count : to);
+        qdeclarativepathview_move(from, to, count, &list);
+        emit endMoveRows();
     }
 
     void modifyItem(int idx, const QString &name, const QString &number) {
@@ -315,6 +372,116 @@ void tst_QDeclarativePathView::pathview3()
     QCOMPARE(obj->pathItemCount(), 4);
 }
 
+void tst_QDeclarativePathView::initialCurrentIndex()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/initialCurrentIndex.qml"));
+    QDeclarativePathView *obj = qobject_cast<QDeclarativePathView*>(c.create());
+
+    QVERIFY(obj != 0);
+    QVERIFY(obj->path() != 0);
+    QVERIFY(obj->delegate() != 0);
+    QVERIFY(obj->model() != QVariant());
+    QCOMPARE(obj->currentIndex(), 3);
+    QCOMPARE(obj->offset(), 5.0);
+    QCOMPARE(obj->preferredHighlightBegin(), 0.5);
+    QCOMPARE(obj->dragMargin(), 24.);
+    QCOMPARE(obj->count(), 8);
+    QCOMPARE(obj->pathItemCount(), 4);
+
+    delete obj;
+}
+
+void tst_QDeclarativePathView::insertModel_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::addColumn<int>("idx");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<qreal>("offset");
+    QTest::addColumn<int>("currentIndex");
+
+    // We have 8 items, with currentIndex == 4
+    QTest::newRow("insert after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << 5. << 4;
+    QTest::newRow("insert before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << 4. << 5;
+    QTest::newRow("insert multiple after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << 6. << 4;
+    QTest::newRow("insert multiple before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << 4. << 6;
+    QTest::newRow("insert at end")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 8 << 1 << 5. << 4;
+    QTest::newRow("insert at beginning")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 4. << 5;
+    QTest::newRow("insert at current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << 4. << 5;
+
+    QTest::newRow("no range - insert after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << 5. << 4;
+    QTest::newRow("no range - insert before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << 4. << 5;
+    QTest::newRow("no range - insert multiple after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << 6. << 4;
+    QTest::newRow("no range - insert multiple before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << 4. << 6;
+    QTest::newRow("no range - insert at end")
+        << int(QDeclarativePathView::NoHighlightRange) << 8 << 1 << 5. << 4;
+    QTest::newRow("no range - insert at beginning")
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 4. << 5;
+    QTest::newRow("no range - insert at current")
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << 4. << 5;
+}
+
+void tst_QDeclarativePathView::insertModel()
+{
+    QFETCH(int, mode);
+    QFETCH(int, idx);
+    QFETCH(int, count);
+    QFETCH(qreal, offset);
+    QFETCH(int, currentIndex);
+
+    QDeclarativeView *window = createView();
+    window->show();
+
+    TestModel model;
+    model.addItem("Ben", "12345");
+    model.addItem("Bohn", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Bill", "4321");
+    model.addItem("Jinny", "679");
+    model.addItem("Milly", "73378");
+    model.addItem("Jimmy", "3535");
+    model.addItem("Barb", "9039");
+
+    QDeclarativeContext *ctxt = window->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    window->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = findItem<QDeclarativePathView>(window->rootObject(), "view");
+    QVERIFY(pathview != 0);
+
+    pathview->setHighlightRangeMode((QDeclarativePathView::HighlightRangeMode)mode);
+
+    pathview->setCurrentIndex(4);
+    if (mode == QDeclarativePathView::StrictlyEnforceRange)
+        QTRY_COMPARE(pathview->offset(), 4.0);
+    else
+        pathview->setOffset(4);
+
+    QList<QPair<QString, QString> > items;
+    for (int i = 0; i < count; ++i)
+        items.append(qMakePair(QString("New"), QString::number(i)));
+
+    model.insertItems(idx, items);
+    QTRY_COMPARE(pathview->offset(), offset);
+
+    QCOMPARE(pathview->currentIndex(), currentIndex);
+
+    delete window;
+}
+
 void tst_QDeclarativePathView::path()
 {
     QDeclarativeEngine engine;
@@ -358,6 +525,192 @@ void tst_QDeclarativePathView::path()
     QCOMPARE(cubic->control1Y(), 90.);
     QCOMPARE(cubic->control2X(), 210.);
     QCOMPARE(cubic->control2Y(), 90.);
+}
+
+void tst_QDeclarativePathView::removeModel_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::addColumn<int>("idx");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<qreal>("offset");
+    QTest::addColumn<int>("currentIndex");
+
+    // We have 8 items, with currentIndex == 4
+    QTest::newRow("remove after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << 3. << 4;
+    QTest::newRow("remove before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << 4. << 3;
+    QTest::newRow("remove multiple after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << 2. << 4;
+    QTest::newRow("remove multiple before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << 4. << 2;
+    QTest::newRow("remove last")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 1 << 3. << 4;
+    QTest::newRow("remove first")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 4. << 3;
+    QTest::newRow("remove current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << 3. << 4;
+    QTest::newRow("remove all")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 8 << 0. << 0;
+
+    QTest::newRow("no range - remove after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << 3. << 4;
+    QTest::newRow("no range - remove before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << 4. << 3;
+    QTest::newRow("no range - remove multiple after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << 2. << 4;
+    QTest::newRow("no range - remove multiple before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << 4. << 2;
+    QTest::newRow("no range - remove last")
+        << int(QDeclarativePathView::NoHighlightRange) << 7 << 1 << 3. << 4;
+    QTest::newRow("no range - remove first")
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 4. << 3;
+    QTest::newRow("no range - remove current offset")
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << 4. << 4;
+    QTest::newRow("no range - remove all")
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 8 << 0. << 0;
+}
+
+void tst_QDeclarativePathView::removeModel()
+{
+    QFETCH(int, mode);
+    QFETCH(int, idx);
+    QFETCH(int, count);
+    QFETCH(qreal, offset);
+    QFETCH(int, currentIndex);
+
+    QDeclarativeView *window = createView();
+    window->show();
+
+    TestModel model;
+    model.addItem("Ben", "12345");
+    model.addItem("Bohn", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Bill", "4321");
+    model.addItem("Jinny", "679");
+    model.addItem("Milly", "73378");
+    model.addItem("Jimmy", "3535");
+    model.addItem("Barb", "9039");
+
+    QDeclarativeContext *ctxt = window->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    window->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = findItem<QDeclarativePathView>(window->rootObject(), "view");
+    QVERIFY(pathview != 0);
+
+    pathview->setHighlightRangeMode((QDeclarativePathView::HighlightRangeMode)mode);
+
+    pathview->setCurrentIndex(4);
+    if (mode == QDeclarativePathView::StrictlyEnforceRange)
+        QTRY_COMPARE(pathview->offset(), 4.0);
+    else
+        pathview->setOffset(4);
+
+    model.removeItems(idx, count);
+    QTRY_COMPARE(pathview->offset(), offset);
+
+    QCOMPARE(pathview->currentIndex(), currentIndex);
+
+    delete window;
+}
+void tst_QDeclarativePathView::moveModel_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::addColumn<int>("from");
+    QTest::addColumn<int>("to");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<qreal>("offset");
+    QTest::addColumn<int>("currentIndex");
+
+    // We have 8 items, with currentIndex == 4
+    QTest::newRow("move after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 1 << 4. << 4;
+    QTest::newRow("move before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 3 << 1 << 4. << 4;
+    QTest::newRow("move before current to after")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 6 << 1 << 5. << 3;
+    QTest::newRow("move multiple after current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 2 << 4. << 4;
+    QTest::newRow("move multiple before current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 2 << 4. << 4;
+    QTest::newRow("move before current to end")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 7 << 1 << 5. << 3;
+    QTest::newRow("move last to beginning")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 0 << 1 << 3. << 5;
+    QTest::newRow("move current")
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 6 << 1 << 2. << 6;
+
+    QTest::newRow("no range - move after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 1 << 4. << 4;
+    QTest::newRow("no range - move before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 3 << 1 << 4. << 4;
+    QTest::newRow("no range - move before current to after")
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 6 << 1 << 5. << 3;
+    QTest::newRow("no range - move multiple after current")
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 2 << 4. << 4;
+    QTest::newRow("no range - move multiple before current")
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 2 << 4. << 4;
+    QTest::newRow("no range - move before current to end")
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 7 << 1 << 5. << 3;
+    QTest::newRow("no range - move last to beginning")
+        << int(QDeclarativePathView::NoHighlightRange) << 7 << 0 << 1 << 3. << 5;
+    QTest::newRow("no range - move current")
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 6 << 1 << 4. << 6;
+    QTest::newRow("no range - move multiple incl. current")
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 5 << 4. << 5;
+}
+
+void tst_QDeclarativePathView::moveModel()
+{
+    QFETCH(int, mode);
+    QFETCH(int, from);
+    QFETCH(int, to);
+    QFETCH(int, count);
+    QFETCH(qreal, offset);
+    QFETCH(int, currentIndex);
+
+    QDeclarativeView *window = createView();
+    window->show();
+
+    TestModel model;
+    model.addItem("Ben", "12345");
+    model.addItem("Bohn", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Bill", "4321");
+    model.addItem("Jinny", "679");
+    model.addItem("Milly", "73378");
+    model.addItem("Jimmy", "3535");
+    model.addItem("Barb", "9039");
+
+    QDeclarativeContext *ctxt = window->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    window->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview0.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = findItem<QDeclarativePathView>(window->rootObject(), "view");
+    QVERIFY(pathview != 0);
+
+    pathview->setHighlightRangeMode((QDeclarativePathView::HighlightRangeMode)mode);
+
+    pathview->setCurrentIndex(4);
+    if (mode == QDeclarativePathView::StrictlyEnforceRange)
+        QTRY_COMPARE(pathview->offset(), 4.0);
+    else
+        pathview->setOffset(4);
+
+    model.moveItems(from, to, count);
+
+    // don't enable this test as 371b2f6947779272494b34ec44445aaad0613756 has
+    // not been backported to QtQuick1 so offset is still buggy
+//    QTRY_COMPARE(pathview->offset(), offset);
+
+    QCOMPARE(pathview->currentIndex(), currentIndex);
+
+    delete window;
 }
 
 void tst_QDeclarativePathView::dataModel()
@@ -590,6 +943,20 @@ void tst_QDeclarativePathView::setCurrentIndex()
     pathview->incrementCurrentIndex();
     QTRY_COMPARE(pathview->currentIndex(), 0);
     firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    // Test positive indexes are wrapped.
+    pathview->setCurrentIndex(6);
+    QTRY_COMPARE(pathview->currentIndex(), 2);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 2);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    // Test negative indexes are wrapped.
+    pathview->setCurrentIndex(-3);
+    QTRY_COMPARE(pathview->currentIndex(), 1);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 1);
     QVERIFY(firstItem);
     QTRY_COMPARE(firstItem->pos() + offset, start);
 
