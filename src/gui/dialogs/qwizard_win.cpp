@@ -390,12 +390,15 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
         }
         break;
     }
-    case WM_NCCALCSIZE: {
-        NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
-        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-        lpncsp->rgrc[0].top -= (vistaState() == VistaAero ? titleBarSize() : 0);
+    case WM_NCCALCSIZE:
+        if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8 && vistaState() == VistaAero) {
+            NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
+            *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+            lpncsp->rgrc[0].top -= titleBarSize();
+        } else {
+            return false; // Negative margins no longer work on Windows 8.
+        }
         break;
-    }
     default:
         LRESULT lResult;
         // Pass to DWM to handle
@@ -765,6 +768,19 @@ int QVistaHelper::titleOffset()
 {
     int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
     return leftMargin() + iconOffset;
+}
+
+int QVistaHelper::topOffset()
+{
+    if (vistaState() != VistaAero)
+        return titleBarSize() + 3;
+    static const int aeroOffset =
+        QSysInfo::WindowsVersion == QSysInfo::WV_WINDOWS7 ?
+        QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
+    int result = aeroOffset;
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
+        result += titleBarSize();
+    return result;
 }
 
 QT_END_NAMESPACE
