@@ -777,7 +777,10 @@ void QX11PaintEngine::drawRects(const QRectF *rects, int rectCount)
         || d->has_complex_xform
         || d->has_custom_pen
         || d->cbrush.style() != Qt::SolidPattern
-        || complexPictOp(d->composition_mode))
+#if !defined(QT_NO_XRENDER)
+        || complexPictOp(d->composition_mode)
+#endif
+       )
     {
         QPaintEngine::drawRects(rects, rectCount);
         return;
