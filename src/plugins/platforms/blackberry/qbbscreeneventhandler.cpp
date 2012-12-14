@@ -409,6 +409,8 @@ void QBBScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
         qFatal("QBB: failed to query event position, errno=%d", errno);
     }
 
+    QCursor::setPos(pos[0], pos[1]);
+
     // get window coordinates of touch
     errno = 0;
     int windowPos[2];

@@ -44,6 +44,7 @@
 #include "qbbscreen.h"
 #include "qbbrootwindow.h"
 #include "qbbwindow.h"
+#include "qbbcursor.h"
 
 #include <QDebug>
 #include <QtCore/QThread>
@@ -111,7 +112,8 @@ QBBScreen::QBBScreen(screen_context_t context, screen_display_t display, int scr
       mUsingOpenGL(false),
       mPrimaryDisplay(screenIndex == 0),
       mKeyboardHeight(0),
-      mScreenIndex(screenIndex)
+      mScreenIndex(screenIndex),
+      mCursor(new QBBCursor(this))
 {
 #if defined(QBBSCREEN_DEBUG)
     qDebug() << "QBBScreen::QBBScreen";
@@ -489,6 +491,11 @@ void QBBScreen::onWindowPost(QBBWindow* window)
         mRootWindow->post();
         mPosted = true;
     }
+}
+
+QPlatformCursor * QBBScreen::cursor() const
+{
+    return mCursor;
 }
 
 void QBBScreen::keyboardHeightChanged(int height)

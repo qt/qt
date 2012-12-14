@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBBWindow;
+class QPlatformCursor;
 
 class QBBScreen : public QPlatformScreen
 {
@@ -85,6 +86,8 @@ public:
     void ensureDisplayCreated();
 
     QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
+
+    QPlatformCursor *cursor() const;
 
 public Q_SLOTS:
     void setRotation(int rotation);
@@ -121,6 +124,8 @@ private:
     QList<QBBWindow*> mChildren;
     QList<screen_window_t> mOverlays;
     int mScreenIndex;
+
+    QPlatformCursor *mCursor;
 
     bool isPrimaryDisplay() { return mPrimaryDisplay; }
 };
