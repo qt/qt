@@ -3995,7 +3995,7 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
     QString savedHost = host;  // pre-validation, may be invalid!
     QString auth = authority();
     bool doFileScheme = scheme == QLatin1String("file") && encodedPath.startsWith('/');
-    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isEmpty() || doFileScheme || !savedHost.isEmpty())) {
+    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isNull() || doFileScheme || !savedHost.isEmpty())) {
         if (doFileScheme && !encodedPath.startsWith('/'))
             url += '/';
         url += "//";
