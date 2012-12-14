@@ -3574,7 +3574,10 @@ void QUrlPrivate::setAuthority(const QString &auth)
     isHostValid = true;
     if (auth.isEmpty()) {
         setUserInfo(QString());
-        host.clear();
+        if (auth.isNull())
+            host.clear();
+        else
+            host = QLatin1String("");
         port = -1;
         return;
     }
