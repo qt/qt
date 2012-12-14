@@ -85,6 +85,10 @@ bool QBBVirtualKeyboardBps::showKeyboard()
     qDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
 #endif
 
+    // They keyboard's mode is global between applications, we have to set it each time
+    if (!isVisible())
+        applyKeyboardMode(keyboardMode());
+
     virtualkeyboard_show();
     return true;
 }
