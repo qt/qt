@@ -3612,6 +3612,10 @@ void QWidgetPrivate::hide_sys()
 #ifndef QT_MAC_USE_COCOA
             ShowHide(window, false);
 #else
+            // Only needed if it exists from 10.7 or later
+            if ((q->windowType() == Qt::Tool) && [window respondsToSelector: @selector(setAnimationBehavior:)])
+                [window setAnimationBehavior: 2]; // NSWindowAnimationBehaviorNone == 2
+
             [window orderOut:window];
             // Unfortunately it is not as easy as just hiding the window, we need
             // to find out if we were in full screen mode. If we were and this is
