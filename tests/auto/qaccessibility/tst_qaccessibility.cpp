@@ -52,6 +52,16 @@
 
 #include "QtTest/qtestaccessible.h"
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 #if defined(Q_OS_WINCE)
 extern "C" bool SystemParametersInfo(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni);
 #define SPI_GETPLATFORMTYPE 257
@@ -419,6 +429,7 @@ void tst_QAccessibility::eventTest()
 {
     QPushButton* button = new QPushButton(0);
     button->setObjectName(QString("Olaf"));
+    setFrameless(button);
 
     button->show();
     QVERIFY_EVENT(button, 0, QAccessible::ObjectShow);
@@ -951,6 +962,7 @@ void tst_QAccessibility::navigateSlider()
 {
     {
     QSlider *slider = new QSlider(0);
+    setFrameless(slider);
     slider->setObjectName(QString("Slidy"));
     slider->show();
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(slider);
@@ -1670,6 +1682,7 @@ void tst_QAccessibility::setText()
 void tst_QAccessibility::hideShowTest()
 {
     QWidget * const window = new QWidget();
+    window->resize(200, 200);
     QWidget * const child = new QWidget(window);
 
     QVERIFY(state(window) & QAccessible::Invisible);
@@ -2295,6 +2308,7 @@ void tst_QAccessibility::scrollBarTest()
 void tst_QAccessibility::tabTest()
 {
     QTabBar *tabBar = new QTabBar();
+    setFrameless(tabBar);
     tabBar->show();
 
     QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(tabBar);
@@ -2678,6 +2692,7 @@ void tst_QAccessibility::menuTest()
 void tst_QAccessibility::spinBoxTest()
 {
     QSpinBox * const spinBox = new QSpinBox();
+    setFrameless(spinBox);
     spinBox->show();
 
     QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(spinBox);
@@ -2708,6 +2723,7 @@ void tst_QAccessibility::spinBoxTest()
 void tst_QAccessibility::doubleSpinBoxTest()
 {
     QDoubleSpinBox *doubleSpinBox = new QDoubleSpinBox;
+    setFrameless(doubleSpinBox);
     doubleSpinBox->show();
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(doubleSpinBox);
@@ -3398,6 +3414,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QDialogButtonBox box(QDialogButtonBox::Reset |
                          QDialogButtonBox::Help |
                          QDialogButtonBox::Ok, Qt::Horizontal);
+    setFrameless(&box);
 
 
     // Test up and down navigation
@@ -3449,6 +3466,7 @@ void tst_QAccessibility::dialTest()
 {
     {
     QDial dial;
+    setFrameless(&dial);
     dial.setValue(20);
     QCOMPARE(dial.value(), 20);
     dial.show();
@@ -4539,6 +4557,7 @@ void tst_QAccessibility::labelTest()
 {
     QString text = "Hello World";
     QLabel *label = new QLabel(text);
+    setFrameless(label);
     label->show();
 
 #if defined(Q_WS_X11)
