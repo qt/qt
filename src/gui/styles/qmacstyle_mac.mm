@@ -3656,13 +3656,17 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QStyleOptionTabV3 myTab = *tab;
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
+            bool selected = (myTab.state & QStyle::State_Selected);
+
+            if (selected && !myTab.documentMode)
+                myTab.palette.setColor(QPalette::WindowText, QColor(Qt::white));
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the
             // outside world, unless they read the source, in which case, it's
             // their own fault).
             bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
-            if (verticalTabs || nonDefaultFont || !tab->icon.isNull()
+            if (selected || verticalTabs || nonDefaultFont || !tab->icon.isNull()
                 || !myTab.leftButtonSize.isNull() || !myTab.rightButtonSize.isNull()) {
                 int heightOffset = 0;
                 if (verticalTabs) {
@@ -3673,39 +3677,24 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
                 myTab.rect.setHeight(myTab.rect.height() + heightOffset);
 
-                if (myTab.documentMode) {
+                if (myTab.documentMode || selected) {
                     p->save();
                     rotateTabPainter(p, myTab.shape, myTab.rect);
 
+                    QColor shadowColor = QColor(myTab.documentMode ? Qt::white : Qt::black);
+                    shadowColor.setAlpha(75);
                     QPalette np = tab->palette;
-                    np.setColor(QPalette::WindowText, QColor(255, 255, 255, 75));
+                    np.setColor(QPalette::WindowText, shadowColor);
+
                     QRect nr = subElementRect(SE_TabBarTabText, opt, w);
                     nr.moveTop(-1);
                     int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
                     proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
                                                tab->text, QPalette::WindowText);
                     p->restore();
-                    QCommonStyle::drawControl(ce, &myTab, p, w);
-                } else if (qMacVersion() >= QSysInfo::MV_10_7 && (tab->state & State_Selected)) {
-                    p->save();
-                    rotateTabPainter(p, myTab.shape, myTab.rect);
-
-                    QPalette np = tab->palette;
-                    np.setColor(QPalette::WindowText, QColor(0, 0, 0, 75));
-                    QRect nr = subElementRect(SE_TabBarTabText, opt, w);
-                    nr.moveTop(-1);
-                    int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
-                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
-                                               tab->text, QPalette::WindowText);
-
-                    np.setColor(QPalette::WindowText, QColor(255, 255, 255, 255));
-                    nr.moveTop(-2);
-                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
-                                               tab->text, QPalette::WindowText);
-                    p->restore();
-                } else {
-                    QCommonStyle::drawControl(ce, &myTab, p, w);
                 }
+
+                QCommonStyle::drawControl(ce, &myTab, p, w);
             } else {
                 p->save();
                 CGContextSetShouldAntialias(cg, true);
