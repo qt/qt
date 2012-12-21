@@ -84,6 +84,7 @@ public:
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0),
           allowRootCertOnDemandLoading(true),
+          peerSessionShared(false),
           sslOptions(QSsl::SslOptionDisableEmptyFragments
                      |QSsl::SslOptionDisableLegacyRenegotiation
                      |QSsl::SslOptionDisableCompression)
@@ -91,6 +92,7 @@ public:
 
     QSslCertificate peerCertificate;
     QList<QSslCertificate> peerCertificateChain;
+
     QSslCertificate localCertificate;
 
     QSslKey privateKey;
@@ -102,6 +104,9 @@ public:
     QSslSocket::PeerVerifyMode peerVerifyMode;
     int peerVerifyDepth;
     bool allowRootCertOnDemandLoading;
+    bool peerSessionShared;
+
+    Q_AUTOTEST_EXPORT static bool peerSessionWasShared(const QSslConfiguration &configuration);
 
     QSsl::SslOptions sslOptions;
 

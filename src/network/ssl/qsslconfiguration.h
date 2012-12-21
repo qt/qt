@@ -128,6 +128,8 @@ public:
 private:
     friend class QSslSocket;
     friend class QSslConfigurationPrivate;
+    friend class QSslSocketBackendPrivate;
+    friend class QSslContext;
     QSslConfiguration(QSslConfigurationPrivate *dd);
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };

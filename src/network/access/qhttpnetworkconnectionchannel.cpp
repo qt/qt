@@ -604,6 +604,13 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         if (ssl) {
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
+
+            // check whether we can re-use an existing SSL session
+            // (meaning another socket in this connection has already
+            // performed a full handshake)
+            if (!connection->sslContext().isNull())
+                QSslSocketPrivate::checkSettingSslContext(sslSocket, connection->sslContext());
+
             sslSocket->connectToHostEncrypted(connectHost, connectPort);
             if (ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
@@ -1029,6 +1036,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
 
     // ### FIXME: if the server closes the connection unexpectedly, we shouldn't send the same broken request again!
     //channels[i].reconnectAttempts = 2;
+
     if (!pendingEncrypt) {
         state = QHttpNetworkConnectionChannel::IdleState;
         if (!reply)
@@ -1162,6 +1170,15 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
 {
     if (!socket)
         return; // ### error
+
+    if (connection->sslContext().isNull()) {
+        // this socket has made the 1st handshake for this connection,
+        // we need to set the SSL context so new sockets can reuse it
+        QSharedPointer<QSslContext> socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket));
+        if (!socketSslContext.isNull())
+            connection->setSslContext(socketSslContext);
+    }
+
     state = QHttpNetworkConnectionChannel::IdleState;
     pendingEncrypt = false;
     if (!reply)

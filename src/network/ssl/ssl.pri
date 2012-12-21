@@ -20,7 +20,8 @@ symbian {
                ssl/qsslsocket.h \
                ssl/qsslsocket_openssl_p.h \
                ssl/qsslsocket_openssl_symbols_p.h \
-               ssl/qsslsocket_p.h
+               ssl/qsslsocket_p.h \
+               ssl/qsslcontext_p.h
     SOURCES += ssl/qssl.cpp \
                ssl/qsslcertificate.cpp \
 	       ssl/qsslconfiguration.cpp \
@@ -29,7 +30,8 @@ symbian {
                ssl/qsslkey.cpp \
                ssl/qsslsocket.cpp \
                ssl/qsslsocket_openssl.cpp \
-               ssl/qsslsocket_openssl_symbols.cpp
+               ssl/qsslsocket_openssl_symbols.cpp \
+               ssl/qsslcontext.cpp
 
     # Add optional SSL libs
     # Static linking of OpenSSL with msvc:

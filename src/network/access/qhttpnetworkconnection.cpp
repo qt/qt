@@ -990,6 +990,18 @@ void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config
         static_cast<QSslSocket *>(d->channels[i].socket)->setSslConfiguration(config);
 }
 
+QSharedPointer<QSslContext> QHttpNetworkConnection::sslContext()
+{
+    Q_D(QHttpNetworkConnection);
+    return d->sslContext;
+}
+
+void QHttpNetworkConnection::setSslContext(QSharedPointer<QSslContext> context)
+{
+    Q_D(QHttpNetworkConnection);
+    d->sslContext = context;
+}
+
 void QHttpNetworkConnection::ignoreSslErrors(int channel)
 {
     Q_D(QHttpNetworkConnection);
