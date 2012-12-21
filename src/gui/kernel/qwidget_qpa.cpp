@@ -427,7 +427,6 @@ void QWidgetPrivate::hide_sys()
         if (p &&p->isVisible()) {
             invalidateBuffer(q->rect());
         }
-        return;
     }
     if (QPlatformWindow *window = q->platformWindow()) {
          window->setVisible(false);
