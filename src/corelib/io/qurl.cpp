@@ -6684,12 +6684,11 @@ QUrl QUrl::fromUserInput(const QString &userInput)
     QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
     QUrl urlPrepended = QUrl::fromEncoded("http://" + trimmedString.toUtf8(), QUrl::TolerantMode);
 
-    // Check the most common case of a valid url with scheme and host
+    // Check the most common case of a valid url with a scheme
     // We check if the port would be valid by adding the scheme to handle the case host:port
     // where the host would be interpretted as the scheme
     if (url.isValid()
         && !url.scheme().isEmpty()
-        && (!url.host().isEmpty() || !url.path().isEmpty())
         && urlPrepended.port() == -1)
         return url;
 
