@@ -98,7 +98,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
                                           0);
 
     m_shm_info.shmid = shmget (IPC_PRIVATE,
-          m_xcb_image->stride * m_xcb_image->height, IPC_CREAT|0777);
+          m_xcb_image->stride * m_xcb_image->height, IPC_CREAT|0600);
 
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());

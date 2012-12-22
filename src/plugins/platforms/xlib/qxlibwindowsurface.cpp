@@ -99,7 +99,7 @@ void QXlibWindowSurface::resizeShmImage(int width, int height)
 
 
     image_info->shminfo.shmid = shmget (IPC_PRIVATE,
-          image->bytes_per_line * image->height, IPC_CREAT|0777);
+          image->bytes_per_line * image->height, IPC_CREAT|0700);
 
     image_info->shminfo.shmaddr = image->data = (char*)shmat (image_info->shminfo.shmid, 0, 0);
     image_info->shminfo.readOnly = False;
