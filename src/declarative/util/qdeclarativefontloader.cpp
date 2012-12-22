@@ -64,7 +64,7 @@ class QDeclarativeFontObject : public QObject
 Q_OBJECT
 
 public:
-    QDeclarativeFontObject(int _id);
+    QDeclarativeFontObject(int _id = -1);
 
     void download(const QUrl &url, QNetworkAccessManager *manager);
 
@@ -84,7 +84,7 @@ private:
     Q_DISABLE_COPY(QDeclarativeFontObject)
 };
 
-QDeclarativeFontObject::QDeclarativeFontObject(int _id = -1)
+QDeclarativeFontObject::QDeclarativeFontObject(int _id)
     : QObject(0), id(_id), reply(0), redirectCount(0) {}
 
 

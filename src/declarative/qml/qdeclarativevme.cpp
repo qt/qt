@@ -283,7 +283,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEObjectStack &stack,
             {
                 QObject *o = (QObject *)operator new(instr.createSimple.typeSize + 
                                                      sizeof(QDeclarativeData));   
-                ::memset(o, 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
+                ::memset(static_cast<void *>(o), 0, instr.createSimple.typeSize + sizeof(QDeclarativeData));
                 instr.createSimple.create(o);
 
                 QDeclarativeData *ddata = (QDeclarativeData *)(((const char *)o) + instr.createSimple.typeSize);
