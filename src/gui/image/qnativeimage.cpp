@@ -173,7 +173,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
 
     bool ok;
     xshminfo.shmid = shmget(IPC_PRIVATE, xshmimg->bytes_per_line * xshmimg->height,
-                            IPC_CREAT | 0777);
+                            IPC_CREAT | 0700);
     ok = xshminfo.shmid != -1;
     if (ok) {
         xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);

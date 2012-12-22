@@ -174,13 +174,13 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
     uint data_offset_value = sizeof(QVFbHeader);
 
     int dataSize = bpl * h + data_offset_value;
-    shmId = shmget(key, dataSize, IPC_CREAT | 0666);
+    shmId = shmget(key, dataSize, IPC_CREAT | 0600);
     if (shmId != -1)
 	data = (unsigned char *)shmat(shmId, 0, 0);
     else {
 	struct shmid_ds shm;
 	shmctl(shmId, IPC_RMID, &shm);
-	shmId = shmget(key, dataSize, IPC_CREAT | 0666);
+    shmId = shmget(key, dataSize, IPC_CREAT | 0600);
 	if (shmId == -1) {
             perror("QShMemViewProtocol::QShMemViewProtocol");
             qFatal("Cannot get shared memory 0x%08x", key);
