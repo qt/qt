@@ -460,7 +460,7 @@ void QWidgetPrivate::setFullScreenSize_helper()
 
     const QRect screen = qApp->desktop()->screenGeometry(qApp->desktop()->screenNumber(q));
     q->move(screen.topLeft());
-    q->resize(screen.size());
+    q->setFixedSize(screen.size());
 
     data.in_set_window_state = old_state;
 }
