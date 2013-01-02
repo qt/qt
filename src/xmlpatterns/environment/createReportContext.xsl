@@ -2,7 +2,7 @@
 <!--
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Patternist project on Qt Labs.
@@ -91,7 +91,7 @@ NOTE: Be aware of binary compatibility when using this stylesheet.
 <xsl:template match="/"><xsl:text disable-output-escaping="yes"
 ><![CDATA[/****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtXmlPatterns module of the Qt Toolkit.

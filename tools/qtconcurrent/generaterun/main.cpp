@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -325,7 +325,7 @@ int main()
     Item run =  (
                        Line("/****************************************************************************") +
                        Line("**") +
-                       Line("** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).") +
+                       Line("** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).") +
                        Line("** Contact: http://www.qt-project.org/legal") +
                        Line("**") +
                        Line("** This file is part of the Qt Toolkit.") +
@@ -375,7 +375,7 @@ int main()
     Item storedFunctionCall = (
                                      Line("/****************************************************************************") +
                                      Line("**") +
-                                     Line("** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).") +
+                                     Line("** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).") +
                                      Line("** Contact: http://www.qt-project.org/legal") +
                                      Line("**") +
                                      Line("** This file is part of the Qt Toolkit.") +

@@ -4260,8 +4260,8 @@ Do you want overwrite the template?</source>
         <translation>&lt;br /&gt;Qt 設計師是一套圖形使用者介面應用程式，用於設計 Qt 的應用程式。&lt;br /&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>%1&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</translation>
     </message>
     <message>
         <source>This version of Qt Designer is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/model.html&quot;&gt;http://qt.digia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.&lt;br/&gt;</source>
@@ -4272,8 +4272,8 @@ Do you want overwrite the template?</source>
         <translation type="obsolete">此程式以 Qt 商業授權同意書（Qt Commerical License Agreement）授權給您。詳情請參照 LICENSE 檔。&lt;br /&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
-        <translation type="obsolete">%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </translation>
+        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <translation type="obsolete">%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </translation>
     </message>
     <message>
         <source>This version of Qt Designer is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.&lt;br/&gt;&lt;br/&gt;You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.digia.com/company/about/businessmodel&quot;&gt;http://qt.digia.com/company/about/businessmodel.html&lt;/a&gt; for an overview of Qt licensing.&lt;br/&gt;</source>

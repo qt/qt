@@ -2,7 +2,7 @@
 <class>AboutDialog</class>
 <comment>*********************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -105,7 +105,7 @@
                 <cstring>aboutCopyright</cstring>
             </property>
             <property name="text">
-                <string>Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies). All Rights Reserved.</string>
+                <string>Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies). All Rights Reserved.</string>
             </property>
             <property name="alignment">
                 <set>AlignCenter</set>

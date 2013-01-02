@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
@@ -810,7 +810,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setText(tr("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
-            "<p>Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</p>")
+            "<p>Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</p>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
             resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");

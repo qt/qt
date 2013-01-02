@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -907,7 +907,7 @@ void MainWindow::helpAbout()
     QMessageBox box(this);
     box.setText(tr("<h3>%1</h3>"
                    "<br/>Version %2"
-                   "<br/><br/>Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).")
+                   "<br/><br/>Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).")
                    .arg(tr("Qt Configuration")).arg(QLatin1String(QT_VERSION_STR)));
     box.setWindowTitle(tr("Qt Configuration"));
     box.setIcon(QMessageBox::NoIcon);

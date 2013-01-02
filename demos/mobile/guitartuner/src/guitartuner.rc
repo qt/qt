@@ -11,7 +11,7 @@ BEGIN
             VALUE "CompanyName",      "Digia Plc\0"
             VALUE "FileDescription",  "Qt Quick example application.\0"
             VALUE "FileVersion",      "1.2.0\0"
-            VALUE "LegalCopyright",   "Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies)."
+            VALUE "LegalCopyright",   "Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies)."
             VALUE "ProductName",      "Guitar Tuner\0"
             VALUE "ProductVersion",   "1.2.0\0"
         END
