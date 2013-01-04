@@ -825,6 +825,9 @@ static const char *certificate_blacklist[] = {
 
     "120001705", "Digisign Server ID (Enrich)", // (Malaysian) Digicert Sdn. Bhd. cross-signed by Verizon CyberTrust
     "1276011370", "Digisign Server ID - (Enrich)", // (Malaysian) Digicert Sdn. Bhd. cross-signed by Entrust
+
+    "2087",                                            "*.EGO.GOV.TR", // Turktrust mis-issued intermediate certificate
+    "2148",                                            "e-islem.kktcmerkezbankasi.org", // Turktrust mis-issued intermediate certificate
     0
 };
 
