@@ -1461,6 +1461,10 @@ void tst_QLocale::dayName()
 
     QLocale l(locale_name);
     QCOMPARE(l.dayName(day, format), dayName);
+
+    QLocale ir("ga_IE");
+    QCOMPARE(ir.dayName(1, QLocale::ShortFormat), QLatin1String("Luan"));
+    QCOMPARE(ir.dayName(7, QLocale::ShortFormat), QLatin1String("Domh"));
 }
 
 void tst_QLocale::standaloneDayName_data()
@@ -1813,6 +1817,10 @@ void tst_QLocale::ampm()
     QLocale ua("uk_UA");
     QCOMPARE(ua.amText(), QString::fromUtf8("\320\264\320\277"));
     QCOMPARE(ua.pmText(), QString::fromUtf8("\320\277\320\277"));
+
+    QLocale tr("tr_TR");
+    QCOMPARE(tr.amText(), QString::fromUtf8("\303\226\303\226"));
+    QCOMPARE(tr.pmText(), QString::fromUtf8("\303\226\123"));
 }
 
 void tst_QLocale::dateFormat()
@@ -1879,6 +1887,10 @@ void tst_QLocale::monthName()
     // check that our CLDR scripts handle surrogate pairs correctly
     QLocale dsrt("en-Dsrt-US");
     QCOMPARE(dsrt.monthName(1, QLocale::LongFormat), QString::fromUtf8("\xf0\x90\x90\x96\xf0\x90\x90\xb0\xf0\x90\x91\x8c\xf0\x90\x90\xb7\xf0\x90\x90\xad\xf0\x90\x90\xaf\xf0\x90\x91\x89\xf0\x90\x90\xa8"));
+
+    QLocale ir("ga_IE");
+    QCOMPARE(ir.monthName(1, QLocale::ShortFormat), QLatin1String("Ean"));
+    QCOMPARE(ir.monthName(12, QLocale::ShortFormat), QLatin1String("Noll"));
 }
 
 void tst_QLocale::standaloneMonthName()
