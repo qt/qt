@@ -54,8 +54,8 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
+#if defined(Q_OS_QNX)
+# undef SRCDIR
 #endif
 
 Q_DECLARE_METATYPE(QImage::Format)
@@ -295,10 +295,10 @@ void tst_QImage::formatHandlersInput_data()
 {
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
-    #ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "images/";
-    #else
+    #ifdef SRCDIR
     const QString prefix = QLatin1String(SRCDIR) + "/images/";
+    #else
+    const QString prefix = "images/";
     #endif
 
     // add a new line here when a file is added
