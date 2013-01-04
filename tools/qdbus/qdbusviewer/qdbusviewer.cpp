@@ -279,9 +279,18 @@ void QDBusViewer::callMethod(const BusSignature &sig)
         args = dialog.values();
     }
 
-    // Special case - convert a value to a QDBusVariant if the
-    // interface wants a variant
+    // Try to convert the values we got as closely as possible to the
+    // dbus signature. this is especially important for those input as strings
     for (int i = 0; i < args.count(); ++i) {
+        QVariant a = args.at(i);
+        int desttype = types.at(i);
+        if (desttype != int(a.type())
+            && desttype < int(QMetaType::LastCoreType) && desttype != int(QVariant::Map)
+            && a.canConvert(QVariant::Type(desttype))) {
+            args[i].convert(QVariant::Type(desttype));
+        }
+        // Special case - convert a value to a QDBusVariant if the
+        // interface wants a variant
         if (types.at(i) == qMetaTypeId<QDBusVariant>())
             args[i] = QVariant::fromValue(QDBusVariant(args.at(i)));
     }
