@@ -154,6 +154,7 @@ private slots:
     void dockWidgetSize();
     void QTBUG2774_stylechange();
     void toggleUnifiedTitleAndToolBarOnMac();
+    void QTBUG19207_toggleUnifiedTitleAndToolBarOnMacMultipleWindows();
     void QTBUG21378_animationFinished();
 };
 
@@ -1852,6 +1853,32 @@ void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
     mw.setUnifiedTitleAndToolBarOnMac(true);
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
+#else
+    QSKIP("Mac specific test", SkipAll);
+#endif
+}
+
+void tst_QMainWindow::QTBUG19207_toggleUnifiedTitleAndToolBarOnMacMultipleWindows()
+{
+#ifdef Q_OS_MAC
+    QMainWindow mw;
+    QToolBar *tb = new QToolBar;
+    tb->addAction("Test");
+    mw.addToolBar(tb);
+    mw.setUnifiedTitleAndToolBarOnMac(true);
+    mw.show();
+
+    QMainWindow mw2;
+    QToolBar *tb2 = new QToolBar;
+    tb2->addAction("Test");
+    mw2.addToolBar(tb2);
+    mw2.setUnifiedTitleAndToolBarOnMac(true);
+    mw2.show();
+
+    // the third call should trigger an assertion failure in -[NSToolbar _itemAtIndex:]
+    mw.setUnifiedTitleAndToolBarOnMac(false);
+    mw.setUnifiedTitleAndToolBarOnMac(true);
+    mw.setUnifiedTitleAndToolBarOnMac(false);
 #else
     QSKIP("Mac specific test", SkipAll);
 #endif
