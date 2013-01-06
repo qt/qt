@@ -909,7 +909,7 @@ void QSqlTableModel::revertRow(int row)
             d->editBuffer.clear();
             int oldIndex = d->editIndex;
             d->editIndex = -1;
-            emit dataChanged(createIndex(oldIndex, 0), createIndex(oldIndex, columnCount()));
+            emit dataChanged(createIndex(oldIndex, 0), createIndex(oldIndex, columnCount() - 1));
         } else if (d->insertIndex == row) {
             d->revertInsertedRow();
         }

@@ -700,9 +700,21 @@ void tst_QSqlTableModel::removeRow()
     QCOMPARE(model.rowCount(), 3);
 
     headerDataChangedSpy.clear();
+    // QTBUG-28961 Model emits dataChanged() for reverted changes before refreshing query
+    // after deleting row. Make sure indices are correct.
+    QVERIFY(model.setData(model.index(1, 1), QString("kurt")));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("kurt"));
+    QSignalSpy dataChangedSpy(&model, SIGNAL(dataChanged(QModelIndex, QModelIndex)));
     QVERIFY(model.removeRow(1));
     QCOMPARE(headerDataChangedSpy.count(), 0);
     QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(dataChangedSpy.count(), 1);
+    QModelIndex idxFirst = qvariant_cast<QModelIndex>(dataChangedSpy.at(0).at(0));
+    QCOMPARE(idxFirst.row(), 1);
+    QCOMPARE(idxFirst.column(), 0);
+    QModelIndex idxLast = qvariant_cast<QModelIndex>(dataChangedSpy.at(0).at(1));
+    QCOMPARE(idxLast.row(), 1);
+    QCOMPARE(idxLast.column(), model.columnCount() - 1);
 
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
