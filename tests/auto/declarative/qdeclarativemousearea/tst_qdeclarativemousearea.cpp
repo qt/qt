@@ -535,6 +535,7 @@ void tst_QDeclarativeMouseArea::preventStealing()
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/preventstealing.qml"));
     canvas->show();
+    QTest::qWaitForWindowShown(canvas);
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
 
@@ -673,6 +674,7 @@ void tst_QDeclarativeMouseArea::preventContextMenu()
     QDeclarativeView *view = createView();
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/preventContextMenu.qml"));
     view->show();
+    QTest::qWaitForWindowShown(view);
     QVERIFY(view->rootObject() != 0);
 
     QDeclarativeProperty mouseAreaEnabled(view->rootObject(), "mouseAreaEnabled");
