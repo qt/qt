@@ -3920,7 +3920,7 @@ void QUrlPrivate::parse(ParseOptions parseOptions) const
 
         QByteArray h(parseData.host, parseData.hostLength);
         that->host = fromPercentEncodingMutable(&h);
-        that->port = parseData.port;
+        that->port = uint(parseData.port) <= 0xffffU ? parseData.port : -1;
 
         that->path.clear();
         that->encodedPath = QByteArray(parseData.path, parseData.pathLength);
