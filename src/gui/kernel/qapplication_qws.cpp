@@ -102,11 +102,6 @@
 #include <locale.h>
 #include <errno.h>
 #include <fcntl.h>
-#ifdef Q_OS_VXWORKS
-#  include <sys/times.h>
-#else
-#  include <sys/time.h>
-#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 
