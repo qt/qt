@@ -127,7 +127,7 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
     }
 #endif
     // use gettimeofday
-    timeval tv;
+    struct timeval tv;
     ::gettimeofday(&tv, 0);
     *sec = tv.tv_sec;
     *frac = tv.tv_usec;
