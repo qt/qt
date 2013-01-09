@@ -80,7 +80,7 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 {
 #ifdef Q_OS_WIN
     m_resolveSymlinks = true;
-#elif !defined(Q_OS_INTEGRITY)
+#elif !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS)
     userId = getuid();
     groupId = getgid();
 #endif
