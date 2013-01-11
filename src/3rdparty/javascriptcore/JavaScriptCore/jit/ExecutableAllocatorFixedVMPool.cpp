@@ -39,7 +39,11 @@
 
 #if CPU(X86_64)
     // These limits suitable on 64-bit platforms (particularly x86-64, where we require all jumps to have a 2Gb max range).
+#ifdef QT_USE_ONEGB_VMALLOCATOR
+    #define VM_POOL_SIZE (1024u * 1024u * 1024u) // 1Gb
+#else
     #define VM_POOL_SIZE (2u * 1024u * 1024u * 1024u) // 2Gb
+#endif
     #define COALESCE_LIMIT (16u * 1024u * 1024u) // 16Mb
 #else
     // These limits are hopefully sensible on embedded platforms.
