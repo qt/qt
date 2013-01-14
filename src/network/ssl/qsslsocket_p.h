@@ -174,6 +174,8 @@ public:
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
 
+    Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
+
 private:
     static bool ensureLibraryLoaded();
     static void ensureCiphersAndCertsLoaded();

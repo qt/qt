@@ -83,6 +83,7 @@ public:
         : protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0),
+          allowRootCertOnDemandLoading(true),
           sslOptions(QSsl::SslOptionDisableEmptyFragments
                      |QSsl::SslOptionDisableLegacyRenegotiation
                      |QSsl::SslOptionDisableCompression)
@@ -100,6 +101,7 @@ public:
     QSsl::SslProtocol protocol;
     QSslSocket::PeerVerifyMode peerVerifyMode;
     int peerVerifyDepth;
+    bool allowRootCertOnDemandLoading;
 
     QSsl::SslOptions sslOptions;
 
