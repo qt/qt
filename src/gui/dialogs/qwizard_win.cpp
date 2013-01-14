@@ -287,6 +287,12 @@ QVistaHelper::VistaState QVistaHelper::vistaState()
     return cachedVistaState;
 }
 
+void QVistaHelper::disconnectBackButton()
+{
+    if (backButton_) // Leave QStyleSheetStyle's connections on destroyed() intact.
+        backButton_->disconnect(SIGNAL(clicked()));
+}
+
 QColor QVistaHelper::basicWindowFrameColor()
 {
     DWORD rgb;
