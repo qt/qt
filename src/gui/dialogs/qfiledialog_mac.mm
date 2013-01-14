@@ -228,6 +228,8 @@ QT_USE_NAMESPACE
     *mCurrentSelection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)([mSavePanel filename]);
     if ([mSavePanel respondsToSelector:@selector(close)])
         [mSavePanel close];
+    if ([mSavePanel isSheet])
+        [NSApp endSheet: mSavePanel];
 }
 
 - (void)showModelessPanel
