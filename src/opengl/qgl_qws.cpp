@@ -149,7 +149,7 @@ static EGLSurface qt_egl_create_surface
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
-    const int *props;
+    const EGLint *props;
     if (properties)
         props = properties->properties();
     else

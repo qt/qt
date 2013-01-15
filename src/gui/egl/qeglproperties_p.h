@@ -76,7 +76,7 @@ public:
     bool removeValue(int name);
     bool isEmpty() const { return props[0] == EGL_NONE; }
 
-    const int *properties() const { return props.constData(); }
+    EGLconst int *properties() const { return props.constData(); }
 
     void setPixelFormat(QImage::Format pixelFormat);
 #ifdef Q_WS_X11
@@ -91,7 +91,7 @@ public:
     QString toString() const;
 
 private:
-    QVarLengthArray<int> props;
+    QVarLengthArray<EGLint> props;
 };
 
 QT_END_NAMESPACE

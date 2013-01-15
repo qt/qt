@@ -684,7 +684,7 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglPr
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
-    const int *props;
+    const EGLint *props;
     if (properties)
         props = properties->properties();
     else
