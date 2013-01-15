@@ -244,6 +244,11 @@ void QBBWindow::setVisible(bool visible)
     root->updateVisibility(root->mVisible);
 
     widget()->activateWindow();
+
+    if (!visible) {
+        // Flush the context, otherwise it won't disappear immediately
+        screen_flush_context(mContext, 0);
+    }
 }
 
 void QBBWindow::updateVisibility(bool parentVisible)
