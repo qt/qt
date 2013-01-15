@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-
+#include <qconfig.h>
 #if defined(QT3_SUPPORT)
 #include <q3hbox.h>
 #include <q3textedit.h>
@@ -402,7 +402,9 @@ private slots:
 #endif
 #endif
 
+#ifndef QT_NO_IM
     void focusProxyAndInputMethods();
+#endif
     void scrollWithoutBackingStore();
 
     void taskQTBUG_7532_tabOrderWithFocusProxy();
@@ -440,6 +442,7 @@ bool tst_QWidget::ensureScreenSize(int width, int height)
     return (available.width() >= width && available.height() >= height);
 }
 
+#ifndef QT_NO_IM
 class MyInputContext : public QInputContext
 {
 public:
@@ -449,6 +452,7 @@ public:
     void reset() {}
     bool isComposing() const { return false; }
 };
+#endif // QT_NO_IM
 
 // Testing get/set functions
 void tst_QWidget::getSetCheck()
@@ -585,6 +589,7 @@ void tst_QWidget::getSetCheck()
     obj1.setAcceptDrops(true);
     QCOMPARE(true, obj1.acceptDrops());
 
+#ifndef QT_NO_IM
     // QInputContext * QWidget::inputContext()
     // void QWidget::setInputContext(QInputContext *)
     MyInputContext *var13 = new MyInputContext;
@@ -606,6 +611,7 @@ void tst_QWidget::getSetCheck()
     }
 #endif
     QVERIFY(qApp->inputContext() != var13);
+#endif // QT_NO_IM
 
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
@@ -9959,6 +9965,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
 void tst_QWidget::inputFocus_task257832()
 {
+#ifndef QT_NO_IM
       QLineEdit *widget = new QLineEdit;
       QInputContext *context = widget->inputContext();
       if (!context)
@@ -9970,6 +9977,9 @@ void tst_QWidget::inputFocus_task257832()
       widget->setReadOnly(true);
       QVERIFY(!context->focusWidget());
       delete widget;
+#else
+      QWARN("Cannot test without inputmethod support");
+#endif // QT_NO_IM
 }
 
 void tst_QWidget::setGraphicsEffect()
@@ -10400,6 +10410,7 @@ void tst_QWidget::opacityChangeCausesBackingStoreRecreation()
 #endif // !Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
 #endif // Q_OS_SYMBIAN
 
+#ifndef QT_NO_IM
 class InputContextTester : public QInputContext
 {
     Q_OBJECT
@@ -10456,6 +10467,7 @@ void tst_QWidget::focusProxyAndInputMethods()
 
     delete toplevel;
 }
+#endif // QT_NO_IM
 
 #ifdef QT_BUILD_INTERNAL
 class scrollWidgetWBS : public QWidget

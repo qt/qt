@@ -58,6 +58,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qconfig.h>
 #include <QtGui/qevent.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>

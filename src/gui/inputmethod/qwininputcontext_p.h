@@ -52,6 +52,8 @@
 //
 // We mean it.
 //
+#include <qconfig.h>
+#ifndef QT_NO_IM
 
 #include "QtGui/qinputcontext.h"
 #include "QtCore/qt_windows.h"
@@ -107,5 +109,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
+#endif // QT_NO_IM
 #endif // QWININPUTCONTEXT_P_H

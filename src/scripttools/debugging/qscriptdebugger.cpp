@@ -881,6 +881,7 @@ void QScriptDebuggerPrivate::_q_goToLine()
     QScriptDebuggerCodeViewInterface *view = codeWidget->currentView();
     if (!view)
         return;
+#ifndef QT_NO_INPUTDIALOG
     bool ok = false;
     int lineNumber = QInputDialog::getInteger(0, QScriptDebugger::tr("Go to Line"),
                                               QScriptDebugger::tr("Line:"),
@@ -888,6 +889,7 @@ void QScriptDebuggerPrivate::_q_goToLine()
                                               1, INT_MAX, 1, &ok);
     if (ok)
         view->gotoLine(lineNumber);
+#endif
 }
 
 class QScriptDebuggerShowLineJob : public QScriptDebuggerCommandSchedulerJob

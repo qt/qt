@@ -127,8 +127,9 @@ private slots:
     void mouseSelectionMode_data();
     void mouseSelectionMode();
     void dragMouseSelection();
+#ifndef QT_NO_IM
     void inputMethodHints();
-
+#endif
     void positionAt();
 
     void cursorDelegate();
@@ -141,8 +142,10 @@ private slots:
     void canPaste();
     void canPasteEmpty();
     void textInput();
+#ifndef QT_NO_IM
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
+#endif
     void geometrySignals();
     void pastingRichText_QTBUG_14003();
     void implicitSize_data();
@@ -151,10 +154,11 @@ private slots:
     void implicitSizePreedit();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
-
+#ifndef QT_NO_IM
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+#endif
     void cursorRectangleSize();
     void deselect();
 
@@ -1604,6 +1608,7 @@ void tst_qdeclarativetextedit::mouseSelectionMode()
     delete canvas;
 }
 
+#ifndef QT_NO_IM
 void tst_qdeclarativetextedit::inputMethodHints()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
@@ -1619,6 +1624,7 @@ void tst_qdeclarativetextedit::inputMethodHints()
 
     delete canvas;
 }
+#endif
 
 void tst_qdeclarativetextedit::positionAt()
 {
@@ -2064,7 +2070,7 @@ QDeclarativeView *tst_qdeclarativetextedit::createView(const QString &filename)
     canvas->setSource(QUrl::fromLocalFile(filename));
     return canvas;
 }
-
+#ifndef QT_NO_IM
 class MyInputContext : public QInputContext
 {
 public:
@@ -2327,7 +2333,7 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     QVERIFY(view.inputContext() == 0);
     QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 }
-
+#endif //QT_NO_IM
 void tst_qdeclarativetextedit::geometrySignals()
 {
     QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
@@ -2484,6 +2490,7 @@ void tst_qdeclarativetextedit::testQtQuick11Attributes_data()
         << ":1 \"TextEdit.onLinkActivated\" is not available in QtQuick 1.0.\n";
 }
 
+#ifndef QT_NO_IM
 void tst_qdeclarativetextedit::preeditMicroFocus()
 {
     QString preeditText = "super";
@@ -2710,6 +2717,7 @@ void tst_qdeclarativetextedit::inputMethodComposing()
     QCOMPARE(edit.isInputMethodComposing(), false);
     QCOMPARE(spy.count(), 2);
 }
+#endif // QT_NO_IM
 
 void tst_qdeclarativetextedit::cursorRectangleSize()
 {

@@ -513,8 +513,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QT_NC_WIDGET_CREATE
 #endif
 
+#ifndef QT_NO_IM
     if (q->hasFocus() && q->testAttribute(Qt::WA_InputMethodEnabled))
         q->inputContext()->setFocusWidget(q);
+#endif
 
     if (destroyw) {
         DestroyWindow(destroyw);

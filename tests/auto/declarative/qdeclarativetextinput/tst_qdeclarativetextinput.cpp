@@ -116,8 +116,9 @@ private slots:
     void maxLength();
     void masks();
     void validators();
+#ifndef QT_NO_IM
     void inputMethods();
-
+#endif
     void passwordCharacter();
     void cursorDelegate();
     void cursorVisible();
@@ -129,8 +130,10 @@ private slots:
     void canPaste();
     void readOnly();
 
+#ifndef QT_NO_IM
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
+#endif
     void setHAlignClearCache();
     void focusOutClearSelection();
 
@@ -142,10 +145,12 @@ private slots:
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
 
+#ifndef QT_NO_IM
     void preeditAutoScroll();
     void preeditMicroFocus();
     void inputContextMouseHandler();
     void inputMethodComposing();
+#endif
     void cursorRectangleSize();
     void deselect();
 
@@ -1521,6 +1526,7 @@ void tst_qdeclarativetextinput::validators()
     delete canvas;
 }
 
+#ifndef QT_NO_IM
 void tst_qdeclarativetextinput::inputMethods()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethods.qml");
@@ -1569,6 +1575,7 @@ void tst_qdeclarativetextinput::inputMethods()
 
     delete canvas;
 }
+#endif // QT_NO_IM
 
 /*
 TextInput element should only handle left/right keys until the cursor reaches
@@ -2155,6 +2162,8 @@ QDeclarativeView *tst_qdeclarativetextinput::createView(const QString &filename)
 
     return canvas;
 }
+
+#ifndef QT_NO_IM
 class MyInputContext : public QInputContext
 {
 public:
@@ -2389,6 +2398,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QVERIFY(view.inputContext() == 0);
     QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 }
+#endif // QT_NO_IM
 
 class MyTextInput : public QDeclarativeTextInput
 {
@@ -2497,6 +2507,7 @@ void tst_qdeclarativetextinput::testQtQuick11Attributes_data()
         << "";
 }
 
+#ifndef QT_NO_IM
 void tst_qdeclarativetextinput::preeditAutoScroll()
 {
     QString committedText = "super";
@@ -2807,6 +2818,7 @@ void tst_qdeclarativetextinput::inputMethodComposing()
     QCOMPARE(input.isInputMethodComposing(), false);
     QCOMPARE(spy.count(), 2);
 }
+#endif // QT_NO_IM
 
 void tst_qdeclarativetextinput::cursorRectangleSize()
 {

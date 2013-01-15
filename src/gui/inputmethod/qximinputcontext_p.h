@@ -66,8 +66,8 @@
 //
 // We mean it.
 //
-
-#if !defined(Q_NO_IM)
+#include <qconfig.h>
+#ifndef QT_NO_IM
 
 #include "QtCore/qglobal.h"
 #include "QtGui/qinputcontext.h"

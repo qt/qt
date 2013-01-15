@@ -888,3 +888,11 @@
 #define QT_NO_PRINTPREVIEWDIALOG
 #endif
 
+//Input Method
+#if defined(QT_NO_IM)
+#define QT_NO_XIM
+#endif
+
+#if defined(QT_NO_IM)
+#define QT_NO_QWS_INPUTMETHODS
+#endif

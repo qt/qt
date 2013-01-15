@@ -424,28 +424,23 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
+#ifndef QT_NO_IM
 QInputContext *QWidgetPrivate::assignedInputContext() const
 {
-#ifndef QT_NO_IM
     const QWidget *widget = q_func();
     while (widget) {
         if (QInputContext *qic = widget->d_func()->ic)
             return qic;
         widget = widget->parentWidget();
     }
-#endif
     return 0;
 }
 
 QInputContext *QWidgetPrivate::inputContext() const
 {
-#ifndef QT_NO_IM
     if (QInputContext *qic = assignedInputContext())
         return qic;
     return qApp->inputContext();
-#else
-    return 0;
-#endif
 }
 
 /*!
@@ -480,7 +475,7 @@ void QWidget::setInputContext(QInputContext *context)
     Q_D(QWidget);
     if (!testAttribute(Qt::WA_InputMethodEnabled))
         return;
-#ifndef QT_NO_IM
+
     if (context == d->ic)
         return;
     if (d->ic)
@@ -488,9 +483,8 @@ void QWidget::setInputContext(QInputContext *context)
     d->ic = context;
     if (d->ic)
         d->ic->setParent(this);
-#endif
 }
-
+#endif // QT_NO_IM
 
 /*!
     \obsolete

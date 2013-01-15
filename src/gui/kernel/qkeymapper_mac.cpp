@@ -739,7 +739,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         qt_mac_send_modifiers_changed(modifiers, widget);
         return true;
     }
-
+#ifndef QT_NO_IM
     QInputContext *currentContext = qApp->inputContext();
     if (currentContext && currentContext->isComposing()) {
         if (ekind == kEventRawKeyDown) {
@@ -756,7 +756,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         if (context)
             context->setLastKeydownEvent(0);
     }
-
+#endif
     //get modifiers
     Qt::KeyboardModifiers modifiers;
     int qtKey;

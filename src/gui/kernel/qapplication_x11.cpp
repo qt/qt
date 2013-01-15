@@ -1047,6 +1047,7 @@ bool QApplicationPrivate::x11_apply_settings()
     qt_use_rtl_extensions =
         settings.value(QLatin1String("useRtlExtensions"), false).toBool();
 
+#ifndef QT_NO_IM
 #ifndef QT_NO_XIM
     if (qt_xim_preferred_style == 0) {
         QString ximInputStyle = settings.value(QLatin1String("XIMInputStyle"),
@@ -1060,7 +1061,7 @@ bool QApplicationPrivate::x11_apply_settings()
         else if (ximInputStyle == QLatin1String("root"))
             qt_xim_preferred_style = XIMPreeditNothing | XIMStatusNothing;
     }
-#endif
+#endif // QT_NO_XIM
     QStringList inputMethods = QInputContextFactory::keys();
     if (inputMethods.size() > 2 && inputMethods.contains(QLatin1String("imsw-multi"))) {
         X11->default_im = QLatin1String("imsw-multi");
@@ -1068,7 +1069,7 @@ bool QApplicationPrivate::x11_apply_settings()
         X11->default_im = settings.value(QLatin1String("DefaultInputMethod"),
                                          QLatin1String("xim")).toString();
     }
-
+#endif //QT_NO_IM
     settings.endGroup(); // Qt
 
     return true;

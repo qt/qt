@@ -1207,9 +1207,10 @@ void qt_init(QApplicationPrivate *priv, int)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::initialize();
 #endif
+#ifndef QT_NO_IM
         QMacInputContext::initialize();
         QApplicationPrivate::inputContext = new QMacInputContext;
-
+#endif
         if (QApplication::desktopSettingsAware())
             qt_mac_update_os_settings();
 #ifndef QT_MAC_USE_COCOA
@@ -1325,7 +1326,9 @@ void qt_cleanup()
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::cleanup();
 #endif
+#ifndef QT_NO_IM
         QMacInputContext::cleanup();
+#endif
         QCursorData::cleanup();
         QFont::cleanup();
         QColormap::cleanup();

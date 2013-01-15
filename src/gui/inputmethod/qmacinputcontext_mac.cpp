@@ -38,7 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <qconfig.h>
+#include <qglobal.h>
+#ifndef QT_NO_IM
 #include <qvarlengtharray.h>
 #include <qwidget.h>
 #include <private/qmacinputcontext_p.h>
@@ -378,3 +380,4 @@ QMacInputContext::globalEventProcessor(EventHandlerCallRef, EventRef event, void
 }
 
 QT_END_NAMESPACE
+#endif // QT_NO_IM

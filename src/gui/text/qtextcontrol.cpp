@@ -50,6 +50,7 @@
 #include <qdebug.h>
 #include <qmime.h>
 #include <qdrag.h>
+#include <qconfig.h>
 #include <qclipboard.h>
 #include <qmenu.h>
 #include <qstyle.h>
@@ -3049,6 +3050,7 @@ void QTextControlPrivate::_q_copyLink()
 #endif
 }
 
+#ifndef QT_NO_IM
 QInputContext *QTextControlPrivate::inputContext()
 {
     QInputContext *ctx = contextWidget->inputContext();
@@ -3056,6 +3058,7 @@ QInputContext *QTextControlPrivate::inputContext()
         ctx = contextWidget->parentWidget()->inputContext();
     return ctx;
 }
+#endif
 
 int QTextControl::hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const
 {

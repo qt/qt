@@ -74,7 +74,9 @@ class QDesktopWidget;
 class QStyle;
 class QEventLoop;
 class QIcon;
+#ifndef QT_NO_IM
 class QInputContext;
+#endif
 template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
