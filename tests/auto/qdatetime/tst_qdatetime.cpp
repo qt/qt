@@ -1087,7 +1087,7 @@ void tst_QDateTime::currentDateTimeUtc2()
     qint64 msec;
 
     // check that we got all down to the same milliseconds
-    int i = 2;
+    int i = 20;
     bool ok = false;
     do {
         local = QDateTime::currentDateTime();
