@@ -1444,6 +1444,9 @@ We hope you will enjoy using Qt.
     \row   \o \c {-xplatform <spec>} \o The operating system and compiler you
     are cross compiling for. \o See the README file for a list of supported
     operating systems and compilers.
+    \row   \o \c {-system-proxies} \o Use system network proxies by default. \o
+    \row   \o \c {-no-system-proxies} \o Do not use system network proxies
+    by default. \o
     \row   \o \c {-qtnamespace <namespace>} \o Wraps all Qt library code in
     'namespace name {..} \o
     \row   \o \c {-qtlibinfix <infix>} \o Renames all Qt* libs to Qt*<infix>
