@@ -84,6 +84,11 @@ public:
     {
         // this is a static assert in case QEvent changed in Qt
         QEventSizeOfChecker<sizeof(QSpontaneKeyEvent)> dummy;
+
+        // Fixing the warnings about unused variables
+        Q_UNUSED(posted);
+        Q_UNUSED(m_accept);
+        Q_UNUSED(reserved);
     }
 #endif
 
