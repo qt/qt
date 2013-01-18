@@ -95,6 +95,7 @@ QThreadData::~QThreadData()
     // the problem...
     if (this->thread == QCoreApplicationPrivate::theMainThread) {
        QCoreApplicationPrivate::theMainThread = 0;
+       QThreadData::clearCurrentThreadData();
     }
 
     QThread *t = thread;
