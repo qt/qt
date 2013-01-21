@@ -9431,6 +9431,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
 #ifndef QT_NO_IM
     Q_D(QWidget);
+    if (d->imHints == hints)
+        return;
     d->imHints = hints;
     // Optimization to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {
