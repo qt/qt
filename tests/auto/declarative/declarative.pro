@@ -77,7 +77,8 @@ contains(QT_CONFIG, private_tests) {
            qdeclarativevisualdatamodel \
            qdeclarativeworkerscript \
            qdeclarativexmllistmodel \
-           qpacketprotocol
+           qpacketprotocol \
+           qperformancetimer
 }
 
 contains(QT_CONFIG, opengl): SUBDIRS += qmlshadersplugin
