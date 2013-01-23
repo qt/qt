@@ -51,6 +51,7 @@
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
+#ifndef  QT_NO_FILESYSTEMITERATOR
 
 bool done = true;
 
@@ -147,4 +148,5 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     return false;
 }
 
+#endif //  QT_NO_FILESYSTEMITERATOR
 QT_END_NAMESPACE
