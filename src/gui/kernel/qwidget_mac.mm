@@ -3556,10 +3556,12 @@ void QWidgetPrivate::show_sys()
         QPoint qlocal, qglobal;
         QWidget *widgetUnderMouse = 0;
         qt_mac_getTargetForMouseEvent(0, QEvent::Enter, qlocal, qglobal, 0, &widgetUnderMouse);
-        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_mouse_receiver);
-        qt_last_mouse_receiver = widgetUnderMouse;
-        qt_last_native_mouse_receiver = widgetUnderMouse ?
-            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
+        if (q == widgetUnderMouse) {
+            QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_mouse_receiver);
+            qt_last_mouse_receiver = widgetUnderMouse;
+            qt_last_native_mouse_receiver = widgetUnderMouse ?
+                (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
+        }
     }
 #endif
 
@@ -3716,10 +3718,12 @@ void QWidgetPrivate::hide_sys()
         QPoint qlocal, qglobal;
         QWidget *widgetUnderMouse = 0;
         qt_mac_getTargetForMouseEvent(0, QEvent::Leave, qlocal, qglobal, 0, &widgetUnderMouse);
-        QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_native_mouse_receiver);
-        qt_last_mouse_receiver = widgetUnderMouse;
-        qt_last_native_mouse_receiver = widgetUnderMouse ?
-            (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
+        if (q == widgetUnderMouse) {
+            QApplicationPrivate::dispatchEnterLeave(widgetUnderMouse, qt_last_native_mouse_receiver);
+            qt_last_mouse_receiver = widgetUnderMouse;
+            qt_last_native_mouse_receiver = widgetUnderMouse ?
+                (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
+       }
      }
 #endif
 
