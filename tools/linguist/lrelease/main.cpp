@@ -381,7 +381,7 @@ static void initBinaryDir(
     wchar_t module_name[MAX_PATH];
     GetModuleFileName(0, module_name, MAX_PATH);
     QFileInfo filePath = QString::fromWCharArray(module_name);
-    binDir = filePath.filePath();
+    binDir = filePath.path();
 #else
     QString argv0 = QFile::decodeName(QByteArray(_argv0));
     QString absPath;
