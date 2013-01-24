@@ -40,8 +40,12 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
+#ifdef Q_OS_VXWORKS
+#include "qfunctions_vxworks.h"
+#else
 #include <sys/time.h>
 #include <time.h>
+#endif
 #include <unistd.h>
 
 #if defined(QT_NO_CLOCK_MONOTONIC) || defined(QT_BOOTSTRAPPED)
