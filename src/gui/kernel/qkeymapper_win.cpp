@@ -74,6 +74,9 @@ extern Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id);
 #ifndef VK_OEM_3
 #define VK_OEM_3 0xC0
 #endif
+#ifndef MAPVK_VK_TO_CHAR
+#define MAPVK_VK_TO_CHAR (2)
+#endif
 
 #if defined(Q_OS_WINCE)
 bool GetKeyboardState(unsigned char* kbuffer)
