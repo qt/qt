@@ -59,7 +59,7 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 #include "qsocketnotifier.h"
 #endif
 
@@ -275,7 +275,7 @@ private:
 };
 #endif
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 class QBBLocaleData: public QObject
 {
     Q_OBJECT
@@ -285,7 +285,7 @@ public:
     void readPPSLocale();
 
 public Q_SLOTS:
-    void updateMesurementSystem();
+    void updateMeasurementSystem();
 
 public:
     uint ppsMeasurement;

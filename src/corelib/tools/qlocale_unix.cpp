@@ -46,7 +46,7 @@
 #include "qstringlist.h"
 #include "qvariant.h"
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 #include <QtCore/private/qcore_unix_p.h>
 #include <QCoreApplication>
 
@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 static const char ppsServicePath[] = "/pps/services/locale/uom";
 static const size_t ppsBufferSize = 256;
 
@@ -74,7 +74,7 @@ QBBLocaleData::~QBBLocaleData()
         qt_safe_close(ppsFd);
 }
 
-void QBBLocaleData::updateMesurementSystem()
+void QBBLocaleData::updateMeasurementSystem()
 {
     char buffer[ppsBufferSize];
 
@@ -114,10 +114,10 @@ void QBBLocaleData::readPPSLocale()
         return;
     }
 
-    updateMesurementSystem();
+    updateMeasurementSystem();
     if (QCoreApplication::instance()) {
         ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
-        QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMesurementSystem()));
+        QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMeasurementSystem()));
     }
 }
 #endif
@@ -188,7 +188,7 @@ struct QSystemLocaleData
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 #endif
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
     Q_GLOBAL_STATIC(QBBLocaleData, qbbLocaleData)
 #endif
 
@@ -208,7 +208,7 @@ QLocale QSystemLocale::fallbackLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
     QBBLocaleData *bbd = qbbLocaleData();
 #endif
     const QLocale &lc_numeric = d->lc_numeric;
@@ -290,7 +290,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             return QLocale::MetricSystem;
         if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
         return bbd->ppsMeasurement;
 #endif
         return QVariant((int)QLocale(meas_locale).measurementSystem());
