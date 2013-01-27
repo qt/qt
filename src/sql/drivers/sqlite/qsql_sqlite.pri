@@ -6,6 +6,6 @@ symbian:include($$QT_SOURCE_TREE/src/plugins/sqldrivers/sqlite_symbian/sqlite_sy
 !system-sqlite:!contains(LIBS, .*sqlite3.*) {
     include($$PWD/../../../3rdparty/sqlite.pri)
 } else {
-    LIBS *= $$QT_LFLAGS_SQLITE
+    LIBS += $$QT_LFLAGS_SQLITE
     QMAKE_CXXFLAGS *= $$QT_CFLAGS_SQLITE
 }
