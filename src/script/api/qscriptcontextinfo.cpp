@@ -160,7 +160,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
             if (returnPC && codeBlock && QScriptEnginePrivate::hasValidCodeBlockRegister(frame)) {
 #if ENABLE(JIT)
                 JSC::JITCode code = codeBlock->getJITCode();
-                unsigned jitOffset = code.offsetOf(JSC::ReturnAddressPtr(returnPC).value());
+                uintptr_t jitOffset = reinterpret_cast<uintptr_t>(JSC::ReturnAddressPtr(returnPC).value()) - reinterpret_cast<uintptr_t>(code.addressForCall().executableAddress());
                 // We can only use the JIT code offset if it's smaller than the JIT size;
                 // otherwise calling getBytecodeIndex() is meaningless.
                 if (jitOffset < code.size()) {
