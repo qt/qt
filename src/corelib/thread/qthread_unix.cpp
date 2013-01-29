@@ -427,7 +427,13 @@ int QThread::idealThreadCount()
     // IRIX
     cores = (int)sysconf(_SC_NPROC_ONLN);
 #elif defined(Q_OS_INTEGRITY)
-    // as of aug 2008 Integrity only supports one single core CPU
+#if (__INTEGRITY_MAJOR_VERSION >= 10)
+    // Integrity V10+ does support multicore CPUs
+    Value processorCount;
+    if (GetProcessorCount(CurrentTask(), &processorCount) == 0)
+        cores = processorCount;
+    else
+#endif
     cores = 1;
 #elif defined(Q_OS_VXWORKS)
     // VxWorks
