@@ -196,7 +196,7 @@ void tst_QSslSocket_onDemandCertificates_member::proxyAuthenticationRequired(con
 
 void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMethods()
 {
-    QString host("qt.nokia.com");
+    QString host("qt-project.org");
 
     // not using any root certs -> should not work
     QSslSocketPtr socket2 = newSocket();
