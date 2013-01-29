@@ -444,7 +444,7 @@
 /*!
     \page supported-platforms.html
     \title Supported Platforms
-    \brief The platforms supported by Nokia for Qt.
+    \brief The platforms supported by Digia for Qt.
     \ingroup platform-specific
     \group platform-details
 
@@ -482,7 +482,7 @@
     Qt is supported on a variety of 32-bit and 64-bit platforms, and can
     usually be built on each platform with GCC, a vendor-supplied compiler, or
     a third party compiler. Although Qt may be built on a range of platform-compiler
-    combinations, only a subset of these are actively supported by Nokia.
+    combinations, only a subset of these are actively supported by Digia.
 
     \tableofcontents
 
@@ -542,21 +542,21 @@
                                      \o As provided by Apple
     \endtable
 
-    \section1 Tier 3 Platforms (Not Supported by Nokia)
+    \section1 Tier 3 Platforms (Not Supported by Digia)
 
-    All platforms not specifically listed above are not supported by Nokia. Nokia does
+    All platforms not specifically listed above are not supported by Digia. Digia does
     not run its unit test suite or perform any other internal tests on platforms not
     listed above.
 
     Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
-    platforms not supported by Nokia.
+    platforms not supported by Digia.
 
     \section1 General Legal Disclaimer
 
     Please note that Qt is offered on an "as is" basis without warranty
     of any kind and that our products are not error or bug free. To the maximum extent
-    permitted by applicable law, Nokia on behalf of itself and its suppliers, disclaims all
+    permitted by applicable law, Digia on behalf of itself and its suppliers, disclaims all
     warranties and conditions, either express or implied, including, but not limited to,
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.
