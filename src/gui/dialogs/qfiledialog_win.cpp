@@ -580,7 +580,7 @@ QString qt_win_CID_get_existing_directory(const QFileDialogArgs &args)
     if (SUCCEEDED(hr)) {
         qt_win_set_IFileDialogOptions(pfd, args.selection,
                                       args.directory, args.caption,
-                                      QStringList(), QFileDialog::ExistingFiles,
+                                      QStringList(), QFileDialog::ExistingFile,
                                       args.options);
 
         // Set the FOS_PICKFOLDERS flag
