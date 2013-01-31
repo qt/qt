@@ -528,7 +528,7 @@ QMacPixmapData::~QMacPixmapData()
     if (cg_data) {
         CGImageRelease(cg_data);
     }
-    if (pixels && (pixels != pixelsToFree))
+    else if (pixels && (pixels != pixelsToFree))
         free(pixels);
     if (pixelsToFree)
         free(pixelsToFree);
