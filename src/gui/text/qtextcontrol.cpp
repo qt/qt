@@ -1981,6 +1981,12 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         } else if (a.type == QInputMethodEvent::TextFormat) {
             QTextCharFormat f = qvariant_cast<QTextFormat>(a.value).toCharFormat();
             if (f.isValid()) {
+                if (f.background().color().alphaF() == 1 && f.background().style() == Qt::SolidPattern) {
+                    f.setForeground(f.background().color());
+                    f.setBackground(Qt::transparent);
+                    f.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                    f.setFontUnderline(true);
+                }
                 QTextLayout::FormatRange o;
                 o.start = a.start + cursor.position() - block.position();
                 o.length = a.length;
