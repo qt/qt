@@ -66,16 +66,16 @@ public:
     virtual void swapBuffers();
     virtual void* getProcAddress(const QString& procName);
 
-    virtual QPlatformWindowFormat platformWindowFormat() const { return sWindowFormat; }
+    virtual QPlatformWindowFormat platformWindowFormat() const { return mWindowFormat; }
 
     void resizeSurface(const QSize &size);
     QSize surfaceSize() const { return mSurfaceSize; }
 
 private:
     static EGLDisplay sEglDisplay;
-    static EGLConfig sEglConfig;
-    static QPlatformWindowFormat sWindowFormat;
 
+    QPlatformWindowFormat mWindowFormat;
+    EGLConfig mEglConfig;
     QBBWindow *mPlatformWindow;
     EGLContext mEglContext;
     EGLSurface mEglSurface;

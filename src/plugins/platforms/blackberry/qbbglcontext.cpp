@@ -53,8 +53,6 @@
 QT_BEGIN_NAMESPACE
 
 EGLDisplay QBBGLContext::sEglDisplay = EGL_NO_DISPLAY;
-EGLConfig QBBGLContext::sEglConfig = 0;
-QPlatformWindowFormat QBBGLContext::sWindowFormat;
 
 QBBGLContext::QBBGLContext(QBBWindow* platformWindow)
     : QPlatformGLContext(),
@@ -127,18 +125,18 @@ QBBGLContext::QBBGLContext(QBBWindow* platformWindow)
     format.setBlueBufferSize(blueSize);
 
     // select EGL config based on requested window format
-    sEglConfig = q_configFromQPlatformWindowFormat(sEglDisplay, format);
-    if (sEglConfig == 0) {
+    mEglConfig = q_configFromQPlatformWindowFormat(sEglDisplay, format);
+    if (mEglConfig == 0) {
         qFatal("QBB: failed to find EGL config");
     }
 
-    mEglContext = eglCreateContext(sEglDisplay, sEglConfig, EGL_NO_CONTEXT, contextAttrs());
+    mEglContext = eglCreateContext(sEglDisplay, mEglConfig, EGL_NO_CONTEXT, contextAttrs());
     if (mEglContext == EGL_NO_CONTEXT) {
         qFatal("QBB: failed to create EGL context, err=%d", eglGetError());
     }
 
     // query/cache window format of selected EGL config
-    sWindowFormat = qt_qPlatformWindowFormatFromConfig(sEglDisplay, sEglConfig);
+    mWindowFormat = qt_qPlatformWindowFormatFromConfig(sEglDisplay, mEglConfig);
 }
 
 QBBGLContext::~QBBGLContext()
@@ -175,25 +173,6 @@ void QBBGLContext::initialize()
 #else
     EGLint renderableType = EGL_OPENGL_ES_BIT;
 #endif
-
-    // get EGL config compatible with window
-    EGLint numConfig;
-    EGLint configAttrs[] = { EGL_BUFFER_SIZE,       32,
-                             EGL_ALPHA_SIZE,        8,
-                             EGL_RED_SIZE,          8,
-                             EGL_GREEN_SIZE,        8,
-                             EGL_BLUE_SIZE,         8,
-                             EGL_SURFACE_TYPE,      EGL_WINDOW_BIT,
-                             EGL_RENDERABLE_TYPE,   renderableType,
-                             EGL_NONE };
-    eglResult = eglChooseConfig(sEglDisplay, configAttrs, &sEglConfig, 1, &numConfig);
-    if (eglResult != EGL_TRUE || numConfig == 0) {
-        qFatal("QBB: failed to find EGL config, err=%d, numConfig=%d", eglGetError(), numConfig);
-    }
-
-    // query/cache window format
-    sWindowFormat = qt_qPlatformWindowFormatFromConfig(sEglDisplay, sEglConfig);
-    sWindowFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
 }
 
 void QBBGLContext::shutdown()
@@ -344,7 +323,7 @@ void QBBGLContext::createSurface()
 #endif
 
     // create EGL surface
-    mEglSurface = eglCreateWindowSurface(sEglDisplay, sEglConfig, (EGLNativeWindowType)mPlatformWindow->winId(), NULL);
+    mEglSurface = eglCreateWindowSurface(sEglDisplay, mEglConfig, (EGLNativeWindowType)mPlatformWindow->winId(), NULL);
     if (mEglSurface == EGL_NO_SURFACE) {
         qFatal("QBB: failed to create EGL surface, err=%d", eglGetError());
     }
