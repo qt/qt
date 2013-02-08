@@ -219,6 +219,9 @@ private slots:
     void QTBUG_21884();
     void QTBUG_16967_data() { generic_data("QSQLITE"); }
     void QTBUG_16967(); //clean close
+    void QTBUG_14904_data() { generic_data("QSQLITE"); }
+    void QTBUG_14904();
+
     void QTBUG_2192_data() { generic_data(); }
     void QTBUG_2192();
 
@@ -3241,6 +3244,42 @@ void tst_QSqlQuery::QTBUG_16967()
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
+}
+
+/**
+  * Test for aliases with dots
+  */
+void tst_QSqlQuery::QTBUG_14904()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString tableName(qTableName("bug14904", __FILE__ ));
+    tst_Databases::safeDropTable( db, tableName );
+
+    q.prepare("create table " + tableName + "(val1 int)");
+    QVERIFY_SQL(q, exec());
+    q.prepare("insert into " + tableName + "(val1) values(?);");
+    q.addBindValue(1);
+    QVERIFY_SQL(q, exec());
+
+    QString sql="select val1 AS value1 from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+
+    QCOMPARE(q.record().indexOf("value1"), 0);
+    QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    sql="select val1 AS 'value.one' from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.record().indexOf("value.one"), 0);  // was -1 before bug fix
+    QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void tst_QSqlQuery::QTBUG_2192()
