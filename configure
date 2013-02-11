@@ -3612,7 +3612,17 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
 	QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
         fi
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
-            QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
+            case "$XPLATFORM" in
+            *dkm*)
+                QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}-dkm" # VxWorks DKM
+                ;;
+            *rtp*)
+                QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}-rtp" # VxWorks RTP
+                ;;
+            *)
+                QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
+                ;;
+            esac
         fi
     elif [ -d "$EPOCROOT" ] && [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
