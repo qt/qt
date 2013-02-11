@@ -1,6 +1,6 @@
-diff -ruN main/ca.xml ../../main/ca.xml
---- main/ca.xml	2011-05-10 20:52:31.000000000 +0200
-+++ ../../main/ca.xml	2013-01-16 11:36:55.343546843 +0100
+diff -ruN ../common/main/ca.xml main/ca.xml
+--- ../common/main/ca.xml	2011-05-10 20:52:31.000000000 +0200
++++ main/ca.xml	2013-01-16 11:36:55.343546843 +0100
 @@ -1343,22 +1343,22 @@
  				<timeFormats>
  					<timeFormatLength type="full">
@@ -28,9 +28,43 @@ diff -ruN main/ca.xml ../../main/ca.xml
  						</timeFormat>
  					</timeFormatLength>
  				</timeFormats>
-diff -ruN main/en_CA.xml ../../main/en_CA.xml
---- main/en_CA.xml	2011-05-02 20:50:23.000000000 +0200
-+++ ../../main/en_CA.xml	2013-01-16 11:36:55.551546840 +0100
+diff -ruN ../common/main/cs.xml main/cs.xml
+--- ../common/main/cs.xml	2011-05-10 22:34:45.000000000 +0200
++++ main/cs.xml	2013-02-11 11:18:15.870446110 +0100
+@@ -1071,18 +1071,18 @@
+ 				<months>
+ 					<monthContext type="format">
+ 						<monthWidth type="abbreviated">
+-							<month type="1">Led</month>
+-							<month type="2">Úno</month>
+-							<month type="3">Bře</month>
+-							<month type="4">Dub</month>
+-							<month type="5">Kvě</month>
+-							<month type="6">Čer</month>
+-							<month type="7">Čvc</month>
+-							<month type="8">Srp</month>
+-							<month type="9">Zář</month>
+-							<month type="10">Říj</month>
+-							<month type="11">Lis</month>
+-							<month type="12">Pro</month>
++							<month type="1">led</month>
++							<month type="2">úno</month>
++							<month type="3">bře</month>
++							<month type="4">dub</month>
++							<month type="5">kvě</month>
++							<month type="6">čvn</month>
++							<month type="7">čvc</month>
++							<month type="8">srp</month>
++							<month type="9">zář</month>
++							<month type="10">říj</month>
++							<month type="11">lis</month>
++							<month type="12">pro</month>
+ 						</monthWidth>
+ 						<monthWidth type="narrow">
+ 							<month type="1" draft="contributed">1</month>
+diff -ruN ../common/main/en_CA.xml main/en_CA.xml
+--- ../common/main/en_CA.xml	2011-05-02 20:50:23.000000000 +0200
++++ main/en_CA.xml	2013-01-16 11:36:55.551546840 +0100
 @@ -10,28 +10,6 @@
  	<dates>
  		<calendars>
@@ -60,9 +94,9 @@ diff -ruN main/en_CA.xml ../../main/en_CA.xml
  				<dateTimeFormats>
  					<availableFormats>
  						<dateFormatItem id="Md">M-d</dateFormatItem>
-diff -ruN main/ga.xml ../../main/ga.xml
---- main/ga.xml	2011-05-05 21:19:19.000000000 +0200
-+++ ../../main/ga.xml	2013-01-16 11:36:55.919546844 +0100
+diff -ruN ../common/main/ga.xml main/ga.xml
+--- ../common/main/ga.xml	2011-05-05 21:19:19.000000000 +0200
++++ main/ga.xml	2013-01-16 11:36:55.919546844 +0100
 @@ -63,14 +63,53 @@
  			<calendar type="gregorian">
  				<months>
@@ -117,9 +151,9 @@ diff -ruN main/ga.xml ../../main/ga.xml
  							<day type="fri">Dé hAoine</day>
  							<day type="sat">Dé Sathairn</day>
  						</dayWidth>
-diff -ruN main/gu.xml ../../main/gu.xml
---- main/gu.xml	2011-05-10 20:52:32.000000000 +0200
-+++ ../../main/gu.xml	2013-01-16 11:36:55.971546844 +0100
+diff -ruN ../common/main/gu.xml main/gu.xml
+--- ../common/main/gu.xml	2011-05-10 20:52:32.000000000 +0200
++++ main/gu.xml	2013-01-16 11:36:55.971546844 +0100
 @@ -3652,7 +3652,7 @@
  		</timeZoneNames>
  	</dates>
@@ -129,9 +163,9 @@ diff -ruN main/gu.xml ../../main/gu.xml
  		<symbols numberSystem="latn">
  			<exponential>પૂર્વ</exponential>
  			<nan>સંખ્યા નથીં</nan>
-diff -ruN main/hi.xml ../../main/hi.xml
---- main/hi.xml	2011-05-10 20:52:32.000000000 +0200
-+++ ../../main/hi.xml	2013-01-16 11:36:56.063546844 +0100
+diff -ruN ../common/main/hi.xml main/hi.xml
+--- ../common/main/hi.xml	2011-05-10 20:52:32.000000000 +0200
++++ main/hi.xml	2013-01-16 11:36:56.063546844 +0100
 @@ -3181,7 +3181,7 @@
  		</timeZoneNames>
  	</dates>
@@ -141,9 +175,9 @@ diff -ruN main/hi.xml ../../main/hi.xml
  		<symbols numberSystem="latn">
  			<decimal>.</decimal>
  			<group>,</group>
-diff -ruN main/id.xml ../../main/id.xml
---- main/id.xml	2011-05-09 19:42:31.000000000 +0200
-+++ ../../main/id.xml	2013-01-16 14:50:10.735567197 +0100
+diff -ruN ../common/main/id.xml main/id.xml
+--- ../common/main/id.xml	2011-05-09 19:42:31.000000000 +0200
++++ main/id.xml	2013-01-16 14:50:10.735567197 +0100
 @@ -1250,8 +1250,8 @@
  				<dayPeriods>
  					<dayPeriodContext type="format">
@@ -191,9 +225,21 @@ diff -ruN main/id.xml ../../main/id.xml
  			<gmtFormat>GMT{0}</gmtFormat>
  			<regionFormat>Waktu {0}</regionFormat>
  			<fallbackRegionFormat>Waktu {1} ({0})</fallbackRegionFormat>
-diff -ruN main/kn.xml ../../main/kn.xml
---- main/kn.xml	2011-05-10 20:52:32.000000000 +0200
-+++ ../../main/kn.xml	2013-01-16 11:36:56.375546845 +0100
+diff -ruN ../common/main/ja.xml main/ja.xml
+--- ../common/main/ja.xml	2011-05-09 19:42:31.000000000 +0200
++++ main/ja.xml	2013-02-11 11:16:18.954445250 +0100
+@@ -1413,7 +1413,7 @@
+ 					</dateFormatLength>
+ 					<dateFormatLength type="short">
+ 						<dateFormat>
+-							<pattern>yy/MM/dd</pattern>
++							<pattern>yyyy/MM/dd</pattern>
+ 						</dateFormat>
+ 					</dateFormatLength>
+ 				</dateFormats>
+diff -ruN ../common/main/kn.xml main/kn.xml
+--- ../common/main/kn.xml	2011-05-10 20:52:32.000000000 +0200
++++ main/kn.xml	2013-01-16 11:36:56.375546845 +0100
 @@ -3592,7 +3592,7 @@
  		</timeZoneNames>
  	</dates>
@@ -203,9 +249,9 @@ diff -ruN main/kn.xml ../../main/kn.xml
  		<symbols numberSystem="latn">
  			<exponential>ಪೂರ್ವ</exponential>
  			<nan>ಸಂಖ್ಯೆಯಲ್ಲ</nan>
-diff -ruN main/kok.xml ../../main/kok.xml
---- main/kok.xml	2011-05-02 08:05:35.000000000 +0200
-+++ ../../main/kok.xml	2013-01-16 11:36:56.395546845 +0100
+diff -ruN ../common/main/kok.xml main/kok.xml
+--- ../common/main/kok.xml	2011-05-02 08:05:35.000000000 +0200
++++ main/kok.xml	2013-01-16 11:36:56.395546845 +0100
 @@ -271,7 +271,7 @@
  		</timeZoneNames>
  	</dates>
@@ -215,9 +261,9 @@ diff -ruN main/kok.xml ../../main/kok.xml
  		<decimalFormats>
  			<decimalFormatLength>
  				<decimalFormat>
-diff -ruN main/ml.xml ../../main/ml.xml
---- main/ml.xml	2011-05-10 20:52:32.000000000 +0200
-+++ ../../main/ml.xml	2013-01-16 11:36:56.623546845 +0100
+diff -ruN ../common/main/ml.xml main/ml.xml
+--- ../common/main/ml.xml	2011-05-10 20:52:32.000000000 +0200
++++ main/ml.xml	2013-01-16 11:36:56.623546845 +0100
 @@ -3827,7 +3827,7 @@
  		</timeZoneNames>
  	</dates>
@@ -227,9 +273,9 @@ diff -ruN main/ml.xml ../../main/ml.xml
  		<symbols numberSystem="latn">
  			<decimal>.</decimal>
  			<group>,</group>
-diff -ruN main/mr.xml ../../main/mr.xml
---- main/mr.xml	2011-05-10 20:52:32.000000000 +0200
-+++ ../../main/mr.xml	2013-01-16 11:36:56.651546845 +0100
+diff -ruN ../common/main/mr.xml main/mr.xml
+--- ../common/main/mr.xml	2011-05-10 20:52:32.000000000 +0200
++++ main/mr.xml	2013-01-16 11:36:56.651546845 +0100
 @@ -3693,7 +3693,7 @@
  		</timeZoneNames>
  	</dates>
@@ -239,9 +285,9 @@ diff -ruN main/mr.xml ../../main/mr.xml
  		<symbols numberSystem="latn">
  			<exponential>पू</exponential>
  			<nan>नान</nan>
-diff -ruN main/ne.xml ../../main/ne.xml
---- main/ne.xml	2011-05-02 08:05:36.000000000 +0200
-+++ ../../main/ne.xml	2013-01-16 11:36:56.787546844 +0100
+diff -ruN ../common/main/ne.xml main/ne.xml
+--- ../common/main/ne.xml	2011-05-02 08:05:36.000000000 +0200
++++ main/ne.xml	2013-01-16 11:36:56.787546844 +0100
 @@ -1240,7 +1240,7 @@
  		</timeZoneNames>
  	</dates>
@@ -251,9 +297,9 @@ diff -ruN main/ne.xml ../../main/ne.xml
  		<symbols numberSystem="latn">
  			<decimal draft="contributed">.</decimal>
  			<group draft="contributed">,</group>
-diff -ruN main/pa.xml ../../main/pa.xml
---- main/pa.xml	2011-05-02 20:50:20.000000000 +0200
-+++ ../../main/pa.xml	2013-01-16 11:36:56.855546846 +0100
+diff -ruN ../common/main/pa.xml main/pa.xml
+--- ../common/main/pa.xml	2011-05-02 20:50:20.000000000 +0200
++++ main/pa.xml	2013-01-16 11:36:56.855546846 +0100
 @@ -299,7 +299,7 @@
  		</calendars>
  	</dates>
@@ -263,9 +309,9 @@ diff -ruN main/pa.xml ../../main/pa.xml
  		<decimalFormats>
  			<decimalFormatLength>
  				<decimalFormat>
-diff -ruN main/sk.xml ../../main/sk.xml
---- main/sk.xml	2011-05-09 19:42:31.000000000 +0200
-+++ ../../main/sk.xml	2013-01-16 11:36:57.119546846 +0100
+diff -ruN ../common/main/sk.xml main/sk.xml
+--- ../common/main/sk.xml	2011-05-09 19:42:31.000000000 +0200
++++ main/sk.xml	2013-01-16 11:36:57.119546846 +0100
 @@ -1703,7 +1703,7 @@
  		</timeZoneNames>
  	</dates>
@@ -275,9 +321,9 @@ diff -ruN main/sk.xml ../../main/sk.xml
  		<symbols numberSystem="latn">
  			<decimal>,</decimal>
  			<group> </group>
-diff -ruN main/ta.xml ../../main/ta.xml
---- main/ta.xml	2011-05-09 19:42:31.000000000 +0200
-+++ ../../main/ta.xml	2013-01-16 11:36:57.327546844 +0100
+diff -ruN ../common/main/ta.xml main/ta.xml
+--- ../common/main/ta.xml	2011-05-09 19:42:31.000000000 +0200
++++ main/ta.xml	2013-01-16 11:36:57.327546844 +0100
 @@ -3642,7 +3642,7 @@
  		</timeZoneNames>
  	</dates>
@@ -287,9 +333,9 @@ diff -ruN main/ta.xml ../../main/ta.xml
  		<symbols numberSystem="latn">
  			<decimal>.</decimal>
  			<group>,</group>
-diff -ruN main/te.xml ../../main/te.xml
---- main/te.xml	2011-05-10 20:52:33.000000000 +0200
-+++ ../../main/te.xml	2013-01-16 11:36:57.343546845 +0100
+diff -ruN ../common/main/te.xml main/te.xml
+--- ../common/main/te.xml	2011-05-10 20:52:33.000000000 +0200
++++ main/te.xml	2013-01-16 11:36:57.343546845 +0100
 @@ -3616,7 +3616,7 @@
  		</timeZoneNames>
  	</dates>
@@ -299,9 +345,9 @@ diff -ruN main/te.xml ../../main/te.xml
  		<symbols numberSystem="latn">
  			<exponential>తూ</exponential>
  		</symbols>
-diff -ruN main/tr.xml ../../main/tr.xml
---- main/tr.xml	2011-05-02 08:05:38.000000000 +0200
-+++ ../../main/tr.xml	2013-01-16 11:36:57.463546845 +0100
+diff -ruN ../common/main/tr.xml main/tr.xml
+--- ../common/main/tr.xml	2011-05-02 08:05:38.000000000 +0200
++++ main/tr.xml	2013-01-16 11:36:57.463546845 +0100
 @@ -1392,8 +1392,8 @@
  				<dayPeriods>
  					<dayPeriodContext type="format">
