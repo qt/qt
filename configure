@@ -814,6 +814,12 @@ if [ -f "$relpath/src/gui/embedded/qscreenintegrityfb_qws.cpp" ]; then
     CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} integrityfb"
 fi
 
+if [ -f "$relpath/src/gui/embedded/qscreenvxworksfb_qws.cpp" ]; then
+    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} vxworks"
+    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} vxworks"
+    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} vxworksfb"
+fi
+
 CFG_ARCH=
 CFG_HOST_ARCH=
 CFG_KBD_PLUGIN_AVAILABLE=
