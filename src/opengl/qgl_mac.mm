@@ -461,9 +461,6 @@ void *QGLContextPrivate::tryFormat(const QGLFormat &format)
         attribs[cnt++] = def(format.samples(), 4);
     }
 
-    if (format.directRendering())
-        attribs[cnt++] = NSOpenGLPFAAccelerated;
-
     if (devType == QInternal::Pbuffer)
         attribs[cnt++] = NSOpenGLPFAPixelBuffer;
 
