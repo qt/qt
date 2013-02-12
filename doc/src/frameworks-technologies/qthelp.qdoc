@@ -68,7 +68,7 @@
     help into Qt applications.
 
     The actual help data, meaning the table of contents, index
-    keywords or html documents, is contained in Qt compressed help
+    keywords or HTML documents, is contained in Qt compressed help
     files. So, one such a help file represents usually one manual
     or documentation set. Since most products are more comprehensive
     and consist of a number of tools, one manual is rarely enough.
@@ -89,7 +89,7 @@
     generation of the compressed help file.
 
     As already mentioned, the Qt compressed help file contains all
-    data, so there is no need any longer to ship all single html
+    data, so there is no need any longer to ship all single HTML
     files. Instead, only the compressed help file and optionally the
     collection file has to be distributed. The collection file is
     optional since any existing collection file, e.g. from an older
@@ -138,20 +138,22 @@
 
     \section1 Generating Qt Help
 
-    Building help files for the Qt help system assumes that the html
-    documentation files already exist, i.e. the Qt help system does
-    not offer the possibility to create html files like e.g. Doxygen.
+    Building help files for the Qt help system assumes that the HTML
+    documentation files already exist.
 
-    Once the html documentents are in place, a \l {Qt Help Project} file
-    has to be created. After specifying all relevant information in
-    this file, it needs to be compiled by calling:
+    Once the HTML documents are in place, a \l {Qt Help Project} file, with
+    an extension of \c .qhp has to be created. After specifying all relevant
+    information in this file, it needs to be compiled by calling:
 
     \snippet doc/src/snippets/code/doc_src_qthelp.qdoc 2
 
-    The file 'doc.qch' contains then all html files in compressed
+    The file 'doc.qch' contains then all HTML files in compressed
     form along with the table of contents and index keywords. To
     test if the generated file is correct, open Qt Assistant and
     install the file via the Settings|Documentation page.
+
+    For the standard Qt source build, the .qhp file is generated and placed
+    in the same directory as the HTML pages.
 
     \target Qt Help Collection Project
     \section2 Creating a Qt Help Collection
@@ -358,11 +360,11 @@
     that all files neccessary to display the help are mentioned, i.e.
     stylesheets or similar files need to be there as well. The files, like all
     file references in a Qt help project, are relative to the help project file
-    itself. As the example shows, files (but not directories) can also be 
-    specified as patterns using wildcards. All listed files will be compressed 
-    and written to the Qt compressed help file. So, in the end, one single Qt 
-    help file contains all documentation files along with the contents and 
-    indices. \note The referenced files must be inside the same directory 
-    (or within a subdirectory) as the help project file. An absolute file path 
+    itself. As the example shows, files (but not directories) can also be
+    specified as patterns using wildcards. All listed files will be compressed
+    and written to the Qt compressed help file. So, in the end, one single Qt
+    help file contains all documentation files along with the contents and
+    indices. \note The referenced files must be inside the same directory
+    (or within a subdirectory) as the help project file. An absolute file path
     is not supported either.
 */
