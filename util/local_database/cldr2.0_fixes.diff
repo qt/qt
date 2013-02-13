@@ -323,7 +323,24 @@ diff -ruN ../common/main/sk.xml main/sk.xml
  			<group> </group>
 diff -ruN ../common/main/ta.xml main/ta.xml
 --- ../common/main/ta.xml	2011-05-09 19:42:31.000000000 +0200
-+++ main/ta.xml	2013-01-16 11:36:57.327546844 +0100
++++ main/ta.xml	2013-02-13 17:26:52.939693894 +0100
+@@ -1244,12 +1244,12 @@
+ 							<dayPeriod type="pm">பிற்பகல்</dayPeriod>
+ 						</dayPeriodWidth>
+ 						<dayPeriodWidth type="narrow">
+-							<dayPeriod type="am">முற்பகல்</dayPeriod>
+-							<dayPeriod type="pm">பிற்பகல்</dayPeriod>
++							<dayPeriod type="am">AM</dayPeriod>
++							<dayPeriod type="pm">PM</dayPeriod>
+ 						</dayPeriodWidth>
+ 						<dayPeriodWidth type="wide">
+-							<dayPeriod type="am">முற்பகல்</dayPeriod>
+-							<dayPeriod type="pm">பிற்பகல்</dayPeriod>
++							<dayPeriod type="am">AM</dayPeriod>
++							<dayPeriod type="pm">PM</dayPeriod>
+ 						</dayPeriodWidth>
+ 					</dayPeriodContext>
+ 				</dayPeriods>
 @@ -3642,7 +3642,7 @@
  		</timeZoneNames>
  	</dates>

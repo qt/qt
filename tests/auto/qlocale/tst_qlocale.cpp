@@ -1825,6 +1825,10 @@ void tst_QLocale::ampm()
     QLocale id("id_ID");
     QCOMPARE(id.amText(), QLatin1String("AM"));
     QCOMPARE(id.pmText(), QLatin1String("PM"));
+
+    QLocale ta("ta_LK");
+    QCOMPARE(ta.amText(), QLatin1String("AM"));
+    QCOMPARE(ta.pmText(), QLatin1String("PM"));
 }
 
 void tst_QLocale::dateFormat()
