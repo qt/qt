@@ -576,12 +576,13 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
     }
 
     FcConfigSubstitute(0, pattern, FcMatchPattern);
-    FcConfigSubstitute(0, pattern, FcMatchFont);
+    FcDefaultSubstitute(pattern);
 
     FcResult result = FcResultMatch;
     FcFontSet *fontSet = FcFontSort(0,pattern,FcFalse,0,&result);
+    FcPatternDestroy(pattern);
 
-    if (fontSet && result == FcResultMatch)
+    if (fontSet)
     {
         for (int i = 0; i < fontSet->nfont; i++) {
             FcChar8 *value = 0;
@@ -592,8 +593,8 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
             if (!fallbackFamilies.contains(familyName,Qt::CaseInsensitive)) {
                 fallbackFamilies << familyName;
             }
-
         }
+        FcFontSetDestroy(fontSet);
     }
 //    qDebug() << "fallbackFamilies for:" << family << fallbackFamilies;
 
