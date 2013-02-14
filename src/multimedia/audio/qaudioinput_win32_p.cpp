@@ -80,7 +80,7 @@ QAudioInputPrivate::~QAudioInputPrivate()
 }
 
 void QT_WIN_CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
-        DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 )
+        DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2 )
 {
     Q_UNUSED(dwParam1)
     Q_UNUSED(dwParam2)

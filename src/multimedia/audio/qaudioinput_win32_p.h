@@ -125,7 +125,7 @@ private:
 
     QMutex mutex;
     static void QT_WIN_CALLBACK waveInProc( HWAVEIN hWaveIn, UINT uMsg,
-            DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 );
+            DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2 );
 
     WAVEHDR* allocateBlocks(int size, int count);
     void freeBlocks(WAVEHDR* blockArray);

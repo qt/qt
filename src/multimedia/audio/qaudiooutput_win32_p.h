@@ -118,7 +118,7 @@ private:
     bool pullMode;
     int intervalTime;
     static void QT_WIN_CALLBACK waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
-            DWORD dwInstance, DWORD dwParam1, DWORD dwParam2 );
+            DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2 );
 
     QMutex mutex;
 
