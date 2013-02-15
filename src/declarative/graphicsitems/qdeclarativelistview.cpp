@@ -896,6 +896,8 @@ void QDeclarativeListViewPrivate::layout()
         fixupPosition();
         q->refill();
     }
+    if (sectionCriteria)
+        updateCurrentSection();
     if (header)
         updateHeader();
     if (footer)

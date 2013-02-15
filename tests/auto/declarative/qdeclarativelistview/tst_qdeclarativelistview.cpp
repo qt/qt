@@ -91,6 +91,7 @@ private slots:
     void enforceRange();
     void spacing();
     void sections();
+    void currentSection();
     void sectionsDelegate();
     void cacheBuffer();
     void positionViewAtIndex();
@@ -1051,6 +1052,36 @@ void tst_QDeclarativeListView::sections()
     item = findItem<QDeclarativeItem>(contentItem, "wrapper", 1);
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->height(), 40.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::currentSection()
+{
+    // QTBUG-29712
+    // update currentSection correctly if model modifications
+    // do not trigger a refill
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 5; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview-sections.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    // make sure the listView won't trigger refill when removing the first row
+    QTRY_VERIFY(listview->height() > model.count() * 40);
+
+    QTRY_COMPARE(listview->currentSection(), QString("0"));
+    model.removeItem(0);
+    QTRY_COMPARE(listview->currentSection(), QString("1"));
 
     delete canvas;
 }
