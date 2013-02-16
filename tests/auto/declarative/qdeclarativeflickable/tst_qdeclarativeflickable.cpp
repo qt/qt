@@ -80,6 +80,8 @@ private slots:
     void wheel();
     void flickVelocity();
     void disabled();
+    void nestedStopAtBounds();
+    void nestedStopAtBounds_data();
 
 private:
     QDeclarativeEngine engine;
@@ -574,6 +576,78 @@ void tst_qdeclarativeflickable::disabled()
     QVERIFY(clickedToBool == true);
 }
 
+void tst_qdeclarativeflickable::nestedStopAtBounds_data()
+{
+    QTest::addColumn<bool>("transpose");
+    QTest::addColumn<bool>("invert");
+
+    QTest::newRow("left") << false << false;
+    QTest::newRow("right") << false << true;
+    QTest::newRow("top") << true << false;
+    QTest::newRow("bottom") << true << true;
+}
+
+void tst_qdeclarativeflickable::nestedStopAtBounds()
+{
+    QFETCH(bool, transpose);
+    QFETCH(bool, invert);
+
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/nestedStopAtBounds.qml"));
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QVERIFY(view.rootObject());
+
+    QDeclarativeFlickable *outer =  qobject_cast<QDeclarativeFlickable*>(view.rootObject());
+    QVERIFY(outer);
+
+    QDeclarativeFlickable *inner = outer->findChild<QDeclarativeFlickable*>("innerFlickable");
+    QVERIFY(inner);
+    inner->setFlickableDirection(transpose ? QDeclarativeFlickable::VerticalFlick : QDeclarativeFlickable::HorizontalFlick);
+    inner->setContentX(invert ? 0 : 100);
+    inner->setContentY(invert ? 0 : 100);
+
+    const int threshold = QApplication::startDragDistance();
+
+    QPoint position(200, 200);
+    int &axis = transpose ? position.ry() : position.rx();
+
+    QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+
+    // drag toward the aligned boundary.  Outer mouse area dragged.
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, position);
+    QTest::qWait(10);
+    axis += invert ? threshold * 2 : -threshold * 2;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
+    axis += invert ? threshold : -threshold;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
+    QVERIFY(outer->contentX() != 50 || outer->contentY() != 50);
+    QVERIFY((inner->contentX() == 0 || inner->contentX() == 100)
+            && (inner->contentY() == 0 || inner->contentY() == 100));
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, position);
+
+    axis = 200;
+    outer->setContentX(50);
+    outer->setContentY(50);
+
+    // drag away from the aligned boundary.  Inner mouse area dragged.
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, position);
+    QTest::qWait(10);
+    axis += invert ? -threshold * 2 : threshold * 2;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
+    axis += invert ? -threshold : threshold;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
+    QVERIFY(outer->contentX() == 50 && outer->contentY() == 50);
+    QVERIFY((inner->contentX() != 0 && inner->contentX() != 100)
+            || (inner->contentY() != 0 && inner->contentY() != 100));
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, position);
+}
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)

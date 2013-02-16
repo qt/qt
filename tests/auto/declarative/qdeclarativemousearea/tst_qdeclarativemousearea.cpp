@@ -602,8 +602,8 @@ void tst_QDeclarativeMouseArea::preventStealing()
     QVERIFY(!mouseArea->pressed());
 
     // Flickable content should have moved.
-    QCOMPARE(flickable->contentX(), 10.);
-    QCOMPARE(flickable->contentY(), 10.);
+    QCOMPARE(flickable->contentX(), 20.);
+    QCOMPARE(flickable->contentY(), 20.);
 
     QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(50, 50)));
 

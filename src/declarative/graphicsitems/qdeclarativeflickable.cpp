@@ -788,9 +788,9 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
+        if (vData.dragStartOffset == 0)
+            vData.dragStartOffset = dy;
         if (qAbs(dy) > QApplication::startDragDistance() || QDeclarativeItemPrivate::elapsed(pressTime) > 200) {
-            if (!vMoved)
-                vData.dragStartOffset = dy;
             qreal newY = dy + vData.pressPos - vData.dragStartOffset;
             const qreal minY = vData.dragMinBound;
             const qreal maxY = vData.dragMaxBound;
@@ -798,31 +798,28 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                 newY = minY + (newY - minY) / 2;
             if (newY < maxY && maxY - minY <= 0)
                 newY = maxY + (newY - maxY) / 2;
-            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newY > minY || newY < maxY)) {
-                rejectY = true;
-                if (newY < maxY) {
-                    newY = maxY;
-                    rejectY = false;
-                }
-                if (newY > minY) {
-                    newY = minY;
-                    rejectY = false;
-                }
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && newY <= maxY) {
+                newY = maxY;
+                rejectY = vData.pressPos == maxY && dy < 0;
+            }
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && newY >= minY) {
+                newY = minY;
+                rejectY = vData.pressPos == minY && dy > 0;
             }
             if (!rejectY && stealMouse && dy != 0) {
                 vData.move.setValue(qRound(newY));
                 vMoved = true;
             }
-            if (qAbs(dy) > QApplication::startDragDistance())
+            if (!rejectY && qAbs(dy) > QApplication::startDragDistance())
                 stealY = true;
         }
     }
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
+        if (hData.dragStartOffset == 0)
+            hData.dragStartOffset = dx;
         if (qAbs(dx) > QApplication::startDragDistance() || QDeclarativeItemPrivate::elapsed(pressTime) > 200) {
-            if (!hMoved)
-                hData.dragStartOffset = dx;
             qreal newX = dx + hData.pressPos - hData.dragStartOffset;
             const qreal minX = hData.dragMinBound;
             const qreal maxX = hData.dragMaxBound;
@@ -830,23 +827,20 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                 newX = minX + (newX - minX) / 2;
             if (newX < maxX && maxX - minX <= 0)
                 newX = maxX + (newX - maxX) / 2;
-            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newX > minX || newX < maxX)) {
-                rejectX = true;
-                if (newX < maxX) {
-                    newX = maxX;
-                    rejectX = false;
-                }
-                if (newX > minX) {
-                    newX = minX;
-                    rejectX = false;
-                }
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && newX <= maxX) {
+                newX = maxX;
+                rejectX = hData.pressPos == maxX && dx < 0;
+            }
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && newX >= minX) {
+                newX = minX;
+                rejectX = hData.pressPos == minX && dx > 0;
             }
             if (!rejectX && stealMouse && dx != 0) {
                 hData.move.setValue(qRound(newX));
                 hMoved = true;
             }
 
-            if (qAbs(dx) > QApplication::startDragDistance())
+            if (!rejectX && qAbs(dx) > QApplication::startDragDistance())
                 stealX = true;
         }
     }
