@@ -466,7 +466,7 @@ void QApplication::alert(QWidget *, int)
 QPlatformNativeInterface *QApplication::platformNativeInterface()
 {
     QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
-    return pi->nativeInterface();
+    return pi ? pi->nativeInterface() : 0;
 }
 
 static void init_platform(const QString &name, const QString &platformPluginPath)
