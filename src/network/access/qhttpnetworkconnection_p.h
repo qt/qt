@@ -93,8 +93,14 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
 public:
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
-    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
+    QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
+                           QObject *parent = 0,
+                           QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
+                           const QNetworkConfiguration &networkConfiguration = QNetworkConfiguration());
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
+                           bool encrypt = false, QObject *parent = 0,
+                           QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
+                           const QNetworkConfiguration &networkConfiguration = QNetworkConfiguration());
 #else
     QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
@@ -117,6 +123,10 @@ public:
     QNetworkProxy transparentProxy() const;
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    void setNetworkConfiguration(const QNetworkConfiguration &conf);
+    QNetworkConfiguration networkConfiguration();
+#endif
     bool isSsl() const;
 
     QHttpNetworkConnectionChannel *channels() const;
@@ -216,6 +226,9 @@ public:
     void emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth);
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfiguration networkConfig;
+#endif
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;

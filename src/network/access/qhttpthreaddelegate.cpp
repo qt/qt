@@ -154,12 +154,17 @@ public:
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt)
         : QHttpNetworkConnection(hostName, port, encrypt)
 #else
-    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt, QSharedPointer<QNetworkSession> networkSession)
-        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession)
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
+                                       QSharedPointer<QNetworkSession> networkSession,
+                                       const QNetworkConfiguration &networkConfiguration)
+        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession,
+                                 networkConfiguration)
 #endif
     {
         setExpires(true);
         setShareable(true);
+        // ### if manager's configuration valid and different from default,
+        // set the configuration on the connection
     }
 
     virtual void dispose()
@@ -270,7 +275,7 @@ void QHttpThreadDelegate::startRequest()
 #ifdef QT_NO_BEARERMANAGEMENT
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl);
 #else
-        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession);
+        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession, networkConfiguration);
 #endif
 #ifndef QT_NO_OPENSSL
         // Set the QSslConfiguration from this QNetworkRequest.

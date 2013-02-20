@@ -760,6 +760,7 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
     Q_D(QNetworkAccessManager);
     d->networkConfiguration = config;
     QNetworkConfigurationManager manager;
+    d->customNetworkConfiguration = true;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
         d->createSession(config);
 }

@@ -79,6 +79,7 @@ public:
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
           lastSessionState(QNetworkSession::Invalid),
+          customNetworkConfiguration(false),
           networkAccessible(QNetworkAccessManager::Accessible),
           activeReplyCount(0),
           online(false),
@@ -141,6 +142,9 @@ public:
     QWeakPointer<QNetworkSession> networkSessionWeakRef;
     QNetworkSession::State lastSessionState;
     QNetworkConfiguration networkConfiguration;
+    // we need to track whether the user set a config or not,
+    // because the default config might change
+    bool customNetworkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     int activeReplyCount;
     bool online;

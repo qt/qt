@@ -525,6 +525,11 @@ void QNetworkAccessHttpBackend::postRequest()
     QVariant v(property("_q_networksession"));
     if (v.isValid())
         delegate->networkSession = qvariant_cast<QSharedPointer<QNetworkSession> >(v);
+    // only pass the network configuration if the user set it,
+    // because the default one can change and we do not want to
+    // be stuck with an old invalid config
+    if (manager->customNetworkConfiguration)
+        delegate->networkConfiguration = manager->networkConfiguration;
 #endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted

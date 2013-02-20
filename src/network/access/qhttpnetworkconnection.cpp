@@ -878,19 +878,26 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT
-QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
+                                               QObject *parent, QSharedPointer<QNetworkSession> networkSession,
+                                               const QNetworkConfiguration &networkConfiguration)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
 {
     Q_D(QHttpNetworkConnection);
     d->networkSession = networkSession;
+    d->networkConfig = networkConfiguration;
     d->init();
 }
 
-QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
+QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
+                                               quint16 port, bool encrypt, QObject *parent,
+                                               QSharedPointer<QNetworkSession> networkSession,
+                                               const QNetworkConfiguration &networkConfiguration)
      : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
 {
     Q_D(QHttpNetworkConnection);
     d->networkSession = networkSession;
+    d->networkConfig = networkConfiguration;
     d->init();
 }
 #else
@@ -976,6 +983,14 @@ QNetworkProxy QHttpNetworkConnection::transparentProxy() const
 }
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+void QHttpNetworkConnection::setNetworkConfiguration(const QNetworkConfiguration &conf) {
+    d_func()->networkConfig = conf;
+}
+QNetworkConfiguration QHttpNetworkConnection::networkConfiguration() {
+    return d_func()->networkConfig;
+}
+#endif
 
 // SSL support below
 #ifndef QT_NO_OPENSSL

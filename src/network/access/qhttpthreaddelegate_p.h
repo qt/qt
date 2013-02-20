@@ -116,6 +116,7 @@ public:
     QString incomingErrorDetail;
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
+    QNetworkConfiguration networkConfiguration;
 #endif
 
 protected:
