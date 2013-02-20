@@ -140,7 +140,7 @@ public:
     QSharedPointer<QNetworkSession> networkSessionStrongRef;
     QWeakPointer<QNetworkSession> networkSessionWeakRef;
     QNetworkSession::State lastSessionState;
-    QString networkConfiguration;
+    QNetworkConfiguration networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     int activeReplyCount;
     bool online;
