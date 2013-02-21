@@ -1415,6 +1415,8 @@ bool QSslSocket::waitForConnected(int msecs)
     if (!d->plainSocket)
         return false;
     bool retVal = d->plainSocket->waitForConnected(msecs);
+    setLocalAddress(d->plainSocket->localAddress());
+    setLocalPort(d->plainSocket->localPort());
     if (!retVal) {
         setSocketState(d->plainSocket->state());
         setSocketError(d->plainSocket->error());
@@ -1750,7 +1752,15 @@ void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 po
     d->plainSocket->setProperty("_q_user-agent", property("_q_user-agent"));
 #endif
     QIODevice::open(openMode);
+
+    if (!d->cachedLocalHostAddress.isNull())
+        QAbstractSocketPrivate::setLocalAddress(d->plainSocket, d->cachedLocalHostAddress);
+
+    if (!d->cachedLocalPort != 0)
+        QAbstractSocketPrivate::setLocalPort(d->plainSocket, d->cachedLocalPort);
+
     d->plainSocket->connectToHost(hostName, port, openMode);
+
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
 }
 
@@ -1856,6 +1866,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , readyReadEmittedPointer(0)
     , allowRootCertOnDemandLoading(true)
     , plainSocket(0)
+    , cachedLocalPort(0)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
 }
@@ -2051,8 +2062,8 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setOpenMode(openMode); // <- from QIODevice
     q->setSocketState(QAbstractSocket::UnconnectedState);
     q->setSocketError(QAbstractSocket::UnknownSocketError);
-    q->setLocalPort(0);
-    q->setLocalAddress(QHostAddress());
+//    q->setLocalPort(0); // preserve; this might have been set through a bind()
+//    q->setLocalAddress(QHostAddress()); // preserve; this might have been set through a bind()
     q->setPeerPort(0);
     q->setPeerAddress(QHostAddress());
     q->setPeerName(QString());
@@ -2302,6 +2313,32 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
     } else {
         //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
         return QTcpSocketPrivate::peek(maxSize);
+    }
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setLocalAddress(QSslSocket *socket, const QHostAddress &address)
+{
+    QAbstractSocket *plainSocket = socket->d_func()->plainSocket;
+    if (plainSocket) {
+        QAbstractSocketPrivate::setLocalAddress(plainSocket, address);
+    } else {
+        socket->d_func()->cachedLocalHostAddress = address;
+    }
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setLocalPort(QSslSocket *socket, quint16 port)
+{
+    QAbstractSocket *plainSocket = socket->d_func()->plainSocket;
+    if (plainSocket) {
+        QAbstractSocketPrivate::setLocalPort(plainSocket, port);
+    } else {
+        socket->d_func()->cachedLocalPort = port;
     }
 }
 

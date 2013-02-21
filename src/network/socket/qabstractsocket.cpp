@@ -383,6 +383,7 @@
 
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslsocket.h>
+#include <private/qsslsocket_p.h>
 #endif
 
 #include <private/qthread_p.h>
@@ -486,7 +487,8 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
-      socketError(QAbstractSocket::UnknownSocketError)
+      socketError(QAbstractSocket::UnknownSocketError),
+      localBindMode(DefaultForPlatform)
 {
 }
 
@@ -855,6 +857,18 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
 
     connectTimeElapsed = 0;
 
+    if (!checkForBind()) {
+        socketError = socketEngine->error();
+        q->setErrorString(socketEngine->errorString());
+        state = QAbstractSocket::UnconnectedState;
+        emit q->stateChanged(state);
+        emit q->error(socketError);
+        return;
+    } else {
+        // move immediately from BoundState to ConnectingState
+        state = QAbstractSocket::ConnectingState;
+    }
+
     if (initSocketLayer(QAbstractSocket::UnknownNetworkLayerProtocol)) {
         if (socketEngine->connectToHostByName(host, port) ||
             socketEngine->state() == QAbstractSocket::ConnectingState) {
@@ -939,6 +953,20 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
 
 /*! \internal
 
+    Check whether we need to bind the socket before connecting.
+*/
+bool QAbstractSocketPrivate::checkForBind() // ### how about UDP???
+{
+    Q_Q(QAbstractSocket);
+    if (!localAddress.isNull()) {
+        return bind(q, QHostAddress(localAddress.toString()), localPort, localBindMode);
+    } else { // no bind() was called or scheduled via the properties
+        return true;
+    }
+}
+
+/*! \internal
+
     Called by a queued or direct connection from _q_startConnecting() or
     _q_testConnection(), this function takes the first address of the
     pending addresses list and tries to connect to it. If the
@@ -1003,6 +1031,18 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
             qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), failed to initialize sock layer");
 #endif
             continue;
+        }
+
+        if (!checkForBind()) {
+            socketError = socketEngine->error();
+            q->setErrorString(socketEngine->errorString());
+            state = QAbstractSocket::UnconnectedState;
+            emit q->stateChanged(state);
+            emit q->error(socketError);
+            return;
+        } else {
+            // move immediately from BoundState to ConnectingState
+            state = QAbstractSocket::ConnectingState;
         }
 
         // Tries to connect to the address. If it succeeds immediately
@@ -1239,52 +1279,83 @@ bool QAbstractSocketPrivate::bind(QAbstractSocket *socket, const QHostAddress &a
 {
     QAbstractSocketPrivate *d = socket->d_func();
 
-    // now check if the socket engine is initialized and to the right type
-    if (!d->socketEngine || !d->socketEngine->isValid()) {
-        QHostAddress nullAddress;
-        d->resolveProxy(nullAddress.toString(), port);
+    // If we are called before connecting, just save the state for
+    // the later bind, because upon connecting, the socket engine
+    // is reset anyhow.
+    if (d->socketType == QAbstractSocket::TcpSocket
+            && d->state == QAbstractSocket::UnconnectedState) {
+#if defined(QABSTRACTSOCKET_DEBUG)
+        qDebug() << "QAbstractSocketPrivate::bind() TCP socket called in unconnected state, delaying bind";
+#endif
+        socket->setLocalAddress(address); // ### Qt5: document
+        socket->setLocalPort(port);
+        d->localBindMode = mode; // we will need those 3 later when we bind again
+        return true; // actual errors will be reported when connecting
+    } else {
+        // If we are called before connecting, do the actual bind
+#if defined(QABSTRACTSOCKET_DEBUG)
+        qDebug() << "QAbstractSocketPrivate::bind() called in other state or as UDP socket, binding...";
+#endif
 
-        QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
-        if (protocol == QAbstractSocket::UnknownNetworkLayerProtocol)
-            protocol = nullAddress.protocol();
+        // now check if the socket engine is initialized and to the right type
+        if (!d->socketEngine || !d->socketEngine->isValid()) {
+            QHostAddress nullAddress;
+            d->resolveProxy(nullAddress.toString(), port);
 
-        if (!d->initSocketLayer(protocol))
-            return false;
-    }
+            QAbstractSocket::NetworkLayerProtocol protocol = address.protocol();
+            if (protocol == QAbstractSocket::UnknownNetworkLayerProtocol)
+                protocol = nullAddress.protocol();
+
+            if (!d->initSocketLayer(protocol))
+                return false;
+        }
 
 #ifdef Q_OS_UNIX
-    if ((mode & ShareAddress) || (mode & ReuseAddressHint))
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
-    else
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+        if ((mode & ShareAddress) || (mode & ReuseAddressHint))
+            d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+        else
+            d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
 #endif
 #ifdef Q_OS_WIN
-    if (mode & ReuseAddressHint)
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
-    else
-        d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
-    if (mode & DontShareAddress)
-        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 1);
-    else
-        d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
+        if (mode & ReuseAddressHint)
+            d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
+        else
+            d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 0);
+        if (mode & DontShareAddress)
+            d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 1);
+        else
+            d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
 #endif
-    bool result = d->socketEngine->bind(address, port);
-    d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
+        bool result = d->socketEngine->bind(address, port);
+        d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
-    if (!result) {
-        d->socketError = d->socketEngine->error();
-        socket->setErrorString(d->socketEngine->errorString());
-        emit socket->error(d->socketError);
-        return false;
+        d->localAddress = d->socketEngine->localAddress();
+        d->localPort = d->socketEngine->localPort();
+
+        if (!result) {
+            d->socketError = d->socketEngine->error();
+            socket->setErrorString(d->socketEngine->errorString());
+            emit socket->error(d->socketError);
+            return false;
+        }
+
+        d->state = QAbstractSocket::BoundState;
+
+        emit socket->stateChanged(d->state);
+        d->socketEngine->setReadNotificationEnabled(true);
+        return true;
     }
+}
 
-    d->state = QAbstractSocket::BoundState;
-    d->localAddress = d->socketEngine->localAddress();
-    d->localPort = d->socketEngine->localPort();
+void QAbstractSocketPrivate::setLocalAddress(QAbstractSocket *socket,
+                                             const QHostAddress &address)
+{
+    socket->setLocalAddress(address);
+}
 
-    emit socket->stateChanged(d->state);
-    d->socketEngine->setReadNotificationEnabled(true);
-    return true;
+void QAbstractSocketPrivate::setLocalPort(QAbstractSocket *socket, quint16 port)
+{
+    socket->setLocalPort(port);
 }
 
 QAbstractSocketEngine* QAbstractSocketPrivate::getSocketEngine(QAbstractSocket *socket)
@@ -1416,9 +1487,9 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
     d->abortCalled = false;
     d->closeCalled = false;
     d->pendingClose = false;
-    d->localPort = 0;
+//    d->localPort = 0; // preserve; this might have been set through a bind()
     d->peerPort = 0;
-    d->localAddress.clear();
+//    d->localAddress.clear(); // preserve; this might have been set through a bind()
     d->peerAddress.clear();
     d->peerName = hostName;
     if (d->hostLookupId != -1) {
@@ -2418,6 +2489,11 @@ void QAbstractSocket::setLocalAddress(const QHostAddress &address)
 {
     Q_D(QAbstractSocket);
     d->localAddress = address;
+#ifndef QT_NO_OPENSSL
+    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
+        QSslSocketPrivate::setLocalAddress(socket, address);
+    }
+#endif
 }
 
 /*!

@@ -185,6 +185,11 @@ public:
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
 
+    quint16 cachedLocalPort;
+    QHostAddress cachedLocalHostAddress;
+    static void setLocalAddress(QSslSocket *socket, const QHostAddress &address);
+    static void setLocalPort(QSslSocket *socket, quint16 port);
+
     Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
 
 private:

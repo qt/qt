@@ -503,7 +503,13 @@ void tst_QTcpSocket::bind_data()
                 continue; // link-local bind will fail, at least on Linux, so skip it.
 
             QString ip(entry.ip().toString());
-            QTest::newRow(ip.toLatin1().constData()) << ip << true << ip;
+            QHostAddress hostAddress(ip);
+            // we will later connect to an IPv4 address, so we get success
+            // only with an IPv4 bind address.
+            bool successExpected = hostAddress.protocol() == QAbstractSocket::IPv4Protocol;
+            QString expectedBindAddress = (successExpected) ? ip : QString();
+            QTest::newRow(ip.toLatin1().constData()) << ip << successExpected <<
+                                                        expectedBindAddress;
         }
     }
 
@@ -534,12 +540,19 @@ void tst_QTcpSocket::bind()
     QTcpSocket *socket = newSocket();
     qDebug() << "Binding " << addr;
 
-    if (successExpected) {
-        QVERIFY2(QAbstractSocketPrivate::bind(socket, addr), qPrintable(socket->errorString()));
-    } else {
-        QVERIFY(!QAbstractSocketPrivate::bind(socket, addr));
-    }
+    // the first bind() will always succeed
+    QVERIFY(QAbstractSocketPrivate::bind(socket, addr));
 
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    if (successExpected) {
+        // there is no way to find out which interface can connect to
+        // the test server, so we cannot depend on whether connection
+        // succeeded or not. We just test that the bind address is
+        // what we expect after connecting
+        socket->waitForConnected(5000);
+    } else {
+        QVERIFY(!socket->waitForConnected(5000));
+    }
     QCOMPARE(socket->localAddress(), expectedLocalAddress);
 
     delete socket;

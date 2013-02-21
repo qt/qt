@@ -170,9 +170,17 @@ public:
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
 
+    BindMode localBindMode;
+
+    bool checkForBind();
     Q_AUTOTEST_EXPORT static bool bind(QAbstractSocket *socket, const QHostAddress &address,
                      quint16 port = 0, BindMode mode = DefaultForPlatform);
     // we don't need the other overload for now
+
+    // we cannot call the protected setLocalAddress from the static QSslSocket
+    // method, so we need these:
+    static void setLocalAddress(QAbstractSocket *socket, const QHostAddress &address);
+    static void setLocalPort(QAbstractSocket *socket, quint16 port);
 
     static QAbstractSocketEngine* getSocketEngine(QAbstractSocket*);
 };

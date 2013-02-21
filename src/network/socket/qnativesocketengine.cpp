@@ -143,6 +143,12 @@ QT_BEGIN_NAMESPACE
                  " not in "#state1" or "#state2); \
         return (returnValue); \
     } } while (0)
+#define Q_CHECK_STATES3(function, state1, state2, state3, returnValue) do { \
+    if (d->socketState != (state1) && d->socketState != (state2) && d->socketState != (state3)) { \
+        qWarning(""#function" was called" \
+                 " not in "#state1" or "#state2" or "#state3); \
+        return (returnValue); \
+    } } while (0)
 #define Q_CHECK_TYPE(function, type, returnValue) do { \
     if (d->socketType != (type)) { \
         qWarning(#function" was called by a" \
@@ -521,11 +527,13 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
     if (!d->checkProxy(address))
         return false;
 
-    Q_CHECK_STATES(QNativeSocketEngine::connectToHost(),
-                   QAbstractSocket::UnconnectedState, QAbstractSocket::ConnectingState, false);
+    Q_CHECK_STATES3(QNativeSocketEngine::connectToHost(),
+                   QAbstractSocket::UnconnectedState,
+                   QAbstractSocket::ConnectingState, QAbstractSocket::BoundState, false);
 
     d->peerAddress = address;
     d->peerPort = port;
+
     bool connected = d->nativeConnect(address, port);
     if (connected)
         d->fetchConnectionParameters();
