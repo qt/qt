@@ -46,6 +46,7 @@
 #include <QThreadStorage>
 #include <QStringList>
 #include <QTimer>
+#include <QHostAddress>
 
 #include <bps/netstatus.h>
 
@@ -333,6 +334,14 @@ void QBBEngine::updateConfiguration(const char *interface)
 
     const netstatus_interface_type_t type = netstatus_interface_get_type(details);
     const netstatus_ip_status_t ipStatus = netstatus_interface_get_ip_status(details);
+    const int numIpAddresses = netstatus_interface_get_num_ip_addresses(details);
+    QList<QHostAddress> hostAddresses;
+    for (int a = 0; a < numIpAddresses; ++a) {
+        const char *ipAddress = netstatus_interface_get_ip_address(details, a);
+        QHostAddress hostAddress(QString::fromLatin1(ipAddress));
+        if (!hostAddress.isNull())
+            hostAddresses.append(hostAddress);
+    }
 
     netstatus_free_interface_details(&details);
 
@@ -367,6 +376,11 @@ void QBBEngine::updateConfiguration(const char *interface)
 
         if (ptr->state != state) {
             ptr->state = state;
+            changed = true;
+        }
+
+        if (ptr->hostAddresses != hostAddresses) {
+            ptr->hostAddresses = hostAddresses;
             changed = true;
         }
 
