@@ -506,4 +506,8 @@ QString QNetworkConfiguration::bearerTypeName() const
     return QLatin1String("Unknown");
 }
 
+QList<QHostAddress> QNetworkConfigurationPrivate::hostIPAddresses(const QNetworkConfiguration &conf) {
+    return conf.d->hostAddresses;
+}
+
 QT_END_NAMESPACE

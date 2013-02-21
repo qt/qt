@@ -58,6 +58,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qmap.h>
+#include <QtNetwork/qhostaddress.h>
 
 #ifdef Q_OS_BLACKBERRY
 #include <bps/netstatus.h>
@@ -101,6 +102,7 @@ public:
     QNetworkConfiguration::Type type;
     QNetworkConfiguration::Purpose purpose;
     QNetworkConfiguration::BearerType bearerType;
+    QList<QHostAddress> hostAddresses;
 
 #ifdef Q_OS_BLACKBERRY
     netstatus_ip_status_t oldIpStatus;
@@ -109,6 +111,7 @@ public:
     bool isValid;
     bool roamingSupported;
 
+    static QList<QHostAddress> hostIPAddresses(const QNetworkConfiguration &conf); // ### Qt5: make public
 private:
     Q_DISABLE_COPY(QNetworkConfigurationPrivate)
 };
