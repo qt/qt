@@ -3568,7 +3568,7 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ] && [ '!' -z "$CFG_SDK" ]; then
     # get the darwin version. 10.0.0 and up means snow leopard.
     VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
-    if [ "$VERSION" -gt 9 ] && [ "$CFG_SDK" == "/Developer/SDKs/MacOSX10.4u.sdk/" ] && [ "$PLATFORM" == "macx-g++" ]; then
+    if [ "$VERSION" -gt 9 ] && [ `basename "$CFG_SDK"` == "MacOSX10.4u.sdk" ] && [ "$PLATFORM" == "macx-g++" ]; then
         echo
         echo "WARNING: The 10.4u SDK does not support gcc 4.2. Configure with -platform macx-g++40. "
         echo
@@ -7163,8 +7163,8 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 
 # select Carbon when using the 10.4u SDK
-if [ "$PLATFORM_MAC" = "yes" ]; then
-    if [ "TEST$CFG_SDK" = "TEST/Developer/SDKs/MacOSX10.4u.sdk/" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ -n "$CFG_SDK" ]; then
+    if [ `basename "$CFG_SDK"` == "MacOSX10.4u.sdk" ]; then
         echo "Carbon on";
         CFG_MAC_COCOA="no";
         CFG_MAC_CARBON="yes";
