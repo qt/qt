@@ -702,6 +702,6 @@ void QRawFontPrivate::cleanUp()
     hintingPreference = QFont::PreferDefaultHinting;
 }
 
-#endif // QT_NO_RAWFONT
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_RAWFONT
