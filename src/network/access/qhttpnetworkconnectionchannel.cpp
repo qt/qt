@@ -601,6 +601,25 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 socket->setProperty("_q_user-agent", value);
         }
 #endif
+        if (connection->networkConfiguration().isValid()) {
+            QList<QHostAddress> hostAddresses = QNetworkConfigurationPrivate::hostIPAddresses(
+                        connection->networkConfiguration());
+            foreach (const QHostAddress &hostAddress, hostAddresses) {
+                switch (hostAddress.protocol()) {
+                // we don't know the protocol (IPv4 vs. IPv6) here yet,
+                // the bind() will have to wait until after the host lookup
+                // (then we know whether we are connecting to IPv4 or IPv6).
+                case QAbstractSocket::IPv4Protocol:
+                    socket->setProperty("_q_bindIPv4Address", hostAddress.toString());
+                    break;
+                case QAbstractSocket::IPv6Protocol:
+                    socket->setProperty("_q_bindIPv6Address", hostAddress.toString());
+                    break;
+                default:
+                    qWarning("bind address is neither IPv4 nor IPv6"); // should never happen
+                }
+            }
+        }
         if (ssl) {
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);

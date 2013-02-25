@@ -46,6 +46,7 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qsslconfiguration.h>
 #include "../../auto/network-settings.h"
 
@@ -56,6 +57,10 @@
 #define BANDWIDTH_LIMIT_BYTES (1024*100)
 #define TIME_ESTIMATION_SECONDS (97)
 
+#ifndef QT_NO_BEARERMANAGEMENT
+Q_DECLARE_METATYPE(QNetworkConfiguration)
+#endif
+
 class tst_qnetworkreply : public QObject
 {
     Q_OBJECT
@@ -64,6 +69,10 @@ class tst_qnetworkreply : public QObject
     void limiting();
     void setSslConfiguration_data();
     void setSslConfiguration();
+#ifndef QT_NO_BEARERMANAGEMENT
+    void setNetworkConfiguration_data();
+    void setNetworkConfiguration();
+#endif
 };
 
 QNetworkReply *reply;
@@ -166,6 +175,42 @@ void tst_qnetworkreply::setSslConfiguration()
     }
 #endif
 }
+
+#ifndef QT_NO_BEARERMANAGEMENT
+void tst_qnetworkreply::setNetworkConfiguration_data()
+{
+    QTest::addColumn<QNetworkConfiguration>("networkConfiguration");
+
+    // add one row per active network configuration
+    QNetworkConfigurationManager confManager;
+    QList<QNetworkConfiguration> confs =
+            confManager.allConfigurations(QNetworkConfiguration::Active);
+    for (int a = 0; a < confs.count(); a++) {
+        QString identifier = confs.at(a).identifier();
+        QTest::newRow(identifier.toLatin1()) << confs.at(a);
+    }
+}
+
+void tst_qnetworkreply::setNetworkConfiguration()
+{
+    QFETCH(QNetworkConfiguration, networkConfiguration);
+
+    QNetworkAccessManager manager;
+    manager.setConfiguration(networkConfiguration);
+    QNetworkReply *reply = manager.get(
+                QNetworkRequest(QUrl("http://codereview.qt-project.org")));
+
+    connect(reply, SIGNAL(finished()),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(15);
+
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->manager()->configuration(), networkConfiguration);
+    qDebug("there are no checks currently whether traffic is flowing over"
+           " the right interface. Use tcpdump / wireshark etc. to check.");
+}
+#endif
 
 QTEST_MAIN(tst_qnetworkreply)
 

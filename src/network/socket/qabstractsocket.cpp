@@ -958,8 +958,21 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
 bool QAbstractSocketPrivate::checkForBind() // ### how about UDP???
 {
     Q_Q(QAbstractSocket);
+    QHostAddress bindAddress;
     if (!localAddress.isNull()) {
-        return bind(q, QHostAddress(localAddress.toString()), localPort, localBindMode);
+        bindAddress = localAddress;
+    } else if (host.protocol() == QAbstractSocket::IPv4Protocol) {
+        QString ipv4BindAddress = q->property("_q_bindIPv4Address").toString();
+        if (!ipv4BindAddress.isEmpty())
+            bindAddress = QHostAddress(q->property("_q_bindIPv4Address").toString());
+    } else if (host.protocol() == QAbstractSocket::IPv6Protocol) {
+        QString ipv6BindAddress = q->property("_q_bindIPv4Address").toString();
+        if (!ipv6BindAddress.isEmpty())
+            bindAddress = QHostAddress(q->property("_q_bindIPv6Address").toString());
+    }
+
+    if (!bindAddress.isNull()) {
+        return bind(q, QHostAddress(bindAddress.toString()), localPort, localBindMode);
     } else { // no bind() was called or scheduled via the properties
         return true;
     }
