@@ -192,10 +192,14 @@ public:
 };
 
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
-                            const QPSQLDriverPrivate *p)
+                            const QPSQLDriverPrivate *p, PGresult* result = 0)
 {
     const char *s = PQerrorMessage(p->connection);
     QString msg = p->isUtf8 ? QString::fromUtf8(s) : QString::fromLocal8Bit(s);
+    if (result) {
+      const char *sCode = PQresultErrorField(result, PG_DIAG_SQLSTATE);
+      msg += QString::fromLatin1("(%1)").arg(QString::fromLatin1(sCode));
+    }
     return QSqlError(QLatin1String("QPSQL: ") + err, msg, type);
 }
 
@@ -217,7 +221,7 @@ bool QPSQLResultPrivate::processResults()
         return true;
     }
     q->setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                    "Unable to create query"), QSqlError::StatementError, driver));
+                    "Unable to create query"), QSqlError::StatementError, driver, result));
     return false;
 }
 
@@ -583,7 +587,7 @@ bool QPSQLResult::prepare(const QString &query)
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                                "Unable to prepare statement"), QSqlError::StatementError, d->driver));
+                                "Unable to prepare statement"), QSqlError::StatementError, d->driver, result));
         PQclear(result);
         d->preparedStmtId.clear();
         return false;
@@ -878,9 +882,9 @@ bool QPSQLDriver::beginTransaction()
     }
     PGresult* res = d->exec("BEGIN");
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
-        PQclear(res);
         setLastError(qMakeError(tr("Could not begin transaction"),
-                                QSqlError::TransactionError, d));
+                                QSqlError::TransactionError, d, res));
+        PQclear(res);
         return false;
     }
     PQclear(res);
@@ -911,9 +915,9 @@ bool QPSQLDriver::commitTransaction()
     }
 
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK || transaction_failed) {
-        PQclear(res);
         setLastError(qMakeError(tr("Could not commit transaction"),
-                                QSqlError::TransactionError, d));
+                                QSqlError::TransactionError, d, res));
+        PQclear(res);
         return false;
     }
     PQclear(res);
@@ -929,7 +933,7 @@ bool QPSQLDriver::rollbackTransaction()
     PGresult* res = d->exec("ROLLBACK");
     if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(tr("Could not rollback transaction"),
-                                QSqlError::TransactionError, d));
+                                QSqlError::TransactionError, d, res));
         PQclear(res);
         return false;
     }
@@ -1313,8 +1317,9 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
         // to check for notifications immediately after executing the LISTEN
         d->seid << name;
         QString query = QLatin1String("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
-        if (PQresultStatus(d->exec(query)) != PGRES_COMMAND_OK) {
-            setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d));
+        PGresult *result = d->exec(query);
+        if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+            setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d, result));
             return false;
         }
 
@@ -1344,8 +1349,9 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
     }
 
     QString query = QLatin1String("UNLISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
-    if (PQresultStatus(d->exec(query)) != PGRES_COMMAND_OK) {
-        setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d));
+    PGresult *result = d->exec(query);
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+        setLastError(qMakeError(tr("Unable to unsubscribe"), QSqlError::StatementError, d, result));
         return false;
     }
 
