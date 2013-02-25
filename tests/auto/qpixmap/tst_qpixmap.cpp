@@ -199,6 +199,8 @@ private slots:
 
     void drawPixmapWhilePainterOpen();
     void scaled_QTBUG19157();
+
+    void copyOnNonAlignedBoundary();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1964,6 +1966,14 @@ void tst_QPixmap::scaled_QTBUG19157()
     QPixmap foo(5000, 1);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+void tst_QPixmap::copyOnNonAlignedBoundary()
+{
+    QImage img(8, 2, QImage::Format_RGB16);
+
+    QPixmap pm1 = QPixmap::fromImage(img, Qt::NoFormatConversion);
+    QPixmap pm2 = pm1.copy(QRect(5, 0, 3, 2)); // When copying second line: 2 bytes too many are read which might cause an access violation.
 }
 
 QTEST_MAIN(tst_QPixmap)
