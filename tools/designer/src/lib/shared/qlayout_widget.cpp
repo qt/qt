@@ -57,6 +57,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QGridLayout>
 #include <QtGui/QFormLayout>
+#include <QtGui/QApplication>
 #include <QtGui/qevent.h>
 
 #include <QtCore/qdebug.h>
@@ -1388,7 +1389,9 @@ void QLayoutSupport::adjustIndicator(const QPoint &pos, int index)
                 const bool closeToLeft = fromLeftRight == fromLeft;
                 showIndicator(RightIndicator, QRect(closeToLeft ? g.x() : g.right() + 1 - indicatorSize, 0, indicatorSize, r.height()), bluePalette);
 
-                const int incr = closeToLeft ? 0 : +1;
+                const QWidget *parent = layout()->parentWidget();
+                const bool leftToRight = Qt::LeftToRight == (parent ? parent->layoutDirection() : QApplication::layoutDirection());
+                const int incr = leftToRight == closeToLeft ? 0 : +1;
                 setCurrentCellFromIndicator(indicatorOrientation, m_currentIndex, incr);
             }
             break;
