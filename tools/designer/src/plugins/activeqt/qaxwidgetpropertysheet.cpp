@@ -112,8 +112,9 @@ void QAxWidgetPropertySheet::setProperty(int index, const QVariant &value)
     }
     // Loading forms: Reload
     if (name == m_controlProperty) {
-        const qdesigner_internal::PropertySheetStringValue sv = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
-        const QString clsid = sv.value();
+        const QString clsid = value.canConvert<qdesigner_internal::PropertySheetStringValue>() ?
+            qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value).value() :
+            value.toString();
         if (clsid.isEmpty() || !axWidget()->loadControl(clsid))
             reset(index);
         else
