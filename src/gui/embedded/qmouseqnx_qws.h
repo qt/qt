@@ -72,6 +72,9 @@ private:
     int mouseFD;
     int mouseButtons;
     bool absolutePositioning;
+#ifndef QT_NO_QWS_TRANSFORMED
+    QPoint transformedMousePos;
+#endif
 };
 
 QT_END_NAMESPACE

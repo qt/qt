@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qmouseqnx_qws.h"
+#ifndef QT_NO_QWS_TRANSFORMED
+#include "qscreen_qws.h"
+#endif
 
 #include "qplatformdefs.h"
 #include "qsocketnotifier.h"
@@ -113,6 +116,9 @@ QQnxMouseHandler::QQnxMouseHandler(const QString & driver, const QString &device
 
         qDebug("QQnxMouseHandler: connected.");
     }
+#ifndef QT_NO_QWS_TRANSFORMED
+    transformedMousePos = QPoint(qt_screen->deviceWidth() / 2, qt_screen->deviceHeight() / 2);
+#endif
 }
 
 /*!
@@ -146,7 +152,11 @@ void QQnxMouseHandler::suspend()
 */
 void QQnxMouseHandler::socketActivated()
 {
+#ifndef QT_NO_QWS_TRANSFORMED
+    QPoint queuedPos = transformedMousePos;
+#else
     QPoint queuedPos = mousePos;
+#endif
 
     // _mouse_packet is a QNX structure. devi-hid is nice enough to translate
     // the raw byte data from mouse devices into generic format for us.
@@ -196,13 +206,24 @@ void QQnxMouseHandler::socketActivated()
             // send the MouseEvent to avoid missing any clicks
             mouseChanged(queuedPos, buttons, 0);
             // mousePos updated by the mouseChanged()
+#ifndef QT_NO_QWS_TRANSFORMED
+            queuedPos = transformedMousePos;
+#else
             queuedPos = mousePos;
+#endif
             mouseButtons = buttons;
         }
     }
 
+#ifndef QT_NO_QWS_TRANSFORMED
+    if (queuedPos != transformedMousePos) {
+        mouseChanged(queuedPos, mouseButtons, 0);
+        transformedMousePos = queuedPos;
+    }
+#else
     if (queuedPos != mousePos)
         mouseChanged(queuedPos, mouseButtons, 0);
+#endif
 }
 
 QT_END_NAMESPACE

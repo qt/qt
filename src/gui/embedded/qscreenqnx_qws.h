@@ -69,7 +69,9 @@ public:
     void blank(bool on);
 
     void exposeRegion(QRegion r, int changing);
-
+#ifndef QT_NO_QWS_TRANSFORMED
+    void setDirty(const QRect&);
+#endif
 private:
     QQnxScreenContext * const d;
 };
