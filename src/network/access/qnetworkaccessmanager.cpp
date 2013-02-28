@@ -357,7 +357,21 @@ static void ensureInitialized()
 QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
+    Q_D(QNetworkAccessManager);
     ensureInitialized();
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (!d->networkSessionRequired) {
+        // if a session is required, we track online state through
+        // the QNetworkSession's signals
+        connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
+                SLOT(_q_onlineStateChanged(bool)));
+        // we would need all configurations to check for
+        // d->networkConfigurationManager.isOnline(), which is asynchronous
+        // and potentially expensive. We can just check here
+        d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
+    }
+#endif
 
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
 }
@@ -759,9 +773,8 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 {
     Q_D(QNetworkAccessManager);
     d->networkConfiguration = config;
-    QNetworkConfigurationManager manager;
     d->customNetworkConfiguration = true;
-    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
+    if (d->networkConfigurationManager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
         d->createSession(config);
 }
 
@@ -844,16 +857,23 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
-    if (networkSession) {
-        // d->online holds online/offline state of this network session.
+    if (d->networkSessionRequired) {
+        QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
+        if (networkSession) {
+            // d->online holds online/offline state of this network session.
+            if (d->online)
+                return d->networkAccessible;
+            else
+                return NotAccessible;
+        } else {
+            // Network accessibility is either disabled or unknown.
+            return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
+        }
+    } else {
         if (d->online)
             return d->networkAccessible;
         else
             return NotAccessible;
-    } else {
-        // Network accessibility is either disabled or unknown.
-        return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
     }
 }
 
@@ -1276,6 +1296,12 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
         }
     }
 }
+
+void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
+{
+    online = isOnline;
+}
+
 #endif // QT_NO_BEARERMANAGEMENT
 
 QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
