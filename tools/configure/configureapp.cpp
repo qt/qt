@@ -3247,10 +3247,13 @@ void Configure::generateCachefile()
         QTextStream configStream(&configFile);
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
-        if (dictionary[ "SHARED" ] == "yes")
+        if (dictionary[ "SHARED" ] == "yes") {
             configStream << " shared";
-        else
+            qtConfig << "shared";
+        } else {
             configStream << " static";
+            qtConfig << "static";
+        }
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
