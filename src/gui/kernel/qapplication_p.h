@@ -499,6 +499,7 @@ public:
     static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
+    static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
 
 //    static void reportScreenCount(int count);
     static void reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *e);

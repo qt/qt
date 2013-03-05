@@ -118,6 +118,9 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
     case QWindowSystemInterfacePrivate::ActivatedWindow:
         QApplicationPrivate::processActivatedEvent(static_cast<QWindowSystemInterfacePrivate::ActivatedWindowEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::WindowStateChanged:
+        QApplicationPrivate::processWindowStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowStateChangedEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Close:
         QApplicationPrivate::processCloseEvent(
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
@@ -145,6 +148,20 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
         qWarning() << "Unknown user input event type:" << e->type;
         break;
     }
+}
+
+void QApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
+{
+    if (wse->tlw.isNull())
+       return;
+
+    QWidget *tlw = wse->tlw.data();
+    if (!tlw->isWindow())
+        return;
+
+    QWindowStateChangeEvent e(tlw->windowState());
+    tlw->setWindowState(wse->newState);
+    QApplication::sendSpontaneousEvent(tlw, &e);
 }
 
 QString QApplicationPrivate::appName() const

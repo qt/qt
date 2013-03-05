@@ -95,6 +95,7 @@ public:
     static void handleEnterEvent(QWidget *w);
     static void handleLeaveEvent(QWidget *w);
     static void handleWindowActivated(QWidget *w);
+    static void handleWindowStateChanged(QWidget *w, Qt::WindowState newState);
 
     // Changes to the screen
     static void handleScreenGeometryChange(int screenIndex);
