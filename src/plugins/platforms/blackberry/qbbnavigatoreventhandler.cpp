@@ -116,4 +116,13 @@ void QBBNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id
     Q_EMIT windowGroupDeactivated(id);
 }
 
+void QBBNavigatorEventHandler::handleWindowGroupStateChanged(const QByteArray &id, Qt::WindowState state)
+{
+#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupStateChanged(id, state);
+}
+
 QT_END_NAMESPACE
