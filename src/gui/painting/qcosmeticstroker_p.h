@@ -86,8 +86,9 @@ public:
         HorizontalMask = 0xc
     };
 
-    QCosmeticStroker(QRasterPaintEngineState *s, const QRect &dr)
+    QCosmeticStroker(QRasterPaintEngineState *s, const QRect &dr, const QRect &dr_unclipped)
         : state(s),
+          deviceRect(dr_unclipped),
           clip(dr),
           pattern(0),
           reversePattern(0),
@@ -106,6 +107,7 @@ public:
 
 
     QRasterPaintEngineState *state;
+    QRect deviceRect;
     QRect clip;
     // clip bounds in real
     qreal xmin, xmax;
