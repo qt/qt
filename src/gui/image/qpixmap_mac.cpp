@@ -890,9 +890,12 @@ static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
     const CGRect cgRect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
     const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
 
+    extern CGFloat qt_mac_get_scalefactor();
+    QRect scaledRect = QRect(rect.topLeft(), rect.size() * qt_mac_get_scalefactor());
+
     if (err && displayCount == 0)
         return QPixmap();
-    QPixmap windowPixmap(rect.size());
+    QPixmap windowPixmap(scaledRect.size());
     for (uint i = 0; i < displayCount; ++i) {
         const CGRect bounds = CGDisplayBounds(displays[i]);
         // Translate to display-local coordinates
