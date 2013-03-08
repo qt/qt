@@ -72,7 +72,7 @@ public:
             if (n == 0)
                 break;
 	    qDebug() << "Read" << str;
-            if ("exit" == str)
+            if (!qstrcmp("exit", str))
                 qApp->quit();
 
             if (socket->write(str, 100) < 0) {
