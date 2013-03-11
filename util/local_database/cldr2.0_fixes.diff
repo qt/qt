@@ -96,7 +96,7 @@ diff -ruN ../common/main/en_CA.xml main/en_CA.xml
  						<dateFormatItem id="Md">M-d</dateFormatItem>
 diff -ruN ../common/main/ga.xml main/ga.xml
 --- ../common/main/ga.xml	2011-05-05 21:19:19.000000000 +0200
-+++ main/ga.xml	2013-01-16 11:36:55.919546844 +0100
++++ main/ga.xml	2013-03-11 12:24:44.137303130 +0100
 @@ -63,14 +63,53 @@
  			<calendar type="gregorian">
  				<months>
@@ -151,6 +151,35 @@ diff -ruN ../common/main/ga.xml main/ga.xml
  							<day type="fri">Dé hAoine</day>
  							<day type="sat">Dé Sathairn</day>
  						</dayWidth>
+@@ -83,6 +122,28 @@
+ 						</quarterWidth>
+ 					</quarterContext>
+ 				</quarters>
++				<dateFormats>
++					<dateFormatLength type="full">
++ 						<dateFormat>
++	                       	<pattern>EEEE d MMMM y</pattern>
++	                    </dateFormat>
++	                </dateFormatLength>
++	                <dateFormatLength type="long">
++	                    <dateFormat>
++	                        <pattern>d MMMM y</pattern>
++	                    </dateFormat>
++	                </dateFormatLength>
++	                <dateFormatLength type="medium">
++	                    <dateFormat>
++	                        <pattern>d MMM y</pattern>
++	                    </dateFormat>
++	                </dateFormatLength>
++	               	<dateFormatLength type="short">
++	                    <dateFormat>
++	                        <pattern>dd/MM/y</pattern>
++	                    </dateFormat>
++	                </dateFormatLength>
++	            </dateFormats>
+ 				<timeFormats>
+ 					<timeFormatLength type="full">
+ 						<timeFormat>
 diff -ruN ../common/main/gu.xml main/gu.xml
 --- ../common/main/gu.xml	2011-05-10 20:52:32.000000000 +0200
 +++ main/gu.xml	2013-01-16 11:36:55.971546844 +0100
