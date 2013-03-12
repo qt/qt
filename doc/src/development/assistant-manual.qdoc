@@ -545,6 +545,9 @@
     exit right away displaying a message if the registration was successful
     or not.
 
+    The search indexing will only index your custom *.html, *.htm,
+    and *.txt files.
+
     \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 6
 
     The \c{-quiet} flag can be passed on to \QA to prevent it from writing
