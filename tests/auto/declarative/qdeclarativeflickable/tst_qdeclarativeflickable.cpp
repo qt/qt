@@ -625,6 +625,9 @@ void tst_qdeclarativeflickable::nestedStopAtBounds()
     axis += invert ? threshold : -threshold;
     moveEvent.setScenePos(position);
     QApplication::sendEvent(view.scene(), &moveEvent);
+    axis += invert ? threshold : -threshold;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
     QVERIFY(outer->contentX() != 50 || outer->contentY() != 50);
     QVERIFY((inner->contentX() == 0 || inner->contentX() == 100)
             && (inner->contentY() == 0 || inner->contentY() == 100));
@@ -638,6 +641,9 @@ void tst_qdeclarativeflickable::nestedStopAtBounds()
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, position);
     QTest::qWait(10);
     axis += invert ? -threshold * 2 : threshold * 2;
+    moveEvent.setScenePos(position);
+    QApplication::sendEvent(view.scene(), &moveEvent);
+    axis += invert ? -threshold : threshold;
     moveEvent.setScenePos(position);
     QApplication::sendEvent(view.scene(), &moveEvent);
     axis += invert ? -threshold : threshold;

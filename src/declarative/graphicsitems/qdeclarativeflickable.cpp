@@ -788,9 +788,9 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
-        if (vData.dragStartOffset == 0)
-            vData.dragStartOffset = dy;
         if (qAbs(dy) > QApplication::startDragDistance() || QDeclarativeItemPrivate::elapsed(pressTime) > 200) {
+            if (!vMoved)
+                vData.dragStartOffset = dy;
             qreal newY = dy + vData.pressPos - vData.dragStartOffset;
             const qreal minY = vData.dragMinBound;
             const qreal maxY = vData.dragMaxBound;
@@ -817,9 +817,9 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
-        if (hData.dragStartOffset == 0)
-            hData.dragStartOffset = dx;
         if (qAbs(dx) > QApplication::startDragDistance() || QDeclarativeItemPrivate::elapsed(pressTime) > 200) {
+            if (!hMoved)
+                hData.dragStartOffset = dx;
             qreal newX = dx + hData.pressPos - hData.dragStartOffset;
             const qreal minX = hData.dragMinBound;
             const qreal maxX = hData.dragMaxBound;
