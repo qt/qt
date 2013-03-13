@@ -2740,9 +2740,27 @@ QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
-    if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
-        emit q->activeFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
-    emit q->focusChanged(flag);
+
+    if (hadActiveFocus != flag) {
+        hadActiveFocus = flag;
+        emit q->activeFocusChanged(flag);
+    }
+
+    QDeclarativeItem *focusItem = q;
+    for (QDeclarativeItem *p = q->parentItem(); p; p = p->parentItem()) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            if (!flag && QGraphicsItemPrivate::get(p)->focusScopeItem != focusItem)
+                break;
+            if (p->d_func()->hadActiveFocus != flag) {
+                p->d_func()->hadActiveFocus = flag;
+                emit p->activeFocusChanged(flag);
+            }
+            focusItem = p;
+        }
+    }
+
+    // For all but the top most focus scope/item this will be called for us by QGraphicsItem.
+    focusItem->d_func()->focusScopeItemChange(flag);
 }
 
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()

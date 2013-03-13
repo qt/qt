@@ -92,6 +92,11 @@ private slots:
     void qtbug_16871();
     void qtbug_21045();
     void hasActiveFocusAfterClear();
+    void setAndClearFocusOfItem();
+    void setAndClearFocusScopeFocus();
+    void setFocusThenSetFocusItem0();
+    void setFocusFocusItem0ThenHasActiveFocus();
+
 private:
     QDeclarativeEngine engine;
 };
@@ -1049,6 +1054,7 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(parentItem->childrenRect(), childrenRectArguments.at(0).toRectF());
 
     QCOMPARE(item->hasActiveFocus(), true);
+    QCOMPARE(item->hasFocus(), true);
     QCOMPARE(focusSpy.count(),1);
     QList<QVariant> focusArguments = focusSpy.first();
     QVERIFY(focusArguments.count() == 1);
@@ -1255,8 +1261,9 @@ void tst_QDeclarativeItem::qtbug_21045()
 void tst_QDeclarativeItem::hasActiveFocusAfterClear()
 {
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    view.show();
+    scene.setFocus();
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
 
     QDeclarativeEngine engine;
     QDeclarativeComponent qmlComponent(&engine);
@@ -1266,6 +1273,174 @@ void tst_QDeclarativeItem::hasActiveFocusAfterClear()
             "width: 100; height: 100;"
             "Rectangle { anchors.fill: parent; color: \"yellow\"; z: parent.z - 1 }"
             "}", QUrl());
+    QDeclarativeItem *createdItem = qobject_cast<QDeclarativeItem*>(qmlComponent.create(engine.rootContext()));
+    QVERIFY(createdItem != 0);
+
+    scene.addItem(createdItem);
+
+    createdItem->QGraphicsItem::setFocus();
+    QCoreApplication::processEvents();
+    scene.setFocusItem(0);
+    QCoreApplication::processEvents();
+
+    QVERIFY(!createdItem->hasActiveFocus());
+}
+
+void tst_QDeclarativeItem::setAndClearFocusOfItem()
+{
+    QGraphicsScene scene;
+    scene.setFocus();
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    QDeclarativeEngine engine(&scene);
+    QDeclarativeComponent qmlComponent(&engine);
+    qmlComponent.setData(
+            "import QtQuick 1.1;"
+            "Item { id: root; "
+            "signal focusChangedTo(bool value);"
+            "signal activeFocusChangedTo(bool value);"
+            "onFocusChanged: root.focusChangedTo(focus);"
+            "onActiveFocusChanged: root.activeFocusChangedTo(activeFocus);"
+            "}", QUrl("test"));
+
+    QGraphicsItem *createdItem = qobject_cast<QGraphicsItem*>(qmlComponent.create(engine.rootContext()));
+    QVERIFY(createdItem);
+    scene.addItem(createdItem);
+
+    QSignalSpy focusChangedSpy(createdItem->toGraphicsObject(), SIGNAL(focusChangedTo(bool)));
+    QSignalSpy activeFocusChangedSpy(createdItem->toGraphicsObject(), SIGNAL(activeFocusChangedTo(bool)));
+
+    QVERIFY(!createdItem->hasFocus());
+    createdItem->toGraphicsObject()->setFocus();
+    QCOMPARE(focusChangedSpy.count(), 1);
+    QCOMPARE(activeFocusChangedSpy.count(), 1);
+    QCOMPARE(focusChangedSpy.takeFirst().first().toBool(), true);
+    QCOMPARE(activeFocusChangedSpy.takeFirst().first().toBool(), true);
+
+    createdItem->toGraphicsObject()->clearFocus();
+    QCOMPARE(focusChangedSpy.count(), 1);
+    QCOMPARE(activeFocusChangedSpy.count(), 1);
+    QCOMPARE(focusChangedSpy.takeFirst().first().toBool(), false);
+    QCOMPARE(activeFocusChangedSpy.takeFirst().first().toBool(), false);
+}
+
+void tst_QDeclarativeItem::setAndClearFocusScopeFocus()
+{
+    //graphicsview init
+    QGraphicsScene scene;
+    scene.setFocus();
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    //declarative init
+    QDeclarativeEngine engine(&scene);
+    QDeclarativeComponent qmlComponent(&engine);
+
+    qmlComponent.setData(
+            "\nimport QtQuick 1.1"
+            "\nFocusScope {"
+            "\n    id: root"
+            "\n    signal listActiveFocusChangedTo(bool value)"
+            "\n    signal topRectActiveFocusChangedTo(bool value)"
+            "\n    Rectangle {"
+            "\n        id: topRect"
+            "\n        focus: true"
+            "\n        onActiveFocusChanged: root.topRectActiveFocusChangedTo(topRect.activeFocus)"
+            "\n    }"
+            "\n    FocusScope {"
+            "\n        objectName: \"focusScope\""
+            "\n        onActiveFocusChanged: root.listActiveFocusChangedTo(activeFocus)"
+            "\n    }"
+            "\n    Rectangle { objectName: \"bottom\" }"
+            "}", QUrl(""));
+
+    QGraphicsItem *createdItem = qobject_cast<QGraphicsItem*>(qmlComponent.create(engine.rootContext()));
+    QVERIFY(createdItem);
+    scene.addItem(createdItem);
+
+    QDeclarativeItem *focusScope = createdItem->toGraphicsObject()->findChild<QDeclarativeItem*>("focusScope");
+    QDeclarativeItem *bottomRect = createdItem->toGraphicsObject()->findChild<QDeclarativeItem*>("bottom");
+
+    QSignalSpy focusScopeSpy(createdItem->toGraphicsObject(), SIGNAL(listActiveFocusChangedTo(bool)));
+    QSignalSpy topRectFocusSpy(createdItem->toGraphicsObject(), SIGNAL(topRectActiveFocusChangedTo(bool)));
+
+    //#1: root gets activefocus, and in turn the top rectangle
+    createdItem->setFocus();
+
+    //#2
+    focusScope->setFocus(true);
+
+    //#3
+    bottomRect->setFocus(true);
+
+    QCOMPARE(topRectFocusSpy.count(), 2);
+    QCOMPARE(focusScopeSpy.count(), 2);
+
+    QCOMPARE(topRectFocusSpy.takeFirst().first().toBool(), true); //from #1
+    QCOMPARE(topRectFocusSpy.takeFirst().first().toBool(), false); //from #2
+
+    QCOMPARE(focusScopeSpy.takeFirst().first().toBool(), true); //from #2
+    QCOMPARE(focusScopeSpy.takeFirst().first().toBool(), false); //from #3
+}
+
+void tst_QDeclarativeItem::setFocusThenSetFocusItem0()
+{
+    //graphicsview init
+    QGraphicsScene scene;
+    scene.setFocus();
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    //declarative init
+    QDeclarativeEngine engine(&scene);
+    QDeclarativeComponent qmlComponent(&engine);
+    qmlComponent.setData(
+            "import QtQuick 1.1;"
+            "Item {"
+            "signal focusChangedTo(bool value);"
+            "signal activeFocusChangedTo(bool value);"
+            "onFocusChanged: focusChangedTo(focus);"
+            "onActiveFocusChanged: activeFocusChangedTo(activeFocus);"
+            "}", QUrl(""));
+
+    QGraphicsItem *createdItem = qobject_cast<QGraphicsItem*>(qmlComponent.create(engine.rootContext()));
+    QVERIFY(createdItem);
+
+    scene.addItem(createdItem);
+
+    QSignalSpy focusChangedSpy(createdItem->toGraphicsObject(), SIGNAL(focusChangedTo(bool)));
+    QSignalSpy activeFocusChangedSpy(createdItem->toGraphicsObject(), SIGNAL(activeFocusChangedTo(bool)));
+
+    createdItem->toGraphicsObject()->setFocus();
+    QVERIFY(!focusChangedSpy.isEmpty());
+    QVERIFY(!activeFocusChangedSpy.isEmpty());
+    QCOMPARE(focusChangedSpy.takeFirst().first().toBool(), true);
+    QCOMPARE(activeFocusChangedSpy.takeFirst().first().toBool(), true);
+
+    scene.setFocusItem(0);
+    QVERIFY(!focusChangedSpy.isEmpty());
+    QVERIFY(!activeFocusChangedSpy.isEmpty());
+    QCOMPARE(focusChangedSpy.takeFirst().first().toBool(), false);
+    QCOMPARE(activeFocusChangedSpy.takeFirst().first().toBool(), false);
+    QVERIFY(activeFocusChangedSpy.isEmpty());
+}
+
+void tst_QDeclarativeItem::setFocusFocusItem0ThenHasActiveFocus()
+{
+    QGraphicsScene scene;
+    scene.setFocus();
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    QDeclarativeEngine engine(&scene);
+    QDeclarativeComponent qmlComponent(&engine);
+    qmlComponent.setData(
+            "import QtQuick 1.1;"
+            "TextInput {"
+            "width: 100; height: 100;"
+            "Rectangle { anchors.fill: parent; color: \"yellow\"; z: parent.z - 1 }"
+            "}", QUrl(""));
     QDeclarativeItem *createdItem = qobject_cast<QDeclarativeItem*>(qmlComponent.create(engine.rootContext()));
     QVERIFY(createdItem != 0);
 
