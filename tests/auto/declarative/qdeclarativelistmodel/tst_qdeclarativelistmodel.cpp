@@ -988,7 +988,7 @@ void tst_qdeclarativelistmodel::property_changes()
 
     expr.setExpression(script_change);
     expr.evaluate();
-    QVERIFY2(!expr.hasError(), QTest::toString(expr.error()));
+    QVERIFY2(!expr.hasError(), QTest::toString(expr.error().toString()));
 
     // test the object returned by get() emits the correct signals
     QCOMPARE(connectionsObject->property("gotSignal").toBool(), itemsChanged);

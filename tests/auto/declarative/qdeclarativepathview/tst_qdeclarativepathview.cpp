@@ -402,34 +402,34 @@ void tst_QDeclarativePathView::insertModel_data()
 
     // We have 8 items, with currentIndex == 4
     QTest::newRow("insert after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << 5. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << qreal(5.) << 4;
     QTest::newRow("insert before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << 4. << 5;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << qreal(4.) << 5;
     QTest::newRow("insert multiple after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << 6. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << qreal(6.) << 4;
     QTest::newRow("insert multiple before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << 4. << 6;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << qreal(4.) << 6;
     QTest::newRow("insert at end")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 8 << 1 << 5. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 8 << 1 << qreal(5.) << 4;
     QTest::newRow("insert at beginning")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 4. << 5;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << qreal(4.) << 5;
     QTest::newRow("insert at current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << 4. << 5;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << qreal(4.) << 5;
 
     QTest::newRow("no range - insert after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << 5. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << qreal(5.) << 4;
     QTest::newRow("no range - insert before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << 4. << 5;
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << qreal(4.) << 5;
     QTest::newRow("no range - insert multiple after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << 6. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << qreal(6.) << 4;
     QTest::newRow("no range - insert multiple before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << 4. << 6;
+        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << qreal(4.) << 6;
     QTest::newRow("no range - insert at end")
-        << int(QDeclarativePathView::NoHighlightRange) << 8 << 1 << 5. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 8 << 1 << qreal(5.) << 4;
     QTest::newRow("no range - insert at beginning")
-        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 4. << 5;
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << qreal(4.) << 5;
     QTest::newRow("no range - insert at current")
-        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << 4. << 5;
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << qreal(4.) << 5;
 }
 
 void tst_QDeclarativePathView::insertModel()
@@ -537,38 +537,38 @@ void tst_QDeclarativePathView::removeModel_data()
 
     // We have 8 items, with currentIndex == 4
     QTest::newRow("remove after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << 3. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 6 << 1 << qreal(3.) << 4;
     QTest::newRow("remove before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << 4. << 3;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 1 << qreal(4.) << 3;
     QTest::newRow("remove multiple after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << 2. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 2 << qreal(2.) << 4;
     QTest::newRow("remove multiple before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << 4. << 2;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 1 << 2 << qreal(4.) << 2;
     QTest::newRow("remove last")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 1 << 3. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 1 << qreal(3.) << 4;
     QTest::newRow("remove first")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 4. << 3;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << qreal(4.) << 3;
     QTest::newRow("remove current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << 3. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 1 << qreal(3.) << 4;
     QTest::newRow("remove all")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 8 << 0. << 0;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 8 << qreal(0.) << 0;
 
     QTest::newRow("no range - remove after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << 3. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 6 << 1 << qreal(3.) << 4;
     QTest::newRow("no range - remove before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << 4. << 3;
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 1 << qreal(4.) << 3;
     QTest::newRow("no range - remove multiple after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << 2. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 2 << qreal(2.) << 4;
     QTest::newRow("no range - remove multiple before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << 4. << 2;
+        << int(QDeclarativePathView::NoHighlightRange) << 1 << 2 << qreal(4.) << 2;
     QTest::newRow("no range - remove last")
-        << int(QDeclarativePathView::NoHighlightRange) << 7 << 1 << 3. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 7 << 1 << qreal(3.) << 4;
     QTest::newRow("no range - remove first")
-        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 4. << 3;
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << qreal(4.) << 3;
     QTest::newRow("no range - remove current offset")
-        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << 4. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 1 << qreal(4.) << 4;
     QTest::newRow("no range - remove all")
-        << int(QDeclarativePathView::NoHighlightRange) << 0 << 8 << 0. << 0;
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 8 << qreal(0.) << 0;
 }
 
 void tst_QDeclarativePathView::removeModel()
@@ -627,40 +627,40 @@ void tst_QDeclarativePathView::moveModel_data()
 
     // We have 8 items, with currentIndex == 4
     QTest::newRow("move after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 1 << 4. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 1 << qreal(4.) << 4;
     QTest::newRow("move before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 3 << 1 << 4. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 3 << 1 << qreal(4.) << 4;
     QTest::newRow("move before current to after")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 6 << 1 << 5. << 3;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 6 << 1 << qreal(5.) << 3;
     QTest::newRow("move multiple after current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 2 << 4. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 5 << 6 << 2 << qreal(4.) << 4;
     QTest::newRow("move multiple before current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 2 << 4. << 4;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 0 << 1 << 2 << qreal(4.) << 4;
     QTest::newRow("move before current to end")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 7 << 1 << 5. << 3;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 2 << 7 << 1 << qreal(5.) << 3;
     QTest::newRow("move last to beginning")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 0 << 1 << 3. << 5;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 7 << 0 << 1 << qreal(3.) << 5;
     QTest::newRow("move current")
-        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 6 << 1 << 2. << 6;
+        << int(QDeclarativePathView::StrictlyEnforceRange) << 4 << 6 << 1 << qreal(2.) << 6;
 
     QTest::newRow("no range - move after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 1 << 4. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 1 << qreal(4.) << 4;
     QTest::newRow("no range - move before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 2 << 3 << 1 << 4. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 3 << 1 << qreal(4.) << 4;
     QTest::newRow("no range - move before current to after")
-        << int(QDeclarativePathView::NoHighlightRange) << 2 << 6 << 1 << 5. << 3;
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 6 << 1 << qreal(5.) << 3;
     QTest::newRow("no range - move multiple after current")
-        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 2 << 4. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 5 << 6 << 2 << qreal(4.) << 4;
     QTest::newRow("no range - move multiple before current")
-        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 2 << 4. << 4;
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 2 << qreal(4.) << 4;
     QTest::newRow("no range - move before current to end")
-        << int(QDeclarativePathView::NoHighlightRange) << 2 << 7 << 1 << 5. << 3;
+        << int(QDeclarativePathView::NoHighlightRange) << 2 << 7 << 1 << qreal(5.) << 3;
     QTest::newRow("no range - move last to beginning")
-        << int(QDeclarativePathView::NoHighlightRange) << 7 << 0 << 1 << 3. << 5;
+        << int(QDeclarativePathView::NoHighlightRange) << 7 << 0 << 1 << qreal(3.) << 5;
     QTest::newRow("no range - move current")
-        << int(QDeclarativePathView::NoHighlightRange) << 4 << 6 << 1 << 4. << 6;
+        << int(QDeclarativePathView::NoHighlightRange) << 4 << 6 << 1 << qreal(4.) << 6;
     QTest::newRow("no range - move multiple incl. current")
-        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 5 << 4. << 5;
+        << int(QDeclarativePathView::NoHighlightRange) << 0 << 1 << 5 << qreal(4.) << 5;
 }
 
 void tst_QDeclarativePathView::moveModel()
