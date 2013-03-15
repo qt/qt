@@ -59,10 +59,6 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_BLACKBERRY)
-#include "qsocketnotifier.h"
-#endif
-
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
 class CEnvironmentChangeNotifier;
 #endif
@@ -272,25 +268,6 @@ public:
 
 private:
     CEnvironmentChangeNotifier *iChangeNotifier;
-};
-#endif
-
-#if defined(Q_OS_BLACKBERRY)
-class QBBLocaleData: public QObject
-{
-    Q_OBJECT
-public:
-    QBBLocaleData();
-    virtual ~QBBLocaleData();
-    void readPPSLocale();
-
-public Q_SLOTS:
-    void updateMeasurementSystem();
-
-public:
-    uint ppsMeasurement;
-    QSocketNotifier *ppsNotifier;
-    int ppsFd;
 };
 #endif
 
