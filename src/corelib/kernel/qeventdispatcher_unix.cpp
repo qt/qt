@@ -908,7 +908,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 
     int nevents = 0;
-    const bool canWait = (d->threadData->canWait
+    const bool canWait = (d->threadData->canWaitLocked()
                           && !d->interrupt
                           && (flags & QEventLoop::WaitForMoreEvents));
 
