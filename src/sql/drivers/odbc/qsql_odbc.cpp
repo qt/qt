@@ -966,11 +966,6 @@ bool QODBCResult::reset (const QString& query)
         return false;
     }
 
-    if(r == SQL_NO_DATA) {
-        setSelect(false);
-        return true;
-    }
-
     SQLULEN isScrollable = 0;
     SQLINTEGER bufferLength;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
