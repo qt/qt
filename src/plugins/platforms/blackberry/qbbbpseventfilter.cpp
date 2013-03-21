@@ -47,6 +47,7 @@
 #include "qbbscreeneventhandler.h"
 #include "qbbvirtualkeyboardbps.h"
 
+#include <QCoreApplication>
 #include <QAbstractEventDispatcher>
 #include <QDebug>
 
@@ -262,6 +263,11 @@ bool QBBBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
         mNavigatorEventHandler->handleWindowGroupDeactivated(id);
         break;
     }
+
+    case NAVIGATOR_LOW_MEMORY:
+        qWarning() << "QApplication based process" << QCoreApplication::applicationPid()
+                   << "received \"NAVIGATOR_LOW_MEMORY\" event";
+        return false;
 
     default:
         #if defined(QBBBPSEVENTFILTER_DEBUG)
