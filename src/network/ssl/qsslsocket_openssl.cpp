@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 //#define QSSLSOCKET_DEBUG
+//#define QT_DECRYPT_SSL_TRAFFIC
 
 #include "qsslsocket_openssl_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
@@ -1399,6 +1400,40 @@ bool QSslSocketBackendPrivate::startHandshake()
     // if we have a max read buffer size, reset the plain socket's to 32k
     if (readBufferMaxSize)
         plainSocket->setReadBufferSize(32768);
+
+#ifdef QT_DECRYPT_SSL_TRAFFIC
+    if (ssl->session && ssl->s3) {
+        const char *mk = reinterpret_cast<const char *>(ssl->session->master_key);
+        QByteArray masterKey(mk, ssl->session->master_key_length);
+        const char *random = reinterpret_cast<const char *>(ssl->s3->client_random);
+        QByteArray clientRandom(random, SSL3_RANDOM_SIZE);
+
+        // different format, needed for e.g. older Wireshark versions:
+//        const char *sid = reinterpret_cast<const char *>(ssl->session->session_id);
+//        QByteArray sessionID(sid, ssl->session->session_id_length);
+//        QByteArray debugLineRSA("RSA Session-ID:");
+//        debugLineRSA.append(sessionID.toHex().toUpper());
+//        debugLineRSA.append(" Master-Key:");
+//        debugLineRSA.append(masterKey.toHex().toUpper());
+//        debugLineRSA.append("\n");
+
+        QByteArray debugLineClientRandom("CLIENT_RANDOM ");
+        debugLineClientRandom.append(clientRandom.toHex().toUpper());
+        debugLineClientRandom.append(" ");
+        debugLineClientRandom.append(masterKey.toHex().toUpper());
+        debugLineClientRandom.append("\n");
+
+        QString sslKeyFile = QDir::tempPath() + QLatin1String("/qt-ssl-keys");
+        QFile file(sslKeyFile);
+        if (!file.open(QIODevice::Append))
+            qWarning() << "could not open file" << sslKeyFile << "for appending";
+        if (!file.write(debugLineClientRandom))
+            qWarning() << "could not write to file" << sslKeyFile;
+        file.close();
+    } else {
+        qWarning("could not decrypt SSL traffic");
+    }
+#endif
 
     connectionEncrypted = true;
     emit q->encrypted();
