@@ -121,7 +121,7 @@ QLocale QSystemLocale::fallbackLocale() const
     QByteArray lang = getSystemLocale();
 
     if (lang.isEmpty())
-        lang = qgetenv("LC_NUMERIC");
+        lang = qgetenv("LC_MESSAGES");
     if (lang.isEmpty())
         lang = qgetenv("LANG");
     return QLocale(QLatin1String(lang));
