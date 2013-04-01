@@ -60,9 +60,6 @@
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtNetwork/qnetworksession.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
-#ifndef QT_NO_BEARERMANAGEMENT
-#include "QtNetwork/qnetworkconfigmanager.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -83,9 +80,6 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
           lastSessionState(QNetworkSession::Invalid),
           customNetworkConfiguration(false),
-          networkConfiguration(networkConfigurationManager.defaultConfiguration()),
-          networkSessionRequired(networkConfigurationManager.capabilities()
-                                 & QNetworkConfigurationManager::NetworkSessionRequired),
           networkAccessible(QNetworkAccessManager::Accessible),
           activeReplyCount(0),
           online(false),
@@ -126,7 +120,6 @@ public:
     void _q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &config,
                                                         bool isSeamless);
     void _q_networkSessionStateChanged(QNetworkSession::State state);
-    void _q_onlineStateChanged(bool isOnline);
 #endif
 
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
@@ -148,12 +141,10 @@ public:
     QSharedPointer<QNetworkSession> networkSessionStrongRef;
     QWeakPointer<QNetworkSession> networkSessionWeakRef;
     QNetworkSession::State lastSessionState;
-    QNetworkConfigurationManager networkConfigurationManager;
     QNetworkConfiguration networkConfiguration;
     // we need to track whether the user set a config or not,
     // because the default config might change
     bool customNetworkConfiguration;
-    bool networkSessionRequired;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     int activeReplyCount;
     bool online;
