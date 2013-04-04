@@ -686,8 +686,8 @@ Reason:
         <translation>&lt;title&gt;about:blank&lt;/title&gt;</translation>
     </message>
     <message>
-        <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
-        <translation>&lt;title&gt;Помилка 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Не вдалось знайти сторінку&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
+        <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found.&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
+        <translation>&lt;title&gt;Помилка 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Не вдалось знайти сторінку.&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
         <source>Open Link</source>
@@ -1087,7 +1087,7 @@ Reason:
     </message>
     <message>
         <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Версія %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2012 Корпорація Digia та/або її дочірні компанії.&lt;/p&gt;</translation>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Версія %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc та/або її дочірні компанії.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About %1</source>

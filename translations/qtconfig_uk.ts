@@ -117,7 +117,7 @@
     </message>
     <message>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</translation>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версія %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc та/або її дочірні компанії.</translation>
     </message>
     <message>
         <source>Qt Configuration</source>
@@ -689,7 +689,7 @@ p, li { white-space: pre-wrap; }
         <translation>Кнопка</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
         <translation></translation>
     </message>

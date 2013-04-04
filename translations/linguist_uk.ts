@@ -927,12 +927,6 @@ lupdate - це частина набору програм Qt Linguist. Вона 
 </translation>
     </message>
     <message>
-        <source>circular inclusion of %1
-</source>
-        <translation>циклічне вкладення %1
-</translation>
-    </message>
-    <message>
         <source>Cannot open %1: %2
 </source>
         <translation>Неможливо відкрити %1: %2
@@ -1992,7 +1986,7 @@ All files (*)</source>
     </message>
     <message>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - це засіб для додавання перекладів до програм на Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Корпорація Digia та/або її дочірні компанії.</translation>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - це засіб для додавання перекладів до програм на Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc та/або її дочірні компанії.</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>
