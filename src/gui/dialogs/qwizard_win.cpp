@@ -231,7 +231,11 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     else if (underMouse())
         state = WIZ_NAV_BB_HOT;
 
-   pDrawThemeBackground(theme, p.paintEngine()->getDC(), WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect); 
+    WIZ_NAVIGATIONPARTS buttonType = (layoutDirection() == Qt::LeftToRight
+                                      ? WIZ_NAV_BACKBUTTON
+                                      : WIZ_NAV_FORWARDBUTTON);
+
+   pDrawThemeBackground(theme, p.paintEngine()->getDC(), buttonType, state, &clipRect, &clipRect);
 }
 
 /******************************************************************************
@@ -348,13 +352,21 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         glowOffset = glowSize();
     }
 
+    const int titleLeft = (wizard->layoutDirection() == Qt::LeftToRight
+                           ? titleOffset() - glowOffset
+                           : wizard->width() - titleOffset() - textWidth + glowOffset);
+
     drawTitleText(
         painter, text,
-        QRect(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight),
+        QRect(titleLeft, verticalCenter - textHeight / 2, textWidth, textHeight),
         hdc);
 
     if (!wizard->windowIcon().isNull()) {
-        QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
+        const int iconLeft = (wizard->layoutDirection() == Qt::LeftToRight
+                              ? leftMargin()
+                              : wizard->width() - leftMargin() - iconSize());
+
+        QRect rect(iconLeft, verticalCenter - iconSize() / 2, iconSize(), iconSize());
         HICON hIcon = wizard->windowIcon().pixmap(iconSize()).toWinHICON();
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
