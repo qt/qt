@@ -1163,8 +1163,11 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: remote disconnect";
 #endif
-                plainSocket->disconnectFromHost();
-                break;
+                shutdown = true; // the other side shut down, make sure we do not send shutdown ourselves
+                q->setErrorString(QSslSocket::tr("The TLS/SSL connection has been closed"));
+                q->setSocketError(QAbstractSocket::RemoteHostClosedError);
+                emit q->error(QAbstractSocket::RemoteHostClosedError);
+                return;
             case SSL_ERROR_SYSCALL: // some IO error
             case SSL_ERROR_SSL: // error in the SSL library
                 // we do not know exactly what the error is, nor whether we can recover from it,
@@ -1447,8 +1450,11 @@ bool QSslSocketBackendPrivate::startHandshake()
 void QSslSocketBackendPrivate::disconnectFromHost()
 {
     if (ssl) {
-        q_SSL_shutdown(ssl);
-        transmit();
+        if (!shutdown) {
+            q_SSL_shutdown(ssl);
+            shutdown = true;
+            transmit();
+        }
     }
     plainSocket->disconnectFromHost();
 }
