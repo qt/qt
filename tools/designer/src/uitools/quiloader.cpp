@@ -409,8 +409,6 @@ static QString convertTranslatable(const DomProperty *p, const QByteArray &class
 
 void FormBuilderPrivate::applyProperties(QObject *o, const QList<DomProperty*> &properties)
 {
-    typedef QList<DomProperty*> DomPropertyList;
-
     QFormBuilder::applyProperties(o, properties);
 
     if (!m_trwatch)
