@@ -1802,7 +1802,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
             GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
             GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
             // QGLContext::bindTexture() can't return an inverted texture, but QPainter::drawPixmap() can:
-            GLX_Y_INVERTED_EXT, options & QGLContext::CanFlipNativePixmapBindOption ? GLX_DONT_CARE : False,
+            GLX_Y_INVERTED_EXT, int(options & QGLContext::CanFlipNativePixmapBindOption ? GLX_DONT_CARE : False),
             XNone
         };
         configList = glXChooseFBConfig(x11Info.display(), x11Info.screen(), configAttribs, &configCount);
