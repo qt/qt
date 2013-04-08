@@ -280,8 +280,8 @@ void MocParser::parse(const char *fname, QIODevice *io, int lineNum)
 MocParser::~MocParser()
 {
     foreach (QMetaObject mo, objects) {
-        delete const_cast<char *>(mo.d.stringdata);
-        delete const_cast<uint *>(mo.d.data);
+        delete[] const_cast<char *>(mo.d.stringdata);
+        delete[] const_cast<uint *>(mo.d.data);
     }
 }
 
