@@ -282,7 +282,7 @@ public:
 
         QSet<const QDeclarativeType *> qmlTypes = qmlTypesByCppName.value(meta->className());
         if (!qmlTypes.isEmpty()) {
-            QStringList exports;
+            QHash<QString, const QDeclarativeType *> exports;
 
             foreach (const QDeclarativeType *qmlTy, qmlTypes) {
                 QString qmlTyName = qmlTy->qmlTypeName();
@@ -295,17 +295,26 @@ public:
                 if (qmlTyName.startsWith("./")) {
                     qmlTyName.remove(0, 2);
                 }
-                exports += enquote(QString("%1 %2.%3").arg(
-                                       qmlTyName,
-                                       QString::number(qmlTy->majorVersion()),
-                                       QString::number(qmlTy->minorVersion())));
+                const QString exportString = enquote(
+                            QString("%1 %2.%3").arg(
+                                qmlTyName,
+                                QString::number(qmlTy->majorVersion()),
+                                QString::number(qmlTy->minorVersion())));
+                exports.insert(exportString, qmlTy);
             }
 
             // ensure exports are sorted and don't change order when the plugin is dumped again
-            exports.removeDuplicates();
-            qSort(exports);
+            QStringList exportStrings = exports.keys();
+            qSort(exportStrings);
+            qml->writeArrayBinding(QLatin1String("exports"), exportStrings);
 
-            qml->writeArrayBinding(QLatin1String("exports"), exports);
+            // write meta object revisions
+            QStringList metaObjectRevisions;
+            foreach (const QString &exportString, exportStrings) {
+                int metaObjectRevision = exports[exportString]->metaObjectRevision();
+                metaObjectRevisions += QString::number(metaObjectRevision);
+            }
+            qml->writeArrayBinding(QLatin1String("exportMetaObjectRevisions"), metaObjectRevisions);
 
             if (const QMetaObject *attachedType = (*qmlTypes.begin())->attachedPropertiesType()) {
                 // Can happen when a type is registered that returns itself as attachedPropertiesType()
