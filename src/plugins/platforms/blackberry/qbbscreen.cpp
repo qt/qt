@@ -493,6 +493,18 @@ void QBBScreen::onWindowPost(QBBWindow* window)
     }
 }
 
+void QBBScreen::adjustOrientation()
+{
+    if (!mPrimaryDisplay)
+        return;
+
+    bool ok = false;
+    const int rotation = qgetenv("ORIENTATION").toInt(&ok);
+
+    if (ok)
+        setRotation(rotation);
+}
+
 QPlatformCursor * QBBScreen::cursor() const
 {
     return mCursor;

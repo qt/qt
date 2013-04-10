@@ -369,6 +369,7 @@ void QBBIntegration::createDisplay(screen_display_t display, int screenIndex)
 {
     QBBScreen *screen = new QBBScreen(mContext, display, screenIndex);
     mScreens.append(screen);
+    screen->adjustOrientation();
 
     QObject::connect(mScreenEventHandler, SIGNAL(newWindowCreated(screen_window_t)),
                   screen, SLOT(newWindowCreated(screen_window_t)));

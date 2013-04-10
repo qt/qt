@@ -83,6 +83,7 @@ public:
     void updateHierarchy();
 
     void onWindowPost(QBBWindow* window);
+    void adjustOrientation();
     void ensureDisplayCreated();
 
     QSharedPointer<QBBRootWindow> rootWindow() const { return mRootWindow; }
