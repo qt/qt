@@ -803,8 +803,10 @@ inline void QScriptValuePrivate::operator delete(void *ptr)
     QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
     if (d->engine)
         d->engine->freeScriptValuePrivate(d);
+#ifndef Q_OS_BLACKBERRY //Workaround for PR318290
     else
         qFree(d);
+#endif
 }
 
 inline void QScriptEnginePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
