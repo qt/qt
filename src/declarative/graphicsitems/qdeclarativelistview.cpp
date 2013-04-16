@@ -3578,7 +3578,8 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
     }
 
     // Ensure we don't cause an ugly list scroll.
-    d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
+    if (!d->visibleItems.isEmpty())
+        d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
 
     d->updateSections();
     d->layout();
