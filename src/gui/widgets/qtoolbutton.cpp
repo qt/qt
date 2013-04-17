@@ -856,6 +856,9 @@ void QToolButton::showMenu()
         d->menuButtonDown = false;
         return; // no menu to show
     }
+    // prevent recursions spinning another event loop
+    if (d->menuButtonDown)
+        return;
 
     d->menuButtonDown = true;
     repaint();
