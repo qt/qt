@@ -1531,6 +1531,7 @@ void MainWindow::selectedMessageChanged(const QModelIndex &sortedIndex, const QM
                 QDir dir = QFileInfo(m_dataModel->srcFileName(model)).dir();
                 QString fileName = QDir::cleanPath(dir.absoluteFilePath(m->fileName()));
                 m_sourceCodeView->setSourceContext(fileName, m->lineNumber());
+                m_sourceCodeView->setCodecName(m_dataModel->model(model)->codecName());
             }
             m_errorsView->setEnabled(true);
         } else {

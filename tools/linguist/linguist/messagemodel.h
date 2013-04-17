@@ -216,6 +216,7 @@ public:
     void setSourceLanguageAndCountry(QLocale::Language lang, QLocale::Country country);
     QLocale::Language sourceLanguage() const { return m_sourceLanguage; }
     QLocale::Country sourceCountry() const { return m_sourceCountry; }
+    QByteArray codecName() const { return m_codecName; }
 
     const QString &localizedLanguage() const { return m_localizedLanguage; }
     const QStringList &numerusForms() const { return m_numerusForms; }
