@@ -1505,7 +1505,9 @@ void Q3ColorDrag::setColor(const QColor &col)
     b = htons(b);
 
     ushort rgba[4] = {
-        r, g, b,
+        static_cast<ushort>(r),
+        static_cast<ushort>(g),
+        static_cast<ushort>(b),
         0xffff // Alpha not supported yet.
     };
     QByteArray data;
