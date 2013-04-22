@@ -94,7 +94,7 @@ static res_state_ptr local_res = 0;
 
 static void resolveLibrary()
 {
-#ifndef QT_NO_LIBRARY
+#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_QNX)
     QLibrary lib(QLatin1String("resolv"));
     lib.setLoadHints(QLibrary::ImprovedSearchHeuristics);
     if (!lib.load())
