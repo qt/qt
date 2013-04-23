@@ -94,7 +94,7 @@ QT_FORWARD_DECLARE_CLASS(QWidgetData)
     QHash<NSDrawer *, QWidget *> *m_drawerHash;
 }
 + (QT_MANGLE_NAMESPACE(QCocoaWindowDelegate)*)sharedDelegate;
-- (void)becomeDelegteForWindow:(NSWindow *)window  widget:(QWidget *)widget;
+- (void)becomeDelegateForWindow:(NSWindow *)window  widget:(QWidget *)widget;
 - (void)resignDelegateForWindow:(NSWindow *)window;
 - (void)becomeDelegateForDrawer:(NSDrawer *)drawer widget:(QWidget *)widget;
 - (void)resignDelegateForDrawer:(NSDrawer *)drawer;

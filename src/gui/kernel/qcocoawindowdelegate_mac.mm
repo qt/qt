@@ -363,7 +363,7 @@ static void cleanupCocoaWindowDelegate()
     return frameToReturn;
 }
 
-- (void)becomeDelegteForWindow:(NSWindow *)window  widget:(QWidget *)widget
+- (void)becomeDelegateForWindow:(NSWindow *)window  widget:(QWidget *)widget
 {
     m_windowHash->insert(window, widget);
     [window setDelegate:self];
@@ -380,7 +380,7 @@ static void cleanupCocoaWindowDelegate()
     m_drawerHash->insert(drawer, widget);
     [drawer setDelegate:self];
     NSWindow *window = [[drawer contentView] window];
-    [self becomeDelegteForWindow:window widget:widget];
+    [self becomeDelegateForWindow:window widget:widget];
 }
 
 - (void)resignDelegateForDrawer:(NSDrawer *)drawer

@@ -61,7 +61,7 @@ QT_USE_NAMESPACE
 {
     self = [self initWithContentRect:rect styleMask:mask backing:NSBackingStoreBuffered defer:YES];
     if (self) {
-        [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] becomeDelegteForWindow:self widget:widget];
+        [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] becomeDelegateForWindow:self widget:widget];
         [self setReleasedWhenClosed:NO];
     }
     return self;
