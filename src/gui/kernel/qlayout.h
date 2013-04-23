@@ -189,6 +189,7 @@ protected:
     void childEvent(QChildEvent *e);
     void addChildLayout(QLayout *l);
     void addChildWidget(QWidget *w);
+    bool adoptLayout(QLayout *layout);
 #ifdef QT3_SUPPORT
     QT3_SUPPORT void deleteAllItems();
 #endif
