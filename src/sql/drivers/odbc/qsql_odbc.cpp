@@ -967,8 +967,7 @@ bool QODBCResult::reset (const QString& query)
     }
 
     SQLULEN isScrollable = 0;
-    SQLINTEGER bufferLength;
-    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
+    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
 
@@ -1114,7 +1113,7 @@ bool QODBCResult::fetchLast()
                 "Unable to fetch last"), QSqlError::ConnectionError, d));
         return false;
     }
-    SQLINTEGER currRow;
+    SQLULEN currRow = 0;
     r = SQLGetStmtAttr(d->hStmt,
                         SQL_ROW_NUMBER,
                         &currRow,
@@ -1601,8 +1600,7 @@ bool QODBCResult::exec()
     }
 
     SQLULEN isScrollable = 0;
-    SQLINTEGER bufferLength;
-    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
+    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
 
