@@ -546,17 +546,6 @@
 #       define WTF_CPU_BIG_ENDIAN 1
 #   endif
 
-#if (_WIN32_WCE >= 0x700)
-	// Windows Embedded Compact 7 is missing std::ptrdiff_t type and std::min and std::max.
-	// They are defined here to minimize the changes to JSCore
-	namespace std {
-		typedef ::ptrdiff_t ptrdiff_t;
-		template <class T> inline T max(const T& a, const T& b) { return (a > b) ? a : b; }
-		template <class T> inline T min(const T& a, const T& b) { return (a < b) ? a : b; }
-	}
-#endif
-
-// For localtime in Windows CE
 #   include <ce_time.h>
 #endif
 
