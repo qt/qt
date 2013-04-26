@@ -10561,11 +10561,16 @@ void QWidget::update()
 */
 void QWidget::update(const QRect &rect)
 {
-    if (!isVisible() || !updatesEnabled() || rect.isEmpty())
+    if (!isVisible() || !updatesEnabled())
+        return;
+
+    QRect r = rect & QWidget::rect();
+
+    if (r.isEmpty())
         return;
 
     if (testAttribute(Qt::WA_WState_InPaintEvent)) {
-        QApplication::postEvent(this, new QUpdateLaterEvent(rect));
+        QApplication::postEvent(this, new QUpdateLaterEvent(r));
         return;
     }
 
@@ -10578,9 +10583,9 @@ void QWidget::update(const QRect &rect)
 #endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStore->markDirty(rect, this);
+            tlwExtra->backingStore->markDirty(r, this);
     } else {
-        d_func()->repaint_sys(rect);
+        d_func()->repaint_sys(r);
     }
 }
 
