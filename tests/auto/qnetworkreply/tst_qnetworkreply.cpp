@@ -349,6 +349,8 @@ private Q_SLOTS:
 #ifdef QT_BUILD_INTERNAL
     void sslSessionSharing_data();
     void sslSessionSharing();
+    void sslSessionSharingFromPersistentSession_data();
+    void sslSessionSharingFromPersistentSession();
 #endif
 #endif
 
@@ -5740,6 +5742,70 @@ void tst_QNetworkReply::sslSessionSharingHelperSlot()
         count = 0; // reset for next row
         sslSessionSharingWasUsed = false; // reset for next row
     }
+}
+
+void tst_QNetworkReply::sslSessionSharingFromPersistentSession_data()
+{
+    QTest::addColumn<bool>("sessionPersistenceEnabled");
+    QTest::newRow("enabled") << true;
+    QTest::newRow("disabled") << false;
+}
+
+void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
+{
+    QNetworkRequest::Attribute sslSessionEnablePersistenceAttribute =
+            static_cast<QNetworkRequest::Attribute>(
+                static_cast<int>(QNetworkRequest::User)-1);
+    QNetworkRequest::Attribute sslSessionTicketLifeTimeHintAttribute =
+            static_cast<QNetworkRequest::Attribute>(
+                static_cast<int>(QNetworkRequest::User)-2);
+    QNetworkRequest::Attribute sslSessionAttribute =
+            static_cast<QNetworkRequest::Attribute>(
+                static_cast<int>(QNetworkRequest::User)-3);
+
+    QString urlString("https://" + QtNetworkSettings::serverName());
+
+    // warm up SSL session cache to get a working session
+    QNetworkRequest warmupRequest(urlString);
+    QFETCH(bool, sessionPersistenceEnabled);
+    if (sessionPersistenceEnabled)
+        warmupRequest.setAttribute(sslSessionEnablePersistenceAttribute, true);
+
+    QNetworkReply *warmupReply = manager.get(warmupRequest);
+    warmupReply->ignoreSslErrors();
+    connect(warmupReply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(warmupReply->error(), QNetworkReply::NoError);
+    QByteArray sslSession = warmupReply->attribute(sslSessionAttribute).toByteArray();
+    QCOMPARE(!sslSession.isEmpty(), sessionPersistenceEnabled);
+
+    QVariant sessionTicketLifeTimeHint = warmupReply->attribute(
+                sslSessionTicketLifeTimeHintAttribute);
+    // the value will always be 0: If enabled the server sends a value of 0,
+    // but in that case the attribute is defined at least
+    QCOMPARE(sessionPersistenceEnabled, !sessionTicketLifeTimeHint.isNull());
+    QCOMPARE(sessionTicketLifeTimeHint.toInt(), 0);
+
+    warmupReply->deleteLater();
+
+    // now send another request with a new QNAM and the persisted session,
+    // to verify it can be resumed without any internal state
+    QNetworkRequest request(warmupRequest);
+    if (sessionPersistenceEnabled)
+        request.setAttribute(sslSessionAttribute, sslSession);
+
+    QNetworkAccessManager newManager;
+    QNetworkReply *reply = newManager.get(request);
+    reply->ignoreSslErrors();
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    bool sslSessionSharingWasUsedInReply = QSslConfigurationPrivate::peerSessionWasShared(
+                reply->sslConfiguration());
+    QCOMPARE(sessionPersistenceEnabled, sslSessionSharingWasUsedInReply);
 }
 
 #endif // QT_BUILD_INTERNAL

@@ -130,6 +130,10 @@ private:
     friend class QSslConfigurationPrivate;
     friend class QSslSocketBackendPrivate;
     friend class QSslContext;
+    // hack to set the SSL session from a QNAM attribute:
+    friend class QHttpThreadDelegate;
+    friend class QNetworkAccessHttpBackend;
+
     QSslConfiguration(QSslConfigurationPrivate *dd);
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };

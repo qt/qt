@@ -897,6 +897,9 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
     d->configuration.sslOptions = configuration.d->sslOptions;
+    d->configuration.cacheSslSession = configuration.d->cacheSslSession;
+    d->configuration.sslSession = configuration.d->sslSession;
+    d->configuration.sslSessionTicketLifeTimeHint = configuration.d->sslSessionTicketLifeTimeHint;
 
     // if the CA certificates were set explicitly (either via
     // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),

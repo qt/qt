@@ -58,7 +58,8 @@ extern QString getErrorsFromOpenSsl();
 QSslContext::QSslContext()
     : ctx(0),
     pkey(0),
-    session(0)
+    session(0),
+    m_sessionTicketLifeTimeHint(-1)
 {
 }
 
@@ -259,6 +260,10 @@ init_context:
     if (sslContext->sslConfiguration.peerVerifyDepth() != 0)
         q_SSL_CTX_set_verify_depth(sslContext->ctx, sslContext->sslConfiguration.peerVerifyDepth());
 
+    // set persisted session if the user set it
+    if (!configuration.d->sslSession.isEmpty())
+        sslContext->setSessionASN1(configuration.d->sslSession);
+
     return sslContext;
 }
 
@@ -267,6 +272,12 @@ SSL* QSslContext::createSsl()
 {
     SSL* ssl = q_SSL_new(ctx);
     q_SSL_clear(ssl);
+
+    if (!session && !sessionASN1().isEmpty()
+            && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionTickets)) {
+        const unsigned char *data = reinterpret_cast<const unsigned char *>(m_sessionASN1.constData());
+        session = q_d2i_SSL_SESSION(0, &data, m_sessionASN1.size()); // refcount is 1 already, set by function above
+    }
 
     if (session) {
         // Try to resume the last session we cached
@@ -293,8 +304,35 @@ bool QSslContext::cacheSession(SSL* ssl)
 
     // cache the session the caller gave us and increase reference count
     session = q_SSL_get1_session(ssl);
-    return (session != NULL);
 
+    if (session && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionTickets)
+            && sslConfiguration.d->cacheSslSession == true) {
+        int sessionSize = q_i2d_SSL_SESSION(session, 0);
+        if (sessionSize > 0) {
+            m_sessionASN1.resize(sessionSize);
+            unsigned char *data = reinterpret_cast<unsigned char *>(m_sessionASN1.data());
+            if (!q_i2d_SSL_SESSION(session, &data))
+                qWarning("could not store persistent version of SSL session");
+            m_sessionTicketLifeTimeHint = session->tlsext_tick_lifetime_hint;
+        }
+    }
+
+    return (session != 0);
+}
+
+QByteArray QSslContext::sessionASN1() const
+{
+    return m_sessionASN1;
+}
+
+void QSslContext::setSessionASN1(const QByteArray &session)
+{
+    m_sessionASN1 = session;
+}
+
+int QSslContext::sessionTicketLifeTimeHint() const
+{
+    return m_sessionTicketLifeTimeHint;
 }
 
 QSslError::SslError QSslContext::error() const

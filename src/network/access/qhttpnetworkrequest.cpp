@@ -50,6 +50,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Oper
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
       autoDecompress(false), pipeliningAllowed(false), withCredentials(true)
+    , m_cacheSslSession(false)
 {
 }
 
@@ -64,6 +65,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     customVerb = other.customVerb;
     withCredentials = other.withCredentials;
     ssl = other.ssl;
+    m_cacheSslSession = other.m_cacheSslSession;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -75,7 +77,8 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
         && (ssl == other.ssl)
-        && (uploadByteDevice == other.uploadByteDevice);
+        && (uploadByteDevice == other.uploadByteDevice)
+        && (m_cacheSslSession == other.m_cacheSslSession);
 }
 
 QByteArray QHttpNetworkRequestPrivate::methodName() const
@@ -309,6 +312,16 @@ void QHttpNetworkRequest::setUploadByteDevice(QNonContiguousByteDevice *bd)
 QNonContiguousByteDevice* QHttpNetworkRequest::uploadByteDevice() const
 {
     return d->uploadByteDevice;
+}
+
+bool QHttpNetworkRequest::cacheSslSession()
+{
+    return d->m_cacheSslSession;
+}
+
+void QHttpNetworkRequest::setCacheSslSession(bool cacheSession)
+{
+    d->m_cacheSslSession = cacheSession;
 }
 
 int QHttpNetworkRequest::majorVersion() const

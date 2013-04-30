@@ -286,6 +286,8 @@ DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMM
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_conf, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
 DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
+DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
+DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return 0, return)
 
 #ifdef Q_OS_SYMBIAN
 #define RESOLVEFUNC(func, ordinal, lib) \
@@ -872,6 +874,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
     RESOLVEFUNC(SSLeay)
+    RESOLVEFUNC(i2d_SSL_SESSION)
+    RESOLVEFUNC(d2i_SSL_SESSION)
 #endif // Q_OS_SYMBIAN
     symbolsResolved = true;
     delete libs.first;

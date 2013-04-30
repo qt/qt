@@ -279,6 +279,9 @@ void QHttpThreadDelegate::startRequest()
 #endif
 #ifndef QT_NO_OPENSSL
         // Set the QSslConfiguration from this QNetworkRequest.
+        if (httpRequest.cacheSslSession())
+            incomingSslConfiguration.d->cacheSslSession = true;
+
         if (ssl && incomingSslConfiguration != QSslConfiguration::defaultConfiguration()) {
             httpConnection->setSslConfiguration(incomingSslConfiguration);
         }

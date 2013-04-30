@@ -87,7 +87,9 @@ public:
           peerSessionShared(false),
           sslOptions(QSsl::SslOptionDisableEmptyFragments
                      |QSsl::SslOptionDisableLegacyRenegotiation
-                     |QSsl::SslOptionDisableCompression)
+                     |QSsl::SslOptionDisableCompression),
+          cacheSslSession(false),
+          sslSessionTicketLifeTimeHint(-1)
     { }
 
     QSslCertificate peerCertificate;
@@ -109,6 +111,10 @@ public:
     Q_AUTOTEST_EXPORT static bool peerSessionWasShared(const QSslConfiguration &configuration);
 
     QSsl::SslOptions sslOptions;
+
+    bool cacheSslSession;
+    QByteArray sslSession;
+    int sslSessionTicketLifeTimeHint;
 
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();

@@ -518,6 +518,9 @@ void QNetworkAccessHttpBackend::postRequest()
                              QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
         httpRequest.setWithCredentials(false);
 
+    if (request().attribute(static_cast<QNetworkRequest::Attribute>(
+                                static_cast<int>(QNetworkRequest::User)-1)).toBool() == true)
+        httpRequest.setCacheSslSession(true);
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
@@ -544,8 +547,15 @@ void QNetworkAccessHttpBackend::postRequest()
 #endif
     delegate->ssl = ssl;
 #ifndef QT_NO_OPENSSL
-    if (ssl)
+    if (ssl) {
         delegate->incomingSslConfiguration = request().sslConfiguration();
+        QNetworkRequest::Attribute sslSessionAttribute =
+                static_cast<QNetworkRequest::Attribute>(
+                    static_cast<int>(QNetworkRequest::User)-3);
+        QByteArray sslSession = request().attribute(sslSessionAttribute).toByteArray();
+        if (!sslSession.isEmpty())
+            delegate->incomingSslConfiguration.d->sslSession = sslSession;
+    }
 #endif
 
     // Do we use synchronous HTTP?
@@ -913,6 +923,21 @@ void QNetworkAccessHttpBackend::replySslConfigurationChanged(const QSslConfigura
         *pendingSslConfiguration = c;
     else if (!c.isNull())
         pendingSslConfiguration = new QSslConfiguration(c);
+
+    if (c.d->sslSession.size() > 0) {
+        QNetworkRequest::Attribute sslSessionAttribute =
+                static_cast<QNetworkRequest::Attribute>(
+                    static_cast<int>(QNetworkRequest::User)-3);
+        QNetworkRequest::Attribute sslSessionTicketLifeTimeHintAttribute =
+                static_cast<QNetworkRequest::Attribute>(
+                    static_cast<int>(QNetworkRequest::User)-2);
+        // only set the attribute once; this method is called several times
+        if (attribute(sslSessionAttribute).toByteArray().isEmpty()) {
+            setAttribute(sslSessionAttribute, c.d->sslSession);
+            setAttribute(sslSessionTicketLifeTimeHintAttribute,
+                         c.d->sslSessionTicketLifeTimeHint);
+        }
+    }
 }
 #endif
 

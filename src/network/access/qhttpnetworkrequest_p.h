@@ -122,6 +122,9 @@ public:
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
+    bool cacheSslSession();
+    void setCacheSslSession(bool cacheSession);
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
@@ -150,6 +153,7 @@ public:
     bool pipeliningAllowed;
     bool withCredentials;
     bool ssl;
+    bool m_cacheSslSession;
 };
 
 

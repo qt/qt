@@ -169,7 +169,10 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->peerVerifyMode == other.d->peerVerifyMode &&
         d->peerVerifyDepth == other.d->peerVerifyDepth &&
         d->allowRootCertOnDemandLoading == other.d->allowRootCertOnDemandLoading &&
-        d->sslOptions == other.d->sslOptions;
+        d->sslOptions == other.d->sslOptions &&
+        d->sslSession == other.d->sslSession &&
+        d->cacheSslSession == other.d->cacheSslSession &&
+        d->sslSessionTicketLifeTimeHint == other.d->sslSessionTicketLifeTimeHint;
 }
 
 /*!
@@ -205,7 +208,10 @@ bool QSslConfiguration::isNull() const
             d->peerCertificateChain.count() == 0 &&
             d->sslOptions == ( QSsl::SslOptionDisableEmptyFragments
                               |QSsl::SslOptionDisableLegacyRenegotiation
-                              |QSsl::SslOptionDisableCompression));
+                              |QSsl::SslOptionDisableCompression) &&
+            d->sslSession.isNull() &&
+            d->cacheSslSession == false &&
+            d->sslSessionTicketLifeTimeHint == -1);
 }
 
 /*!
