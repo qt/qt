@@ -1113,6 +1113,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
         case 'd':
             DisableSpecificWarnings += option+3;
             break;
+        case 'e':
+            if (config->CompilerVersion <= NET2008)
+                AdditionalOptions += option;
+            else
+                TreatSpecificWarningsAsErrors += option + 3;
+            break;
         default:
             AdditionalOptions += option;
         }
