@@ -56,6 +56,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
+#include <QtDeclarative/QDeclarativeListProperty>
+#include <QtDeclarative/QDeclarativeParserStatus>
+#include <QtDeclarative/QDeclarativePropertyValueSource>
+#include <QtDeclarative/QDeclarativePropertyValueInterceptor>
 
 QT_BEGIN_HEADER
 
@@ -279,6 +283,47 @@ namespace QDeclarativePrivate
 
         return qmlregister(QDeclarativePrivate::ComponentRegistration, &type);
     }
+    /*!
+      \internal
+      \fn int qmlRegisterUncreatableType(const char *url, const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+      \relates QDeclarativeEngine
+
+      This overload is backported from Qt5, and allows uncreatable types to be versioned.
+  */
+    template<typename T, int metaObjectRevision>
+    int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& reason)
+    {
+        QByteArray name(T::staticMetaObject.className());
+
+        QByteArray pointerName(name + '*');
+        QByteArray listName("QDeclarativeListProperty<" + name + ">");
+
+        QDeclarativePrivate::RegisterType type = {
+            1,
+
+            qRegisterMetaType<T *>(pointerName.constData()),
+            qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
+            0, 0,
+            reason,
+
+            uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
+
+            QDeclarativePrivate::attachedPropertiesFunc<T>(),
+            QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
+
+            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(),
+            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
+            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
+
+            0, 0,
+
+            0,
+            metaObjectRevision
+        };
+
+        return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
+    }
+
 
 }
 
