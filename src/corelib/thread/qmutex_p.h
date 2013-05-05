@@ -79,7 +79,7 @@ public:
     Qt::HANDLE owner;
     uint count;
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX) && (!defined(Q_OS_LINUX) || defined(QT_LINUXBASE)) && !defined(Q_OS_SYMBIAN)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
