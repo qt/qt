@@ -47,5 +47,3 @@ wince*|symbian {
 
     requires(contains(QT_CONFIG,script))
 }
-
-win32:CONFIG+=insignificant_test # QTQAINFRA-574
