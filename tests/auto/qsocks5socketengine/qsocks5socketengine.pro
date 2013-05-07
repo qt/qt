@@ -15,5 +15,3 @@ symbian: TARGET.CAPABILITY = NetworkServices
 
 
 requires(contains(QT_CONFIG,private_tests))
-
-CONFIG+=insignificant_test # QTQAINFRA-428
