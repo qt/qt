@@ -8,4 +8,4 @@ include(../platformsocketengine/platformsocketengine.pri)
 
 symbian: TARGET.CAPABILITY = NetworkServices
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+macx:CONFIG+=insignificant_test # QTQAINFRA-574
