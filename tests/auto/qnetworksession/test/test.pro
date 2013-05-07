@@ -25,4 +25,4 @@ maemo6|maemo5 {
     PKGCONFIG += conninet
 }
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-574
