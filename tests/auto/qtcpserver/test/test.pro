@@ -34,4 +34,4 @@ QT = core network
 MOC_DIR=tmp
 
 
-mac*|win32:CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-574
