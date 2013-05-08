@@ -10,4 +10,4 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include (../xmlpatterns.pri)
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-574
