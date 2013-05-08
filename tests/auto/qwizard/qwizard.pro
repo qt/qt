@@ -7,4 +7,4 @@ SOURCES  += tst_qwizard.cpp tst_qwizard_2.cpp
 RESOURCES = qwizard.qrc
 TARGET.EPOCHEAPSIZE = 0x200000 0xF00000
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32|macx:CONFIG+=insignificant_test # QTQAINFRA-574
