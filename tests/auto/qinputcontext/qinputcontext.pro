@@ -7,4 +7,4 @@ symbian {
     LIBS += -lws32 -lcone
 }
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+macx:CONFIG+=insignificant_test # QTQAINFRA-547
