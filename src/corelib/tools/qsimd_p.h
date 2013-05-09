@@ -199,7 +199,7 @@ QT_BEGIN_HEADER
 #endif
 
 // 3D now intrinsics
-#if defined(QT_HAVE_3DNOW)
+#if defined(QT_HAVE_3DNOW) && (defined(__3dNOW__) || defined(Q_CC_MSVC))
 #include <mm3dnow.h>
 #endif
 
