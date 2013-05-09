@@ -19,4 +19,4 @@ QT = core
 include(externaltests.pri)
 CONFIG += parallel_test
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+macx:CONFIG+=insignificant_test # QTBUG-31100
