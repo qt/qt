@@ -12,5 +12,3 @@ wince* {
 } else {
     !symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
-
-CONFIG+=insignificant_test # QTQAINFRA-428
