@@ -1,4 +1,4 @@
 load(qttest_p4)
 SOURCES  += tst_qinputdialog.cpp
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+macx:CONFIG+=insignificant_test # QTBUG-31101
