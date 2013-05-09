@@ -9,4 +9,4 @@ win32-msvc*:LIBS += advapi32.lib
 
 CONFIG += parallel_test
 
-CONFIG+=insignificant_test # QTQAINFRA-428
+win32:CONFIG+=insignificant_test # QTQAINFRA-574
