@@ -58,7 +58,7 @@ mac {
     LIBS += -lmmfdevsound
 } else:unix {
     unix:contains(QT_CONFIG, alsa) {
-        linux-*|freebsd-*|openbsd-*:{
+        linux-*|freebsd-*|openbsd-*|qnx:{
             DEFINES += HAS_ALSA
             HEADERS += $$PWD/qaudiooutput_alsa_p.h $$PWD/qaudioinput_alsa_p.h $$PWD/qaudiodeviceinfo_alsa_p.h
             SOURCES += $$PWD/qaudiodeviceinfo_alsa_p.cpp \
