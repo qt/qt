@@ -204,10 +204,12 @@ QString QGuiPlatformPlugin::systemIconThemeName()
     QString result;
 #ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_GNOME) {
-        result = QString::fromLatin1("gnome");
 #ifndef QT_NO_STYLE_GTK
-        result = QGtkStylePrivate::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"), result);
+        result = QGtkStylePrivate::getIconThemeName();
 #endif
+        if (result.isEmpty()) {
+            result = QString::fromLatin1("gnome");
+        }
     } else if (X11->desktopEnvironment == DE_KDE) {
         result =  X11->desktopVersion >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
         QSettings settings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
