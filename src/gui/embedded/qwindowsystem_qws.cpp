@@ -3885,8 +3885,13 @@ void QWSServerPrivate::request_region(int wid, const QString &surfaceKey,
 
     const bool wasOpaque = changingw->opaque;
 
-    changingw->createSurface(surfaceKey, surfaceData);
     QWSWindowSurface *surface = changingw->windowSurface();
+    if (!surface) {
+        changingw->createSurface(surfaceKey, surfaceData);
+        surface = changingw->windowSurface();
+    } else {
+        surface->setPermanentState(surfaceData);
+    }
 
     changingw->opaque = surface->isOpaque();
 
