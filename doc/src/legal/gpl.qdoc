@@ -58,7 +58,7 @@ Reference: \l{GNU Lesser General Public License, version 2.1}
 
 \snippet doc/src/snippets/code/doc_src_lgpl.qdoc LGPL v2.1
 
-\section1 Nokia Qt LGPL Exception version 1.0
+\section1 Digia Qt LGPL Exception version 1.1
 
 As a special exception to the GNU Lesser General Public License version 2.1,
 the object code form of a "work that uses the Library" may incorporate material
