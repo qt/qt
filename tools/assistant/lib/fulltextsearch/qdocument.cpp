@@ -4,7 +4,7 @@
 ** All rights reserved.
 **
 ** Portion Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** All rights reserved.
+
 **
 ** This file may be used under the terms of the GNU Lesser General Public
 ** License version 2.1 as published by the Free Software Foundation and
