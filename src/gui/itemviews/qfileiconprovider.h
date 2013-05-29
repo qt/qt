@@ -70,6 +70,7 @@ private:
     Q_DECLARE_PRIVATE(QFileIconProvider)
     QScopedPointer<QFileIconProviderPrivate> d_ptr;
     Q_DISABLE_COPY(QFileIconProvider)
+    friend class QFileDialog;
 };
 
 #endif // QT_NO_FILEICONPROVIDER

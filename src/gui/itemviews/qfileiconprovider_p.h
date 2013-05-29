@@ -57,6 +57,7 @@ class QFileIconProviderPrivate
 
 public:
     QFileIconProviderPrivate();
+    void setUseCustomDirectoryIcons(bool enable);
     QIcon getIcon(QStyle::StandardPixmap name) const;
 #ifdef Q_WS_WIN
     QIcon getWinIcon(const QFileInfo &fi) const;
@@ -67,6 +68,7 @@ public:
     const QString homePath;
 
 private:
+    bool useCustomDirectoryIcons;
     mutable QIcon file;
     mutable QIcon fileLink;
     mutable QIcon directory;
