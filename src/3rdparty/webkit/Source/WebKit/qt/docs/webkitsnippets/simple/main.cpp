@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     QWidget *parent = 0;
 //! [Using QWebView]
     QWebView *view = new QWebView(parent);
-    view->load(QUrl("http://qt.nokia.com/"));
+    view->load(QUrl("http://qt-project.org"));
     view->show();
 //! [Using QWebView]
     return app.exec();
