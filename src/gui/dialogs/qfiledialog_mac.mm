@@ -170,7 +170,7 @@ QT_USE_NAMESPACE
     mSelectedNameFilter = new QStringList([self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter]);
 
     QFileInfo sel(selectFile);
-    if (sel.isDir()){
+    if (sel.isDir() && !sel.isBundle()){
         mCurrentDir = [qt_mac_QStringToNSString(sel.absoluteFilePath()) retain];
         mCurrentSelection = new QString;
     } else {
