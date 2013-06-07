@@ -1284,8 +1284,11 @@ Qt::DropAction QDragManager::drag(QDrag *o)
         return Qt::IgnoreAction;
     /* At the moment it seems clear that Mac OS X does not want to drag with a non-left button
      so we just bail early to prevent it */
-    if(!(GetCurrentEventButtonState() & kEventMouseButtonPrimary))
+    if (!(GetCurrentEventButtonState() & kEventMouseButtonPrimary)) {
+        o->setMimeData(0);
+        o->deleteLater();
         return Qt::IgnoreAction;
+    }
 
     if(object) {
         dragPrivate()->source->removeEventFilter(this);
