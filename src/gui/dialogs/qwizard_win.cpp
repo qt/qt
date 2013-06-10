@@ -248,7 +248,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , wizard(wizard)
     , backButton_(0)
 {
-    is_vista = resolveSymbols();
+    is_vista = QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && resolveSymbols();
     if (instanceCount++ == 0)
         cachedVistaState = Dirty;
     if (is_vista)
