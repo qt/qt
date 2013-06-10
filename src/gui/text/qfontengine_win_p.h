@@ -147,6 +147,7 @@ public:
 
 private:
     bool hasCFFTable() const;
+    bool hasCMapTable() const;
     QNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,
                                QImage::Format mask_format);
 
