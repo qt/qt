@@ -524,6 +524,9 @@
     easier. It provides a clean abstraction layer for porting QtGui to new
     window systems.
 
+    \note QPA is considered an experimental feature in Qt 4.8. In Qt 5 it
+    is a supported and complete feature.
+
     \section1 Qt WebKit 2.2
 
     The new Qt WebKit release introduces bug fixes, performance improvements,
