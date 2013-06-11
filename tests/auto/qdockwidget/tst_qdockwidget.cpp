@@ -363,7 +363,9 @@ void tst_QDockWidget::features()
 
 void tst_QDockWidget::setFloating()
 {
+    const QRect deskRect = QApplication::desktop()->availableGeometry();
     QMainWindow mw;
+    mw.move(deskRect.left() + deskRect.width() * 2 / 3, deskRect.top() + deskRect.height() / 3);
     QDockWidget dw;
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
 
@@ -373,10 +375,16 @@ void tst_QDockWidget::setFloating()
 #endif
 
     QVERIFY(!dw.isFloating());
+    const QPoint dockedPosition = dw.mapToGlobal(dw.pos());
 
     QSignalSpy spy(&dw, SIGNAL(topLevelChanged(bool)));
 
     dw.setFloating(true);
+    const QPoint floatingPosition = dw.pos();
+
+    // QTBUG-31044, show approximately at old position, give or take window frame.
+    QVERIFY((dockedPosition - floatingPosition).manhattanLength() < 50);
+
     QVERIFY(dw.isFloating());
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).value(0).toBool(), dw.isFloating());
