@@ -715,7 +715,8 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
 
 static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerName)
 {
-    // headerName is not empty here
+    if (headerName.isEmpty())
+        return QNetworkRequest::KnownHeaders(-1);
 
     switch (tolower(headerName.at(0))) {
     case 'c':
