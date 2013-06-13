@@ -1080,8 +1080,10 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
     // also called when last URL is empty, e.g. on first call
-    if (backend->reply->urlForLastAuthentication.isEmpty()
-            || url != backend->reply->urlForLastAuthentication) {
+    if ((static_cast<QNetworkRequest::LoadControl>
+         (backend->request().attribute(QNetworkRequest::AuthenticationReuseAttribute).toInt()) != QNetworkRequest::Manual)
+            && (backend->reply->urlForLastAuthentication.isEmpty()
+            || url != backend->reply->urlForLastAuthentication)) {
         // if credentials are included in the url, then use them
         if (!url.userName().isEmpty()
             && !url.password().isEmpty()) {
