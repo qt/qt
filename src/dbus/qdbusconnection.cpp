@@ -53,6 +53,7 @@
 #include "qdbusinterface_p.h"
 #include "qdbusutil_p.h"
 #include "qdbusconnectionmanager_p.h"
+#include "qdbuspendingcall_p.h"
 
 #include "qdbusthreaddebug_p.h"
 
@@ -625,7 +626,7 @@ QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int tim
         return QDBusPendingCall(0); // null pointer -> disconnected
     }
 
-    QDBusPendingCallPrivate *priv = d->sendWithReplyAsync(message, timeout);
+    QDBusPendingCallPrivate *priv = d->sendWithReplyAsync(message, 0, 0, 0, timeout);
     return QDBusPendingCall(priv);
 }
 
