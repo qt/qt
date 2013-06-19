@@ -1902,6 +1902,7 @@ void QColorDialog::setVisible(bool visible)
     } else {
         if (d->delegate) {
             d->closeCocoaColorPanel();
+            QColorDialogPrivate::sharedColorPanelAvailable = true;
             setAttribute(Qt::WA_DontShowOnScreen, false);
         }
     }
