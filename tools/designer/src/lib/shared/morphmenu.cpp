@@ -62,6 +62,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QLayout>
 #include <QtGui/QUndoStack>
+#include <QtGui/QSplitter>
 
 #include <QtGui/QFrame>
 #include <QtGui/QGroupBox>
@@ -457,6 +458,13 @@ void MorphWidgetCommand::morph(QWidget *before, QWidget *after)
         Q_ASSERT(lh);
         lh->replaceWidget(containingLayout, before, after);
         delete lh;
+    } else if (QSplitter *splitter = qobject_cast<QSplitter *>(parent)) {
+        const int index = splitter->indexOf(before);
+        before->hide();
+        before->setParent(0);
+        splitter->insertWidget(index, after);
+        after->setParent(parent);
+        after->setGeometry(oldGeom);
     } else {
         before->hide();
         before->setParent(0);
