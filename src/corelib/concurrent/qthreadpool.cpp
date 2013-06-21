@@ -187,6 +187,7 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
         // recycle an available thread
         --waitingThreads;
         enqueueTask(task);
+        runnableReady.wakeOne();
         return true;
     }
 
@@ -218,7 +219,6 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
     QList<QPair<QRunnable *, int> >::iterator at =
         qUpperBound(queue.begin(), queue.end(), priority);
     queue.insert(at, qMakePair(runnable, priority));
-    runnableReady.wakeOne();
 }
 
 int QThreadPoolPrivate::activeThreadCount() const
@@ -471,8 +471,14 @@ void QThreadPool::start(QRunnable *runnable, int priority)
 
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    if (!d->tryStart(runnable))
+    if (!d->tryStart(runnable)) {
         d->enqueueTask(runnable, priority);
+
+        if (d->waitingThreads > 0) {
+            --d->waitingThreads;
+            d->runnableReady.wakeOne();
+        }
+    }
 }
 
 /*!
