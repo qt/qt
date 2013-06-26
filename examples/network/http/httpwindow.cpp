@@ -52,9 +52,9 @@ HttpWindow::HttpWindow(QWidget *parent)
 #endif
 {
 #ifndef QT_NO_OPENSSL
-    urlLineEdit = new QLineEdit("https://qt.nokia.com/");
+    urlLineEdit = new QLineEdit("https://qt-project.org/");
 #else
-    urlLineEdit = new QLineEdit("http://qt.nokia.com/");
+    urlLineEdit = new QLineEdit("http://qt-project.org/");
 #endif
 
     urlLabel = new QLabel(tr("&URL:"));
