@@ -187,7 +187,8 @@ public:
             snapToPixelGrid(false),
             nativePaintingActive(false),
             inverseScale(1),
-            lastMaskTextureUsed(0)
+            lastMaskTextureUsed(0),
+            hasCompatibilityExtension(false)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -318,6 +319,8 @@ public:
     QVector<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
+
+    bool hasCompatibilityExtension;
 };
 
 

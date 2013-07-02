@@ -568,6 +568,7 @@ void QGL2PaintEngineEx::beginNativePainting()
 #ifndef QT_OPENGL_ES_2
     const QGLFormat &fmt = d->device->format();
     if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+        || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && d->hasCompatibilityExtension)
         || fmt.profile() == QGLFormat::CompatibilityProfile)
     {
         // be nice to people who mix OpenGL 1.x code with QPainter commands
@@ -2139,6 +2140,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->device->beginPaint();
 
 #if !defined(QT_OPENGL_ES_2)
+    QGLExtensionMatcher extensions;
+    d->hasCompatibilityExtension = extensions.match("GL_ARB_compatibility");
+
     bool success = qt_resolve_version_2_0_functions(d->ctx)
                    && qt_resolve_buffer_extensions(d->ctx)
                    && (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
