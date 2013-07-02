@@ -1973,6 +1973,8 @@ QString VCXProjectWriter::platformToolSetVersion(const DotNET version)
     {
     case NET2012:
         return "v110";
+    case NET2013:
+        return "v120";
     }
     Q_ASSERT(!"This MSVC version does not support the PlatformToolSet tag!");
     return QString();
