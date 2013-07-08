@@ -3866,7 +3866,14 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                     d->updateFrameStrut();  // In theory the dirty would work, but it's optimized out if the window is not visible :(
                 }
                 // Everything should be handled by Cocoa.
-                [window zoom:window];
+                if (!windowFlags() & Qt::FramelessWindowHint) {
+                    [window zoom:window];
+                } else {
+                    QDesktopWidget *dsk = QApplication::desktop();
+                    QRect avail = dsk->availableGeometry(dsk->screenNumber(this));
+                    setGeometry(avail);
+                }
+
 #endif
                 needSendStateChange = oldstate == windowState(); // Zoom didn't change flags.
             } else if(oldstate & Qt::WindowMaximized && !(oldstate & Qt::WindowFullScreen)) {

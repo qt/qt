@@ -2052,6 +2052,15 @@ void tst_QWidget::showMaximized()
     }
 #endif
 #endif // QT3_SUPPORT
+#ifdef Q_WS_MAC // Only do this on Mac because it's still not getting accurate results elsewhere
+    {
+        QWidget w;
+        w.setWindowFlags(Qt::FramelessWindowHint);
+        w.showMaximized();
+        QTest::qWaitForWindowShown(&w);
+        QCOMPARE(w.geometry(), QApplication::desktop()->availableGeometry(&w));
+    }
+#endif
 }
 
 void tst_QWidget::showFullScreen()
