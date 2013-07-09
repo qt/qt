@@ -1409,9 +1409,12 @@ bool QDockWidget::event(QEvent *event)
         d->toggleViewAction->setChecked(false);
         emit visibilityChanged(false);
         break;
-    case QEvent::Show:
+    case QEvent::Show: {
         d->toggleViewAction->setChecked(true);
-        emit visibilityChanged(geometry().right() >= 0 && geometry().bottom() >= 0);
+        const QPoint parentTopLeft = isWindow() ?
+            QApplication::desktop()->availableGeometry(this).topLeft() : QPoint(0, 0);
+        emit visibilityChanged(geometry().right() >= parentTopLeft.x() && geometry().bottom() >= parentTopLeft.y());
+}
         break;
 #endif
     case QEvent::ApplicationLayoutDirectionChange:
