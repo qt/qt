@@ -1,5 +1,5 @@
 ********* Start testing of tst_Cmptest *********
-Config: Using QTest library 4.8.5, Qt 4.8.5
+Config: Using QTest library 4.8.6, Qt 4.8.6
 PASS   : tst_Cmptest::initTestCase()
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_pointerfuncs()
