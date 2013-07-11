@@ -53,7 +53,7 @@ function setFont( form )
 This widget can have many children!
 </p>
 <object ID="ParentWidget" CLASSID="CLSID:d574a747-8016-46db-a07c-b2b4854ee75c"
-CODEBASE="http://qt.nokia.com/demos/hierarchy.cab">
+CODEBASE="http://www.qt-project.org/demos/hierarchy.cab">
 [Object not available! Did you forget to build and register the server?]
 </object><br />
 <form>

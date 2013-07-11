@@ -32,7 +32,7 @@
 
     \raw HTML
     <object ID="QSimpleAX" CLASSID="CLSID:DF16845C-92CD-4AAB-A982-EB9840E74669"
-    CODEBASE="http://qt.nokia.com/demos/simpleax.cab">
+    CODEBASE="http://www.qt-project.org/demos/simpleax.cab">
         <PARAM NAME="text" VALUE="A simple control" />
         <PARAM NAME="value" VALUE="1" />
     [Object not available! Did you forget to build and register the server?]

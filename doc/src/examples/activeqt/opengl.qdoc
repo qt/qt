@@ -43,7 +43,7 @@
     <p />
     An OpenGL scene:<br />
     <object ID="GLBox" CLASSID="CLSID:5fd9c22e-ed45-43fa-ba13-1530bb6b03e0"
-    CODEBASE="http://qt.nokia.com/demos/openglax.cab">
+    CODEBASE="http://www.qt-project.org/demos/openglax.cab">
     [Object not available! Did you forget to build and register the server?]
     </object><br />
 

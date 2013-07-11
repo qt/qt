@@ -310,9 +310,8 @@
     since this includes subclasses of QObject and QWidget we can wrap
     any of our datatypes into a QObject subclass to make its API
     available to .NET. This has the positive side effect that the same
-    API is automatically available in
-    \l{http://qt.nokia.com/products/qsa/}{QSA}, the cross platform
-    scripting solution for Qt applications, and to COM clients in general.
+    API is automatically available when using \l QtScript to automate
+    Qt applications and to COM clients in general.
 
     When using the "IJW" method, in principle the only limitation is the
     time required to write the wrapper classes and data type conversion
