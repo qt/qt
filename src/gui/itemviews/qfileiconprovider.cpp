@@ -40,9 +40,10 @@
 ****************************************************************************/
 
 #include "qfileiconprovider.h"
+#include "qfileiconprovider_p.h"
 
 #ifndef QT_NO_FILEICONPROVIDER
-#include <qstyle.h>
+#include <qfileinfo.h>
 #include <qapplication.h>
 #include <qdir.h>
 #include <qpixmapcache.h>
@@ -86,38 +87,6 @@ QT_BEGIN_NAMESPACE
   \value Folder
   \value File
 */
-
-class QFileIconProviderPrivate
-{
-    Q_DECLARE_PUBLIC(QFileIconProvider)
-
-public:
-    QFileIconProviderPrivate();
-    QIcon getIcon(QStyle::StandardPixmap name) const;
-#ifdef Q_WS_WIN
-    QIcon getWinIcon(const QFileInfo &fi) const;
-#elif defined(Q_WS_MAC)
-    QIcon getMacIcon(const QFileInfo &fi) const;
-#endif
-    QFileIconProvider *q_ptr;
-    const QString homePath;
-
-private:
-    mutable QIcon file;
-    mutable QIcon fileLink;
-    mutable QIcon directory;
-    mutable QIcon directoryLink;
-    mutable QIcon harddisk;
-    mutable QIcon floppy;
-    mutable QIcon cdrom;
-    mutable QIcon ram;
-    mutable QIcon network;
-    mutable QIcon computer;
-    mutable QIcon desktop;
-    mutable QIcon trashcan;
-    mutable QIcon generic;
-    mutable QIcon home;
-};
 
 QFileIconProviderPrivate::QFileIconProviderPrivate() :
     homePath(QDir::home().absolutePath())
