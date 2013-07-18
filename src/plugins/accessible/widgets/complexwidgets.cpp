@@ -1780,9 +1780,12 @@ int QAccessibleComboBox::navigate(RelationFlag rel, int entry, QAccessibleInterf
     *target = 0;
     if (entry > ComboBoxSelf) switch (rel) {
     case Child:
-        if (entry < PopupList)
+        if (entry == CurrentText && comboBox()->isEditable()) {
+            *target = QAccessible::queryAccessibleInterface(comboBox()->lineEdit());
+            return *target ? 0 : -1;
+        } else if (entry < PopupList) {
             return entry;
-        if (entry == PopupList) {
+        } else if (entry == PopupList) {
             QAbstractItemView *view = comboBox()->view();
             QWidget *parent = view ? view->parentWidget() : 0;
             *target = QAccessible::queryAccessibleInterface(parent);
