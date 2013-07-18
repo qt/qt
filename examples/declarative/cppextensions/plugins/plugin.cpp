@@ -144,7 +144,7 @@ class QExampleQmlPlugin : public QDeclarativeExtensionPlugin
 public:
     void registerTypes(const char *uri)
     {
-        Q_ASSERT(uri == QLatin1String("com.nokia.TimeExample"));
+        Q_ASSERT(uri == QLatin1String("org.qtproject.TimeExample"));
         qmlRegisterType<TimeModel>(uri, 1, 0, "Time");
     }
 };

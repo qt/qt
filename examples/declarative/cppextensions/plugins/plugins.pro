@@ -2,24 +2,24 @@ TEMPLATE = lib
 CONFIG += qt plugin
 QT += declarative
 
-DESTDIR = com/nokia/TimeExample
+DESTDIR = org/qtproject/TimeExample
 TARGET  = qmlqtimeexampleplugin
 
 SOURCES += plugin.cpp
 
 qdeclarativesources.files += \
-    com/nokia/TimeExample/qmldir \
-    com/nokia/TimeExample/center.png \
-    com/nokia/TimeExample/clock.png \
-    com/nokia/TimeExample/Clock.qml \
-    com/nokia/TimeExample/hour.png \
-    com/nokia/TimeExample/minute.png
+    org/qtproject/TimeExample/qmldir \
+    org/qtproject/TimeExample/center.png \
+    org/qtproject/TimeExample/clock.png \
+    org/qtproject/TimeExample/Clock.qml \
+    org/qtproject/TimeExample/hour.png \
+    org/qtproject/TimeExample/minute.png
 
-qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/com/nokia/TimeExample
+qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/org/qtproject/TimeExample
 
 sources.files += plugins.pro plugin.cpp plugins.qml README
 sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins
-target.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/com/nokia/TimeExample
+target.path += $$[QT_INSTALL_EXAMPLES]/declarative/cppextensions/plugins/org/qtproject/TimeExample
 
 build_all:!build_pass {
     CONFIG -= build_all
