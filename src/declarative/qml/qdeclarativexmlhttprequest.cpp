@@ -1273,6 +1273,11 @@ void QDeclarativeXMLHttpRequest::finished()
         if (redirect.isValid()) {
             QUrl url = m_network->url().resolved(redirect.toUrl());
             if (url.scheme().toLower() != QLatin1String("file")) {
+                // See http://www.ietf.org/rfc/rfc2616.txt, section 10.3.4 "303 See Other":
+                // Result of 303 redirection should be a new "GET" request.
+                const QVariant code = m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+                if (code.isValid() && code.toInt() == 303 && m_method != QLatin1String("GET"))
+                    m_method = QLatin1String("GET");
                 destroyNetwork();
                 requestFromUrl(url);
                 return;
