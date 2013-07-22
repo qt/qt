@@ -614,6 +614,8 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     } else {
         qWarning("could not load crypt32 library"); // should never happen
     }
+#elif defined(Q_OS_QNX)
+    s_loadRootCertsOnDemand = true;
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_MAC)
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
     QList<QByteArray> dirs = unixRootCertDirectories();
