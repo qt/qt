@@ -313,7 +313,9 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
 
     [printPanel setOptions:macOptions];
 
-    if (modality == Qt::ApplicationModal) {
+    if (modality == Qt::ApplicationModal || !q->parentWidget()) {
+        if (modality == Qt::NonModal)
+            qWarning("QPrintDialog is required to be modal on OS X");
         int rval = [printPanel runModalWithPrintInfo:ep->printInfo];
         [delegate printPanelDidEnd:printPanel returnCode:rval contextInfo:this];
     } else {
