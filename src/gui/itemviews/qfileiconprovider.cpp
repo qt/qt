@@ -213,22 +213,19 @@ static bool isCacheable(const QFileInfo &fi)
 QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 {
     QIcon retIcon;
-    const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
-
     QString key;
-    if (isCacheable(fileInfo))
-        key = QLatin1String("qt_") + fileExtension;
-
     QPixmap pixmap;
-    if (!key.isEmpty()) {
+    // If it's a file, non-{exe,lnk,ico} then we might have it cached already
+    if (isCacheable(fileInfo)) {
+        const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
+        key = QLatin1String("qt_") + fileExtension;
         QPixmapCache::find(key, pixmap);
-    }
-
-    if (!pixmap.isNull()) {
-        retIcon.addPixmap(pixmap);
-        if (QPixmapCache::find(key + QLatin1Char('l'), pixmap))
+        if (!pixmap.isNull()) {
             retIcon.addPixmap(pixmap);
-        return retIcon;
+            if (QPixmapCache::find(key + QLatin1Char('l'), pixmap))
+                retIcon.addPixmap(pixmap);
+            return retIcon;
+        }
     }
 
     /* We don't use the variable, but by storing it statically, we
@@ -240,13 +237,15 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     unsigned long val = 0;
 
     //Get the small icon
+    const unsigned int flags =
 #ifndef Q_OS_WINCE
-    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
-                        sizeof(SHFILEINFO), SHGFI_ICON|SHGFI_SMALLICON|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX);
+        SHGFI_ICON|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
 #else
-    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
-                        sizeof(SHFILEINFO), SHGFI_SMALLICON|SHGFI_SYSICONINDEX);
+        SHGFI_SYSICONINDEX;
 #endif
+
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(),
+                0, &info, sizeof(SHFILEINFO), flags | SHGFI_SMALLICON);
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
     if (val && info.hIcon) {
@@ -281,13 +280,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     }
 
     //Get the big icon
-#ifndef Q_OS_WINCE
-    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
-                        sizeof(SHFILEINFO), SHGFI_ICON|SHGFI_LARGEICON|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX);
-#else
-    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(), 0, &info,
-                        sizeof(SHFILEINFO), SHGFI_LARGEICON|SHGFI_SYSICONINDEX);
-#endif
+    val = SHGetFileInfo((const wchar_t *)QDir::toNativeSeparators(fileInfo.filePath()).utf16(),
+                0, &info, sizeof(SHFILEINFO), flags | SHGFI_LARGEICON);
+
     if (val && info.hIcon) {
         if (fileInfo.isDir() && !fileInfo.isRoot()) {
             //using the unique icon index provided by windows save us from duplicate keys
