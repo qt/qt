@@ -388,7 +388,10 @@ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd
         return false;
     }
 
-    const QString code = QTextStream(&file).readAll();
+    QTextStream ts(&file);
+    ts.setCodec("UTF-8");
+    ts.setAutoDetectUnicode(true);
+    const QString code = ts.readAll();
 
     Engine driver;
     Parser parser(&driver);
