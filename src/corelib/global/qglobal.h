@@ -718,8 +718,10 @@ namespace QT_NAMESPACE {}
     in which case _BOOL is not defined
         this is the default in 4.2 compatibility mode triggered by -compat=4 */
 #  if __SUNPRO_CC >= 0x500
-#    define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-   /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
+#    if __SUNPRO_CC < 0x590
+#      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+       /* see http://www.oracle.com/technetwork/systems/cccompare-137792.html */
+#    endif
 #    if __SUNPRO_CC >= 0x590
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
