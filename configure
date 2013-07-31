@@ -7705,9 +7705,12 @@ case "$XPLATFORM" in
                 canBuildQtXmlPatterns="no"
                 canBuildQtConcurrent="no"
                 ;;
-            5.*)
+            5.9)
                 canBuildWebKit="no"
                 canBuildQtConcurrent="no"
+                ;;
+            5.1*)
+                canBuildWebKit="no"
                 ;;
         esac
         ;;
