@@ -92,7 +92,7 @@
 #define QT_SOCKLEN_T            size_t
 #else
 // always this case in practice
-#define QT_SOCKLEN_T            int
+#define QT_SOCKLEN_T            socklen_t
 #endif
 
 // Solaris redefines connect -> __xnet_connect with _XOPEN_SOURCE_EXTENDED
