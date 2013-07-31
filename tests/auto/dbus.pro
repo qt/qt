@@ -16,6 +16,7 @@ SUBDIRS=\
            qdbustype \
            qdbusthreading \
            qdbusxmlparser \
+           qdbusxmlgenerator \
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
            qdbusmarshall \
