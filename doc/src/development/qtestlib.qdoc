@@ -35,8 +35,8 @@
 
     \keyword qtestlib
 
-    The QTestLib framework, provided by Nokia, is a tool for unit
-    testing Qt based applications and libraries. QTestLib provides
+    QTestLib is a framework for unit testing Qt based applications and libraries.
+    QTestLib provides
     all the functionality commonly found in unit testing frameworks as
     well as extensions for testing graphical user interfaces.
 
