@@ -67,6 +67,13 @@ QFont qfontForThemeFont(ThemeFontID themeID)
 #else
     QCFType<CTFontRef> ctfont = CopyCTThemeFont(themeID);
     QString familyName = QCFString(CTFontCopyFamilyName(ctfont));
+
+    // Fix for the new private UI font on Mavericks
+    if (familyName == QLatin1String(".Lucida Grande UI"))
+        familyName = QLatin1String("Lucida Grande");
+    else if (familyName.startsWith(QLatin1String(".")))
+        qWarning("Qt: qfontForThemeFont: encountered unknown private system font: %s", familyName.toLatin1().constData());
+
     QCFType<CFDictionaryRef> dict = CTFontCopyTraits(ctfont);
     CFNumberRef num = static_cast<CFNumberRef>(CFDictionaryGetValue(dict, kCTFontWeightTrait));
     float fW;
