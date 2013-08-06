@@ -343,3 +343,8 @@ void YetMoreFun::funStuff()
 }
 
 }
+
+
+
+// QTBUG-27974: strings from included sources are not collected
+#include "included.cpp"

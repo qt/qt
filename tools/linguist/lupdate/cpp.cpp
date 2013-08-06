@@ -1411,6 +1411,7 @@ void CppParser::processInclude(const QString &file, ConversionData &cd, const QS
         parser.functionContextUnresolved = functionContextUnresolved;
         parser.pendingContext = pendingContext;
         parser.setInput(ts, cleanFile);
+        parser.setTranslator(tor);
         QStringList stack = includeStack;
         stack << cleanFile;
         parser.parseInternal(cd, stack, inclusions);

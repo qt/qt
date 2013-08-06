@@ -228,6 +228,11 @@ backslashed \ stuff.</source>
         <source>just QObject</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="included.cpp" line="42"/>
+        <source>message from #included .cpp file</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QTranslator</name>
