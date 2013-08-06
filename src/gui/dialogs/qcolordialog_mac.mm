@@ -120,6 +120,11 @@ QT_USE_NAMESPACE
     mDialogIsExecuting = false;
     mResultSet = false;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7)
+        [mColorPanel setRestorable:NO];
+#endif
+
     if (mHackedPanel) {
         [self relayout];
 
