@@ -3465,7 +3465,7 @@ QString QApplication::sessionKey() const
 
    \warning This signal is only emitted on Symbian.
 
-   \sa aboutToFreeGpuResources()
+   \sa aboutToReleaseGpuResources()
 */
 
 /*!
