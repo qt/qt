@@ -492,10 +492,14 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
 
     png_uint_32 width;
     png_uint_32 height;
+    png_int_32 offset_x;
+    png_int_32 offset_y;
     int bit_depth;
     int color_type;
+    int unit_type;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
                  0, 0, 0);
+    png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
 
     uchar *data = outImage->bits();
     int bpl = outImage->bytesPerLine();
@@ -526,6 +530,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
 
     outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
     outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
+
+    if (unit_type == PNG_OFFSET_PIXEL)
+        outImage->setOffset(QPoint(offset_x, offset_y));
 
     state = ReadingEnd;
     png_read_end(png_ptr, end_info);
