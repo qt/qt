@@ -927,13 +927,7 @@ ProFileEvaluator::Private::VisitReturn ProFileEvaluator::Private::visitProBlock(
             okey = true, or_op = false; // force next evaluation
             break;
         case TokForLoop:
-            if (m_cumulative) { // This is a no-win situation, so just pretend it's no loop
-                skipHashStr(tokPtr);
-                uint exprLen = getBlockLen(tokPtr);
-                tokPtr += exprLen;
-                blockLen = getBlockLen(tokPtr);
-                ret = visitProBlock(tokPtr);
-            } else if (okey != or_op) {
+            if (m_cumulative || okey != or_op) {
                 const ProString &variable = getHashStr(tokPtr);
                 uint exprLen = getBlockLen(tokPtr);
                 const ushort *exprPtr = tokPtr;
@@ -1063,6 +1057,10 @@ ProFileEvaluator::Private::VisitReturn ProFileEvaluator::Private::visitProLoop(
     ProStringList list = valuesDirect(it_list);
     if (list.isEmpty()) {
         if (it_list == statics.strforever) {
+            if (m_cumulative) {
+                // The termination conditions wouldn't be evaluated, so we must skip it.
+                return ReturnFalse;
+            }
             infinite = true;
         } else {
             const QString &itl = it_list.toQString(m_tmp1);
@@ -1073,6 +1071,11 @@ ProFileEvaluator::Private::VisitReturn ProFileEvaluator::Private::visitProLoop(
                 if (ok) {
                     int end = itl.mid(dotdot+2).toInt(&ok);
                     if (ok) {
+                        if (m_cumulative && qAbs(end - start) > 100) {
+                            // Such a loop is unlikely to contribute something useful to the
+                            // file collection, and may cause considerable delay.
+                            return ReturnFalse;
+                        }
                         if (start < end) {
                             for (int i = start; i <= end; i++)
                                 list << ProString(QString::number(i), NoHash);

@@ -1,6 +1,7 @@
 include(win/win.pri)
-include(mac/mac.pri)
-include(unix/unix.pri)
+more = mac unix
+for(dir, more): \
+    include($$dir/$${dir}.pri)
 include (common/common.pri)             # Important: keep the space before the '('
 include(relativity/relativity.pri)
 
