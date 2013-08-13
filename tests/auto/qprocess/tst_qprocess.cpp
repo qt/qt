@@ -158,6 +158,7 @@ private slots:
     void invalidProgramString_data();
     void invalidProgramString();
     void onlyOneStartedSignal();
+    void waitForStartedWithoutStart();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2617,6 +2618,12 @@ void tst_QProcess::onlyOneStartedSignal()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(spyStarted.count(), 1);
     QCOMPARE(spyFinished.count(), 1);
+}
+
+void tst_QProcess::waitForStartedWithoutStart()
+{
+    QProcess process;
+    QVERIFY(!process.waitForStarted(5000));
 }
 
 QTEST_MAIN(tst_QProcess)
