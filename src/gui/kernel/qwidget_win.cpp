@@ -1796,10 +1796,10 @@ QOleDropTarget* QWidgetPrivate::registerOleDnd(QWidget *widget)
 
 void QWidgetPrivate::unregisterOleDnd(QWidget *widget, QOleDropTarget *dropTarget)
 {
-    dropTarget->releaseQt();
-    dropTarget->Release();
     Q_ASSERT(widget->testAttribute(Qt::WA_WState_Created));
     if (!widget->internalWinId()) {
+        dropTarget->releaseQt();
+        dropTarget->Release();
         QWidget *nativeParent = widget->nativeParentWidget();
         while (nativeParent) {
             QWExtra *nativeExtra = nativeParent->d_func()->extra;
@@ -1828,6 +1828,8 @@ void QWidgetPrivate::unregisterOleDnd(QWidget *widget, QOleDropTarget *dropTarge
 #ifndef Q_OS_WINCE
         CoLockObjectExternal(dropTarget, false, true);
 #endif
+        dropTarget->releaseQt();
+        dropTarget->Release();
         RevokeDragDrop(widget->internalWinId());
     }
 }
