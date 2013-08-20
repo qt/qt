@@ -326,11 +326,7 @@ static void resolveTimerAPI()
 #else
         QSystemLibrary library(QLatin1String("winmm"));
 #endif
-        if (
-#if defined(_MSC_VER) && _MSC_VER >= 1700 // QTBUG-27266, Disable when running MSVC2012-built code on pre-Windows
-            QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8 &&
-#endif
-            library.load()) {
+        if (library.load()) {
             qtimeSetEvent = (ptimeSetEvent)library.resolve("timeSetEvent");
             qtimeKillEvent = (ptimeKillEvent)library.resolve("timeKillEvent");
         }
