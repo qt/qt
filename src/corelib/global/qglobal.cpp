@@ -1166,7 +1166,7 @@ bool qSharedBuild()
     \enum QSysInfo::MacVersion
 
     This enum provides symbolic names for the various versions of the
-    Macintosh operating system. On Mac, the
+    OS X operating system. On OS X, the
     QSysInfo::MacintoshVersion variable gives the version of the
     system on which the application is run.
 
@@ -1178,8 +1178,9 @@ bool qSharedBuild()
     \value MV_10_4     Mac OS X 10.4
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
-    \value MV_10_7     Mac OS X 10.7
-    \value MV_10_8     Mac OS X 10.8
+    \value MV_10_7     OS X 10.7
+    \value MV_10_8     OS X 10.8
+    \value MV_10_9     OS X 10.9
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1191,6 +1192,7 @@ bool qSharedBuild()
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
     \value MV_LION     Apple codename for MV_10_7
     \value MV_MOUNTAINLION Apple codename for MV_10_8
+    \value MV_MAVERICKS    Apple codename for MV_10_9
 
     \sa WinVersion, SymbianVersion
 */
