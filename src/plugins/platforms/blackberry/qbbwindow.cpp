@@ -245,10 +245,10 @@ void QBBWindow::setVisible(bool visible)
 
     widget()->activateWindow();
 
-    if (!visible) {
-        // Flush the context, otherwise it won't disappear immediately
+    // Flush the context when invisible, otherwise it won't disappear immediately,
+    // but still allow navigator to capture screenshot (thumbnail) when minimized
+    if (!visible && !(widget()->windowState() & Qt::WindowMinimized))
         screen_flush_context(mContext, 0);
-    }
 }
 
 void QBBWindow::updateVisibility(bool parentVisible)
