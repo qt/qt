@@ -1826,18 +1826,18 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.pro 38
 
+    \bold{Note:} On Windows, specifying libraries with the \c{-l} option
+    will cause the library with the highest version
+    number to be used. For example, \c{math2.lib} could potentially be used
+    instead of \c{math.lib}. To avoid this ambiguity, we recommend that you
+    explicitly specify the library to be used by including the \c{.lib}
+    file name suffix, as in the example above.
+
     To specify a path containing spaces, quote the path using the technique
     mentioned in the \l{qmake Project Files#Whitespace}{qmake Project Files}
     document.
 
     \snippet doc/src/snippets/qmake/spaces.pro quoting library paths with spaces
-
-    \bold{Note:} On Windows, specifying libraries with the \c{-l} option,
-    as in the above example, will cause the library with the highest version
-    number to be used; for example, \c{libmath2.lib} could potentially be used
-    instead of \c{libmathlib}. To avoid this ambiguity, we recommend that you
-    explicitly specify the library to be used by including the \c{.lib}
-    file name suffix.
 
     \bold{Note:} On the Symbian platform, the build system makes a
     distinction between shared and
