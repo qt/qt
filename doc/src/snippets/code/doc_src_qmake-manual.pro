@@ -327,7 +327,8 @@ SOURCES = myclass.cpp \
 
 #! [50]
 SUBDIRS = kernel \
-          tools
+          tools \
+          myapp
 #! [50]
 
 
