@@ -666,8 +666,20 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         setWindowIcon_sys(true);
         setWindowTitle_helper(extra->topextra->caption);
     }
-    if (old_winid)
+    if (old_winid) {
+#ifndef QT_NO_DRAGANDDROP
+        if (extra && extra->dropTarget) {
+            // NOTE: It is possible that the current widget has already registered an ole drop target
+            // without Qt::WA_DropSiteRegistered being set. In this case we have to call RevokeDragDrop()
+            // to drop the reference count of the ole drop target object held by windows to prevent leak
+            // and re-register the old drop target object to the new window handle if possible
+            RevokeDragDrop(old_winid);
+            if (q->internalWinId())
+                RegisterDragDrop(q->internalWinId(), extra->dropTarget);
+        }
+#endif // !QT_NO_DRAGANDDROP
         DestroyWindow(old_winid);
+    }
 
     if (q->testAttribute(Qt::WA_AcceptDrops) || dropSiteWasRegistered
         || (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_DropSiteRegistered)))
@@ -1815,6 +1827,8 @@ void QWidgetPrivate::unregisterOleDnd(QWidget *widget, QOleDropTarget *dropTarge
 #ifndef Q_OS_WINCE
                     CoLockObjectExternal(nativeExtra->dropTarget, false, true);
 #endif
+                    nativeExtra->dropTarget->releaseQt();
+                    nativeExtra->dropTarget->Release();
                     RevokeDragDrop(nativeParent->internalWinId());
                     nativeExtra->dropTarget = 0;
             }
