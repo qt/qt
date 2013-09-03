@@ -1792,7 +1792,9 @@ class QDebug;
 class QNoDebug;
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT_INLINE QDebug qDebug();
+#ifndef QT_NO_WARNING_OUTPUT
 Q_CORE_EXPORT_INLINE QDebug qWarning();
+#endif
 Q_CORE_EXPORT_INLINE QDebug qCritical();
 #else
 inline QNoDebug qDebug();
