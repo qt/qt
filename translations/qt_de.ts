@@ -2219,40 +2219,6 @@ nach
     </message>
 </context>
 <context>
-    <name>QDeclarativeTypeData</name>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation type="obsolete">Der Typ  %1 ist nicht verfügbar</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation type="obsolete">Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation type="obsolete">%1 %2</translation>
-    </message>
-</context>
-<context>
-    <name>QDeclarativeTypeLoader</name>
-    <message>
-        <source>Script %1 unavailable</source>
-        <translation>Das Skript %1 ist nicht verfügbar</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation>Der Typ %1 ist nicht verfügbar</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation>Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation>%1 %2</translation>
-    </message>
-</context>
-<context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
