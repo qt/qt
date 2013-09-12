@@ -77,6 +77,19 @@ private:
     int outerChannel;
 };
 
+class BBScopedLoopLevelCounter
+{
+    QEventDispatcherBlackberryPrivate *d;
+
+public:
+    inline BBScopedLoopLevelCounter(QEventDispatcherBlackberryPrivate *p)
+        : d(p)
+    { ++d->loop_level; }
+
+    inline ~BBScopedLoopLevelCounter()
+    { --d->loop_level; }
+};
+
 struct bpsIOHandlerData
 {
     bpsIOHandlerData()
@@ -146,7 +159,8 @@ static int bpsIOHandler(int fd, int io_events, void *data)
 }
 
 QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberryPrivate()
-    : ioData(new bpsIOHandlerData)
+    : loop_level(0)
+    , ioData(new bpsIOHandlerData)
 {
     // prepare to use BPS
     int result = bps_initialize();
@@ -154,6 +168,11 @@ QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberryPrivate()
         qFatal("QEventDispatcherBlackberry: bps_initialize failed");
 
     bps_channel = bps_channel_get_active();
+
+    if (bps_channel_create(&holding_channel, 0) != BPS_SUCCESS) {
+        qWarning("QEventDispatcherBlackberry: bps_channel_create failed");
+        holding_channel = -1;
+    }
 
     // get domain for IO ready and wake up events - ignoring race condition here for now
     if (bpsUnblockDomain == -1) {
@@ -165,6 +184,11 @@ QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberryPrivate()
 
 QEventDispatcherBlackberryPrivate::~QEventDispatcherBlackberryPrivate()
 {
+    if ((holding_channel != -1) &&
+        (bps_channel_destroy(holding_channel) != BPS_SUCCESS)) {
+        qWarning("QEventDispatcherBlackberry: bps_channel_destroy failed");
+    }
+
     // we're done using BPS
     bps_shutdown();
 }
@@ -279,11 +303,21 @@ static inline int timevalToMillisecs(const timeval &tv)
     return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
+static inline void destroyHeldBpsEvent(int holding_channel)
+{
+    // Switch to the holding channel and use bps_get_event() to trigger its destruction.  We
+    // don't care about the return value from this call to bps_get_event().
+    BpsChannelScopeSwitcher holdingChannelSwitcher(holding_channel);
+    bps_event_t *held_event = 0;
+    (void)bps_get_event(&held_event, 0);
+ }
+
 int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                        timeval *timeout)
 {
     Q_UNUSED(nfds);
     Q_D(QEventDispatcherBlackberry);
+    const BBScopedLoopLevelCounter bbLoopCounter(d);
 
     BpsChannelScopeSwitcher channelSwitcher(d->bps_channel);
 
@@ -305,6 +339,31 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
 
     bps_event_t *event = 0;
     unsigned int eventCount = 0;
+
+    // If an event handler called through filterEvent() starts a nested event loop by creating a
+    // new QEventLoop, we will recursively enter this function again.  However, each time
+    // bps_get_event() is called, it destroys the last event it handed out before returning the
+    // next event.  We don't want it to destroy the event that triggered the nested event loop,
+    // since there may still be more handlers that need to get that event, once the nested event
+    // loop is done and control returns to the outer event loop.
+    //
+    // So we move an event to a holding channel, which takes ownership of the event.  Putting
+    // the event on our own channel allows us to manage when it is destroyed, keeping it alive
+    // until we know we are done with it.  Each recursive call of this function needs to have
+    // it's own holding channel, since a channel is a queue, not a stack.
+    //
+    // However, a recursive call into this function happens very rarely compared to the many
+    // times this function is called.  We don't want to create a holding channel for each time
+    // this function is called, only when it is called recursively.  Thus we have the instance
+    // variable d->holding_channel to use in the common case.  We keep track of recursive calls
+    // with d->loop_level.  If we are in a recursive call, then we create a new holding channel
+    // for this run.
+    int holding_channel = d->holding_channel;
+    if ((d->loop_level > 1) &&
+        Q_UNLIKELY(bps_channel_create(&holding_channel, 0) != BPS_SUCCESS)) {
+        qWarning("QEventDispatcherBlackberry: bps_channel_create failed");
+        holding_channel = -1;
+    }
 
     // Convert timeout to milliseconds
     int timeoutTotal = -1;
@@ -330,6 +389,11 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
                 emit awake();
                 filterEvent(static_cast<void*>(event));
                 emit aboutToBlock();
+
+                if (Q_LIKELY(holding_channel != -1)) {
+                    // We are now done with this BPS event.  Destroy it.
+                    destroyHeldBpsEvent(holding_channel);
+                }
             }
 
             // Update the timeout
@@ -369,6 +433,12 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         if (bps_event_get_domain(event) == bpsUnblockDomain) {
             timeoutTotal = 0;   // in order to immediately drain the event queue of native events
             event = 0;          // (especially touch move events) we don't break out here
+        } else {
+            // Move the event to our holding channel so we can manage when it is destroyed.
+            if (Q_LIKELY(holding_channel != 1) &&
+                Q_UNLIKELY(bps_channel_push_event(holding_channel, event) != BPS_SUCCESS)) {
+                qWarning("QEventDispatcherBlackberry: bps_channel_push_event failed");
+            }
         }
 
         ++eventCount;
@@ -378,10 +448,24 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         const unsigned int maximumEventCount = 12;
         if (Q_UNLIKELY((eventCount > maximumEventCount && timeoutLeft == 0)
                        || !QElapsedTimer::isMonotonic())) {
-            if (event)
+            if (event) {
                 filterEvent(static_cast<void*>(event));
+
+                if (Q_LIKELY(holding_channel != -1)) {
+                    // We are now done with this BPS event.  Destroy it.
+                    destroyHeldBpsEvent(holding_channel);
+                }
+            }
             break;
         }
+    }
+
+    // If this was a recursive call into this function, a new holding channel was created for
+    // this run, so destroy it now.
+    if ((holding_channel != d->holding_channel) &&
+        Q_LIKELY(holding_channel != -1) &&
+        Q_UNLIKELY(bps_channel_destroy(holding_channel) != BPS_SUCCESS)) {
+        qWarning("QEventDispatcherBlackberry: bps_channel_destroy failed");
     }
 
     // the number of bits set in the file sets
