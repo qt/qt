@@ -1060,6 +1060,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
                   << "\t\t\t" << writeSettings("path", escapeFilePath(files[file])) << ";" << "\n"
                   << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(files[file])), SettingsNoQuote) << ";" << "\n"
+                  << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(files[file])) << ";\n"
                   << "\t\t" << "};" << "\n";
                 QString copy_file_key = keyFor("QMAKE_PBX_BUNDLE_COPY_FILE." + bundle_data[i] + "-" + files[file]);
                 pbx_files += copy_file_key;
