@@ -28,4 +28,12 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>nm::Test</name>
+    <message>
+        <location filename="sub/src/test.cpp" line="51"/>
+        <source>MyText</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

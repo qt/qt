@@ -371,7 +371,7 @@ static void processProject(
         ConversionData cd;
         cd.m_noUiLines = options & NoUiLines;
         cd.m_codecForSource = codecForSource;
-        cd.m_includePath = visitor.values(QLatin1String("INCLUDEPATH"));
+        cd.m_includePath = visitor.absolutePathValues(QLatin1String("INCLUDEPATH"), pfi.absolutePath());
         QStringList sourceFiles = getSources(visitor, pfi.absolutePath());
         QSet<QString> sourceDirs;
         sourceDirs.insert(QDir::cleanPath(pfi.absolutePath()) + QLatin1Char('/'));
