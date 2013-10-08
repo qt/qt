@@ -57,6 +57,8 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+Q_DECLARE_METATYPE(QWizard::WizardButton);
+
 static QImage grabWidget(QWidget *window)
 {
     return QPixmap::grabWidget(window).toImage();
@@ -105,6 +107,8 @@ private slots:
     void setWizardStyle();
     void removePage();
     void sideWidget();
+    void objectNames_data();
+    void objectNames();
 
     // task-specific tests below me:
     void task161660_buttonSpacing();
@@ -2412,6 +2416,44 @@ void tst_QWizard::task161660_buttonSpacing()
                  QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal));
     QApplication::setStyle(origStyle);
 #endif
+}
+
+void tst_QWizard::objectNames_data()
+{
+    QTest::addColumn<QWizard::WizardButton>("wizardButton");
+    QTest::addColumn<QString>("buttonName");
+
+    QTest::newRow("BackButton")    << QWizard::BackButton    << QString::fromLatin1("__qt__passive_wizardbutton0");
+    QTest::newRow("NextButton")    << QWizard::NextButton    << QString::fromLatin1("__qt__passive_wizardbutton1");
+    QTest::newRow("CommitButton")  << QWizard::CommitButton  << QString::fromLatin1("qt_wizard_commit");
+    QTest::newRow("FinishButton")  << QWizard::FinishButton  << QString::fromLatin1("qt_wizard_finish");
+    QTest::newRow("CancelButton")  << QWizard::CancelButton  << QString::fromLatin1("qt_wizard_cancel");
+    QTest::newRow("HelpButton")    << QWizard::HelpButton    << QString::fromLatin1("__qt__passive_wizardbutton5");
+    QTest::newRow("CustomButton1") << QWizard::CustomButton1 << QString::fromLatin1("__qt__passive_wizardbutton6");
+    QTest::newRow("CustomButton2") << QWizard::CustomButton2 << QString::fromLatin1("__qt__passive_wizardbutton7");
+    QTest::newRow("CustomButton3") << QWizard::CustomButton3 << QString::fromLatin1("__qt__passive_wizardbutton8");
+}
+
+void tst_QWizard::objectNames()
+{
+    QFETCH(QWizard::WizardButton, wizardButton);
+    QFETCH(QString, buttonName);
+
+    QWizard wizard;
+    QList<QWizard::WizardButton> buttons = QList<QWizard::WizardButton>()
+        << QWizard::BackButton
+        << QWizard::NextButton
+        << QWizard::CommitButton
+        << QWizard::FinishButton
+        << QWizard::CancelButton
+        << QWizard::HelpButton
+        << QWizard::CustomButton1
+        << QWizard::CustomButton2
+        << QWizard::CustomButton3
+      ;
+    QVERIFY(buttons.contains(wizardButton));
+    QVERIFY(wizard.button(wizardButton));
+    QCOMPARE(wizard.button(wizardButton)->objectName(), buttonName);
 }
 
 class task177716_CommitPage : public QWizardPage
