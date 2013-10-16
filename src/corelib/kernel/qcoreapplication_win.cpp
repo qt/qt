@@ -875,6 +875,11 @@ QString decodeMSG(const MSG& msg)
             }
             break;
 #endif
+#ifdef WM_INPUTLANGCHANGE
+        case WM_INPUTLANGCHANGE:
+            parameters = QLatin1String("Keyboard layout changed");
+            break;
+#endif // WM_INPUTLANGCHANGE
 #ifdef WM_NCACTIVATE
         case WM_NCACTIVATE:
             {
