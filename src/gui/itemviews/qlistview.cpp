@@ -1852,6 +1852,15 @@ void QCommonListViewBase::removeHiddenRow(int row)
     dd->hiddenRows.remove(dd->model->index(row, 0, qq->rootIndex()));
 }
 
+#ifndef QT_NO_DRAGANDDROP
+void QCommonListViewBase::paintDragDrop(QPainter *painter)
+{
+    // FIXME: Until the we can provide a proper drop indicator
+    // in IconMode, it makes no sense to show it
+    dd->paintDropIndicator(painter);
+}
+#endif
+
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
     horizontalScrollBar()->setSingleStep(step.width() + spacing());
@@ -1921,13 +1930,6 @@ int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView:
 */
 
 #ifndef QT_NO_DRAGANDDROP
-void QListModeViewBase::paintDragDrop(QPainter *painter)
-{
-    // FIXME: Until the we can provide a proper drop indicator
-    // in IconMode, it makes no sense to show it
-    dd->paintDropIndicator(painter);
-}
-
 QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
 {
     QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
@@ -2669,23 +2671,6 @@ void QIconModeViewBase::removeHiddenRow(int row)
 }
 
 #ifndef QT_NO_DRAGANDDROP
-void QIconModeViewBase::paintDragDrop(QPainter *painter)
-{
-    if (!draggedItems.isEmpty() && viewport()->rect().contains(draggedItemsPos)) {
-        //we need to draw the items that arre dragged
-        painter->translate(draggedItemsDelta());
-        QStyleOptionViewItemV4 option = viewOptions();
-        option.state &= ~QStyle::State_MouseOver;
-        QVector<QModelIndex>::const_iterator it = draggedItems.begin();
-        QListViewItem item = indexToListViewItem(*it);
-        for (; it != draggedItems.end(); ++it) {
-            item = indexToListViewItem(*it);
-            option.rect = viewItemRect(item);
-            delegate(*it)->paint(painter, option, *it);
-        }
-    }
-}
-
 bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
 {
     // This function does the same thing as in QAbstractItemView::startDrag(),
@@ -2700,7 +2685,14 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
                     && (*it).column() == dd->column)
                     draggedItems.push_back(*it);
         }
+
+        QRect rect;
+        QPixmap pixmap = dd->renderToPixmap(indexes, &rect);
+        rect.adjust(horizontalOffset(), verticalOffset(), 0, 0);
+
         QDrag *drag = new QDrag(qq);
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(dd->pressedPosition - rect.topLeft());
         drag->setMimeData(dd->model->mimeData(indexes));
         Qt::DropAction action = drag->exec(supportedActions, Qt::CopyAction);
         draggedItems.clear();
