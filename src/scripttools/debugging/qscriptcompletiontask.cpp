@@ -118,7 +118,7 @@ namespace {
 static bool isIdentChar(const QChar &ch)
 {
     static QChar underscore = QLatin1Char('_');
-    return ch.isLetter() || (ch == underscore);
+    return ch.isLetterOrNumber() || (ch == underscore);
 }
 
 static bool isPrefixOf(const QString &prefix, const QString &what)
