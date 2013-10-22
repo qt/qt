@@ -1202,6 +1202,12 @@ bool QDesignerPropertySheet::reset(int index)
             const QVariant classNameDefaultV = d->m_object->property("_q_classname");
             if (classNameDefaultV.isValid())
                 value.setValue(classNameDefaultV.toString());
+        } else if (!isAdditionalProperty(index)) {
+            const QDesignerMetaPropertyInterface *property = d->m_meta->property(index);
+            if ((property->accessFlags() & QDesignerMetaPropertyInterface::ResetAccess) && property->reset(d->m_object))
+                value.setValue(property->read(d->m_object).toString());
+            else
+                return false;
         }
         setProperty(index, QVariant::fromValue(value));
         return true;
