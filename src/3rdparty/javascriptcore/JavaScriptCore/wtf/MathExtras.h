@@ -96,7 +96,7 @@ inline bool signbit(double x) { struct ieee_double *p = (struct ieee_double *)&x
 
 #endif
 
-#if COMPILER(MSVC) || COMPILER(RVCT)
+#if (COMPILER(MSVC) && _MSC_VER < 1800) || COMPILER(RVCT)
 
 // We must not do 'num + 0.5' or 'num - 0.5' because they can cause precision loss.
 static double round(double num)
@@ -121,7 +121,7 @@ inline double trunc(double num) { return num > 0 ? floor(num) : ceil(num); }
 
 #endif
 
-#if COMPILER(MSVC)
+#if COMPILER(MSVC) && _MSC_VER < 1800
 
 inline bool isinf(double num) { return !_finite(num) && !_isnan(num); }
 inline bool isnan(double num) { return !!_isnan(num); }
