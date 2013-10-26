@@ -1,734 +1,955 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
-<context>
-    <name>AudioOutput</name>
-    <message>
-        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+375"/>
-        <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Revert back to device &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
+<TS version="2.0" language="he_IL" sourcelanguage="en">
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2251"/>
         <source>Close Tab</source>
-        <translation type="unfinished"></translation>
+        <translation>סגור כרטיסייה</translation>
     </message>
 </context>
 <context>
-    <name>PPDOptionsModel</name>
+    <name>Debugger::JSAgentWatchData</name>
     <message>
-        <source>Name</source>
-        <translation type="obsolete">שם</translation>
+        <source>[Array of length %1]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;undefined&gt;</source>
+        <translation>&lt;לא מוגדר&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>FakeReply</name>
+    <message>
+        <source>Fake error!</source>
+        <translation>שגיאה מעושה!</translation>
+    </message>
+    <message>
+        <source>Invalid URL</source>
+        <translation>כתובת URL לא תקינה</translation>
+    </message>
+</context>
+<context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <source>Services</source>
+        <translation>שירותים</translation>
+    </message>
+    <message>
+        <source>Hide %1</source>
+        <translation>הסתר את %1</translation>
+    </message>
+    <message>
+        <source>Hide Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <translation>הצג הכל</translation>
+    </message>
+    <message>
+        <source>Preferences...</source>
+        <translation>העדפות...</translation>
+    </message>
+    <message>
+        <source>Quit %1</source>
+        <translation>צא מתוך %1</translation>
+    </message>
+    <message>
+        <source>About %1</source>
+        <translation>אודות %1</translation>
     </message>
 </context>
 <context>
     <name>Phonon::</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/phononnamespace.cpp" line="+55"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>התראות</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Music</source>
-        <translation type="unfinished"></translation>
+        <translation>מוסיקה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>וידאו</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Communication</source>
-        <translation type="unfinished"></translation>
+        <translation>תקשורת</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Games</source>
-        <translation type="unfinished"></translation>
+        <translation>משחקים</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Accessibility</source>
-        <translation type="unfinished"></translation>
+        <translation>נגישות</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::AudioOutput</name>
+    <message>
+        <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;התקן השמע&lt;b&gt;%1&lt;/b&gt;לא פועל.&lt;br/&gt;מפעיל במקום את &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;עובר אל התקן השמע&lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;אשר זה עתה הפך לזמין ולו יש עדיפות גבוהה יותר.&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Revert back to device &apos;%1&apos;</source>
+        <translation>חזרה אל התקן &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which has higher preference or is specifically configured for this stream.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;עובר אל התקן השמע&lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;אשר לו יש עדיפות גבוהה יותר או שהוא מוגדר באופן נקודתי עבור זרם זה.&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
     <name>Phonon::Gstreamer::Backend</name>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+171"/>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>אזהרה: נראה כי החבילה gstreamer0.10-plugins-good אינה מותקנת.
+          מספר תכונות של וידאו לא יהיו זמינות.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>אזהרה: תוספי GStreamer הבסיסיים אינם מותקנים.
+      כל התמיכה בשמע וגם בוידאו מושבתת</translation>
     </message>
 </context>
 <context>
     <name>Phonon::Gstreamer::MediaObject</name>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+90"/>
         <source>Cannot start playback. 
 
-Check your Gstreamer installation and make sure you 
+Check your GStreamer installation and make sure you 
 have libgstreamer-plugins-base installed.</source>
+        <translation>אין אפשרות להתחיל לנגן.
+
+אנא בדוק את התקנת GStreamer שלך וודא כי החבילה libgstreamer-plugins-base מותקנת.</translation>
+    </message>
+    <message>
+        <source>Missing codec helper script assistant.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+113"/>
+        <source>Plugin codec installation failed for codec: %0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
-        <translation type="unfinished"></translation>
+        <translation>קודק נדרש חסר. עליך להתקין את הקודק(ים) הבא(ים) כדי לנגן תוכן זה: %0</translation>
     </message>
     <message>
-        <location line="+676"/>
-        <location line="+8"/>
-        <location line="+15"/>
-        <location line="+9"/>
-        <location line="+6"/>
-        <location line="+19"/>
-        <location line="+335"/>
-        <location line="+24"/>
         <source>Could not open media source.</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח את מקור המדיה.</translation>
     </message>
     <message>
-        <location line="-403"/>
         <source>Invalid source type.</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס מקור לא תקין.</translation>
     </message>
     <message>
-        <location line="+377"/>
         <source>Could not locate media source.</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות למצוא את מקור המדיה.</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Could not open audio device. The device is already in use.</source>
+        <translation>אין אפשרות לפתוח את התקן השמע. ההתקן בשימוש.</translation>
+    </message>
+    <message>
+        <source>Could not decode media source.</source>
+        <translation>אין אפשרות לפענח את קידוד מדיית המקור.</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF</name>
+    <message>
+        <source>Audio Output</source>
+        <translation>פלט שמע</translation>
+    </message>
+    <message>
+        <source>The audio output device</source>
+        <translation>התקן פלט שמע</translation>
+    </message>
+    <message>
+        <source>No error</source>
+        <translation>אין שגיאה</translation>
+    </message>
+    <message>
+        <source>Not found</source>
+        <translation>לא נמצא</translation>
+    </message>
+    <message>
+        <source>Out of memory</source>
+        <translation>לא נותר זיכרון</translation>
+    </message>
+    <message>
+        <source>Not supported</source>
+        <translation>לא נתמך</translation>
+    </message>
+    <message>
+        <source>Overflow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>Could not decode media source.</source>
+        <source>Underflow</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Already exists</source>
+        <translation>כבר קיים</translation>
+    </message>
+    <message>
+        <source>Path not found</source>
+        <translation>נתיב לא נמצא</translation>
+    </message>
+    <message>
+        <source>In use</source>
+        <translation>בשימוש</translation>
+    </message>
+    <message>
+        <source>Not ready</source>
+        <translation>לא מוכן</translation>
+    </message>
+    <message>
+        <source>Access denied</source>
+        <translation>גישה נדחתה</translation>
+    </message>
+    <message>
+        <source>Could not connect</source>
+        <translation>אין אפשרות להתחבר</translation>
+    </message>
+    <message>
+        <source>Disconnected</source>
+        <translation>מנותק</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>הרשאה נדחתה</translation>
+    </message>
+    <message>
+        <source>Insufficient bandwidth</source>
+        <translation>רוחב פס בלתי מספיק</translation>
+    </message>
+    <message>
+        <source>Network unavailable</source>
+        <translation>רשת לא זמינה</translation>
+    </message>
+    <message>
+        <source>Network communication error</source>
+        <translation>שגיאת תקשורת רשת</translation>
+    </message>
+    <message>
+        <source>Streaming not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server alert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid protocol</source>
+        <translation>פרוטוקול שגוי</translation>
+    </message>
+    <message>
+        <source>Invalid URL</source>
+        <translation>‏URL שגוי</translation>
+    </message>
+    <message>
+        <source>Multicast error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Proxy server error</source>
+        <translation>שגיאת שרת מתווך</translation>
+    </message>
+    <message>
+        <source>Proxy server not supported</source>
+        <translation>שרת מתווך לא נתמך</translation>
+    </message>
+    <message>
+        <source>Audio output error</source>
+        <translation>שגיאת פלט שמע</translation>
+    </message>
+    <message>
+        <source>Video output error</source>
+        <translation>שגיאת פלט וידאו</translation>
+    </message>
+    <message>
+        <source>Decoder error</source>
+        <translation>שגיאת מפענח</translation>
+    </message>
+    <message>
+        <source>Audio or video components could not be played</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DRM error</source>
+        <translation>שגיאת DRM</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>שגיאה לא מוכרת (%1)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractMediaPlayer</name>
+    <message>
+        <source>Not ready to play</source>
+        <translation>לא מוכן לנגן</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>שגיאה בפתיחת קובץ</translation>
+    </message>
+    <message>
+        <source>Error opening URL</source>
+        <translation>שגיאה בפתיחת URL</translation>
+    </message>
+    <message>
+        <source>Error opening resource</source>
+        <translation>שגיאה בפתיחת משאב</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not opened</source>
+        <translation>שגיאה בפתיחת מקור: משאב לא נפתח</translation>
+    </message>
+    <message>
+        <source>Setting volume failed</source>
+        <translation>קביעת עוצמת שמע נכשלה</translation>
+    </message>
+    <message>
+        <source>Loading clip failed</source>
+        <translation>טעינת סרטון נכשלה</translation>
+    </message>
+    <message>
+        <source>Playback complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download error</source>
+        <translation>שגיאת הורדה</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractVideoPlayer</name>
+    <message>
+        <source>Pause failed</source>
+        <translation>השהייה נכשלה</translation>
+    </message>
+    <message>
+        <source>Seek failed</source>
+        <translation>חיפוש נכשל</translation>
+    </message>
+    <message>
+        <source>Getting position failed</source>
+        <translation>השגת מיקום נכשלה</translation>
+    </message>
+    <message>
+        <source>Opening clip failed</source>
+        <translation>פתיחת סרטון נכשלה</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AudioEqualizer</name>
+    <message>
+        <source>%1 Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AudioPlayer</name>
+    <message>
+        <source>Getting position failed</source>
+        <translation>השגת מיקום נכשלה</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::DsaVideoPlayer</name>
+    <message>
+        <source>Video display error</source>
+        <translation>שגיאת תצוגת וידאו</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EffectFactory</name>
+    <message>
+        <source>Enabled</source>
+        <translation>מאופשר</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EnvironmentalReverb</name>
+    <message>
+        <source>Decay HF ratio (%)</source>
+        <extracomment>DecayHFRatio: Ratio of high-frequency decay time to the value specified by DecayTime.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decay time (ms)</source>
+        <extracomment>DecayTime: Time over which reverberation is diminished.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Density (%)</source>
+        <extracomment>Density Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Diffusion value.</extracomment>
+        <translation>צפיפות (%)</translation>
+    </message>
+    <message>
+        <source>Diffusion (%)</source>
+        <extracomment>Diffusion: Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Density value.</extracomment>
+        <translation>דיות (%)</translation>
+    </message>
+    <message>
+        <source>Reflections delay (ms)</source>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival of the direct path from the source and the arrival of the first reflection.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reflections level (mB)</source>
+        <extracomment>ReflectionsLevel: Amplitude of reflections. This value is corrected by the RoomLevel to give the final reflection amplitude.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverb delay (ms)</source>
+        <extracomment>ReverbDelay: Amount of time between arrival of the first reflection and start of the late reverberation.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverb level (mB)</source>
+        <extracomment>ReverbLevel: Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room HF level</source>
+        <extracomment>RoomHFLevel: Amplitude of low-pass filter used to attenuate the high frequency component of reflected sound.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Room level (mB)</source>
+        <extracomment>RoomLevel: Master volume control for all reflected sound.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::MediaObject</name>
+    <message>
+        <source>Error opening source: type not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error opening source: resource is compressed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not valid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error opening source: media type could not be determined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to set requested IAP</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::StereoWidening</name>
+    <message>
+        <source>Level (%)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::SurfaceVideoPlayer</name>
+    <message>
+        <source>Video display error</source>
+        <translation>שגיאת תצוגת וידאו</translation>
     </message>
 </context>
 <context>
     <name>Phonon::VolumeSlider</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/volumeslider.cpp" line="+42"/>
-        <location line="+18"/>
         <source>Volume: %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>עוצמת שמע: %1%</translation>
     </message>
     <message>
-        <location line="-15"/>
-        <location line="+18"/>
-        <location line="+54"/>
-        <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation type="unfinished"></translation>
+        <source>Use this slider to adjust the volume. The leftmost position is 0%. The rightmost is %1%</source>
+        <translation>השתמש במחוון זה כדי להתאים את עוצמת השמע. המיקום השמאלי ביותר הוא0%. הימני ביותר הוא %1%</translation>
+    </message>
+    <message>
+        <source>Muted</source>
+        <translation>מושתקת</translation>
     </message>
 </context>
 <context>
     <name>Q3Accel</name>
     <message>
-        <location filename="../src/qt3support/other/q3accel.cpp" line="+481"/>
         <source>%1, %2 not defined</source>
-        <translation type="unfinished"></translation>
+        <translation>%1, %2 לא מוגדר</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>Ambiguous %1 not handled</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 דו משמעי לא טופל</translation>
     </message>
 </context>
 <context>
     <name>Q3DataTable</name>
     <message>
-        <location filename="../src/qt3support/sql/q3datatable.cpp" line="+285"/>
         <source>True</source>
-        <translation type="unfinished">אמת</translation>
+        <translation>אמת</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>False</source>
-        <translation type="unfinished">שקר</translation>
+        <translation>שקר</translation>
     </message>
     <message>
-        <location line="+505"/>
         <source>Insert</source>
-        <translation type="unfinished">הוסף</translation>
+        <translation>הוסף</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Update</source>
-        <translation type="unfinished">עדכן</translation>
+        <translation>עדכן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">מחק</translation>
+        <translation>מחק</translation>
     </message>
 </context>
 <context>
     <name>Q3FileDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+864"/>
         <source>Copy or Move a File</source>
-        <translation type="unfinished">העתק או העבר קובץ</translation>
+        <translation>העתק או העבר קובץ</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Read: %1</source>
-        <translation type="unfinished">קרא: %1</translation>
+        <translation>קרא: %1</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+30"/>
         <source>Write: %1</source>
-        <translation type="unfinished">כתוב: %1</translation>
+        <translation>כתוב: %1</translation>
     </message>
     <message>
-        <location line="-22"/>
-        <location line="+1575"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
     <message>
-        <location line="-157"/>
-        <location line="+49"/>
-        <location line="+2153"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+110"/>
         <source>All Files (*)</source>
-        <translation type="unfinished">כל הקבצים (*)</translation>
+        <translation>כל הקבצים (*)</translation>
     </message>
     <message>
-        <location line="-2089"/>
         <source>Name</source>
-        <translation type="unfinished">שם</translation>
+        <translation>שם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Size</source>
-        <translation type="unfinished">גודל</translation>
+        <translation>גודל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type</source>
-        <translation type="unfinished">סוג</translation>
+        <translation>טיפוס</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Date</source>
-        <translation type="unfinished">תאריך</translation>
+        <translation>תאריך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Attributes</source>
-        <translation type="unfinished">מאפיינים</translation>
+        <translation>תכונות</translation>
     </message>
     <message>
-        <location line="+35"/>
-        <location line="+2031"/>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;אישור</translation>
+        <translation>&amp;אישור</translation>
     </message>
     <message>
-        <location line="-1991"/>
         <source>Look &amp;in:</source>
-        <translation type="unfinished">&amp;חפש ב:</translation>
+        <translation>&amp;חפש בתוך:</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+1981"/>
-        <location line="+16"/>
         <source>File &amp;name:</source>
-        <translation type="unfinished">&amp;שם הקובץ:</translation>
+        <translation>&amp;שם קובץ:</translation>
     </message>
     <message>
-        <location line="-1996"/>
         <source>File &amp;type:</source>
-        <translation type="unfinished">&amp;סוג הקובץ:</translation>
+        <translation>&amp;טיפוס קובץ:</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Back</source>
-        <translation type="unfinished">אחורה</translation>
+        <translation>אחורה</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>One directory up</source>
-        <translation type="unfinished">ספריה אחת למעלה</translation>
+        <translation>ספרייה אחת למעלה</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Create New Folder</source>
-        <translation type="unfinished">צור תיקיה חדשה</translation>
+        <translation>צור תיקייה חדשה</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>List View</source>
-        <translation type="unfinished">תצוגת רשימה</translation>
+        <translation>תצוגת רשימה</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Detail View</source>
-        <translation type="unfinished">תצוגת פרטים</translation>
+        <translation>תצוגת פרטים</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Preview File Info</source>
-        <translation type="unfinished">תצוגה מקדימה של פרטי הקובץ</translation>
+        <translation>תצוגה מקדימה של מידע אודות הקובץ</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Preview File Contents</source>
-        <translation type="unfinished">תצוגה מקדימה של תוכן הקובץ</translation>
+        <translation>תצוגה מקדימה של תוכן הקובץ</translation>
     </message>
     <message>
-        <location line="+88"/>
         <source>Read-write</source>
-        <translation type="unfinished">קריאה-כתיבה</translation>
+        <translation>קריאה וכתיבה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Read-only</source>
-        <translation type="unfinished">קריאה-בלבד</translation>
+        <translation>קריאה בלבד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Write-only</source>
-        <translation type="unfinished">כתיבה-בלבד</translation>
+        <translation>כתיבה בלבד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Inaccessible</source>
-        <translation type="unfinished">לא נגיש</translation>
+        <translation>לא נגיש</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Symlink to File</source>
-        <translation type="unfinished">קישור סמלי לקובץ</translation>
+        <translation>קישור סמלי אל קובץ</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Symlink to Directory</source>
-        <translation type="unfinished">קישור סמלי לספריה</translation>
+        <translation>קישור סמלי אל ספרייה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Symlink to Special</source>
-        <translation type="unfinished">קישור סמלי לפריט מיוחד</translation>
+        <translation>קישור סמלי אל פריט מיוחד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>File</source>
-        <translation type="unfinished">קובץ</translation>
+        <translation>קובץ</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Dir</source>
-        <translation type="unfinished">ספריה</translation>
+        <translation>ספרייה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Special</source>
-        <translation type="unfinished">מיוחד</translation>
+        <translation>מיוחד</translation>
     </message>
     <message>
-        <location line="+704"/>
-        <location line="+2100"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+337"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתיחה</translation>
     </message>
     <message>
-        <location line="-1990"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+84"/>
         <source>Save As</source>
-        <translation type="unfinished">שמירה בשם</translation>
+        <translation>שמירה בשם</translation>
     </message>
     <message>
-        <location line="+642"/>
-        <location line="+5"/>
-        <location line="+355"/>
         <source>&amp;Open</source>
-        <translation type="unfinished">&amp;פתח</translation>
+        <translation>&amp;פתח</translation>
     </message>
     <message>
-        <location line="-357"/>
-        <location line="+341"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;שמור</translation>
+        <translation>&amp;שמור</translation>
     </message>
     <message>
-        <location line="-334"/>
         <source>&amp;Rename</source>
-        <translation type="unfinished">ש&amp;נה שם</translation>
+        <translation>ש&amp;נה שם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;מחק</translation>
+        <translation>&amp;מחק</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>R&amp;eload</source>
-        <translation type="unfinished">&amp;טען מחדש</translation>
+        <translation>&amp;טען מחדש</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Sort by &amp;Name</source>
-        <translation type="unfinished">סדר לפי ש&amp;ם</translation>
+        <translation>מיין לפי ש&amp;ם</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Sort by &amp;Size</source>
-        <translation type="unfinished">סדר לפי &amp;גודל</translation>
+        <translation>מיין לפי &amp;גודל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Sort by &amp;Date</source>
-        <translation type="unfinished">סדר לפי &amp;תאריך</translation>
+        <translation>מיין לפי &amp;תאריך</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Unsorted</source>
-        <translation type="unfinished">&amp;ללא סדר</translation>
+        <translation>&amp;לא ממוין</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Sort</source>
-        <translation type="unfinished">סדר</translation>
+        <translation>מיין</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Show &amp;hidden files</source>
-        <translation type="unfinished">הצג קבצים &amp;מוסתרים</translation>
+        <translation>הצג קבצים &amp;מוסתרים</translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>the file</source>
-        <translation type="unfinished">הקובץ</translation>
+        <translation>הקובץ</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>the directory</source>
-        <translation type="unfinished">הספריה</translation>
+        <translation>הספרייה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>the symlink</source>
-        <translation type="unfinished">הקישור הסמלי</translation>
+        <translation>הקישור הסמלי</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Delete %1</source>
-        <translation type="unfinished">מחק את %1</translation>
+        <translation>מחק את %1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&lt;qt&gt;Are you sure you wish to delete %1 &quot;%2&quot;?&lt;/qt&gt;</source>
-        <translation type="unfinished">&lt;qt&gt;האם אתה בטוח שברצונך למחוק %1 &quot;%2&quot;?&lt;/qt&gt;</translation>
+        <translation>&lt;qt&gt;האם אתה בטוח כי ברצונך למחוק %1 &quot;%2&quot;?&lt;/qt&gt;</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;כן</translation>
+        <translation>&amp;כן</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;לא</translation>
+        <translation>&amp;לא</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>New Folder 1</source>
-        <translation type="unfinished">תיקיה חדשה 1</translation>
+        <translation>תיקייה חדשה 1</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>New Folder</source>
-        <translation type="unfinished">תיקיה חדשה</translation>
+        <translation>תיקייה חדשה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>New Folder %1</source>
-        <translation type="unfinished">תיקיה חדשה %1</translation>
+        <translation>תיקייה חדשה %1</translation>
     </message>
     <message>
-        <location line="+98"/>
         <source>Find Directory</source>
-        <translation type="unfinished">חפש ספריה</translation>
+        <translation>חפש ספרייה</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+108"/>
         <source>Directories</source>
-        <translation type="unfinished">ספריות</translation>
+        <translation>ספריות</translation>
     </message>
     <message>
-        <location line="-2"/>
         <source>Directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>ספרייה:</translation>
     </message>
     <message>
-        <location line="+40"/>
-        <location line="+1110"/>
         <source>Error</source>
-        <translation type="unfinished">שגיאה</translation>
+        <translation>שגיאה</translation>
     </message>
     <message>
-        <location line="-1109"/>
         <source>%1
 File not found.
 Check path and filename.</source>
-        <translation type="unfinished">%1
-הקובץ לא נמצא.
-בדוק את הנתיב ואת שם הקובץ.</translation>
+        <translation>%1
+קובץ לא נמצא.
+בדוק נתיב ושם קובץ.</translation>
     </message>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="-289"/>
         <source>All Files (*.*)</source>
-        <translation type="unfinished">כל הקבצים (*.*)</translation>
+        <translation>כל הקבצים (*.*)</translation>
     </message>
     <message>
-        <location line="+375"/>
         <source>Open </source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתיחה </translation>
     </message>
     <message>
-        <location line="+155"/>
         <source>Select a Directory</source>
-        <translation type="unfinished">בחר ספריה</translation>
+        <translation>בחירת ספרייה</translation>
     </message>
 </context>
 <context>
     <name>Q3LocalFs</name>
     <message>
-        <location filename="../src/qt3support/network/q3localfs.cpp" line="+130"/>
-        <location line="+10"/>
         <source>Could not read directory
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לקרוא ספרייה
+%1</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Could not create directory
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות ליצור ספרייה
+%1</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Could not remove file or directory
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להסיר קובץ או ספרייה
+%1</translation>
     </message>
     <message>
-        <location line="+27"/>
         <source>Could not rename
 %1
 to
 %2</source>
-        <translation type="unfinished">לא ניתן לשנות את השם של
+        <translation>אין אפשרות לשנות את השם של
 %1
 אל
 %2</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>Could not open
 %1</source>
-        <translation type="unfinished">לא ניתן לפתוח את
+        <translation>אין אפשרות לפתוח
 %1</translation>
     </message>
     <message>
-        <location line="+68"/>
         <source>Could not write
 %1</source>
-        <translation type="unfinished">לא ניתן לכתוב את
+        <translation>אין אפשרות לכתוב
 %1</translation>
     </message>
 </context>
 <context>
     <name>Q3MainWindow</name>
     <message>
-        <location filename="../src/qt3support/widgets/q3mainwindow.cpp" line="+2051"/>
         <source>Line up</source>
-        <translation type="unfinished">סדר בשורה</translation>
+        <translation>סדר בשורה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Customize...</source>
-        <translation type="unfinished">התאמה אישית...</translation>
+        <translation>התאמה אישית...</translation>
     </message>
 </context>
 <context>
     <name>Q3NetworkProtocol</name>
     <message>
-        <location filename="../src/qt3support/network/q3networkprotocol.cpp" line="+854"/>
         <source>Operation stopped by the user</source>
-        <translation type="unfinished">הפעולה הופסקה על ידי המשתמש</translation>
+        <translation>הפעולה הופסקה על ידי המשתמש</translation>
     </message>
 </context>
 <context>
     <name>Q3ProgressDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3progressdialog.cpp" line="+224"/>
-        <location line="+61"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
 </context>
 <context>
     <name>Q3TabDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3tabdialog.cpp" line="+189"/>
-        <location line="+814"/>
         <source>OK</source>
-        <translation type="unfinished">אישור</translation>
+        <translation>אישור</translation>
     </message>
     <message>
-        <location line="-356"/>
         <source>Apply</source>
-        <translation type="unfinished">החל</translation>
+        <translation>החל</translation>
     </message>
     <message>
-        <location line="+43"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Defaults</source>
-        <translation type="unfinished">ברירות מחדל</translation>
+        <translation>ברירות מחדל</translation>
     </message>
     <message>
-        <location line="+50"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
 </context>
 <context>
     <name>Q3TextEdit</name>
     <message>
-        <location filename="../src/qt3support/text/q3textedit.cpp" line="+5429"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;בטל</translation>
+        <translation>&amp;בטל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">בצע &amp;שוב</translation>
+        <translation>בצע &amp;שוב</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;גזור</translation>
+        <translation>&amp;גזור</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">הע&amp;תק</translation>
+        <translation>הע&amp;תק</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">ה&amp;דבק</translation>
+        <translation>ה&amp;דבק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Clear</source>
-        <translation type="unfinished">נקה</translation>
+        <translation>נקה</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+2"/>
         <source>Select All</source>
-        <translation type="unfinished">בחר הכל</translation>
+        <translation>בחר הכל</translation>
     </message>
 </context>
 <context>
     <name>Q3TitleBar</name>
     <message>
-        <location filename="../src/plugins/accessible/compat/q3complexwidgets.cpp" line="+246"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>מערכת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Restore up</source>
-        <translation type="unfinished"></translation>
+        <translation>שחזר מעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Minimize</source>
-        <translation type="unfinished">מזער</translation>
+        <translation>מזער</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Restore down</source>
-        <translation type="unfinished"></translation>
+        <translation>שחזר מטה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Maximize</source>
-        <translation type="unfinished">הגדל</translation>
+        <translation>הגדל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Contains commands to manipulate the window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Puts a minimized back to normal</source>
-        <translation type="unfinished"></translation>
+        <source>Puts a minimized window back to normal</source>
+        <translation>החזרת חלון ממוזער למצב רגיל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Moves the window out of the way</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Puts a maximized window back to normal</source>
-        <translation type="unfinished"></translation>
+        <translation>החזרת חלון מוגדל בחזרה למצב רגיל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Makes the window full screen</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדלת החלון למסך מלא</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Closes the window</source>
-        <translation type="unfinished"></translation>
+        <translation>סגירת החלון</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Displays the name of the window and contains controls to manipulate it</source>
         <translation type="unfinished"></translation>
     </message>
@@ -736,2278 +957,2825 @@ to
 <context>
     <name>Q3ToolBar</name>
     <message>
-        <location filename="../src/qt3support/widgets/q3toolbar.cpp" line="+692"/>
         <source>More...</source>
-        <translation type="unfinished"></translation>
+        <translation>עוד...</translation>
     </message>
 </context>
 <context>
     <name>Q3UrlOperator</name>
     <message>
-        <location filename="../src/qt3support/network/q3urloperator.cpp" line="+386"/>
-        <location line="+260"/>
-        <location line="+4"/>
         <source>The protocol `%1&apos; is not supported</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; אינו נתמך</translation>
+        <translation>הפרוטוקול &quot;%1&quot; אינו נתמך</translation>
     </message>
     <message>
-        <location line="-260"/>
         <source>The protocol `%1&apos; does not support listing directories</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בהצגת ספריות</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בהצגת ספריות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The protocol `%1&apos; does not support creating new directories</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך ביצירת ספריית חדשות</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך ביצירת ספריית חדשות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The protocol `%1&apos; does not support removing files or directories</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בהסרת קבצים או ספריות</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בהסרת קבצים או ספריות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The protocol `%1&apos; does not support renaming files or directories</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בשינוי שמותיהם של קבצים או ספריות</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בשינוי שמות קבצים או ספריות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The protocol `%1&apos; does not support getting files</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בהורדת קבצים</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בהורדת קבצים</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The protocol `%1&apos; does not support putting files</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בהעלאת קבצים</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בהעלאת קבצים</translation>
     </message>
     <message>
-        <location line="+243"/>
-        <location line="+4"/>
         <source>The protocol `%1&apos; does not support copying or moving files or directories</source>
-        <translation type="unfinished">הפרוטוקול &quot;%1&quot; לא תומך בהעתקה או העברה של קבצים או ספריות</translation>
+        <translation>הפרוטוקול &quot;%1&quot; לא תומך בהעתקה או העברה של קבצים או ספריות</translation>
     </message>
     <message>
-        <location line="+237"/>
-        <location line="+1"/>
         <source>(unknown)</source>
-        <translation type="unfinished">(לא ידוע)</translation>
+        <translation>(לא ידוע)</translation>
     </message>
 </context>
 <context>
     <name>Q3Wizard</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3wizard.cpp" line="+177"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ביטול</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&lt; &amp;Back</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt; &amp;אחורה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Next &gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;קדימה &gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Finish</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;סיים</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;עזרה</translation>
     </message>
 </context>
 <context>
     <name>QAbstractSocket</name>
     <message>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+868"/>
-        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+615"/>
-        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+657"/>
-        <location line="+26"/>
         <source>Host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>מארח לא נמצא</translation>
     </message>
     <message>
-        <location line="+50"/>
-        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+3"/>
-        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+4"/>
         <source>Connection refused</source>
-        <translation type="unfinished">החיבור נדחה</translation>
+        <translation>חיבור נדחה</translation>
     </message>
     <message>
-        <location line="+141"/>
         <source>Connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>פג זמן חיבור</translation>
     </message>
     <message>
-        <location line="-547"/>
-        <location line="+787"/>
-        <location line="+208"/>
         <source>Operation on socket is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>פעולה על שקע אינה נתמכת</translation>
     </message>
     <message>
-        <location line="+137"/>
         <source>Socket operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>תם זמן פעולת שקע</translation>
     </message>
     <message>
-        <location line="+380"/>
         <source>Socket is not connected</source>
-        <translation type="unfinished"></translation>
+        <translation>שקע לא מחובר</translation>
     </message>
     <message>
-        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="-8"/>
         <source>Network unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>רשת לא ניתנת להשגה</translation>
     </message>
 </context>
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1199"/>
         <source>&amp;Step up</source>
-        <translation type="unfinished"></translation>
+        <translation>הע&amp;לה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Step &amp;down</source>
-        <translation type="unfinished"></translation>
+        <translation>הו&amp;רד</translation>
     </message>
     <message>
-        <location line="-8"/>
         <source>&amp;Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;בחר הכל</translation>
+    </message>
+</context>
+<context>
+    <name>QAccessibleButton</name>
+    <message>
+        <source>Uncheck</source>
+        <translation>בטל סימון</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>סמן</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>לחץ</translation>
     </message>
 </context>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2248"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>RTL</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.h" line="+352"/>
         <source>Executable &apos;%1&apos; requires Qt %2, found Qt %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ הפעלה &quot;%1&quot; דורש את Qt %2, נמצא Qt %3.</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Incompatible Qt Library Error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת תאימות ספריית Qt</translation>
     </message>
     <message>
-        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
         <source>Activate</source>
-        <translation type="unfinished"></translation>
+        <translation>הפעל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Activates the program&apos;s main window</source>
-        <translation type="unfinished"></translation>
+        <translation>מפעיל את החלון הראשי של התוכנית</translation>
     </message>
 </context>
 <context>
     <name>QAxSelect</name>
     <message>
-        <location filename="../src/activeqt/container/qaxselect.ui"/>
         <source>Select ActiveX Control</source>
-        <translation type="unfinished"></translation>
+        <translation>בחירת פקד ActiveX</translation>
     </message>
     <message>
-        <location/>
         <source>OK</source>
-        <translation type="unfinished">אישור</translation>
+        <translation>אישור</translation>
     </message>
     <message>
-        <location/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ביטול</translation>
     </message>
     <message>
-        <location/>
         <source>COM &amp;Object:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;רכיב COM:</translation>
     </message>
 </context>
 <context>
     <name>QCheckBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+114"/>
         <source>Uncheck</source>
-        <translation type="unfinished"></translation>
+        <translation>בטל סימון</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Check</source>
-        <translation type="unfinished"></translation>
+        <translation>סמן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Toggle</source>
-        <translation type="unfinished"></translation>
+        <translation>החלף</translation>
     </message>
 </context>
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1253"/>
         <source>Hu&amp;e:</source>
         <translation>&amp;גוון:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Sat:</source>
-        <translation>&amp;הרוויה:</translation>
+        <translation>&amp;רוויה:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Val:</source>
         <translation>&amp;ערך:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Red:</source>
         <translation>&amp;אדום:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Green:</source>
         <translation>&amp;ירוק:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bl&amp;ue:</source>
         <translation>&amp;כחול:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A&amp;lpha channel:</source>
         <translation>ע&amp;רוץ אלפא:</translation>
     </message>
     <message>
-        <location line="+101"/>
         <source>Select Color</source>
-        <translation type="unfinished"></translation>
+        <translation>בחירת צבע</translation>
     </message>
     <message>
-        <location line="+137"/>
         <source>&amp;Basic colors</source>
         <translation>&amp;צבעים בסיסיים</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Custom colors</source>
         <translation>צבעים &amp;מותאמים אישית</translation>
     </message>
     <message>
-        <source>&amp;Define Custom Colors &gt;&gt;</source>
-        <translation type="obsolete">&amp;הגדר צבעים מותאמים אישית &gt;&gt;</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">אישור</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">ביטול</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>&amp;Add to Custom Colors</source>
-        <translation>ה&amp;וסף לצבעים מותאמים אישית</translation>
-    </message>
-    <message>
-        <source>Select color</source>
-        <translation type="obsolete">בחירת צבע</translation>
+        <translation>&amp;הוסף לצבעים מותאמים אישית</translation>
     </message>
 </context>
 <context>
     <name>QComboBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1771"/>
-        <location line="+65"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתח</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+544"/>
         <source>False</source>
-        <translation type="unfinished">שקר</translation>
+        <translation>שקר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>True</source>
-        <translation type="unfinished">אמת</translation>
+        <translation>אמת</translation>
     </message>
     <message>
-        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+0"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
 </context>
 <context>
     <name>QCoreApplication</name>
     <message>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="+119"/>
         <source>%1: key is empty</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: המפתח הוא ריק</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>%1: unable to make key</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: אין אפשרות ליצור מפתח</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>%1: ftok failed</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: פעולת ftok נכשלה</translation>
+    </message>
+    <message>
+        <source>%1: already exists</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>‏%1: כבר קיים</translation>
+    </message>
+    <message>
+        <source>%1: does not exist</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>‏%1: לא קיים</translation>
+    </message>
+    <message>
+        <source>%1: out of resources</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: לא נותרו משאבים</translation>
+    </message>
+    <message>
+        <source>%1: permission denied</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: הרשאה נדחתה</translation>
+    </message>
+    <message>
+        <source>%1: unknown error %2</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1: שגיאה לא מוכרת %2</translation>
     </message>
 </context>
 <context>
     <name>QDB2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1276"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחבר</translation>
     </message>
     <message>
-        <location line="+303"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to set autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לקבוע ביצוע ממוכן</translation>
     </message>
 </context>
 <context>
     <name>QDB2Result</name>
     <message>
-        <location line="-1043"/>
-        <location line="+243"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראה</translation>
     </message>
     <message>
-        <location line="-206"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
     <message>
-        <location line="+196"/>
         <source>Unable to bind variable</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך משתנה</translation>
     </message>
     <message>
-        <location line="+92"/>
         <source>Unable to fetch record %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הרשומה %1</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to fetch next</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הבא</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Unable to fetch first</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הראשון</translation>
     </message>
 </context>
 <context>
     <name>QDateTimeEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qdatetimeedit.cpp" line="+2295"/>
         <source>AM</source>
-        <translation type="unfinished"></translation>
+        <translation>לפני הצהריים</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>am</source>
-        <translation type="unfinished"></translation>
+        <translation>לפני הצהריים</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>PM</source>
+        <translation>אחרי הצהריים</translation>
+    </message>
+    <message>
+        <source>pm</source>
+        <translation>אחרי הצהריים</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAbstractAnimation</name>
+    <message>
+        <source>Cannot animate non-existent property &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>pm</source>
+        <source>Cannot animate read-only property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Animation is an abstract class</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchorAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>אין אפשרות לקבוע פרק זמן של &lt; 0</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchors</name>
+    <message>
+        <source>Possible anchor loop detected on fill.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on centerIn.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on vertical anchor.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on horizontal anchor.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot specify left, right, and hcenter anchors.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot anchor to a null item.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot anchor a horizontal edge to a vertical edge.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot anchor item to self.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot specify top, bottom, and vcenter anchors.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot anchor a vertical edge to a horizontal edge.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnimatedImage</name>
+    <message>
+        <source>Qt was built without support for QMovie</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeApplication</name>
+    <message>
+        <source>Application is an abstract class</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBehavior</name>
+    <message>
+        <source>Cannot change the animation assigned to a Behavior.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBinding</name>
+    <message>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompiledBindings</name>
+    <message>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompiler</name>
+    <message>
+        <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unknown enumeration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: string expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: url expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unsigned int expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: int expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: number expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: color expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: date expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: time expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: datetime expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: point expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: size expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: rect expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: boolean expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: 3D vector expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element is not creatable.</source>
+        <translation>אלמנט אינו בר יצירה.</translation>
+    </message>
+    <message>
+        <source>Component elements may not contain properties other than id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid component id specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>id is not unique</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid component body specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new properties.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new signals.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new functions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot create empty component specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available in %3 %4.%5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1.%2&quot; is not available due to component versioning.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Incorrectly specified signal assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign a value to a signal (expecting a script to be run)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty signal assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty property assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attached properties cannot be used here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Non-existent attached object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid attached object assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent default property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid use of namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not an attached property name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid use of id property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property has already been assigned a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid grouped property access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign a value directly to a grouped property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property use</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property assignment expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single property assignment expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected object assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can only assign one binding to lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign primitives to lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign multiple values to a script property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: script expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate default property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate property name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal property name</source>
+        <translation>שם מאפיין לא חוקי</translation>
+    </message>
+    <message>
+        <source>Duplicate signal name</source>
+        <translation>שם אות כפול</translation>
+    </message>
+    <message>
+        <source>Signal names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal signal name</source>
+        <translation>שם אות לא חוקי</translation>
+    </message>
+    <message>
+        <source>Duplicate method name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Method names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal method name</source>
+        <translation>שם שיטה לא חוקי</translation>
+    </message>
+    <message>
+        <source>Property value set multiple times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property nesting</source>
+        <translation>קינון מאפיין לא תקין</translation>
+    </message>
+    <message>
+        <source>Cannot override FINAL property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property type</source>
+        <translation>טיפוס מאפיין לא תקין</translation>
+    </message>
+    <message>
+        <source>Invalid empty ID</source>
+        <translation>מזהה ריק לא תקין</translation>
+    </message>
+    <message>
+        <source>IDs cannot start with an uppercase letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IDs must start with a letter or underscore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IDs must contain only letters, numbers, and underscores</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID illegally masks global JavaScript property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No property alias location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeComponent</name>
+    <message>
+        <source>Invalid empty URL</source>
+        <translation>כתובת URL ריקה לא תקינה</translation>
+    </message>
+    <message>
+        <source>createObject: value is not an object</source>
+        <translation>‏createObject: ערך אינו אובייקט</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeConnections</name>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections: nested objects not allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections: syntax error</source>
+        <translation>חיבורים: שגיאת תחביר</translation>
+    </message>
+    <message>
+        <source>Connections: script expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeEngine</name>
+    <message>
+        <source>executeSql called outside transaction()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read-only Transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version mismatch: expected %1, found %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SQL transaction failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>transaction: missing callback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SQL: database version mismatch</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeFlipable</name>
+    <message>
+        <source>front is a write-once property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>back is a write-once property</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeImportDatabase</name>
+    <message>
+        <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; version %2.%3 is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot;: no such directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>import &quot;%1&quot; has no qmldir and no namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>- %1 is not a namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>- nested namespaces not allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>local directory</source>
+        <translation>ספרייה מקומית</translation>
+    </message>
+    <message>
+        <source>is ambiguous. Found in %1 and in %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is instantiated recursively</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is not a type</source>
+        <translation>אינו טיפוס</translation>
+    </message>
+    <message>
+        <source>File name case mismatch for &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeyNavigationAttached</name>
+    <message>
+        <source>KeyNavigation is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeysAttached</name>
+    <message>
+        <source>Keys is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLayoutMirroringAttached</name>
+    <message>
+        <source>LayoutDirection attached property only works with Items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LayoutMirroring is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeListModel</name>
+    <message>
+        <source>remove: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>insert: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>insert: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move: out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>append: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>set: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>set: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot contain nested elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot use reserved &quot;id&quot; property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot use script for property value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListModel: undefined property &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLoader</name>
+    <message>
+        <source>Loader does not support loading non-visual elements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentAnimation</name>
+    <message>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentChange</name>
+    <message>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParser</name>
+    <message>
+        <source>Illegal unicode escape sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal character</source>
+        <translation>תו לא חוקי</translation>
+    </message>
+    <message>
+        <source>Unclosed string at end of line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal escape sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unclosed comment at end of file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal syntax for exponential number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Identifier cannot start with numeric literal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression literal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid regular expression flag &apos;%0&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression backslash sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Syntax error</source>
+        <translation>שגיאת תחביר</translation>
+    </message>
+    <message>
+        <source>Unexpected token `%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected token `%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property value set multiple times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected type name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid import qualifier ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Script import qualifiers must be unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Script import requires a qualifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Library import requires a version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected parameter type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property type modifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected property type modifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected property type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Readonly not yet supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>JavaScript declaration outside Script element</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePauseAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>אין אפשרות לקבוע פרק זמן של &lt; 0</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePixmap</name>
+    <message>
+        <source>Error decoding: %1: %2</source>
+        <translation>שגיאה בפיענוח: %1: %2</translation>
+    </message>
+    <message>
+        <source>Failed to get image from provider: %1</source>
+        <translation>נכשל להשיג תמונה מתוך סַפָּק: %1</translation>
+    </message>
+    <message>
+        <source>Cannot open: %1</source>
+        <translation>אין אפשרות לפתוח: %1</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>אין אפשרות לקבוע פרק זמן של &lt; 0</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyChanges</name>
+    <message>
+        <source>PropertyChanges does not support creating state-specific objects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to read-only property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTextInput</name>
+    <message>
+        <source>Could not load cursor delegate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not instantiate cursor delegate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>תסריט %1 לא זמין</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>טיפוס %1 לא זמין</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVME</name>
+    <message>
+        <source>Unable to create object of type %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign value %1 to property %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object type %1 with no default method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign an object to signal property %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to interface property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create attached object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot set properties on %1 as it is null</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVisualDataModel</name>
+    <message>
+        <source>Delegate component must be Item type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModel</name>
+    <message>
+        <source>Qt was built without support for xmlpatterns</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModelRole</name>
+    <message>
+        <source>An XmlRole query must not start with &apos;/&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlRoleList</name>
+    <message>
+        <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QDial</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+951"/>
         <source>QDial</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>חוגה</translatorcomment>
+        <translation>QDial</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>SpeedoMeter</source>
-        <translation type="unfinished"></translation>
+        <translation>מד־מהירות</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>SliderHandle</source>
-        <translation type="unfinished"></translation>
+        <translation>ידית הזזה</translation>
     </message>
 </context>
 <context>
     <name>QDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qdialog.cpp" line="+597"/>
         <source>What&apos;s This?</source>
         <translation>מה זה?</translation>
     </message>
     <message>
-        <location line="-115"/>
         <source>Done</source>
-        <translation type="unfinished"></translation>
+        <translation>סיים</translation>
     </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1866"/>
-        <location line="+464"/>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+561"/>
         <source>OK</source>
-        <translation type="unfinished">אישור</translation>
+        <translation>אישור</translation>
     </message>
     <message>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+3"/>
         <source>Save</source>
-        <translation type="unfinished">שמור</translation>
+        <translation>שמור</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;שמור</translation>
+        <translation>&amp;שמור</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתיחה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ביטול</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגירה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;סגור</translation>
+        <translation>&amp;סגור</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Apply</source>
-        <translation type="unfinished">החל</translation>
+        <translation>החל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>אפס</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Don&apos;t Save</source>
-        <translation type="unfinished"></translation>
+        <translation>אל תשמור</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Discard</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>השלך זרוק סלק</translatorcomment>
+        <translation>שכח</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;כן</translation>
+        <translation>&amp;כן</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Yes to &amp;All</source>
-        <translation type="unfinished"></translation>
+        <translation>כן ל&amp;הכל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;לא</translation>
+        <translation>&amp;לא</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>N&amp;o to All</source>
-        <translation type="unfinished"></translation>
+        <translation>ל&amp;א להכל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Save All</source>
-        <translation type="unfinished"></translation>
+        <translation>שמור הכל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Abort</source>
-        <translation type="unfinished"></translation>
+        <translation>בטל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Retry</source>
-        <translation type="unfinished"></translation>
+        <translation>נסה שוב</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Ignore</source>
-        <translation type="unfinished"></translation>
+        <translation>התעלם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>שחזר ברירות מחדל</translation>
     </message>
     <message>
-        <location line="-29"/>
         <source>Close without Saving</source>
-        <translation type="unfinished"></translation>
+        <translation>סגור ללא שמירה</translation>
     </message>
     <message>
-        <location line="-27"/>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;אישור</translation>
+        <translation>&amp;אישור</translation>
     </message>
 </context>
 <context>
     <name>QDirModel</name>
     <message>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+453"/>
         <source>Name</source>
-        <translation type="unfinished">שם</translation>
+        <translation>שם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Size</source>
-        <translation type="unfinished">גודל</translation>
+        <translation>גודל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
-        <translation type="unfinished"></translation>
+        <translation>סוג</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
-        <translation type="unfinished">סוג</translation>
+        <translation>טיפוס</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Date Modified</source>
-        <translation type="unfinished"></translation>
+        <translation>תאריך שינוי</translation>
     </message>
 </context>
 <context>
     <name>QDockWidget</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/qaccessiblewidgets.cpp" line="+1239"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Dock</source>
-        <translation type="unfinished"></translation>
+        <translation>חבר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Float</source>
-        <translation type="unfinished"></translation>
+        <translation>הצף</translation>
     </message>
 </context>
 <context>
     <name>QDoubleSpinBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-537"/>
         <source>More</source>
-        <translation type="unfinished"></translation>
+        <translation>יותר</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Less</source>
-        <translation type="unfinished"></translation>
+        <translation>פחות</translation>
     </message>
 </context>
 <context>
     <name>QErrorMessage</name>
     <message>
-        <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+391"/>
         <source>&amp;Show this message again</source>
         <translation>&amp;הצג הודעה זו שנית</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;OK</source>
         <translation>&amp;אישור</translation>
     </message>
     <message>
-        <location line="-200"/>
         <source>Debug Message:</source>
-        <translation type="unfinished"></translation>
+        <translation>הודעת דיבאג:</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Warning:</source>
-        <translation type="unfinished"></translation>
+        <translation>אזהרה:</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Fatal Error:</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה קריטית:</translation>
     </message>
 </context>
 <context>
     <name>QFile</name>
     <message>
-        <location filename="../src/corelib/io/qfile.cpp" line="+708"/>
-        <location line="+141"/>
         <source>Destination file exists</source>
+        <translation>קובץ יעד קיים</translation>
+    </message>
+    <message>
+        <source>Will not rename sequential file using block copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-108"/>
         <source>Cannot remove source file</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להסיר קובץ מקור</translation>
     </message>
     <message>
-        <location line="+120"/>
         <source>Cannot open %1 for input</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח את %1 לקריאה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Cannot open for output</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח לכתיבה</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Failure to write block</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכתוב בלוק</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Cannot create %1 for output</source>
+        <translation>אין אפשרות לפתוח את %1 לכתיבה</translation>
+    </message>
+    <message>
+        <source>No file engine available or engine does not support UnMapExtension</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+515"/>
-        <location line="+444"/>
         <source>All Files (*)</source>
         <translation>כל הקבצים (*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Back</source>
-        <translation type="unfinished">אחורה</translation>
+        <translation>אחורה</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>List View</source>
-        <translation type="unfinished">תצוגת רשימה</translation>
+        <translation>תצוגת רשימה</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Detail View</source>
-        <translation type="unfinished">תצוגת פרטים</translation>
+        <translation>תצוגת פרטים</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+414"/>
-        <location line="+1"/>
         <source>File</source>
-        <translation type="unfinished">קובץ</translation>
+        <translation>קובץ</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-461"/>
         <source>Open</source>
-        <translation>פתח</translation>
+        <translation>פתיחה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Save As</source>
-        <translation type="unfinished">שמירה בשם</translation>
+        <translation>שמירה בשם</translation>
     </message>
     <message>
-        <location line="+678"/>
-        <location line="+50"/>
-        <location line="+1471"/>
-        <location line="+75"/>
         <source>&amp;Open</source>
         <translation>&amp;פתח</translation>
     </message>
     <message>
-        <location line="-1596"/>
-        <location line="+50"/>
         <source>&amp;Save</source>
         <translation>&amp;שמור</translation>
     </message>
     <message>
-        <location line="-699"/>
         <source>&amp;Rename</source>
-        <translation type="unfinished">ש&amp;נה שם</translation>
+        <translation>ש&amp;נה שם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;מחק</translation>
+        <translation>&amp;מחק</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Show &amp;hidden files</source>
-        <translation type="unfinished">הצג קבצים &amp;מוסתרים</translation>
+        <translation>הצג קבצים &amp;מוסתרים</translation>
     </message>
     <message>
-        <location line="+1964"/>
         <source>New Folder</source>
-        <translation type="unfinished">תיקיה חדשה</translation>
+        <translation>תיקייה חדשה</translation>
     </message>
     <message>
-        <location line="-1999"/>
         <source>Find Directory</source>
-        <translation type="unfinished">חפש ספריה</translation>
+        <translation>חפש ספרייה</translation>
     </message>
     <message>
-        <location line="+685"/>
         <source>Directories</source>
         <translation>ספריות</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog_win.cpp" line="+160"/>
         <source>All Files (*.*)</source>
-        <translation type="unfinished">כל הקבצים (*.*)</translation>
+        <translation>כל הקבצים (*.*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+832"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1 כבר קיים.
+האם ברצונך להחליף אותו?</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>%1
 File not found.
 Please verify the correct file name was given.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1
+הקובץ לא נמצא.
+אנא ודא כי שם הקובץ הנכון הוזן.</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+402"/>
         <source>My Computer</source>
-        <translation type="unfinished"></translation>
+        <translation>המחשב שלי</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Parent Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>ספרייה מעלה</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Files of type:</source>
-        <translation type="unfinished"></translation>
+        <translation>קבצים מטיפוס:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1496"/>
-        <location line="+648"/>
         <source>Directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>ספרייה:</translation>
     </message>
     <message>
-        <location line="+794"/>
-        <location line="+862"/>
         <source>%1
 Directory not found.
 Please verify the correct directory name was given.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1
+ספרייה לא נמצאה.
+אנא ודא כי ניתן שם ספרייה מדויק.</translation>
     </message>
     <message>
-        <location line="-218"/>
         <source>&apos;%1&apos; is write protected.
 Do you want to delete it anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 מוגן בפני כתיבה.
+האם ברצונך למחוק אותו בכל זאת?</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Are sure you want to delete &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
+        <translation>האם אתה בטוח כי ברצונך למחוק את &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Could not delete directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות למחוק ספרייה.</translation>
     </message>
     <message>
-        <location line="+407"/>
         <source>Recent Places</source>
-        <translation type="unfinished"></translation>
+        <translation>מיקומים אחרונים</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="-4"/>
         <source>Drive</source>
+        <translation>כונן</translation>
+    </message>
+    <message>
+        <source>File Folder</source>
+        <comment>Match Windows Explorer</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <source>Folder</source>
+        <comment>All other platforms</comment>
+        <translation>תיקייה</translation>
+    </message>
+    <message>
+        <source>Alias</source>
+        <comment>Mac OS X Finder</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <comment>All other platforms</comment>
+        <translation>קיצור דרך</translation>
+    </message>
+    <message>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>לא ידוע</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2525"/>
         <source>Show </source>
-        <translation type="unfinished"></translation>
+        <translation>הצג </translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>קדימה</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+7"/>
         <source>&amp;New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>תיקייה &amp;חדשה</translation>
     </message>
     <message>
-        <location line="+656"/>
-        <location line="+38"/>
         <source>&amp;Choose</source>
-        <translation type="unfinished"></translation>
+        <translation>בח&amp;ר</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+418"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>הסר</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-687"/>
-        <location line="+652"/>
         <source>File &amp;name:</source>
-        <translation type="unfinished">&amp;שם הקובץ:</translation>
+        <translation>&amp;שם קובץ:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Look in:</source>
+        <translation>חפש בתוך:</translation>
+    </message>
+    <message>
+        <source>Create New Folder</source>
+        <translation>צור תיקייה חדשה</translation>
+    </message>
+    <message>
+        <source>Go back</source>
+        <translation>אחורה</translation>
+    </message>
+    <message>
+        <source>Go forward</source>
+        <translation>קדימה</translation>
+    </message>
+    <message>
+        <source>Go to the parent directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
-        <source>Create New Folder</source>
-        <translation type="unfinished">צור תיקיה חדשה</translation>
+        <source>Create a New Folder</source>
+        <translation>צור תיקייה חדשה</translation>
+    </message>
+    <message>
+        <source>Change to list view mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change to detail view mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QFileSystemModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+744"/>
         <source>%1 TB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ט&quot;ב</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1 GB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ג&quot;ב</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1 MB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 מ&quot;ב</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1 KB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ק&quot;ב</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>%1 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 בתים</translation>
     </message>
     <message>
-        <location line="+77"/>
         <source>Invalid filename</source>
-        <translation type="unfinished"></translation>
+        <translation>שם קובץ לא תקין</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&lt;b&gt;The name &quot;%1&quot; can not be used.&lt;/b&gt;&lt;p&gt;Try using another name, with fewer characters or no punctuations marks.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;אין אפשרות להשתמש בשם &quot;%1&quot;.&lt;/b&gt;&lt;p&gt;נסה שם אחר, עם פחות תווים או בלי סימני פיסוק.</translation>
     </message>
     <message>
-        <location line="+63"/>
         <source>Name</source>
-        <translation type="unfinished">שם</translation>
+        <translation>שם</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Size</source>
-        <translation type="unfinished">גודל</translation>
+        <translation>גודל</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
-        <translation type="unfinished"></translation>
+        <translation>סוג</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
-        <translation type="unfinished">סוג</translation>
+        <translation>טיפוס</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Date Modified</source>
-        <translation type="unfinished"></translation>
+        <translation>תאריך שינוי</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+234"/>
         <source>My Computer</source>
-        <translation type="unfinished"></translation>
+        <translation>המחשב שלי</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Computer</source>
+        <translation>מחשב</translation>
+    </message>
+    <message>
+        <source>%1 byte(s)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QFontDatabase</name>
     <message>
-        <location filename="../src/gui/text/qfontdatabase.cpp" line="+90"/>
-        <location line="+1176"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>רגיל</translation>
     </message>
     <message>
-        <location line="-1173"/>
-        <location line="+12"/>
-        <location line="+1149"/>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>מודגש</translation>
     </message>
     <message>
-        <location line="-1158"/>
-        <location line="+1160"/>
         <source>Demi Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>מודגש למחצה</translation>
     </message>
     <message>
-        <location line="-1157"/>
-        <location line="+18"/>
-        <location line="+1135"/>
         <source>Black</source>
-        <translation type="unfinished"></translation>
+        <translation>שחור</translation>
     </message>
     <message>
-        <location line="-1145"/>
         <source>Demi</source>
-        <translation type="unfinished"></translation>
+        <translation>למחצה</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+1145"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1004"/>
-        <location line="+1007"/>
         <source>Italic</source>
-        <translation type="unfinished"></translation>
+        <translation>נטוי</translation>
     </message>
     <message>
-        <location line="-1004"/>
-        <location line="+1006"/>
         <source>Oblique</source>
-        <translation type="unfinished"></translation>
+        <translation>אלכסוני</translation>
     </message>
     <message>
-        <location line="+705"/>
         <source>Any</source>
-        <translation type="unfinished"></translation>
+        <translation>כולם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Latin</source>
-        <translation type="unfinished"></translation>
+        <translation>לטינית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Greek</source>
-        <translation type="unfinished"></translation>
+        <translation>יוונית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Cyrillic</source>
-        <translation type="unfinished"></translation>
+        <translation>קירילית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Armenian</source>
-        <translation type="unfinished"></translation>
+        <translation>ארמנית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Hebrew</source>
-        <translation type="unfinished"></translation>
+        <translation>עברית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Arabic</source>
-        <translation type="unfinished"></translation>
+        <translation>ערבית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Syriac</source>
-        <translation type="unfinished"></translation>
+        <translation>סורית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Thaana</source>
-        <translation type="unfinished"></translation>
+        <translation>טאנה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Devanagari</source>
-        <translation type="unfinished"></translation>
+        <translation>דוונאגרי</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Bengali</source>
-        <translation type="unfinished"></translation>
+        <translation>בנגלית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Gurmukhi</source>
-        <translation type="unfinished"></translation>
+        <translation>גורמוכי</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Gujarati</source>
-        <translation type="unfinished"></translation>
+        <translation>גוג&apos;ראטית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Oriya</source>
-        <translation type="unfinished"></translation>
+        <translation>אוריה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Tamil</source>
-        <translation type="unfinished"></translation>
+        <translation>טמילית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Telugu</source>
-        <translation type="unfinished"></translation>
+        <translation>טלוגו</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Kannada</source>
-        <translation type="unfinished"></translation>
+        <translation>קאנאדה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Malayalam</source>
-        <translation type="unfinished"></translation>
+        <translation>מליאלאם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Sinhala</source>
-        <translation type="unfinished"></translation>
+        <translation>סינהלזית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Thai</source>
-        <translation type="unfinished"></translation>
+        <translation>תאילנדית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Lao</source>
-        <translation type="unfinished"></translation>
+        <translation>לאו</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Tibetan</source>
-        <translation type="unfinished"></translation>
+        <translation>טיבטי</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Myanmar</source>
-        <translation type="unfinished"></translation>
+        <translation>מיאנמר</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Georgian</source>
-        <translation type="unfinished"></translation>
+        <translation>גרוזינית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Khmer</source>
-        <translation type="unfinished"></translation>
+        <translation>חמר</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Simplified Chinese</source>
-        <translation type="unfinished"></translation>
+        <translation>סינית מפושטת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Traditional Chinese</source>
-        <translation type="unfinished"></translation>
+        <translation>סינית מסורתית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Japanese</source>
-        <translation type="unfinished"></translation>
+        <translation>יפנית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Korean</source>
-        <translation type="unfinished"></translation>
+        <translation>קוריאנית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Vietnamese</source>
-        <translation type="unfinished"></translation>
+        <translation>ויאטנמית</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Symbol</source>
-        <translation type="unfinished"></translation>
+        <translation>סימנים</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Ogham</source>
-        <translation type="unfinished"></translation>
+        <translation>אוגם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Runic</source>
+        <translation>רוני</translation>
+    </message>
+    <message>
+        <source>N&apos;Ko</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QFontDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+772"/>
         <source>&amp;Font</source>
         <translation>&amp;גופן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Font st&amp;yle</source>
         <translation>&amp;סגנון גופן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Size</source>
         <translation>גו&amp;דל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Effects</source>
         <translation>אפקטים</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Stri&amp;keout</source>
         <translation>קו &amp;חוצה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Underline</source>
         <translation>קו &amp;תחתי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Sample</source>
         <translation>דוגמה</translation>
     </message>
     <message>
-        <location line="-603"/>
-        <location line="+247"/>
         <source>Select Font</source>
         <translation>בחר גופן</translation>
     </message>
     <message>
-        <location line="+357"/>
         <source>Wr&amp;iting System</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;שיטת כתיבה</translation>
     </message>
 </context>
 <context>
     <name>QFtp</name>
     <message>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+2303"/>
         <source>Host %1 found</source>
-        <translation type="unfinished">המארח %1 נמצא</translation>
+        <translation>מארח %1 נמצא</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Host found</source>
-        <translation type="unfinished">המארח נמצא</translation>
+        <translation>מארח נמצא</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qftp.cpp" line="+1003"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1456"/>
-        <location line="+1451"/>
         <source>Connected to host %1</source>
-        <translation>מחובר למארח %1</translation>
+        <translation>מחובר אל מארח %1</translation>
     </message>
     <message>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+7"/>
         <source>Connected to host</source>
-        <translation type="unfinished">מחובר למארח</translation>
+        <translation>מחובר אל מארח</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>Connection to %1 closed</source>
-        <translation type="unfinished">החיבור אל %1 נסגר</translation>
+        <translation>חיבור אל %1 נסגר</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qftp.cpp" line="+1375"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-243"/>
-        <location line="+250"/>
         <source>Connection closed</source>
-        <translation>החיבור נסגר</translation>
+        <translation>חיבור נסגר</translation>
     </message>
     <message>
-        <location line="-1487"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1566"/>
         <source>Host %1 not found</source>
-        <translation type="unfinished">המארח %1 לא נמצא</translation>
+        <translation>מארח %1 לא נמצא</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+4"/>
         <source>Connection refused to host %1</source>
-        <translation type="unfinished">החיבור אל המארח %1 נדחה</translation>
+        <translation>חיבור אל מארח %1 נדחה</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Connection timed out to host %1</source>
-        <translation type="unfinished"></translation>
+        <translation>זמן חיבור אל מארח %1 פקע</translation>
     </message>
     <message>
-        <location line="+501"/>
-        <location line="+29"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+458"/>
-        <location line="+728"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location line="+889"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+77"/>
         <source>Connecting to host failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>חיבור אל מארח נכשל:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Login failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>התחברות נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Listing directory failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>קבלת רשימת הקבצים מתוך ספרייה נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Changing directory failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שינוי ספרייה נכשל:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Downloading file failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>הורדת קובץ נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Uploading file failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>העלאת קובץ נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Removing file failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>הסרת קובץ נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Creating directory failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>יצירת ספרייה נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Removing directory failed:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>הסרת ספרייה נכשלה:
+%1</translation>
     </message>
     <message>
-        <location line="-1524"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1356"/>
         <source>Not connected</source>
-        <translation type="unfinished"></translation>
+        <translation>לא מחובר</translation>
     </message>
     <message>
-        <location line="+396"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+332"/>
         <source>Connection refused for data connection</source>
-        <translation type="unfinished"></translation>
+        <translation>חיבור נדחה עבור חיבור של נתונים</translation>
+    </message>
+</context>
+<context>
+    <name>QGroupBox</name>
+    <message>
+        <source>Toggle</source>
+        <translation>הפעל/כבה</translation>
     </message>
 </context>
 <context>
     <name>QHostInfo</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_p.h" line="+183"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
+    </message>
+    <message>
+        <source>No host name given</source>
+        <translation>לא ניתן שם מארח</translation>
     </message>
 </context>
 <context>
     <name>QHostInfoAgent</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+178"/>
-        <location line="+9"/>
-        <location line="+64"/>
-        <location line="+31"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+180"/>
-        <location line="+9"/>
-        <location line="+40"/>
-        <location line="+27"/>
         <source>Host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>מארח לא נמצא</translation>
     </message>
     <message>
-        <location line="-44"/>
-        <location line="+39"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-34"/>
-        <location line="+29"/>
         <source>Unknown address type</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס כתובת לא מוכר</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-19"/>
-        <location line="+27"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
+    </message>
+    <message>
+        <source>No host name given</source>
+        <translation>לא ניתן שם מארח</translation>
+    </message>
+    <message>
+        <source>Invalid hostname</source>
+        <translation>שם מארח לא תקין</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>שגיאה לא מוכרת (%1)</translation>
     </message>
 </context>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+876"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+1836"/>
         <source>Connection refused</source>
-        <translation>החיבור נדחה</translation>
+        <translation>חיבור נדחה</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="+2631"/>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
         <source>Host %1 not found</source>
-        <translation>המארח %1 לא נמצא</translation>
+        <translation>מארח %1 לא נמצא</translation>
     </message>
     <message>
-        <location line="-62"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="-45"/>
         <source>Wrong content length</source>
         <translation>אורך תוכן שגוי</translation>
     </message>
     <message>
-        <location line="-2204"/>
         <source>HTTPS connection requested but SSL support not compiled in</source>
-        <translation type="unfinished"></translation>
+        <translation>התבקש חיבור HTTPS אבל תמיכת SSL לא מקומפלת אל הספרייה</translation>
     </message>
     <message>
-        <location line="+2286"/>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+10"/>
-        <location line="+19"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+48"/>
         <source>HTTP request failed</source>
-        <translation>בקשת ה-HTTP נכשלה</translation>
+        <translation>בקשת HTTP נכשלה</translation>
     </message>
     <message>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+450"/>
         <source>Host %1 found</source>
-        <translation type="unfinished">המארח %1 נמצא</translation>
+        <translation>מארח %1 נמצא</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Host found</source>
-        <translation type="unfinished">המארח נמצא</translation>
+        <translation>מארח נמצא</translation>
     </message>
     <message>
-        <location line="-11"/>
         <source>Connected to host %1</source>
-        <translation type="unfinished">מחובר למארח %1</translation>
+        <translation>מחובר אל מארח %1</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Connected to host</source>
-        <translation type="unfinished">מחובר למארח</translation>
+        <translation>מחובר אל מארח</translation>
     </message>
     <message>
-        <location line="-11"/>
         <source>Connection to %1 closed</source>
-        <translation type="unfinished">החיבור אל %1 נסגר</translation>
+        <translation>חיבור אל %1 נסגר</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-22"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+14"/>
         <source>Connection closed</source>
-        <translation type="unfinished">החיבור נסגר</translation>
+        <translation>חיבור נסגר</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-1077"/>
-        <location line="+820"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="-1152"/>
-        <location line="+567"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location line="-568"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="-370"/>
         <source>Request aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפול בבקשה הופסק</translation>
     </message>
     <message>
-        <location line="+579"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+381"/>
         <source>No server set to connect to</source>
-        <translation type="unfinished"></translation>
+        <translation>לא נקבע שרת להתחבר אליו</translation>
     </message>
     <message>
-        <location line="+168"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+60"/>
         <source>Server closed connection unexpectedly</source>
-        <translation type="unfinished"></translation>
+        <translation>שרת סגר חיבור באופן לא צפוי</translation>
     </message>
     <message>
-        <location line="+151"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+113"/>
         <source>Invalid HTTP response header</source>
-        <translation type="unfinished"></translation>
+        <translation>התקבלה כותרת לא תקינה בתשובת HTTP</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Unknown authentication method</source>
-        <translation type="unfinished"></translation>
+        <translation>שיטת אימות לא מוכרת</translation>
     </message>
     <message>
-        <location line="+97"/>
-        <location line="+48"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+40"/>
-        <location line="+47"/>
         <source>Invalid HTTP chunked body</source>
-        <translation type="unfinished"></translation>
+        <translation>נתח גוף HTTP לא תקין</translation>
     </message>
     <message>
-        <location line="+38"/>
         <source>Error writing response to device</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בכתיבת תשובה אל ההתקן</translation>
     </message>
     <message>
-        <location line="-173"/>
         <source>Proxy authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>נדרש אימות עבור שרת מתווך</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>נדרש אימות</translation>
     </message>
     <message>
-        <location line="-138"/>
         <source>Connection refused (or timed out)</source>
-        <translation type="unfinished"></translation>
+        <translation>חיבור נדחה (או פג זמנו)</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+6"/>
         <source>Proxy requires authentication</source>
-        <translation type="unfinished"></translation>
+        <translation>שרת מתווך דורש אימות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Host requires authentication</source>
-        <translation type="unfinished"></translation>
+        <translation>מארח דורש אימות</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Data corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>מידע משובש</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unknown protocol specified</source>
-        <translation type="unfinished"></translation>
+        <translation>צוין פרוטוקול לא מוכר</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>SSL handshake failed</source>
-        <translation type="unfinished"></translation>
+        <translation>לחיצת ידיים של SSL נכשלה</translation>
     </message>
 </context>
 <context>
     <name>QHttpSocketEngine</name>
     <message>
-        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="-89"/>
         <source>Did not receive HTTP response from proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>לא התקבלה תשובת HTTP משרת מתווך</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>Error parsing authentication request from proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפענוח בקשת האימות של שרת מתווך</translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>Authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>נדרש אימות</translation>
     </message>
     <message>
-        <location line="+27"/>
         <source>Proxy denied connection</source>
-        <translation type="unfinished"></translation>
+        <translation>שרת מתווך דחה חיבור</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Error communicating with HTTP proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בהתקשורות עם שרת מתווך של HTTP</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Proxy server not found</source>
-        <translation type="unfinished"></translation>
+        <translation>שרת מתווך לא נמצא</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Proxy connection refused</source>
-        <translation type="unfinished"></translation>
+        <translation>חיבור שרת מתווך נדחה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Proxy server connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>פג זמן חיבור שרת מתווך</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Proxy connection closed prematurely</source>
-        <translation type="unfinished"></translation>
+        <translation>חיבור שרת מתווך נסגר בטרם עת</translation>
     </message>
 </context>
 <context>
     <name>QIBaseDriver</name>
     <message>
-        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1428"/>
         <source>Error opening database</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת מסד נתונים</translation>
     </message>
     <message>
-        <location line="+54"/>
         <source>Could not start transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להפעיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
 </context>
 <context>
     <name>QIBaseResult</name>
     <message>
-        <location line="-1097"/>
         <source>Unable to create BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות ליצור BLOB</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Unable to write BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכתוב BLOB</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Unable to open BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח BLOB</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Unable to read BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לקרוא BLOB</translation>
     </message>
     <message>
-        <location line="+125"/>
-        <location line="+189"/>
         <source>Could not find array</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות למצוא מערך נתונים</translation>
     </message>
     <message>
-        <location line="-157"/>
         <source>Could not get array data</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להשיג מידע מערך נתונים</translation>
     </message>
     <message>
-        <location line="+212"/>
         <source>Could not get query info</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להשיג מידע שאילתא</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Could not start transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להפעיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Could not allocate statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להקצות הוראה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Could not prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+7"/>
         <source>Could not describe input statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לתאר הוראת קלט</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Could not describe statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לתאר הוראה</translation>
     </message>
     <message>
-        <location line="+115"/>
         <source>Unable to close statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לסגור הוראה</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Unable to execute query</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע שאילתא</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>Could not fetch next item</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הפריט הבא</translation>
     </message>
     <message>
-        <location line="+160"/>
         <source>Could not get statement info</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להשיג מידע הוראה</translation>
     </message>
 </context>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+1869"/>
         <source>Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>הרשאה נדחתה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Too many open files</source>
-        <translation type="unfinished"></translation>
+        <translation>יותר מדי קבצים פתוחים</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>No such file or directory</source>
-        <translation type="unfinished"></translation>
+        <translation>לא קיים קובץ או ספרייה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>No space left on device</source>
-        <translation type="unfinished"></translation>
+        <translation>לא נשאר מקום בהתקן</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1536"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
 </context>
 <context>
     <name>QInputContext</name>
     <message>
-        <location filename="../src/gui/inputmethod/qinputcontextfactory.cpp" line="+242"/>
         <source>XIM</source>
-        <translation type="unfinished"></translation>
+        <translation>XIM</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <source>FEP</source>
+        <translation>FEP</translation>
+    </message>
+    <message>
         <source>XIM input method</source>
-        <translation type="unfinished"></translation>
+        <translation>שיטת קלט XIM</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Windows input method</source>
-        <translation type="unfinished"></translation>
+        <translation>שיטת קלט של Windows</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Mac OS X input method</source>
+        <translation>שיטת קלט של Mac OS X</translation>
+    </message>
+    <message>
+        <source>S60 FEP input method</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QInputDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qinputdialog.cpp" line="+223"/>
         <source>Enter a value:</source>
-        <translation type="unfinished"></translation>
+        <translation>הכנס ערך:</translation>
     </message>
 </context>
 <context>
     <name>QLibrary</name>
     <message>
-        <location filename="../src/corelib/plugin/qlibrary.cpp" line="+378"/>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+302"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. Expected build key &quot;%2&quot;, got &quot;%3&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+340"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location line="-377"/>
-        <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+280"/>
         <source>The shared library was not found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>The file &apos;%1&apos; is not a valid Qt plugin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (Cannot mix debug and release libraries.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/plugin/qlibrary_unix.cpp" line="+209"/>
-        <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+99"/>
         <source>Cannot load library %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לטעון ספרייה %1: %2</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+26"/>
         <source>Cannot unload library %1: %2</source>
+        <translation>אין אפשרות לפרוק ספרייה %1: %2</translation>
+    </message>
+    <message>
+        <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
-        <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+15"/>
-        <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
+        <source>&apos;%1&apos; is not an ELF object (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is not an ELF object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; is an invalid ELF object (%2)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2680"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;בטל</translation>
+        <translation>&amp;בטל</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">בצע &amp;שוב</translation>
+        <translation>בצע &amp;שוב</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;גזור</translation>
+        <translation>&amp;גזור</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">הע&amp;תק</translation>
+        <translation>הע&amp;תק</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">ה&amp;דבק</translation>
+        <translation>ה&amp;דבק</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Select All</source>
-        <translation type="unfinished">בחר הכל</translation>
+        <translation>בחר הכל</translation>
     </message>
     <message>
-        <location line="-6"/>
         <source>Delete</source>
-        <translation type="unfinished">מחק</translation>
+        <translation>מחק</translation>
     </message>
 </context>
 <context>
     <name>QLocalServer</name>
     <message>
-        <location filename="../src/network/socket/qlocalserver.cpp" line="+226"/>
-        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+231"/>
         <source>%1: Name error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאת שם</translation>
     </message>
     <message>
-        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="-8"/>
         <source>%1: Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: הרשאה נדחתה</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>%1: Address in use</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: כתובת בשימוש</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location filename="../src/network/socket/qlocalserver_win.cpp" line="+158"/>
         <source>%1: Unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאה לא מוכרת %2</translation>
     </message>
 </context>
 <context>
     <name>QLocalSocket</name>
     <message>
-        <location filename="../src/network/socket/qlocalsocket_tcp.cpp" line="+132"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+134"/>
         <source>%1: Connection refused</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: חיבור נדחה</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Remote closed</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: קצה מרוחק סגר</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+80"/>
-        <location line="+43"/>
         <source>%1: Invalid name</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שם לא תקין</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket access error</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>גישת שקע</translatorcomment>
+        <translation>%1: שגיאת גישה לשקע</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket resource error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאת משאב שקע</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: תם זמן פעולת שקע</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Datagram too large</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: צרור נתונים גדול מדי</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="-48"/>
         <source>%1: Connection error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאת חיבור</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: The socket operation is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: פעולת השקע אינה נתמכת</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>%1: Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+4"/>
-        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+10"/>
         <source>%1: Unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאה לא מוכרת %2</translation>
+    </message>
+    <message>
+        <source>%1: Access denied</source>
+        <translation>%1: גישה נדחתה</translation>
     </message>
 </context>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1231"/>
         <source>Unable to open database &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח מסד נתונים &apos;</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחבר</translation>
     </message>
     <message>
-        <location line="+127"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
 </context>
 <context>
     <name>QMYSQLResult</name>
     <message>
-        <location line="-922"/>
         <source>Unable to fetch data</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא נתונים</translation>
     </message>
     <message>
-        <location line="+176"/>
         <source>Unable to execute query</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע שאילתא</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Unable to store result</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאחסן תוצאה</translation>
     </message>
     <message>
-        <location line="+190"/>
-        <location line="+8"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Unable to reset statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאפס הוראה</translation>
     </message>
     <message>
-        <location line="+87"/>
         <source>Unable to bind value</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך ערך</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראה</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location line="+21"/>
         <source>Unable to bind outvalues</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך outvalues</translation>
     </message>
     <message>
-        <location line="-12"/>
         <source>Unable to store statement results</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאחסן תוצאות הוראה</translation>
     </message>
     <message>
-        <location line="-253"/>
         <source>Unable to execute next query</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע שאילתא באה</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Unable to store next result</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאחסן תוצאה באה</translation>
     </message>
 </context>
 <context>
     <name>QMdiArea</name>
     <message>
-        <location filename="../src/gui/widgets/qmdiarea.cpp" line="+290"/>
         <source>(Untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ללא שם)</translation>
     </message>
 </context>
 <context>
     <name>QMdiSubWindow</name>
     <message>
-        <location filename="../src/gui/widgets/qmdisubwindow.cpp" line="+280"/>
         <source>%1 - [%2]</source>
-        <translation type="unfinished">%1 - [%2]</translation>
+        <translation>%1 - [%2]</translation>
     </message>
     <message>
-        <location line="+72"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="-18"/>
         <source>Minimize</source>
-        <translation type="unfinished">מזער</translation>
+        <translation>מזער</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Restore Down</source>
-        <translation type="unfinished">שחזר למטה</translation>
+        <translation>שחזר למטה</translation>
     </message>
     <message>
-        <location line="+707"/>
         <source>&amp;Restore</source>
-        <translation type="unfinished">ש&amp;חזר</translation>
+        <translation>ש&amp;חזר</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Move</source>
-        <translation type="unfinished">ה&amp;זז</translation>
+        <translation>ה&amp;זז</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Size</source>
-        <translation type="unfinished">גו&amp;דל</translation>
+        <translation>גו&amp;דל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mi&amp;nimize</source>
-        <translation type="unfinished">&amp;מזער</translation>
+        <translation>&amp;מזער</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Ma&amp;ximize</source>
-        <translation type="unfinished">&amp;הגדל</translation>
+        <translation>&amp;הגדל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Stay on &amp;Top</source>
-        <translation type="unfinished">&amp;תמיד עליון</translation>
+        <translation>&amp;תמיד עליון</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;סגור</translation>
+        <translation>&amp;סגור</translation>
     </message>
     <message>
-        <location line="-787"/>
         <source>- [%1]</source>
-        <translation type="unfinished"></translation>
+        <translation>- [%1]</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>Maximize</source>
-        <translation type="unfinished">הגדל</translation>
+        <translation>הגדל</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unshade</source>
-        <translation type="unfinished"></translation>
+        <translation>בטל הצללה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Shade</source>
-        <translation type="unfinished"></translation>
+        <translation>הצלל</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Restore</source>
-        <translation type="unfinished"></translation>
+        <translation>שחזר</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>תפריט</translation>
     </message>
 </context>
 <context>
     <name>QMenu</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/qaccessiblemenu.cpp" line="+157"/>
-        <location line="+225"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="-224"/>
-        <location line="+225"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתח</translation>
     </message>
     <message>
-        <location line="-223"/>
-        <location line="+225"/>
-        <location line="+51"/>
         <source>Execute</source>
-        <translation type="unfinished"></translation>
+        <translation>הפעל</translation>
     </message>
 </context>
 <context>
     <name>QMenuBar</name>
     <message>
-        <source>Options</source>
-        <translation type="obsolete">אפשרויות</translation>
+        <source>Actions</source>
+        <translation>פעולות</translation>
+    </message>
+    <message>
+        <source>Corner Toolbar</source>
+        <translation>סרגל כלים פינתי</translation>
     </message>
 </context>
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="-1964"/>
-        <location line="+852"/>
-        <location filename="../src/gui/dialogs/qmessagebox.h" line="-52"/>
-        <location line="+8"/>
         <source>OK</source>
         <translation>אישור</translation>
     </message>
     <message>
-        <location line="+509"/>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
+        <translation>&lt;h3&gt;אודות Qt&lt;/h3&gt;&lt;p&gt;תוכנית זו משתמשת ב־Qt גירסה %1.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.digia.com/product/licensing&quot;&gt;qt.digia.com/product/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Digia product. See &lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&amp;#8207;Qt הינה ערכת כלי C++&amp;#8206; עבור פיתוח יישומים חוצי-פלטפורמה.&lt;/p&gt;&lt;p&gt;&amp;#8207;Qt מספקת ניידות קוד-בודד על פני MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, וכל הגרסאות העיקריות של Unix. Qt גם כן זמינה עבור רכיבים משובצים כגון Qt עבור Embedded Linux וגם Qt עבור Windows CE.&lt;/p&gt;&lt;p&gt;&amp;#8207;Qt זמינה תחת שלוש אפשרויות רישוי שונות המיועדות להתאים לצרכים של המשתמשים השונים שלנו.&lt;/p&gt;&lt;p&gt;&amp;#8207;Qt הרשויה תחת הסכם ההרשאה המסחרי שלנו הינה הולמת למען פיתוח של תכנות קנייניות/מסחריות כאשר אין ברצונך לשתף שום קוד מקור עם צדדים שלישיים או שבמובן אחר לא יכול להיענות עם התנאים של GNU LGPL גירסה 2.1 או GNU GPL גירסה 3.0.&lt;/p&gt;&lt;p&gt;&amp;#8207;Qt הרשויה תחת הרשיון GNU LGPL גירסה 2.1 הינה הולמת למען הפיתוח של יישומי Qt (קנייניים או קוד פתוח) בתנאי שביכולתך להיענות עם התנאים והסייגים של הרשיון GNU LGPL גירסה 2.1.&lt;/p&gt;&lt;p&gt;&amp;#8207;Qt הרשויה תחת הרשיון GNU General Public License גירסה 3.0 הינה הולמת עבור הפיתוח של יישומי Qt כאשר ברצונך להשתמש ביישומים אלה בשילוב עם תכנה הכפופה אל התנאים של הרשיון GNU GPL גירסה 3.0 או כאשר במובן אחר ברצונך להיענות עם התנאים של הרשיון GNU GPL גירסה 3.0.&lt;/p&gt;&lt;p&gt;אנא ראה &lt;a href=&quot;http://qt.digia.com/product/licensing&quot;&gt;qt.digia.com/product/licensing&lt;/a&gt; לסקירה כללית של מתן היתרי רישוי Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Digia product. See &lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; for more information.&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>About Qt</source>
-        <translation type="unfinished"></translation>
+        <translation>אודות Qt</translation>
     </message>
     <message>
-        <location line="-508"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="-1097"/>
         <source>Show Details...</source>
-        <translation type="unfinished"></translation>
+        <translation>הצג פרטים...</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Hide Details...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1570"/>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.digia.com/product/licensing&quot;&gt;qt.digia.com/product/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Digia product. See &lt;a href=&quot;http://qt.digia.com/&quot;&gt;qt.digia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>הסתר פרטים...</translation>
     </message>
 </context>
 <context>
     <name>QMultiInputContext</name>
     <message>
-        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontext.cpp" line="+88"/>
         <source>Select IM</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר שיטת קלט</translation>
     </message>
 </context>
 <context>
     <name>QMultiInputContextPlugin</name>
     <message>
-        <location filename="../src/plugins/inputmethods/imsw-multi/qmultiinputcontextplugin.cpp" line="+95"/>
         <source>Multiple input method switcher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Multiple input method switcher that uses the context menu of the text widgets</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3015,1425 +3783,1209 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNativeSocketEngine</name>
     <message>
-        <location filename="../src/network/socket/qnativesocketengine.cpp" line="+206"/>
         <source>The remote host closed the connection</source>
-        <translation type="unfinished"></translation>
+        <translation>המארח המרוחק סגר את החיבור</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Network operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>תם זמן פעולת רשת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>לא נותרו משאבים</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unsupported socket operation</source>
-        <translation type="unfinished"></translation>
+        <translation>פעולת שקע לא נתמכת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Protocol type not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס פרוטוקול לא נתמך</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Invalid socket descriptor</source>
-        <translation type="unfinished"></translation>
+        <translation>מתאר שקע לא תקין</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Network unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>רשת לא ניתנת להשגה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>הרשאה נדחתה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>פג זמן חיבור</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Connection refused</source>
-        <translation type="unfinished">החיבור נדחה</translation>
+        <translation>חיבור נדחה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The bound address is already in use</source>
-        <translation type="unfinished"></translation>
+        <translation>הכתובת הכרוכה כבר מצויה בשימוש</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The address is not available</source>
-        <translation type="unfinished"></translation>
+        <translation>הכתובת אינה זמינה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The address is protected</source>
-        <translation type="unfinished"></translation>
+        <translation>הכתובת מוגנת</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Unable to send a message</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לשלוח הודעה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unable to receive a message</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לקבל הודעה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unable to write</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכתוב</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Network error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת רשת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Another socket is already listening on the same port</source>
-        <translation type="unfinished"></translation>
+        <translation>שקע אחר כבר מאזין על אותו הפורט</translation>
     </message>
     <message>
-        <location line="-66"/>
         <source>Unable to initialize non-blocking socket</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאתחל שקע לא-חוסם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Unable to initialize broadcast socket</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאתחל שקע broadcast</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
-        <translation type="unfinished"></translation>
+        <translation>ניסיון להשתמש בשקע IPv6 על פלטפורמה אשר לא תומכת IPv6</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Host unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>מארח לא ניתן להשגה</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>Datagram was too large to send</source>
-        <translation type="unfinished"></translation>
+        <translation>צרור הנתונים היה גדול מדי בכדי להישלח</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Operation on non-socket</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>The proxy type is invalid for this operation</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס שרת מתווך אינו תקין לפעולה זו</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessCacheBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesscachebackend.cpp" line="+65"/>
         <source>Error opening %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת %1</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkAccessDataBackend</name>
+    <message>
+        <source>Invalid URI: %1</source>
+        <translation>כתובת URI לא תקינה: %1</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkAccessDebugPipeBackend</name>
+    <message>
+        <source>Write error writing to %1: %2</source>
+        <translation>שגיאת כתיבה בעת כתיבה אל %1: %2</translation>
+    </message>
+    <message>
+        <source>Socket error on %1: %2</source>
+        <translation>שגיאת שקע על %1: %2</translation>
+    </message>
+    <message>
+        <source>Remote host closed the connection prematurely on %1</source>
+        <translation>מארח מרוחק סגר בטרם עת את החיבור על %1</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessFileBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+99"/>
         <source>Request for opening non-local file %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
         <source>Error opening %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת %1: ‏%2</translation>
     </message>
     <message>
-        <location line="+56"/>
         <source>Write error writing to %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת כתיבה בעת כתיבה אל %1: %2</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Cannot open %1: Path is a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח את %1: נתיב הינו ספרייה</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Read error reading from %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת קריאה בעת קריאה מתוך %1: %2</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessFtpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessftpbackend.cpp" line="+165"/>
         <source>No suitable proxy found</source>
-        <translation type="unfinished"></translation>
+        <translation>לא נמצא שרת מתווך מתאים</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Cannot open %1: is a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח את %1: הינו ספרייה</translation>
     </message>
     <message>
-        <location line="+130"/>
         <source>Logging in to %1 failed: authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>כניסה אל %1 נכשלה: נדרש אימות</translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>Error while downloading %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בעת הורדת %1: %2</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Error while uploading %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בעת העלאת %1: %2</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+597"/>
         <source>No suitable proxy found</source>
+        <translation>לא נמצא שרת מתווך מתאים</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkAccessManager</name>
+    <message>
+        <source>Network access is disabled.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QNetworkReply</name>
     <message>
-        <location line="+128"/>
         <source>Error downloading %1 - server replied: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בהורדת %1 - שרת ענה: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+68"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>פרוטוקול &quot;%1&quot; אינו מוכר</translation>
+    </message>
+    <message>
+        <source>Network session error.</source>
+        <translation>שגיאת פגישת רשת.</translation>
+    </message>
+    <message>
+        <source>backend start error.</source>
+        <translation>שגיאת התחלת מגשר עורפי.</translation>
+    </message>
+    <message>
+        <source>Temporary network failure.</source>
+        <translation>כשל רשת זמני.</translation>
     </message>
 </context>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+432"/>
-        <location line="+22"/>
         <source>Operation canceled</source>
-        <translation type="unfinished"></translation>
+        <translation>פעולה בוטלה</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkSession</name>
+    <message>
+        <source>Invalid configuration.</source>
+        <translation>תצורה לא תקינה.</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkSessionPrivateImpl</name>
+    <message>
+        <source>Roaming error</source>
+        <translation>שגיאת נדידה</translation>
+    </message>
+    <message>
+        <source>Session aborted by user or system</source>
+        <translation>פגישה בוטלה על ידי משתמש או מערכת</translation>
+    </message>
+    <message>
+        <source>The specified configuration cannot be used.</source>
+        <translation>התצורה אשר צוינה לא שמישה.</translation>
+    </message>
+    <message>
+        <source>Unidentified Error</source>
+        <translation>שגיאה לא מזוהה</translation>
+    </message>
+    <message>
+        <source>Unknown session error.</source>
+        <translation>שגיאת פגישה לא מוכרת.</translation>
+    </message>
+    <message>
+        <source>The session was aborted by the user or system.</source>
+        <translation>הפגישה בוטלה על ידי משתמש או מערכת.</translation>
+    </message>
+    <message>
+        <source>The requested operation is not supported by the system.</source>
+        <translation>הפעולה המבוקשת אינה נתמכת על ידי המערכת.</translation>
+    </message>
+    <message>
+        <source>Roaming was aborted or is not possible.</source>
+        <translation>נדידה בוטלה או אינה אפשרית.</translation>
     </message>
 </context>
 <context>
     <name>QOCIDriver</name>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2069"/>
         <source>Unable to logon</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחבר</translation>
     </message>
     <message>
-        <location line="-144"/>
         <source>Unable to initialize</source>
         <comment>QOCIDriver</comment>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאתחל</translation>
     </message>
     <message>
-        <location line="+215"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
 </context>
 <context>
     <name>QOCIResult</name>
     <message>
-        <location line="-963"/>
-        <location line="+161"/>
-        <location line="+15"/>
         <source>Unable to bind column for batch execute</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך טור עבור הרצת אצווה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to execute batch statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראת אצווה</translation>
     </message>
     <message>
-        <location line="+302"/>
         <source>Unable to goto next</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להמשיך הלאה</translation>
     </message>
     <message>
-        <location line="+59"/>
         <source>Unable to alloc statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להקצות הוראה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <source>Unable to get statement type</source>
+        <translation>אין אפשרות להשיג טיפוס הוראה</translation>
+    </message>
+    <message>
         <source>Unable to bind value</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך ערך</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראה</translation>
     </message>
 </context>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1785"/>
         <source>Unable to connect</source>
+        <translation>אין אפשרות להתחבר</translation>
+    </message>
+    <message>
+        <source>Unable to connect - Driver doesn&apos;t support all functionality required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Unable to connect - Driver doesn&apos;t support all needed functionality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+242"/>
         <source>Unable to disable autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לנטרל ביצוע ממוכן</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to enable autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאפשר ביצוע ממוכן</translation>
     </message>
 </context>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-1218"/>
-        <location line="+349"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-332"/>
-        <location line="+626"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראה</translation>
     </message>
     <message>
-        <location line="-555"/>
         <source>Unable to fetch next</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הבא</translation>
     </message>
     <message>
-        <location line="+279"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
     <message>
-        <location line="+268"/>
         <source>Unable to bind variable</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך משתנה</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+194"/>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-475"/>
-        <location line="+578"/>
         <source>Unable to fetch last</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את האחרון</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-672"/>
         <source>Unable to fetch</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא</translation>
     </message>
     <message>
-        <location line="+44"/>
         <source>Unable to fetch first</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הראשון</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Unable to fetch previous</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא את הקודם</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/gui/util/qdesktopservices_mac.cpp" line="+165"/>
-        <source>Home</source>
-        <translation type="unfinished">Home</translation>
+        <source>PulseAudio Sound Server</source>
+        <translation>שרת צליל PulseAudio</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdatabackend.cpp" line="+74"/>
-        <source>Operation not supported on %1</source>
+        <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+53"/>
-        <source>Invalid URI: %1</source>
+        <source>invalid query: &quot;%1&quot;</source>
+        <translation>שאילתא לא תקינה: &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Host not found</source>
+        <translation>מארח לא נמצא</translation>
+    </message>
+    <message>
+        <source>Could not read image data</source>
+        <translation>אין אפשרות לקרוא נתוני תמונה</translation>
+    </message>
+    <message>
+        <source>Sequential device (eg socket) for image read not supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+175"/>
-        <source>Write error writing to %1: %2</source>
+        <source>Seek file/device for image read failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
-        <source>Read error reading from %1: %2</source>
+        <source>Image mHeader read failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
-        <source>Socket error on %1: %2</source>
+        <source>Image type not supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
-        <source>Remote host closed the connection prematurely on %1</source>
+        <source>Image depth not valid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+53"/>
-        <source>Protocol error: packet of size 0 received</source>
+        <source>Could not seek to image read footer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo.cpp" line="+177"/>
-        <location line="+57"/>
-        <source>No host name given</source>
+        <source>Could not read footer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image type (non-TrueVision 2.0) not supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not reset to start position</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
         <source>Name</source>
-        <translation type="unfinished">שם</translation>
+        <translation>שם</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>ערך</translation>
     </message>
 </context>
 <context>
     <name>QPSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/psql/qsql_psql.cpp" line="+763"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחבר</translation>
     </message>
     <message>
-        <location line="+49"/>
         <source>Could not begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Could not commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Could not rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
     <message>
-        <location line="+358"/>
         <source>Unable to subscribe</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להירשם</translation>
     </message>
     <message>
-        <location line="+32"/>
         <source>Unable to unsubscribe</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבטל הרשמה</translation>
     </message>
 </context>
 <context>
     <name>QPSQLResult</name>
     <message>
-        <location line="-1058"/>
         <source>Unable to create query</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות ליצור שאילתא</translation>
     </message>
     <message>
-        <location line="+374"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להכין הוראה</translation>
     </message>
 </context>
 <context>
     <name>QPageSetupWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="+304"/>
         <source>Centimeters (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>סנטימטרים (ס&quot;מ)</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Millimeters (mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>מילימטרים (מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Inches (in)</source>
-        <translation type="unfinished"></translation>
+        <translation>אינצ&apos;ים (אינ)</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Points (pt)</source>
-        <translation type="unfinished"></translation>
+        <translation>נקודות (נק)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupwidget.ui"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>טופס</translation>
     </message>
     <message>
-        <location/>
         <source>Paper</source>
-        <translation type="unfinished"></translation>
+        <translation>נייר</translation>
     </message>
     <message>
-        <location/>
         <source>Page size:</source>
-        <translation type="unfinished"></translation>
+        <translation>מידת עמוד:</translation>
     </message>
     <message>
-        <location/>
         <source>Width:</source>
-        <translation type="unfinished"></translation>
+        <translation>רוחב:</translation>
     </message>
     <message>
-        <location/>
         <source>Height:</source>
-        <translation type="unfinished"></translation>
+        <translation>גובה:</translation>
     </message>
     <message>
-        <location/>
         <source>Paper source:</source>
-        <translation type="unfinished"></translation>
+        <translation>מקור נייר:</translation>
     </message>
     <message>
-        <location/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>כיוון הדפסה</translation>
     </message>
     <message>
-        <location/>
         <source>Portrait</source>
-        <translation type="unfinished">לאורך</translation>
+        <translation>לאורך</translation>
     </message>
     <message>
-        <location/>
         <source>Landscape</source>
-        <translation type="unfinished">לרוחב</translation>
+        <translation>לרוחב</translation>
     </message>
     <message>
-        <location/>
         <source>Reverse landscape</source>
-        <translation type="unfinished"></translation>
+        <translation>במהופך לרוחב</translation>
     </message>
     <message>
-        <location/>
         <source>Reverse portrait</source>
-        <translation type="unfinished"></translation>
+        <translation>במהופך לאורך</translation>
     </message>
     <message>
-        <location/>
         <source>Margins</source>
-        <translation type="unfinished"></translation>
+        <translation>שוליים</translation>
     </message>
     <message>
-        <location/>
         <source>top margin</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה עליון</translation>
     </message>
     <message>
-        <location/>
         <source>left margin</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה שמאלי</translation>
     </message>
     <message>
-        <location/>
         <source>right margin</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה ימני</translation>
     </message>
     <message>
-        <location/>
         <source>bottom margin</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה תחתון</translation>
     </message>
 </context>
 <context>
     <name>QPluginLoader</name>
     <message>
-        <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+24"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
     <message>
-        <location line="-68"/>
         <source>The plugin was not loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>התוספת לא נטענה.</translation>
     </message>
 </context>
 <context>
     <name>QPrintDialog</name>
     <message>
-        <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+98"/>
         <source>locally connected</source>
         <translation>מחוברת מקומית</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+225"/>
         <source>Aliases: %1</source>
         <translation>שמות נוספים: %1</translation>
     </message>
     <message>
-        <location line="+223"/>
-        <location line="+199"/>
         <source>unknown</source>
         <translation>לא ידוע</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+268"/>
         <source>OK</source>
-        <translation type="unfinished">אישור</translation>
+        <translation>אישור</translation>
     </message>
     <message>
-        <source>Cancel</source>
-        <translation type="obsolete">ביטול</translation>
-    </message>
-    <message>
-        <source>Print in color if available</source>
-        <translation type="obsolete">הדפס בצבע אם הדבר זמין</translation>
-    </message>
-    <message>
-        <source>Printer</source>
-        <translation type="obsolete">מדפסת</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+375"/>
         <source>Print all</source>
-        <translation type="unfinished">הדפס הכל</translation>
+        <translation>הדפס הכל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Print range</source>
-        <translation type="unfinished">טווח הדפסה</translation>
+        <translation>טווח הדפסה</translation>
     </message>
     <message>
-        <source>Print last page first</source>
-        <translation type="obsolete">הדפס את העמוד הראשון אחרון</translation>
-    </message>
-    <message>
-        <source>Number of copies:</source>
-        <translation type="obsolete">מספר עותקים:</translation>
-    </message>
-    <message>
-        <source>Paper format</source>
-        <translation type="obsolete">תבנית נייר</translation>
-    </message>
-    <message>
-        <source>Portrait</source>
-        <translation type="obsolete">לאורך</translation>
-    </message>
-    <message>
-        <source>Landscape</source>
-        <translation type="obsolete">לרוחב</translation>
-    </message>
-    <message>
-        <location line="-48"/>
         <source>A0 (841 x 1189 mm)</source>
-        <translation>A0 (841 x 1189 mm)</translation>
+        <translation>A0 (‏841 x ‏1189 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A1 (594 x 841 mm)</source>
-        <translation>A1 (594 x 841 mm)</translation>
+        <translation>A1 (‏594 x ‏841 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A2 (420 x 594 mm)</source>
-        <translation>A2 (420 x 594 mm)</translation>
+        <translation>A2 (‏420 x ‏594 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A3 (297 x 420 mm)</source>
-        <translation>A3 (297 x 420 mm)</translation>
+        <translation>A3 (‏297 x ‏420 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>A5 (148 x 210 mm)</source>
-        <translation>A5 (148 x 210 mm)</translation>
+        <translation>A5 (‏148 x ‏210 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A6 (105 x 148 mm)</source>
-        <translation>A6 (105 x 148 mm)</translation>
+        <translation>A6 (‏105 x ‏148 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A7 (74 x 105 mm)</source>
-        <translation>A7 (74 x 105 mm)</translation>
+        <translation>A7 (‏74 x ‏105 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A8 (52 x 74 mm)</source>
-        <translation>A8 (52 x 74 mm)</translation>
+        <translation>A8 (‏52 x ‏74 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A9 (37 x 52 mm)</source>
-        <translation>A9 (37 x 52 mm)</translation>
+        <translation>A9 (‏37 x ‏52 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B0 (1000 x 1414 mm)</source>
-        <translation>B0 (1000 x 1414 mm)</translation>
+        <translation>B0 (‏1000 x ‏1414 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B1 (707 x 1000 mm)</source>
-        <translation>B1 (707 x 1000 mm)</translation>
+        <translation>B1 (‏707 x ‏1000 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B2 (500 x 707 mm)</source>
-        <translation>B2 (500 x 707 mm)</translation>
+        <translation>B2 (‏500 x ‏707 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B3 (353 x 500 mm)</source>
-        <translation>B3 (353 x 500 mm)</translation>
+        <translation>B3 (‏353 x ‏500 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B4 (250 x 353 mm)</source>
-        <translation>B4 (250 x 353 mm)</translation>
+        <translation>B4 (‏250 x ‏353 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>B6 (125 x 176 mm)</source>
-        <translation>B6 (125 x 176 mm)</translation>
+        <translation>B6 (‏125 x ‏176 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B7 (88 x 125 mm)</source>
-        <translation>B7 (88 x 125 mm)</translation>
+        <translation>B7 (‏88 x ‏125 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B8 (62 x 88 mm)</source>
-        <translation>B8 (62 x 88 mm)</translation>
+        <translation>B8 (‏62 x ‏88 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B9 (44 x 62 mm)</source>
-        <translation>B9 (44 x 62 mm)</translation>
+        <translation>B9 (‏44 x ‏62 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B10 (31 x 44 mm)</source>
-        <translation>B10 (31 x 44 mm)</translation>
+        <translation>B10 (‏31 x ‏44 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>C5E (163 x 229 mm)</source>
-        <translation>C5E (163 x 229 mm)</translation>
+        <translation>C5E (‏163 x ‏229 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>DLE (110 x 220 mm)</source>
-        <translation>DLE (110 x 220 mm)</translation>
+        <translation>DLE (‏110 x ‏220 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Folio (210 x 330 mm)</source>
-        <translation>Folio (210 x 330 mm)</translation>
+        <translation>גיליון (210 x ‏330 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Ledger (432 x 279 mm)</source>
-        <translation>Ledger (432 x 279 mm)</translation>
+        <translation>פנקס רשימות (432 x 279 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Tabloid (279 x 432 mm)</source>
-        <translation>Tabloid (279 x 432 mm)</translation>
+        <translation>צהובון (279 x ‏432 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>US Common #10 Envelope (105 x 241 mm)</source>
-        <translation>US Common #10 Envelope (105 x 241 mm)</translation>
+        <translation>US Common #10 מעטפה (105 x 241 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="-25"/>
+        <source>Print current page</source>
+        <translation>הדפס עמוד נוכחי</translation>
+    </message>
+    <message>
         <source>A4 (210 x 297 mm, 8.26 x 11.7 inches)</source>
-        <translation type="unfinished"></translation>
+        <translation>A4 (‏210 x ‏297 מ&quot;מ, 8.26 x ‏11.7 אינצ&apos;ים)</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>B5 (176 x 250 mm, 6.93 x 9.84 inches)</source>
-        <translation type="unfinished"></translation>
+        <translation>B5 (‏176 x ‏250 מ&quot;מ, 6.93 x ‏9.84 אינצ&apos;ים)</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Executive (7.5 x 10 inches, 191 x 254 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>ביצועי (7.5 x ‏10 אינצ&apos;ים, 191 x ‏254 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Legal (8.5 x 14 inches, 216 x 356 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>משפטי (8.5 x 14 אינצ&apos;ים, 216 x 356 מ&quot;מ)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Letter (8.5 x 11 inches, 216 x 279 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>מכתב (8.5 x ‏11 אינצ&apos;ים 216 x ‏279 מ&quot;מ)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+110"/>
-        <location line="+13"/>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
-        <translation type="unfinished">הדפס</translation>
+        <translation>הדפס</translation>
     </message>
     <message>
-        <source>File</source>
-        <translation type="obsolete">קובץ</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-357"/>
         <source>Print To File ...</source>
-        <translation type="unfinished"></translation>
+        <translation>הדפסה אל קובץ...</translation>
     </message>
     <message>
-        <source>Other</source>
-        <translation type="obsolete">אחר</translation>
-    </message>
-    <message>
-        <location line="+80"/>
         <source>File %1 is not writable.
 Please choose a different file name.</source>
-        <translation type="unfinished"></translation>
+        <translation>הקובץ %1 אינו בר כתיבה.
+אנא בחר שם קובץ אחר.</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>%1 already exists.
 Do you want to overwrite it?</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1 כבר קיים.
+האם ברצונך להחליף אותו?</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-208"/>
         <source>File exists</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ כבר קיים</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&lt;qt&gt;Do you want to overwrite it?&lt;/qt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;qt&gt;האם ברצונך לשכתב אותו?&lt;/qt&gt;</translation>
     </message>
     <message>
-        <location line="+227"/>
         <source>Print selection</source>
-        <translation type="unfinished"></translation>
+        <translation>הדפס בחירה</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-8"/>
         <source>%1 is a directory.
 Please choose a different file name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 הינו ספרייה.
+אנא בחר שם קובץ אחר.</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="-232"/>
         <source>A0</source>
-        <translation type="unfinished"></translation>
+        <translation>A0</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A1</source>
-        <translation type="unfinished"></translation>
+        <translation>A1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A2</source>
-        <translation type="unfinished"></translation>
+        <translation>A2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A3</source>
-        <translation type="unfinished"></translation>
+        <translation>A3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A4</source>
-        <translation type="unfinished"></translation>
+        <translation>A4</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A5</source>
-        <translation type="unfinished"></translation>
+        <translation>A5</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A6</source>
-        <translation type="unfinished"></translation>
+        <translation>A6</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A7</source>
-        <translation type="unfinished"></translation>
+        <translation>A7</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A8</source>
-        <translation type="unfinished"></translation>
+        <translation>A8</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A9</source>
-        <translation type="unfinished"></translation>
+        <translation>A9</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B0</source>
-        <translation type="unfinished"></translation>
+        <translation>B0</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B1</source>
-        <translation type="unfinished"></translation>
+        <translation>B1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B2</source>
-        <translation type="unfinished"></translation>
+        <translation>B2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B3</source>
-        <translation type="unfinished"></translation>
+        <translation>B3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B4</source>
-        <translation type="unfinished"></translation>
+        <translation>B4</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B5</source>
-        <translation type="unfinished"></translation>
+        <translation>B5</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B6</source>
-        <translation type="unfinished"></translation>
+        <translation>B6</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B7</source>
-        <translation type="unfinished"></translation>
+        <translation>B7</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B8</source>
-        <translation type="unfinished"></translation>
+        <translation>B8</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B9</source>
-        <translation type="unfinished"></translation>
+        <translation>B9</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>B10</source>
-        <translation type="unfinished"></translation>
+        <translation>B10</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>C5E</source>
-        <translation type="unfinished"></translation>
+        <translation>C5E</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>DLE</source>
-        <translation type="unfinished"></translation>
+        <translation>DLE</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Executive</source>
-        <translation type="unfinished"></translation>
+        <translation>ביצועי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Folio</source>
-        <translation type="unfinished"></translation>
+        <translation>גיליון</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Ledger</source>
-        <translation type="unfinished"></translation>
+        <translation>פנקס רשימות</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Legal</source>
-        <translation type="unfinished"></translation>
+        <translation>משפטי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Letter</source>
-        <translation type="unfinished"></translation>
+        <translation>מכתב</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Tabloid</source>
-        <translation type="unfinished"></translation>
+        <translation>צהובון</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>US Common #10 Envelope</source>
-        <translation type="unfinished"></translation>
+        <translation>US Common #10 מעטפה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>מותאם</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-522"/>
-        <location line="+68"/>
         <source>&amp;Options &gt;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;אפשרויות &gt;&gt;</translation>
     </message>
     <message>
-        <location line="-63"/>
         <source>&amp;Print</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;הדפס</translation>
     </message>
     <message>
-        <location line="+67"/>
         <source>&amp;Options &lt;&lt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;אפשרויות &lt;&lt;</translation>
     </message>
     <message>
-        <location line="+253"/>
         <source>Print to File (PDF)</source>
-        <translation type="unfinished"></translation>
+        <translation>הדפס לקובץ (PDF)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Print to File (Postscript)</source>
-        <translation type="unfinished"></translation>
+        <translation>הדפס לקובץ (Postscript)</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Local file</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ מקומי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Write %1 file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+1"/>
         <source>The &apos;From&apos; value cannot be greater than the &apos;To&apos; value.</source>
-        <translation type="unfinished"></translation>
+        <translation>ערך התחלה לא יכול להיות גדול מערך סיום.</translation>
     </message>
 </context>
 <context>
     <name>QPrintPreviewDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qabstractpagesetupdialog.cpp" line="+68"/>
-        <location line="+12"/>
         <source>Page Setup</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדרת עמוד</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+252"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
-        <location line="+79"/>
         <source>Print Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>תצוגה מקדימה</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Next page</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד הבא</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Previous page</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד קודם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>First page</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד ראשון</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Last page</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד אחרון</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Fit width</source>
-        <translation type="unfinished"></translation>
+        <translation>התאם רוחב</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Fit page</source>
-        <translation type="unfinished"></translation>
+        <translation>התאם עמוד</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Zoom in</source>
-        <translation type="unfinished"></translation>
+        <translation>זום פנימה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Zoom out</source>
-        <translation type="unfinished"></translation>
+        <translation>זום החוצה</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Portrait</source>
-        <translation type="unfinished">לאורך</translation>
+        <translation>לאורך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Landscape</source>
-        <translation type="unfinished">לרוחב</translation>
+        <translation>לרוחב</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Show single page</source>
-        <translation type="unfinished"></translation>
+        <translation>הצג עמוד בודד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Show facing pages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Show overview of all pages</source>
-        <translation type="unfinished"></translation>
+        <translation>הצג סקירה כללית של כל העמודים</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Print</source>
-        <translation type="unfinished">הדפס</translation>
+        <translation>הדפס</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Page setup</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדרת עמוד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="+151"/>
         <source>Export to PDF</source>
-        <translation type="unfinished"></translation>
+        <translation>יצא ל־PDF</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Export to PostScript</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QPrintPropertiesDialog</name>
-    <message>
-        <source>Save</source>
-        <translation type="obsolete">שמור</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">אישור</translation>
+        <translation>יצא ל־PostScript</translation>
     </message>
 </context>
 <context>
     <name>QPrintPropertiesWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintpropertieswidget.ui"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>טופס</translation>
     </message>
     <message>
-        <location/>
         <source>Page</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד</translation>
     </message>
     <message>
-        <location/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>מתקדם</translation>
     </message>
 </context>
 <context>
     <name>QPrintSettingsOutput</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintsettingsoutput.ui"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>טופס</translation>
     </message>
     <message>
-        <location/>
         <source>Copies</source>
-        <translation type="unfinished"></translation>
+        <translation>עותקים</translation>
     </message>
     <message>
-        <location/>
         <source>Print range</source>
-        <translation type="unfinished">טווח הדפסה</translation>
+        <translation>טווח הדפסה</translation>
     </message>
     <message>
-        <location/>
         <source>Print all</source>
-        <translation type="unfinished">הדפס הכל</translation>
+        <translation>הדפס הכל</translation>
     </message>
     <message>
-        <location/>
         <source>Pages from</source>
-        <translation type="unfinished"></translation>
+        <translation>מעמוד</translation>
     </message>
     <message>
-        <location/>
         <source>to</source>
-        <translation type="unfinished"></translation>
+        <translation>עד</translation>
     </message>
     <message>
-        <location/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>בחירה</translation>
     </message>
     <message>
-        <location/>
         <source>Output Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>הגדרות פלט</translation>
     </message>
     <message>
-        <location/>
         <source>Copies:</source>
-        <translation type="unfinished"></translation>
+        <translation>עותקים:</translation>
     </message>
     <message>
-        <location/>
         <source>Collate</source>
-        <translation type="unfinished"></translation>
+        <translation>השווה</translation>
     </message>
     <message>
-        <location/>
         <source>Reverse</source>
-        <translation type="unfinished"></translation>
+        <translation>הפוך</translation>
     </message>
     <message>
-        <location/>
         <source>Options</source>
-        <translation type="unfinished">אפשרויות</translation>
+        <translation>אפשרויות</translation>
     </message>
     <message>
-        <location/>
         <source>Color Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>מצב צבע</translation>
     </message>
     <message>
-        <location/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>צבע</translation>
     </message>
     <message>
-        <location/>
         <source>Grayscale</source>
-        <translation type="unfinished"></translation>
+        <translation>גווני אפור</translation>
     </message>
     <message>
-        <location/>
         <source>Duplex Printing</source>
-        <translation type="unfinished"></translation>
+        <translation>הדפסה דו כיוונית</translation>
     </message>
     <message>
-        <location/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>ללא</translation>
     </message>
     <message>
-        <location/>
         <source>Long side</source>
-        <translation type="unfinished"></translation>
+        <translation>צד ארוך</translation>
     </message>
     <message>
-        <location/>
         <source>Short side</source>
-        <translation type="unfinished"></translation>
+        <translation>צד קצר</translation>
+    </message>
+    <message>
+        <source>Current Page</source>
+        <translation>עמוד נוכחי</translation>
     </message>
 </context>
 <context>
     <name>QPrintWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintwidget.ui"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>טופס</translation>
     </message>
     <message>
-        <location/>
         <source>Printer</source>
-        <translation type="unfinished">מדפסת</translation>
+        <translation>מדפסת</translation>
     </message>
     <message>
-        <location/>
         <source>&amp;Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;שם:</translation>
     </message>
     <message>
-        <location/>
         <source>P&amp;roperties</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;מאפיינים</translation>
     </message>
     <message>
-        <location/>
         <source>Location:</source>
-        <translation type="unfinished"></translation>
+        <translation>מיקום:</translation>
     </message>
     <message>
-        <location/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>תצוגה מקדימה</translation>
     </message>
     <message>
-        <location/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס:</translation>
     </message>
     <message>
-        <location/>
         <source>Output &amp;file:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;קובץ פלט:</translation>
     </message>
     <message>
-        <location/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
 </context>
 <context>
     <name>QProcess</name>
     <message>
-        <location filename="../src/corelib/io/qprocess_unix.cpp" line="+475"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+147"/>
         <source>Could not open input redirection for reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+36"/>
         <source>Could not open output redirection for writing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+235"/>
         <source>Resource error (fork failure): %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת משאב (כשלון fork)‏: %1</translation>
     </message>
     <message>
-        <location line="+259"/>
-        <location line="+53"/>
-        <location line="+74"/>
-        <location line="+67"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+422"/>
-        <location line="+50"/>
-        <location line="+75"/>
-        <location line="+42"/>
-        <location line="+54"/>
         <source>Process operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>תם זמן פעולת תהליך</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+533"/>
-        <location line="+52"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
-        <location line="+50"/>
         <source>Error reading from process</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בקריאה מתהליך</translation>
     </message>
     <message>
-        <location line="+47"/>
-        <location line="+779"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+140"/>
         <source>Error writing to process</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בכתיבה אל תהליך</translation>
     </message>
     <message>
-        <location line="-709"/>
         <source>Process crashed</source>
-        <translation type="unfinished"></translation>
+        <translation>תהליך קרס</translation>
     </message>
     <message>
-        <location line="+912"/>
         <source>No program defined</source>
-        <translation type="unfinished"></translation>
+        <translation>לא הוגדרה תוכנית</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="-341"/>
-        <source>Process failed to start</source>
-        <translation type="unfinished"></translation>
+        <source>Process failed to start: %1</source>
+        <translation>תהליך נכשל בעליה: %1</translation>
     </message>
 </context>
 <context>
     <name>QProgressDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qprogressdialog.cpp" line="+182"/>
         <source>Cancel</source>
         <translation>ביטול</translation>
     </message>
@@ -4441,347 +4993,570 @@ Please choose a different file name.</source>
 <context>
     <name>QPushButton</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="-8"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתח</translation>
     </message>
 </context>
 <context>
     <name>QRadioButton</name>
     <message>
-        <location line="+12"/>
         <source>Check</source>
-        <translation type="unfinished"></translation>
+        <translation>סמן</translation>
     </message>
 </context>
 <context>
     <name>QRegExp</name>
     <message>
-        <location filename="../src/corelib/tools/qregexp.cpp" line="+64"/>
         <source>no error occurred</source>
-        <translation type="unfinished">לא אירעה כל שגיאה</translation>
+        <translation>לא אירעה כל שגיאה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>disabled feature used</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>bad char class syntax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>bad lookahead syntax</source>
+        <translation>תחביר lookahead שגוי</translation>
+    </message>
+    <message>
+        <source>lookbehinds not supported, see QTBUG-2371</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>bad repetition syntax</source>
-        <translation type="unfinished"></translation>
+        <translation>תחביר הישנות שגוי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>invalid octal value</source>
-        <translation type="unfinished"></translation>
+        <translation>ערך אוקטלי לא תקין</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>missing left delim</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>unexpected end</source>
+        <translation>סוף לא צפוי</translation>
+    </message>
+    <message>
+        <source>met internal limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>met internal limit</source>
-        <translation type="unfinished"></translation>
+        <source>invalid interval</source>
+        <translation>פרק זמן לא תקין</translation>
+    </message>
+    <message>
+        <source>invalid category</source>
+        <translation>קטגוריה לא תקינה</translation>
     </message>
 </context>
 <context>
     <name>QSQLite2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+396"/>
-        <source>Error to open database</source>
-        <translation type="unfinished"></translation>
+        <source>Error opening database</source>
+        <translation>שגיאה בפתיחת מסד נתונים</translation>
     </message>
     <message>
-        <location line="+41"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>Unable to rollback Transaction</source>
-        <translation type="unfinished"></translation>
+        <source>Unable to rollback transaction</source>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
 </context>
 <context>
     <name>QSQLite2Result</name>
     <message>
-        <location line="-323"/>
         <source>Unable to fetch results</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא תוצאות</translation>
     </message>
     <message>
-        <location line="+147"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע הוראה</translation>
     </message>
 </context>
 <context>
     <name>QSQLiteDriver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+528"/>
         <source>Error opening database</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בפתיחת מסד נתונים</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Error closing database</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בסגירת מסד נתונים</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
     </message>
 </context>
 <context>
     <name>QSQLiteResult</name>
     <message>
-        <location line="-400"/>
-        <location line="+66"/>
-        <location line="+8"/>
         <source>Unable to fetch row</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להביא שורה</translation>
     </message>
     <message>
-        <location line="+63"/>
         <source>Unable to execute statement</source>
+        <translation>אין אפשרות לבצע הוראה</translation>
+    </message>
+    <message>
+        <source>Unable to execute multiple statements at a time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Unable to reset statement</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לאפס הוראה</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Unable to bind parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לכרוך פרמטרים</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Parameter count mismatch</source>
+        <translation>ספירת פרמטרים לא מתאימה</translation>
+    </message>
+    <message>
+        <source>No query</source>
+        <translation>אין שאילתא</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptBreakpointsModel</name>
+    <message>
+        <source>ID</source>
+        <translation>מזהה</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>מיקום</translation>
+    </message>
+    <message>
+        <source>Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-208"/>
-        <source>No query</source>
+        <source>Ignore-count</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single-shot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hit-count</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QScriptBreakpointsWidget</name>
+    <message>
+        <source>New</source>
+        <translation>חדש</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>מחק</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebugger</name>
+    <message>
+        <source>Go to Line</source>
+        <translation>עבור אל שורה</translation>
+    </message>
+    <message>
+        <source>Line:</source>
+        <translation>שורה:</translation>
+    </message>
+    <message>
+        <source>Interrupt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shift+F5</source>
+        <translation>Shift+F5</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>המשך</translation>
+    </message>
+    <message>
+        <source>F5</source>
+        <translation>F5</translation>
+    </message>
+    <message>
+        <source>Step Into</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>F11</source>
+        <translation>F11</translation>
+    </message>
+    <message>
+        <source>Step Over</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>F10</source>
+        <translation>F10</translation>
+    </message>
+    <message>
+        <source>Step Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shift+F11</source>
+        <translation>Shift+F11</translation>
+    </message>
+    <message>
+        <source>Run to Cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl+F10</source>
+        <translation>Ctrl+F10</translation>
+    </message>
+    <message>
+        <source>Run to New Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>הפעל/כבה Breakpoint</translation>
+    </message>
+    <message>
+        <source>F9</source>
+        <translation>F9</translation>
+    </message>
+    <message>
+        <source>Clear Debug Output</source>
+        <translation>נקה פלט דיבאג</translation>
+    </message>
+    <message>
+        <source>Clear Error Log</source>
+        <translation>נקה יומן שגיאה</translation>
+    </message>
+    <message>
+        <source>Clear Console</source>
+        <translation>נקה מסוף</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Script...</source>
+        <translation>&amp;מצא בתוך תסריט...</translation>
+    </message>
+    <message>
+        <source>Ctrl+F</source>
+        <translation>Ctrl+F</translation>
+    </message>
+    <message>
+        <source>Find &amp;Next</source>
+        <translation>מצא את ה&amp;בא</translation>
+    </message>
+    <message>
+        <source>F3</source>
+        <translation>F3</translation>
+    </message>
+    <message>
+        <source>Find &amp;Previous</source>
+        <translation>מצא את ה&amp;קודם</translation>
+    </message>
+    <message>
+        <source>Shift+F3</source>
+        <translation>Shift+F3</translation>
+    </message>
+    <message>
+        <source>Ctrl+G</source>
+        <translation>Ctrl+G</translation>
+    </message>
+    <message>
+        <source>Debug</source>
+        <translation>דיבאג</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerCodeFinderWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>סגור</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>אחורה</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>קדימה</translation>
+    </message>
+    <message>
+        <source>Case Sensitive</source>
+        <translation>התאם רישיות</translation>
+    </message>
+    <message>
+        <source>Whole words</source>
+        <translation>מילים שלמות</translation>
+    </message>
+    <message>
+        <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerLocalsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>שם</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>ערך</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerStackModel</name>
+    <message>
+        <source>Level</source>
+        <translation>רמה</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>שם</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>מיקום</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptEdit</name>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>הפעל/כבה Breakpoint</translation>
+    </message>
+    <message>
+        <source>Disable Breakpoint</source>
+        <translation>נטרל Breakpoint</translation>
+    </message>
+    <message>
+        <source>Enable Breakpoint</source>
+        <translation>אפשר Breakpoint</translation>
+    </message>
+    <message>
+        <source>Breakpoint Condition:</source>
+        <translation>תנאי Breakpoint:</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptEngineDebugger</name>
+    <message>
+        <source>Loaded Scripts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Breakpoints</source>
+        <translation>Breakpoints</translation>
+    </message>
+    <message>
+        <source>Stack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Locals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Debug Output</source>
+        <translation>פלט דיבאג</translation>
+    </message>
+    <message>
+        <source>Error Log</source>
+        <translation>יומן שגיאה</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt Script Debugger</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QScriptNewBreakpointWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>סגור</translation>
     </message>
 </context>
 <context>
     <name>QScrollBar</name>
     <message>
-        <location filename="../src/gui/widgets/qscrollbar.cpp" line="+448"/>
         <source>Scroll here</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול לכאן</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Left edge</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה שמאלי</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Top</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה עליון</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Right edge</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה ימני</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה תחתון</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+143"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד ימינה</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+4"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מטה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Scroll left</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Scroll up</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול מעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Scroll right</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול ימינה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Scroll down</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול מטה</translation>
     </message>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-6"/>
         <source>Line up</source>
-        <translation type="unfinished">סדר בשורה</translation>
+        <translation>שורה מעלה</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>מיקום</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Line down</source>
-        <translation type="unfinished"></translation>
+        <translation>שורה מטה</translation>
     </message>
 </context>
 <context>
     <name>QSharedMemory</name>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory.cpp" line="+207"/>
         <source>%1: unable to set key on lock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+81"/>
         <source>%1: create size is less then 0</source>
+        <translatorcomment>typo</translatorcomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+168"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_p.h" line="+148"/>
         <source>%1: unable to lock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>%1: unable to unlock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+78"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+87"/>
         <source>%1: permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: הרשאה נדחתה</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="-22"/>
         <source>%1: already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1: כבר קיים</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+9"/>
         <source>%1: doesn&apos;t exists</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1: לא קיים</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+9"/>
         <source>%1: out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: לא נותרו משאבים</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+7"/>
         <source>%1: unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאה לא מוכרת %2</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>%1: key is empty</source>
+        <translation>%1: מפתח ריק</translation>
+    </message>
+    <message>
+        <source>%1: doesn&apos;t exist</source>
+        <translation>%1: לא קיים</translation>
+    </message>
+    <message>
+        <source>%1: UNIX key file doesn&apos;t exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>%1: unix key file doesn&apos;t exists</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
         <source>%1: ftok failed</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: פעולת ftok נכשלה</translation>
     </message>
     <message>
-        <location line="+51"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+15"/>
         <source>%1: unable to make key</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: אין אפשרות לייצר מפתח</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>%1: system-imposed size restrictions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+53"/>
+        <source>%1: bad name</source>
+        <translation>%1: שם שגוי</translation>
+    </message>
+    <message>
         <source>%1: not attached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="-27"/>
         <source>%1: invalid size</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: גודל לא תקין</translation>
     </message>
     <message>
-        <location line="+68"/>
-        <source>%1: key error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
         <source>%1: size query failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4789,2992 +5564,4714 @@ Please choose a different file name.</source>
 <context>
     <name>QShortcut</name>
     <message>
-        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+373"/>
         <source>Space</source>
-        <translation type="unfinished">רווח</translation>
+        <extracomment>This and all following &quot;incomprehensible&quot; strings in QShortcut context are key names. Please use the localized names appearing on actual keyboards or whatever is commonly used.</extracomment>
+        <translation>רווח</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Esc</source>
-        <translation type="unfinished">Esc</translation>
+        <translation>Esc</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Tab</source>
-        <translation type="unfinished">Tab</translation>
+        <translation>Tab</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Backtab</source>
-        <translation type="unfinished">Backtab</translation>
+        <translation>Backtab</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Backspace</source>
-        <translation type="unfinished">Backspace</translation>
+        <translation>Backspace</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Return</source>
-        <translation type="unfinished">Return</translation>
+        <translation>Return</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enter</source>
-        <translation type="unfinished">Enter</translation>
+        <translation>Enter</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Ins</source>
-        <translation type="unfinished">Ins</translation>
+        <translation>Ins</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Del</source>
-        <translation type="unfinished">Del</translation>
+        <translation>Del</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Pause</source>
-        <translation type="unfinished">Pause</translation>
+        <translation>Pause</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Print</source>
-        <translation type="unfinished">הדפס</translation>
+        <translation>Print</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>SysReq</source>
-        <translation type="unfinished">SysReq</translation>
+        <translation>SysReq</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Home</source>
-        <translation type="unfinished">Home</translation>
+        <translation>Home</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>End</source>
-        <translation type="unfinished">End</translation>
+        <translation>End</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Left</source>
-        <translation type="unfinished">שמאלה</translation>
+        <translation>שמאלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Up</source>
-        <translation type="unfinished">למעלה</translation>
+        <translation>למעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Right</source>
-        <translation type="unfinished">ימינה</translation>
+        <translation>ימינה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Down</source>
-        <translation type="unfinished">למטה</translation>
+        <translation>למטה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>PgUp</source>
-        <translation type="unfinished">PgUp</translation>
+        <translation>PgUp</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>PgDown</source>
-        <translation type="unfinished">PgDown</translation>
+        <translation>PgDown</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>CapsLock</source>
-        <translation type="unfinished">CapsLock</translation>
+        <translation>CapsLock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>NumLock</source>
-        <translation type="unfinished">NumLock</translation>
+        <translation>NumLock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>ScrollLock</source>
-        <translation type="unfinished">ScrollLock</translation>
+        <translation>ScrollLock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>תפריט</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Back</source>
-        <translation type="unfinished">אחורה</translation>
+        <translation>אחורה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>קדימה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>עצור</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>רענן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Volume Down</source>
-        <translation type="unfinished"></translation>
+        <translation>עוצמת שמע: הנמך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Volume Mute</source>
-        <translation type="unfinished"></translation>
+        <translation>עוצמת שמע: השתק</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Volume Up</source>
-        <translation type="unfinished"></translation>
+        <translation>עוצמת שמע: הגבר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bass Boost</source>
-        <translation type="unfinished"></translation>
+        <translation>בס: הרם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bass Up</source>
-        <translation type="unfinished"></translation>
+        <translation>בס: הגבר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bass Down</source>
-        <translation type="unfinished"></translation>
+        <translation>בס: הנמך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Treble Up</source>
-        <translation type="unfinished"></translation>
+        <translation>טרבל: הגבר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Treble Down</source>
-        <translation type="unfinished"></translation>
+        <translation>טרבל: הנמך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Media Play</source>
-        <translation type="unfinished"></translation>
+        <translation>מדיה: נגן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Media Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>מדיה: עצור</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Media Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>מדיה: קודם</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Media Next</source>
-        <translation type="unfinished"></translation>
+        <translation>מדיה: הבא</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Media Record</source>
-        <translation type="unfinished"></translation>
+        <translation>מדיה: הקלט</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <source>Media Pause</source>
+        <extracomment>Media player pause button</extracomment>
+        <translation>מדיה: השהה</translation>
+    </message>
+    <message>
+        <source>Toggle Media Play/Pause</source>
+        <extracomment>Media player button to toggle between playing and paused</extracomment>
+        <translation>מדיה: נגן/השהה</translation>
+    </message>
+    <message>
         <source>Favorites</source>
-        <translation type="unfinished"></translation>
+        <translation>מועדפים</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>חפש</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Standby</source>
-        <translation type="unfinished"></translation>
+        <translation>Standby</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Open URL</source>
-        <translation type="unfinished"></translation>
+        <translation>פתח URL</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch Mail</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר דואר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch Media</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר מדיה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (0)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (0)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (1)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (1)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (2)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (2)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (3)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (3)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (4)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (4)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (5)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (5)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (6)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (6)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (7)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (7)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (8)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (8)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (9)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (9)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (A)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (A)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (B)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (B)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (C)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (C)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (D)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (D)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (E)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגר (E)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Launch (F)</source>
+        <translation>שגר (F)</translation>
+    </message>
+    <message>
+        <source>Monitor Brightness Up</source>
+        <translation>בהירות צג: הגבר</translation>
+    </message>
+    <message>
+        <source>Monitor Brightness Down</source>
+        <translation>בהירות צג: הנמך</translation>
+    </message>
+    <message>
+        <source>Keyboard Light On/Off</source>
+        <translation>אור מקלדת: דלוק/כבוי</translation>
+    </message>
+    <message>
+        <source>Keyboard Brightness Up</source>
+        <translation>בהירות מקלדת: הגבר</translation>
+    </message>
+    <message>
+        <source>Keyboard Brightness Down</source>
+        <translation>בהירות מקלדת: הנמך</translation>
+    </message>
+    <message>
+        <source>Power Off</source>
+        <translation>כיבוי</translation>
+    </message>
+    <message>
+        <source>Wake Up</source>
+        <translation>התעורר</translation>
+    </message>
+    <message>
+        <source>Eject</source>
+        <translation>Eject</translation>
+    </message>
+    <message>
+        <source>Screensaver</source>
+        <translation>שומר מסך</translation>
+    </message>
+    <message>
+        <source>WWW</source>
+        <translation>WWW</translation>
+    </message>
+    <message>
+        <source>Sleep</source>
+        <translation>תנומה</translation>
+    </message>
+    <message>
+        <source>LightBulb</source>
+        <translation>נורה</translation>
+    </message>
+    <message>
+        <source>Shop</source>
+        <translation>חנות</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>היסטוריה</translation>
+    </message>
+    <message>
+        <source>Add Favorite</source>
+        <translation>הוסף מועדף</translation>
+    </message>
+    <message>
+        <source>Hot Links</source>
+        <translation>קישורים חמים</translation>
+    </message>
+    <message>
+        <source>Adjust Brightness</source>
+        <translation>התאם בהירות</translation>
+    </message>
+    <message>
+        <source>Finance</source>
+        <translation>פיננסים</translation>
+    </message>
+    <message>
+        <source>Community</source>
+        <translation>קהילה</translation>
+    </message>
+    <message>
+        <source>Audio Rewind</source>
+        <translation>שמע: אחורה</translation>
+    </message>
+    <message>
+        <source>Back Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <source>Application Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Application Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Book</source>
+        <translation>ספר</translation>
+    </message>
+    <message>
+        <source>CD</source>
+        <translation>תקליטור</translation>
+    </message>
+    <message>
+        <source>Calculator</source>
+        <translation>מחשבון</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>נקה</translation>
+    </message>
+    <message>
+        <source>Clear Grab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>סגור</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>העתק</translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation>גזור</translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation>תצוגה</translation>
+    </message>
+    <message>
+        <source>DOS</source>
+        <translation>DOS</translation>
+    </message>
+    <message>
+        <source>Documents</source>
+        <translation>מסמכים</translation>
+    </message>
+    <message>
+        <source>Spreadsheet</source>
+        <translation>גיליון אלקטרוני</translation>
+    </message>
+    <message>
+        <source>Browser</source>
+        <translation>דפדפן</translation>
+    </message>
+    <message>
+        <source>Game</source>
+        <translation>משחק</translation>
+    </message>
+    <message>
+        <source>Go</source>
+        <translation>המשך</translation>
+    </message>
+    <message>
+        <source>iTouch</source>
+        <translation>iTouch</translation>
+    </message>
+    <message>
+        <source>Logoff</source>
+        <translation>התנתק</translation>
+    </message>
+    <message>
+        <source>Market</source>
+        <translation>שוק</translation>
+    </message>
+    <message>
+        <source>Meeting</source>
+        <translation>פגישה</translation>
+    </message>
+    <message>
+        <source>Keyboard Menu</source>
+        <translation>תפריט מקלדת</translation>
+    </message>
+    <message>
+        <source>Menu PB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>My Sites</source>
+        <translation>האתרים שלי</translation>
+    </message>
+    <message>
+        <source>News</source>
+        <translation>חדשות</translation>
+    </message>
+    <message>
+        <source>Home Office</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Option</source>
+        <translation>אפשרות</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation>הדבק</translation>
+    </message>
+    <message>
+        <source>Phone</source>
+        <translation>טלפון</translation>
+    </message>
+    <message>
+        <source>Reply</source>
+        <translation>מענה</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>טען מחדש</translation>
+    </message>
+    <message>
+        <source>Rotate Windows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation PB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation KB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>שמור</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>שלח</translation>
+    </message>
+    <message>
+        <source>Spellchecker</source>
+        <translation>בודק איות</translation>
+    </message>
+    <message>
+        <source>Split Screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Support</source>
+        <translation>תמיכה</translation>
+    </message>
+    <message>
+        <source>Task Panel</source>
+        <translation>לוח משימות</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>מסוף</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>כלים</translation>
+    </message>
+    <message>
+        <source>Travel</source>
+        <translation>מסע</translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <translation>וידאו</translation>
+    </message>
+    <message>
+        <source>Word Processor</source>
+        <translation>מעבד תמלילים</translation>
+    </message>
+    <message>
+        <source>XFer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>זום פנימה</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>זום החוצה</translation>
+    </message>
+    <message>
+        <source>Away</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Messenger</source>
+        <translation>מסרים מיידיים</translation>
+    </message>
+    <message>
+        <source>WebCam</source>
+        <translation>מצלמת רשת</translation>
+    </message>
+    <message>
+        <source>Mail Forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pictures</source>
+        <translation>תמונות</translation>
+    </message>
+    <message>
+        <source>Music</source>
+        <translation>מוזיקה</translation>
+    </message>
+    <message>
+        <source>Battery</source>
+        <translation>סוללה</translation>
+    </message>
+    <message>
+        <source>Bluetooth</source>
+        <translation>Bluetooth</translation>
+    </message>
+    <message>
+        <source>Wireless</source>
+        <translation>אלחוטי</translation>
+    </message>
+    <message>
+        <source>Ultra Wide Band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio Forward</source>
+        <translation>שמע: קדימה</translation>
+    </message>
+    <message>
+        <source>Audio Repeat</source>
+        <translation>שמע: חזור</translation>
+    </message>
+    <message>
+        <source>Audio Random Play</source>
+        <translation>שמע: נגינה אקראית</translation>
+    </message>
+    <message>
+        <source>Subtitle</source>
+        <translation>כתוביות</translation>
+    </message>
+    <message>
+        <source>Audio Cycle Track</source>
+        <translation>שמע: חזרה על רצועה</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation>זמן</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Top Menu</source>
+        <translation>תפריט עליון</translation>
+    </message>
+    <message>
+        <source>Suspend</source>
+        <translation>השהה</translation>
+    </message>
+    <message>
+        <source>Hibernate</source>
+        <translation>דומם</translation>
+    </message>
+    <message>
         <source>Print Screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Print Screen</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Page Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Page Up</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Page Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Page Down</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Caps Lock</source>
-        <translation type="unfinished"></translation>
+        <translation>Caps Lock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Num Lock</source>
-        <translation type="unfinished"></translation>
+        <translation>Num Lock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Number Lock</source>
-        <translation type="unfinished"></translation>
+        <translation>Number Lock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Scroll Lock</source>
-        <translation type="unfinished"></translation>
+        <translation>Scroll Lock</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Insert</source>
-        <translation type="unfinished">הוסף</translation>
+        <translation>Insert</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">מחק</translation>
+        <translation>Delete</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Escape</source>
-        <translation type="unfinished"></translation>
+        <translation>Escape</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>System Request</source>
-        <translation type="unfinished"></translation>
+        <translation>System Request</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Yes</source>
-        <translation type="unfinished">כן</translation>
+        <translation>כן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>No</source>
-        <translation type="unfinished">לא</translation>
+        <translation>לא</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Context1</source>
-        <translation type="unfinished"></translation>
+        <translation>הקשר1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Context2</source>
-        <translation type="unfinished"></translation>
+        <translation>הקשר2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Context3</source>
-        <translation type="unfinished"></translation>
+        <translation>הקשר3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Context4</source>
-        <translation type="unfinished"></translation>
+        <translation>הקשר4</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Call</source>
-        <translation type="unfinished"></translation>
+        <extracomment>Button to start a call (note: a separate button is used to end the call)</extracomment>
+        <translation>התקשר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Hangup</source>
-        <translation type="unfinished"></translation>
+        <extracomment>Button to end a call (note: a separate button is used to start the call)</extracomment>
+        <translation>נתק</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <source>Toggle Call/Hangup</source>
+        <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
+        <translation>התקשר/נתק</translation>
+    </message>
+    <message>
         <source>Flip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+527"/>
-        <location line="+122"/>
+        <source>Voice Dial</source>
+        <extracomment>Button to trigger voice dialing</extracomment>
+        <translation>חיוג קולי</translation>
+    </message>
+    <message>
+        <source>Last Number Redial</source>
+        <extracomment>Button to redial the last number called</extracomment>
+        <translation>חיוג חוזר</translation>
+    </message>
+    <message>
+        <source>Camera Shutter</source>
+        <extracomment>Button to trigger the camera shutter (take a picture)</extracomment>
+        <translation>צַמְצָם מצלמה</translation>
+    </message>
+    <message>
+        <source>Camera Focus</source>
+        <extracomment>Button to focus the camera</extracomment>
+        <translation>מוקד מצלמה</translation>
+    </message>
+    <message>
+        <source>Kanji</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Muhenkan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Henkan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Romaji</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hiragana</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Katakana</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hiragana Katakana</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zenkaku</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hankaku</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zenkaku Hankaku</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Touroku</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Massyo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Kana Lock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Kana Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eisu Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eisu toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Code input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple Candidate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Previous Candidate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Hanja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Jamo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Romaja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Jeonja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Banja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul PreHanja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul PostHanja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hangul Special</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Ctrl</source>
-        <translation type="unfinished">Ctrl</translation>
+        <translation>Ctrl</translation>
     </message>
     <message>
-        <location line="-121"/>
-        <location line="+125"/>
         <source>Shift</source>
-        <translation type="unfinished">Shift</translation>
+        <translation>Shift</translation>
     </message>
     <message>
-        <location line="-124"/>
-        <location line="+122"/>
         <source>Alt</source>
-        <translation type="unfinished">Alt</translation>
+        <translation>Alt</translation>
     </message>
     <message>
-        <location line="-121"/>
-        <location line="+117"/>
         <source>Meta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-25"/>
         <source>+</source>
-        <translation type="unfinished">+</translation>
+        <translatorcomment>LRE</translatorcomment>
+        <translation>+‪</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>F%1</source>
-        <translation type="unfinished">F%1</translation>
+        <translation>F%1</translation>
     </message>
     <message>
-        <location line="-720"/>
         <source>Home Page</source>
-        <translation type="unfinished"></translation>
+        <translation>דף בית</translation>
     </message>
 </context>
 <context>
     <name>QSlider</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+151"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מעלה</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>מיקום</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד ימינה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מטה</translation>
     </message>
 </context>
 <context>
     <name>QSocks5SocketEngine</name>
     <message>
-        <location filename="../src/network/socket/qsocks5socketengine.cpp" line="-67"/>
         <source>Connection to proxy refused</source>
-        <translation type="unfinished"></translation>
+        <translation>החיבור אל שרת מתווך נדחה</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Connection to proxy closed prematurely</source>
-        <translation type="unfinished"></translation>
+        <translation>החיבור אל שרת מתווך נסגר בטרם עת</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Proxy host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>מארח שרת מתווך לא נמצא</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Connection to proxy timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>פג זמן חיבור אל שרת מתווך</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Proxy authentication failed</source>
-        <translation type="unfinished"></translation>
+        <translation>אימות שרת מתווך נכשל</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Proxy authentication failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אימות שרת מתווך נכשל: %1</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>SOCKS version 5 protocol error</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת פרוטוקול SOCKS גירסה 5</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>General SOCKSv5 server failure</source>
-        <translation type="unfinished"></translation>
+        <translation>כשל שרת SOCKSv5 כללי</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Connection not allowed by SOCKSv5 server</source>
-        <translation type="unfinished"></translation>
+        <translation>שרת SOCKSv5 לא מאפשר חיבור</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>TTL expired</source>
-        <translation type="unfinished"></translation>
+        <translation>‏TTL פקע</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>SOCKSv5 command not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>פקודת SOCKSv5 לא נתמכת</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Address type not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס כתובת לא נתמך</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Unknown SOCKSv5 proxy error code 0x%1</source>
-        <translation type="unfinished"></translation>
+        <translation>קוד שגיאת שרת מתווך SOCKSv5 לא מוכר 0x%1</translation>
     </message>
     <message>
-        <location line="+685"/>
         <source>Network operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>תם זמן פעולת רשת</translation>
+    </message>
+</context>
+<context>
+    <name>QSoftKeyManager</name>
+    <message>
+        <source>OK</source>
+        <translation>אישור</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>בחר</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <translation>סיים</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation>אפשרויות</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>ביטול</translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation>יציאה</translation>
     </message>
 </context>
 <context>
     <name>QSpinBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-574"/>
         <source>More</source>
-        <translation type="unfinished"></translation>
+        <translation>יותר</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Less</source>
-        <translation type="unfinished"></translation>
+        <translation>פחות</translation>
     </message>
 </context>
 <context>
     <name>QSql</name>
     <message>
-        <location filename="../src/qt3support/sql/q3sqlmanager_p.cpp" line="+890"/>
         <source>Delete</source>
-        <translation type="unfinished">מחק</translation>
+        <translation>מחק</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Delete this record?</source>
-        <translation type="unfinished">האם למחוק רשומה זו?</translation>
+        <translation>האם למחוק רשומה זו?</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+16"/>
-        <location line="+36"/>
         <source>Yes</source>
-        <translation type="unfinished">כן</translation>
+        <translation>כן</translation>
     </message>
     <message>
-        <location line="-51"/>
-        <location line="+16"/>
-        <location line="+36"/>
         <source>No</source>
-        <translation type="unfinished">לא</translation>
+        <translation>לא</translation>
     </message>
     <message>
-        <location line="-44"/>
         <source>Insert</source>
-        <translation type="unfinished">הוסף</translation>
+        <translation>הוסף</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Update</source>
-        <translation type="unfinished">עדכן</translation>
+        <translation>עדכן</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save edits?</source>
-        <translation type="unfinished">האם לשמור את העריכה?</translation>
+        <translation>האם לשמור את העריכה?</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
     <message>
-        <location line="+32"/>
         <source>Confirm</source>
-        <translation type="unfinished">אישור</translation>
+        <translation>אישור</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Cancel your edits?</source>
-        <translation type="unfinished">האם לבטל את העריכה שלך?</translation>
+        <translation>האם לבטל את העריכה שלך?</translation>
     </message>
 </context>
 <context>
     <name>QSslSocket</name>
     <message>
-        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+569"/>
         <source>Unable to write data: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לרשום נתונים: %1</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <source>Unable to decrypt data: %1</source>
+        <translation>אין אפשרות לפענח נתונים: %1</translation>
+    </message>
+    <message>
+        <source>The TLS/SSL connection has been closed</source>
+        <translation>חיבור TLS/SSL נסגר</translation>
+    </message>
+    <message>
         <source>Error while reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בעת קריאה: %1</translation>
     </message>
     <message>
-        <location line="+96"/>
         <source>Error during SSL handshake: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בעת לחיצת יד SSL‏: %1</translation>
     </message>
     <message>
-        <location line="-524"/>
         <source>Error creating SSL context (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה ביצירת הקשר SSL‏ (%1)</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>Invalid or empty cipher list (%1)</source>
+        <translation>רשימת צופן לא תקינה או ריקה (%1)</translation>
+    </message>
+    <message>
+        <source>Private key does not certify public key, %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+62"/>
         <source>Error creating SSL session, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה ביצירת פגישת SSL‏, %1</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Error creating SSL session: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה ביצירת פגישת SSL‏: %1</translation>
     </message>
     <message>
-        <location line="-61"/>
         <source>Cannot provide a certificate with no key, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לספק תעודה בלי מפתח, %1</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Error loading local certificate, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאה בטעינת תעודה מקומית, %1</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Error loading private key, %1</source>
+        <translation>שגיאה בטעינת מפתח פרטי, %1</translation>
+    </message>
+    <message>
+        <source>No error</source>
+        <translation>אין שגיאה</translation>
+    </message>
+    <message>
+        <source>The issuer certificate could not be found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Private key does not certificate public key, %1</source>
+        <source>The certificate signature could not be decrypted</source>
+        <translation>חתימת תעודה לא ניתנת לפיענוח</translation>
+    </message>
+    <message>
+        <source>The public key in the certificate could not be read</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The signature of the certificate is invalid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The certificate is not yet valid</source>
+        <translation>התעודה עדיין אינה תקפה</translation>
+    </message>
+    <message>
+        <source>The certificate has expired</source>
+        <translation>התעודה פקעה</translation>
+    </message>
+    <message>
+        <source>The certificate&apos;s notBefore field contains an invalid time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The certificate&apos;s notAfter field contains an invalid time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The certificate is self-signed, and untrusted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The root certificate of the certificate chain is self-signed, and untrusted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The issuer certificate of a locally looked up certificate could not be found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No certificates could be verified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>One of the CA certificates is invalid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The basicConstraints path length parameter has been exceeded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The supplied certificate is unsuitable for this purpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The root CA certificate is not trusted for this purpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The root CA certificate is marked to reject the specified purpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The current candidate issuer certificate was rejected because its subject name did not match the issuer name of the current certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The current candidate issuer certificate was rejected because its issuer name and serial number was present and did not match the authority key identifier of the current certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The peer did not present any certificate</source>
+        <translation>העמית לא הציג שום תעודה</translation>
+    </message>
+    <message>
+        <source>The host name did not match any of the valid hosts for this certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The peer certificate is blacklisted</source>
+        <translation>תעודת העמית מצויה ברשימה שחורה</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>שגיאה לא מוכרת</translation>
+    </message>
+</context>
+<context>
+    <name>QStateMachine</name>
+    <message>
+        <source>Missing initial state in compound state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Missing default state in history state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No common ancestor for targets and source of transition from state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>שגיאה לא מוכרת</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLDriver</name>
+    <message>
+        <source>Invalid option: </source>
+        <translation>אפשרות לא תקינה: </translation>
+    </message>
+    <message>
+        <source>Error opening database</source>
+        <translation>שגיאה בפתיחת מסד נתונים</translation>
+    </message>
+    <message>
+        <source>POLICY_DB_DEFAULT must be defined before any other POLICY definitions can be used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to begin transaction</source>
+        <translation>אין אפשרות להתחיל טרנזקציה</translation>
+    </message>
+    <message>
+        <source>Unable to commit transaction</source>
+        <translation>אין אפשרות לבצע טרנזקציה</translation>
+    </message>
+    <message>
+        <source>Unable to rollback transaction</source>
+        <translation>אין אפשרות להחזיר לאחור טרנזקציה</translation>
+    </message>
+</context>
+<context>
+    <name>QSymSQLResult</name>
+    <message>
+        <source>Error retrieving column count</source>
+        <translation>שגיאה באחזור ספירת טורים</translation>
+    </message>
+    <message>
+        <source>Error retrieving column name</source>
+        <translation>שגיאה באחזור שם טור</translation>
+    </message>
+    <message>
+        <source>Error retrieving column type</source>
+        <translation>שגיאה באחזור טיפוס טור</translation>
+    </message>
+    <message>
+        <source>Unable to fetch row</source>
+        <translation>אין אפשרות להביא שורה</translation>
+    </message>
+    <message>
+        <source>Unable to execute statement</source>
+        <translation>אין אפשרות לבצע הוראה</translation>
+    </message>
+    <message>
+        <source>Statement is not prepared</source>
+        <translation>הוראה אינה מוכנה</translation>
+    </message>
+    <message>
+        <source>Unable to reset statement</source>
+        <translation>אין אפשרות לאפס הוראה</translation>
+    </message>
+    <message>
+        <source>Unable to bind parameters</source>
+        <translation>אין אפשרות לכרוך פרמטרים</translation>
+    </message>
+    <message>
+        <source>Parameter count mismatch</source>
+        <translation>ספירת פרמטרים לא מתאימה</translation>
+    </message>
+</context>
+<context>
+    <name>QSymbianSocketEngine</name>
+    <message>
+        <source>Unable to initialize non-blocking socket</source>
+        <translation>אין אפשרות לאתחל שקע לא-חוסם</translation>
+    </message>
+    <message>
+        <source>Unable to initialize broadcast socket</source>
+        <translation>אין אפשרות לאתחל שקע broadcast</translation>
+    </message>
+    <message>
+        <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
+        <translation>ניסיון להשתמש בשקע IPv6 על פלטפורמה אשר לא תומכת IPv6</translation>
+    </message>
+    <message>
+        <source>The remote host closed the connection</source>
+        <translation>המארח המרוחק סגר את החיבור</translation>
+    </message>
+    <message>
+        <source>Network operation timed out</source>
+        <translation>תם זמן פעולת רשת</translation>
+    </message>
+    <message>
+        <source>Out of resources</source>
+        <translation>לא נותרו משאבים</translation>
+    </message>
+    <message>
+        <source>Unsupported socket operation</source>
+        <translation>פעולת שקע לא נתמכת</translation>
+    </message>
+    <message>
+        <source>Protocol type not supported</source>
+        <translation>טיפוס פרוטוקול לא נתמך</translation>
+    </message>
+    <message>
+        <source>Invalid socket descriptor</source>
+        <translation>מתאר שקע לא תקין</translation>
+    </message>
+    <message>
+        <source>Host unreachable</source>
+        <translation>מארח לא ניתן להשגה</translation>
+    </message>
+    <message>
+        <source>Network unreachable</source>
+        <translation>רשת לא ניתנת להשגה</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>הרשאה נדחתה</translation>
+    </message>
+    <message>
+        <source>Connection timed out</source>
+        <translation>פג זמן חיבור</translation>
+    </message>
+    <message>
+        <source>Connection refused</source>
+        <translation>חיבור נדחה</translation>
+    </message>
+    <message>
+        <source>The bound address is already in use</source>
+        <translation>הכתובת הכרוכה כבר מצויה בשימוש</translation>
+    </message>
+    <message>
+        <source>The address is not available</source>
+        <translation>הכתובת אינה זמינה</translation>
+    </message>
+    <message>
+        <source>The address is protected</source>
+        <translation>הכתובת מוגנת</translation>
+    </message>
+    <message>
+        <source>Datagram was too large to send</source>
+        <translation>צרור נתונים היה גדול מדי בכדי להישלח</translation>
+    </message>
+    <message>
+        <source>Unable to send a message</source>
+        <translation>אין אפשרות לשלוח הודעה</translation>
+    </message>
+    <message>
+        <source>Unable to receive a message</source>
+        <translation>אין אפשרות לקבל הודעה</translation>
+    </message>
+    <message>
+        <source>Unable to write</source>
+        <translation>אין אפשרות לכתוב</translation>
+    </message>
+    <message>
+        <source>Network error</source>
+        <translation>שגיאת רשת</translation>
+    </message>
+    <message>
+        <source>Another socket is already listening on the same port</source>
+        <translation>שקע אחר כבר מאזין על אותו הפורט</translation>
+    </message>
+    <message>
+        <source>Operation on non-socket</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The proxy type is invalid for this operation</source>
+        <translation>טיפוס שרת מתווך אינו תקין לפעולה זו</translation>
+    </message>
+    <message>
+        <source>The address is invalid for this operation</source>
+        <translation>הכתובת אינה תקינה לפעולה זו</translation>
+    </message>
+    <message>
+        <source>The specified network session is not opened</source>
+        <translation>פגישת הרשת אשר צוינה אינה פתוחה</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>שגיאה לא מוכרת</translation>
     </message>
 </context>
 <context>
     <name>QSystemSemaphore</name>
     <message>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="-41"/>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+66"/>
         <source>%1: out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: לא נותרו משאבים</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+4"/>
         <source>%1: permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: הרשאה נדחתה</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>%1: already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1: כבר קיים</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>%1: does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>‏%1: לא קיים</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+3"/>
+        <source>%1: name error</source>
+        <translation>%1: שגיאת שם</translation>
+    </message>
+    <message>
         <source>%1: unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: שגיאה לא מוכרת %2</translation>
     </message>
 </context>
 <context>
     <name>QTDSDriver</name>
     <message>
-        <location filename="../src/sql/drivers/tds/qsql_tds.cpp" line="+584"/>
         <source>Unable to open connection</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות לפתוח חיבור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Unable to use database</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להשתמש במסד נתונים</translation>
     </message>
 </context>
 <context>
     <name>QTabBar</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="-326"/>
         <source>Scroll Left</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Scroll Right</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול ימינה</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>סגור</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation>הפעל</translation>
+    </message>
+    <message>
+        <source>Press</source>
+        <translation>לחץ</translation>
+    </message>
+    <message>
+        <source>Close the tab</source>
+        <translation>סגור את הכרטיסייה</translation>
+    </message>
+    <message>
+        <source>Activate the tab</source>
+        <translation>הפעל את הכרטיסייה</translation>
     </message>
 </context>
 <context>
     <name>QTcpServer</name>
     <message>
-        <location filename="../src/network/socket/qtcpserver.cpp" line="+282"/>
         <source>Operation on socket is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>פעולה על שקע אינה נתמכת</translation>
     </message>
 </context>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+1973"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;בטל</translation>
+        <translation>&amp;בטל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">בצע &amp;שוב</translation>
+        <translation>בצע &amp;שוב</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;גזור</translation>
+        <translation>&amp;גזור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">הע&amp;תק</translation>
+        <translation>הע&amp;תק</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Copy &amp;Link Location</source>
-        <translation type="unfinished"></translation>
+        <translation>העתק כתובת &amp;קישור</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">ה&amp;דבק</translation>
+        <translation>ה&amp;דבק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Delete</source>
-        <translation type="unfinished">מחק</translation>
+        <translation>מחק</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Select All</source>
-        <translation type="unfinished">בחר הכל</translation>
+        <translation>בחר הכל</translation>
     </message>
 </context>
 <context>
     <name>QToolButton</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+254"/>
-        <location line="+6"/>
         <source>Press</source>
-        <translation type="unfinished"></translation>
+        <translation>לחץ</translation>
     </message>
     <message>
-        <location line="-4"/>
-        <location line="+8"/>
         <source>Open</source>
-        <translation type="unfinished">פתח</translation>
+        <translation>פתח</translation>
     </message>
 </context>
 <context>
     <name>QUdpSocket</name>
     <message>
-        <location filename="../src/network/socket/qudpsocket.cpp" line="+169"/>
         <source>This platform does not support IPv6</source>
-        <translation type="unfinished"></translation>
+        <translation>פלטפורמה זו לא תומכת בפרוטוקול IPv6</translation>
     </message>
 </context>
 <context>
     <name>QUndoGroup</name>
     <message>
-        <location filename="../src/gui/util/qundogroup.cpp" line="+386"/>
-        <source>Undo</source>
-        <translation type="unfinished">בטל</translation>
+        <source>Undo %1</source>
+        <translation>בטל %1</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>בטל</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>בצע שוב %1</translation>
+    </message>
+    <message>
         <source>Redo</source>
-        <translation type="unfinished">שחזר</translation>
+        <comment>Default text for redo action</comment>
+        <translation>בצע שוב</translation>
     </message>
 </context>
 <context>
     <name>QUndoModel</name>
     <message>
-        <location filename="../src/gui/util/qundoview.cpp" line="+101"/>
         <source>&lt;empty&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;ריק&gt;</translation>
     </message>
 </context>
 <context>
     <name>QUndoStack</name>
     <message>
-        <location filename="../src/gui/util/qundostack.cpp" line="+834"/>
-        <source>Undo</source>
-        <translation type="unfinished">בטל</translation>
+        <source>Undo %1</source>
+        <translation>בטל %1</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <source>Undo</source>
+        <comment>Default text for undo action</comment>
+        <translation>בטל</translation>
+    </message>
+    <message>
+        <source>Redo %1</source>
+        <translation>בצע שוב %1</translation>
+    </message>
+    <message>
         <source>Redo</source>
-        <translation type="unfinished">שחזר</translation>
+        <comment>Default text for redo action</comment>
+        <translation>בצע שוב</translation>
     </message>
 </context>
 <context>
     <name>QUnicodeControlCharacterMenu</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+884"/>
         <source>LRM Left-to-right mark</source>
-        <translation type="unfinished"></translation>
+        <translation>LRM Left-to-right mark</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>RLM Right-to-left mark</source>
-        <translation type="unfinished"></translation>
+        <translation>RLM Right-to-left mark</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>ZWJ Zero width joiner</source>
-        <translation type="unfinished"></translation>
+        <translation>ZWJ Zero width joiner</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>ZWNJ Zero width non-joiner</source>
-        <translation type="unfinished"></translation>
+        <translation>ZWNJ Zero width non-joiner</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>ZWSP Zero width space</source>
-        <translation type="unfinished"></translation>
+        <translation>ZWSP Zero width space</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LRE Start of left-to-right embedding</source>
-        <translation type="unfinished"></translation>
+        <translation>LRE Start of left-to-right embedding</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>RLE Start of right-to-left embedding</source>
-        <translation type="unfinished"></translation>
+        <translation>RLE Start of right-to-left embedding</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LRO Start of left-to-right override</source>
-        <translation type="unfinished"></translation>
+        <translation>LRO Start of left-to-right override</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>RLO Start of right-to-left override</source>
-        <translation type="unfinished"></translation>
+        <translation>RLO Start of right-to-left override</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>PDF Pop directional formatting</source>
-        <translation type="unfinished"></translation>
+        <translation>PDF Pop directional formatting</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Insert Unicode control character</source>
-        <translation type="unfinished"></translation>
+        <translation>הוסף תו בקרה של Unicode</translation>
     </message>
 </context>
 <context>
     <name>QWebFrame</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+692"/>
         <source>Request cancelled</source>
-        <translation type="unfinished"></translation>
+        <translation>בקשה בוטלה</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <source>Request canceled</source>
+        <translation>בקשה בוטלה</translation>
+    </message>
+    <message>
         <source>Request blocked</source>
-        <translation type="unfinished"></translation>
+        <translation>בקשה נחסמה</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Cannot show URL</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להציג URL</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Frame load interruped by policy change</source>
-        <translation type="unfinished"></translation>
+        <source>Frame load interrupted by policy change</source>
+        <translation>טעינת מסגרת נקטעה על ידי שינוי מדיניות</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <source>Loading is handled by the media engine</source>
+        <translation>טעינה מטופלת על ידי מנוע המדיה</translation>
+    </message>
+    <message>
         <source>Cannot show mimetype</source>
-        <translation type="unfinished"></translation>
+        <translation>אין אפשרות להציג טיפוס נתונים</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>File does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>קובץ לא קיים</translation>
     </message>
 </context>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+382"/>
-        <source>Bad HTTP request</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
-        <translation type="unfinished"></translation>
+        <translation>שלח</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Submit</source>
         <comment>Submit (input element) alt text for &lt;input&gt; elements with no alt, title, or value</comment>
-        <translation type="unfinished"></translation>
+        <translation>שלח</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Reset</source>
         <comment>default label for Reset buttons in forms on web pages</comment>
-        <translation type="unfinished"></translation>
+        <translation>אפס</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
-        <translation type="unfinished"></translation>
+        <translation>זהו אינדקס בר־חיפוש. הכנס מילות חיפוש:</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Choose File</source>
         <comment>title for file button used in HTML forms</comment>
-        <translation type="unfinished"></translation>
+        <translation>בחר קובץ</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>No file selected</source>
         <comment>text to display in file button used in HTML forms when no file is selected</comment>
-        <translation type="unfinished"></translation>
+        <translation>לא נבחר קובץ</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Details</source>
+        <comment>text to display in &lt;details&gt; tag when it has no &lt;summary&gt; child</comment>
+        <translation>פרטים</translation>
+    </message>
+    <message>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>פתח בחלון חדש</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Save Link...</source>
         <comment>Download Linked File context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>שמירת קישור...</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy Link</source>
         <comment>Copy Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>העתק קישור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open Image</source>
         <comment>Open Image in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>פתח תמונה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Save Image</source>
         <comment>Download Image context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>שמור תמונה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>העתק תמונה</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Copy Image Address</source>
+        <comment>Copy Image Address menu item</comment>
+        <translation>העתק כתובת תמונה</translation>
+    </message>
+    <message>
+        <source>Open Video</source>
+        <comment>Open Video in New Window</comment>
+        <translation>פתח וידאו</translation>
+    </message>
+    <message>
+        <source>Open Audio</source>
+        <comment>Open Audio in New Window</comment>
+        <translation>פתח שמע</translation>
+    </message>
+    <message>
+        <source>Copy Video</source>
+        <comment>Copy Video Link Location</comment>
+        <translation>העתק וידאו</translation>
+    </message>
+    <message>
+        <source>Copy Audio</source>
+        <comment>Copy Audio Link Location</comment>
+        <translation>העתק שמע</translation>
+    </message>
+    <message>
+        <source>Toggle Controls</source>
+        <comment>Toggle Media Controls</comment>
+        <translation>הפעל/כבה בקרים</translation>
+    </message>
+    <message>
+        <source>Toggle Loop</source>
+        <comment>Toggle Media Loop Playback</comment>
+        <translation>הפעל/כבה לולאה</translation>
+    </message>
+    <message>
+        <source>Enter Fullscreen</source>
+        <comment>Switch Video to Fullscreen</comment>
+        <translation>עבור למסך מלא</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <comment>Play</comment>
+        <translation>נגן</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <comment>Pause</comment>
+        <translation>השהה</translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <comment>Mute</comment>
+        <translation>השתק</translation>
+    </message>
+    <message>
         <source>Open Frame</source>
         <comment>Open Frame in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>פתח מסגרת</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy</source>
         <comment>Copy context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>העתק</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Go Back</source>
         <comment>Back context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>אחורה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Go Forward</source>
         <comment>Forward context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>קדימה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Stop</source>
         <comment>Stop context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>עצור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Reload</source>
         <comment>Reload context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>טען מחדש</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cut</source>
         <comment>Cut context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>גזור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>הדבק</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Select All</source>
+        <comment>Select All context menu item</comment>
+        <translation>בחר הכל</translation>
+    </message>
+    <message>
         <source>No Guesses Found</source>
         <comment>No Guesses Found context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>לא נמצאו ניחושים</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Spelling context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>התעלם</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Add To Dictionary</source>
         <comment>Learn Spelling context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>הוסף למילון</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Search The Web</source>
         <comment>Search The Web context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>חפש ברשת</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Look Up In Dictionary</source>
         <comment>Look Up in Dictionary context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>חפש במילון</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open Link</source>
         <comment>Open Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>פתח קישור</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Grammar context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>התעלם</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Spelling</source>
         <comment>Spelling and Grammar context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>איות</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Show Spelling and Grammar</source>
         <comment>menu item title</comment>
-        <translation type="unfinished"></translation>
+        <translation>הצג איות ותחביר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Hide Spelling and Grammar</source>
         <comment>menu item title</comment>
-        <translation type="unfinished"></translation>
+        <translation>הסתר איות ותחביר</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Spelling</source>
         <comment>Check spelling context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>בדוק איות</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Spelling While Typing</source>
         <comment>Check spelling while typing context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>בדוק איות בזמן כתיבה</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Grammar With Spelling</source>
         <comment>Check grammar with spelling context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>בדוק תחביר וגם איות</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Fonts</source>
         <comment>Font context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>גופנים</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Bold</source>
         <comment>Bold context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>מודגש</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Italic</source>
         <comment>Italic context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>נטוי</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Underline</source>
         <comment>Underline context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>קו תחתי</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Outline</source>
         <comment>Outline context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>מתאר</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Direction</source>
         <comment>Writing direction context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>כיוון</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Text Direction</source>
         <comment>Text direction context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>כיוון טקסט</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Default</source>
         <comment>Default writing direction context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>ברירת מחדל</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>LTR</source>
+        <source>Left to Right</source>
         <comment>Left to Right context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>שמאל אל ימין</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>RTL</source>
+        <source>Right to Left</source>
         <comment>Right to Left context menu item</comment>
+        <translation>ימין אל שמאל</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <comment>Media controller status message when the media is loading</comment>
+        <translation>טוען...</translation>
+    </message>
+    <message>
+        <source>Live Broadcast</source>
+        <comment>Media controller status message when watching a live broadcast</comment>
+        <translation>שידור חי</translation>
+    </message>
+    <message>
+        <source>Audio Element</source>
+        <comment>Media controller element</comment>
+        <translation>אלמנט שמע</translation>
+    </message>
+    <message>
+        <source>Video Element</source>
+        <comment>Media controller element</comment>
+        <translation>אלמנט חוזי</translation>
+    </message>
+    <message>
+        <source>Mute Button</source>
+        <comment>Media controller element</comment>
+        <translation>לחצן השתקה</translation>
+    </message>
+    <message>
+        <source>Unmute Button</source>
+        <comment>Media controller element</comment>
+        <translation>לחצן הוצאה מהשתקה</translation>
+    </message>
+    <message>
+        <source>Play Button</source>
+        <comment>Media controller element</comment>
+        <translation>לחצן נגינה</translation>
+    </message>
+    <message>
+        <source>Pause Button</source>
+        <comment>Media controller element</comment>
+        <translation>לחצן השהיה</translation>
+    </message>
+    <message>
+        <source>Slider</source>
+        <comment>Media controller element</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Slider Thumb</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rewind Button</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Return to Real-time Button</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Elapsed Time</source>
+        <comment>Media controller element</comment>
+        <translation>זמן שחלף</translation>
+    </message>
+    <message>
+        <source>Remaining Time</source>
+        <comment>Media controller element</comment>
+        <translation>זמן שנותר</translation>
+    </message>
+    <message>
+        <source>Status Display</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fullscreen Button</source>
+        <comment>Media controller element</comment>
+        <translation>לחצן מסך מלא</translation>
+    </message>
+    <message>
+        <source>Seek Forward Button</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seek Back Button</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio element playback controls and status display</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video element playback controls and status display</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute audio tracks</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unmute audio tracks</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Begin playback</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished">התחל פס קול</translation>
+    </message>
+    <message>
+        <source>Pause playback</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished">השהה פס קול</translation>
+    </message>
+    <message>
+        <source>Movie time scrubber</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Movie time scrubber thumb</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rewind movie</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Return streaming movie to real-time</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current movie time</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remaining movie time</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current movie status</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play movie in full-screen mode</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seek quickly back</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seek quickly forward</source>
+        <comment>Media controller element</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Indefinite time</source>
+        <comment>Media time description</comment>
+        <translation>זמן לא מוגדר</translation>
+    </message>
+    <message>
+        <source>%1 days %2 hours %3 minutes %4 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 ימים %2 שעות %3 דקות %4 שניות</translation>
+    </message>
+    <message>
+        <source>%1 hours %2 minutes %3 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 שעות %2 דקות %3 שניות</translation>
+    </message>
+    <message>
+        <source>%1 minutes %2 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 דקות %2 שניות</translation>
+    </message>
+    <message>
+        <source>%1 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 שניות</translation>
+    </message>
+    <message>
         <source>Inspect</source>
         <comment>Inspect Element context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>בחן</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>No recent searches</source>
         <comment>Label for only item in menu that appears when clicking on the search field image, when no searches have been performed</comment>
-        <translation type="unfinished"></translation>
+        <translation>אין חיפושים אחרונים</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Recent searches</source>
         <comment>label for first item in the menu that appears when clicking on the search field image, used as embedded menu title</comment>
-        <translation type="unfinished"></translation>
+        <translation>חיפושים אחרונים</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Clear recent searches</source>
         <comment>menu item in Recent Searches menu that empties menu&apos;s contents</comment>
-        <translation type="unfinished"></translation>
+        <translation>נקה חיפושים אחרונים</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <source>Missing Plug-in</source>
+        <comment>Label text to be used when a plug-in is missing</comment>
+        <translation>תוספת חסרה</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <comment>Unknown filesize FTP directory listing item</comment>
-        <translation type="unfinished"></translation>
+        <translation>לא ידוע</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>%1 (%2x%3 pixels)</source>
         <comment>Title string for images</comment>
-        <translation type="unfinished"></translation>
+        <translation> (%2 על %3 פיקסלים) %1</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+185"/>
         <source>Web Inspector - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>בוחן רשת - %2</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/ScrollbarQt.cpp" line="+58"/>
         <source>Scroll here</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול לכאן</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Left edge</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה שמאלי</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Top</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה עליון</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Right edge</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה ימני</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>קצה תחתון</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד ימינה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>עמוד מטה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Scroll left</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול שמאלה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Scroll up</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול מעלה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Scroll right</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול ימינה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Scroll down</source>
-        <translation type="unfinished"></translation>
+        <translation>גלול מטה</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/FileChooserQt.cpp" line="+45"/>
         <source>%n file(s)</source>
         <comment>number of chosen file</comment>
         <translation type="unfinished">
-            <numerusform></numerusform>
+            <numerusform>קובץ %n</numerusform>
+            <numerusform>%n קבצים</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1322"/>
         <source>JavaScript Alert - %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">אתראת JavaScript‏ - %1</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>JavaScript Confirm - %1</source>
-        <translation type="unfinished"></translation>
+        <translation>אישור JavaScript‏ - %1</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>JavaScript Prompt - %1</source>
+        <translation type="unfinished">שאלת JavaScript‏ - %1</translation>
+    </message>
+    <message>
+        <source>JavaScript Problem - %1</source>
+        <translation>בעיית JavaScript‏ - %1</translation>
+    </message>
+    <message>
+        <source>The script on this page appears to have a problem. Do you want to stop the script?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+333"/>
         <source>Move the cursor to the next character</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל התו הבא</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the previous character</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל התו הקודם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the next word</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל המילה הבאה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the previous word</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל המילה הקודמת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the next line</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל השורה הבאה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the previous line</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל השורה הקודמת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the start of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל תחילת השורה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the end of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל סוף השורה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the start of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל תחילת הבלוק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the end of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל סוף הבלוק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the start of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>הזז את הסמן אל תחילת המסמך</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Move the cursor to the end of the document</source>
+        <translation>הזז את הסמן אל סוף המסמך</translation>
+    </message>
+    <message>
+        <source>Paste and Match Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Select all</source>
+        <source>Remove formatting</source>
+        <translation>הסר עיצוב</translation>
+    </message>
+    <message>
+        <source>Strikethrough</source>
+        <translation>קו חוצה</translation>
+    </message>
+    <message>
+        <source>Subscript</source>
+        <translation>כיתוב תחתי</translation>
+    </message>
+    <message>
+        <source>Superscript</source>
+        <translation>כיתוב עילי</translation>
+    </message>
+    <message>
+        <source>Insert Bulleted List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <source>Insert Numbered List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Indent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outdent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Justify</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Align Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Align Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Select to the next character</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד התו הבא</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the previous character</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד התו הקודם</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the next word</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד המילה הבאה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the previous word</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד המילה הקודמת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the next line</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד השורה הבאה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the previous line</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד השורה הקודמת</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the start of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד תחילת השורה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the end of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד סוף השורה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the start of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד תחילת הבלוק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the end of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד סוף הבלוק</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the start of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד תחילת המסמך</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select to the end of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>בחר עד סוף המסמך</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Delete to the start of the word</source>
-        <translation type="unfinished"></translation>
+        <translation>מחק עד תחילת המילה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Delete to the end of the word</source>
-        <translation type="unfinished"></translation>
+        <translation>מחק עד סוף המילה</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Insert a new paragraph</source>
-        <translation type="unfinished"></translation>
+        <translation>הכנס פסקה חדשה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Insert a new line</source>
+        <translation>הכנס שורה חדשה</translation>
+    </message>
+    <message>
+        <source>Redirection limit reached</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QWhatsThisAction</name>
     <message>
-        <location filename="../src/gui/kernel/qwhatsthis.cpp" line="+522"/>
         <source>What&apos;s This?</source>
-        <translation type="unfinished">מה זה?</translation>
+        <translation>מה זה?</translation>
     </message>
 </context>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5326"/>
         <source>*</source>
-        <translation type="unfinished"></translation>
+        <translation>*</translation>
     </message>
 </context>
 <context>
     <name>QWizard</name>
     <message>
-        <location filename="../src/gui/dialogs/qwizard.cpp" line="+649"/>
         <source>Cancel</source>
-        <translation type="unfinished">ביטול</translation>
+        <translation>ביטול</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Help</source>
-        <translation type="unfinished">עזרה</translation>
+        <translation>עזרה</translation>
     </message>
     <message>
-        <location line="-14"/>
         <source>Go Back</source>
-        <translation type="unfinished"></translation>
+        <translation>אחורה</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>המשך</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Commit</source>
-        <translation type="unfinished"></translation>
+        <translation>בצע</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Done</source>
-        <translation type="unfinished"></translation>
+        <translation>סיום</translation>
     </message>
     <message>
-        <location line="-10"/>
         <source>&lt; &amp;Back</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt; &amp;אחורה</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>&amp;Finish</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;סיים</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;עזרה</translation>
     </message>
     <message>
-        <location line="-8"/>
         <source>&amp;Next</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;קדימה</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Next &gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;קדימה &gt;</translation>
     </message>
 </context>
 <context>
     <name>QWorkspace</name>
     <message>
-        <location filename="../src/gui/widgets/qworkspace.cpp" line="+1094"/>
         <source>&amp;Restore</source>
-        <translation type="unfinished">ש&amp;חזר</translation>
+        <translation>ש&amp;חזר</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Move</source>
-        <translation type="unfinished">ה&amp;זז</translation>
+        <translation>ה&amp;זז</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Size</source>
-        <translation type="unfinished">&amp;שנה גודל</translation>
+        <translation>&amp;שנה גודל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Mi&amp;nimize</source>
-        <translation type="unfinished">&amp;מזער</translation>
+        <translation>&amp;מזער</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Ma&amp;ximize</source>
-        <translation type="unfinished">&amp;הגדל</translation>
+        <translation>&amp;הגדל</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;סגור</translation>
+        <translation>&amp;סגור</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Stay on &amp;Top</source>
-        <translation type="unfinished">&amp;תמיד עליון</translation>
+        <translation>&amp;תמיד עליון</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+1059"/>
         <source>Sh&amp;ade</source>
-        <translation type="unfinished">&amp;גלול</translation>
+        <translation>ה&amp;צלל</translation>
     </message>
     <message>
-        <location line="-278"/>
-        <location line="+60"/>
         <source>%1 - [%2]</source>
         <translation>%1 - [%2]</translation>
     </message>
     <message>
-        <location line="-1837"/>
         <source>Minimize</source>
-        <translation type="unfinished">מזער</translation>
+        <translation>מזער</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Restore Down</source>
-        <translation type="unfinished">שחזר למטה</translation>
+        <translation>שחזר למטה</translation>
     </message>
     <message>
-        <location line="-4"/>
         <source>Close</source>
-        <translation type="unfinished">סגור</translation>
+        <translation>סגור</translation>
     </message>
     <message>
-        <location line="+2053"/>
         <source>&amp;Unshade</source>
-        <translation type="unfinished">&amp;בטל גלילה</translation>
+        <translation>&amp;בטל הצללה</translation>
     </message>
 </context>
 <context>
     <name>QXml</name>
     <message>
-        <location filename="../src/xml/sax/qxml.cpp" line="+58"/>
         <source>no error occurred</source>
         <translation>לא אירעה כל שגיאה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error triggered by consumer</source>
         <translation>נגרמה שגיאה על ידי הצרכן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>unexpected end of file</source>
         <translation>סוף קובץ לא צפוי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>more than one document type definition</source>
-        <translation>יותר מהגדרה אחת של סוג מסמך</translation>
+        <translation>יותר מהגדרה אחת של טיפוס מסמך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error occurred while parsing element</source>
         <translation>אירעה שגיאה בעת עיבוד המרכיב</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>tag mismatch</source>
         <translation>אי-התאמה בתגית</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error occurred while parsing content</source>
         <translation>אירעה שגיאה בעת עיבוד התוכן</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>unexpected character</source>
         <translation>תו לא צפוי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>invalid name for processing instruction</source>
-        <translation>שם לא תקף עבור הוראת העיבוד</translation>
+        <translation>שם לא תקין עבור הוראת העיבוד</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>version expected while reading the XML declaration</source>
         <translation>הייתה צפויה גירסה בעת קריאה ההכרזה על XML</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>wrong value for standalone declaration</source>
         <translation>ערך שגוי עבור ההגדרה העצמאית</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>encoding declaration or standalone declaration expected while reading the XML declaration</source>
         <translation>הייתה צפויה הכרזה על קידוד או הכרזה עצמאית בעת קריאת ההכרזה על XML</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>standalone declaration expected while reading the XML declaration</source>
         <translation>הייתה צפויה הכרזה עצמאית בעת קריאת ההכרזה על XML</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error occurred while parsing document type definition</source>
-        <translation>אירעה שגיאה בעת עיבוד הגדרת סוג המסמך</translation>
+        <translation>אירעה שגיאה בעת עיבוד הגדרת טיפוס המסמך</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>letter is expected</source>
         <translation>הייתה צפויה אות</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error occurred while parsing comment</source>
         <translation>אירעה שגיאה בעת עיבוד ההערה</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error occurred while parsing reference</source>
         <translation>אירעה שגיאה בעת עיבוד ההתייחסות</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>internal general entity reference not allowed in DTD</source>
-        <translation>התייחסות ליישות כללית פנימית אינה מותרת ב-DTD</translation>
+        <translation>התייחסות אל ישות כללית פנימית אינה מותרת ב-DTD</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>external parsed general entity reference not allowed in attribute value</source>
-        <translation>התייחסות ליישות כללית מעובדת חיצונית אינה מותרת בערך המאפיין</translation>
+        <translation>התייחסות אל ישות כללית מעובדת חיצונית אינה מותרת בערך המאפיין</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>external parsed general entity reference not allowed in DTD</source>
-        <translation>התייחסות ליישות כללית מעובדת חיצונית אינה מותרת ב-DTD</translation>
+        <translation>התייחסות אל ישות כללית מעובדת חיצונית אינה מותרת ב-DTD</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>unparsed entity reference in wrong context</source>
-        <translation>התייחסות ליישות לא מעובדת בהקשר שגוי</translation>
+        <translation>התייחסות אל ישות לא מעובדת בהקשר שגוי</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>recursive entities</source>
-        <translation>יישות רקורסיבית</translation>
+        <translation>ישויות רקורסיביות</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>error in the text declaration of an external entity</source>
-        <translation>שגיאה בהכרזת טקסט של יישות חיצונית</translation>
+        <translation>שגיאה בהכרזת טקסט של ישות חיצונית</translation>
+    </message>
+</context>
+<context>
+    <name>QXmlPatternistCLI</name>
+    <message>
+        <source>Warning in %1, at line %2, column %3: %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning in %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error %1 in %2, at line %3, column %4: %5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error %1 in %2: %3</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QXmlStream</name>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream.cpp" line="+592"/>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+1769"/>
         <source>Extra content at end of document.</source>
-        <translation type="unfinished"></translation>
+        <translation>תוכן נוסף בסוף מסמך.</translation>
     </message>
     <message>
-        <location line="+222"/>
         <source>Invalid entity value.</source>
-        <translation type="unfinished"></translation>
+        <translation>ערך ישות לא תקין.</translation>
     </message>
     <message>
-        <location line="+107"/>
         <source>Invalid XML character.</source>
-        <translation type="unfinished"></translation>
+        <translation>תו XML לא תקין.</translation>
     </message>
     <message>
-        <location line="+259"/>
         <source>Sequence &apos;]]&gt;&apos; not allowed in content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+309"/>
         <source>Namespace prefix &apos;%1&apos; not declared</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+78"/>
         <source>Attribute redefined.</source>
-        <translation type="unfinished"></translation>
+        <translation>מאפיין הוגדר מחדש.</translation>
     </message>
     <message>
-        <location line="+115"/>
         <source>Unexpected character &apos;%1&apos; in public id literal.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Invalid XML version string.</source>
-        <translation type="unfinished"></translation>
+        <translation>מחרוזת גירסת XML לא תקינה.</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Unsupported XML version.</source>
-        <translation type="unfinished"></translation>
+        <translation>גירסת XML לא נתמכת.</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>%1 is an invalid encoding name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 אינו שם קידוד תקין.</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Encoding %1 is unsupported</source>
-        <translation type="unfinished"></translation>
+        <translation>קידוד %1 אינו נתמך</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Standalone accepts only yes or no.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Invalid attribute in XML declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>מאפיין לא תקין בתוך הכרזת XML.</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Premature end of document.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Invalid document.</source>
-        <translation type="unfinished"></translation>
+        <translation>מסמך לא תקין.</translation>
     </message>
     <message>
-        <location line="+40"/>
         <source>Expected </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>, but got &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Unexpected &apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+210"/>
         <source>Expected character data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="-995"/>
         <source>Recursive entity detected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+516"/>
         <source>Start tag expected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+222"/>
         <source>XML declaration not at start of document.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-31"/>
         <source>NDATA in parameter entity declaration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>%1 is an invalid processing instruction name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Invalid processing instruction name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream.cpp" line="-521"/>
-        <location line="+12"/>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+164"/>
-        <location line="+53"/>
         <source>Illegal namespace declaration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+15"/>
         <source>Invalid XML name.</source>
-        <translation type="unfinished"></translation>
+        <translation>שם XML לא תקין.</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Opening and ending tag mismatch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Reference to unparsed entity &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>התייחסות אל ישות לא מעובדת &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <location line="+61"/>
-        <location line="+40"/>
         <source>Entity &apos;%1&apos; not declared.</source>
-        <translation type="unfinished"></translation>
+        <translation>ישות &apos;%1&apos; לא מוצהרת.</translation>
     </message>
     <message>
-        <location line="-26"/>
         <source>Reference to external entity &apos;%1&apos; in attribute value.</source>
-        <translation type="unfinished"></translation>
+        <translation>התייחסות אל ישות חיצונית &apos;%1&apos; בתוך ערך מאפיין.</translation>
     </message>
     <message>
-        <location line="+40"/>
         <source>Invalid character reference.</source>
-        <translation type="unfinished"></translation>
+        <translation>הפניה לתו לא תקינה.</translation>
     </message>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream.cpp" line="-75"/>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="-823"/>
         <source>Encountered incorrectly encoded content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+274"/>
         <source>The standalone pseudo attribute must appear after the encoding.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+562"/>
         <source>%1 is an invalid PUBLIC identifier.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
+    <name>QmlJSDebugger::LiveSelectionTool</name>
+    <message>
+        <source>Items</source>
+        <translation>פריטים</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::QmlToolBar</name>
+    <message>
+        <source>Inspector Mode</source>
+        <translation>מצב בוחן</translation>
+    </message>
+    <message>
+        <source>Play/Pause Animations</source>
+        <translation>הנפש/השהה אנימציות</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>בחר</translation>
+    </message>
+    <message>
+        <source>Select (Marquee)</source>
+        <translation>בחר (Marquee)</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation>זום</translation>
+    </message>
+    <message>
+        <source>Color Picker</source>
+        <translation>קוטף צבעים</translation>
+    </message>
+    <message>
+        <source>Apply Changes to QML Viewer</source>
+        <translation>החל שינויים לתוך QML Viewer</translation>
+    </message>
+    <message>
+        <source>Apply Changes to Document</source>
+        <translation>החל שינויים לתוך מסמך</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>כלים</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>0.5x</source>
+        <translation>0.5x</translation>
+    </message>
+    <message>
+        <source>0.25x</source>
+        <translation>0.25x</translation>
+    </message>
+    <message>
+        <source>0.125x</source>
+        <translation>0.125x</translation>
+    </message>
+    <message>
+        <source>0.1x</source>
+        <translation>0.1x</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ToolBarColorBox</name>
+    <message>
+        <source>Copy Color</source>
+        <translation>העתק צבע</translation>
+    </message>
+</context>
+<context>
+    <name>QmlJSDebugger::ZoomTool</name>
+    <message>
+        <source>Zoom to &amp;100%</source>
+        <translation>זום &amp;100%</translation>
+    </message>
+    <message>
+        <source>Zoom In</source>
+        <translation>זום פנימה</translation>
+    </message>
+    <message>
+        <source>Zoom Out</source>
+        <translation>זום החוצה</translation>
+    </message>
+</context>
+<context>
     <name>QtXmlPatterns</name>
     <message>
-        <location filename="../src/xmlpatterns/acceltree/qacceltreebuilder.cpp" line="+205"/>
-        <source>An %1-attribute with value %2 has already been declared.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>An %1-attribute must have a valid %2 as value, which %3 isn&apos;t.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/api/qiodevicedelegate.cpp" line="+84"/>
         <source>Network timeout.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/api/qxmlserializer.cpp" line="+320"/>
         <source>Element %1 can&apos;t be serialized because it appears outside the document element.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+60"/>
         <source>Attribute %1 can&apos;t be serialized because it appears at the top level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractdatetime.cpp" line="+80"/>
         <source>Year %1 is invalid because it begins with %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>שנה %1 אינה תקינה מכיוון שזו מתחילה עם %2.</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Day %1 is outside the range %2..%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>יום %1 מצוי מחוץ לטווח %2..%3.</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Month %1 is outside the range %2..%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>חודש %1 מצוי מחוץ לטווח %2..%3.</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Overflow: Can&apos;t represent date %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Day %1 is invalid for month %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>יום %1 אינו תקין עבור חודש %2.</translation>
     </message>
     <message>
-        <location line="+49"/>
         <source>Time 24:%1:%2.%3 is invalid. Hour is 24, but minutes, seconds, and milliseconds are not all 0; </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Time %1:%2:%3.%4 is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>to be tested</translatorcomment>
+        <translation>זמן %1:%2:%3.%4 אינו תקין.</translation>
     </message>
     <message>
-        <location line="+115"/>
         <source>Overflow: Date can&apos;t be represented.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractduration.cpp" line="+99"/>
-        <location line="+15"/>
         <source>At least one component must be present.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>At least one time component must appear after the %1-delimiter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractfloatmathematician.cpp" line="+64"/>
-        <source>No operand in an integer division, %1, can be %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>The first operand in an integer division, %1, cannot be infinity (%2).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>The second operand in a division, %1, cannot be zero (%2).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/data/qanyuri_p.h" line="+132"/>
         <source>%1 is not a valid value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 אינו ערך תקין של טיפוס %2.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomiccasters_p.h" line="+223"/>
         <source>When casting to %1 from %2, the source value cannot be %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomicmathematicians.cpp" line="+65"/>
         <source>Integer division (%1) by zero (%2) is undefined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Division (%1) by zero (%2) is undefined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Modulus division (%1) by zero (%2) is undefined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+122"/>
-        <location line="+32"/>
         <source>Dividing a value of type %1 by %2 (not-a-number) is not allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-20"/>
         <source>Dividing a value of type %1 by %2 or %3 (plus or minus zero) is not allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
         <source>Multiplication of a value of type %1 by %2 or %3 (plus or minus infinity) is not allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qatomicvalue.cpp" line="+79"/>
         <source>A value of type %1 cannot have an Effective Boolean Value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qboolean.cpp" line="+78"/>
         <source>Effective Boolean Value cannot be calculated for a sequence containing two or more atomic values.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qderivedinteger_p.h" line="+402"/>
         <source>Value %1 of type %2 exceeds maximum (%3).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Value %1 of type %2 is below minimum (%3).</source>
-        <translation type="unfinished"></translation>
+        <translation>ערך %1 של טיפוס %2 מצוי מתחת למינימום (%3).</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qhexbinary.cpp" line="+91"/>
         <source>A value of type %1 must contain an even number of digits. The value %2 does not.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>%1 is not valid as a value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 אינו תקף בתור ערך של טיפוס %2.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qarithmeticexpression.cpp" line="+207"/>
         <source>Operator %1 cannot be used on type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Operator %1 cannot be used on atomic values of type %2 and %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qattributenamevalidator.cpp" line="+66"/>
         <source>The namespace URI in the name for a computed attribute cannot be %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>The name for a computed attribute cannot have the namespace URI %1 with the local name %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcastas.cpp" line="+88"/>
         <source>Type error in cast, expected %1, received %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>When casting to %1 or types derived from it, the source value must be of the same type, or it must be a string literal. Type %2 is not allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcastingplatform.cpp" line="+134"/>
-        <source>No casting is possible with %1 as the target type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>It is not possible to cast from %1 to %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Casting to %1 is not possible because it is an abstract type, and can therefore never be instantiated.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>It&apos;s not possible to cast the value %1 of type %2 to %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Failure when casting from %1 to %2: %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/expr/qcommentconstructor.cpp" line="+67"/>
         <source>A comment cannot contain %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>A comment cannot end with a %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcomparisonplatform.cpp" line="+167"/>
-        <source>No comparisons can be done involving the type %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Operator %1 is not available between atomic values of type %2 and %3.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/expr/qdocumentcontentvalidator.cpp" line="+86"/>
         <source>An attribute node cannot be a child of a document node. Therefore, the attribute %1 is out of place.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qexpressionfactory.cpp" line="+169"/>
         <source>A library module cannot be evaluated directly. It must be imported from a main module.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
         <source>No template by name %1 exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qgenericpredicate.cpp" line="+106"/>
         <source>A value of type %1 cannot be a predicate. A predicate must have either a numeric type or an Effective Boolean Value type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
         <source>A positional predicate must evaluate to a single numeric value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qncnameconstructor_p.h" line="+113"/>
-        <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, is %2 invalid.</source>
+        <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, %2 is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>%1 is not a valid target name in a processing instruction. It must be a %2 value, e.g. %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qpath.cpp" line="+109"/>
         <source>The last step in a path must contain either nodes or atomic values. It cannot be a mixture between the two.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qprocessinginstructionconstructor.cpp" line="+84"/>
         <source>The data of a processing instruction cannot contain the string %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qqnameconstructor.cpp" line="+82"/>
         <source>No namespace binding exists for the prefix %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qqnameconstructor_p.h" line="+156"/>
         <source>No namespace binding exists for the prefix %1 in %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location filename="../src/xmlpatterns/functions/qqnamefns.cpp" line="+69"/>
         <source>%1 is an invalid %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/xmlpatterns/functions/qabstractfunctionfactory.cpp" line="+77"/>
         <source>%1 takes at most %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location line="+11"/>
         <source>%1 requires at least %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qaggregatefns.cpp" line="+120"/>
         <source>The first argument to %1 cannot be of type %2. It must be a numeric type, xs:yearMonthDuration or xs:dayTimeDuration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+74"/>
         <source>The first argument to %1 cannot be of type %2. It must be of type %3, %4, or %5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+91"/>
         <source>The second argument to %1 cannot be of type %2. It must be of type %3, %4, or %5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qassemblestringfns.cpp" line="+88"/>
         <source>%1 is not a valid XML 1.0 character.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qcomparingaggregator.cpp" line="+197"/>
-        <source>The first argument to %1 cannot be of type %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/functions/qdatetimefn.cpp" line="+86"/>
         <source>If both values have zone offsets, they must have the same zone offset. %1 and %2 are not the same.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qerrorfn.cpp" line="+61"/>
         <source>%1 was called.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qpatternmatchingfns.cpp" line="+94"/>
         <source>%1 must be followed by %2 or %3, not at the end of the replacement string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>In the replacement string, %1 must be followed by at least one digit when not escaped.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>In the replacement string, %1 can only be used to escape itself or %2, not %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qpatternplatform.cpp" line="+92"/>
         <source>%1 matches newline characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>%1 and %2 match the start and end of a line.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Matches are case insensitive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Whitespace characters are removed, except when they appear in character classes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
         <source>%1 is an invalid regular expression pattern: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>%1 is an invalid flag for regular expressions. Valid flags are:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qqnamefns.cpp" line="+17"/>
         <source>If the first argument is the empty sequence or a zero-length string (no namespace), a prefix cannot be specified. Prefix %1 was specified.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+347"/>
         <source>It will not be possible to retrieve %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qcontextnodechecker.cpp" line="+54"/>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencegeneratingfns.cpp" line="+279"/>
         <source>The default collection is undefined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>%1 cannot be retrieved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qstringvaluefns.cpp" line="+252"/>
         <source>The normalization form %1 is unsupported. The supported forms are %2, %3, %4, and %5, and none, i.e. the empty string (no normalization).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qtimezonefns.cpp" line="+87"/>
         <source>A zone offset must be in the range %1..%2 inclusive. %3 is out of range.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>%1 is not a whole number of minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/janitors/qcardinalityverifier.cpp" line="+58"/>
         <source>Required cardinality is %1; got cardinality %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/janitors/qitemverifier.cpp" line="+67"/>
         <source>The item %1 did not match the required type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>הפריט %1 לא תואם את הטיפוס הנדרש %2.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="+379"/>
-        <location line="+7253"/>
         <source>%1 is an unknown schema type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 הינו טיפוס סכמה לא מוכר.</translation>
     </message>
     <message>
-        <location line="-6971"/>
         <source>Only one %1 declaration can occur in the query prolog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+188"/>
         <source>The initialization of variable %1 depends on itself</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
-        <source>No variable by name %1 exists</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/parser/qparsercontext.cpp" line="+93"/>
         <source>The variable %1 is unused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="+2841"/>
         <source>Version %1 is not supported. The supported XQuery version is 1.0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>The encoding %1 is invalid. It must contain Latin characters only, must not contain whitespace, and must match the regular expression %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+55"/>
         <source>No function with signature %1 is available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
-        <location line="+10"/>
         <source>A default namespace declaration must occur before function, variable, and option declarations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Namespace declarations must occur before function, variable, and option declarations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Module imports must occur before function, variable, and option declarations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+200"/>
         <source>It is not possible to redeclare prefix %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Prefix %1 is already declared in the prolog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+95"/>
         <source>The name of an option must have a prefix. There is no default namespace for options.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+171"/>
         <source>The Schema Import feature is not supported, and therefore %1 declarations cannot occur.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>The target namespace of a %1 cannot be empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>The module import feature is not supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+52"/>
-        <source>No value is available for the external variable by name %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-4154"/>
-        <source>A construct was encountered which only is allowed in XQuery.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+118"/>
-        <source>A template by name %1 has already been declared.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3581"/>
         <source>The keyword %1 cannot occur with any other mode name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>The value of attribute %1 must of type %2, which %3 isn&apos;t.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+75"/>
-        <source>The prefix %1 can not be bound. By default, it is already bound to the namespace %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+312"/>
-        <source>A variable by name %1 has already been declared.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+135"/>
         <source>A stylesheet function must have a prefixed name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>The namespace %1 is reserved; therefore user defined functions may not use it. Try the predefined prefix %2, which exists for these cases.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>The namespace of a user defined function in a library module must be equivalent to the module namespace. In other words, it should be %1 instead of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>A function already exists with the signature %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>No external functions are supported. All supported functions can be used directly, without first declaring them as external</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>An argument by name %1 has already been declared. Every argument name must be unique.</source>
+        <source>W3C XML Schema identity constraint selector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+179"/>
+        <source>W3C XML Schema identity constraint field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A construct was encountered which is disallowed in the current language(%1).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A template with name %1 has already been declared.</source>
+        <translation>תבנית עם שם %1 כבר הוצהרה.</translation>
+    </message>
+    <message>
+        <source>No variable with name %1 exists</source>
+        <translation>לא קיים משתנה עם שם %1</translation>
+    </message>
+    <message>
+        <source>The value of attribute %1 must be of type %2, which %3 isn&apos;t.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The prefix %1 cannot be bound. By default, it is already bound to the namespace %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A variable with name %1 has already been declared.</source>
+        <translation>משתנה עם שם %1 כבר הוצהר.</translation>
+    </message>
+    <message>
+        <source>No value is available for the external variable with name %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1, which exists for cases like this)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An argument with name %1 has already been declared. Every argument name must be unique.</source>
+        <translation>ארגומנט עם שם %1 כבר הוצהר. על כל שם ארגומנט להיות ייחודי.</translation>
+    </message>
+    <message>
         <source>When function %1 is used for matching inside a pattern, the argument must be a variable reference or a string literal.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>In an XSL-T pattern, the first argument to function %1 must be a string literal, when used for matching.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>In an XSL-T pattern, the first argument to function %1 must be a literal or a variable reference, when used for matching.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>In an XSL-T pattern, function %1 cannot have a third argument.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>In an XSL-T pattern, only function %1 and %2, not %3, can be used for matching.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+63"/>
         <source>In an XSL-T pattern, axis %1 cannot be used, only axis %2 or %3 can.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+126"/>
         <source>%1 is an invalid template mode name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
         <source>The name of a variable bound in a for-expression must be different from the positional variable. Hence, the two variables named %1 collide.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+758"/>
         <source>The Schema Validation Feature is not supported. Hence, %1-expressions may not be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>None of the pragma expressions are supported. Therefore, a fallback expression must be present</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+267"/>
         <source>Each name of a template parameter must be unique; %1 is duplicated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+129"/>
         <source>The %1-axis is unsupported in XQuery</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1150"/>
+        <source>No function with name %1 is available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An attribute with name %1 has already appeared on this element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>%1 is not a valid name for a processing-instruction.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7029"/>
         <source>%1 is not a valid numeric literal.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6165"/>
-        <source>No function by name %1 is available.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+102"/>
         <source>The namespace URI cannot be the empty string when binding to a prefix, %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>%1 is an invalid namespace URI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>It is not possible to bind to the prefix %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Namespace %1 can only be bound to %2 (and it is, in either case, pre-declared).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Prefix %1 can only be bound to %2 (and it is, in either case, pre-declared).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Two namespace declaration attributes have the same name: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+89"/>
         <source>The namespace URI must be a constant and cannot use enclosed expressions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>An attribute by name %1 has already appeared on this element.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+61"/>
         <source>A direct element constructor is not well-formed. %1 is ended with %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+458"/>
         <source>The name %1 does not refer to any schema type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>%1 is an complex type. Casting to complex types is not possible. However, casting to atomic types such as %2 works.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>%1 is not an atomic type. Casting is only possible to atomic types.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+145"/>
-        <location line="+71"/>
         <source>%1 is not in the in-scope attribute declarations. Note that the schema import feature is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>The name of an extension expression must be in a namespace.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/type/qcardinality.cpp" line="+55"/>
         <source>empty</source>
-        <translation type="unfinished"></translation>
+        <translation>ריק</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>zero or one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>exactly one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>one or more</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>zero or more</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/type/qtypechecker.cpp" line="+63"/>
         <source>Required type is %1, but %2 was found.</source>
-        <translation type="unfinished"></translation>
+        <translation>טיפוס נדרש הינו %1, אך %2 נמצא.</translation>
     </message>
     <message>
-        <location line="+44"/>
         <source>Promoting %1 to %2 may cause loss of precision.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
         <source>The focus is undefined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/utils/qoutputvalidator.cpp" line="+86"/>
         <source>It&apos;s not possible to add attributes after any other kind of node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>An attribute by name %1 has already been created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/utils/qxpathhelper_p.h" line="+120"/>
         <source>Only the Unicode Codepoint Collation is supported(%1). %2 is unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/acceltree/qacceltreeresourceloader.cpp" line="+314"/>
         <source>%1 is an unsupported encoding.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>%1 contains octets which are disallowed in the requested encoding %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>The codepoint %1, occurring in %2 using encoding %3, is an invalid XML character.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qapplytemplate.cpp" line="+119"/>
         <source>Ambiguous rule match.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcomputednamespaceconstructor.cpp" line="+69"/>
         <source>In a namespace constructor, the value for a namespace cannot be an empty string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>The prefix must be a valid %1, which %2 is not.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>The prefix %1 cannot be bound.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Only the prefix %1 can be bound to %2 and vice versa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qevaluationcache.cpp" line="+117"/>
-        <source>Circularity detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/expr/qtemplate.cpp" line="+145"/>
         <source>The parameter %1 is required, but no corresponding %2 is supplied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-71"/>
         <source>The parameter %1 is passed, but no corresponding %2 exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qunparsedtextfn.cpp" line="+65"/>
         <source>The URI cannot have a fragment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qxslttokenizer.cpp" line="+519"/>
         <source>Element %1 is not allowed at this location.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Text nodes are not allowed at this location.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Parse error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>שגיאת עיבוד: %1</translation>
     </message>
     <message>
-        <location line="+62"/>
         <source>The value of the XSL-T version attribute must be a value of type %1, which %2 isn&apos;t.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Running an XSL-T 1.0 stylesheet with a 2.0 processor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+108"/>
         <source>Unknown XSL-T attribute %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>מאפיין XSL-T לא מוכר %1.</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Attribute %1 and %2 are mutually exclusive.</source>
-        <translation type="unfinished"></translation>
+        <translation>מאפיין %1 וגם %2 לא יכולים להתקיים בו זמנית.</translation>
     </message>
     <message>
-        <location line="+166"/>
         <source>In a simplified stylesheet module, attribute %1 must be present.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+72"/>
         <source>If element %1 has no attribute %2, it cannot have attribute %3 or %4.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Element %1 must have at least one of the attributes %2 or %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>אלמנט %1 חייב לקבל לפחות אחד מן המאפיינים %2 או %3.</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>At least one mode must be specified in the %1-attribute on element %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qmaintainingreader.cpp" line="+183"/>
-        <source>Attribute %1 cannot appear on the element %2. Only the standard attributes can appear.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Attribute %1 cannot appear on the element %2. Only %3 is allowed, and the standard attributes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Attribute %1 cannot appear on the element %2. Allowed is %3, %4, and the standard attributes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Attribute %1 cannot appear on the element %2. Allowed is %3, and the standard attributes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>XSL-T attributes on XSL-T elements must be in the null namespace, not in the XSL-T namespace which %1 is.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>The attribute %1 must appear on element %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>The element with local name %1 does not exist in XSL-T.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/parser/qxslttokenizer.cpp" line="+123"/>
         <source>Element %1 must come last.</source>
-        <translation type="unfinished"></translation>
+        <translation>אלמנט %1 חייב להיות אחרון.</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>At least one %1-element must occur before %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Only one %1-element can appear.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>At least one %1-element must occur inside %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>When attribute %1 is present on %2, a sequence constructor cannot be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Element %1 must have either a %2-attribute or a sequence constructor.</source>
-        <translation type="unfinished"></translation>
+        <translation>אלמנט %1 חייב לקבל מאפיין %2 או מרכיב המשך.</translation>
     </message>
     <message>
-        <location line="+125"/>
         <source>When a parameter is required, a default value cannot be supplied through a %1-attribute or a sequence constructor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+270"/>
         <source>Element %1 cannot have children.</source>
-        <translation type="unfinished"></translation>
+        <translation>אלמנט %1 לא יכול לקבל צאצא.</translation>
     </message>
     <message>
-        <location line="+434"/>
         <source>Element %1 cannot have a sequence constructor.</source>
-        <translation type="unfinished"></translation>
+        <translation>אלמנט %1 לא יכול לקבל מרכיב המשך.</translation>
     </message>
     <message>
-        <location line="+86"/>
-        <location line="+9"/>
         <source>The attribute %1 cannot appear on %2, when it is a child of %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>A parameter in a function cannot be declared to be a tunnel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+149"/>
         <source>This processor is not Schema-aware and therefore %1 cannot be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
         <source>Top level stylesheet elements must be in a non-null namespace, which %1 isn&apos;t.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>The value for attribute %1 on element %2 must either be %3 or %4, not %5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Attribute %1 cannot have the value %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>מאפיין %1 לא יכול לקבל את הערך %2.</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>The attribute %1 can only appear on the first %2 element.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+99"/>
         <source>At least one %1 element must appear as child of %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>לפחות אלמנט %1 אחד חייב להופיע כצאצא של %2.</translation>
     </message>
-</context>
-<context>
-    <name>VolumeSlider</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/volumeslider.cpp" line="+67"/>
-        <source>Muted</source>
+        <source>Empty particle cannot be derived from non-empty particle.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+15"/>
-        <source>Volume: %1%</source>
+        <source>Derived particle is missing element %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived element %1 is missing value constraint as defined in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived element %1 has weaker value constraint than base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed value constraint of element %1 differs from value constraint in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived element %1 cannot be nillable as base element is not nillable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Block constraints of derived element %1 must not be more weaker than in the base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type of derived element %1 cannot be validly derived from base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type of derived element %1 cannot be validly derived from base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is missing in derived particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 does not match namespace constraint of wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wildcard in derived particle is not a valid subset of wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>processContent of wildcard in derived particle is weaker than wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived particle allows content that is not allowed in the base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 has inheritance loop in its base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circular inheritance of base type %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circular inheritance of union %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to derive from %2 by restriction as the latter defines it as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to derive from %2 by extension as the latter defines it as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type of simple type %1 cannot be complex type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 cannot have direct base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 is not allowed to have base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 can only have simple atomic type as base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 cannot derive from %2 as the latter defines restriction as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variety of item type of %1 must be either atomic or union.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variety of member types of %1 must be atomic.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 is only allowed to have %2 facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type of simple type %1 must have variety of type list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type of simple type %1 has defined derivation by restriction as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Item type of base type does not match item type of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type %1 contains not allowed facet type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to derive from %2 by union as the latter defines it as final.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to have any facets.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type %1 of simple type %2 must have variety of union.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type %1 of simple type %2 is not allowed to have restriction in %3 attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Member type %1 cannot be derived from member type %2 of %3&apos;s base type %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derivation method of %1 must be extension because the base type %2 is a simple type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 has duplicated element %2 in its content model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 has non-deterministic content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 is not a valid extension of content model of %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 must have simple content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 must have the same simple type as its base class %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 cannot be derived from base type %2%3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 with simple content cannot be derived from complex base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Item type of simple type %1 cannot be a complex type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Member type of simple type %1 cannot be a complex type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not allowed to have a member type with the same name as itself.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet collides with %2 facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must have the same value as %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be equal or greater than %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be less than or equal to %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet contains invalid regular expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown notation %1 used in %2 facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet contains invalid value %2: %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet cannot be %2 or %3 if %4 facet of base type is %5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet cannot be %2 if %3 facet of base type is %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be less than or equal to %2 facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be less than %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet and %2 facet cannot appear together.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be greater than %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be less than %2 facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 facet must be greater than or equal to %2 facet of base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple type contains not allowed facet %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only %1 and %2 facets are allowed when derived by union.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 contains %2 facet with invalid data: %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute group %1 contains attribute %2 twice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute group %1 contains two different attributes that both have types derived from %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 contains attribute %2 twice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 contains two different attributes that both have types derived from %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not allowed to have a value constraint if its base type is complex.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not allowed to have a value constraint if its type is derived from %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value constraint of element %1 is not of elements type: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not allowed to have substitution group affiliation as it is no global element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of element %1 cannot be derived from type of substitution group affiliation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value constraint of attribute %1 is not of attributes type: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 has value constraint but has type derived from %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute in derived complex type must be %2 like in base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 in derived complex type must have %2 value constraint like in base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 in derived complex type must have the same %2 value constraint like in base type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 in derived complex type must have %2 value constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>processContent of base wildcard must be weaker than derived wildcard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 exists twice with different types.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Particle contains non-deterministic wildcards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base attribute %1 is required but derived attribute is not.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of derived attribute %1 cannot be validly derived from type of base attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value constraint of derived attribute %1 does not match value constraint of base attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived attribute %1 does not exist in the base definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived attribute %1 does not match the wildcard in the base definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base attribute %1 is required but missing in derived definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived definition contains an %1 element that does not exists in the base definition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Derived wildcard is not a subset of the base wildcard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 of derived wildcard is not a valid restriction of %2 of base wildcard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 from base type is missing in derived type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of derived attribute %1 differs from type of base attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base definition contains an %1 element that is missing in the derived definition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not process unknown element %1, expected elements are: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not allowed in this scope, possible elements are: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Child element is missing in that scope, possible child elements are: %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Document is not a XML schema.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element contains invalid content: {%3}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target namespace %1 of imported schema is different from the target namespace %2 as defined by the importing schema.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element without %2 attribute is not allowed inside schema without target namespace.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element has neither %2 attribute nor %3 child element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element with %2 child element must not have a %3 attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must be %3 or %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must have a value of %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must have a value of %3 or %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element must not have %2 and %3 attribute together.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content of %1 attribute of %2 element must not be from namespace %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must not be %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must have the value %3 because the %4 attribute is set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specifying use=&apos;prohibited&apos; inside an attribute group has no effect.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element must have either %2 or %3 attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element must have either %2 attribute or %3 or %4 as child element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element requires either %2 or %3 attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Text or entity references not allowed inside %1 element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must contain %3, %4 or a list of URIs.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element is not allowed in this context.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element has larger value than %3 attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prefix of qualified name %1 is not defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute of %2 element must either contain %3 or the other values.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component with ID %1 has been defined previously.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute group %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element group %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notation %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Identity constraint %1 already defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicated facets in simple type %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 references unknown %2 or %3 element %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 references identity constraint %2 that is no %3 or %4 element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 has a different number of fields from the identity constraint %2 that it references.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Item type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Member type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base type %1 of complex type cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 cannot have complex base type that has a %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content model of complex type %1 contains %2 element, so it cannot be derived by extension from a non-empty type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type of %1 element must be a simple type, %2 is not.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Substitution group %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Substitution group %1 has circular definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicated element names %1 in %2 element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reference %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circular group reference for %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element is not allowed in this scope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element cannot have %2 attribute with value other than %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element cannot have %2 attribute with value other than %3 or %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute group %1 has circular reference.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 attribute in %2 must have %3 use like in base type %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute wildcard of %1 is not a valid restriction of attribute wildcard of base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 has attribute wildcard but its base type %2 has not.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Union of attribute wildcard of type %1 and attribute wildcard of its base type %2 is not expressible.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enumeration facet contains invalid content: {%1} is not a value of type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Namespace prefix of qualified name %1 is not defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 element %2 is not a valid restriction of the %3 element it redefines: %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is not valid according to %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String content does not match the length facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String content does not match the minLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String content does not match the maxLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match the maxInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match the maxExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match the minInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match the minExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed integer content does not match in the totalDigits facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match the maxInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match the maxExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match the minInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match the minExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsigned integer content does not match in the totalDigits facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content does not match the maxInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content does not match the maxExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content does not match the minInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content does not match the minExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Double content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decimal content does not match in the fractionDigits facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Decimal content does not match in the totalDigits facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content does not match the maxInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content does not match the maxExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content does not match the minInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content does not match the minExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Date time content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content does not match the maxInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content does not match the maxExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content does not match the minInclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content does not match the minExclusive facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boolean content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Binary content does not match the length facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Binary content does not match the minLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Binary content does not match the maxLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Binary content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid QName content: %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QName content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QName content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notation content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List content does not match length facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List content does not match minLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List content does not match maxLength facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Union content is not listed in the enumeration facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Union content does not match pattern facet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data of type %1 are not allowed to be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is missing child element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is one IDREF value with no corresponding ID: %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loaded schema file is invalid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 contains invalid data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>xsi:schemaLocation namespace %1 has already appeared earlier in the instance document.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>xsi:noNamespaceSchemaLocation cannot appear after the first no-namespace element or attribute.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No schema defined for validation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No definition for element %1 available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified type %1 is not known to the schema.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not defined in this scope.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Declaration for element %1 does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains invalid content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is declared as abstract.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is not nillable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 contains invalid data: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element contains content although it is nillable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed value constraint not allowed if element is nillable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified type %1 is not validly substitutable with element type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Complex type %1 is not allowed to be abstract.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains not allowed attributes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains not allowed child element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content of element %1 does not match its type definition: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content of element %1 does not match defined value constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains not allowed child content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains not allowed text content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 cannot contain other elements, as it has fixed content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 is missing required attribute %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 does not match the attribute wildcard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Declaration for attribute %1 does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains two attributes of type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attribute %1 contains invalid content.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Element %1 contains unknown attribute %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content of attribute %1 does not match its type definition: %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Content of attribute %1 does not match defined value constraint.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Non-unique value found for constraint %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Key constraint %1 contains absent fields.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Key constraint %1 contains references nillable element %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No referenced value found for key reference %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>More than one value found for field %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Field %1 has no simple type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID value &apos;%1&apos; is not unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
