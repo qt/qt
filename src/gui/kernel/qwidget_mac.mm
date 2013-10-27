@@ -2803,6 +2803,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 if (window)
                     qt_mac_destructWindow(window);
             }
+#ifdef QT_MAC_USE_COCOA
+            if (isWindow())
+                QCoreGraphicsPaintEngine::clearColorSpace(this);
+#endif
         }
         QT_TRY {
             d->setWinId(0);
