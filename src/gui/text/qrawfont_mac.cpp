@@ -52,6 +52,13 @@ void QRawFontPrivate::platformCleanUp()
 {
 }
 
+static void releaseFontData(void* info, const void* data, size_t size)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(size);
+    delete (QByteArray*)info;
+}
+
 extern int qt_defaultDpi();
 
 void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
@@ -61,8 +68,9 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
     // Mac OS X ignores it
     Q_UNUSED(hintingPreference);
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
+    QByteArray* fontDataCopy = new QByteArray(fontData);
+    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
+            fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
 
     CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
 
