@@ -96,6 +96,7 @@ private slots:
     void returnValues();
     void varAssignment();
     void bindingsSpliceCorrectly();
+    void qtbug_33625();
 
 private:
     QDeclarativeEngine engine;
@@ -1010,6 +1011,19 @@ void tst_qdeclarativevaluetypes::bindingsSpliceCorrectly()
 
     delete object;
     }
+}
+
+//qreal as float should not limit int to single precision.
+void tst_qdeclarativevaluetypes::qtbug_33625()
+{
+   QDeclarativeComponent component(&engine, TEST_FILE("qtbug-33625.qml"));
+   QObject *object = component.create();
+   QVERIFY(object != 0);
+
+   QCOMPARE(object->property("intint").toInt(), 16777237);
+   QCOMPARE(object->property("stringint").toInt(), 16777237);
+
+   delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativevaluetypes)

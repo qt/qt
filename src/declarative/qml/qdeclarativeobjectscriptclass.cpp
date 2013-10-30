@@ -328,7 +328,12 @@ void QDeclarativeObjectScriptClass::setProperty(Object *object,
 {
     return setProperty(toQObject(object), name, value, context());
 }
-
+namespace {
+int qRoundDouble(double d)
+{
+    return d >= double(0.0) ? int(d + double(0.5)) : int(d - int(d-1) + double(0.5)) + int(d-1);
+}
+}
 void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
                                                 const Identifier &name,
                                                 const QScriptValue &value,
@@ -405,7 +410,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     } else {
         //### expand optimization for other known types
         if (lastData->propType == QMetaType::Int && value.isNumber()) {
-            int rawValue = qRound(value.toNumber());
+            int rawValue = qRoundDouble(value.toNumber());
             int status = -1;
             int flags = 0;
             void *a[] = { (void *)&rawValue, 0, &status, &flags };

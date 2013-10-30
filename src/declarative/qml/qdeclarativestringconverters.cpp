@@ -97,13 +97,19 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
     return QVariant(s);
 }
 
+namespace {
+int qRoundDouble(double d)
+{
+    return d >= double(0.0) ? int(d + double(0.5)) : int(d - int(d-1) + double(0.5)) + int(d-1);
+}
+}
 QVariant QDeclarativeStringConverters::variantFromString(const QString &s, int preferredType, bool *ok)
 {
     switch (preferredType) {
     case QMetaType::Int:
-        return QVariant(int(qRound(s.toDouble(ok))));
+        return QVariant(int(qRoundDouble(s.toDouble(ok))));
     case QMetaType::UInt:
-        return QVariant(uint(qRound(s.toDouble(ok))));
+        return QVariant(uint(qRoundDouble(s.toDouble(ok))));
     case QMetaType::QColor:
         return QVariant::fromValue(colorFromString(s, ok));
 #ifndef QT_NO_DATESTRING
