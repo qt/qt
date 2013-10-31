@@ -64,6 +64,7 @@
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 #include <private/qlocale_p.h>
+#include <private/qmutexpool_p.h>
 
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
@@ -203,15 +204,18 @@ QString QCoreApplicationPrivate::macMenuBarName()
 #endif
 QString QCoreApplicationPrivate::appName() const
 {
-    static QString applName;
+    QMutexLocker locker(QMutexPool::globalInstanceGet(&applicationName));
+
+    if (applicationName.isNull()) {
 #ifdef Q_OS_MAC
-    applName = macMenuBarName();
+        applicationName = macMenuBarName();
 #endif
-    if (applName.isEmpty() && argv[0]) {
-        char *p = strrchr(argv[0], '/');
-        applName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
+        if (applicationName.isEmpty() && argv[0]) {
+            char *p = strrchr(argv[0], '/');
+            applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
+        }
     }
-    return applName;
+    return applicationName;
 }
 #endif
 
@@ -2417,7 +2421,12 @@ QString QCoreApplication::applicationName()
 #ifdef Q_OS_BLACKBERRY
     coreappdata()->loadManifest();
 #endif
-    return coreappdata()->application;
+
+    QString appname = coreappdata() ? coreappdata()->application : QString();
+    if (appname.isEmpty() && QCoreApplication::self)
+        appname = QCoreApplication::self->d_func()->appName();
+
+    return appname;
 }
 
 /*!

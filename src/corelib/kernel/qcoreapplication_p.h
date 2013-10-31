@@ -87,6 +87,8 @@ public:
     bool notify_helper(QObject *, QEvent *);
 
     virtual QString appName() const;
+    mutable QString applicationName;
+
     virtual void createEventDispatcher();
     static void removePostedEvent(QEvent *);
 #ifdef Q_OS_WIN
