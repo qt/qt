@@ -98,6 +98,7 @@ private slots:
     void destruction();
     void threadRecycling();
     void expiryTimeout();
+    void expiryTimeoutRace();
     void exceptions();
     void maxThreadCount();
     void setMaxThreadCount_data();
@@ -333,7 +334,7 @@ class ExpiryTimeoutTask : public QRunnable
 {
 public:
     QThread *thread;
-    int runCount;
+    QAtomicInt runCount;
     QSemaphore semaphore;
 
     ExpiryTimeoutTask()
@@ -345,7 +346,7 @@ public:
     void run()
     {
         thread = QThread::currentThread();
-        ++runCount;
+        runCount.ref();
         semaphore.release();
     }
 };
@@ -364,7 +365,7 @@ void tst_QThreadPool::expiryTimeout()
     // run the task
     threadPool.start(&task);
     QVERIFY(task.semaphore.tryAcquire(1, 10000));
-    QCOMPARE(task.runCount, 1);
+    QCOMPARE(int(task.runCount), 1);
     QVERIFY(!task.thread->wait(100));
     // thread should expire
     QThread *firstThread = task.thread;
@@ -373,7 +374,7 @@ void tst_QThreadPool::expiryTimeout()
     // run task again, thread should be restarted
     threadPool.start(&task);
     QVERIFY(task.semaphore.tryAcquire(1, 10000));
-    QCOMPARE(task.runCount, 2);
+    QCOMPARE(int(task.runCount), 2);
     QVERIFY(!task.thread->wait(100));
     // thread should expire again
     QVERIFY(task.thread->wait(10000));
@@ -384,6 +385,22 @@ void tst_QThreadPool::expiryTimeout()
 
     threadPool.setExpiryTimeout(expiryTimeout);
     QCOMPARE(threadPool.expiryTimeout(), expiryTimeout);
+}
+
+void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
+{
+    ExpiryTimeoutTask task;
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(1);
+    threadPool.setExpiryTimeout(50);
+    const int numTasks = 20;
+    for (int i = 0; i < numTasks; ++i) {
+        threadPool.start(&task);
+        QTest::qSleep(50); // exactly the same as the expiry timeout
+    }
+    QCOMPARE(int(task.runCount), numTasks);
+    QVERIFY(threadPool.waitForDone(2000));
 }
 
 #ifndef QT_NO_EXCEPTIONS
