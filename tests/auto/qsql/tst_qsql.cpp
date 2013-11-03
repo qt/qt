@@ -119,8 +119,10 @@ void tst_QSql::cleanup()
 // of a field "id"(integer) and "name"(char/varchar).
 void tst_QSql::basicDriverTest()
 {
-    int argc = 0;
-    QApplication app( argc, 0, false );
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QApplication app( argc, argv, false );
+
     tst_Databases dbs;
     dbs.open();
 
@@ -201,21 +203,22 @@ void tst_QSql::basicDriverTest()
 void tst_QSql::open()
 {
     int i;
-    int argc = 0;
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     int count = -1;
     for ( i = 0; i < 10; ++i ) {
 
-	QApplication app( argc, 0, false );
-	tst_Databases dbs;
+       QApplication app( argc, argv, false );
+       tst_Databases dbs;
 
-	dbs.open();
-	if ( count == -1 )
-	    // first iteration: see how many dbs are open
-	    count = (int) dbs.dbNames.count();
-	else
-	    // next iterations: make sure all are opened again
-	    QCOMPARE( count, (int)dbs.dbNames.count() );
-	dbs.close();
+       dbs.open();
+       if ( count == -1 )
+           // first iteration: see how many dbs are open
+           count = (int) dbs.dbNames.count();
+       else
+           // next iterations: make sure all are opened again
+           QCOMPARE( count, (int)dbs.dbNames.count() );
+       dbs.close();
     }
 }
 
@@ -230,8 +233,9 @@ void tst_QSql::openInvalid()
 
 void tst_QSql::concurrentAccess()
 {
-    int argc = 0;
-    QApplication app( argc, 0, false );
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QApplication app( argc, argv, false );
     tst_Databases dbs;
 
     dbs.open();
@@ -258,8 +262,10 @@ void tst_QSql::concurrentAccess()
 
 void tst_QSql::openErrorRecovery()
 {
-    int argc = 0;
-    QApplication app( argc, 0, false );
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QApplication app( argc, argv, false );
+
     tst_Databases dbs;
 
     dbs.addDbs();
@@ -305,8 +311,9 @@ void tst_QSql::openErrorRecovery()
 
 void tst_QSql::registerSqlDriver()
 {
-    int argc = 0;
-    QApplication app( argc, 0, false );
+    int argc = 1;
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QApplication app( argc, argv, false );
 
     QSqlDatabase::registerSqlDriver( "QSQLTESTDRIVER", new QSqlDriverCreator<QSqlNullDriver> );
     QVERIFY( QSqlDatabase::drivers().contains( "QSQLTESTDRIVER" ) );

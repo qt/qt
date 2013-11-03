@@ -1896,6 +1896,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     QTEST_ASSERT(metaObject);
 
     QTestResult::setCurrentTestObject(metaObject->className());
+    if (argc > 0)
+        QTestResult::setCurrentAppName(argv[0]);
+
     qtest_qParseArgs(argc, argv, false);
     if (QTest::randomOrder) {
         seedRandom();
@@ -2137,6 +2140,14 @@ QTestData &QTest::newRow(const char *dataTag)
 
     \sa QTest::newRow(), QFETCH(), QMetaType
 */
+
+/*!
+    Returns the name of the binary that is currently executed.
+*/
+const char *QTest::currentAppName()
+{
+    return QTestResult::currentAppName();
+}
 
 /*!
     Returns the name of the test function that is currently executed.
