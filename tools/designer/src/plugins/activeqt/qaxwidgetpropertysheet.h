@@ -66,6 +66,7 @@ public:
     explicit QAxWidgetPropertySheet(QDesignerAxWidget *object, QObject *parent = 0);
 
     virtual bool isEnabled(int index) const;
+    virtual QVariant property(int index) const;
     virtual void setProperty(int index, const QVariant &value);
     virtual bool reset(int index);
     int indexOf(const QString &name) const;

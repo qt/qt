@@ -100,6 +100,15 @@ bool QAxWidgetPropertySheet::reset(int index)
     return true;
 }
 
+QVariant QAxWidgetPropertySheet::property(int index) const
+{
+    // QTBUG-34592, accessing the 'control' property via meta object system
+    // may cause crashes during loading for some controls.
+    return propertyName(index) == m_controlProperty ?
+        QVariant(axWidget()->control()) :
+        QDesignerPropertySheet::property(index);
+}
+
 void QAxWidgetPropertySheet::setProperty(int index, const QVariant &value)
 {
 
