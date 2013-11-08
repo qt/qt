@@ -3916,7 +3916,7 @@ void QWidgetPrivate::setFocus_sys()
     if (q->testAttribute(Qt::WA_WState_Created)) {
 #ifdef QT_MAC_USE_COCOA
         QMacCocoaAutoReleasePool pool;
-        NSView *view = qt_mac_nativeview_for(q);
+        NSView *view = qt_mac_effectiveview_for(q);
         [[view window] makeFirstResponder:view];
 #else
         SetKeyboardFocus(qt_mac_window_for(q), qt_mac_nativeview_for(q), 1);
