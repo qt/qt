@@ -3148,7 +3148,6 @@ QMetaObject *MetaObjectGenerator::metaObject(const QMetaObject *parentObject, co
     Q_ASSERT(offset == int_data_size-1);
 
     char *string_data = new char[stringdata.length()];
-    memset(string_data, 0, sizeof(string_data));
     memcpy(string_data, stringdata, stringdata.length());
 
     // put the metaobject together
