@@ -90,6 +90,7 @@ bool QHelpDBReader::init()
         return false;
 
     QSqlDatabase db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), m_uniqueId);
+    db.setConnectOptions(QLatin1String("QSQLITE_OPEN_READONLY"));
     db.setDatabaseName(m_dbName);
     if (!db.open()) {
         /*: The placeholders are: %1 - The name of the database which cannot be opened
