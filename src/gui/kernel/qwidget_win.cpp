@@ -631,7 +631,15 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         dropSiteWasRegistered = true;
         q->setAttribute(Qt::WA_DropSiteRegistered, false); // ole dnd unregister (we will register again below)
     }
-
+    QList<QWidget *> registeredDropChildren;
+    if (QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget()) {
+        foreach (QWidget *w, nativeParent->d_func()->extra->oleDropWidgets) {
+            if (w && q->isAncestorOf(w)) {
+                registeredDropChildren.push_back(w);
+                w->setAttribute(Qt::WA_DropSiteRegistered, false);
+            }
+        }
+    }
     if ((q->windowType() == Qt::Desktop))
         old_winid = 0;
     setWinId(0);
@@ -684,6 +692,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (q->testAttribute(Qt::WA_AcceptDrops) || dropSiteWasRegistered
         || (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_DropSiteRegistered)))
         q->setAttribute(Qt::WA_DropSiteRegistered, true);
+    foreach (QWidget *w, registeredDropChildren)
+        w->setAttribute(Qt::WA_DropSiteRegistered, true);
 
 #ifdef Q_WS_WINCE
     // Show borderless toplevel windows in tasklist & NavBar
