@@ -694,7 +694,6 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     menu.setColor(QPalette::Active, QPalette::Text, menuText);
     menu.setColor(QPalette::Active, QPalette::WindowText, menuText);
     menu.setColor(QPalette::Active, QPalette::ButtonText, menuText);
-    const QColor fg = menu.foreground().color(), btn = menu.button().color();
     QColor disabled(qt_colorref2qrgb(GetSysColor(COLOR_GRAYTEXT)));
     menu.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     menu.setColor(QPalette::Disabled, QPalette::Text, disabled);
