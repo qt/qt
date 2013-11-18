@@ -1922,7 +1922,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 
     if (!isOpaque && ptrUpdateLayeredWindow && (data.window_flags & Qt::FramelessWindowHint)) {
         if (GetWindowLong(q->internalWinId(), GWL_EXSTYLE) & Q_WS_EX_LAYERED) {
-            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (int)(255.0 * level), AC_SRC_ALPHA};
+            BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             ptrUpdateLayeredWindow(q->internalWinId(), NULL, NULL, NULL, NULL, NULL, 0, &blend, Q_ULW_ALPHA);
         }
         return;
