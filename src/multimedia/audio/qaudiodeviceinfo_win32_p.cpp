@@ -264,7 +264,7 @@ void QAudioDeviceInfoInternal::updateLists()
     // redo all lists based on current settings
     bool base = false;
     bool match = false;
-    DWORD fmt = NULL;
+    DWORD fmt = 0;
     QString tmp;
 
     if(device.compare(QLatin1String("default")) == 0)
