@@ -222,7 +222,7 @@ QThreadPrivate::~QThreadPrivate()
     Another way to make code run in a separate thread, is to subclass QThread
     and reimplement run(). For example:
 
-    \snippet code/src_corelib_thread_qthread.cpp reimpl-run
+    \snippet doc/src/snippets/code/src_corelib_thread_qthread.cpp reimpl-run
 
     In that example, the thread will exit after the run function has returned.
     There will not be any event loop running in the thread unless you call
