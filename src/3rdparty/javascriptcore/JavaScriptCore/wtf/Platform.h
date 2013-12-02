@@ -325,6 +325,28 @@
 
 #endif /* ARM */
 
+/* CPU(MIPS) - MIPS, any version */
+#if (defined(mips) || defined(__mips__) || defined(MIPS) || defined(_MIPS_))
+#define WTF_CPU_MIPS 1
+#include <sgidefs.h>
+#if defined(__MIPSEB__)
+#define WTF_CPU_BIG_ENDIAN 1
+#endif
+/* CPU(MIPS64) - MIPS 64-bit both BIG and LITTLE endian */
+#if defined(_MIPS_SIM_ABI64) && (_MIPS_SIM == _MIPS_SIM_ABI64)
+#define WTF_CPU_MIPS64 1
+#endif
+
+/* CPU(MIPSN32) - MIPS N32 ABI both BIG and LITTLE endian */
+#if defined(_MIPS_SIM_ABIN32) && (_MIPS_SIM == _MIPS_SIM_ABIN32)
+#define WTF_CPU_MIPSN32 1
+#endif
+
+/* CPU(MIPS32) - MIPS O32 ABI both BIG and LITTLE endian */
+#if defined(_MIPS_SIM_ABI32) && (_MIPS_SIM == _MIPS_SIM_ABI32)
+#define WTF_CPU_MIPS32 1
+#endif
+#endif /* __mips__ */
 
 
 /* ==== OS() - underlying operating system; only to be used for mandated low-level services like 
@@ -873,7 +895,7 @@
 #endif
 
 #if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
-#if (CPU(X86_64) && (OS(UNIX) || OS(WINDOWS) || OS(SOLARIS) || OS(HPUX))) || (CPU(IA64) && !CPU(IA64_32)) || CPU(ALPHA) || CPU(AIX64) || CPU(SPARC64)
+#if (CPU(X86_64) && (OS(UNIX) || OS(WINDOWS) || OS(SOLARIS) || OS(HPUX))) || (CPU(IA64) && !CPU(IA64_32)) || CPU(ALPHA) || CPU(AIX64) || CPU(SPARC64) || CPU(MIPS64)
 #define WTF_USE_JSVALUE64 1
 #elif CPU(ARM) || CPU(PPC64)
 #define WTF_USE_JSVALUE32 1
