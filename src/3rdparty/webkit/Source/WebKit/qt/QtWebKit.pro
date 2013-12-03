@@ -217,46 +217,16 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
 }
 
 contains(DEFINES, ENABLE_VIDEO=1) {
-    !contains(DEFINES, WTF_USE_QTKIT=1):!contains(DEFINES, WTF_USE_GSTREAMER=1):contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
+    !contains(DEFINES, WTF_USE_GSTREAMER=1):contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += $$PWD/WebCoreSupport/FullScreenVideoWidget.h
         SOURCES += $$PWD/WebCoreSupport/FullScreenVideoWidget.cpp
     }
 
-    contains(DEFINES, WTF_USE_QTKIT=1) | contains(DEFINES, WTF_USE_GSTREAMER=1) | contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
+    contains(DEFINES, WTF_USE_GSTREAMER=1) | contains(DEFINES, WTF_USE_QT_MULTIMEDIA=1) {
         HEADERS += $$PWD/WebCoreSupport/FullScreenVideoQt.h
         SOURCES += $$PWD/WebCoreSupport/FullScreenVideoQt.cpp
     }
 
-    contains(DEFINES, WTF_USE_QTKIT=1) {
-        INCLUDEPATH += $$SOURCE_DIR/WebCore/platform/qt/ \
-                       $$SOURCE_DIR/WebCore/platform/mac/ \
-                       $$SOURCE_DIR/../WebKitLibraries/
-
-        DEFINES+=NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-        contains(CONFIG, "x86") {
-            DEFINES+=NS_BUILD_32_LIKE_64
-        }
-
-        HEADERS += $$PWD/WebCoreSupport/WebSystemInterface.h \
-                   $$PWD/WebCoreSupport/QTKitFullScreenVideoHandler.h
-
-        OBJECTIVE_SOURCES += $$PWD/WebCoreSupport/WebSystemInterface.mm \
-                   $$PWD/WebCoreSupport/QTKitFullScreenVideoHandler.mm
-
-        LIBS+= -framework Security -framework IOKit
-        # We can know the Mac OS version by using the Darwin major version
-        DARWIN_VERSION = $$split(QMAKE_HOST.version, ".")
-        DARWIN_MAJOR_VERSION = $$first(DARWIN_VERSION)
-        equals(DARWIN_MAJOR_VERSION, "9") | contains(QMAKE_MAC_SDK, ".*MacOSX10.5.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLeopard.a
-        } else: equals(DARWIN_MAJOR_VERSION, "10") | contains(QMAKE_MAC_SDK, ".*MacOSX10.6.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceSnowLeopard.a
-        } else: equals(DARWIN_MAJOR_VERSION, "11") | contains(QMAKE_MAC_SDK, ".*MacOSX10.7.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceLion.a
-        } else: equals(DARWIN_MAJOR_VERSION, "12") | contains(QMAKE_MAC_SDK, ".*MacOSX10.8.sdk") {
-            LIBS += $$SOURCE_DIR/../WebKitLibraries/libWebKitSystemInterfaceMountainLion.a
-        }
-    }
 }
 
 contains(DEFINES, ENABLE_ICONDATABASE=1) {
