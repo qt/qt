@@ -137,6 +137,7 @@ public:
     qreal rightMargin;
     qreal bottomMargin;
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant> valueCache;
+    PMPaper customPaper;
     QMacPrintEnginePrivate() : mode(QPrinter::ScreenResolution), state(QPrinter::Idle),
                                orient(QPrinter::Portrait), printInfo(0), format(0), settings(0),
                                session(0), paintEngine(0), suppressStatus(false),
