@@ -240,13 +240,21 @@ public:
 
     public:
         FlaggedDebugSignatures() : idx(0)
-        { std::fill_n(locations, Count, static_cast<char*>(0)); }
+        {
+            for (uint i = 0; i < Count; ++i)
+                locations[i] = 0;
+        }
 
         void store(const char* method)
         { locations[idx++ % Count] = method; }
 
         bool contains(const char *method) const
-        { return std::find(locations, locations + Count, method) != locations + Count; }
+        {
+            for (uint i = 0; i < Count; ++i)
+                if (locations[i] == method)
+                    return true;
+            return false;
+        }
     };
 
     QThread *thread;
