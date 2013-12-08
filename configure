@@ -5163,6 +5163,9 @@ if [ "${CFG_MMX}" = "auto" ]; then
 fi
 
 # detect 3dnow support
+if [ "${CFG_MMX}" = "auto" ]; then
+    CFG_3DNOW=no
+fi
 if [ "${CFG_3DNOW}" = "auto" ]; then
     if compileTest unix/3dnow "3dnow" "-m3dnow"; then
 	CFG_3DNOW=yes
@@ -5172,6 +5175,9 @@ if [ "${CFG_3DNOW}" = "auto" ]; then
 fi
 
 # detect sse support
+if [ "${CFG_MMX}" = "auto" ]; then
+    CFG_SSE=no
+fi
 if [ "${CFG_SSE}" = "auto" ]; then
     if compileTest unix/sse "sse" "-msse"; then
 	CFG_SSE=yes
@@ -5181,6 +5187,9 @@ if [ "${CFG_SSE}" = "auto" ]; then
 fi
 
 # detect sse2 support
+if [ "${CFG_SSE}" = "auto" ]; then
+    CFG_SSE2=no
+fi
 if [ "${CFG_SSE2}" = "auto" ]; then
     if compileTest unix/sse2 "sse2" "-msse2"; then
        CFG_SSE2=yes
@@ -5190,6 +5199,9 @@ if [ "${CFG_SSE2}" = "auto" ]; then
 fi
 
 # detect sse3 support
+if [ "${CFG_SSE2}" = "no" ]; then
+    CFG_SSE3=no
+fi
 if [ "${CFG_SSE3}" = "auto" ]; then
     if compileTest unix/sse3 "sse3" "-msse3"; then
        CFG_SSE3=yes
@@ -5199,6 +5211,9 @@ if [ "${CFG_SSE3}" = "auto" ]; then
 fi
 
 # detect ssse3 support
+if [ "${CFG_SSE3}" = "no" ]; then
+    CFG_SSSE3=no
+fi
 if [ "${CFG_SSSE3}" = "auto" ]; then
     if compileTest unix/ssse3 "ssse3" "-mssse3"; then
        CFG_SSSE3=yes
@@ -5208,6 +5223,9 @@ if [ "${CFG_SSSE3}" = "auto" ]; then
 fi
 
 # detect sse4.1 support
+if [ "${CFG_SSSE3}" = "no" ]; then
+    CFG_SSE4_1=no
+fi
 if [ "${CFG_SSE4_1}" = "auto" ]; then
     if compileTest unix/sse4_1 "sse4_1" "-msse4.1"; then
        CFG_SSE4_1=yes
@@ -5217,6 +5235,9 @@ if [ "${CFG_SSE4_1}" = "auto" ]; then
 fi
 
 # detect sse4.2 support
+if [ "${CFG_SSE4_1}" = "no" ]; then
+    CFG_SSE4_2=no
+fi
 if [ "${CFG_SSE4_2}" = "auto" ]; then
     if compileTest unix/sse4_2 "sse4_2" "-msse4.2"; then
        CFG_SSE4_2=yes
@@ -5226,6 +5247,9 @@ if [ "${CFG_SSE4_2}" = "auto" ]; then
 fi
 
 # detect avx support
+if [ "${CFG_SSE4_2}" = "no" ]; then
+    CFG_AVX=no
+fi
 if [ "${CFG_AVX}" = "auto" ]; then
     if compileTest unix/avx "avx" "-mavx"; then
        CFG_AVX=yes
