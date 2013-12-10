@@ -830,6 +830,8 @@ static const char *certificate_blacklist[] = {
 
     "2087",                                            "*.EGO.GOV.TR", // Turktrust mis-issued intermediate certificate
     "2148",                                            "e-islem.kktcmerkezbankasi.org", // Turktrust mis-issued intermediate certificate
+
+    "204199",                                        "AC DG Tr\xC3\xA9sor SSL", // intermediate certificate linking back to ANSSI French National Security Agency
     0
 };
 
