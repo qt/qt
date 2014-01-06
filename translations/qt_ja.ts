@@ -5578,7 +5578,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Left</source>
-        <translation>→</translation>
+        <translation>←</translation>
     </message>
     <message>
         <source>Up</source>
@@ -5586,7 +5586,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Right</source>
-        <translation>←</translation>
+        <translation>→</translation>
     </message>
     <message>
         <source>Down</source>
