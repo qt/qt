@@ -803,10 +803,10 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
     bool k0 = false;
     bool k1 = false;
     int  msgType = msg.message;
-    // WM_CHAR messages already contain the character in question so there is
+    // WM_(IME_)CHAR messages already contain the character in question so there is
     // no need to fiddle with our key map. In any other case add this key to the
     // keymap if it is not present yet.
-    if (msg.message != WM_CHAR)
+    if (msg.message != WM_CHAR && msg.message != WM_IME_CHAR)
         updateKeyMap(msg);
 
     const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
