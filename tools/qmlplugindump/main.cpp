@@ -67,6 +67,7 @@
 
 QString pluginImportPath;
 bool verbose = false;
+bool creatable = true;
 
 QString currentProperty;
 QString inObjectInstantiation;
@@ -218,31 +219,33 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QList<QDeclarativeTy
         qmlTypesByCppName[baseCpp] = baseExports;
     }
 
-    // find even more QMetaObjects by instantiating QML types and running
-    // over the instances
-    foreach (QDeclarativeType *ty, QDeclarativeMetaType::qmlTypes()) {
-        if (skip.contains(ty))
-            continue;
-        if (ty->isExtendedType())
-            continue;
-        if (!ty->isCreatable())
-            continue;
-        if (ty->typeName() == "QDeclarativeComponent")
-            continue;
+    if (creatable) {
+        // find even more QMetaObjects by instantiating QML types and running
+        // over the instances
+        foreach (QDeclarativeType *ty, QDeclarativeMetaType::qmlTypes()) {
+            if (skip.contains(ty))
+                continue;
+            if (ty->isExtendedType())
+                continue;
+            if (!ty->isCreatable())
+                continue;
+            if (ty->typeName() == "QDeclarativeComponent")
+                continue;
 
-        QByteArray tyName = ty->qmlTypeName();
-        tyName = tyName.mid(tyName.lastIndexOf('/') + 1);
-        if (tyName.isEmpty())
-            continue;
+            QByteArray tyName = ty->qmlTypeName();
+            tyName = tyName.mid(tyName.lastIndexOf('/') + 1);
+            if (tyName.isEmpty())
+                continue;
 
-        inObjectInstantiation = tyName;
-        QObject *object = ty->create();
-        inObjectInstantiation.clear();
+            inObjectInstantiation = tyName;
+            QObject *object = ty->create();
+            inObjectInstantiation.clear();
 
-        if (object)
-            collectReachableMetaObjects(object, &metas);
-        else
-            qWarning() << "Could not create" << tyName;
+            if (object)
+                collectReachableMetaObjects(object, &metas);
+            else
+                qWarning() << "Could not create" << tyName;
+        }
     }
 
     return metas;
@@ -482,8 +485,8 @@ void sigSegvHandler(int) {
 void printUsage(const QString &appName)
 {
     qWarning() << qPrintable(QString(
-                                 "Usage: %1 [-v] [-[non]relocatable] module.uri version [module/import/path]\n"
-                                 "       %1 [-v] -path path/to/qmldir/directory [version]\n"
+                                 "Usage: %1 [-v] [-noinstantiate] [-[non]relocatable] module.uri version [module/import/path]\n"
+                                 "       %1 [-v] [-noinstantiate] -path path/to/qmldir/directory [version]\n"
                                  "       %1 [-v] -builtins\n"
                                  "Example: %1 Qt.labs.particles 4.7 /home/user/dev/qt-install/imports").arg(
                                  appName));
@@ -544,6 +547,9 @@ int main(int argc, char *argv[])
                 action = Builtins;
             } else if (arg == QLatin1String("-v")) {
                 verbose = true;
+            } else if (arg == QLatin1String("--noinstantiate")
+                       || arg == QLatin1String("-noinstantiate")) {
+                creatable = false;
             } else {
                 qWarning() << "Invalid argument: " << arg;
                 return EXIT_INVALIDARGUMENTS;
