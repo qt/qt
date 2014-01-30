@@ -773,8 +773,11 @@ extern bool qt_use_rtl_extensions;
 QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
 {
     QList<int> result;
+    const quint32 nativeVirtualKey = e->nativeVirtualKey();
+    if (nativeVirtualKey > 255)
+        return result;
 
-    KeyboardLayoutItem *kbItem = keyLayout[e->nativeVirtualKey()];
+    KeyboardLayoutItem *kbItem = keyLayout[nativeVirtualKey];
     if(!kbItem)
         return result;
 
