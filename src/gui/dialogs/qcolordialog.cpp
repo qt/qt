@@ -1844,8 +1844,8 @@ QColorDialog::ColorDialogOptions QColorDialog::options() const
 
     \value ShowAlphaChannel Allow the user to select the alpha component of a color.
     \value NoButtons Don't display \gui{OK} and \gui{Cancel} buttons. (Useful for "live dialogs".)
-    \value DontUseNativeDialog Use Qt's standard color dialog on the Mac instead of Apple's
-                               native color panel.
+    \value DontUseNativeDialog Use Qt's standard color dialog on the Mac instead of the operating system
+                               native color dialog.
 
     \sa options, setOption(), testOption(), windowModality()
 */
