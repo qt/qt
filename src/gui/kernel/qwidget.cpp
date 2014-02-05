@@ -10019,7 +10019,7 @@ QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChil
         // 'includeFrame' is true if the child's parent is a top-level QMainWindow with an unified tool bar.
         // An unified tool bar on the Mac lives outside QMainWindow's geometry(), so a normal
         // QWidget::mapFromParent won't do the trick.
-        if (includeFrame && qobject_cast<QToolBar *>(child))
+        if (includeFrame && qobject_cast<QToolBar *>(child) && qt_widget_private(child)->isInUnifiedToolbar)
             childPoint = qt_mac_nativeMapFromParent(child, p);
         else
 #endif
