@@ -199,8 +199,7 @@ Compiler Environment::detectCompiler()
                     ++installed;
                     detectedCompiler = compiler_info[i].compiler;
                     if (detectedCompiler == CC_MINGW) {
-                        bool is64bit;
-                        const int version = detectGPlusPlusVersion(executable, &is64bit);
+                        const int version = detectGPlusPlusVersion(executable);
                         if (version < 0x040600)
                             detectedCompiler = CC_MINGW_44;
                     }
@@ -257,21 +256,17 @@ bool Environment::detectExecutable(const QString &executable)
   Determine the g++ version.
 */
 
-int Environment::detectGPlusPlusVersion(const QString &executable,
-                                        bool *is64bit)
+int Environment::detectGPlusPlusVersion(const QString &executable)
 {
     QRegExp regexp(QLatin1String("[gG]\\+\\+[\\.exEX]{0,4} ([^\\n]+) (\\d+)\\.(\\d+)\\.(\\d+)"));
     QString stdOut = readProcessStandardOutput(executable + QLatin1String(" --version"));
     if (regexp.indexIn(stdOut) != -1) {
         const QString compiler = regexp.cap(1);
-        // Check for "tdm64-1"
-        *is64bit = compiler.contains(QLatin1String("64"));
         const int major = regexp.cap(2).toInt();
         const int minor = regexp.cap(3).toInt();
         const int patch = regexp.cap(4).toInt();
         return (major << 16) + (minor << 8) + patch;
     }
-    *is64bit = false;
     return 0;
 }
 
