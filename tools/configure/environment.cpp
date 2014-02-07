@@ -260,7 +260,7 @@ bool Environment::detectExecutable(const QString &executable)
 int Environment::detectGPlusPlusVersion(const QString &executable,
                                         bool *is64bit)
 {
-    QRegExp regexp(QLatin1String("[gG]\\+\\+[\\.exEX]{0,4} ([^\\s]+) (\\d+)\\.(\\d+)\\.(\\d+)"));
+    QRegExp regexp(QLatin1String("[gG]\\+\\+[\\.exEX]{0,4} ([^\\n]+) (\\d+)\\.(\\d+)\\.(\\d+)"));
     QString stdOut = readProcessStandardOutput(executable + QLatin1String(" --version"));
     if (regexp.indexIn(stdOut) != -1) {
         const QString compiler = regexp.cap(1);
