@@ -226,6 +226,7 @@ extern void qt_mac_update_cursor(); // qcursor_mac.mm
 void onApplicationWindowChangedActivation( QWidget*widget, bool activated );
 void onApplicationChangedActivation( bool activated );
 
+#ifdef QT_MAC_USE_COCOA
 void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 {
     // Create qt_menu.nib dir in temp.
@@ -258,7 +259,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     if (!ok)
         qWarning("qt_mac_loadMenuNib: could not instantiate nib");
 }
-
+#endif
 
 static void qt_mac_read_fontsmoothing_settings()
 {
