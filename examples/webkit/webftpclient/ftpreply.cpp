@@ -212,7 +212,7 @@ void FtpReply::abort()
 //! [bytes available]
 qint64 FtpReply::bytesAvailable() const
 {
-    return content.size() - offset;
+    return content.size() - offset + QIODevice::bytesAvailable();
 }
 //! [bytes available]
 
