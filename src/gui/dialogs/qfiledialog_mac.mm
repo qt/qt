@@ -293,6 +293,7 @@ QT_USE_NAMESPACE
 
 - (BOOL)isHiddenFile:(NSString *)filename isDir:(BOOL)isDir
 {
+#ifdef QT_MAC_USE_COCOA
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)filename, kCFURLPOSIXPathStyle, isDir);
     CFBooleanRef isHidden;
     Boolean errorOrHidden = false;
@@ -305,6 +306,11 @@ QT_USE_NAMESPACE
     }
     CFRelease(url);
     return errorOrHidden;
+#else
+    Q_UNUSED(filename);
+    Q_UNUSED(isDir);
+    return false;
+#endif
 }
 
 - (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename
