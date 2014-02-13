@@ -334,7 +334,8 @@ QT_USE_NAMESPACE
         }
     }
 
-    QString qtFileName = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename);
+    QString qtFileName
+        = QFileInfo(QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename)).fileName();
     // No filter means accept everything
     bool nameMatches = mSelectedNameFilter->isEmpty();
     // Check if the current file name filter accepts the file:
