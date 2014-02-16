@@ -377,9 +377,6 @@ init_context:
             q_SSL_CTX_load_verify_locations(ctx, 0, unixDirs.at(a).constData());
     }
 
-    // Register a custom callback to get all verification errors.
-    X509_STORE_set_verify_cb_func(ctx->cert_store, q_X509Callback);
-
     if (!configuration.localCertificate.isNull()) {
         // Require a private key as well.
         if (configuration.privateKey.isNull()) {
