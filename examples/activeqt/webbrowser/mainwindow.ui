@@ -87,19 +87,6 @@
       <property name="windowTitle" >
         <string>Address</string>
       </property>
-      <widget class="QLabel" name="lblAddress" >
-        <property name="objectName" >
-          <string notr="true" >lblAddress</string>
-        </property>
-        <property name="text" >
-          <string>Address</string>
-        </property>
-      </widget>
-      <widget class="QLineEdit" name="addressEdit" >
-        <property name="objectName" >
-          <string notr="true" >addressEdit</string>
-        </property>
-      </widget>
       <addaction name="actionGo" />
     </widget>
     <widget class="QMenuBar" name="menubar" >
@@ -271,14 +258,6 @@
 			<header>webaxwidget.h</header>
 		</customwidget>
 	</customwidgets>
-	<connections>
-    <connection>
-      <sender>addressEdit</sender>
-      <signal>returnPressed()</signal>
-      <receiver>actionGo</receiver>
-      <slot>trigger()</slot>
-    </connection>
-  </connections>
   <layoutdefault spacing="6" margin="11" />
   <images>
     <image name="image0" >
