@@ -3639,6 +3639,7 @@ void QSettings::setPath_helper(Scope scope, const QString &organization, const Q
     QSettingsPrivate *oldPriv = d;
     QSettingsPrivate *newPriv = QSettingsPrivate::create(oldPriv->format, scope, organization, application);
     static_cast<QObjectPrivate &>(*newPriv) = static_cast<QObjectPrivate &>(*oldPriv);  // copy the QObject stuff over (hack)
+    oldPriv->threadData = 0; //     QTBUG-36908, newPriv takes ownership.
     d_ptr.reset(newPriv);
 }
 
