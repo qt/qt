@@ -209,6 +209,14 @@
 #define WTF_CPU_AIX64 1
 #endif
 
+/* CPU(AARCH64) - AArch64 */
+#if defined(__aarch64__)
+#define WTF_CPU_AARCH64 1
+#if defined(__AARCH64EB__)
+#define WTF_CPU_BIG_ENDIAN 1
+#endif
+#endif
+
 /* CPU(ARM) - ARM, any version*/
 #if   defined(arm) \
     || defined(__arm__) \
@@ -895,7 +903,7 @@
 #endif
 
 #if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
-#if (CPU(X86_64) && (OS(UNIX) || OS(WINDOWS) || OS(SOLARIS) || OS(HPUX))) || (CPU(IA64) && !CPU(IA64_32)) || CPU(ALPHA) || CPU(AIX64) || CPU(SPARC64) || CPU(MIPS64)
+#if (CPU(X86_64) && (OS(UNIX) || OS(WINDOWS) || OS(SOLARIS) || OS(HPUX))) || (CPU(IA64) && !CPU(IA64_32)) || CPU(ALPHA) || CPU(AIX64) || CPU(SPARC64) || CPU(MIPS64) || CPU(AARCH64)
 #define WTF_USE_JSVALUE64 1
 #elif CPU(ARM) || CPU(PPC64)
 #define WTF_USE_JSVALUE32 1
