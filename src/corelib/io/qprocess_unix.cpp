@@ -774,17 +774,17 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     Q_Q(QProcess);
 
     // copy the stdin socket (without closing on exec)
-    qt_safe_dup2(stdinChannel.pipe[0], QT_FILENO(stdin), 0);
+    qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
 
     // copy the stdout and stderr if asked to
     if (processChannelMode != QProcess::ForwardedChannels) {
-        qt_safe_dup2(stdoutChannel.pipe[1], QT_FILENO(stdout), 0);
+        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
 
         // merge stdout and stderr if asked to
         if (processChannelMode == QProcess::MergedChannels) {
-            qt_safe_dup2(QT_FILENO(stdout), QT_FILENO(stderr), 0);
+            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
         } else {
-            qt_safe_dup2(stderrChannel.pipe[1], QT_FILENO(stderr), 0);
+            qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
         }
     }
 
