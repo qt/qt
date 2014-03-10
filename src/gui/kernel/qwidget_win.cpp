@@ -633,10 +633,12 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     }
     QList<QWidget *> registeredDropChildren;
     if (QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget()) {
-        foreach (QWidget *w, nativeParent->d_func()->extra->oleDropWidgets) {
-            if (w && q->isAncestorOf(w)) {
-                registeredDropChildren.push_back(w);
-                w->setAttribute(Qt::WA_DropSiteRegistered, false);
+        if (const QWExtra *extra = nativeParent->d_func()->extra) {
+            foreach (QWidget *w, extra->oleDropWidgets) {
+                if (w && q->isAncestorOf(w)) {
+                    registeredDropChildren.push_back(w);
+                    w->setAttribute(Qt::WA_DropSiteRegistered, false);
+                }
             }
         }
     }
