@@ -172,6 +172,8 @@ namespace JSC {
 
         JSObject* compile(ExecState*, ScopeChainNode*);
 
+        bool isCompiled() const { return m_evalCodeBlock; }
+
         ExceptionInfo* reparseExceptionInfo(JSGlobalData*, ScopeChainNode*, CodeBlock*);
         static PassRefPtr<EvalExecutable> create(ExecState* exec, const SourceCode& source) { return adoptRef(new EvalExecutable(exec, source)); }
 
