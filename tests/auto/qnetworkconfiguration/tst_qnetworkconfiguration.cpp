@@ -211,27 +211,26 @@ void tst_QNetworkConfiguration::comparison()
     //compare invalid connection points 
     QNetworkConfiguration pt1;
     QVERIFY(!pt1.isValid());
-    QVERIFY(pt1.type() == QNetworkConfiguration::Invalid);
+    QCOMPARE(pt1.type(), QNetworkConfiguration::Invalid);
 
     QNetworkConfiguration pt2(pt1);
-    QVERIFY(pt1==pt2);
+    QCOMPARE(pt1, pt2);
     QVERIFY(!(pt1!=pt2));
-    QVERIFY(pt1.name() == pt2.name());
-    QVERIFY(pt1.isValid() == pt2.isValid());
-    QVERIFY(pt1.type() == pt2.type());
-    QVERIFY(pt1.state() == pt2.state());
-    QVERIFY(pt1.purpose() == pt2.purpose());
+    QCOMPARE(pt1.name(), pt2.name());
+    QCOMPARE(pt1.isValid(), pt2.isValid());
+    QCOMPARE(pt1.type(), pt2.type());
+    QCOMPARE(pt1.state(), pt2.state());
+    QCOMPARE(pt1.purpose(), pt2.purpose());
 
-    
     QNetworkConfiguration pt3;
     pt3 = pt1;
-    QVERIFY(pt1==pt3);
+    QCOMPARE(pt1, pt3);
     QVERIFY(!(pt1!=pt3));
-    QVERIFY(pt1.name() == pt3.name());
-    QVERIFY(pt1.isValid() == pt3.isValid());
-    QVERIFY(pt1.type() == pt3.type());
-    QVERIFY(pt1.state() == pt3.state());
-    QVERIFY(pt1.purpose() == pt3.purpose());
+    QCOMPARE(pt1.name(), pt3.name());
+    QCOMPARE(pt1.isValid(), pt3.isValid());
+    QCOMPARE(pt1.type(), pt3.type());
+    QCOMPARE(pt1.state(), pt3.state());
+    QCOMPARE(pt1.purpose(), pt3.purpose());
 
     //test case must run on machine that has valid connection points
     QNetworkConfigurationManager manager;
@@ -239,7 +238,7 @@ void tst_QNetworkConfiguration::comparison()
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+    QTRY_COMPARE(spy.count(), 1); //wait for scan to complete
 
     QList<QNetworkConfiguration> configs = manager.allConfigurations(QNetworkConfiguration::Discovered);
     QVERIFY(configs.count());
@@ -249,13 +248,13 @@ void tst_QNetworkConfiguration::comparison()
     QVERIFY(!defaultConfig.name().isEmpty());
 
     pt3 = defaultConfig;
-    QVERIFY(defaultConfig==pt3);
+    QCOMPARE(defaultConfig, pt3);
     QVERIFY(!(defaultConfig!=pt3));
-    QVERIFY(defaultConfig.name() == pt3.name());
-    QVERIFY(defaultConfig.isValid() == pt3.isValid());
-    QVERIFY(defaultConfig.type() == pt3.type());
-    QVERIFY(defaultConfig.state() == pt3.state());
-    QVERIFY(defaultConfig.purpose() == pt3.purpose());
+    QCOMPARE(defaultConfig.name(), pt3.name());
+    QCOMPARE(defaultConfig.isValid(), pt3.isValid());
+    QCOMPARE(defaultConfig.type(), pt3.type());
+    QCOMPARE(defaultConfig.state(), pt3.state());
+    QCOMPARE(defaultConfig.purpose(), pt3.purpose());
 }
 
 void tst_QNetworkConfiguration::children()
