@@ -321,6 +321,8 @@ public:
     bool fixAlphaChannel(const QRect &rect);
     bool swapAlphaChannel(const QRect &rect, bool allPixels = false);
 
+    static bool isItemViewDelegateLineEdit(const QWidget *widget);
+
     QRgb groupBoxTextColor;
     QRgb groupBoxTextColorDisabled;
     QRgb sliderTickColor;
