@@ -66,7 +66,7 @@ public:
     static Compiler detectCompiler();
     static QString detectQMakeSpec();
     static bool detectExecutable(const QString &executable);
-    static int detectGPlusPlusVersion(const QString &executable, bool *is64bit);
+    static int detectGPlusPlusVersion(const QString &executable);
     static QString readProcessStandardOutput(const QString &commandLine);
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
