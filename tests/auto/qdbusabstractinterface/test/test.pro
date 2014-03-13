@@ -11,3 +11,5 @@ TARGET = ../tst_qdbusabstractinterface
 
 QT = core testlib
 QT += dbus
+
+macx:CONFIG += insignificant_test # QTBUG-37469

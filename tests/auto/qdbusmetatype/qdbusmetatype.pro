@@ -7,4 +7,4 @@ contains(QT_CONFIG,dbus): {
 	SOURCES += ../qdbusmarshall/dummy.cpp
 }
 
-
+macx:CONFIG += insignificant_test # QTBUG-37469
