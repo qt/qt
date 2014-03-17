@@ -2360,6 +2360,9 @@ QStringList QCoreApplication::arguments()
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
 
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
+
     \sa organizationDomain applicationName
 */
 
@@ -2409,6 +2412,9 @@ QString QCoreApplication::organizationDomain()
     using the empty constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
+
     \sa organizationName organizationDomain applicationVersion
 */
 void QCoreApplication::setApplicationName(const QString &application)
@@ -2433,6 +2439,9 @@ QString QCoreApplication::applicationName()
     \property QCoreApplication::applicationVersion
     \since 4.4
     \brief the version of this application
+
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
 
     \sa applicationName organizationName organizationDomain
 */
