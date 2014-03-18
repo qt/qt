@@ -4931,6 +4931,10 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = 256;
         break;
 
+    case SH_Menu_SloppySubMenus:
+        ret = true;
+        break;
+
     case SH_ProgressDialog_TextLabelAlignment:
         ret = Qt::AlignCenter;
         break;
