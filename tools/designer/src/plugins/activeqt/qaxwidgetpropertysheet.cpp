@@ -58,6 +58,13 @@ QT_BEGIN_NAMESPACE
 
 const char *QAxWidgetPropertySheet::controlPropertyName = "control";
 
+static QString designerPropertyToString(const QVariant &value)
+{
+    return value.canConvert<qdesigner_internal::PropertySheetStringValue>() ?
+        qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value).value() :
+        value.toString();
+}
+
 QAxWidgetPropertySheet::QAxWidgetPropertySheet(QDesignerAxWidget *object, QObject *parent) :
     QDesignerPropertySheet(object, parent),
     m_controlProperty(controlPropertyName),
@@ -121,9 +128,7 @@ void QAxWidgetPropertySheet::setProperty(int index, const QVariant &value)
     }
     // Loading forms: Reload
     if (name == m_controlProperty) {
-        const QString clsid = value.canConvert<qdesigner_internal::PropertySheetStringValue>() ?
-            qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value).value() :
-            value.toString();
+        const QString clsid = designerPropertyToString(value);
         if (clsid.isEmpty() || !axWidget()->loadControl(clsid))
             reset(index);
         else
@@ -182,7 +187,7 @@ void QAxWidgetPropertySheet::reloadPropertySheet(const struct SavedProperties &p
             continue;
         }
         if (name == QLatin1String(controlPropertyName))	 {
-            sheet->setChanged(index, !i.value().toString().isEmpty());
+            sheet->setChanged(index, !designerPropertyToString(i.value()).isEmpty());
             continue;
         }
         sheet->setChanged(index, true);
