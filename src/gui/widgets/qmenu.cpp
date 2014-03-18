@@ -2864,6 +2864,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     QAction *action = d->actionAt(e->pos());
     if (!action || action->isSeparator()) {
         if (d->hasHadMouse
+            && d->sloppyDelayTimer == 0 // Keep things as they are while we're moving to the submenu
             && (!d->currentAction || (action && action->isSeparator())
                 || !(d->currentAction->menu() && d->currentAction->menu()->isVisible())))
             d->setCurrentAction(0);
