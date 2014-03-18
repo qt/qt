@@ -153,7 +153,7 @@ public:
                       cancelAction(0),
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
+                      hasCheckableItems(0), sloppyDelayTimer(0), sloppyAction(0), doChildEffects(false)
 #ifdef QT3_SUPPORT
                       ,emitHighlighted(false)
 #endif
@@ -275,7 +275,7 @@ public:
     mutable bool hasCheckableItems;
 
     //sloppy selection
-    static int sloppyDelayTimer;
+    int sloppyDelayTimer;
     mutable QAction *sloppyAction;
     QRegion sloppyRegion;
 

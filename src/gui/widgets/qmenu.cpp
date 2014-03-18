@@ -90,7 +90,6 @@
 QT_BEGIN_NAMESPACE
 
 QMenu *QMenuPrivate::mouseDown = 0;
-int QMenuPrivate::sloppyDelayTimer = 0;
 
 /* QMenu code */
 // internal class used for the torn off popup
@@ -2874,7 +2873,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     }
     if (d->sloppyRegion.contains(e->pos())) {
         d->sloppyAction = action;
-        QMenuPrivate::sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this)*6);
+        d->sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this)*6);
     } else if (action != d->currentAction) {
         d->setCurrentAction(action, style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this));
     }
@@ -2915,9 +2914,9 @@ QMenu::timerEvent(QTimerEvent *e)
     } else if(d->menuDelayTimer.timerId() == e->timerId()) {
         d->menuDelayTimer.stop();
         internalDelayedPopup();
-    } else if(QMenuPrivate::sloppyDelayTimer == e->timerId()) {
-        killTimer(QMenuPrivate::sloppyDelayTimer);
-        QMenuPrivate::sloppyDelayTimer = 0;
+    } else if (d->sloppyDelayTimer == e->timerId()) {
+        killTimer(d->sloppyDelayTimer);
+        d->sloppyDelayTimer = 0;
         internalSetSloppyAction();
     } else if(d->searchBufferTimer.timerId() == e->timerId()) {
         d->searchBuffer.clear();
