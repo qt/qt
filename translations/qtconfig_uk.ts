@@ -116,8 +116,8 @@
         <translation>Оберіть теку</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версія %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc та/або її дочірні компанії.</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версія %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc та/або її дочірні компанії.</translation>
     </message>
     <message>
         <source>Qt Configuration</source>

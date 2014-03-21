@@ -100,7 +100,7 @@
         <translation>변경 사항을 저장하였습니다.</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;버전 %2&lt;br/&gt;&lt;br/&gt;저작권자 (C) 2012 Digia Plc and/or its subsidiary(-ies).</translation>
     </message>
     <message>

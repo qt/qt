@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
@@ -1365,7 +1365,7 @@ void MainWindow::about()
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
                     "applications.</p>"
-                    "<p>Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies)."
+                    "<p>Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies)."
                    ).arg(version));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));

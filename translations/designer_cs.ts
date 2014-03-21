@@ -3261,7 +3261,7 @@ Chcete tuto předlohu přepsat?</translation>
         <translation>&lt;br/&gt;Qt Designer je obrazový návrhář uživatelského rozhraní pro programy Qt.&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>%1&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
         <translation>%1&lt;br/&gt;Autorské právo (C) 2012 Digia Plc a/nebo její dceřinná společnost(i).</translation>
     </message>
 </context>

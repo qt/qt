@@ -95,7 +95,7 @@
         <translation>Izberite mapo</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Različica %2&lt;br/&gt;&lt;br/&gt;Avtorske pravice © 2012 Digia Plc in/ali njene podružnice.&lt;br/&gt;&lt;br/&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;</translation>
     </message>
     <message>

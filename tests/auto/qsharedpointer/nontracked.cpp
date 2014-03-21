@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Intel Corporation.
+** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
