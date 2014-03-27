@@ -60,6 +60,8 @@ class ImageWidget : public QWidget
 public:
     ImageWidget(QWidget *parent = 0);
     void openDirectory(const QString &path);
+    void grabGestures(const QList<Qt::GestureType> &gestures);
+    static void setVerbose(bool v) { ImageWidget::verbose = v; }
 
 protected:
     bool event(QEvent *event);
@@ -88,11 +90,12 @@ private:
     QImage prevImage, nextImage;
     QImage currentImage;
 
-    float horizontalOffset;
-    float verticalOffset;
-    float rotationAngle;
-    float scaleFactor;
-    float currentStepScaleFactor;
+    qreal horizontalOffset;
+    qreal verticalOffset;
+    qreal rotationAngle;
+    qreal scaleFactor;
+    qreal currentStepScaleFactor;
+    static bool verbose;
 //! [class definition end]
 };
 //! [class definition end]

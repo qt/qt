@@ -43,6 +43,8 @@
 
 #include <QtGui>
 
+bool ImageWidget::verbose = false;
+
 //! [constructor]
 ImageWidget::ImageWidget(QWidget *parent)
     : QWidget(parent),
@@ -55,14 +57,16 @@ ImageWidget::ImageWidget(QWidget *parent)
 
 {
     setMinimumSize(QSize(100,100));
-
-//! [enable gestures]
-    grabGesture(Qt::PanGesture);
-    grabGesture(Qt::PinchGesture);
-    grabGesture(Qt::SwipeGesture);
-//! [enable gestures]
 }
 //! [constructor]
+
+void ImageWidget::grabGestures(const QList<Qt::GestureType> &gestures)
+{
+    //! [enable gestures]
+    foreach (Qt::GestureType gesture, gestures)
+        grabGesture(gesture);
+    //! [enable gestures]
+}
 
 //! [event handler]
 bool ImageWidget::event(QEvent *event)
@@ -77,10 +81,10 @@ void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
 
-    float iw = currentImage.width();
-    float ih = currentImage.height();
-    float wh = height();
-    float ww = width();
+    const qreal iw = currentImage.width();
+    const qreal ih = currentImage.height();
+    const qreal wh = height();
+    const qreal ww = width();
 
     p.translate(ww/2, wh/2);
     p.translate(horizontalOffset, verticalOffset);
@@ -98,11 +102,15 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
     verticalOffset = 0;
     horizontalOffset = 0;
     update();
+    if (ImageWidget::verbose)
+        qDebug() << "reset on mouse double click";
 }
 
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
+    if (ImageWidget::verbose)
+        qDebug() << "gestureEvent():" << event->gestures().size();
     if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
         swipeTriggered(static_cast<QSwipeGesture *>(swipe));
     else if (QGesture *pan = event->gesture(Qt::PanGesture))
@@ -126,6 +134,8 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
     }
 #endif
     QPointF delta = gesture->delta();
+    if (ImageWidget::verbose)
+        qDebug() << "panTriggered():" << delta;
     horizontalOffset += delta.x();
     verticalOffset += delta.y();
     update();
@@ -135,13 +145,18 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
     QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
     if (changeFlags & QPinchGesture::RotationAngleChanged) {
-        qreal value = gesture->property("rotationAngle").toReal();
-        qreal lastValue = gesture->property("lastRotationAngle").toReal();
-        rotationAngle += value - lastValue;
+        const qreal value = gesture->property("rotationAngle").toReal();
+        const qreal lastValue = gesture->property("lastRotationAngle").toReal();
+        const qreal rotationAngleDelta = value - lastValue;
+        rotationAngle += rotationAngleDelta;
+        if (ImageWidget::verbose)
+            qDebug() << "pinchTriggered(): rotation by" << rotationAngleDelta << rotationAngle;
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
         currentStepScaleFactor = value;
+        if (ImageWidget::verbose)
+            qDebug() << "pinchTriggered(): " << currentStepScaleFactor;
     }
     if (gesture->state() == Qt::GestureFinished) {
         scaleFactor *= currentStepScaleFactor;
@@ -155,10 +170,15 @@ void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
     if (gesture->state() == Qt::GestureFinished) {
         if (gesture->horizontalDirection() == QSwipeGesture::Left
-            || gesture->verticalDirection() == QSwipeGesture::Up)
+            || gesture->verticalDirection() == QSwipeGesture::Up) {
+            if (ImageWidget::verbose)
+                qDebug() << "swipeTriggered(): swipe to previous";
             goPrevImage();
-        else
+        } else {
+            if (ImageWidget::verbose)
+                qDebug() << "swipeTriggered(): swipe to next";
             goNextImage();
+        }
         update();
     }
 }
@@ -184,17 +204,23 @@ void ImageWidget::openDirectory(const QString &path)
 
 QImage ImageWidget::loadImage(const QString &fileName)
 {
+    qDebug() << position << files << fileName;
     QImageReader reader(fileName);
+    if (ImageWidget::verbose)
+        qDebug() << "loading" << QDir::toNativeSeparators(fileName) << position << '/' << files.size();
     if (!reader.canRead()) {
-        qDebug() << fileName << ": can't load image";
+        qWarning() << QDir::toNativeSeparators(fileName) << ": can't load image";
         return QImage();
     }
 
     QImage image;
     if (!reader.read(&image)) {
-        qDebug() << fileName << ": corrupted image";
+        qWarning() << QDir::toNativeSeparators(fileName) << ": corrupted image: " << reader.errorString();
         return QImage();
     }
+    const QSize maximumSize(2000, 2000); // Reduce in case someone has large photo images.
+    if (image.size().width() > maximumSize.width() || image.height() > maximumSize.height())
+        image = image.scaled(maximumSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     return image;
 }
 
@@ -238,7 +264,7 @@ void ImageWidget::goToImage(int index)
         return;
 
     if (index < 0 || index >= files.size()) {
-        qDebug() << "goToImage: invalid index: " << index;
+        qWarning() << "goToImage: invalid index: " << index;
         return;
     }
 
