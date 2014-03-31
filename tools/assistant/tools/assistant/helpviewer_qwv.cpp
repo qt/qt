@@ -90,6 +90,7 @@ HelpNetworkReply::HelpNetworkReply(const QNetworkRequest &request,
     TRACE_OBJ
     setRequest(request);
     setOpenMode(QIODevice::ReadOnly);
+    setUrl(request.url());
 
     setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
     setHeader(QNetworkRequest::ContentLengthHeader, QByteArray::number(origLen));
