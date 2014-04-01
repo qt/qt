@@ -835,7 +835,7 @@
             \o VC++ 6.0
             \o VC++ 7.1 (2003)
             \o VC++ 8.0 (2005)
-            \o MinGW
+            \o MinGW 4.4
         \row
         \o \list
                \o QTCORE4.DLL - The QtCore runtime
