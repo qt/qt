@@ -449,7 +449,7 @@
     \row    \o Microsoft Windows XP SP3 (32-bit)
                                      \o GCC 4.4 (MinGW)
     \row    \o Microsoft Windows XP SP3 (32-bit)
-                                     \o \l{http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/4.8.2/threads-posix/dwarf/i686-4.8.2-release-posix-dwarf-rt_v3-rev2.7z/download}{MinGW-builds gcc 4.8.2 (32 bit)}
+                                     \o \l{http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/4.8.2/threads-posix/dwarf/i686-4.8.2-release-posix-dwarf-rt_v3-rev3.7z/download}{MinGW-builds gcc 4.8.2 (32 bit)}
     \row    \o Microsoft Windows 7 (64-bit)
                                      \o MSVC 2010 SP1
     \row    \o Apple Mac OS X 10.6 "Snow Leopard" Cocoa (32-bit)
