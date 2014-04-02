@@ -1453,11 +1453,8 @@ void QTextEngine::shape(int item) const
 
 static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
 {
-    if (fontEngine) {
-        fontEngine->ref.deref();
-        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
-            delete fontEngine;
-    }
+    if (fontEngine && !fontEngine->ref.deref())
+        delete fontEngine;
 }
 
 void QTextEngine::resetFontEngineCache()

@@ -600,11 +600,11 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
             if (request.family != fontEngine->fontDef.family) {
                 qWarning("QRawFont::platformLoadFromData: Failed to load font. "
                          "Got fallback instead: %s", qPrintable(fontEngine->fontDef.family));
-                if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+                if (fontEngine->ref == 0)
                     delete fontEngine;
                 fontEngine = 0;
             } else {
-                Q_ASSERT(fontEngine->cache_count == 0 && fontEngine->ref == 0);
+                Q_ASSERT(fontEngine->ref == 0);
 
                 // Override the generated font name
                 static_cast<QFontEngineWin *>(fontEngine)->uniqueFamilyName = uniqueFamilyName;
