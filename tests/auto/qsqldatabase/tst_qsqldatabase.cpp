@@ -2538,6 +2538,7 @@ void tst_QSqlDatabase::sqlite_enable_cache_mode()
     QSqlQuery q(db), q2(db2);
     QVERIFY_SQL(q, exec("select * from "+qTableName("qtest", __FILE__)));
     QVERIFY_SQL(q2, exec("select * from "+qTableName("qtest", __FILE__)));
+    db2.close();
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

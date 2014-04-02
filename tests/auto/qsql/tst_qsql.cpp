@@ -254,6 +254,7 @@ void tst_QSql::concurrentAccess()
 	QVERIFY_SQL( ndb, open() );
 
 	QCOMPARE( db.tables(), ndb.tables() );
+        ndb.close();
     }
     // no database servers installed - don't fail
     QVERIFY(1);

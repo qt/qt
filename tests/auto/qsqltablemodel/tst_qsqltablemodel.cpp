@@ -1261,7 +1261,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
         QSKIP(":memory: database, skipping test", SkipSingle);
 
     QSqlDatabase attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
-    attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));
+    attachedDb.setDatabaseName(dbs.sqLiteFileName());
     QVERIFY_SQL(attachedDb, open());
     QSqlQuery q(attachedDb);
     tst_Databases::safeDropTables(attachedDb, QStringList() << "atest" << "atest2");
@@ -1297,6 +1297,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 3);
     QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("main"));
+    attachedDb.close();
 }
 
 

@@ -136,13 +136,24 @@ class tst_Databases
 {
 
 public:
-    tst_Databases(): counter( 0 )
+    tst_Databases(): counter( 0 ), m_sqLitePrefix(QDir::tempPath())
     {
+        if (!m_sqLitePrefix.endsWith(QLatin1Char('/')))
+            m_sqLitePrefix += QLatin1Char('/');
+        m_sqLitePrefix += QLatin1String("foo");
+        m_sqLitePrefix += QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch() % quint64(1000));
     }
 
     ~tst_Databases()
     {
         close();
+        for (int i = m_sqLiteFiles.size() - 1; i >= 0; --i) {
+            QFile sqLiteFile(m_sqLiteFiles.at(i));
+            if (sqLiteFile.exists() && !sqLiteFile.remove()) {
+                qWarning() << "Cannot remove " << QDir::toNativeSeparators(sqLiteFile.fileName())
+                           << ':' << sqLiteFile.errorString();
+            }
+        }
     }
 
     // returns a testtable consisting of the names of all database connections if
@@ -279,7 +290,7 @@ public:
 
 //      use in-memory database to prevent local files
 //         addDb("QSQLITE", ":memory:");
-         addDb( "QSQLITE", QDir::toNativeSeparators(QDir::tempPath()+"/foo.db") );
+         addDb( "QSQLITE", QDir::toNativeSeparators(sqLiteFileName()));
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(QDir::tempPath()+"/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
@@ -569,8 +580,20 @@ public:
             return QString();
     }
 
+    QString sqLiteFileName() // Return a temporary file name for SQLite DB
+    {
+        const QString newFileName = m_sqLitePrefix + QLatin1Char('_')
+            + QString::number(m_sqLiteFiles.size()) + QLatin1String(".db");
+        m_sqLiteFiles.append(newFileName);
+        return newFileName;
+    }
+
     QStringList     dbNames;
     int      counter;
+
+private:
+    QString m_sqLitePrefix;
+    QStringList m_sqLiteFiles;
 };
 
 #endif
