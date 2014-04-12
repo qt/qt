@@ -92,6 +92,14 @@ namespace WTF {
         friend void deleteAllValues<>(const HashSet&);
         friend void fastDeleteAllValues<>(const HashSet&);
 
+#if COMPILER(MSVC) && _MSC_VER >= 1700
+        // MSVC2012/MSVC2013 has trouble constructing a HashTableConstIteratorAdapter from a
+        // HashTableIterator despite the existence of a const_iterator cast method on the latter class.
+        pair<iterator, bool> iterator_const_cast(const pair<typename HashTableType::iterator, bool>& p)
+        {
+            return make_pair(iterator(HashTableType::const_iterator(p.first)), p.second);
+        }
+#endif
         HashTableType m_impl;
     };
 
@@ -177,7 +185,11 @@ namespace WTF {
     template<typename T, typename U, typename V>
     inline pair<typename HashSet<T, U, V>::iterator, bool> HashSet<T, U, V>::add(const ValueType& value)
     {
+#if COMPILER(MSVC) && _MSC_VER >= 1700
+        return iterator_const_cast(m_impl.add(value));
+#else
         return m_impl.add(value);
+#endif
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
@@ -186,7 +198,11 @@ namespace WTF {
     HashSet<Value, HashFunctions, Traits>::add(const T& value)
     {
         typedef HashSetTranslatorAdapter<ValueType, ValueTraits, T, HashTranslator> Adapter;
+#if COMPILER(MSVC) && _MSC_VER >= 1700
+        return iterator_const_cast(m_impl.template addPassingHashCode<T, T, Adapter>(value, value));
+#else
         return m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+#endif
     }
 
     template<typename T, typename U, typename V>
