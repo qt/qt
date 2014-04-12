@@ -110,7 +110,7 @@ inline bool signbit(double x) { struct ieee_double *p = (struct ieee_double *)&x
 
 #endif
 
-#if COMPILER(MSVC) || (COMPILER(RVCT) && !(RVCT_VERSION_AT_LEAST(3, 0, 0, 0)))
+#if (COMPILER(MSVC) && _MSC_VER < 1800) || (COMPILER(RVCT) && !(RVCT_VERSION_AT_LEAST(3, 0, 0, 0)))
 
 // We must not do 'num + 0.5' or 'num - 0.5' because they can cause precision loss.
 static double round(double num)
@@ -135,7 +135,7 @@ inline double trunc(double num) { return num > 0 ? floor(num) : ceil(num); }
 
 #endif
 
-#if COMPILER(MSVC)
+#if COMPILER(MSVC) && _MSC_VER < 1800
 // The 64bit version of abs() is already defined in stdlib.h which comes with VC10
 #if COMPILER(MSVC9_OR_LOWER)
 inline long long abs(long long num) { return _abs64(num); }
