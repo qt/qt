@@ -289,6 +289,19 @@ static void cleanupCocoaApplicationDelegate()
     qt_button_down = 0;
 }
 
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
+{
+    Q_UNUSED(theApplication);
+    Q_UNUSED(flag);
+    // The reflection delegate gets precedence
+    if (reflectionDelegate
+        && [reflectionDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)])
+        return [reflectionDelegate applicationShouldHandleReopen:theApplication hasVisibleWindows:flag];
+
+    onApplicationChangedActivation(true);
+    return NO;
+}
+
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification
 {
     Q_UNUSED(notification);
