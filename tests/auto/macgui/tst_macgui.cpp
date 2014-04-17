@@ -222,7 +222,7 @@ void tst_MacGui::spinBoxArrowButtons()
     QSpinBox spinBox2(&colorWidget);
     spinBox2.move(0, 100);
     colorWidget.show();
-    QTest::qWait(100);
+    QTest::qWait(500);
     
     // Grab an unfocused spin box.
     const QImage noFocus = grabWindowContents(&colorWidget).toImage();
@@ -230,9 +230,9 @@ void tst_MacGui::spinBoxArrowButtons()
     // Set focus by clicking the less button.
     InterfaceChildPair lessInterface = wn.find(QAccessible::Name, "Less", &spinBox);
     QVERIFY(lessInterface.iface);
-    const int delay = 500;
+    const int delay = 1000;
     clickLater(lessInterface, Qt::LeftButton, delay);
-    const int timeout = 1;
+    const int timeout = 4;
     QTestEventLoop::instance().enterLoop(timeout);
 
     // Grab a focused spin box.
