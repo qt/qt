@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#include <itemviews/qfileiconprovider_p.h>
+#include <private/qfileiconprovider_p.h>
 #if !defined(Q_WS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include "ui_qfiledialog.h"
 #else
