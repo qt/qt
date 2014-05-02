@@ -105,7 +105,7 @@ else:win32:SOURCES += ../../corelib/tools/qlocale_win.cpp
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
    SOURCES += ../../corelib/kernel/qcore_mac.cpp
-   LIBS += -framework CoreServices
+   LIBS += -framework CoreServices -framework ApplicationServices
 }
 
 if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)

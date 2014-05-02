@@ -34,6 +34,7 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
+** Copyright (C) 2014 Samuel Gaist <samuel.gaist@edeltech.ch>
 **
 ** $QT_END_LICENSE$
 **
@@ -44,6 +45,7 @@
 #include "qplatformdefs.h"
 #include "qfsfileengine.h"
 #include "qfile.h"
+#include "qfileinfo.h"
 
 #include <QtCore/qvarlengtharray.h>
 
@@ -52,9 +54,12 @@
 #include <stdio.h>
 #include <errno.h>
 
-
 #if defined(Q_OS_MAC)
 # include <QtCore/private/qcore_mac_p.h>
+#endif
+
+#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+# include <CoreFoundation/CFBundle.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -78,6 +83,63 @@ static inline bool _q_isMacHidden(const char *nativePath)
     FileInfo * const fileInfo = reinterpret_cast<FileInfo*>(&catInfo.finderInfo);
     return (fileInfo->finderFlags & kIsInvisible);
 }
+
+static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &entry)
+{
+    if (!data.isDirectory())
+        return false;
+
+    QFileInfo info(entry.filePath());
+    QString suffix = info.suffix();
+
+    if (suffix.length() > 0) {
+        // First step: is the extension known ?
+        CFStringRef extensionRef = QCFString::toCFStringRef(suffix);
+        CFStringRef uniformTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extensionRef, NULL);
+        if (UTTypeConformsTo(uniformTypeIdentifier, kUTTypeBundle))
+            return true;
+
+        // Second step: check if an application knows the package type
+        CFStringRef path = QCFString::toCFStringRef(entry.filePath());
+        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
+
+        UInt32 type, creator;
+        // Well created packages have the PkgInfo file
+        if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+            return true;
+
+        // Find if an application other than Finder claims to know how to handle the package
+        QCFType<CFURLRef> application;
+        LSGetApplicationForURL(url,
+                               kLSRolesEditor|kLSRolesViewer|kLSRolesViewer,
+                               NULL,
+                               &application);
+
+        if (application) {
+            QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);
+            CFStringRef identifier = CFBundleGetIdentifier(bundle);
+            QString applicationId = QCFString::toQString(identifier);
+            if (applicationId != QLatin1String("com.apple.finder"))
+                return true;
+        }
+    }
+
+    // Third step: check if the directory has the package bit set
+    FSRef packageRef;
+    FSPathMakeRef((UInt8 *)entry.nativeFilePath().constData(), &packageRef, NULL);
+
+    FSCatalogInfo catalogInfo;
+    FSGetCatalogInfo(&packageRef,
+                     kFSCatInfoFinderInfo,
+                     &catalogInfo,
+                     NULL,
+                     NULL,
+                     NULL);
+
+    FolderInfo *folderInfo = reinterpret_cast<FolderInfo *>(catalogInfo.finderInfo);
+    return folderInfo->finderFlags & kHasBundle;
+}
+
 #else
 static inline bool _q_isMacHidden(const char *nativePath)
 {
@@ -468,18 +530,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
 #if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
     if (what & QFileSystemMetaData::BundleType) {
-        if (entryExists && data.isDirectory()) {
-            QCFType<CFStringRef> path = CFStringCreateWithBytes(0,
-                    (const UInt8*)nativeFilePath, nativeFilePathLength,
-                    kCFStringEncodingUTF8, false);
-            QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path,
-                    kCFURLPOSIXPathStyle, true);
-
-            UInt32 type, creator;
-            if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
-                data.entryFlags |= QFileSystemMetaData::BundleType;
-        }
-
+        if (entryExists && isPackage(data, entry))
+            data.entryFlags |= QFileSystemMetaData::BundleType;
         data.knownFlagsMask |= QFileSystemMetaData::BundleType;
     }
 #endif
