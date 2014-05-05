@@ -249,6 +249,7 @@ private slots:
     void taskQTBUG_11466_keyboardNavigationRegression();
     void taskQTBUG_13567_removeLastItemRegression();
     void taskQTBUG_25333_adjustViewOptionsForIndex();
+    void taskQTBUG_37813_crash();
 
 #ifndef QT_NO_ANIMATION
     void quickExpandCollapse();
@@ -4091,6 +4092,32 @@ void tst_QTreeView::quickExpandCollapse()
 }
 #endif
 
+
+void tst_QTreeView::taskQTBUG_37813_crash()
+{
+    // QTBUG_37813: Crash in visual / logical index mapping in QTreeViewPrivate::adjustViewOptionsForIndex()
+    // when hiding/moving columns. It is reproduceable with a QTreeWidget only.
+#ifdef QT_BUILD_INTERNAL
+    QTreeWidget treeWidget;
+    treeWidget.setDragEnabled(true);
+    treeWidget.setColumnCount(2);
+    QList<QTreeWidgetItem *> items;
+    for (int r = 0; r < 2; ++r) {
+        QTreeWidgetItem *item = new QTreeWidgetItem();
+        for (int c = 0; c < treeWidget.columnCount(); ++c)
+            item->setText(c, QString::fromLatin1("Row %1 Column %2").arg(r).arg(c));
+        items.append(item);
+    }
+    treeWidget.addTopLevelItems(items);
+    treeWidget.setColumnHidden(0, true);
+    treeWidget.header()->moveSection(0, 1);
+    QItemSelection sel(treeWidget.model()->index(0, 0), treeWidget.model()->index(0, 1));
+    QRect rect;
+    QAbstractItemViewPrivate *av = static_cast<QAbstractItemViewPrivate*>(qt_widget_private(&treeWidget));
+    const QPixmap pixmap = av->renderToPixmap(sel.indexes(), &rect);
+    QVERIFY(pixmap.size().isValid());
+#endif // QT_BUILD_INTERNAL
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
