@@ -2177,7 +2177,7 @@ bool Configure::findFile(const QString &fileName)
 {
     const QString file = fileName.toLower();
     const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
-    const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
+    const QString mingwPath = dictionary["QMAKESPEC"].contains("-g++") ?
         findFileInPaths("g++.exe", pathEnvVar) : QString();
 
     QString paths;
@@ -2249,7 +2249,7 @@ QString Configure::defaultTo(const QString &option)
     // By default we do not want to compile OCI driver when compiling with
     // MinGW, due to lack of such support from Oracle. It prob. wont work.
     // (Customer may force the use though)
-    if (dictionary["QMAKESPEC"].endsWith("-g++")
+    if (dictionary["QMAKESPEC"].contains("-g++")
         && option == "SQL_OCI")
         return "no";
 
