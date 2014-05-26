@@ -256,7 +256,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     {
         int depth = widget->x11Info().depth();
         const QImage &src = d->image->image;
-        if (src.format() != QImage::Format_RGB32 || depth < 24 || X11->bppForDepth.value(depth) != 32) {
+        if (src.format() != QImage::Format_RGB32 || (depth != 24 && depth != 32) || X11->bppForDepth.value(depth) != 32) {
             Q_ASSERT(src.depth() >= 16);
             const QImage sub_src(src.scanLine(br.y()) + br.x() * (uint(src.depth()) / 8),
                                  br.width(), br.height(), src.bytesPerLine(), src.format());
