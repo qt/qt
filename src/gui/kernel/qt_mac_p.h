@@ -75,6 +75,62 @@
 
 #include <Carbon/Carbon.h>
 
+#if !defined(QT_MAC_USE_COCOA) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    // Some deprecated functions have been removed from the the 10.7 SDK, but the symbols are
+    // still exported by the 32-bit QD.framework (a subframework of ApplicationServices).
+    extern "C" {
+        // from QuickdrawAPI.h
+        // https://developer.apple.com/legacy/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
+        void          CopyBits(const BitMap *srcBits, const BitMap *dstBits, const Rect *srcRect, const Rect *dstRect, short mode, RgnHandle maskRgn);
+        void          CopyRgn(RgnHandle srcRgn, RgnHandle dstRgn);
+        void          DisposeRgn(RgnHandle rgn);
+        GDHandle      GetMainDevice(void);
+        const BitMap *GetPortBitMapForCopyBits(CGrafPtr port);
+        Rect         *GetRegionBounds(RgnHandle region, Rect *bounds);
+        RgnHandle     NewRgn(void);
+        OSStatus      QDRegionToRects(RgnHandle rgn, QDRegionParseDirection dir, RegionToRectsUPP proc, void *userData);
+        void          SetEmptyRgn(RgnHandle rgn);
+        void          SetRect(Rect* r, short left, short top, short right, short bottom);
+        void          SetRectRgn(RgnHandle rgn, short left, short top, short right, short bottom);
+        void          UnionRgn(RgnHandle srcRgnA, RgnHandle srcRgnB, RgnHandle dstRgn);
+        enum {
+            kQDRegionToRectsMsgInit       = 1,
+            kQDRegionToRectsMsgParse      = 2,
+            kQDRegionToRectsMsgTerminate  = 3
+        };
+        enum {
+            kQDParseRegionFromTop         = (1 << 0),
+            kQDParseRegionFromBottom      = (1 << 1),
+            kQDParseRegionFromLeft        = (1 << 2),
+            kQDParseRegionFromRight       = (1 << 3),
+            kQDParseRegionFromTopLeft     = kQDParseRegionFromTop | kQDParseRegionFromLeft,
+            kQDParseRegionFromBottomRight = kQDParseRegionFromBottom | kQDParseRegionFromRight
+        };
+
+        // from Fonts.h
+        // https://developer.apple.com/legacy/library/documentation/Carbon/reference/Font_Manager/fm_reference.pdf
+        OSStatus         FMCreateFontIterator(const FMFilter *iFilter, void *iRefCon, OptionBits iOptions, FMFontIterator *ioIterator);
+        OSStatus         FMDisposeFontIterator(FMFontIterator *ioIterator);
+        ATSFontFamilyRef FMGetATSFontFamilyRefFromFont(FMFontFamily iFamily);
+        ATSFontFamilyRef FMGetATSFontFamilyRefFromFontFamily(FMFontFamily iFamily);
+        ATSFontRef       FMGetATSFontRefFromFont(FMFont iFont);
+        OSStatus         FMGetFontFamilyInstanceFromFont(FMFont iFont, FMFontFamily *oFontFamily, FMFontStyle *oStyle);
+        FMFontFamily     FMGetFontFamilyFromATSFontFamilyRef(ATSFontFamilyRef iFamily);
+        FMFont           FMGetFontFromATSFontRef(ATSFontRef iFont);
+        OSStatus         FMGetFontFromFontFamilyInstance(FMFontFamily iFontFamily, FMFontStyle iStyle, FMFont *oFont, FMFontStyle *oIntrinsicStyle);
+        OSStatus         FMGetNextFont(FMFontIterator *ioIterator, FMFont *oFont);
+        enum {
+            kFMUseGlobalScopeOption       = 0x00000001
+        };
+        enum {
+            commandMark                   = 17,
+            checkMark                     = 18,
+            diamondMark                   = 19,
+            appleMark                     = 20
+        };
+    }
+#endif
+
 QT_BEGIN_NAMESPACE
 class QWidget;
 class QDragMoveEvent;
