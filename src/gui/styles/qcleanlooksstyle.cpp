@@ -1773,7 +1773,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 }
             } else {
                 Q_D(const QCleanlooksStyle);
-                int slideWidth = ((rect.width() - 4) * 2) / 3;
+                int slideWidth = (qMax(rect.width() - 4, minWidth) * 2) / 3;
                 int step = ((d->animateStep * slideWidth) / d->animationFps) % slideWidth;
                 if ((((d->animateStep * slideWidth) / d->animationFps) % (2 * slideWidth)) >= slideWidth)
                     step = slideWidth - step;
