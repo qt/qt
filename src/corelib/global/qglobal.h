@@ -330,6 +330,9 @@ namespace QT_NAMESPACE {}
 #  if !defined(MAC_OS_X_VERSION_10_9)
 #       define MAC_OS_X_VERSION_10_9 MAC_OS_X_VERSION_10_8 + 1
 #  endif
+#  if !defined(MAC_OS_X_VERSION_10_10)
+#       define MAC_OS_X_VERSION_10_10 101000
+#  endif
 #endif
 
 #ifdef __LSB_VERSION__
@@ -1630,6 +1633,7 @@ public:
         MV_10_7 = 0x0009,
         MV_10_8 = 0x000A,
         MV_10_9 = 0x000B,
+        MV_10_10 = 0x000C,
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -1641,7 +1645,8 @@ public:
         MV_SNOWLEOPARD = MV_10_6,
         MV_LION = MV_10_7,
         MV_MOUNTAINLION = MV_10_8,
-        MV_MAVERICKS = MV_10_9
+        MV_MAVERICKS = MV_10_9,
+        MV_YOSEMITE = MV_10_10
     };
     static const MacVersion MacintoshVersion;
 #endif
