@@ -1674,8 +1674,9 @@ static QSysInfo::MacVersion macVersion()
 {
 #if !defined(Q_OS_IOS)
     SInt32 gestalt_version;
-    if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
-        return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
+    if (Gestalt(gestaltSystemVersionMinor, &gestalt_version) == noErr) {
+        // add 2 because OS X 10.0 is 0x02 in the enum
+        return QSysInfo::MacVersion(gestalt_version + 2);
     }
 #endif
     return QSysInfo::MV_Unknown;
