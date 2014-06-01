@@ -300,7 +300,7 @@ void QClipboard::clear(Mode mode)
 #endif
 }
 
-#if !defined(Q_OS_WINCE) && defined(Q_CC_MSVC)
+#if !defined(Q_OS_WINCE) && defined(Q_CC_MSVC) && WINVER > 0x0501
 static bool isProcessBeingDebugged(HWND hwnd)
 {
     DWORD pid = 0;
@@ -314,9 +314,9 @@ static bool isProcessBeingDebugged(HWND hwnd)
     CloseHandle(processHandle);
     return debugged != FALSE;
 }
-#else // !defined(Q_OS_WINCE) && defined(Q_CC_MSVC)
+#else // !defined(Q_OS_WINCE) && defined(Q_CC_MSVC) && WINVER > 0x0501
 static bool isProcessBeingDebugged(HWND) { return false; }
-#endif // defined(Q_OS_WINCE) || !defined(Q_CC_MSVC)
+#endif // defined(Q_OS_WINCE) || !defined(Q_CC_MSVC) && WINVER > 0x0501
 
 bool QClipboard::event(QEvent *e)
 {
