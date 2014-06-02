@@ -304,31 +304,66 @@ namespace QT_NAMESPACE {}
 #endif
 
 #ifdef Q_OS_DARWIN
-#  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
-#    undef MAC_OS_X_VERSION_MIN_REQUIRED
-#  endif
-#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_4
 #  include <AvailabilityMacros.h>
-#  if !defined(MAC_OS_X_VERSION_10_3)
-#     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
+#
+#  // Availability.h was introduced with the OS X 10.6 SDK
+#  if (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060) || \
+      (defined(MAC_OS_X_VERSION_MAX_ALLOWED) && MAC_OS_X_VERSION_MAX_ALLOWED >= 1060)
+#    include <Availability.h>
+#  endif
+#
+#  ifdef Q_OS_MACX
+#    if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < 1040
+#       undef __MAC_OS_X_VERSION_MIN_REQUIRED
+#       define __MAC_OS_X_VERSION_MIN_REQUIRED 1040
+#    endif
+#    if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < 1040
+#       undef MAC_OS_X_VERSION_MIN_REQUIRED
+#       define MAC_OS_X_VERSION_MIN_REQUIRED 1040
+#    endif
+#  endif
+#
+#  // Numerical checks are preferred to named checks, but to be safe
+#  // we define the missing version names in case Qt uses them.
+#
+#  if !defined(__MAC_10_4)
+#       define __MAC_10_4 1040
+#  endif
+#  if !defined(__MAC_10_5)
+#       define __MAC_10_5 1050
+#  endif
+#  if !defined(__MAC_10_6)
+#       define __MAC_10_6 1060
+#  endif
+#  if !defined(__MAC_10_7)
+#       define __MAC_10_7 1070
+#  endif
+#  if !defined(__MAC_10_8)
+#       define __MAC_10_8 1080
+#  endif
+#  if !defined(__MAC_10_9)
+#       define __MAC_10_9 1090
+#  endif
+#  if !defined(__MAC_10_10)
+#       define __MAC_10_10 101000
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_4)
-#       define MAC_OS_X_VERSION_10_4 MAC_OS_X_VERSION_10_3 + 1
+#       define MAC_OS_X_VERSION_10_4 1040
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_5)
-#       define MAC_OS_X_VERSION_10_5 MAC_OS_X_VERSION_10_4 + 1
+#       define MAC_OS_X_VERSION_10_5 1050
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_6)
-#       define MAC_OS_X_VERSION_10_6 MAC_OS_X_VERSION_10_5 + 1
+#       define MAC_OS_X_VERSION_10_6 1060
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_7)
-#       define MAC_OS_X_VERSION_10_7 MAC_OS_X_VERSION_10_6 + 1
+#       define MAC_OS_X_VERSION_10_7 1070
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_8)
-#       define MAC_OS_X_VERSION_10_8 MAC_OS_X_VERSION_10_7 + 1
+#       define MAC_OS_X_VERSION_10_8 1080
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_9)
-#       define MAC_OS_X_VERSION_10_9 MAC_OS_X_VERSION_10_8 + 1
+#       define MAC_OS_X_VERSION_10_9 1090
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_10)
 #       define MAC_OS_X_VERSION_10_10 101000
