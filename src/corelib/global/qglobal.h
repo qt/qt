@@ -1175,7 +1175,7 @@ redefine to built-in booleans to make autotests work properly */
 #  else
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE
 #  endif
-#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE 
+#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
 #endif
 
 typedef int QNoImplicitBoolCast;
