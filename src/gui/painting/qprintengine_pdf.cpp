@@ -559,7 +559,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
         data.resize(bytesPerLine * h);
         char *rawdata = data.data();
         for (int y = 0; y < h; ++y) {
-            memcpy(rawdata, image.scanLine(y), bytesPerLine);
+            memcpy(rawdata, image.constScanLine(y), bytesPerLine);
             rawdata += bytesPerLine;
         }
         object = writeImage(data, w, h, d, 0, 0);
@@ -581,7 +581,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
                 softMaskData.resize(w * h);
                 uchar *sdata = (uchar *)softMaskData.data();
                 for (int y = 0; y < h; ++y) {
-                    const QRgb *rgb = (const QRgb *)image.scanLine(y);
+                    const QRgb *rgb = (const QRgb *)image.constScanLine(y);
                     for (int x = 0; x < w; ++x) {
                         uchar alpha = qAlpha(*rgb);
                         *sdata++ = alpha;
@@ -597,7 +597,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
             softMaskData.resize(w * h);
             uchar *sdata = (uchar *)softMaskData.data();
             for (int y = 0; y < h; ++y) {
-                const QRgb *rgb = (const QRgb *)image.scanLine(y);
+                const QRgb *rgb = (const QRgb *)image.constScanLine(y);
                 if (colorMode == QPrinter::GrayScale) {
                     for (int x = 0; x < w; ++x) {
                         *(data++) = qGray(*rgb);
