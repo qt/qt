@@ -45,7 +45,7 @@
 void click_cocoa_button()
 {
     QMacCocoaAutoReleasePool pool;
-    NSArray *windows = [NSApp windows];
+    NSArray *windows = [[NSApplication sharedApplication] windows];
     for (NSWindow *window in windows) {
         // This is NOT how one should do RTTI, but since I don't want to leak the class too much...
         if ([[window delegate] respondsToSelector:@selector(qtFont)]) {
@@ -54,7 +54,8 @@ void click_cocoa_button()
                 if ([view isKindOfClass:[NSButton class]]
                         && [[static_cast<NSButton *>(view) title] isEqualTo:@"OK"]) {
                     [static_cast<NSButton *>(view) performClick:view];
-                    [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
+                    [[NSApplication sharedApplication] postEvent:[NSEvent
+                        otherEventWithType:NSApplicationDefined location:NSZeroPoint
                         modifierFlags:0 timestamp:0. windowNumber:0 context:0
                         subtype:SHRT_MAX data1:0 data2:0] atStart:NO];
 
