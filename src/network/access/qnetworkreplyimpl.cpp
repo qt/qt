@@ -505,6 +505,13 @@ void QNetworkReplyImplPrivate::_q_cacheDestroyed()
     cacheEnabled = false;
 }
 
+void QNetworkReplyImplPrivate::_q_cacheSaveDeviceAboutToClose()
+{
+    // do not keep a dangling pointer to the device around (device
+    // is closing because e.g. QAbstractNetworkCache::remove() was called).
+    cacheSaveDevice = 0;
+}
+
 void QNetworkReplyImplPrivate::completeCacheSave()
 {
     Q_Q(QNetworkReplyImpl);
@@ -564,6 +571,9 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
     }
 
     cacheSaveDevice = networkCache()->prepare(metaData);
+
+    if (cacheSaveDevice)
+        q->connect(cacheSaveDevice, SIGNAL(aboutToClose()), SLOT(_q_cacheSaveDeviceAboutToClose()));
 
     if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
         if (cacheSaveDevice && !cacheSaveDevice->isOpen())
