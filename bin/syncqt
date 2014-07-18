@@ -225,6 +225,8 @@ sub classNames {
         push @ret, "Qt"
     } elsif(basename($iheader) eq "qssl.h") {
         push @ret, "QSsl";
+    } elsif(basename($iheader) eq "qgl.h") {
+        push @ret, "QGL";
     } elsif(basename($iheader) eq "qtest.h") {
         push @ret, "QTest"
     } elsif(basename($iheader) eq "qtconcurrentmap.h") {
