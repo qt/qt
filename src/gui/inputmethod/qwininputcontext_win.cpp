@@ -439,7 +439,7 @@ bool QWinInputContext::endComposition()
 {
     QWidget *fw = focusWidget();
 #ifdef Q_IME_DEBUG
-    qDebug("endComposition! fw = %s", fw ? fw->className() : "(null)");
+    qDebug() << "endComposition! fw=" <<  fw;
 #endif
     bool result = true;
     if(imePosition == -1 || recursionGuard)
@@ -483,7 +483,7 @@ void QWinInputContext::reset()
     QWidget *fw = focusWidget();
 
 #ifdef Q_IME_DEBUG
-    qDebug("sending accept to focus widget %s", fw ? fw->className() : "(null)");
+    qDebug() << "sending accept to focus widget" <<  fw;
 #endif
 
     if (fw && imePosition != -1) {
@@ -538,20 +538,20 @@ bool QWinInputContext::composition(LPARAM lParam)
 #ifdef Q_IME_DEBUG
     QString str;
     if (lParam & GCS_RESULTSTR)
-        str += "RESULTSTR ";
+        str += QLatin1String("RESULTSTR ");
     if (lParam & GCS_COMPSTR)
-        str += "COMPSTR ";
+        str += QLatin1String("COMPSTR ");
     if (lParam & GCS_COMPATTR)
-        str += "COMPATTR ";
+        str += QLatin1String("COMPATTR ");
     if (lParam & GCS_CURSORPOS)
-        str += "CURSORPOS ";
+        str += QLatin1String("CURSORPOS ");
     if (lParam & GCS_COMPCLAUSE)
-        str += "COMPCLAUSE ";
+        str += QLatin1String("COMPCLAUSE ");
     if (lParam & CS_INSERTCHAR)
-       str += "INSERTCHAR ";
+       str += QLatin1String("INSERTCHAR ");
     if (lParam & CS_NOMOVECARET)
-       str += "NOMOVECARET ";
-    qDebug("composition, lParam=(%x) %s imePosition=%d", lParam, str.latin1(), imePosition);
+       str += QLatin1String("NOMOVECARET ");
+    qDebug("composition, lParam=(%x) %s imePosition=%d", lParam, qPrintable(str), imePosition);
 #endif
 
     bool result = true;
@@ -690,7 +690,7 @@ void QWinInputContext::updateImeStatus(QWidget *w, bool hasFocus)
             && !(focusProxyWidget->inputMethodHints() & (Qt::ImhExclusiveInputMask | Qt::ImhHiddenText));
     bool hasIme = e && hasFocus;
 #ifdef Q_IME_DEBUG
-    qDebug("%s HasFocus = %d hasIme = %d e = %d ", w->className(), hasFocus, hasIme, e);
+    qDebug("%s HasFocus = %d hasIme = %d e = %d ", w->metaObject()->className(), hasFocus, hasIme, e);
 #endif
     if (hasFocus || e) {
         if (isInPopup(w))
@@ -710,7 +710,7 @@ void QWinInputContext::enablePopupChild(QWidget *w, bool e)
     if (!w || !isInPopup(w))
         return;
 #ifdef Q_IME_DEBUG
-    qDebug("enablePopupChild: w=%s, enable = %s", w ? w->className() : "(null)" , e ? "true" : "false");
+    qDebug() << "enablePopupChild: w=" << w << "enable=" << e;
 #endif
     QWidget *parent = findParentforPopup(w);
     if (parent) {
@@ -728,7 +728,7 @@ void QWinInputContext::enable(QWidget *w, bool e)
 {
     if(w) {
 #ifdef Q_IME_DEBUG
-        qDebug("enable: w=%s, enable = %s", w ? w->className() : "(null)" , e ? "true" : "false");
+        qDebug() <<"enable: w=" << w << "enable=" << e;
 #endif
         if (!w->testAttribute(Qt::WA_WState_Created))
             return;
