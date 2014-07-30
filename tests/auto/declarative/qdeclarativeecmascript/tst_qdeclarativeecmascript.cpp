@@ -447,6 +447,16 @@ void tst_qdeclarativeecmascript::arrayExpressions()
     QCOMPARE(list.at(1), &obj2);
     QCOMPARE(list.at(2), &obj3);
     QCOMPARE(list.at(3), (QObject *)0);
+
+    MyExpression expr2(&context, "[1, 2, \"foo\", \"bar\"]");
+    result = expr2.evaluate();
+    QCOMPARE(result.userType(), qMetaTypeId<QList<QVariant> >());
+    QList<QVariant> list2 = qvariant_cast<QList<QVariant> >(result);
+    QCOMPARE(list2.count(), 4);
+    QCOMPARE(list2.at(0), QVariant(1));
+    QCOMPARE(list2.at(1), QVariant(2));
+    QCOMPARE(list2.at(2), QVariant(QString("foo")));
+    QCOMPARE(list2.at(3), QVariant(QString("bar")));
 }
 
 // Tests that modifying a context property will reevaluate expressions

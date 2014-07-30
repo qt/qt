@@ -2141,8 +2141,20 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
     else if (dc == contextClass)
         return QVariant();
 
+    bool containsQObjects = false;
+
+    if (val.isArray()) {
+        int length = val.property(QLatin1String("length")).toInt32();
+        for (int ii = 0; ii < length; ++ii) {
+            if (val.property(ii).isQObject()) {
+                containsQObjects = true;
+                break;
+            }
+        }
+    }
+
     // Convert to a QList<QObject*> only if val is an array and we were explicitly hinted
-    if (hint == qMetaTypeId<QList<QObject *> >() && val.isArray()) {
+    if (hint == qMetaTypeId<QList<QObject *> >() && val.isArray() && containsQObjects) {
         QList<QObject *> list;
         int length = val.property(QLatin1String("length")).toInt32();
         for (int ii = 0; ii < length; ++ii) {
