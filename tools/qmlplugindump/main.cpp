@@ -64,6 +64,10 @@
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
+#ifdef Q_OS_WIN
+#include <crtdbg.h>
+#include <qt_windows.h>
+#endif
 
 QString pluginImportPath;
 bool verbose = false;
@@ -494,6 +498,13 @@ void printUsage(const QString &appName)
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_WIN
+    // we do not want windows popping up if the module loaded triggers an assert
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+#endif
 #ifdef Q_OS_UNIX
     // qmldump may crash, but we don't want any crash handlers to pop up
     // therefore we intercept the segfault and just exit() ourselves
