@@ -80,7 +80,7 @@ public:
         NextConsole        = 0x05000001,
         SwitchConsoleFirst = 0x06000000,
         SwitchConsoleLast  = 0x0600007f,
-        SwitchConsoleMask  = 0x0000007f,
+        SwitchConsoleMask  = 0x0000007f
     };
 
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);

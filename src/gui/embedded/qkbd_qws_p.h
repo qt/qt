@@ -74,7 +74,7 @@ namespace QWSKeyboard {
         IsDead     = 0x01,
         IsLetter   = 0x02,
         IsModifier = 0x04,
-        IsSystem   = 0x08,
+        IsSystem   = 0x08
     };
 
     enum System {
@@ -84,7 +84,7 @@ namespace QWSKeyboard {
         SystemConsolePrevious = 0x0180,
         SystemConsoleNext     = 0x0181,
         SystemReboot          = 0x0200,
-        SystemZap             = 0x0300,
+        SystemZap             = 0x0300
     };
 
     struct Composing {
@@ -102,7 +102,7 @@ namespace QWSKeyboard {
         ModShiftL  = 0x10,
         ModShiftR  = 0x20,
         ModCtrlL   = 0x40,
-        ModCtrlR   = 0x80,
+        ModCtrlR   = 0x80
         // ModCapsShift = 0x100, // not supported!
     };
 };
