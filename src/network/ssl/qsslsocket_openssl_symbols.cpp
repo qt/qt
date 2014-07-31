@@ -40,6 +40,10 @@
 ****************************************************************************/
 
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENSSL
+
 #include "qsslsocket_openssl_symbols_p.h"
 
 #ifdef Q_OS_WIN
@@ -984,3 +988,5 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 }
 
 QT_END_NAMESPACE
+
+#endif QT_NO_OPENSSL

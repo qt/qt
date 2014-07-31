@@ -85,8 +85,10 @@ public:
 
     QIODevice *outputDevice() const;
 
+#ifndef QT_NO_TEXTCODEC
     void setCodec(const QTextCodec *codec);
     const QTextCodec *codec() const;
+#endif
 
     /* The members below are internal, not part of the public API, and
      * unsupported. Using them leads to undefined behavior. */

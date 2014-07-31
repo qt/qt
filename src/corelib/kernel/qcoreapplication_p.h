@@ -148,7 +148,9 @@ public:
 #if defined(QT3_SUPPORT)
     static bool useQt3Support;
 #endif
+#ifndef QT_NO_SETTINGS
     static QSettings *trolltechConf();
+#endif
 };
 
 QT_END_NAMESPACE

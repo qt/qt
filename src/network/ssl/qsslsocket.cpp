@@ -298,6 +298,10 @@
     \sa peerVerifyError()
 */
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENSSL
+
 #include "qsslcipher.h"
 #include "qsslsocket.h"
 #include "qsslsocket_openssl_p.h"
@@ -2334,3 +2338,5 @@ QT_END_NAMESPACE
 // For private slots
 #define d d_ptr
 #include "moc_qsslsocket.cpp"
+
+#endif // QT_NO_OPENSSL

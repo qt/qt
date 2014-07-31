@@ -324,6 +324,7 @@ bool AccelTreeResourceLoader::retrieveUnparsedText(const QUrl &uri,
     if(!reply)
         return false;
 
+#ifndef QT_NO_TEXTCODEC
     const QTextCodec * codec;
     if(encoding.isEmpty())
     {
@@ -366,6 +367,10 @@ bool AccelTreeResourceLoader::retrieveUnparsedText(const QUrl &uri,
         else
             return false;
     }
+
+#else
+    const QString result = QString::fromUtf8(reply->readAll());
+#endif // QT_NO_TEXTCODEC
 
     const int len = result.length();
     /* This code is a candidate for threading. Divide and conqueror. */

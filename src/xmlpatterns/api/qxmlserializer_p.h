@@ -87,8 +87,10 @@ public:
     QStack<QVector<QXmlName> >          namespaces;
 
     QIODevice *                         device;
+#ifndef QT_NO_TEXTCODEC
     const QTextCodec *                  codec;
     QTextCodec::ConverterState          converterState;
+#endif
     /**
      * Name cache. Since encoding QStrings are rather expensive
      * operations to do, and we on top of that would have to do

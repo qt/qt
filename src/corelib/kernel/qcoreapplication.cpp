@@ -338,12 +338,14 @@ public:
   Create an instance of Trolltech.conf. This ensures that the settings will not
   be thrown out of QSetting's cache for unused settings.
   */
+#ifndef QT_NO_SETTINGS
 Q_GLOBAL_STATIC_WITH_ARGS(QSettings, staticTrolltechConf, (QSettings::UserScope, QLatin1String("Trolltech")))
 
 QSettings *QCoreApplicationPrivate::trolltechConf()
 {
     return staticTrolltechConf();
 }
+#endif
 
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {

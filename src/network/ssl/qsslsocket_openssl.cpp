@@ -42,6 +42,10 @@
 //#define QSSLSOCKET_DEBUG
 //#define QT_DECRYPT_SSL_TRAFFIC
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENSSL
+
 #include "qsslsocket_openssl_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
 #include "qsslsocket.h"
@@ -1546,3 +1550,5 @@ bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QStri
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_OPENSSL

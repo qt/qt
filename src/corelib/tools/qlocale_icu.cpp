@@ -78,6 +78,10 @@ bool qt_initIcu(const QString &localeString)
     if (status == ErrorLoading)
         return false;
 
+#ifdef QT_NO_LIBRARY
+    status = ErrorLoading;
+    return false;
+#else
     if (status == NotLoaded) {
 
         // resolve libicui18n
@@ -139,6 +143,7 @@ bool qt_initIcu(const QString &localeString)
         // success :)
         status = Loaded;
     }
+#endif // QT_NO_LIBRARY
 
     if (icuCollator) {
         ptr_ucol_close(icuCollator);

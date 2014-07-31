@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #include "qdynamiccontext_p.h"
 #include "qpatternistlocale_p.h"
 #include "qitem_p.h"
@@ -56,7 +58,9 @@ QXmlSerializerPrivate::QXmlSerializerPrivate(const QXmlQuery &query,
       state(QXmlSerializer::BeforeDocumentElement),
       np(query.namePool().d),
       device(outputDevice),
+#ifndef QT_NO_TEXTCODEC
       codec(QTextCodec::codecForMib(106)), /* UTF-8 */
+#endif
       query(query)
 {
     hasClosedElement.reserve(EstimatedTreeDepth);
@@ -86,8 +90,10 @@ QXmlSerializerPrivate::QXmlSerializerPrivate(const QXmlQuery &query,
 
     namespaces.push(defNss);
 
+#ifndef QT_NO_TEXTCODEC
     /* If we don't set this flag, QTextCodec will generate a BOM. */
     converterState.flags = QTextCodec::IgnoreHeader;
+#endif
 }
 
 /*!
@@ -264,7 +270,11 @@ void QXmlSerializer::writeEscapedAttribute(const QString &toEscape)
 void QXmlSerializer::write(const QString &content)
 {
     Q_D(QXmlSerializer);
+#ifndef QT_NO_TEXTCODEC
     d->device->write(d->codec->fromUnicode(content.constData(), content.length(), &d->converterState));
+#else
+    d->device->write(content.toUtf8());
+#endif
 }
 
 /*!
@@ -280,9 +290,13 @@ void QXmlSerializer::write(const QXmlName &name)
         QByteArray &mutableCell = d->nameCache[name.code()];
 
         const QString content(d->np->toLexical(name));
+#ifndef QT_NO_TEXTCODEC
         mutableCell = d->codec->fromUnicode(content.constData(),
                                             content.length(),
                                             &d->converterState);
+#else
+        mutableCell = content.toUtf8();
+#endif
         d->device->write(mutableCell);
     }
     else
@@ -306,7 +320,9 @@ void QXmlSerializer::startElement(const QXmlName &name)
     Q_D(QXmlSerializer);
     Q_ASSERT(d->device);
     Q_ASSERT(d->device->isWritable());
+#ifndef QT_NO_TEXTCODEC
     Q_ASSERT(d->codec);
+#endif
     Q_ASSERT(!name.isNull());
 
     d->namespaces.push(QVector<QXmlName>());
@@ -605,6 +621,9 @@ QIODevice *QXmlSerializer::outputDevice() const
     return d->device;
 }
 
+
+#ifndef QT_NO_TEXTCODEC
+
 /*!
   Sets the codec the serializer will use for encoding its XML output.
   The output codec is set to \a outputCodec. By default, the output
@@ -631,6 +650,8 @@ const QTextCodec *QXmlSerializer::codec() const
     Q_D(const QXmlSerializer);
     return d->codec;
 }
+
+#endif // QT_NO_TEXTCODEC
 
 /*!
  \reimp

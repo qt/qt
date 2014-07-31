@@ -713,6 +713,11 @@
 #define QT_NO_PROXYMODEL
 #endif
 
+// QIdentityProxyModel
+#if !defined(QT_NO_IDENTITYPROXYMODEL) && defined(QT_NO_PROXYMODEL)
+#  define QT_NO_IDENTITYPROXYMODEL
+#endif
+
 // QStandardItemModel
 #if !defined(QT_NO_STANDARDITEMMODEL) && (defined(QT_NO_ITEMVIEWS))
 #define QT_NO_STANDARDITEMMODEL
