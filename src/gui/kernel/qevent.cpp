@@ -3205,295 +3205,412 @@ QShortcutEvent::~QShortcutEvent()
 #endif // QT_NO_SHORTCUT
 
 #ifndef QT_NO_DEBUG_STREAM
+
+static inline void formatTouchPoint(QDebug d, const QTouchEvent::TouchPoint &tp)
+{
+    d << "TouchPoint(" << tp.id() << ' ' << tp.rect();
+    switch (tp.state()) {
+    case Qt::TouchPointPressed:
+        d << " pressed";
+        break;
+    case Qt::TouchPointReleased:
+        d << " released";
+        break;
+    case Qt::TouchPointMoved:
+        d << " moved";
+        break;
+    case Qt::TouchPointStationary:
+        d << " stationary";
+        break;
+    case Qt::TouchPointStateMask: // Qt 4 only
+        d << " stateMask";
+    case Qt::TouchPointPrimary:
+        d << " primary";
+        break;
+    }
+    d << ')';
+}
+
+static inline void formatTouchEvent(QDebug d, const char *name, const QTouchEvent &t)
+{
+    d << "QTouchEvent(" << name << " states: " <<  t.touchPointStates();
+    d << ", " << t.touchPoints().size() << " points: " << t.touchPoints() << ')';
+}
+
+static void formatUnicodeString(QDebug d, const QString &s)
+{
+    d << '"' << hex;
+    for (int i = 0; i < s.size(); ++i) {
+        if (i)
+            d << ',';
+        d << "U+" << s.at(i).unicode();
+    }
+    d << dec << '"';
+}
+
+static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
+{
+    d << "QInputMethodEvent(";
+    if (!e->preeditString().isEmpty()) {
+        d << "preedit=";
+        formatUnicodeString(d, e->preeditString());
+    }
+    if (!e->commitString().isEmpty()) {
+        d << ", commit=";
+        formatUnicodeString(d, e->commitString());
+    }
+    if (e->replacementLength()) {
+        d << ", replacementStart=" << e->replacementStart() << ", replacementLength="
+          << e->replacementLength();
+    }
+    if (const int attributeCount = e->attributes().size()) {
+        d << ", attributes= {";
+        for (int a = 0; a < attributeCount; ++a) {
+            const QInputMethodEvent::Attribute &at = e->attributes().at(a);
+            if (a)
+                d << ',';
+            d << "[type= " << at.type << ", start=" << at.start << ", length=" << at.length
+              << ", value=" << at.value << ']';
+        }
+        d << '}';
+    }
+    d << ')';
+}
+
+static const char *eventTypeName(QEvent::Type t)
+{
+    static const int enumIdx = QEvent::staticMetaObject.indexOfEnumerator("Type");
+    return t <= QEvent::User
+        ? QEvent::staticMetaObject.enumerator(enumIdx).valueToKey(t)
+        : "User";
+}
+
+static const char *eventClassName(QEvent::Type t)
+{
+    switch (t) {
+    case QEvent::ActionAdded:
+    case QEvent::ActionRemoved:
+    case QEvent::ActionChanged:
+        return "QActionEvent";
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseMove:
+    case QEvent::NonClientAreaMouseMove:
+    case QEvent::NonClientAreaMouseButtonPress:
+    case QEvent::NonClientAreaMouseButtonRelease:
+    case QEvent::NonClientAreaMouseButtonDblClick:
+        return "QMouseEvent";
+    case QEvent::DragEnter:
+        return "QDragEnterEvent";
+    case QEvent::DragMove:
+        return "QDragMoveEvent";
+    case QEvent::Drop:
+        return "QDropEvent";
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+    case QEvent::ShortcutOverride:
+        return "QKeyEvent";
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        return "QFocusEvent";
+    case QEvent::ChildAdded:
+    case QEvent::ChildPolished:
+    case QEvent::ChildRemoved:
+#ifdef QT3_SUPPORT
+    case QEvent::ChildInsertedRequest:
+    case QEvent::ChildInserted:
+#endif
+        return "QChildEvent";
+    case QEvent::Paint:
+        return "QPaintEvent";
+    case QEvent::Move:
+        return "QMoveEvent";
+    case QEvent::Resize:
+        return "QResizeEvent";
+    case QEvent::Show:
+        return "QShowEvent";
+    case QEvent::Hide:
+        return "QHideEvent";
+    case QEvent::Enter:
+        return "QEnterEvent";
+    case QEvent::Close:
+        return "QCloseEvent";
+    case QEvent::FileOpen:
+        return "QFileOpenEvent";
+#ifndef QT_NO_GESTURES
+    case QEvent::NativeGesture:
+        return "QNativeGestureEvent";
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+        return "QGestureEvent";
+#endif
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
+        return "QHoverEvent";
+    case QEvent::TabletEnterProximity:
+    case QEvent::TabletLeaveProximity:
+    case QEvent::TabletPress:
+    case QEvent::TabletMove:
+    case QEvent::TabletRelease:
+        return "QTabletEvent";
+    case QEvent::StatusTip:
+        return "QStatusTipEvent";
+    case QEvent::ToolTip:
+        return "QHelpEvent";
+    case QEvent::WindowStateChange:
+        return "QWindowStateChangeEvent";
+    case QEvent::Wheel:
+        return "QWheelEvent";
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        return "QTouchEvent";
+    case QEvent::Shortcut:
+        return "QShortcutEvent";
+    case QEvent::InputMethod:
+        return "QInputMethodEvent";
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseRelease:
+    case QEvent::GraphicsSceneMouseDoubleClick:
+        return "QGraphicsSceneMouseEvent";
+    case QEvent::GraphicsSceneContextMenu:
+    case QEvent::GraphicsSceneHoverEnter:
+    case QEvent::GraphicsSceneHoverMove:
+    case QEvent::GraphicsSceneHoverLeave:
+    case QEvent::GraphicsSceneHelp:
+    case QEvent::GraphicsSceneDragEnter:
+    case QEvent::GraphicsSceneDragMove:
+    case QEvent::GraphicsSceneDragLeave:
+    case QEvent::GraphicsSceneDrop:
+    case QEvent::GraphicsSceneWheel:
+        return "QGraphicsSceneEvent";
+    case QEvent::Timer:
+        return "QTimerEvent";
+    default:
+        break;
+    }
+    return "QEvent";
+}
+
+namespace {
+// Make protected QObject::staticQtMetaObject accessible for formatting enums.
+class DebugHelper : public QObject {
+public:
+    static const char *mouseButtonToString(Qt::MouseButton button)
+    {
+        static const int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("MouseButtons");
+        return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(button);
+    }
+
+    static QByteArray mouseButtonsToString(Qt::MouseButtons buttons)
+    {
+        QByteArray result;
+        for (int i = 0; (uint)(1 << i) <= Qt::MouseButtonMask; ++i) {
+            const Qt::MouseButton button = static_cast<Qt::MouseButton>(1 << i);
+            if (buttons.testFlag(button)) {
+                if (!result.isEmpty())
+                    result.append('|');
+                result.append(mouseButtonToString(button));
+            }
+        }
+        if (result.isEmpty())
+            result.append("NoButton");
+        return result;
+    }
+};
+} // namespace
+
+#  ifndef QT_NO_DRAGANDDROP
+
+static void formatDropEvent(QDebug d, const QDropEvent *e)
+{
+    const QEvent::Type type = e->type();
+    d << eventClassName(type) << "(dropAction=" << e->dropAction() << ", proposedAction="
+        << e->proposedAction() << ", possibleActions=" << e->possibleActions();
+    if (type == QEvent::DragMove || type == QEvent::DragEnter)
+        d << ", answerRect=" << static_cast<const QDragMoveEvent *>(e)->answerRect();
+    d << ", formats=" << e->mimeData()->formats();
+    if (const Qt::KeyboardModifiers mods = e->keyboardModifiers())
+        d << ", keyboardModifiers=" << mods;
+    d << ", " << DebugHelper::mouseButtonsToString(e->mouseButtons()).constData();
+}
+
+#  endif // !QT_NO_DRAGANDDROP
+
+#  ifndef QT_NO_TABLETEVENT
+
+static void formatTabletEvent(QDebug d, const QTabletEvent *e)
+{
+    const QEvent::Type type = e->type();
+
+    static const int deviceEnumIdx = QTabletEvent::staticMetaObject.indexOfEnumerator("TabletDevice");
+    static const int pointerTypeEnumIdx = QTabletEvent::staticMetaObject.indexOfEnumerator("PointerType");
+    const char* device = QTabletEvent::staticMetaObject.enumerator(deviceEnumIdx).valueToKey(e->device());
+    const char* pointerType = QTabletEvent::staticMetaObject.enumerator(pointerTypeEnumIdx).valueToKey(e->pointerType());
+
+    d << eventClassName(type)  << '(' << eventTypeName(type)
+      << ", device=" << device
+      << ", pointerType=" << pointerType
+      << ", uniqueId=" << e->uniqueId()
+      << ", z=" << e->z()
+      << ", xTilt=" << e->xTilt()
+      << ", yTilt=" << e->yTilt();
+    if (type == QEvent::TabletPress || type == QEvent::TabletMove)
+        d << ", pressure=" << e->pressure();
+    if (e->device() == QTabletEvent::RotationStylus || e->device() == QTabletEvent::FourDMouse)
+        d << ", rotation=" << e->rotation();
+    if (e->device() == QTabletEvent::Airbrush)
+        d << ", tangentialPressure=" << e->tangentialPressure();
+}
+
+#  endif // !QT_NO_TABLETEVENT
+
+QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
+{
+    formatTouchPoint(dbg, tp);
+    return dbg;
+}
+
 QDebug operator<<(QDebug dbg, const QEvent *e) {
 #ifndef Q_BROKEN_DEBUG_STREAM
+    dbg.nospace();
+    if (!e) {
+        dbg << "QEvent(this = 0x0)";
+        dbg.space();
+        return dbg;
+    }
     // More useful event output could be added here
-    if (!e)
-        return dbg << "QEvent(this = 0x0)";
-    const char *n = 0;
-    switch (e->type()) {
-    case QEvent::Timer:
-        n = "Timer";
-        break;
+    const QEvent::Type type = e->type();
+    switch (type) {
     case QEvent::MouseButtonPress:
     case QEvent::MouseMove:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
+    case QEvent::NonClientAreaMouseButtonPress:
+    case QEvent::NonClientAreaMouseMove:
+    case QEvent::NonClientAreaMouseButtonRelease:
+    case QEvent::NonClientAreaMouseButtonDblClick:
     {
         const QMouseEvent *me = static_cast<const QMouseEvent*>(e);
-        switch(me->type()) {
-        case QEvent::MouseButtonPress:
-            n = "MouseButtonPress";
-            break;
-        case QEvent::MouseMove:
-            n = "MouseMove";
-            break;
-        case QEvent::MouseButtonRelease:
-            n = "MouseButtonRelease";
-            break;
-        case QEvent::MouseButtonDblClick:
-        default:
-            n = "MouseButtonDblClick";
-            break;
-        }
-        dbg.nospace() << "QMouseEvent("  << n
-                      << ", " << me->button()
-                      << ", " << hex << (int)me->buttons()
-                      << ", " << hex << (int)me->modifiers()
-                      << ')';
+        const Qt::MouseButton button = me->button();
+        const Qt::MouseButtons buttons = me->buttons();
+        dbg << "QMouseEvent(" << eventTypeName(type);
+        if (type != QEvent::MouseMove && type != QEvent::NonClientAreaMouseMove)
+            dbg << ", " << DebugHelper::mouseButtonToString(button);
+        if (buttons && button != buttons)
+            dbg << ", buttons=" << DebugHelper::mouseButtonsToString(buttons).constData();
+        if (const int mods = int(me->modifiers()))
+            dbg << ", modifiers=0x" << hex << mods << dec;
+        dbg << ')';
     }
-    return dbg.space();
-
-#ifndef QT_NO_TOOLTIP
-    case QEvent::ToolTip:
-        n = "ToolTip";
         break;
-#endif
-    case QEvent::WindowActivate:
-        n = "WindowActivate";
+#  ifndef QT_NO_WHEELEVENT
+    case QEvent::Wheel: {
+        const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
+        dbg << "QWheelEvent(" << "delta=" << we->delta() << ", pos=" << we->pos()
+            << ", orientation=" << we->orientation() << ')';
+    }
         break;
-    case QEvent::WindowDeactivate:
-        n = "WindowDeactivate";
-        break;
-    case QEvent::ActivationChange:
-        n = "ActivationChange";
-        break;
-#ifndef QT_NO_WHEELEVENT
-    case QEvent::Wheel:
-        dbg.nospace() << "QWheelEvent("  << static_cast<const QWheelEvent *>(e)->delta()
-                      << ')';
-        return dbg.space();
-#endif
+#  endif // !QT_NO_WHEELEVENT
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     case QEvent::ShortcutOverride:
-        {
-            const QKeyEvent *ke = static_cast<const QKeyEvent*>(e);
-            switch(ke->type()) {
-            case QEvent::ShortcutOverride:
-                n = "ShortcutOverride";
-                break;
-            case QEvent::KeyRelease:
-                n = "KeyRelease";
-                break;
-            case QEvent::KeyPress:
-            default:
-                n = "KeyPress";
-                break;
-            }
-            dbg.nospace() << "QKeyEvent("  << n
-                          << ", " << hex << ke->key()
-                          << ", " << hex << (int)ke->modifiers()
-                          << ", \"" << ke->text()
-                          << "\", " << ke->isAutoRepeat()
-                          << ", " << ke->count()
-                          << ')';
-        }
-        return dbg.space();
-    case QEvent::FocusIn:
-        n = "FocusIn";
-        break;
-    case QEvent::FocusOut:
-        n = "FocusOut";
-        break;
-    case QEvent::Enter:
-        n = "Enter";
-        break;
-    case QEvent::Leave:
-        n = "Leave";
-        break;
-    case QEvent::PaletteChange:
-        n = "PaletteChange";
-        break;
-    case QEvent::PolishRequest:
-        n = "PolishRequest";
-        break;
-    case QEvent::Polish:
-        n = "Polish";
-        break;
-    case QEvent::UpdateRequest:
-        n = "UpdateRequest";
-        break;
-    case QEvent::Paint:
-        n = "Paint";
-        break;
-    case QEvent::Move:
-        n = "Move";
-        break;
-    case QEvent::Resize:
-        n = "Resize";
-        break;
-    case QEvent::Create:
-        n = "Create";
-        break;
-    case QEvent::Destroy:
-        n = "Destroy";
-        break;
-    case QEvent::Close:
-        n = "Close";
-        break;
-    case QEvent::Quit:
-        n = "Quit";
-        break;
-    case QEvent::FileOpen:
-        n = "FileOpen";
-        break;
-    case QEvent::Show:
-        n = "Show";
-        break;
-    case QEvent::ShowToParent:
-        n = "ShowToParent";
-        break;
-    case QEvent::Hide:
-        n = "Hide";
-        break;
-    case QEvent::HideToParent:
-        n = "HideToParent";
-        break;
-    case QEvent::None:
-        n = "None";
-        break;
-    case QEvent::ParentChange:
-        n = "ParentChange";
-        break;
-    case QEvent::ParentAboutToChange:
-        n = "ParentAboutToChange";
-        break;
-    case QEvent::HoverEnter:
-        n = "HoverEnter";
-        break;
-    case QEvent::HoverMove:
-        n = "HoverMove";
-        break;
-    case QEvent::HoverLeave:
-        n = "HoverLeave";
-        break;
-    case QEvent::ZOrderChange:
-        n = "ZOrderChange";
-        break;
-    case QEvent::StyleChange:
-        n = "StyleChange";
-        break;
-    case QEvent::DragEnter:
-        n = "DragEnter";
-        break;
-    case QEvent::DragMove:
-        n = "DragMove";
-        break;
-    case QEvent::DragLeave:
-        n = "DragLeave";
-        break;
-    case QEvent::Drop:
-        n = "Drop";
-        break;
-    case QEvent::GraphicsSceneMouseMove:
-        n = "GraphicsSceneMouseMove";
-        break;
-    case QEvent::GraphicsSceneMousePress:
-        n = "GraphicsSceneMousePress";
-        break;
-    case QEvent::GraphicsSceneMouseRelease:
-        n = "GraphicsSceneMouseRelease";
-        break;
-    case QEvent::GraphicsSceneMouseDoubleClick:
-        n = "GraphicsSceneMouseDoubleClick";
-        break;
-    case QEvent::GraphicsSceneContextMenu:
-        n = "GraphicsSceneContextMenu";
-        break;
-    case QEvent::GraphicsSceneHoverEnter:
-        n = "GraphicsSceneHoverEnter";
-        break;
-    case QEvent::GraphicsSceneHoverMove:
-        n = "GraphicsSceneHoverMove";
-        break;
-    case QEvent::GraphicsSceneHoverLeave:
-        n = "GraphicsSceneHoverLeave";
-        break;
-    case QEvent::GraphicsSceneHelp:
-        n = "GraphicsSceneHelp";
-        break;
-    case QEvent::GraphicsSceneDragEnter:
-        n = "GraphicsSceneDragEnter";
-        break;
-    case QEvent::GraphicsSceneDragMove:
-        n = "GraphicsSceneDragMove";
-        break;
-    case QEvent::GraphicsSceneDragLeave:
-        n = "GraphicsSceneDragLeave";
-        break;
-    case QEvent::GraphicsSceneDrop:
-        n = "GraphicsSceneDrop";
-        break;
-    case QEvent::GraphicsSceneWheel:
-        n = "GraphicsSceneWheel";
-        break;
-    case QEvent::GraphicsSceneResize:
-        n = "GraphicsSceneResize";
-        break;
-    case QEvent::GraphicsSceneMove:
-        n = "GraphicsSceneMove";
-        break;
-    case QEvent::CursorChange:
-        n = "CursorChange";
-        break;
-    case QEvent::ToolTipChange:
-        n = "ToolTipChange";
-        break;
-    case QEvent::StatusTip:
-        n = "StatusTip";
-        break;
-    case QEvent::WhatsThis:
-        n = "WhatsThis";
-        break;
-    case QEvent::FontChange:
-        n = "FontChange";
-        break;
-    case QEvent::Style:
-        n = "Style";
-        break;
-    case QEvent::KeyboardLayoutChange:
-        n = "KeyboardLayoutChange";
-        break;
-    case QEvent::DynamicPropertyChange:
-        n = "DynamicPropertyChange";
-        break;
-    case QEvent::GrabMouse:
-        n = "GrabMouse";
-        break;
-    case QEvent::UngrabMouse:
-        n = "UngrabMouse";
-        break;
-    case QEvent::GrabKeyboard:
-        n = "GrabKeyboard";
-        break;
-    case QEvent::UngrabKeyboard:
-        n = "UngrabKeyboard";
-        break;
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInsertedRequest:
-      n = "ChildInsertedRequest";
-      break;
-    case QEvent::ChildInserted: n = "ChildInserted";
-#endif
-    case QEvent::ChildAdded: n = n ? n : "ChildAdded";
-    case QEvent::ChildPolished: n = n ? n : "ChildPolished";
-    case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
-        dbg.nospace() << "QChildEvent(" << n << ", " << (static_cast<const QChildEvent*>(e))->child();
-        return dbg.space();
-#ifndef QT_NO_GESTURES
-    case QEvent::Gesture:
-        n = "Gesture";
-        break;
-#endif
-    default:
-        dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
-        return dbg.space();
+    {
+        const QKeyEvent *ke = static_cast<const QKeyEvent *>(e);
+        dbg << "QKeyEvent("  << eventTypeName(type)
+            << ", key=0x" << hex << ke->key() << dec;
+        if (const int mods = ke->modifiers())
+            dbg << ", modifiers=0x" << hex << mods << dec;
+        if (!ke->text().isEmpty())
+            dbg << ", text=" << ke->text();
+        if (ke->isAutoRepeat())
+            dbg << ", autorepeat, count=" << ke->count();
+        dbg << ')';
     }
-
-    dbg.nospace() << 'Q' << n << "Event(" << (const void *)e << ')';
-    return dbg.space();
-#else
+        break;
+    case QEvent::Shortcut: {
+        const QShortcutEvent *se = static_cast<const QShortcutEvent *>(e);
+        dbg << "QShortcutEvent(" << se->key().toString() << ", id=" << se->shortcutId();
+        if (se->isAmbiguous())
+            dbg << ", ambiguous";
+        dbg << ')';
+    }
+        break;
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        dbg << "QFocusEvent(" << eventTypeName(type) << ", "
+            << static_cast<const QFocusEvent *>(e)->reason() << ')';
+        break;
+    case QEvent::Move: {
+        const QMoveEvent *me = static_cast<const QMoveEvent *>(e);
+        dbg << "QMoveEvent(" << me->pos();
+        if (!me->spontaneous())
+            dbg << ", non-spontaneous";
+        dbg << ')';
+    }
+         break;
+    case QEvent::Resize: {
+        const QResizeEvent *re = static_cast<const QResizeEvent *>(e);
+        dbg << "QResizeEvent(" << re->size();
+        if (!re->spontaneous())
+            dbg << ", non-spontaneous";
+        dbg << ')';
+    }
+        break;
+#  ifndef QT_NO_DRAGANDDROP
+    case QEvent::DragEnter:
+    case QEvent::DragMove:
+    case QEvent::Drop:
+        formatDropEvent(dbg, static_cast<const QDropEvent *>(e));
+        break;
+#  endif // !QT_NO_DRAGANDDROP
+    case QEvent::InputMethod:
+        formatInputMethodEvent(dbg, static_cast<const QInputMethodEvent *>(e));
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        formatTouchEvent(dbg, eventTypeName(type), *static_cast<const QTouchEvent*>(e));
+        break;
+    case QEvent::ChildAdded:
+    case QEvent::ChildPolished:
+    case QEvent::ChildRemoved:
+        dbg << "QChildEvent(" << eventTypeName(type) << ", " << (static_cast<const QChildEvent*>(e))->child() << ')';
+        break;
+#  ifndef QT_NO_GESTURES
+    case QEvent::NativeGesture: {
+        const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
+        dbg << "QNativeGestureEvent(type=" << ne->type() << ", percentage=" << ne->percentage
+           << "position=" << ne->position << ", angle=" << ne->angle << ')';
+    }
+         break;
+#  endif // !QT_NO_GESTURES
+    case QEvent::ContextMenu:
+        dbg << "QContextMenuEvent(" << static_cast<const QContextMenuEvent *>(e)->pos() << ')';
+        break;
+#  ifndef QT_NO_TABLETEVENT
+    case QEvent::TabletEnterProximity:
+    case QEvent::TabletLeaveProximity:
+    case QEvent::TabletPress:
+    case QEvent::TabletMove:
+    case QEvent::TabletRelease:
+        formatTabletEvent(dbg, static_cast<const QTabletEvent *>(e));
+        break;
+#  endif // !QT_NO_TABLETEVENT
+    case QEvent::Timer:
+        dbg << "QTimerEvent(id=" << static_cast<const QTimerEvent *>(e)->timerId() << ')';
+        break;
+    default:
+        dbg << eventClassName(type) << '(' << eventTypeName(type) << ", "
+            << (const void *)e << ", type = " << e->type() << ')';
+        break;
+    }
+    dbg.maybeSpace();
+    return dbg;
+#else // !Q_BROKEN_DEBUG_STREAM
     qWarning("This compiler doesn't support streaming QEvent to QDebug");
     return dbg;
     Q_UNUSED(e);
