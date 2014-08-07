@@ -144,7 +144,7 @@ inline bool QBasicAtomicInt::deref()
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "xor %[expectedValue], r0\n"
@@ -166,7 +166,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "xor %[expectedValue], r0\n"
@@ -189,7 +189,7 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"
@@ -217,7 +217,7 @@ inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -234,7 +234,7 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -252,7 +252,7 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"
@@ -275,7 +275,7 @@ inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 
 inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -292,7 +292,7 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -310,7 +310,7 @@ inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"
@@ -334,7 +334,7 @@ inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
-    register T *result;
+    T *result;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "xor %[expectedValue], r0\n"
@@ -357,7 +357,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
 {
-    register T *result;
+    T *result;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "xor %[expectedValue], r0\n"
@@ -381,7 +381,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
 {
-    register T *result;
+    T *result;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"
@@ -411,7 +411,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -429,7 +429,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -448,7 +448,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"
@@ -473,7 +473,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -491,7 +491,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("0:\n"
                  "movli.l @%[_q_value], r0\n"
                  "mov r0, %[originalValue]\n"
@@ -510,7 +510,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("synco\n"
                  "0:\n"
                  "movli.l @%[_q_value], r0\n"

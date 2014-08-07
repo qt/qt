@@ -432,7 +432,7 @@ namespace QtSharedPointer {
             if (o) {
                 // increase the strongref, but never up from zero
                 // or less (-1 is used by QWeakPointer on untracked QObject)
-                register int tmp = o->strongref;
+                int tmp = o->strongref;
                 while (tmp > 0) {
                     // try to increment from "tmp" to "tmp + 1"
                     if (o->strongref.testAndSetRelaxed(tmp, tmp + 1))
@@ -819,7 +819,7 @@ namespace QtSharedPointer {
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerCast(const QSharedPointer<T> &src)
 {
-    register X *ptr = static_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
+    X *ptr = static_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
     return QtSharedPointer::copyAndSetPointer(ptr, src);
 }
 template <class X, class T>
@@ -831,7 +831,7 @@ Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerCast(const QWeakPointer<T> &sr
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
 {
-    register X *ptr = dynamic_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
+    X *ptr = dynamic_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
     if (!ptr)
         return QSharedPointer<X>();
     return QtSharedPointer::copyAndSetPointer(ptr, src);
@@ -845,7 +845,7 @@ Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &src)
 {
-    register X *ptr = const_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
+    X *ptr = const_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
     return QtSharedPointer::copyAndSetPointer(ptr, src);
 }
 template <class X, class T>
@@ -865,7 +865,7 @@ QWeakPointer<X> qWeakPointerCast(const QSharedPointer<T> &src)
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerObjectCast(const QSharedPointer<T> &src)
 {
-    register X *ptr = qobject_cast<X *>(src.data());
+    X *ptr = qobject_cast<X *>(src.data());
     return QtSharedPointer::copyAndSetPointer(ptr, src);
 }
 template <class X, class T>

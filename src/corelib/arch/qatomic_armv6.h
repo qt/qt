@@ -148,7 +148,7 @@ inline bool QBasicAtomicInt::deref()
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
@@ -303,8 +303,8 @@ inline bool QBasicAtomicInt::ref()
 
 inline bool QBasicAtomicInt::deref()
 {
-    register int newValue;
-    register int result;
+    int newValue;
+    int result;
     retry:
     __asm {
         ldrex   newValue, [&_q_value]
@@ -318,7 +318,7 @@ inline bool QBasicAtomicInt::deref()
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     retry:
     __asm {
         ldrex   result, [&_q_value]
@@ -332,8 +332,8 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
-    register int originalValue;
-    register int result;
+    int originalValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -346,9 +346,9 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 
 inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 {
-    register int originalValue;
-    register int newValue;
-    register int result;
+    int originalValue;
+    int newValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -363,7 +363,7 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
-    register T *result;
+    T *result;
     retry:
     __asm {
         ldrex   result, [&_q_value]
@@ -378,8 +378,8 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
-    register T *originalValue;
-    register int result;
+    T *originalValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -393,9 +393,9 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 {
-    register T *originalValue;
-    register T *newValue;
-    register int result;
+    T *originalValue;
+    T *newValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]

@@ -173,7 +173,7 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 #ifdef O_CLOEXEC
     flags |= O_CLOEXEC;
 #endif
-    register int fd;
+    int fd;
     EINTR_LOOP(fd, QT_OPEN(pathname, flags, mode));
 
     // unknown flags are ignored, so we have no way of verifying if
@@ -196,7 +196,7 @@ static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 #endif
 
-    register int ret;
+    int ret;
 #if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
     // use pipe2
     flags |= O_CLOEXEC;
@@ -228,7 +228,7 @@ static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC
 {
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
-    register int ret;
+    int ret;
 #ifdef F_DUPFD_CLOEXEC
     // use this fcntl
     if (flags & FD_CLOEXEC) {
@@ -252,7 +252,7 @@ static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
 {
     Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
 
-    register int ret;
+    int ret;
 #if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(O_CLOEXEC)
     // use dup3
     if (flags & FD_CLOEXEC) {
@@ -296,7 +296,7 @@ static inline qint64 qt_safe_write_nosignal(int fd, const void *data, qint64 len
 
 static inline int qt_safe_close(int fd)
 {
-    register int ret;
+    int ret;
     EINTR_LOOP(ret, QT_CLOSE(fd));
     return ret;
 }

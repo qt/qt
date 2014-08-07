@@ -105,7 +105,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 
 inline bool QBasicAtomicInt::ref()
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "addl  %0,1,%1\n" /* tmp=old+1;                              */
@@ -122,7 +122,7 @@ inline bool QBasicAtomicInt::ref()
 
 inline bool QBasicAtomicInt::deref()
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "subl  %0,1,%1\n" /* tmp=old-1;                              */
@@ -139,7 +139,7 @@ inline bool QBasicAtomicInt::deref()
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int ret;
+    int ret;
     asm volatile("1:\n"
                  "ldl_l %0,%1\n"   /* ret=*ptr;                               */
                  "cmpeq %0,%2,%0\n"/* if (ret==expected) ret=0; else ret=1;   */
@@ -158,7 +158,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
-    register int ret;
+    int ret;
     asm volatile("1:\n"
                  "ldl_l %0,%1\n"   /* ret=*ptr;                               */
                  "cmpeq %0,%2,%0\n"/* if (ret==expected) ret=0; else ret=1;   */
@@ -178,7 +178,7 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
-    register int ret;
+    int ret;
     asm volatile("mb\n"
                  "1:\n"
                  "ldl_l %0,%1\n"   /* ret=*ptr;                               */
@@ -198,7 +198,7 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -215,7 +215,7 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -233,7 +233,7 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
@@ -251,7 +251,7 @@ inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 
 inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "addl  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -268,7 +268,7 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
                  "addl  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -286,7 +286,7 @@ inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 {
-    register int old, tmp;
+    int old, tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldl_l %0,%2\n"   /* old=*ptr;                               */
@@ -305,7 +305,7 @@ inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
-    register void *ret;
+    void *ret;
     asm volatile("1:\n"
                  "ldq_l %0,%1\n"   /* ret=*ptr;                               */
                  "cmpeq %0,%2,%0\n"/* if (ret==expected) tmp=0; else tmp=1;   */
@@ -325,7 +325,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
 {
-    register void *ret;
+    void *ret;
     asm volatile("1:\n"
                  "ldq_l %0,%1\n"   /* ret=*ptr;                               */
                  "cmpeq %0,%2,%0\n"/* if (ret==expected) tmp=0; else tmp=1;   */
@@ -346,7 +346,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
 {
-    register void *ret;
+    void *ret;
     asm volatile("mb\n"
                  "1:\n"
                  "ldq_l %0,%1\n"   /* ret=*ptr;                               */
@@ -367,7 +367,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -385,7 +385,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -404,7 +404,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
@@ -423,7 +423,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "addq  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -441,7 +441,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "addq  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -460,7 +460,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
 {
-    register T *old, *tmp;
+    T *old, *tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
