@@ -194,6 +194,7 @@ private Q_SLOTS:
     void getFromFileSpecial();
     void getFromFtp_data();
     void getFromFtp();
+    void getFromFtpAfterError();    // QTBUG-40797
     void getFromHttp_data();
     void getFromHttp();
     void getErrors_data();
@@ -1596,6 +1597,32 @@ void tst_QNetworkReply::getFromFtp()
 
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
     QCOMPARE(reply->readAll(), reference.readAll());
+}
+
+void tst_QNetworkReply::getFromFtpAfterError()
+{
+    QNetworkRequest invalidRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/invalid.txt"));
+    QNetworkReplyPtr invalidReply;
+    invalidReply = manager.get(invalidRequest);
+    QSignalSpy spy(invalidReply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    // now run the request:
+    connect(invalidReply.data(), SIGNAL(error(QNetworkReply::NetworkError)),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(!spy.isEmpty());
+    QCOMPARE(invalidReply->error(), QNetworkReply::ContentNotFoundError);
+
+    QFile reference("srcdir:/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QNetworkRequest validRequest(QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
+    QNetworkReplyPtr validReply;
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::GetOperation, validRequest, validReply));
+    QCOMPARE(validReply->url(), validRequest.url());
+    QCOMPARE(validReply->error(), QNetworkReply::NoError);
+    QCOMPARE(validReply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(validReply->readAll(), reference.readAll());
 }
 
 void tst_QNetworkReply::getFromHttp_data()

@@ -205,7 +205,7 @@ void QNetworkAccessFtpBackend::ftpConnectionReady(QNetworkAccessCache::Cacheable
     // no, defer the actual operation until after we've logged in
 }
 
-void QNetworkAccessFtpBackend::disconnectFromFtp()
+void QNetworkAccessFtpBackend::disconnectFromFtp(CacheCleanupMode mode)
 {
     state = Disconnecting;
 
@@ -213,7 +213,12 @@ void QNetworkAccessFtpBackend::disconnectFromFtp()
         disconnect(ftp, 0, this, 0);
 
         QByteArray key = makeCacheKey(url());
-        QNetworkAccessManagerPrivate::getObjectCache(this)->releaseEntry(key);
+        if (mode == RemoveCachedConnection) {
+            QNetworkAccessManagerPrivate::getObjectCache(this)->removeEntry(key);
+            ftp->dispose();
+        } else {
+            QNetworkAccessManagerPrivate::getObjectCache(this)->releaseEntry(key);
+        }
 
         ftp = 0;
     }
@@ -263,14 +268,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         }
 
         // we're not connected, so remove the cache entry:
-        QByteArray key = makeCacheKey(url());
-        QNetworkAccessManagerPrivate::getObjectCache(this)->removeEntry(key);
-
-        disconnect(ftp, 0, this, 0);
-        ftp->dispose();
-        ftp = 0;
-
-        state = Disconnecting;
+        disconnectFromFtp(RemoveCachedConnection);
         finished();
         return;
     }
@@ -290,7 +288,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         else
             error(QNetworkReply::ContentAccessDenied, msg);
 
-        disconnectFromFtp();
+        disconnectFromFtp(RemoveCachedConnection);
         finished();
     }
 
