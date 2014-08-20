@@ -3241,17 +3241,17 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
     	fi
     	CFG_HOST_ARCH=s390
     	;;
+    *:*:aarch64*|*:*:arm64*)
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            echo "    AArch64 (aarch64)"
+        fi
+        CFG_HOST_ARCH=aarch64
+        ;;
     *:*:arm*)
         if [ "$OPT_VERBOSE" = "yes" ]; then
             echo "    ARM (arm)"
         fi
         CFG_HOST_ARCH=arm
-        ;;
-    *:*:aarch64*)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    AArch64 (aarch64)"
-        fi
-        CFG_HOST_ARCH=aarch64
         ;;
     Linux:*:sparc*)
         if [ "$OPT_VERBOSE" = "yes" ]; then
