@@ -3229,7 +3229,7 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
         fi
         CFG_HOST_ARCH=powerpc
         ;;
-    *:*:ppc64)
+    *:*:ppc64*)
         if [ "$OPT_VERBOSE" = "yes" ]; then
             echo "    64-bit PowerPC (powerpc)"
         fi
