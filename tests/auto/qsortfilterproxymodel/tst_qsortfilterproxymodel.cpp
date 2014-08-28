@@ -154,6 +154,7 @@ private slots:
     void hierarchyFilterInvalidation();
     void simpleFilterInvalidation();
 
+    void noMapAfterSourceDelete();
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -3535,6 +3536,39 @@ void tst_QSortFilterProxyModel::simpleFilterInvalidation()
     model.insertRow(0, new QStandardItem("extra"));
 }
 
+class SourceAssertion : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    explicit SourceAssertion(QObject *parent = 0)
+      : QSortFilterProxyModel(parent)
+    {
+
+    }
+
+    QModelIndex mapToSource(const QModelIndex &proxyIndex) const
+    {
+      Q_ASSERT(sourceModel());
+      return QSortFilterProxyModel::mapToSource(proxyIndex);
+    }
+};
+
+void tst_QSortFilterProxyModel::noMapAfterSourceDelete()
+{
+    SourceAssertion proxy;
+    QStringListModel *model = new QStringListModel(QStringList() << "Foo" << "Bar");
+
+    proxy.setSourceModel(model);
+
+    // Create mappings
+    QPersistentModelIndex persistent = proxy.index(0, 0);
+
+    QVERIFY(persistent.isValid());
+
+    delete model;
+
+    QVERIFY(!persistent.isValid());
+}
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"

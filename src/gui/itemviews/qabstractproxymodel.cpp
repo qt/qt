@@ -84,6 +84,7 @@ QT_BEGIN_NAMESPACE
 //detects the deletion of the source model
 void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
 {
+    invalidatePersistentIndexes();
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
