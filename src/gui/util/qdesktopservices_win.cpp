@@ -65,15 +65,30 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool shellExecute(const QUrl &url)
+{
+#ifndef Q_OS_WINCE
+    if (!url.isValid())
+        return false;
+
+    const QString nativeFilePath =
+            url.isLocalFile() ? QDir::toNativeSeparators(url.toLocalFile()) : url.toString();
+    const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)nativeFilePath.utf16(), 0, 0, SW_SHOWNORMAL);
+    // ShellExecute returns a value greater than 32 if successful
+    if (result <= 32) {
+        qWarning("ShellExecute '%s' failed (error %s).", qPrintable(url.toString()), qPrintable(QString::number(result)));
+        return false;
+    }
+    return true;
+#else
+    Q_UNUSED(url);
+    return false;
+#endif
+}
+
 static bool openDocument(const QUrl &file)
 {
-    if (!file.isValid())
-        return false;
-    QString filePath = file.toLocalFile();
-    if (filePath.isEmpty())
-        filePath = file.toString();
-    quintptr returnValue = (quintptr)ShellExecute(0, 0, (wchar_t*)filePath.utf16(), 0, 0, SW_SHOWNORMAL);
-    return (returnValue > 32); //ShellExecute returns a value greater than 32 if successful
+    return shellExecute(file);
 }
 
 static QString expandEnvStrings(const QString &command)
@@ -158,15 +173,7 @@ static bool launchWebBrowser(const QUrl &url)
         return true;
     }
 
-    if (!url.isValid())
-        return false;
-
-    if (url.scheme().isEmpty())
-        return openDocument(url);
-
-    quintptr returnValue = (quintptr)ShellExecute(0, 0, (wchar_t *)QString::fromUtf8(url.toEncoded().constData()).utf16(),
-                                                  0, 0, SW_SHOWNORMAL);
-    return (returnValue > 32);
+    return shellExecute(url);
 }
 
 QString QDesktopServices::storageLocation(StandardLocation type)
