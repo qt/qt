@@ -1,4 +1,6 @@
-The French, German, and Simplified Chinese translation files are
-supported by Qt. All other translations are contributed by
-third parties. These are provided without guarantees and may
-disappear from future Qt releases.
+All translations are contributed by the Qt community.
+They are provided without guarantees, will often be stale, and may even
+disappear entirely from future Qt releases.
+
+See http://qt-project.org/wiki/Qt-Localization for information on how to
+contribute translations.
