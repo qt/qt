@@ -1699,7 +1699,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         }
     }
     else if (event == QKeySequence::Cut) {
-        if (!isReadOnly()) {
+        if (!isReadOnly() && hasSelectedText()) {
             copy();
             del();
         }

@@ -236,6 +236,7 @@ private slots:
 
 #ifndef QT_NO_CLIPBOARD
     void cut();
+    void cutWithoutSelection();
     void copy();
     void paste();
 #endif
@@ -3011,6 +3012,34 @@ void tst_QLineEdit::cut()
     testWidget->cursorBackward(true, 1);
     testWidget->cut();
     QCOMPARE(testWidget->text(), QString("Abcdefg defg hijklmno"));
+}
+
+void tst_QLineEdit::cutWithoutSelection()
+{
+    enum { selectionLength = 1 };
+
+    if (QKeySequence(QKeySequence::Cut).toString() != QLatin1String("Ctrl+X"))
+        QSKIP("Platform with non-standard keybindings", SkipAll);
+    QClipboard *clipboard = QApplication::clipboard();
+#ifdef Q_WS_X11
+    clipboard = 0; // Avoid unstable X11 clipboard
+#endif
+
+    if (clipboard)
+        clipboard->clear();
+    const QString origText("test");
+    QLineEdit lineEdit(origText);
+    lineEdit.setCursorPosition(0);
+    QVERIFY(!lineEdit.hasSelectedText());
+    QTest::keyClick(&lineEdit, Qt::Key_X, Qt::ControlModifier);
+    QCOMPARE(lineEdit.text(), origText); // No selection, unmodified.
+    if (clipboard)
+        QVERIFY(clipboard->text().isEmpty());
+    lineEdit.setSelection(0, selectionLength);
+    QTest::keyClick(&lineEdit, Qt::Key_X, Qt::ControlModifier);
+    QCOMPARE(lineEdit.text(), origText.right(origText.size() - selectionLength));
+    if (clipboard)
+        QCOMPARE(clipboard->text(), origText.left(selectionLength));
 }
 
 void tst_QLineEdit::copy()
