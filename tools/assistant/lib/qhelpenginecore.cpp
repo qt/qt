@@ -79,6 +79,7 @@ QHelpEngineCorePrivate::~QHelpEngineCorePrivate()
 
 void QHelpEngineCorePrivate::clearMaps()
 {
+    emit q->readersAboutToBeInvalidated();
     QMap<QString, QHelpDBReader*>::iterator it = readerMap.begin();
     while (it != readerMap.end()) {
         delete it.value();

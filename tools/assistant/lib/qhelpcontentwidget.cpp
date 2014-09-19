@@ -219,22 +219,28 @@ void QHelpContentProvider::collectContents(const QString &customFilterName)
 
 void QHelpContentProvider::stopCollecting()
 {
-    if (!isRunning())
-        return;
-    m_mutex.lock();
-    m_abort = true;
-    m_mutex.unlock();
-    wait();
+    if (isRunning()) {
+        m_mutex.lock();
+        m_abort = true;
+        m_mutex.unlock();
+        wait();
+    }
+    qDeleteAll(m_rootItems);
+    m_rootItems.clear();
 }
 
 QHelpContentItem *QHelpContentProvider::rootItem()
 {
     QMutexLocker locker(&m_mutex);
+    if (m_rootItems.isEmpty())
+        return 0;
     return m_rootItems.dequeue();
 }
 
 int QHelpContentProvider::nextChildCount() const
 {
+    if (m_rootItems.isEmpty())
+        return 0;
     return m_rootItems.head()->childCount();
 }
 
@@ -348,7 +354,7 @@ QHelpContentModel::QHelpContentModel(QHelpEnginePrivate *helpEngine)
 
     connect(d->qhelpContentProvider, SIGNAL(finished()),
         this, SLOT(insertContents()), Qt::QueuedConnection);
-    connect(helpEngine->q, SIGNAL(setupStarted()), this, SLOT(invalidateContents()));
+    connect(helpEngine->q, SIGNAL(readersAboutToBeInvalidated()), this, SLOT(invalidateContents()));
 }
 
 /*!
