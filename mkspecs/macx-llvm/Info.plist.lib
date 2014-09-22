@@ -4,9 +4,9 @@
 <dict>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
-        <key>CFBundleShortVersionString</key>
-        <string>@SHORT_VERSION@</string>
-        <key>CFBundleGetInfoString</key>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
+	<key>CFBundleGetInfoString</key>
 	<string>Created by Qt/QMake</string>
 	<key>CFBundleSignature</key>
 	<string>@TYPEINFO@</string>
