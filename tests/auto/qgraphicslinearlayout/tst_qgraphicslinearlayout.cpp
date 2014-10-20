@@ -108,6 +108,7 @@ private slots:
     void testOffByOneInLargerLayout();
     void testDefaultAlignment();
     void combineSizePolicies();
+    void hiddenItems();
 
     // Task specific tests
     void task218400_insertStretchCrash();
@@ -1648,6 +1649,33 @@ void tst_QGraphicsLinearLayout::combineSizePolicies()
     w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     QCOMPARE(layout->maximumHeight(), qreal(200));
 }
+
+void tst_QGraphicsLinearLayout::hiddenItems()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(2);
+
+    RectWidget *w1 = new RectWidget;
+    w1->setPreferredSize(QSizeF(20, 20));
+    layout->addItem(w1);
+
+    RectWidget *w2 = new RectWidget;
+    w2->setPreferredSize(QSizeF(20, 20));
+    layout->addItem(w2);
+
+    RectWidget *w3 = new RectWidget;
+    w3->setPreferredSize(QSizeF(20, 20));
+    layout->addItem(w3);
+
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+    w2->hide();
+    QCOMPARE(layout->preferredWidth(), qreal(42));
+    w2->show();
+    QCOMPARE(layout->preferredWidth(), qreal(64));
+}
+
 
 QTEST_MAIN(tst_QGraphicsLinearLayout)
 #include "tst_qgraphicslinearlayout.moc"

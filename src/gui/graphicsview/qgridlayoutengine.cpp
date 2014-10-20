@@ -49,6 +49,7 @@
 #include "qgridlayoutengine_p.h"
 #include "qstyleoption.h"
 #include "qvarlengtharray.h"
+#include "qgraphicswidget_p.h"
 
 #include <QtDebug>
 #include <QtCore/qmath.h>
@@ -696,6 +697,14 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         qreal ascent = vBox.q_minimumSize - descent;
         return QRectF(x, y + height - rowDescent - ascent, width, ascent + descent);
     }
+}
+
+bool QGridLayoutItem::isIgnored()
+{
+    if (QGraphicsItem *item = layoutItem()->graphicsItem()) {
+        return QGraphicsItemPrivate::get(item)->explicitlyHidden;
+    }
+    return false;
 }
 
 void QGridLayoutItem::setGeometry(const QRectF &rect)
@@ -1410,7 +1419,7 @@ void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData, const QLayoutSt
             if (rowIsIdenticalToPrevious && item != itemAt(row - 1, column, orientation))
                 rowIsIdenticalToPrevious = false;
 
-            if (item)
+            if (item && !item->isIgnored())
                 rowIsEmpty = false;
         }
 
