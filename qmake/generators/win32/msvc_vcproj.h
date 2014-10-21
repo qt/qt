@@ -134,6 +134,7 @@ protected:
 private:
     QStringList collectSubDirs(QMakeProject *proj);
     QUuid increaseUUID(const QUuid &id);
+    bool isStandardSuffix(const QString &suffix) const;
     friend class VCFilter;
 };
 

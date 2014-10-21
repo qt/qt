@@ -862,6 +862,7 @@ public:
     QString                 ConfigurationName;
     QString                 OutputDirectory;
     QString                 PrimaryOutput;
+    QString                 PrimaryOutputExtension;
     QString                 ProgramDatabase;
     triState                RegisterOutput;
     useOfATL                UseOfATL;

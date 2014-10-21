@@ -375,6 +375,21 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
     return result;
 }
 
+bool VcprojGenerator::isStandardSuffix(const QString &suffix) const
+{
+    if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
+        if (suffix.compare("exe", Qt::CaseInsensitive) == 0)
+            return true;
+    } else if (project->isActiveConfig("shared")) {
+        if (suffix.compare("dll", Qt::CaseInsensitive) == 0)
+            return true;
+    } else {
+        if (suffix.compare("lib", Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
+
 QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
 {
     QStringList subdirs;
@@ -917,12 +932,12 @@ void VcprojGenerator::initConfiguration()
     if (!conf.OutputDirectory.endsWith("\\"))
         conf.OutputDirectory += '\\';
     if (conf.CompilerVersion >= NET2010) {
-        // The target name could have been changed.
-        conf.PrimaryOutput = project->first("TARGET");
-        if (!conf.PrimaryOutput.isEmpty() && project->first("TEMPLATE") == "vclib"
-                && project->isActiveConfig("shared")) {
-            conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
-        }
+        const QFileInfo targetInfo = fileInfo(project->first("MSVCPROJ_TARGET"));
+        conf.PrimaryOutput = targetInfo.completeBaseName();
+
+        const QString targetSuffix = targetInfo.suffix();
+        if (!isStandardSuffix(targetSuffix))
+            conf.PrimaryOutputExtension = '.' + targetSuffix;
     }
 
     conf.Name = project->values("BUILD_NAME").join(" ");
