@@ -989,4 +989,4 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 
 QT_END_NAMESPACE
 
-#endif QT_NO_OPENSSL
+#endif // QT_NO_OPENSSL
