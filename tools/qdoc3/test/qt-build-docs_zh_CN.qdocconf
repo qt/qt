@@ -17,15 +17,15 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.486
+qhp.Qt.namespace           = com.trolltech.qt.487
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.title               = 教程
 qhp.Qt.indexTitle          = 教程
 qhp.Qt.selectors           = fake:example
 
-qhp.Qt.filterAttributes    = qt 4.8.6 qtrefdoc zh_CN
-qhp.Qt.customFilters.Qt.name = Qt 4.8.6
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.6
+qhp.Qt.filterAttributes    = qt 4.8.7 qtrefdoc zh_CN
+qhp.Qt.customFilters.Qt.name = Qt 4.8.7
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.7
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
