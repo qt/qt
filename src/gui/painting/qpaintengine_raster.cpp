@@ -3418,6 +3418,8 @@ void QRasterPaintEngine::releaseDC(HDC) const
 
 bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) const
 {
+    if (!state()->WxF)
+        return false;
     const QTransform &m = state()->matrix;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = fontEngine->type();
