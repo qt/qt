@@ -8,4 +8,4 @@ wince*|symbian: {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
-
+macx:CONFIG += insignificant_test # QTBUG-43507
