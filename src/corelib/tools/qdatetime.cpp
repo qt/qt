@@ -1533,7 +1533,7 @@ int QTime::msec() const
     Returns the time as a string. Milliseconds are not included. The
     \a format parameter determines the format of the string.
 
-    If \a format is Qt::TextDate, the string format is HH:MM:SS; e.g. 1
+    If \a format is Qt::TextDate, the string format is HH:mm:ss; e.g. 1
     second before midnight would be "23:59:59".
 
     If \a format is Qt::ISODate, the string format corresponds to the
