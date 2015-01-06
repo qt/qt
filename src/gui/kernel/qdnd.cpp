@@ -196,7 +196,7 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
 {
 #ifdef QDND_DEBUG
     qDebug("QDragManager::defaultAction(Qt::DropActions possibleActions)");
-    qDebug("keyboard modifiers : %s", KeyboardModifiersToString(modifiers).latin1());
+    qDebug("keyboard modifiers : %s", qPrintable(KeyboardModifiersToString(modifiers)));
 #endif
 
     QDragPrivate *d = dragPrivate();
@@ -235,7 +235,7 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
         possibleActions = object->d_func()->possible_actions;
 
 #ifdef QDND_DEBUG
-    qDebug("possible actions : %s", dragActionsToString(possibleActions).latin1());
+    qDebug("possible actions : %s", qPrintable(dragActionsToString(possibleActions)));
 #endif
 
     // Check if the action determined is allowed
@@ -251,7 +251,7 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
     }
 
 #ifdef QDND_DEBUG
-    qDebug("default action : %s", dragActionsToString(defaultAction).latin1());
+    qDebug("default action : %s", qPrintable(dragActionsToString(defaultAction)));
 #endif
 
     return defaultAction;
