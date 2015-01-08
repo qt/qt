@@ -2145,6 +2145,8 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
 
     if (val.isArray()) {
         int length = val.property(QLatin1String("length")).toInt32();
+        if (!length)
+            containsQObjects = true;
         for (int ii = 0; ii < length; ++ii) {
             if (val.property(ii).isQObject()) {
                 containsQObjects = true;
