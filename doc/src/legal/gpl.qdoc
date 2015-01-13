@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -30,7 +30,7 @@
 \ingroup licensing
 \brief About the GPL license used for Qt.
 
-The Qt GUI Toolkit is Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).\br
+The Qt GUI Toolkit is Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
 Contact: http://www.qt-project.org/legal
 
 Qt is available under the GPL.
@@ -47,7 +47,7 @@ Reference: \l{GNU General Public License}
 \ingroup licensing
 \brief About the LGPL license used for Qt.
 
-The Qt GUI Toolkit is Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).\br
+The Qt GUI Toolkit is Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
 Contact: http://www.qt-project.org/legal
 
 Qt is available under the LGPL.

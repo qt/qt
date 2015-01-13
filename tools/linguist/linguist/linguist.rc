@@ -18,7 +18,7 @@ BEGIN
             VALUE "CompanyName", "Digia Plc and/or its subsidiary(-ies)"
             VALUE "FileDescription", "Qt Linguist"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "LegalCopyright", "Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies)."
+            VALUE "LegalCopyright", "Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies)."
             VALUE "InternalName", "linguist"
             VALUE "OriginalFilename", "linguist.exe"
             VALUE "ProductName", "Qt Linguist"
