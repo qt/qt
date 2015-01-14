@@ -23,8 +23,8 @@ HTML.footer = \
     "</div> \n" \
     "<div class=\"footer\">\n" \
     "    <p>\n" \
-    "      <acronym title=\"Copyright\">&copy;</acronym> 2014 Digia Plc and/or its\n" \
-    "      subsidiaries. Documentation contributions included herein are the copyrights of\n" \
+    "      <acronym title=\"Copyright\">&copy;</acronym> 2015 The Qt Company Ltd.\n" \
+    "      Documentation contributions included herein are the copyrights of\n" \
     "      their respective owners.</p>\n" \
     "    <br />\n" \
     "    <p>\n" \
@@ -36,7 +36,7 @@ HTML.footer = \
     "      www.qt-project.org</a>.</p>\n" \
     "    <br />\n" \
     "    <p>\n" \
-    "      Digia, Qt and their respective logos are trademarks of Digia Plc \n" \
+    "      Qt and respective logos are trademarks of The Qt Company Ltd \n" \
     "      in Finland and/or other countries worldwide. All other trademarks are property\n" \
     "      of their respective owners. <a title=\"Privacy Policy\"\n" \
     "      href=\"http://en.gitorious.org/privacy_policy/\">Privacy Policy</a></p>\n" \

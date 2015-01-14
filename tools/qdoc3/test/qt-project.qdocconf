@@ -37,9 +37,9 @@ qhp.Qt.subprojects.examples.selectors = fake:example
 
 dita.metadata.default.author      = Qt Development Frameworks
 dita.metadata.default.permissions = all
-dita.metadata.default.publisher   = Digia
-dita.metadata.default.copyryear = 2013
-dita.metadata.default.copyrholder = Digia
+dita.metadata.default.publisher   = The Qt Company
+dita.metadata.default.copyryear = 2015
+dita.metadata.default.copyrholder = The Qt Company
 dita.metadata.default.audience = programmer
 
 language                = Cpp
