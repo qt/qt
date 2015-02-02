@@ -73,7 +73,7 @@ public:
       showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), requireImplicitWidth(false),
       hAlignImplicit(true), rightToLeftText(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
-      mouseSelectionMode(QDeclarativeTextEdit::SelectCharacters), selectByMouse(false), canPaste(false),
+      mouseSelectionMode(QDeclarativeTextEdit::SelectCharacters), lineCount(0), selectByMouse(false), canPaste(false),
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
