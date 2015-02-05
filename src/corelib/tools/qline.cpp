@@ -344,7 +344,7 @@ inline static qreal q_rad2deg(qreal x)
     or a null line.
 
     The intersect() function determines the IntersectType for this
-    line and a given line, while the angle() function returns the
+    line and a given line, while the angleTo() function returns the
     angle between the lines. In addition, the unitVector() function
     returns a line that has the same starting point as this line, but
     with a length of only 1, while the normalVector() function returns
