@@ -273,6 +273,8 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
+    QMutexLocker l(&data->postEventList.mutex);
+
 #if defined(Q_OS_BLACKBERRY)
     data->eventDispatcher = new QEventDispatcherBlackberry;
 #else
@@ -286,6 +288,7 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     data->eventDispatcher = new QEventDispatcherUNIX;
 #endif
 
+    l.unlock();
     data->eventDispatcher->startingUp();
 }
 

@@ -318,7 +318,9 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
+    QMutexLocker l(&data->postEventList.mutex);
     data->eventDispatcher = new QEventDispatcherWin32;
+    l.unlock();
     data->eventDispatcher->startingUp();
 }
 

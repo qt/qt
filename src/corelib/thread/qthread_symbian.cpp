@@ -336,7 +336,9 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
+    QMutexLocker l(&data->postEventList.mutex);
     data->eventDispatcher = new QEventDispatcherSymbian;
+    l.unlock();
     data->eventDispatcher->startingUp();
 }
 
