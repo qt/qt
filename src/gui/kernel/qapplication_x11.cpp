@@ -4189,6 +4189,12 @@ static Qt::MouseButtons translateMouseButtons(int s)
         ret |= Qt::MidButton;
     if (s & Button3Mask)
         ret |= Qt::RightButton;
+    // X11 has no special state for XButton1 and XButton2, so we need to use
+    // the global state maintained between press and release.
+    if (mouseButtonState.testFlag(Qt::XButton1))
+        ret |= Qt::XButton1;
+    if (mouseButtonState.testFlag(Qt::XButton2))
+        ret |= Qt::XButton2;
     return ret;
 }
 
