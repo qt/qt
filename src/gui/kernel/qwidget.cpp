@@ -10015,7 +10015,7 @@ QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChil
 
         // Map the point 'p' from parent coordinates to child coordinates.
         QPoint childPoint = p;
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
         // 'includeFrame' is true if the child's parent is a top-level QMainWindow with an unified tool bar.
         // An unified tool bar on the Mac lives outside QMainWindow's geometry(), so a normal
         // QWidget::mapFromParent won't do the trick.
