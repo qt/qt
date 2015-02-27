@@ -150,6 +150,9 @@ private slots:
     void rgbSwapped_data();
     void rgbSwapped();
 
+    void mirrored_data();
+    void mirrored();
+
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
 };
@@ -2014,6 +2017,119 @@ void tst_QImage::rgbSwapped()
     QCOMPARE(image, imageSwappedTwice);
 
     QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.numBytes()), 0);
+}
+
+void tst_QImage::mirrored_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<bool>("swap_vertical");
+    QTest::addColumn<bool>("swap_horizontal");
+    QTest::addColumn<int>("width");
+    QTest::addColumn<int>("height");
+
+    QTest::newRow("Format_RGB32, vertical") << QImage::Format_RGB32 << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB32, vertical") << QImage::Format_ARGB32 << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB32_Premultiplied, vertical") << QImage::Format_ARGB32_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_RGB16, vertical") << QImage::Format_RGB16 << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB8565_Premultiplied, vertical") << QImage::Format_ARGB8565_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB6666_Premultiplied, vertical") << QImage::Format_ARGB6666_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB4444_Premultiplied, vertical") << QImage::Format_ARGB4444_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_RGB666, vertical") << QImage::Format_RGB666 << true << false << 16 << 16;
+    QTest::newRow("Format_RGB555, vertical") << QImage::Format_RGB555 << true << false << 16 << 16;
+    QTest::newRow("Format_ARGB8555_Premultiplied, vertical") << QImage::Format_ARGB8555_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_RGB888, vertical") << QImage::Format_RGB888 << true << false << 16 << 16;
+    QTest::newRow("Format_RGB444, vertical") << QImage::Format_RGB444 << true << false << 16 << 16;
+    QTest::newRow("Format_Indexed8, vertical") << QImage::Format_Indexed8 << true << false << 16 << 16;
+    QTest::newRow("Format_Mono, vertical") << QImage::Format_Mono << true << false << 16 << 16;
+    QTest::newRow("Format_MonoLSB, vertical") << QImage::Format_MonoLSB << true << false << 16 << 16;
+
+    QTest::newRow("Format_ARGB32_Premultiplied, horizontal") << QImage::Format_ARGB32_Premultiplied << false << true << 16 << 16;
+    QTest::newRow("Format_RGB888, horizontal") << QImage::Format_RGB888 << false << true << 16 << 16;
+    QTest::newRow("Format_RGB16, horizontal") << QImage::Format_RGB16 << false << true << 16 << 16;
+    QTest::newRow("Format_Indexed8, horizontal") << QImage::Format_Indexed8 << false << true << 16 << 16;
+    QTest::newRow("Format_Mono, horizontal") << QImage::Format_Mono << false << true << 16 << 16;
+    QTest::newRow("Format_MonoLSB, horizontal") << QImage::Format_MonoLSB << false << true << 16 << 16;
+
+    QTest::newRow("Format_ARGB32_Premultiplied, horizontal+vertical") << QImage::Format_ARGB32_Premultiplied << true << true << 16 << 16;
+    QTest::newRow("Format_RGB888, horizontal+vertical") << QImage::Format_RGB888 << true << true << 16 << 16;
+    QTest::newRow("Format_RGB16, horizontal+vertical") << QImage::Format_RGB16 << true << true << 16 << 16;
+    QTest::newRow("Format_Indexed8, horizontal+vertical") << QImage::Format_Indexed8 << true << true << 16 << 16;
+    QTest::newRow("Format_Mono, horizontal+vertical") << QImage::Format_Mono << true << true << 16 << 16;
+    QTest::newRow("Format_MonoLSB, horizontal+vertical") << QImage::Format_MonoLSB << true << true << 16 << 16;
+
+    QTest::newRow("Format_RGB32, vertical") << QImage::Format_RGB32 << true << false << 8 << 16;
+    QTest::newRow("Format_ARGB32, vertical") << QImage::Format_ARGB32 << true << false << 16 << 8;
+    QTest::newRow("Format_Mono, vertical, non-aligned") << QImage::Format_Mono << true << false << 19 << 25;
+    QTest::newRow("Format_MonoLSB, vertical, non-aligned") << QImage::Format_MonoLSB << true << false << 19 << 25;
+
+    // Non-aligned horizontal 1-bit needs special handling so test this.
+    QTest::newRow("Format_Mono, horizontal, non-aligned") << QImage::Format_Mono << false << true << 13 << 17;
+    QTest::newRow("Format_Mono, horizontal, non-aligned") << QImage::Format_Mono << false << true << 19 << 25;
+    QTest::newRow("Format_Mono, horizontal+vertical, non-aligned") << QImage::Format_Mono << true << true << 25 << 47;
+    QTest::newRow("Format_Mono, horizontal+vertical, non-aligned") << QImage::Format_Mono << true << true << 21 << 16;
+
+    QTest::newRow("Format_MonoLSB, horizontal, non-aligned") << QImage::Format_MonoLSB << false << true << 13 << 17;
+    QTest::newRow("Format_MonoLSB, horizontal, non-aligned") << QImage::Format_MonoLSB << false << true << 19 << 25;
+    QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned") << QImage::Format_MonoLSB << true << true << 25 << 47;
+    QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned") << QImage::Format_MonoLSB << true << true << 21 << 16;
+}
+
+void tst_QImage::mirrored()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(bool, swap_vertical);
+    QFETCH(bool, swap_horizontal);
+    QFETCH(int, width);
+    QFETCH(int, height);
+
+    QImage image(width, height, format);
+
+    switch (format) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+        for (int i = 0; i < image.height(); ++i) {
+            ushort* scanLine = (ushort*)image.scanLine(i);
+            *scanLine = (i % 2) ? 0x5555U : 0xCCCCU;
+        }
+        break;
+    case QImage::Format_Indexed8:
+        for (int i = 0; i < image.height(); ++i) {
+            for (int j = 0; j < image.width(); ++j) {
+                image.setColor(i*16+j, qRgb(j*16, i*16, 0));
+                image.setPixel(j, i, i*16+j);
+            }
+        }
+        break;
+    default:
+        for (int i = 0; i < image.height(); ++i)
+            for (int j = 0; j < image.width(); ++j)
+                image.setPixel(j, i, qRgb(j*16, i*16, 0));
+        break;
+    }
+
+    QImage imageMirrored = image.mirrored(swap_horizontal, swap_vertical);
+
+    for (int i = 0; i < image.height(); ++i) {
+        int mirroredI = swap_vertical ? (image.height() - i - 1) : i;
+        for (int j = 0; j < image.width(); ++j) {
+            QRgb referenceColor = image.pixel(j, i);
+            int mirroredJ = swap_horizontal ? (image.width() - j - 1) : j;
+            QRgb mirroredColor = imageMirrored.pixel(mirroredJ, mirroredI);
+            QCOMPARE(mirroredColor, referenceColor);
+        }
+    }
+
+    QImage imageMirroredTwice = imageMirrored.mirrored(swap_horizontal, swap_vertical);
+
+    QCOMPARE(image, imageMirroredTwice);
+
+    if (format != QImage::Format_Mono && format != QImage::Format_MonoLSB)
+        QCOMPARE(memcmp(image.constBits(), imageMirroredTwice.constBits(), image.byteCount()), 0);
+    else {
+        for (int i = 0; i < image.height(); ++i)
+            for (int j = 0; j < image.width(); ++j)
+                QCOMPARE(image.pixel(j,i), imageMirroredTwice.pixel(j,i));
+    }
 }
 
 void tst_QImage::deepCopyWhenPaintingActive()
