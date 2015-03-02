@@ -368,7 +368,6 @@ void WidgetDataBase::loadPlugins()
 {
     typedef QMap<QString, int> NameIndexMap;
     typedef QList<QDesignerWidgetDataBaseItemInterface*> ItemList;
-    typedef QMap<QString, QDesignerWidgetDataBaseItemInterface*> NameItemMap;
     typedef QSet<QString> NameSet;
     // 1) create a map of existing custom classes
     NameIndexMap existingCustomClasses;

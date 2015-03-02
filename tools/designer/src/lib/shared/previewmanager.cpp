@@ -817,7 +817,7 @@ QWidget *PreviewManager::raise(const QDesignerFormWindowInterface *fw, const Pre
 {
     typedef PreviewManagerPrivate::PreviewDataList PreviewDataList;
     if (d->m_previews.empty())
-        return false;
+        return 0;
 
     // find matching window
     const PreviewDataList::const_iterator cend =  d->m_previews.constEnd();
