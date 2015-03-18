@@ -64,8 +64,10 @@
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
-#ifdef Q_OS_WIN
-#include <crtdbg.h>
+#if defined(Q_OS_WIN)
+#  if !defined(Q_CC_MINGW)
+#    include <crtdbg.h>
+#  endif
 #include <qt_windows.h>
 #endif
 
@@ -498,7 +500,7 @@ void printUsage(const QString &appName)
 
 int main(int argc, char *argv[])
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_CC_MINGW)
     // we do not want windows popping up if the module loaded triggers an assert
     SetErrorMode(SEM_NOGPFAULTERRORBOX);
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
