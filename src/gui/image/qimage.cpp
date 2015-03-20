@@ -4781,7 +4781,7 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
             T *srcPtr = (T *) (src->data + srcY * src->bytes_per_line);
             T *dstPtr = (T *) (dst->data + dstY * dst->bytes_per_line);
             for (int srcX = 0, dstX = dstX0; srcX < srcXEnd; ++srcX, dstX += dstXIncr)
-                std::swap(srcPtr[srcX], dstPtr[dstX]);
+                qSwap(srcPtr[srcX], dstPtr[dstX]);
         }
     } else {
         for (int srcY = 0, dstY = dstY0; srcY < h; ++srcY, dstY += dstYIncr) {
