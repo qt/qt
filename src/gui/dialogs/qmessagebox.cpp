@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -10,20 +10,21 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** As a special exception, The Qt Company gives you certain additional
+** rights. These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** GNU General Public License Usage
@@ -33,7 +34,6 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -1766,10 +1766,9 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
-        "<p>Qt provides single-source portability across MS&nbsp;Windows, "
-        "Mac&nbsp;OS&nbsp;X, Linux, and all major commercial Unix variants. "
-        "Qt is also available for embedded devices as Qt for Embedded Linux "
-        "and Qt for Windows CE.</p>"
+        "<p>Qt provides single-source portability across all major desktop "
+        "operating systems. It is also available for embedded Linux and other "
+        "embedded and mobile operating systems.</p>"
         "<p>Qt is available under three different licensing options designed "
         "to accommodate the needs of our various users.</p>"
         "<p>Qt licensed under our commercial license agreement is appropriate "
@@ -1777,18 +1776,18 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "want to share any source code with third parties or otherwise cannot "
         "comply with the terms of the GNU LGPL version 3 or GNU LGPL version 2.1.</p>"
         "<p>Qt licensed under the GNU LGPL version 3 is appropriate for the "
-        "development of Qt applications provided you can comply with the terms "
+        "development of Qt&nbsp;applications provided you can comply with the terms "
         "and conditions of the GNU LGPL version 3.</p>"
         "<p>Qt licensed under the GNU LGPL version 2.1 is appropriate for the "
-        "development of Qt applications provided you can comply with the terms "
+        "development of Qt&nbsp;applications provided you can comply with the terms "
         "and conditions of the GNU LGPL version 2.1.</p>"
         "<p>Please see <a href=\"http://%2/\">%2</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) %1 Digia Plc and/or its subsidiary(-ies) and other "
+        "<p>Copyright (C) %1 The Qt Company Ltd and other "
         "contributors.</p>"
-        "<p>Qt and the Qt logo are trademarks of Digia Plc and/or its subsidiary(-ies).</p>"
-        "<p>Qt is a Digia product developed as an open source project. See <a href=\"http://%3/\">%3</a> "
-        "for more information.</p>"
+        "<p>Qt and the Qt logo are trademarks of The Qt Company Ltd.</p>"
+        "<p>Qt is The Qt Company Ltd product developed as an open source "
+        "project. See <a href=\"http://%3/\">%3</a> for more information.</p>"
         ).arg(QLatin1String("2015"),
               QLatin1String("qt.io/licensing"),
               QLatin1String("qt.io"));

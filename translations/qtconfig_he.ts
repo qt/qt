@@ -456,7 +456,7 @@ p, li { white-space: pre-wrap; }
         <translation>בחירת ספרייה</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
         <translation></translation>
     </message>
     <message>

@@ -3252,7 +3252,7 @@ Czy chcesz nadpisać szablon?</translation>
         <translation>Qt Designer</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>%1&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

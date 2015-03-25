@@ -3,7 +3,7 @@
 ** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
 ** All rights reserved.
 **
-** Portion Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Portion Copyright (C) 2015 The Qt Company Ltd.
 
 **
 ** This file may be used under the terms of the GNU Lesser General Public

@@ -1072,7 +1072,7 @@ Powód:
         <translation></translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;</source>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

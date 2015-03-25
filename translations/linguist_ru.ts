@@ -1464,8 +1464,8 @@ All files (*)</source>
         <translation>Версия %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Корпорация Digia и/или её дочерние подразделения.</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Корпорация The Qt Company и/или её дочерние подразделения.</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>
@@ -2124,8 +2124,8 @@ All files (*)</source>
         <translation>Переключение проверки маркеров форматирования</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Digia.</source>
-        <translation>Показать информацию об инструментарии Qt от Digia.</translation>
+        <source>Display information about the Qt toolkit by The Qt Company.</source>
+        <translation>Показать информацию об инструментарии Qt от The Qt Company.</translation>
     </message>
 </context>
 <context>

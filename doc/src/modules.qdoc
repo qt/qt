@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -10,9 +10,9 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Free Documentation License Usage
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -551,8 +551,8 @@
     Copyright (C) 2004-2009 Matthias Kretz <kretz@kde.org> \BR
     Copyright (C) 2008 Ian Monroe <ian@monroe.nu> \BR
     Copyright (C) 2007-2008 Trolltech ASA \BR
-    Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies). \BR
-    Contact: http://www.qt-project.org/legal
+    Copyright (C) 2015 The Qt Company Ltd. \BR
+    Contact: http://www.qt.io/licensing/
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -697,7 +697,7 @@
 
     \legalese
     Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team \BR
-    Changes are Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
+    Changes are Copyright (C) 2015 The Qt Company Ltd.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -762,7 +762,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
+    Copyright (C) 2015 The Qt Company Ltd.\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -811,7 +811,7 @@
     the following license.
 
     \legalese
-    Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
+    Copyright (C) 2015 The Qt Company Ltd.\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -903,7 +903,7 @@
     the following license.
     
     \legalese
-    Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
+    Copyright (C) 2015 The Qt Company Ltd.\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)
@@ -941,9 +941,9 @@
     distributed under the following license.
     
     \legalese
-    Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
+    Copyright (C) 2015 The Qt Company Ltd.\br
     All rights reserved.\br
-    Contact: http://www.qt-project.org/legal
+    Contact: http://www.qt.io/licensing/
 
     This file is part of the Symbian application wrapper of the Qt Toolkit.
 

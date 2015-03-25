@@ -116,8 +116,8 @@
         <translation>Выбор каталога</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версия %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Корпорация Digia и/или её дочерние подразделения.</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версия %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Корпорация The Qt Company и/или её дочерние подразделения.</translation>
     </message>
     <message>
         <source>Qt Configuration</source>
@@ -690,7 +690,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">Простая кнопка</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;a href=&quot;http://qt.digia.com&quot;&gt;http://qt.digia.com&lt;/a&gt;&lt;/p&gt;
+        <source>&lt;p&gt;&lt;a href=&quot;http://qt.io&quot;&gt;http://qt.io&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;&lt;/p&gt;</source>
         <translation></translation>
     </message>

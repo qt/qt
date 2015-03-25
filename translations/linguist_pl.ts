@@ -1422,7 +1422,7 @@ Czy chcesz pominąć pierwszy plik?</translation>
         <translation>Plik zachowany.</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1938,7 +1938,7 @@ Wszystkie pliki (*)</translation>
         <translation>Warianty tłumaczeń</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Digia.</source>
+        <source>Display information about the Qt toolkit by The Qt Company.</source>
         <translation>Pokaż informacje o pakiecie narzędziowym Qt oferowanym przez Nokię.</translation>
     </message>
 </context>

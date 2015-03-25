@@ -1090,8 +1090,8 @@ Reason:
         <translation>Ezinezkoa elkarturiko eduki gaia aurkitzea.</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Bertsioa %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyrighta (C) 2012 Digia Plc eta/edo ordezkaria(k).&lt;/p&gt;</translation>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.&lt;/p&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Bertsioa %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyrighta (C) 2015 The Qt Company Ltd eta/edo ordezkaria(k).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About %1</source>

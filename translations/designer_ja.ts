@@ -3238,8 +3238,8 @@ Do you want overwrite the template?</source>
         <translation>&lt;br/&gt;Qt Designer は、Qt アプリケーションをデザインするための GUI ツールです。&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>%1&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>%1&lt;br/&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>%1&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</translation>
     </message>
 </context>
 <context>

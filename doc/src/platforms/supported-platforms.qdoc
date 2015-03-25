@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -10,9 +10,9 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Free Documentation License Usage
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -357,7 +357,7 @@
 /*!
     \page supported-platforms.html
     \title Supported Platforms
-    \brief The platforms supported by Digia for Qt.
+    \brief The platforms supported by The Qt Company for Qt.
     \ingroup platform-specific
     \group platform-details
 
@@ -394,7 +394,7 @@
     Qt is supported on a variety of 32-bit and 64-bit platforms, and can
     usually be built on each platform with GCC, a vendor-supplied compiler, or
     a third party compiler. Although Qt may be built on a range of platform-compiler
-    combinations, only a subset of these are actively supported by Digia.
+    combinations, only a subset of these are actively supported by The Qt Company.
 
     \tableofcontents
 
@@ -456,21 +456,21 @@
                                      \o As provided by Apple
     \endtable
 
-    \section1 Tier 3 Platforms (Not Supported by Digia)
+    \section1 Tier 3 Platforms (Not Supported by The Qt Company)
 
-    All platforms not specifically listed above are not supported by Digia. Digia does
+    All platforms not specifically listed above are not supported by The Qt Company. The Qt Company does
     not run its unit test suite or perform any other internal tests on platforms not
     listed above.
 
     Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
-    platforms not supported by Digia.
+    platforms not supported by The Qt Company.
 
     \section1 General Legal Disclaimer
 
     Please note that Qt is offered on an "as is" basis without warranty
     of any kind and that our products are not error or bug free. To the maximum extent
-    permitted by applicable law, Digia on behalf of itself and its suppliers, disclaims all
+    permitted by applicable law, The Qt Company on behalf of itself and its suppliers, disclaims all
     warranties and conditions, either express or implied, including, but not limited to,
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.

@@ -1094,8 +1094,8 @@ Minden fájl (*)</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;A Qt Linguist a Qt alkalmazások fordítását segítő eszköz.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;A Qt Linguist a Qt alkalmazások fordítását segítő eszköz.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -1541,8 +1541,8 @@ Minden fájl (*)</translation>
     </message>
     <message>
         <location/>
-        <source>Display information about the Qt toolkit by Digia.</source>
-        <translation>Információk a Digia Qt eszközkészletéről.</translation>
+        <source>Display information about the Qt toolkit by The Qt Company.</source>
+        <translation>Információk a The Qt Company Qt eszközkészletéről.</translation>
     </message>
 </context>
 <context>

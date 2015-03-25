@@ -5,15 +5,15 @@
 ;                SIS creation.
 ;  Version     :
 ;
-;  Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+;  Copyright (C) 2015 The Qt Company Ltd.
 ;  This material, including documentation and any related
 ;  computer programs, is protected by copyright controlled by
-;  Digia Plc. All rights are reserved. Copying,
+;  The Qt Company Ltd. All rights are reserved. Copying,
 ;  including reproducing, storing, adapting or translating, any
 ;  or all of this material requires the prior written consent of
-;  Digia Plc. This material also contains confidential
+;  The Qt Company Ltd. This material also contains confidential
 ;  information which may not be disclosed to others without the
-;  prior written consent of Digia Plc.
+;  prior written consent of The Qt Company Ltd.
 ; ==============================================================================
 
 
@@ -21,7 +21,7 @@
 #{"PMMapper"},(0x2002121F),1,0,0
 
 ;Localised Vendor name
-%{"Digia Test EN"}
+%{"The Qt Company Test EN"}
 
 ;Unique Vendor name
 :"Vendor"

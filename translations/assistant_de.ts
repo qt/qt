@@ -1051,8 +1051,8 @@ Grund:
         <translation>Ctrl+Alt+Left</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc und/oder ihre Tochtergesellschaft(en).&lt;/p&gt;</translation>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.&lt;/p&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd und/oder ihre Tochtergesellschaft(en).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>

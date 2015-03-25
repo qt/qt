@@ -8,10 +8,10 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "CompanyName",      "Digia Plc\0"
+            VALUE "CompanyName",      "The Qt Company Ltd\0"
             VALUE "FileDescription",  "Qt Quick example application.\0"
             VALUE "FileVersion",      "1.2.0\0"
-            VALUE "LegalCopyright",   "Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies)."
+            VALUE "LegalCopyright",   "Copyright (C) 2015 The Qt Company Ltd."
             VALUE "ProductName",      "Guitar Tuner\0"
             VALUE "ProductVersion",   "1.2.0\0"
         END

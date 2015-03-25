@@ -10,7 +10,7 @@ This application is a demo which uses the QtMultimedia APIs to capture and play 
 Acknowledgments
 ---------------
 
-The application uses the FFTReal v2.00 library by Laurent de Soras to perform frequency analysis of the audio signal.  For further information, see the project home page:
+The application uses the FFTReal v2.00 library by Laurent de Soras to perform frequency analysis of the audio signal. For further information, see the project home page:
     http://ldesoras.free.fr/prod.html
 
 

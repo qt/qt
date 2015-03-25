@@ -1365,8 +1365,8 @@ Options:
         <translation>אודות Qt</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Digia.</source>
-        <translation>הצג מידע אודות ערכת כלים Qt מאת Digia.</translation>
+        <source>Display information about the Qt toolkit by The Qt Company.</source>
+        <translation>הצג מידע אודות ערכת כלים Qt מאת The Qt Company.</translation>
     </message>
     <message>
         <source>&amp;What&apos;s This?</source>
@@ -1701,8 +1701,8 @@ All files (*)</source>
         <translation>גירסה %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p dir=&quot;rtl&quot;&gt;Qt Linguist הוא כלי להוספת תרגומים ליישומי Qt.&lt;/p&gt;&lt;p dir=&quot;ltr&quot;&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p dir=&quot;rtl&quot;&gt;Qt Linguist הוא כלי להוספת תרגומים ליישומי Qt.&lt;/p&gt;&lt;p dir=&quot;ltr&quot;&gt;Copyright (C) 2015 The Qt Company Ltd.</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>

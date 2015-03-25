@@ -456,8 +456,8 @@ p, li { white-space: pre-wrap; }
         <translation>Hautatu Zuzenbide bat</translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Bertsioa %2&lt;br/&gt;&lt;br/&gt;Copyrighta (C) 2012 Digia Plc eta/edo ordezkaria(-k).</translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Bertsioa %2&lt;br/&gt;&lt;br/&gt;Copyrighta (C) 2015 The Qt Company Ltd eta/edo ordezkaria(-k).</translation>
     </message>
     <message>
         <source>Save Changes</source>

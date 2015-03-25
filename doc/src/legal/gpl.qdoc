@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -10,9 +10,9 @@
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Free Documentation License Usage
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -30,8 +30,8 @@
 \ingroup licensing
 \brief About the GPL license used for Qt.
 
-The Qt GUI Toolkit is Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
-Contact: http://www.qt-project.org/legal
+The Qt GUI Toolkit is Copyright (C) 2015 The Qt Company Ltd.\br
+Contact: http://www.qt.io/licensing/
 
 Qt is available under the GPL.
 
@@ -47,8 +47,8 @@ Reference: \l{GNU General Public License}
 \ingroup licensing
 \brief About the LGPL license used for Qt.
 
-The Qt GUI Toolkit is Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).\br
-Contact: http://www.qt-project.org/legal
+The Qt GUI Toolkit is Copyright (C) 2015 The Qt Company Ltd.\br
+Contact: http://www.qt.io/licensing/
 
 Qt is available under the LGPL.
 
@@ -58,7 +58,7 @@ Reference: \l{GNU Lesser General Public License, version 2.1}
 
 \snippet doc/src/snippets/code/doc_src_lgpl.qdoc LGPL v2.1
 
-\section1 Digia Qt LGPL Exception version 1.1
+\section1 The Qt Company Qt LGPL Exception version 1.1
 
 As a special exception to the GNU Lesser General Public License version 2.1,
 the object code form of a "work that uses the Library" may incorporate material

@@ -15,10 +15,10 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "CompanyName", "Digia Plc and/or its subsidiary(-ies)"
+            VALUE "CompanyName", "The Qt Company Ltd"
             VALUE "FileDescription", "Qt Examples and Demos"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "LegalCopyright", "Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies)."
+            VALUE "LegalCopyright", "Copyright (C) 2015 The Qt Company Ltd."
             VALUE "InternalName", "qtdemo"
             VALUE "OriginalFilename", "qtdemo.exe"
             VALUE "ProductName", "Qt Examples and Demos"

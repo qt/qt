@@ -1911,8 +1911,8 @@ Všechny soubory (*)</translation>
         <translation>Verze %1</translation>
     </message>
     <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist je nástrojem pro přidávání překladů do programů Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2012 Digia Plc a/nebo její dceřinná společnost(i).</translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd.</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist je nástrojem pro přidávání překladů do programů Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2015 The Qt Company Ltd a/nebo její dceřinná společnost(i).</translation>
     </message>
     <message>
         <source>Do you want to save the modified files?</source>
@@ -2135,7 +2135,7 @@ Všechny soubory (*)</translation>
         <translation>Varianty délky</translation>
     </message>
     <message>
-        <source>Display information about the Qt toolkit by Digia.</source>
+        <source>Display information about the Qt toolkit by The Qt Company.</source>
         <translation>Zobrazit informace o sadě nástrojů Qt od Nokie.</translation>
     </message>
 </context>

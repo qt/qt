@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -15,7 +15,7 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** If you have questions regarding the use of this file, please contact
-** us via http://www.qt-project.org/.
+** us via http://www.qt.io/contact-us/.
 **
 ** $QT_END_LICENSE$
 **
