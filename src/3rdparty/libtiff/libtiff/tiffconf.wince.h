@@ -1,4 +1,4 @@
-/* $Id: tiffconf.wince.h,v 1.1.2.1 2009-01-01 17:52:51 bfriesen Exp $ */
+/* $Id: tiffconf.wince.h,v 1.3 2010-03-10 18:56:49 bfriesen Exp $ */
 
 /*
  * Windows CE platform tiffconf.wince.h
@@ -38,21 +38,6 @@
 
 /* The size of a `int', as computed by sizeof. */
 #define SIZEOF_INT 4
-
-/* The size of a `long', as computed by sizeof. */
-#define SIZEOF_LONG 4
-
-/* Signed 64-bit type formatter */
-#define TIFF_INT64_FORMAT "%I64d"
-
-/* Signed 64-bit type */
-#define TIFF_INT64_T signed __int64
-
-/* Unsigned 64-bit type formatter */
-#define TIFF_UINT64_FORMAT "%I64u"
-
-/* Unsigned 64-bit type */
-#define TIFF_UINT64_T unsigned __int64
 
 /* Compatibility stuff. */
 
@@ -127,3 +112,10 @@
 #define IPTC_SUPPORT
 
 #endif /* _TIFFCONF_ */
+/*
+ * Local Variables:
+ * mode: c
+ * c-basic-offset: 8
+ * fill-column: 78
+ * End:
+ */

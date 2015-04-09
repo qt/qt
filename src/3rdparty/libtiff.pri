@@ -34,10 +34,9 @@ SOURCES += \
     $$PWD/libtiff/libtiff/tif_write.c \
     $$PWD/libtiff/libtiff/tif_zip.c
 
-wince*:       SOURCES += $$PWD/../corelib/kernel/qfunctions_wince.cpp \
-                         $$PWD/libtiff/libtiff/tif_wince.c
+wince*:       SOURCES += $$PWD/libtiff/libtiff/tif_win32.c
 win32:        SOURCES += $$PWD/libtiff/libtiff/tif_win32.c
 else:         SOURCES += $$PWD/libtiff/libtiff/tif_unix.c
-symbian:      SOURCES += $$PWD/libtiff/port/lfind.c
+android:      SOURCES += $$PWD/libtiff/port/lfind.c
 
 include($$PWD/zlib_dependency.pri)

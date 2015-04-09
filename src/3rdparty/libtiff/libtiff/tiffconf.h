@@ -9,6 +9,40 @@
 
 #include <qglobal.h>
 
+/* Signed 16-bit type */
+#define TIFF_INT16_T qint16
+
+/* Signed 32-bit type */
+#define TIFF_INT32_T qint32
+
+/* Signed 64-bit type */
+#define TIFF_INT64_T qint64
+
+/* Signed 8-bit type */
+#define TIFF_INT8_T qint8
+
+/* Unsigned 16-bit type */
+#define TIFF_UINT16_T quint16
+
+/* Unsigned 32-bit type */
+#define TIFF_UINT32_T quint32
+
+/* Unsigned 64-bit type */
+#define TIFF_UINT64_T quint64
+
+/* Unsigned 8-bit type */
+#define TIFF_UINT8_T quint8
+
+/* Signed size type */
+#if QT_POINTER_SIZE == 4
+#define TIFF_SSIZE_T qint32
+#else
+#define TIFF_SSIZE_T qint64
+#endif
+
+/* Pointer difference type */
+#define TIFF_PTRDIFF_T ptrdiff_t
+
 /* Define to 1 if the system has the type `int16'. */
 /* #undef HAVE_INT16 */
 
@@ -17,16 +51,6 @@
 
 /* Define to 1 if the system has the type `int8'. */
 /* #undef HAVE_INT8 */
-
-/* The size of a `int', as computed by sizeof. */
-#define SIZEOF_INT 4
-
-/* The size of a `long', as computed by sizeof. */
-#if (QT_POINTER_SIZE == 8) && !defined(Q_OS_WIN64)
-#define SIZEOF_LONG 8
-#else
-#define SIZEOF_LONG 4
-#endif
 
 /* Compatibility stuff. */
 
