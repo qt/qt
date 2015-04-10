@@ -47,8 +47,7 @@
     legacy \c lib/fonts/fontdir file.
 
     Support for other font formats can be added. To make a suggestion,
-    please create a task in our bug tracker at \l
-    {http://bugreports.qt-project.org}{http://bugreports.qt-project.org}.
+    please create a task in our \l {Qt Bug Tracker}{bug tracker}.
 
     \tableofcontents
 

@@ -1480,7 +1480,7 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     \l{QtSvg Module}{SVG Module}.
 
     TGA support only extends to reading non-RLE compressed files.  In particular
-    calls to \l{http://doc.qt.nokia.com/4.7-snapshot/qimageioplugin.html#capabilities}{capabilities}
+    calls to \l{http://doc.qt.io/qt-4.8/qimageioplugin.html#capabilities}{capabilities}
     for the tga plugin returns only QImageIOPlugin::CanRead, not QImageIOPlugin::CanWrite.
 
     To configure Qt with GIF support, pass \c -qt-gif to the \c

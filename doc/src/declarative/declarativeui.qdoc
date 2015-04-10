@@ -84,8 +84,8 @@ Qt applications.
 \list
 \o \l{Qt Quick Components for Symbian 1.1}{Qt Quick Components for Symbian} - a native component set for the Symbian^3 platform
 \o \l{QtWebKit QML Module}
-\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
-\o \l {http://doc.qt.nokia.com/qt-components-symbian-1.1/index.html}{Qt Quick Components}
+\o \l{http://doc.qt.digia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
+\o \l {http://doc.qt.digia.com/qt-components-symbian-1.0/index.html}{Qt Quick Components}
 \endlist
 
 \section1 Qt Quick Tools
@@ -106,7 +106,7 @@ Qt applications.
 \o \l{QML Coding Conventions}
 \o \l{external: Qt Creator Manual}{Qt Creator Manual}
 \o \l{Programming with Qt}
-\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
+\o \l{http://doc.qt.digia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
 \endlist
 
 \section1 Architecture

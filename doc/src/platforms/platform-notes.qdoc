@@ -65,7 +65,7 @@
 
     This page describes implementation details regarding the Qt for Symbian port. To get 
     started with application development for Symbian devices, read  the \l 
-    {http://doc.qt.nokia.com/qtcreator/creator-developing-symbian.html} 
+    {external: Setting Up Development Environment for Symbian}
     {Connecting Symbian Devices} document.
 
     \section1 Source Compatibility
@@ -95,7 +95,7 @@
     \target Supported Devices
     \section1 Supported Devices
     
-    The \l {http://developer.qt.nokia.com/wiki/support_for_Symbian}{Support for Symbian} document
+    The \l {http://wiki.qt.io/Support_for_Symbian}{Support for Symbian} document
     details the Qt support on different Symbian devices.
 
     The \l {http://www.developer.nokia.com/Community/Wiki/Nokia_Smart_Installer_for_Symbian#Supported_Devices}
@@ -124,7 +124,7 @@
     \list
     \o QtConcurrent
     \o QtDBus
-    \o \l {http://doc.qt.nokia.com/4.8/printing.html}{Printing support}
+    \o \l {http://doc.qt.io/qt-4.8/printing.html}{Printing support}
     \o Qt3Support
     \endlist
     
@@ -141,7 +141,7 @@
     \row    \o QtGui
             \o QtGui's widgets are deprecated (i.e. they are available but not 
             recommended to use) in the Symbian port. It is recommended to use \l
-            {http://doc.qt.nokia.com/qt-components-symbian-1.1/symbian-components-functional.html}
+            {http://doc.qt.digia.com/qt-components-symbian-1.0/symbian-components-functional.html}
             {Qt Quick Components for Symbian} instead, because they provide 
             better look and feel on Symbian devices.
 
@@ -186,9 +186,9 @@
     Known issues can be found by visiting the
     \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}{wiki page} with an
     up-to-date list of known issues, and the list of bugs can be found by
-    \l{http://bugreports.qt-project.org/browse/QTBUG/component/19171}{browsing} the
+    \l{http://bugreports.qt.io/browse/QTBUG/component/19171}{browsing} the
     S60 component in Qt's public task tracker, located at
-    \l{http://bugreports.qt-project.org/}{http://bugreports.qt-project.org/}.
+    \l{http://bugreports.qt.io/}{http://bugreports.qt.io/}.
 
     For information about mixing exceptions with Symbian leaves, see
     \l{Exception Safety with Symbian}.
@@ -200,7 +200,7 @@
     capabilities to function properly. The capabilities your application needs
     to function properly depends on which parts of Qt you use. 
     In a Qt application Symbian capabilities are defined in the
-    \l {http://doc.qt.nokia.com/4.8/qmake-variable-reference.html#target-capability}
+    \l {http://doc.qt.io/qt-4.8/qmake-variable-reference.html#target-capability}
     {TARGET.CAPABILITY} qmake variable in the project file.
     Here is an overview for which capabilities may be needed when using different modules:
 
@@ -236,7 +236,7 @@
     \section1 Multimedia Support
 
     Qt Mobility provides a high-level API for multimedia functionality with
-    \l{http://doc.qt.nokia.com/qtmobility/multimedia.html}{QtMultimediaKit}.
+    \l{http://doc.qt.digia.com/qtmobility/multimedia.html}{QtMultimediaKit}.
     In addition, Qt provides the low-level \l {QtMultimedia}{QtMultimedia} 
     module that is internally used by the QtMultimediaKit. For more information
     on developing multimedia applications for Symbian devices, see
@@ -295,7 +295,7 @@
     Symbian. The OpenVG graphics system is not able to manage OpenGL graphics
     resources. Also, a QGLWidget object is not able to release its GPU resources
     when the application goes to the background. If OpenGL functionality is
-    needed, \l { http://doc.qt.nokia.com/4.7-snapshot/qapplication.html#setGraphicsSystem}
+    needed, \l {http://doc.qt.io/qt-4.8/qapplication.html#setGraphicsSystem}
     {OpenGL graphics system} usage is recommended. If an application
     decides to use QGLWidget, then it is the application's responsibility to
     destroy and release QGLWidget and related OpenGL resources when the

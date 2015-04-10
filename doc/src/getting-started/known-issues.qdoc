@@ -32,7 +32,7 @@
     \brief Links to online resources stating known issues in this Qt version at the time of release.
 
 	\list
-        \o An up-to-date list of known issues can be found at \l{http://bugreports.qt-project.org/}{Qt Bug Tracker}.
+        \o An up-to-date list of known issues can be found at \l{http://bugreports.qt.io/}{Qt Bug Tracker}.
 	\o For a list list of known bugs, see the \l{Task Tracker} at the Qt website.
 	\o An overview of known issues may also be found at: \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}
     {Known Issues Wiki}.

@@ -1348,7 +1348,7 @@ We hope you will enjoy using Qt.
     \endlist
 
 
-    We recommend you to take a look at \l{http://doc.qt.nokia.com/latest/install-symbian.html}{Installing Qt for the Symbian platform}
+    We recommend you to take a look at \l{http://doc.qt.digia.com/latest/install-symbian.html}{Installing Qt for the Symbian platform}
     to get more information about how to setup the development environment.
 
     \sa {Known Issues}

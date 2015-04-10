@@ -5,7 +5,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://qt.nokia.com/doc/4.8
+url                     = http://doc.qt.io/qt-4.8
 version                 = 4.8.7
 
 sourceencoding          = UTF-8

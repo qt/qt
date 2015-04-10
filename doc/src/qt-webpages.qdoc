@@ -26,27 +26,27 @@
 ****************************************************************************/
 
 /*!
-    \externalpage http://qt-project.org/
+    \externalpage http://www.qt.io/
     \title Qt Homepage
 */
 /*!
-    \externalpage http://bugreports.qt-project.org
+    \externalpage http://bugreports.qt.io/
     \title Qt Bug Tracker
 */
 /*!
-    \externalpage http://qt.digia.com/Product/
+    \externalpage http://www.qt.io/product/
     \title About Qt
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Developer-Tools/
+    \externalpage http://www.qt.io/ide/
     \title Visual Studio Integration
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Developer-Tools/
+    \externalpage http://www.qt.io/ide/
     \title Qt Creator Product Page
 */
 /*!
-    \externalpage http://qt.digia.com/products/add-on-products/catalog/4/Utilities/qtcorba/
+    \externalpage http://www.qt.io/product/
     \title CORBA Framework
 */
 /*!
@@ -54,11 +54,11 @@
     \title Window Menu
 */
 /*!
-    \externalpage http://qt-project.org
+    \externalpage http://www.qt.io/developers/
     \title Developer Network
 */
 /*!
-    \externalpage http://qt.digia.com/downloads
+    \externalpage http://www.qt.io/download
     \title Downloads
 */
 /*!
@@ -66,27 +66,27 @@
     \title License FAQ
 */
 /*!
-    \externalpage http://qt.digia.com/products/licensing/
+    \externalpage http://www.qt.io/terms-conditions/#section-1
     \title Free Software and Contributions
 */
 /*!
-    \externalpage http://qt.digia.com/products/licensing/
+    \externalpage http://www.qt.io/terms-conditions/#section-1
     \title Qt Licensing Overview
 */
 /*!
-    \externalpage http://qt.digia.com/products/licensing/
+    \externalpage http://www.qt.io/download/
     \title Qt License Pricing
 */
 /*!
-    \externalpage http://qt-project.org/doc/qt-4.8/supported-platforms.html
+    \externalpage http://doc.qt.io/qt-4.8/supported-platforms.html
     \title Platform Support Policy
 */
 /*!
-    \externalpage http://qt.digia.com/product/
+    \externalpage http://www.qt.io/product/
     \title Product Overview
 */
 /*!
-    \externalpage http://qt-project.org/doc/qt-4.8/supported-platforms.html
+    \externalpage http://doc.qt.io/qt-4.8/supported-platforms.html
     \title Qt 4 Platforms Overview
 */
 /*!
@@ -94,7 +94,7 @@
     \title Qt Quarterly
 */
 /*!
-    \externalpage http://bugreports.qt-project.org
+    \externalpage http://bugreports.qt.io/
     \title Task Tracker
 */
 /*!
@@ -102,19 +102,19 @@
     \title Qt Mailing Lists
 */
 /*!
-    \externalpage http://qt-project.org/wiki/Category:Learning::Whitepapers
+    \externalpage https://wiki.qt.io/Category:Learning::Whitepapers
     \title Whitepapers
 */
 /*!
-    \externalpage http://qt.digia.com/product/
+    \externalpage http://www.qt.io/product/
     \title QtCanvas
 */
 /*!
-    \externalpage http://blog.qt.digia.com/2007/08/10/qt-d-bus-accessibility-bridge-on-labstrolltechcom/
+    \externalpage http://blog.qt.io/blog/2007/08/10/qt-d-bus-accessibility-bridge-on-labstrolltechcom/
     \title D-Bus Accessibility Bridge
 */
 /*!
-    \externalpage http://blog.qt.digia.com/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
+    \externalpage http://blog.qt.io/blog/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
     \title qtestlib-tools Announcement
 */
 /*!
@@ -126,7 +126,7 @@
     \title QtSharedMemory
 */
 /*!
-    \externalpage http://qt.digia.com/qq/qq21-portingcanvas.html
+    \externalpage http://doc.qt.digia.com/qq/qq21-portingcanvas.html
     \title Porting to Qt 4.2's Graphics View
 */
 /*!
@@ -134,7 +134,7 @@
     \title QtWinForms Solution
 */
 /*!
-    \externalpage http://qt.gitorious.org
+    \externalpage https://code.qt.io/
     \title Public Qt Repository
 */
 /*!
@@ -146,51 +146,51 @@
     \title qtestlib-tools
 */
 /*!
-    \externalpage http://
+    \externalpage http://doc.qt.io/
     \title Qt Docs Web Start Page
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-visual-editor.html
+    \externalpage http://doc.qt.io/qtcreator/creator-visual-editor.html
     \title external: Developing Qt Quick Applications with Creator
 */
 /*!
-    \externalpage http://qt-project.org/wiki/Qt_Coding_Style
+    \externalpage https://wiki.qt.io/Qt_Coding_Style
     \title Qt Coding Style
 */
 /*!
-    \externalpage http://qt-project.org/forums
+    \externalpage http://forum.qt.io/
     \title Forums on Qt Developer Network
 */
 /*!
-    \externalpage http://qt-project.org/wiki/
+    \externalpage https://wiki.qt.io/Main_Page
     \title Wiki on Qt Developer Network
 */
 /*!
-    \externalpage http://qt-project.org/wiki/QtCreatorWhitepaper
+    \externalpage https://wiki.qt.io/QtCreatorWhitepaper
     \title Qt Creator Whitepaper
 */
 /*!
-    \externalpage http://qt-project.org/wiki/Category:Learning::Whitepaper
+    \externalpage https://wiki.qt.io/Category:Learning::Whitepapers
     \title Qt Whitepaper
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-visual-editor.html
+    \externalpage http://doc.qt.io/qtcreator/creator-visual-editor.html
     \title external: Developing Qt Quick Applications
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-publish-ovi.html
+    \externalpage http://doc.qt.io/qtcreator/creator-deployment.html
     \title external: Publishing Applications to Ovi Store
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/
+    \externalpage http://doc.qt.io/qtcreator/
     \title external: Qt Creator Manual
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-developing-symbian.html
+    \externalpage http://doc.qt.digia.com/qtcreator-2.4/creator-developing-symbian.html
     \title external: Setting Up Development Environment for Symbian
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-developing-maemo.html
+    \externalpage http://doc.qt.digia.com/qtcreator-2.4/creator-developing-maemo.html
     \title external: Setting Up Development Environment for Maemo
 */
 /*!
@@ -206,7 +206,7 @@
     \title external: Qt Simulator Manual
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Qt-SDK/
+    \externalpage http://www.qt.io/product/
     \title Qt SDK Product Page
 */
 /*!
@@ -214,39 +214,39 @@
     \title external: Qt SDK Manual
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-project-managing.html
+    \externalpage http://doc.qt.io/qtcreator/creator-project-managing.html
     \title external: Creating Qt Projects in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-building-running.html
+    \externalpage http://doc.qt.io/qtcreator/creator-building-running.html
     \title external: Building and Running Applications in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-running-targets.html
+    \externalpage http://doc.qt.io/qtcreator/creator-running-targets.html
     \title external: Set Compiler Targets in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-build-settings.html
+    \externalpage http://doc.qt.io/qtcreator/creator-build-settings.html
     \title external: Build Settings in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-run-settings.html
+    \externalpage http://doc.qt.io/qtcreator/creator-run-settings.html
     \title external: Run Settings in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-using-qt-designer.html
+    \externalpage http://doc.qt.io/qtcreator/creator-using-qt-designer.html
     \title external: Designer in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-debugging.html
+    \externalpage http://doc.qt.io/qtcreator/creator-debugging.html
     \title external: Debugging Applications in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-deployment-symbian.html
+    \externalpage http://doc.qt.digia.com/qtcreator-2.4/creator-deployment-symbian.html
     \title external: Symbian Deployment in Creator
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator-2.5/creator-deployment-maemo.html
+    \externalpage http://doc.qt.digia.com/qtcreator-2.4/creator-deployment-maemo.html
     \title external: Maemo Deployment in Creator
 */
 /*!
@@ -258,11 +258,11 @@
     \title external: Mobility Location
 */
 /*!
-    \externalpage http://qt.digia.com/Services/training/
+    \externalpage http://www.qt.io/events/
     \title Qt Training Partners
 */
 /*!
-    \externalpage http://qt.digia.com/Services/training/
+    \externalpage http://www.qt.io/events/
     \title Open Enrollment Qt Training Courses
 */
 /*!
@@ -270,214 +270,210 @@
     \title external: Qt Mobility Examples
 */
 /*!
-    \externalpage http://qt-project.org/videos
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Video Portal
 */
 /*!
-    \externalpage http://qt-project.org/wiki/developer-guides
+    \externalpage https://wiki.qt.io/Developer-Guides
     \title Qt eLearning Training Materials
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Developer Days 2010
 */
 /*!
-    \externalpage http://qt-project.org/wiki/Category:LanguageBindings
+    \externalpage https://wiki.qt.io/Category:LanguageBindings
     \title Qt Language Bindings on Wiki
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_programming_essentials_by_ics_part_1
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Essentials by ICS part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_programming_essentials_by_ics_part_2
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Essentials by ICS part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_programming_essentials_by_kdab_part_1
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Essentials by KDAB part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_programming_essentials_by_kdab_part_2
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Qt Essentials by KDAB part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_qgraphicsview_by_ics
+    \externalpage https://www.youtube.com/user/QtStudios
     \title QGraphicsView by ICS
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_qgraphicsview_by_kdab
+    \externalpage https://www.youtube.com/user/QtStudios
     \title QGraphicsView by KDAB
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_multithreading_by_ics
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Multithreading by ICS
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_multithreading_by_kdab
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Multithreading by KDAB
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/training_teaser_ui_development_with_qt_by_ics
+    \externalpage https://www.youtube.com/user/QtStudios
     \title UI Development with Qt by ICS
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/training_teaser_ui_development_with_qt_by_kdab
+    \externalpage https://www.youtube.com/user/QtStudios
     \title UI Development with Qt by KDAB
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/training_teaser_embedded_development_by_basyskom
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Embedded Development by basysKom
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/training_teaser_embedded_development_by_ics
+    \externalpage https://www.youtube.com/user/QtStudios
     \title Embedded Development by ICS
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_model_view_programming_by_basyskom
+    \externalpage https://www.youtube.com/user/QtStudios
     \title ModelView Programming by basysKom
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_model_view_programming_by_kdab
+    \externalpage https://www.youtube.com/user/QtStudios
     \title ModelView Programming by KDAB
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/programming_with_qt_webkit_by_kdab
+    \externalpage https://www.youtube.com/user/QtStudios
     \title QWebKit by KDAB
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_quick_introduction_to_qt_quick_part_1_4
+    \externalpage https://www.youtube.com/watch?v=WBf9TbzHBfk
     \title Quick by KDAB part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_quick_user_interaction_user_input_and_states_part_2_4
+    \externalpage https://www.youtube.com/watch?v=CyNVvbMg888
     \title Quick by KDAB part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_quick_animations_and_visual_effects_part_3_4
+    \externalpage https://www.youtube.com/watch?v=rwLj-P2Oofw
     \title Quick by KDAB part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_quick_small_projects_arranging_items_qmlcomponentsand_debugging_qml_part
+    \externalpage https://www.youtube.com/watch?v=4rjhgMTShnM
     \title Quick by KDAB part 4
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_mobile_development_for_nokia_devices_introduction_to_qt_on_mobile_part_1
+    \externalpage https://www.youtube.com/watch?v=7vsBANtYWUg
     \title Qt Mobile Development for Nokia Devices by Digia part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_mobile_development_for_nokia_devices_mobile_ui_design_technologies_and_a
+    \externalpage https://www.youtube.com/watch?v=WgXy1841Wwo
     \title Qt Mobile Development for Nokia Devices by Digia part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_mobile_development_for_nokia_devices_getting_started_with_nokia_qt_sdk_p
+    \externalpage https://www.youtube.com/watch?v=-qhBsfAqmyQ
     \title Qt Mobile Development for Nokia Devices by Digia part 3
 */
 
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_2_hello_world_in_qtcre
+    \externalpage https://www.youtube.com/watch?v=HYBLfsO2Vng
     \title Qt Essentials - Fundamentals of Qt part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_essentials_widget_edition_fundamentals_of_qt_part_1_your_first_qt_applic
+    \externalpage https://www.youtube.com/watch?v=-h0F8-WjHV0
     \title Qt Essentials - Fundamentals of Qt part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/qt_essentials_widget_edition_application_creation_part_1_mainwindows
+    \externalpage https://www.youtube.com/watch?v=z4RLrRK7420
     \title Qt Essentials - Application Creation part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/application_creation_part_2_settings_resources_and_application_deployment
+    \externalpage https://www.youtube.com/watch?v=ZM6TQpEyyzA
     \title Qt Essentials - Application Creation part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/application_creation_part_3_translation_for_developers
+    \externalpage https://www.youtube.com/watch?v=ew8fk3lLqbQ
     \title Qt Essentials - Application Creation part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/widgets_part_1_common_widgets
+    \externalpage https://www.youtube.com/watch?v=Q1XGyPREbFg
     \title Qt Essentials - Widgets part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/widgets_part_2_layout_management
+    \externalpage https://www.youtube.com/watch?v=VOGPOWz9nV0
     \title Qt Essentials - Widgets part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/widgets_part_3_guidelines_for_custom_widgets
+    \externalpage https://www.youtube.com/watch?v=bGTJ63w_Csc
     \title Qt Essentials - Widgets part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/graphics_view_part_1_using_graphicsview_classes
+    \externalpage https://www.youtube.com/watch?v=P9VG5LpU1lA
     \title Qt Essentials - Graphics View part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/graphics_view_part_2_transformations_and_coordinate_systems
+    \externalpage https://www.youtube.com/watch?v=dj5550wsUG0
     \title Qt Essentials - Graphics View part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/graphics_view_part_3_creating_custom_items
+    \externalpage https://www.youtube.com/watch?v=PbVcR_sCSNw
     \title Qt Essentials - Graphics View part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_part_1_model_view_concept
+    \externalpage https://www.youtube.com/watch?v=T0HXWcpPItk
     \title Qt Essentials - Model/View I part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_part_2_showing_simple_data
+    \externalpage https://www.youtube.com/watch?v=tuA8VK9nOFA
     \title Qt Essentials - Model/View I part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_part_3_proxy_models
+    \externalpage https://www.youtube.com/watch?v=lEfzIt7lJ8M
     \title Qt Essentials - Model/View I part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_part_4_custom_models
+    \externalpage https://www.youtube.com/watch?v=ytKDsJgJa4k
     \title Qt Essentials - Model/View I part 4
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_ii_part_1_editing_item_data
+    \externalpage https://www.youtube.com/watch?v=CX-cjj-U-mQ
     \title Qt Essentials - Model/View II part 1
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_ii_part_2_delegates
+    \externalpage https://www.youtube.com/watch?v=iBt2OYcFaIo
     \title Qt Essentials - Model/View II part 2
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_ii_part_3_data_widget_mapper
+    \externalpage https://www.youtube.com/watch?v=GFdW0VdJqw8
     \title Qt Essentials - Model/View II part 3
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_ii_part_4_custom_tree_model
+    \externalpage https://www.youtube.com/watch?v=dcrSTeVaW5Y
     \title Qt Essentials - Model/View II part 4
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/model_view_ii_part_5_drag_and_drop
+    \externalpage https://www.youtube.com/watch?v=d2OFjACLgOg
     \title Qt Essentials - Model/View II part 5
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Learning/Certification/
+    \externalpage http://www.qt.io/qt-certification/
     \title Qt Certification
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Learning/Certification/
+    \externalpage http://www.qt.io/qt-certification/
     \title Qt Certification Exam Preparation and Prerequisites
 */
 /*!
-    \externalpage http://qt.digia.com/Product/Learning/Certification/
-    \title Qt Certification
-*/
-/*!
-    \externalpage http://qt-project.org
+    \externalpage http://www.qt.io/developers/
     \title Qt Developer Network
 */
 
 /*!
-    \externalpage http://qt-project.org/wiki/Qt_Modules_Maturity_Level
+    \externalpage https://wiki.qt.io/Qt_Modules_Maturity_Level
     \title Qt Modules' Maturity Levels - Modules List
 */
 
 /*!
-    \externalpage http://blog.qt.digia.com/2011/05/03/qt-modules-maturity-level/
+    \externalpage http://blog.qt.io/blog/2011/05/03/qt-modules-maturity-level/
     \title Qt Modules' Maturity Level - Description
 */
 

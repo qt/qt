@@ -78,7 +78,7 @@ QDeclarativeImportDatabase::resolveType "Rectangle" = "QDeclarativeRectangle"
 
 \section1 Debugging with Qt Creator
 
-\l{http://qt.nokia.com/products/developer-tools}{Qt Creator} provides built-in
+\l{http://doc.qt.io/qtcreator/creator-debugging-qml.html}{Qt Creator} provides built-in
 support for QML debugging. QML projects and standalone C++ applications that
 utilize QML can be debugged on desktops as well as on remote devices.
 For more information, see the Qt Creator Manual.

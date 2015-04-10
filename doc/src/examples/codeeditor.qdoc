@@ -192,7 +192,7 @@
     fetched with QTextBlock::userData(). Matching parentheses can be
     highlighted with an extra selection. The "Matching Parentheses
     with QSyntaxHighlighter" article in Qt Quarterly 31 implements
-    this. You find it here: \l{http://doc.qt.nokia.com/qq/}.
+    this. You find it here: \l{http://doc.qt.digia.com/qq/}.
 
     The line number area is now painted every time the cursor blinks
     (because we connect \l{QPlainTextEdit::}{updateRequest()} to

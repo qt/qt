@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qml
 description             = Qml Reference Documentation
-url                     = http://qt.nokia.com/doc/4.8/
+url                     = http://doc.qt.io/qt-4.8/
 qmlonly                 = true
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \

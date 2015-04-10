@@ -68,7 +68,7 @@
     just scale the existing tiles. Then, at the end of the animation, update
     tiles on top of the scaled ones.  For now we will ignore the blocking
     issue and concentrate on the tiling and the interaction model.
-    More information about Tiling can be found here: \l{http://doc.qt.nokia.com/4.7/qwebsettings.html#WebAttribute-enum} (see the entry for TiledBackingStoreEnabled).
+    More information about Tiling can be found here: \l{http://doc.qt.io/qt-4.8/qwebsettings.html#WebAttribute-enum} (see the entry for TiledBackingStoreEnabled).
 
 
     \section1 Resize to Contents
