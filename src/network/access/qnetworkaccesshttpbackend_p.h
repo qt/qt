@@ -112,7 +112,7 @@ signals:
 
     void startHttpRequestSynchronously();
 
-    void haveUploadData(QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
+    void haveUploadData(const qint64 pos, QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
 private slots:
     // From HTTP thread:
     void replyDownloadData(QByteArray);
@@ -129,13 +129,14 @@ private slots:
     // From QNonContiguousByteDeviceThreadForwardImpl in HTTP thread:
     void resetUploadDataSlot(bool *r);
     void wantUploadDataSlot(qint64);
-    void sentUploadDataSlot(qint64);
+    void sentUploadDataSlot(qint64, qint64);
 
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
 
 private:
     QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
     int statusCode;
+    qint64 uploadByteDevicePosition;
     QString reasonPhrase;
     // Will be increased by HTTP thread:
     QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
