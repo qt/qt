@@ -3206,6 +3206,8 @@ QShortcutEvent::~QShortcutEvent()
 
 #ifndef QT_NO_DEBUG_STREAM
 
+QDebug operator<<(QDebug, const QTouchEvent::TouchPoint &);
+
 static inline void formatTouchPoint(QDebug d, const QTouchEvent::TouchPoint &tp)
 {
     d << "TouchPoint(" << tp.id() << ' ' << tp.rect();
