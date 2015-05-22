@@ -36,6 +36,7 @@
 #if COMPILER(MSVC)
 // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
 
+#  if _MSC_VER < 1900
 inline int snprintf(char* buffer, size_t count, const char* format, ...) 
 {
     int result;
@@ -45,6 +46,7 @@ inline int snprintf(char* buffer, size_t count, const char* format, ...)
     va_end(args);
     return result;
 }
+#  endif // _MSC_VER < 1900
 
 #if COMPILER(MSVC7) || OS(WINCE)
 
