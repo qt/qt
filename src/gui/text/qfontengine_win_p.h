@@ -144,6 +144,7 @@ public:
     mutable uint widthCacheSize;
     mutable QFixed *designAdvances;
     mutable int designAdvancesSize;
+    int cmapSize;
 
 private:
     bool hasCFFTable() const;

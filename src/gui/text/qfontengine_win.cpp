@@ -215,9 +215,8 @@ void QFontEngineWin::getCMap()
     bool symb = false;
     if (ttf) {
         cmapTable = getSfntTable(qbswap<quint32>(MAKE_TAG('c', 'm', 'a', 'p')));
-        int size = 0;
         cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>(cmapTable.constData()),
-                       cmapTable.size(), &symb, &size);
+                       cmapTable.size(), &symb, &cmapSize);
     }
     if (!cmap) {
         ttf = false;
@@ -263,14 +262,14 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
         if (symbol) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
                 if (!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
             }
         } else if (ttf) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, QChar::mirroredChar(uc));
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, QChar::mirroredChar(uc));
             }
         } else {
 #endif
@@ -296,14 +295,14 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
         if (symbol) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
                 if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
             }
         } else if (ttf) {
             for (; i < numChars; ++i, ++glyph_pos) {
                 unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             }
         } else {
 #endif
@@ -335,6 +334,7 @@ QFontEngineWin::QFontEngineWin(const QString &name, HFONT _hfont, bool stockFont
     _name = name;
 
     cmap = 0;
+    cmapSize = 0;
     hfont = _hfont;
     logfont = lf;
     HDC hdc = shared_dc();
@@ -811,9 +811,9 @@ bool QFontEngineWin::canRender(const QChar *string,  int len)
     if (symbol) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(string, i, len);
-            if (getTrueTypeGlyphIndex(cmap, uc) == 0) {
+            if (getTrueTypeGlyphIndex(cmap, cmapSize, uc) == 0) {
                 if (uc < 0x100) {
-                    if (getTrueTypeGlyphIndex(cmap, uc + 0xf000) == 0)
+                    if (getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000) == 0)
                         return false;
                 } else {
                     return false;
@@ -823,7 +823,7 @@ bool QFontEngineWin::canRender(const QChar *string,  int len)
     } else if (ttf) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(string, i, len);
-            if (getTrueTypeGlyphIndex(cmap, uc) == 0)
+            if (getTrueTypeGlyphIndex(cmap, cmapSize, uc) == 0)
                 return false;
         }
     } else {

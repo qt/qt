@@ -625,7 +625,7 @@ bool QFontEngineMacMulti::canRender(const QChar *string, int len)
 }
 
 QFontEngineMac::QFontEngineMac(ATSUStyle baseStyle, ATSUFontID fontID, const QFontDef &def, QFontEngineMacMulti *multiEngine)
-    : fontID(fontID), multiEngine(multiEngine), cmap(0), symbolCMap(false)
+    : fontID(fontID), multiEngine(multiEngine), cmap(0), symbolCMap(false), cmapSize(0)
 {
     fontDef = def;
     ATSUCreateAndCopyStyle(baseStyle, &style);
@@ -747,22 +747,21 @@ bool QFontEngineMac::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 {
     if (!cmap) {
         cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
-        int size = 0;
-        cmap = getCMap(reinterpret_cast<const uchar *>(cmapTable.constData()), cmapTable.size(), &symbolCMap, &size);
+        cmap = getCMap(reinterpret_cast<const uchar *>(cmapTable.constData()), cmapTable.size(), &symbolCMap, &cmapSize);
         if (!cmap)
             return false;
     }
     if (symbolCMap) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             if(!glyphs->glyphs[i] && uc < 0x100)
-                glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
         }
     } else {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[i] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
         }
     }
 

@@ -108,6 +108,7 @@ private:
     qreal m_maxCharWidth;
     QFixed m_xHeight;
     QFixed m_averageCharWidth;
+    mutable int cmapSize;
 };
 
 class QFontEngineMacMulti : public QFontEngineMulti

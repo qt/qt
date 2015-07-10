@@ -358,9 +358,9 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
             unsigned int uc = getChar(str, i, len);
             if (mirrored)
                 uc = QChar::mirroredChar(uc);
-            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
             ++glyph_pos;
         }
     } else {
@@ -368,7 +368,7 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
             unsigned int uc = getChar(str, i, len);
             if (mirrored)
                 uc = QChar::mirroredChar(uc);
-            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+            glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
             if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))
@@ -511,16 +511,16 @@ bool QFontEngineQPA::canRender(const QChar *string, int len)
     if (symbol) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(string, i, len);
-            glyph_t g = getTrueTypeGlyphIndex(cmap, uc);
+            glyph_t g = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
             if(!g && uc < 0x100)
-                g = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                g = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
             if (!g)
                 return false;
         }
     } else {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(string, i, len);
-            if (!getTrueTypeGlyphIndex(cmap, uc))
+            if (!getTrueTypeGlyphIndex(cmap, cmapSize, uc))
                 return false;
         }
     }

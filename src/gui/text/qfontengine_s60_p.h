@@ -93,6 +93,7 @@ private:
     // the Font Table API
     COpenFont *m_openFont;
     mutable MOpenFontTrueTypeExtension *m_trueTypeExtension;
+    mutable int m_cmapSize;
 };
 
 class QFontEngineS60 : public QFontEngine

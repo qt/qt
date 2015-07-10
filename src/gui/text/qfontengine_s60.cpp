@@ -77,6 +77,7 @@ QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont
     : m_cFont(cFont)
     , m_symbolCMap(false)
     , m_openFont(openFont)
+    , m_cmapSize(0)
 {
     if (!symbianFontTableApiAvailable()) {
         TAny *trueTypeExtension = NULL;
@@ -161,10 +162,9 @@ const uchar *QSymbianTypeFaceExtras::cmap() const
 {
     if (m_cmapTable.isNull()) {
         const QByteArray cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
-        int size = 0;
         const uchar *cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>
-                (cmapTable.constData()), cmapTable.size(), &m_symbolCMap, &size);
-        m_cmapTable = QByteArray(reinterpret_cast<const char *>(cmap), size);
+                (cmapTable.constData()), cmapTable.size(), &m_symbolCMap, &m_cmapSize);
+        m_cmapTable = QByteArray(reinterpret_cast<const char *>(cmap), m_cmapSize);
     }
     return reinterpret_cast<const uchar *>(m_cmapTable.constData());
 }
@@ -324,6 +324,7 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
         *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap,
+                                                  m_cmapSize,
                         (isRtl && !m_extras->isSymbolCMap()) ? QChar::mirroredChar(uc) : uc);
     }
 
@@ -463,7 +464,7 @@ bool QFontEngineS60::canRender(const QChar *string, int len)
     const unsigned char *cmap = m_extras->cmap();
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(string, i, len);
-        if (QFontEngine::getTrueTypeGlyphIndex(cmap, uc) == 0)
+        if (QFontEngine::getTrueTypeGlyphIndex(cmap, m_cmapSize, uc) == 0)
             return false;
     }
     return true;
