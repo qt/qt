@@ -369,6 +369,7 @@ bool DataModel::release(const QString &fileName, bool verbose, bool ignoreUnfini
     Translator tor;
     QLocale locale(m_language, m_country);
     tor.setLanguageCode(locale.name());
+    tor.setCodecName(m_codecName);  
     for (DataModelIterator it(this); it.isValid(); ++it)
         tor.append(it.current()->message());
     ConversionData cd;
