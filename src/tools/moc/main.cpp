@@ -190,6 +190,8 @@ int runMoc(int _argc, char **_argv)
 
     // Workaround a bug while parsing the boost/type_traits/has_operator.hpp header. See QTBUG-22829
     pp.macros["BOOST_TT_HAS_OPERATOR_HPP_INCLUDED"];
+    pp.macros["BOOST_LEXICAL_CAST_INCLUDED"];
+    pp.macros["BOOST_NEXT_PRIOR_HPP_INCLUDED"];
 
     QByteArray filename;
     QByteArray output;
