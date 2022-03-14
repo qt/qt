@@ -579,6 +579,32 @@ void QPrintDialogPrivate::setTabs(const QList<QWidget*> &tabWidgets)
 void QPrintDialogPrivate::selectPrinter(QCUPSSupport *cups)
 {
     options.duplex->setEnabled(cups && cups->ppdOption("Duplex"));
+
+    if (cups) {
+        const ppd_option_t* duplex = cups->ppdOption("Duplex");
+        if (duplex) {
+            // copy default ppd duplex to qt dialog
+            if (qstrcmp(duplex->defchoice, "DuplexTumble") == 0)
+                options.duplexShort->setChecked(true);
+            else if (qstrcmp(duplex->defchoice, "DuplexNoTumble") == 0)
+                options.duplexLong->setChecked(true);
+            else
+                options.noDuplex->setChecked(true);
+        }
+
+        if (cups->currentPPD()) {
+            // set default color
+            if (cups->currentPPD()->color_device)
+                options.color->setChecked(true);
+            else
+                options.grayscale->setChecked(true);
+        }
+
+        // set collation
+        const ppd_option_t *collate = cups->ppdOption("Collate");
+        if (collate)
+            options.collate->setChecked(qstrcmp(collate->defchoice, "True")==0);
+    }
 }
 #endif
 
