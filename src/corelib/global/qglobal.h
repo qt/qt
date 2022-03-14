@@ -52,7 +52,7 @@
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
-#define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+#define QT_VERSION_CHECK(qt_version_check_major, qt_version_check_minor, qt_version_check_patch) ((qt_version_check_major<<16)|(qt_version_check_minor<<8)|(qt_version_check_patch))
 
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
