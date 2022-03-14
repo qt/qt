@@ -7734,7 +7734,7 @@ case "$XPLATFORM" in
     *-g++*)
 	# Check gcc's version
 	case "$(${QMAKE_CONF_COMPILER} -dumpversion)" in
-	    5*|4*|3.4*)
+	    9*|8*|7*|6*|5*|4*|3.4*)
 		;;
             3.3*)
                 canBuildWebKit="no"
@@ -8050,7 +8050,7 @@ g++*)
     3.*)
         COMPILER_VERSION="3.*"
         ;;
-    5*|4.*)
+    9*|8*|7*|6*|5*|4.*)
         COMPILER_VERSION="4"
         ;;
     *)
