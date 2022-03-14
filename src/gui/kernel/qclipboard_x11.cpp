@@ -548,7 +548,8 @@ bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int ti
                 return false;
 
             XSync(X11->display, false);
-            usleep(50000);
+            if (!XPending(X11->display))
+                usleep(5000);
 
             now.start();
 
