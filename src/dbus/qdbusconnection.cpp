@@ -1110,8 +1110,10 @@ public:
         // make sure this connection is running on the main thread
         QCoreApplication *instance = QCoreApplication::instance();
         if (!instance) {
+#ifndef QT_NO_DEBUG
             qWarning("QDBusConnection: %s D-Bus connection created before QCoreApplication. Application may misbehave.",
                      type == SessionBus ? "session" : type == SystemBus ? "system" : "generic");
+#endif
         } else if (QDBusConnectionPrivate::d(*this)) {
             QDBusConnectionPrivate::d(*this)->moveToThread(instance->thread());
         }
