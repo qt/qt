@@ -109,3 +109,4 @@ defineTest(prependJavaScriptCoreLib) {
     return(true)
 }
 
+QMAKE_CXXFLAGS += -std=gnu++98
