@@ -65,6 +65,7 @@ struct GPollFDWithQSocketNotifier
 struct GSocketNotifierSource
 {
     GSource source;
+    QEventLoop::ProcessEventsFlags processEventsFlags;
     QList<GPollFDWithQSocketNotifier *> pollfds;
 };
 
@@ -80,6 +81,9 @@ static gboolean socketNotifierSourceCheck(GSource *source)
     GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
 
     bool pending = false;
+    if (src->processEventsFlags & QEventLoop::ExcludeSocketNotifiers)
+        return pending;
+
     for (int i = 0; !pending && i < src->pollfds.count(); ++i) {
         GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
 
@@ -103,6 +107,9 @@ static gboolean socketNotifierSourceDispatch(GSource *source, GSourceFunc, gpoin
     QEvent event(QEvent::SockAct);
 
     GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
+    if (src->processEventsFlags & QEventLoop::ExcludeSocketNotifiers)
+        return true;
+
     for (int i = 0; i < src->pollfds.count(); ++i) {
         GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
 
@@ -331,6 +338,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
         reinterpret_cast<GSocketNotifierSource *>(g_source_new(&socketNotifierSourceFuncs,
                                                                sizeof(GSocketNotifierSource)));
     (void) new (&socketNotifierSource->pollfds) QList<GPollFDWithQSocketNotifier *>();
+    socketNotifierSource->processEventsFlags = QEventLoop::AllEvents;
     g_source_set_can_recurse(&socketNotifierSource->source, true);
     g_source_attach(&socketNotifierSource->source, mainContext);
 
@@ -416,6 +424,7 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
     // tell postEventSourcePrepare() and timerSource about any new flags
     QEventLoop::ProcessEventsFlags savedFlags = d->timerSource->processEventsFlags;
     d->timerSource->processEventsFlags = flags;
+    d->socketNotifierSource->processEventsFlags = flags;
 
     if (!(flags & QEventLoop::EventLoopExec)) {
         // force timers to be sent at normal priority
@@ -427,6 +436,7 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
         result = g_main_context_iteration(d->mainContext, canWait);
 
     d->timerSource->processEventsFlags = savedFlags;
+    d->socketNotifierSource->processEventsFlags = savedFlags;
 
     if (canWait)
         emit awake();
