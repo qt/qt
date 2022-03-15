@@ -72,7 +72,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(QTSRCS)
 
-CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
+CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
            -Igenerators/mac -Igenerators/symbian -Igenerators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \

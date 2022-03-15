@@ -4997,8 +4997,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQMAKE_OPENSOURCE_EDITION"
         fi
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
-            setBootstrapVariable QMAKE_CFLAGS_RELEASE
-            setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
+            QMakeVar set QMAKE_CFLAGS_RELEASE
+            QMakeVar set QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
         elif [ "$CFG_DEBUG" = "yes" ]; then
