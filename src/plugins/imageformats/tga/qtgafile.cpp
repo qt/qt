@@ -41,6 +41,7 @@
 
 #include "qtgafile.h"
 
+#include <QtCore/QBuffer>
 #include <QtCore/QIODevice>
 #include <QtCore/QDebug>
 #include <QtCore/QDateTime>
@@ -265,4 +266,17 @@ QImage QTgaFile::readImage()
 
     // TODO: add processing of TGA extension information - ie TGA 2.0 files
     return im;
+}
+/**
+ * Checks if device contains a valid tga image, *without* changing device
+ * position.
+ */
+bool QTgaFile::canRead(QIODevice *device)
+{
+       QByteArray header = device->peek(HeaderSize);
+       if (header.size() < HeaderSize)
+               return false;
+       QBuffer buffer(&header);
+       QTgaFile tga(&buffer);
+       return tga.isValid();
 }

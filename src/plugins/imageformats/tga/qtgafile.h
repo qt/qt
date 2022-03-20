@@ -93,6 +93,8 @@ public:
     inline QSize size() const;
     inline Compression compression() const;
 
+    static bool canRead(QIODevice *device);
+
 private:
     static inline quint16 littleEndianInt(const unsigned char *d);
 

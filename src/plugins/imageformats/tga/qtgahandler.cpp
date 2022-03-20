@@ -77,8 +77,7 @@ bool QTgaHandler::canRead(QIODevice *device)
         qWarning("QTgaHandler::canRead() called with no device");
         return false;
     }
-    QTgaFile tga(device);
-    return tga.isValid();
+    return QTgaFile::canRead(device);
 }
 
 bool QTgaHandler::read(QImage *image)
