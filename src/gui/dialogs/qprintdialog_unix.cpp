@@ -128,6 +128,8 @@ public:
 #endif
     void _q_collapseOrExpandDialog();
 
+    void _q_applyDialog();
+
     void setupPrinter();
     void updateWidgets();
 
@@ -392,7 +394,7 @@ void QPrintDialogPrivate::init()
     options.grayscale->setIcon(QIcon(QLatin1String(":/trolltech/dialogs/qprintdialog/images/status-gray-scale.png")));
     top->d->setOptionsPane(this);
 
-    buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, q);
+    buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Apply, Qt::Horizontal, q);
     collapseButton = new QPushButton(QPrintDialog::tr("&Options >>"), buttons);
     buttons->addButton(collapseButton, QDialogButtonBox::ResetRole);
     bottom->setVisible(false);
@@ -400,6 +402,7 @@ void QPrintDialogPrivate::init()
     QPushButton *printButton = buttons->button(QDialogButtonBox::Ok);
     printButton->setText(QPrintDialog::tr("&Print"));
     printButton->setDefault(true);
+    QPushButton *applyButton = buttons->button(QDialogButtonBox::Apply);
 
     QVBoxLayout *lay = new QVBoxLayout(q);
     q->setLayout(lay);
@@ -422,6 +425,8 @@ void QPrintDialogPrivate::init()
                      q, SLOT(_q_chbPrintLastFirstToggled(bool)));
 
     QObject::connect(collapseButton, SIGNAL(released()), q, SLOT(_q_collapseOrExpandDialog()));
+
+    QObject::connect(applyButton, SIGNAL(released()), q, SLOT(_q_applyDialog()));
 }
 
 void QPrintDialogPrivate::applyPrinterProperties(QPrinter *p)
@@ -481,6 +486,13 @@ void QPrintDialogPrivate::_q_checkFields()
         q->accept();
 }
 #endif // QT_NO_MESSAGEBOX
+
+void QPrintDialogPrivate::_q_applyDialog()
+{
+    Q_Q(QPrintDialog);
+    if (top->d->checkFields())
+        q->done((int)QDialog::Accepted+1);
+}
 
 void QPrintDialogPrivate::setupPrinter()
 {
