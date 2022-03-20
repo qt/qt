@@ -1887,6 +1887,7 @@ Q_CORE_EXPORT void qCritical(const char *, ...) /* print critical message */
 Q_CORE_EXPORT void qFatal(const char *, ...) /* print fatal message and exit */
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 1, 2)))
+    __attribute__ ((noreturn))
 #endif
 ;
 
