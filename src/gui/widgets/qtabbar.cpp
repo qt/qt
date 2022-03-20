@@ -723,8 +723,8 @@ void QTabBarPrivate::refresh()
         layoutTabs();
         makeVisible(currentIndex);
         q->update();
-        q->updateGeometry();
     }
+    q->updateGeometry();
 }
 
 /*!
