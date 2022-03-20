@@ -746,16 +746,17 @@ static QVector<qreal> parsePercentageList(const QChar *&str)
 static QString idFromUrl(const QString &url)
 {
     QString::const_iterator itr = url.constBegin();
-    while ((*itr).isSpace())
+    QString::const_iterator end = url.constEnd();
+    while (itr != end && (*itr).isSpace())
         ++itr;
-    if ((*itr) == QLatin1Char('('))
+    if (itr != end && (*itr) == QLatin1Char('('))
         ++itr;
-    while ((*itr).isSpace())
+    while (itr != end && (*itr).isSpace())
         ++itr;
-    if ((*itr) == QLatin1Char('#'))
+    if (itr != end && (*itr) == QLatin1Char('#'))
         ++itr;
     QString id;
-    while ((*itr) != QLatin1Char(')')) {
+    while (itr != end && (*itr) != QLatin1Char(')')) {
         id += *itr;
         ++itr;
     }
