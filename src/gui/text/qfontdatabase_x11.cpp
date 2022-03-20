@@ -729,10 +729,17 @@ static void loadXlfds(const char *reqFamily, int encoding_id)
 static int getFCWeight(int fc_weight)
 {
     int qtweight = QFont::Black;
-    if (fc_weight <= (FC_WEIGHT_LIGHT + FC_WEIGHT_MEDIUM) / 2)
+    if (fc_weight <= (FC_WEIGHT_LIGHT + FC_WEIGHT_REGULAR) / 2)
         qtweight = QFont::Light;
-    else if (fc_weight <= (FC_WEIGHT_MEDIUM + FC_WEIGHT_DEMIBOLD) / 2)
+    else if (fc_weight <= (FC_WEIGHT_REGULAR + FC_WEIGHT_MEDIUM) / 2)
         qtweight = QFont::Normal;
+#if 0
+    // FIXME: Uncomment this when it's safe to expand the Enum to include ::Medium
+    // Will map Medium to DemiBold via fallthrough for the moment,
+    // but avoids API/ABI break
+    else if (fc_weight <= (FC_WEIGHT_MEDIUM + FC_WEIGHT_DEMIBOLD) / 2)
+        qtweight = QFont::Medium;
+#endif
     else if (fc_weight <= (FC_WEIGHT_DEMIBOLD + FC_WEIGHT_BOLD) / 2)
         qtweight = QFont::DemiBold;
     else if (fc_weight <= (FC_WEIGHT_BOLD + FC_WEIGHT_BLACK) / 2)
@@ -772,9 +779,13 @@ QFontDef qt_FcPatternToQFontDef(FcPattern *pattern, const QFontDef &request)
        fontDef.styleHint
     */
 
+    // Default to Regular and thus to the common case.  Previous
+    // versions of Qt requested Medium as default.  This is fine until
+    // a Medium weight is actually provided by a font, and so gets
+    // promoted to bold fallthrough.
     int weight;
     if (FcPatternGetInteger(pattern, FC_WEIGHT, 0, &weight) != FcResultMatch)
-        weight = FC_WEIGHT_MEDIUM;
+        weight = FC_WEIGHT_REGULAR;
     fontDef.weight = getFCWeight(weight);
 
     int slant;
@@ -1066,16 +1077,19 @@ static void loadFontConfig()
         //         capitalize(value);
         familyName = QString::fromUtf8((const char *)value);
         slant_value = FC_SLANT_ROMAN;
-        weight_value = FC_WEIGHT_MEDIUM;
+        weight_value = FC_WEIGHT_REGULAR;
         spacing_value = FC_PROPORTIONAL;
 	file_value = 0;
 	index_value = 0;
 	scalable = FcTrue;
 
+	// Fallthroughs in case a match was not found.  In previous
+	// versions of Qt, Medium was requested from FontConfig,
+	// leading to a promotion from Medium to Bold.
         if (FcPatternGetInteger (fonts->fonts[i], FC_SLANT, 0, &slant_value) != FcResultMatch)
 	    slant_value = FC_SLANT_ROMAN;
         if (FcPatternGetInteger (fonts->fonts[i], FC_WEIGHT, 0, &weight_value) != FcResultMatch)
-	    weight_value = FC_WEIGHT_MEDIUM;
+	    weight_value = FC_WEIGHT_REGULAR;
         if (FcPatternGetInteger (fonts->fonts[i], FC_SPACING, 0, &spacing_value) != FcResultMatch)
 	    spacing_value = FC_PROPORTIONAL;
         if (FcPatternGetString (fonts->fonts[i], FC_FILE, 0, &file_value) != FcResultMatch)
@@ -1487,14 +1501,32 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
     }
 
     int weight_value = FC_WEIGHT_BLACK;
+    // Default and request Regular font weight if none specified
+    // Previous versions of Qt default to requesting Medium, even
+    // though this weight does not typically exist.
     if (request.weight == 0)
-        weight_value = FC_WEIGHT_MEDIUM;
+        weight_value = FC_WEIGHT_REGULAR;
     else if (request.weight < (QFont::Light + QFont::Normal) / 2)
         weight_value = FC_WEIGHT_LIGHT;
-    else if (request.weight < (QFont::Normal + QFont::DemiBold) / 2)
+#if 0
+    // FIXME: Avoid ABI Break; active this full codepath when
+    // QFont::Medium enum is available in the future
+    else if (request.weight < (QFont::Normal + QFont::Medium) / 2)
+        weight_value = FC_WEIGHT_REGULAR;
+    else if (request.weight < (QFont::Medium + QFont::DemiBold) / 2)
         weight_value = FC_WEIGHT_MEDIUM;
     else if (request.weight < (QFont::DemiBold + QFont::Bold) / 2)
         weight_value = FC_WEIGHT_DEMIBOLD;
+#else
+    // For the moment This may still not full-circle correctly; via
+    // Medium->DemiBold->Bold promotion.  However It's hard to do much
+    // about this without an ABI/API tweak to include the fuller set
+    // of standard TTF/CSS/FontConfig weights.
+    else if (request.weight < (QFont::Normal + QFont::DemiBold) / 2)
+        weight_value = FC_WEIGHT_REGULAR;
+    else if (request.weight < (QFont::DemiBold + QFont::Bold) / 2)
+        weight_value = (FC_WEIGHT_MEDIUM + FC_WEIGHT_DEMIBOLD) / 2;
+#endif
     else if (request.weight < (QFont::Bold + QFont::Black) / 2)
         weight_value = FC_WEIGHT_BOLD;
     FcPatternDel(pattern, FC_WEIGHT);
