@@ -150,10 +150,10 @@ static inline void sha1ProcessChunk(Sha1State *state, const unsigned char *buffe
     quint32 d = state->h3;
     quint32 e = state->h4;
 
-    quint8 chunkBuffer[64];
-    memcpy(chunkBuffer, buffer, 64);
+    Sha1Chunk chunkBuffer;
+    memcpy(chunkBuffer.bytes, buffer, 64);
 
-    Sha1Chunk *chunk = reinterpret_cast<Sha1Chunk*>(&chunkBuffer);
+    Sha1Chunk *chunk = &chunkBuffer;
 
     for (int i = 0; i < 16; ++i)
         chunk->words[i] = qFromBigEndian(chunk->words[i]);
@@ -189,7 +189,7 @@ static inline void sha1ProcessChunk(Sha1State *state, const unsigned char *buffe
     // Wipe variables
 #ifdef SHA1_WIPE_VARIABLES
     a = b = c = d = e = 0;
-    memset(chunkBuffer, 0, 64);
+    memset(chunkBuffer.bytes, 0, 64);
 #endif
 }
 
