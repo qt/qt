@@ -316,6 +316,10 @@ DEFINEFUNC4(void, DSA_get0_pqg, const DSA *d, d, const BIGNUM **p, p, const BIGN
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#func)))) \
         qWarning("QSslSocket: cannot resolve "#func);
+#define RESOLVE_RENAMED_FUNC(func, funcname) \
+    if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#funcname)))     \
+        && !(_q_##func = _q_PTR_##func(libs.second->resolve(#funcname)))) \
+        qWarning("QSslSocket: cannot resolve "#funcname);
 #endif
 
 #if !defined QT_LINKED_OPENSSL
@@ -826,7 +830,11 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_get_current_cipher)
     RESOLVEFUNC(SSL_get_error)
     RESOLVEFUNC(SSL_get_peer_cert_chain)
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    RESOLVE_RENAMED_FUNC(SSL_get_peer_certificate, SSL_get1_peer_certificate)
+#else
     RESOLVEFUNC(SSL_get_peer_certificate)
+#endif
     RESOLVEFUNC(SSL_get_verify_result)
     RESOLVEFUNC(SSL_library_init)
     RESOLVEFUNC(SSL_load_error_strings)
@@ -845,7 +853,11 @@ bool q_resolveOpenSslSymbols()
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     RESOLVEFUNC(SSL_CTX_ctrl)
     RESOLVEFUNC(EVP_PKEY_id)
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    RESOLVE_RENAMED_FUNC(EVP_PKEY_base_id, EVP_PKEY_get_base_id)
+#else
     RESOLVEFUNC(EVP_PKEY_base_id)
+#endif
     RESOLVEFUNC(SSL_CIPHER_get_bits)
     RESOLVEFUNC(SSL_CTX_set_options)
     RESOLVEFUNC(X509_get_version)
