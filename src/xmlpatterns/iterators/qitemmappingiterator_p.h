@@ -117,23 +117,27 @@ namespace QPatternist
          */
         virtual TResult next()
         {
-            const TSource sourceItem(m_it->next());
-
-            if(qIsForwardIteratorEnd(sourceItem))
+            while (true)
             {
-                m_current = TResult();
-                m_position = -1;
-                return TResult();
-            }
-            else
-            {
-                m_current = m_mapper->mapToItem(sourceItem, m_context);
-                if(qIsForwardIteratorEnd(m_current))
-                    return next(); /* The mapper returned null, so continue with the next in the source. */
+                const TSource &sourceItem = m_it->next();
+                if (qIsForwardIteratorEnd(sourceItem))
+                {
+                    m_current = TResult();
+                    m_position = -1;
+                    return m_current;
+                }
                 else
                 {
-                    ++m_position;
-                    return m_current;
+                    m_current = m_mapper->mapToItem(sourceItem, m_context);
+                    if (qIsForwardIteratorEnd(m_current))
+                    {
+                        continue; /* The mapper returned null, so continue with the next in the source. */
+                    }
+                    else
+                    {
+                        ++m_position;
+                        return m_current;
+                    }
                 }
             }
         }
