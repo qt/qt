@@ -23,3 +23,11 @@ maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
 symbian: warning(This example does not work on Symbian platform)
 maemo5: warning(This example does not work on Maemo platform)
 simulator: warning(This example does not work on Simulator platform)
+
+qclucene = QtCLucene$${QT_LIBINFIX}
+if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
+    mac:qclucene = $${qclucene}_debug
+    win32:qclucene = $${qclucene}d
+}
+linux-lsb-g++:LIBS_PRIVATE += --lsb-shared-libs=$$qclucene
+LIBS_PRIVATE += -l$$qclucene
