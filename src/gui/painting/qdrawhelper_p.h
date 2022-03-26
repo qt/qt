@@ -1867,13 +1867,21 @@ inline void qt_memfill(T *dest, T value, int count)
     switch (count & 0x07)
     {
     case 0: do { *dest++ = value;
+        // fall through
     case 7:      *dest++ = value;
+        // fall through
     case 6:      *dest++ = value;
+        // fall through
     case 5:      *dest++ = value;
+        // fall through
     case 4:      *dest++ = value;
+        // fall through
     case 3:      *dest++ = value;
+        // fall through
     case 2:      *dest++ = value;
+        // fall through
     case 1:      *dest++ = value;
+        // fall through
     } while (--n > 0);
     }
 }
@@ -1916,11 +1924,17 @@ inline void qt_memconvert(DST *dest, const SRC *src, int count)
         {
         case 0: do { *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
             case 7:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 6:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 5:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 4:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 3:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 2:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 1:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
             } while (--n > 0);
         }
@@ -1953,6 +1967,7 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     if (count < 3) {
         switch (count) {
         case 2: *dest++ = qrgb666(*src++);
+            // fall through
         case 1: *dest = qrgb666(*src);
         }
         return;
@@ -1961,7 +1976,9 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     const int align = (quintptr(dest) & 3);
     switch (align) {
     case 1: *dest++ = qrgb666(*src++); --count;
+        // fall through
     case 2: *dest++ = qrgb666(*src++); --count;
+        // fall through
     case 3: *dest++ = qrgb666(*src++); --count;
     }
 
@@ -1989,7 +2006,9 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     dest = reinterpret_cast<qrgb666*>(dest32);
     switch (count & 3) {
     case 3: *dest++ = qrgb666(*src++);
+        // fall through
     case 2: *dest++ = qrgb666(*src++);
+        // fall through
     case 1: *dest = qrgb666(*src);
     }
 }
@@ -2069,12 +2088,19 @@ do {                                          \
     switch ((length) & 0x07)                  \
     {                                         \
     case 0: do { *--_d = *--_s;                 \
+        /* fall through */                      \
     case 7:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 6:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 5:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 4:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 3:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 2:      *--_d = *--_s;                 \
+        /* fall through */                      \
     case 1:      *--_d = *--_s;                 \
     } while (--n > 0);                        \
     }                                         \
@@ -2089,12 +2115,19 @@ do {                                          \
     switch ((length) & 0x07)                  \
     {                                         \
     case 0: do { *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 7:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 6:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 5:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 4:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 3:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 2:      *_d++ = *_s++;                 \
+        /* fall through */                      \
     case 1:      *_d++ = *_s++;                 \
     } while (--n > 0);                        \
     }                                         \

@@ -1665,6 +1665,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
         switch(c = *++s) {
         case '-':
             esign = 1;
+            // fall through
         case '+':
             c = *++s;
         }
@@ -2505,7 +2506,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         break;
     case 2:
         leftright = 0;
-        /* no break */
+        // fall through
     case 4:
         if (ndigits <= 0)
             ndigits = 1;
@@ -2513,7 +2514,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         break;
     case 3:
         leftright = 0;
-        /* no break */
+        // fall through
     case 5:
         i = ndigits + k + 1;
         ilim = i;

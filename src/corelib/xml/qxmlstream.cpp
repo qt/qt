@@ -2126,7 +2126,8 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
                     result += readElementText(behaviour);
                     break;
                 }
-                // Fall through (for ErrorOnUnexpectedElement)
+                // continue on ErrorOnUnexpectedElement
+                // fall through
             default:
                 if (d->error || behaviour == ErrorOnUnexpectedElement) {
                     if (!d->error)

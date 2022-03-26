@@ -120,6 +120,7 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
         Q_ASSERT(false);
+        // fall through
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
         depth = 1;

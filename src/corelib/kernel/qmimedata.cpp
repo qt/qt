@@ -140,8 +140,8 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         case QVariant::List: {
             if (format != QLatin1String("text/uri-list"))
                 break;
-            // fall through
         }
+            // fall through
         case QVariant::Url: {
             QByteArray ba = data.toByteArray();
             // Qt 3.x will send text/uri-list with a trailing

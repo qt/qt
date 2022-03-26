@@ -189,6 +189,7 @@ Type Moc::parseType()
                 prev();
                 break;
             }
+            // fall through
         case CHAR:
         case SHORT:
         case INT:
@@ -859,6 +860,7 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
             continue;
         case USING:
             error("'using' directive not supported in 'slots' section");
+            // fall through
         default:
             prev();
         }
@@ -913,6 +915,7 @@ void Moc::parseSignals(ClassDef *def)
             continue;
         case USING:
             error("'using' directive not supported in 'signals' section");
+            // fall through
         default:
             prev();
         }

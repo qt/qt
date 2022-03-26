@@ -472,7 +472,7 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
         switch (ret) {
         case Z_NEED_DICT:
             ret = Z_DATA_ERROR;
-            // and fall through
+            // fall through
         case Z_DATA_ERROR:
         case Z_MEM_ERROR:
             inflateEnd(&inflateStrm);

@@ -240,10 +240,15 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
     if (count < 7) {
         switch (count) {
         case 6: *dest++ = value;
+            // fall through
         case 5: *dest++ = value;
+            // fall through
         case 4: *dest++ = value;
+            // fall through
         case 3: *dest++ = value;
+            // fall through
         case 2: *dest++ = value;
+            // fall through
         case 1: *dest   = value;
         }
         return;
@@ -252,7 +257,9 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
     const int align = (quintptr)(dest) & 0xf;
     switch (align) {
     case 4:  *dest++ = value; --count;
+            // fall through
     case 8:  *dest++ = value; --count;
+            // fall through
     case 12: *dest++ = value; --count;
     }
 
@@ -263,8 +270,11 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
     int n = (count128 + 3) / 4;
     switch (count128 & 0x3) {
     case 0: do { _mm_stream_si128(dst128++, value128);
+            // fall through
     case 3:      _mm_stream_si128(dst128++, value128);
+            // fall through
     case 2:      _mm_stream_si128(dst128++, value128);
+            // fall through
     case 1:      _mm_stream_si128(dst128++, value128);
     } while (--n > 0);
     }
@@ -273,7 +283,9 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
     if (rest) {
         switch (rest) {
         case 3: dest[count - 3] = value;
+            // fall through
         case 2: dest[count - 2] = value;
+            // fall through
         case 1: dest[count - 1] = value;
         }
     }
@@ -387,6 +399,7 @@ void qt_memfill16_sse2(quint16 *dest, quint16 value, int count)
     if (count < 3) {
         switch (count) {
         case 2: *dest++ = value;
+            // fall through
         case 1: *dest = value;
         }
         return;

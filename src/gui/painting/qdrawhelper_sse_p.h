@@ -92,10 +92,15 @@ inline void qt_memfill32_sse_template(quint32 *dest, quint32 value, int count)
     if (count < 7) {
         switch (count) {
         case 6: *dest++ = value;
+            // fall through
         case 5: *dest++ = value;
+            // fall through
         case 4: *dest++ = value;
+            // fall through
         case 3: *dest++ = value;
+            // fall through
         case 2: *dest++ = value;
+            // fall through
         case 1: *dest   = value;
         }
         return;
@@ -108,8 +113,11 @@ inline void qt_memfill32_sse_template(quint32 *dest, quint32 value, int count)
     int n = (count64 + 3) / 4;
     switch (count64 & 0x3) {
     case 0: do { _mm_stream_pi(dst64++, value64);
+        // fall through
     case 3:      _mm_stream_pi(dst64++, value64);
+        // fall through
     case 2:      _mm_stream_pi(dst64++, value64);
+        // fall through
     case 1:      _mm_stream_pi(dst64++, value64);
     } while (--n > 0);
     }

@@ -343,18 +343,25 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
             // the rest always falls through
         case 254:
             ++netmask;
+            // fall through
         case 252:
             ++netmask;
+            // fall through
         case 248:
             ++netmask;
+            // fall through
         case 240:
             ++netmask;
+            // fall through
         case 224:
             ++netmask;
+            // fall through
         case 192:
             ++netmask;
+            // fall through
         case 128:
             ++netmask;
+            // fall through
         case 0:
             break;
         }

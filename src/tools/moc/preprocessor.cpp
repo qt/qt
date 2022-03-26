@@ -312,7 +312,7 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                         ++data;
                     }
                     token = WHITESPACE; // one comment, one whitespace
-                    // fall through;
+                    // fall through
                 case WHITESPACE:
                     if (column == 1)
                         column = 0;
@@ -459,7 +459,7 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                     ++data;
                 }
                 token = PP_WHITESPACE; // one comment, one whitespace
-                // fall through;
+                // fall through
             case PP_WHITESPACE:
                 while (*data && (*data == ' ' || *data == '\t'))
                     ++data;

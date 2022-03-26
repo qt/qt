@@ -5247,6 +5247,7 @@ end:
                             }
                             break; }
                         }
+                        // fall through
                     case MonthSection:
                         if (sn.count >= 3) {
                             int tmp = newCurrentValue.date().month();

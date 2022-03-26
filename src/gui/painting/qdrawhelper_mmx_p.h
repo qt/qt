@@ -658,8 +658,11 @@ static void QT_FASTCALL rasterop_solid_SourceOrDestination(uint *dest,
         int n = (length64 + 3) / 4;
         switch (length64 & 0x3) {
         case 0: do { *dst64 = _mm_or_si64(*dst64, color64); ++dst64;
+            // fall through
         case 3:      *dst64 = _mm_or_si64(*dst64, color64); ++dst64;
+        // fall through
         case 2:      *dst64 = _mm_or_si64(*dst64, color64); ++dst64;
+        // fall through
         case 1:      *dst64 = _mm_or_si64(*dst64, color64); ++dst64;
         } while (--n > 0);
         }
@@ -732,8 +735,11 @@ static void QT_FASTCALL rasterop_solid_SourceXorDestination(uint *dest,
         int n = (length64 + 3) / 4;
         switch (length64 & 0x3) {
         case 0: do { *dst64 = _mm_xor_si64(*dst64, color64); ++dst64;
+            // fall through
         case 3:      *dst64 = _mm_xor_si64(*dst64, color64); ++dst64;
+        // fall through
         case 2:      *dst64 = _mm_xor_si64(*dst64, color64); ++dst64;
+        // fall through
         case 1:      *dst64 = _mm_xor_si64(*dst64, color64); ++dst64;
         } while (--n > 0);
         }
@@ -772,10 +778,13 @@ static void QT_FASTCALL rasterop_solid_SourceAndNotDestination(uint *dest,
         switch (length64 & 0x3) {
         case 0: do { tmp1 = _mm_andnot_si64(*dst64, color64);
                      *dst64++ = _mm_or_si64(tmp1, mmx_0xff000000);
+                     // fall through
         case 3:      tmp2 = _mm_andnot_si64(*dst64, color64);
                      *dst64++ = _mm_or_si64(tmp2, mmx_0xff000000);
+                     // fall through
         case 2:      tmp3 = _mm_andnot_si64(*dst64, color64);
                      *dst64++ = _mm_or_si64(tmp3, mmx_0xff000000);
+                     // fall through
         case 1:      tmp4 = _mm_andnot_si64(*dst64, color64);
                      *dst64++ = _mm_or_si64(tmp4, mmx_0xff000000);
         } while (--n > 0);

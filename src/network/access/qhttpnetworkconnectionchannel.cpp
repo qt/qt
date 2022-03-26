@@ -393,8 +393,8 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         switch (state) {
         case QHttpNetworkReplyPrivate::NothingDoneState: {
             state = reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
-            // fallthrough
         }
+            // fall through
         case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = reply->d_func()->readStatus(socket);
             if (statusBytes == -1) {
@@ -516,6 +516,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 
             // everything done, fall through
             }
+            // fall through
       case QHttpNetworkReplyPrivate::AllDoneState:
             allDone();
             break;
