@@ -234,4 +234,3 @@ SOURCES += \
     SOURCES += wtf/TCSystemAlloc.cpp
 }
 
-QMAKE_CXXFLAGS += -std=gnu++98
