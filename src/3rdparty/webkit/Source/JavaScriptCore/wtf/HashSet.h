@@ -188,7 +188,8 @@ namespace WTF {
 #if COMPILER(MSVC) && _MSC_VER >= 1700
         return iterator_const_cast(m_impl.add(value));
 #else
-        return m_impl.add(value);
+        pair<typename HashTableType::iterator, bool> p = m_impl.add(value);
+        return pair<iterator, bool>(iterator(p.first), p.second);
 #endif
     }
 
@@ -201,7 +202,8 @@ namespace WTF {
 #if COMPILER(MSVC) && _MSC_VER >= 1700
         return iterator_const_cast(m_impl.template addPassingHashCode<T, T, Adapter>(value, value));
 #else
-        return m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+        pair<typename HashTableType::iterator, bool> p = m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+        return pair<iterator, bool>(iterator(p.first), p.second);
 #endif
     }
 

@@ -157,7 +157,7 @@ Structure::~Structure()
 {
     if (m_previous) {
         if (m_nameInPrevious)
-            m_previous->table.remove(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(m_nameInPrevious.get()), m_attributesInPrevious), m_specificValueInPrevious);
+            m_previous->table.remove(StructureTransitionTableHash::Key(RefPtr<UString::Rep>(m_nameInPrevious.get()), +m_attributesInPrevious), m_specificValueInPrevious);
         else
             m_previous->table.removeAnonymousSlotTransition(m_anonymousSlotsInPrevious);
 
@@ -280,7 +280,7 @@ void Structure::materializePropertyMap()
             continue;
         }
         structure->m_nameInPrevious->ref();
-        PropertyMapEntry entry(structure->m_nameInPrevious.get(), structure->m_offset, structure->m_attributesInPrevious, structure->m_specificValueInPrevious, ++m_propertyTable->lastIndexUsed);
+        PropertyMapEntry entry(structure->m_nameInPrevious.get(), structure->m_offset, +structure->m_attributesInPrevious, structure->m_specificValueInPrevious, ++m_propertyTable->lastIndexUsed);
         insertIntoPropertyMapHashTable(entry);
     }
 }
