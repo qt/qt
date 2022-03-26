@@ -309,21 +309,21 @@ static inline int qt_safe_close(int fd)
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
-    register int ret;
+    int ret;
     EINTR_LOOP(ret, ::execve(filename, argv, envp));
     return ret;
 }
 
 static inline int qt_safe_execv(const char *path, char *const argv[])
 {
-    register int ret;
+    int ret;
     EINTR_LOOP(ret, ::execv(path, argv));
     return ret;
 }
 
 static inline int qt_safe_execvp(const char *file, char *const argv[])
 {
-    register int ret;
+    int ret;
     EINTR_LOOP(ret, ::execvp(file, argv));
     return ret;
 }
@@ -332,7 +332,7 @@ static inline int qt_safe_execvp(const char *file, char *const argv[])
 #ifndef Q_OS_VXWORKS // no processes on VxWorks
 static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 {
-    register int ret;
+    int ret;
     EINTR_LOOP(ret, ::waitpid(pid, status, options));
     return ret;
 }
