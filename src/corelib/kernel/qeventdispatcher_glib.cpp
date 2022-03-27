@@ -319,8 +319,10 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     if (qgetenv("QT_NO_THREADED_GLIB").isEmpty()) {
         static int dummyValue = 0; // only used for its address
         QMutexLocker locker(QMutexPool::instance()->get(&dummyValue));
+#if !GLIB_CHECK_VERSION (2, 32, 0)
         if (!g_thread_supported())
             g_thread_init(NULL);
+#endif
     }
 
     if (mainContext) {
