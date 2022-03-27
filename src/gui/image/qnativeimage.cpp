@@ -158,7 +158,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
     int dd = info.depth();
     Visual *vis = (Visual*) info.visual();
 
-    if (!X11->use_mitshm || format != QImage::Format_RGB16 && X11->bppForDepth.value(dd) != 32) {
+    if (!X11->use_mitshm || (format != QImage::Format_RGB16 && X11->bppForDepth.value(dd) != 32)) {
         image = QImage(width, height, format);
         // follow good coding practice and set xshminfo attributes, though values not used in this case
         xshminfo.readOnly = true;
