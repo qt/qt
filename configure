@@ -790,7 +790,7 @@ CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
-CFG_WEBKIT=auto # (yes|no|auto|debug)
+CFG_WEBKIT=no # (yes|no|auto|debug)
 CFG_JAVASCRIPTCORE_JIT=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 
@@ -4025,8 +4025,8 @@ fi
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
 
-    -no-webkit ......... Do not build the WebKit module.
- +  -webkit ............ Build the WebKit module.
+ +  -no-webkit ......... Do not build the WebKit module.
+    -webkit ............ Build the WebKit module.
                          WebKit is built if a decent C++ compiler is used.
     -webkit-debug ...... Build the WebKit module with debug symbols.
 
