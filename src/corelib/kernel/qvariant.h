@@ -351,10 +351,11 @@ class Q_CORE_EXPORT QVariant
     struct Private
     {
         inline Private(): type(Invalid), is_shared(false), is_null(true) { data.ptr = 0; }
-        inline Private(const Private &other)
+        Private(const Private &other)
             : data(other.data), type(other.type),
               is_shared(other.is_shared), is_null(other.is_null)
         {}
+        Private &operator=(const Private &other) = default;
         union Data
         {
             char c;

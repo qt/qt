@@ -258,6 +258,7 @@ public:
     public:
         iterator() : p(0), b(0), e(0), n(0) {}
         iterator(const iterator &o) : p(o.p), b(o.b), e(o.e), n(o.n) {}
+        iterator &operator=(const iterator &o) = default;
 
         QTextFragment fragment() const;
 

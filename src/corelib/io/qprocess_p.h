@@ -113,8 +113,7 @@ inline uint qHash(const QProcEnvKey &key) { return key.hash; }
 class QProcEnvValue
 {
 public:
-    QProcEnvValue() {}
-    QProcEnvValue(const QProcEnvValue &other) { *this = other; }
+    QProcEnvValue() = default;
     explicit QProcEnvValue(const QString &value) : stringValue(value) {}
     explicit QProcEnvValue(const QByteArray &value) : byteValue(value) {}
     bool operator==(const QProcEnvValue &other) const

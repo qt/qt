@@ -110,6 +110,7 @@ public:
 
     QStyleOptionFocusRect();
     QStyleOptionFocusRect(const QStyleOptionFocusRect &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionFocusRect &operator=(const QStyleOptionFocusRect &other) = default;
 
 protected:
     QStyleOptionFocusRect(int version);
@@ -126,6 +127,7 @@ public:
 
     QStyleOptionFrame();
     QStyleOptionFrame(const QStyleOptionFrame &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionFrame &operator=(const QStyleOptionFrame &other) = default;
 
 protected:
     QStyleOptionFrame(int version);
@@ -188,6 +190,7 @@ public:
     QStyleOptionTabWidgetFrame();
     inline QStyleOptionTabWidgetFrame(const QStyleOptionTabWidgetFrame &other)
         : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionTabWidgetFrame &operator=(const QStyleOptionTabWidgetFrame &other) = default;
 
 protected:
     QStyleOptionTabWidgetFrame(int version);
@@ -227,6 +230,7 @@ public:
 
     QStyleOptionTabBarBase();
     QStyleOptionTabBarBase(const QStyleOptionTabBarBase &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionTabBarBase &operator=(const QStyleOptionTabBarBase &other) = default;
 
 protected:
     QStyleOptionTabBarBase(int version);
@@ -271,6 +275,7 @@ public:
 
     QStyleOptionHeader();
     QStyleOptionHeader(const QStyleOptionHeader &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionHeader &operator=(const QStyleOptionHeader &other) = default;
 
 protected:
     QStyleOptionHeader(int version);
@@ -293,6 +298,7 @@ public:
 
     QStyleOptionButton();
     QStyleOptionButton(const QStyleOptionButton &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionButton &operator=(const QStyleOptionButton &other) = default;
 
 protected:
     QStyleOptionButton(int version);
@@ -323,6 +329,7 @@ public:
 
     QStyleOptionTab();
     QStyleOptionTab(const QStyleOptionTab &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionTab &operator=(const QStyleOptionTab &other) = default;
 
 protected:
     QStyleOptionTab(int version);
@@ -382,6 +389,7 @@ public:
     int midLineWidth;
     QStyleOptionToolBar();
     QStyleOptionToolBar(const QStyleOptionToolBar &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionToolBar &operator=(const QStyleOptionToolBar &other) = default;
 
 protected:
     QStyleOptionToolBar(int version);
@@ -408,6 +416,7 @@ public:
 
     QStyleOptionProgressBar();
     QStyleOptionProgressBar(const QStyleOptionProgressBar &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionProgressBar &operator=(const QStyleOptionProgressBar &other) = default;
 
 protected:
     QStyleOptionProgressBar(int version);
@@ -455,6 +464,7 @@ public:
 
     QStyleOptionMenuItem();
     QStyleOptionMenuItem(const QStyleOptionMenuItem &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionMenuItem &operator=(const QStyleOptionMenuItem &other) = default;
 
 protected:
     QStyleOptionMenuItem(int version);
@@ -514,6 +524,7 @@ public:
 
     QStyleOptionDockWidget();
     QStyleOptionDockWidget(const QStyleOptionDockWidget &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionDockWidget &operator=(const QStyleOptionDockWidget &other) = default;
 
 protected:
     QStyleOptionDockWidget(int version);
@@ -554,6 +565,7 @@ public:
 
     QStyleOptionViewItem();
     QStyleOptionViewItem(const QStyleOptionViewItem &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionViewItem &operator=(const QStyleOptionViewItem &other) = default;
 
 protected:
     QStyleOptionViewItem(int version);
@@ -641,6 +653,7 @@ public:
 
     QStyleOptionToolBox();
     QStyleOptionToolBox(const QStyleOptionToolBox &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionToolBox &operator=(const QStyleOptionToolBox &other) = default;
 
 protected:
     QStyleOptionToolBox(int version);
@@ -677,6 +690,7 @@ public:
 
     QStyleOptionRubberBand();
     QStyleOptionRubberBand(const QStyleOptionRubberBand &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionRubberBand &operator=(const QStyleOptionRubberBand &other) = default;
 
 protected:
     QStyleOptionRubberBand(int version);
@@ -695,6 +709,7 @@ public:
 
     QStyleOptionComplex(int version = QStyleOptionComplex::Version, int type = SO_Complex);
     QStyleOptionComplex(const QStyleOptionComplex &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionComplex &operator=(const QStyleOptionComplex &other) = default;
 };
 
 #ifndef QT_NO_SLIDER
@@ -719,6 +734,7 @@ public:
 
     QStyleOptionSlider();
     QStyleOptionSlider(const QStyleOptionSlider &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionSlider &operator=(const QStyleOptionSlider &other) = default;
 
 protected:
     QStyleOptionSlider(int version);
@@ -738,6 +754,7 @@ public:
 
     QStyleOptionSpinBox();
     QStyleOptionSpinBox(const QStyleOptionSpinBox &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionSpinBox &operator=(const QStyleOptionSpinBox &other) = default;
 
 protected:
     QStyleOptionSpinBox(int version);
@@ -786,6 +803,7 @@ public:
 
     QStyleOptionToolButton();
     QStyleOptionToolButton(const QStyleOptionToolButton &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionToolButton &operator=(const QStyleOptionToolButton &other) = default;
 
 protected:
     QStyleOptionToolButton(int version);
@@ -808,6 +826,7 @@ public:
 
     QStyleOptionComboBox();
     QStyleOptionComboBox(const QStyleOptionComboBox &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionComboBox &operator=(const QStyleOptionComboBox &other) = default;
 
 protected:
     QStyleOptionComboBox(int version);
@@ -826,6 +845,7 @@ public:
 
     QStyleOptionTitleBar();
     QStyleOptionTitleBar(const QStyleOptionTitleBar &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionTitleBar &operator=(const QStyleOptionTitleBar &other) = default;
 
 protected:
     QStyleOptionTitleBar(int version);
@@ -846,6 +866,8 @@ public:
 
     QStyleOptionGroupBox();
     QStyleOptionGroupBox(const QStyleOptionGroupBox &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionGroupBox &operator=(const QStyleOptionGroupBox &other) = default;
+
 protected:
     QStyleOptionGroupBox(int version);
 };
@@ -860,6 +882,8 @@ public:
 
     QStyleOptionSizeGrip();
     QStyleOptionSizeGrip(const QStyleOptionSizeGrip &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionSizeGrip &operator=(const QStyleOptionSizeGrip &other) = default;
+
 protected:
     QStyleOptionSizeGrip(int version);
 };
@@ -876,6 +900,7 @@ public:
 
     QStyleOptionGraphicsItem();
     QStyleOptionGraphicsItem(const QStyleOptionGraphicsItem &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionGraphicsItem &operator=(const QStyleOptionGraphicsItem &other) = default;
     static qreal levelOfDetailFromTransform(const QTransform &worldTransform);
 protected:
     QStyleOptionGraphicsItem(int version);

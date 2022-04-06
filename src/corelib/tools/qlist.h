@@ -190,6 +190,7 @@ public:
         inline iterator() : i(0) {}
         inline iterator(Node *n) : i(n) {}
         inline iterator(const iterator &o): i(o.i){}
+        inline iterator &operator=(const iterator &o)  { i = o.i; return *this; }
         inline T &operator*() const { return i->t(); }
         inline T *operator->() const { return &i->t(); }
         inline T &operator[](int j) const { return i[j].t(); }
@@ -242,6 +243,7 @@ public:
 #else
         inline const_iterator(const iterator &o): i(o.i) {}
 #endif
+        inline const_iterator &operator=(const const_iterator &o) { i = o.i; return *this; }
         inline const T &operator*() const { return i->t(); }
         inline const T *operator->() const { return &i->t(); }
         inline const T &operator[](int j) const { return i[j].t(); }
