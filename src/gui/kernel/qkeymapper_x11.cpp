@@ -595,7 +595,11 @@ void QKeyMapperPrivate::clearMappings()
                             KeySym sym;
                             int x = 0;
                             do {
+#ifndef QT_NO_XKB
+                                sym = XkbKeycodeToKeysym(X11->display, map->modifiermap[mapIndex], 0, x++);
+#else
                                 sym = XKeycodeToKeysym(X11->display, map->modifiermap[mapIndex], x++);
+#endif
                             } while (sym == NoSymbol && x < coreDesc.keysyms_per_keycode);
                             const uchar mask = 1 << maskIndex;
                             SETMASK(sym, mask);
@@ -607,7 +611,11 @@ void QKeyMapperPrivate::clearMappings()
                 // determine the meaning of the Lock modifier
                 for (i = 0; i < map->max_keypermod; ++i) {
                     for (int x = 0; x < coreDesc.keysyms_per_keycode; ++x) {
+#ifndef QT_NO_XKB
+                        KeySym sym = XkbKeycodeToKeysym(X11->display, map->modifiermap[LockMapIndex], 0, x);
+#else
                         KeySym sym = XKeycodeToKeysym(X11->display, map->modifiermap[LockMapIndex], x);
+#endif
                         if (sym == XK_Caps_Lock || sym == XK_ISO_Lock) {
                             coreDesc.lock_meaning = XK_Caps_Lock;
                             break;
