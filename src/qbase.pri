@@ -193,7 +193,7 @@ include(qt_targets.pri)
 win32:DEFINES+=_USE_MATH_DEFINES
 
 symbian {
-    # Make partial upgrade SIS file for all dll's except webkit and s60main
+    # Make partial upgrade SIS file for all dll's except s60main
     !contains(TARGET.UID3, 0x200267C2):!contains(TARGET.UID3, 0xE00267C2):!contains(TARGET.UID3, 0x2001E61F):!contains(TARGET.UID3, 0xE001E61F) {
         # Partial upgrade SIS file
         vendorinfo = \
