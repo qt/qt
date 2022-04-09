@@ -790,7 +790,6 @@ CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
-CFG_WEBKIT=no # (yes|no|auto|debug)
 CFG_JAVASCRIPTCORE_JIT=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 
@@ -1067,9 +1066,8 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
         L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
     fi
 
-    echo "-no-multimedia -no-webkit -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
+    echo "-no-multimedia -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
     CFG_MULTIMEDIA=no
-    CFG_WEBKIT=no
     CFG_PHONON=no
     CFG_MULTIMEDIA=no
     CFG_MEDIASERVICES=no
@@ -1124,19 +1122,6 @@ while [ "$#" -gt 0 ]; do
     -no-*-*|-plugin-*-*|-qt-*-*)
         VAR=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
         VAL=`echo $1 | sed "s,^-\([^-]*\).*,\1,"`
-        ;;
-    #WebKit options
-    -webkit)
-        VAR="webkit"
-        VAL="yes"
-        ;;
-    -webkit-debug)
-        VAR="webkit"
-        VAL="debug"
-        ;;
-    -no-webkit)
-        VAR="webkit"
-        VAL="no"
         ;;
     #Qt style no options
     -no-*)
@@ -2267,10 +2252,6 @@ while [ "$#" -gt 0 ]; do
                 UNKNOWN_OPT=yes
             fi
         fi
-        ;;
-    webkit)
-        [ "$VAL" = "auto" ] && VAL="yes"
-        CFG_WEBKIT="$VAL"
         ;;
     javascript-jit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
@@ -3867,7 +3848,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-webkit-debug]
+        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg]
         [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] 
         [-no-declarative] [-declarative] [-no-declarative-debug] [-declarative-debug]
@@ -4024,11 +4005,6 @@ fi
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
-
- +  -no-webkit ......... Do not build the WebKit module.
-    -webkit ............ Build the WebKit module.
-                         WebKit is built if a decent C++ compiler is used.
-    -webkit-debug ...... Build the WebKit module with debug symbols.
 
     -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
  +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
@@ -6241,12 +6217,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
-    # Additional check to decide if WebKit support will be included
-    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
-        echo "Warning: -no-xrender will disable the QtWebkit module."
-        CFG_WEBKIT="no"
-    fi
-
     # auto-detect MIT-SHM support
     if [ "$CFG_MITSHM" != "no" ]; then
         if compileTest x11/mitshm "mitshm" $X11TESTS_FLAGS; then
@@ -7701,14 +7671,12 @@ fi
 # supported and on which compilers.
 #
 canBuildQtXmlPatterns="yes"
-canBuildWebKit="$HAVE_STL"
 canBuildQtScript="$HAVE_STL"
 canBuildQtConcurrent="yes"
 
-# WebKit and QtScript require stdint.h
+# QtScript requires stdint.h
 compileTest unix/stdint "Stdint"
 if [ $? != "0" ]; then
-    canBuildWebKit="no"
     canBuildQtScript="no"
 fi
 
@@ -7726,16 +7694,11 @@ case "$XPLATFORM" in
 		canBuildQtXmlPatterns="no"
 		;;
 	    *)
-		canBuildWebKit="no"
 		canBuildQtXmlPatterns="no"
 		;;
 	esac
 	;;
-    unsupported/vxworks-*-g++*)
-	canBuildWebKit="no"
-	;;
     unsupported/vxworks-*-dcc*)
-	canBuildWebKit="no"
 	canBuildQtXmlPatterns="no"
 	;;
     *-g++*)
@@ -7743,11 +7706,7 @@ case "$XPLATFORM" in
 	case "$(${QMAKE_CONF_COMPILER} -dumpversion)" in
 	    [1-9][0-9]*|9*|8*|7*|6*|5*|4*|3.4*)
 		;;
-            3.3*)
-                canBuildWebKit="no"
-                ;;
 	    *)
-		canBuildWebKit="no"
 		canBuildQtXmlPatterns="no"
 		;;
 	esac
@@ -7756,26 +7715,17 @@ case "$XPLATFORM" in
         # Check the compiler version
         case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
             5.[012345678])
-                canBuildWebKit="no"
                 canBuildQtXmlPatterns="no"
                 canBuildQtConcurrent="no"
                 ;;
             5.9)
-                canBuildWebKit="no"
                 canBuildQtConcurrent="no"
-                ;;
-            5.1*)
-                canBuildWebKit="no"
                 ;;
         esac
         ;;
     hpux-acc*)
-	canBuildWebKit="no"
 	canBuildQtXmlPatterns="no"
         canBuildQtConcurrent="no"
-	;;
-    hpuxi-acc*)
-	canBuildWebKit="no"
 	;;
     aix-xlc*)
         # Get the xlC version
@@ -7802,18 +7752,15 @@ EOF
 
         case "$xlcver" in
             [123456].*)
-                canBuildWebKit="no"
                 canBuildQtXmlPatterns="no"
                 canBuildQtConcurrent="no"
                 ;;
             *)
-                canBuildWebKit="no"
                 canBuildQtConcurrent="no"
                 ;;
         esac
         ;;
     irix-cc*)
-        canBuildWebKit="no"
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
@@ -7821,18 +7768,6 @@ EOF
     symbian-armcc)
         ;;
 esac
-
-if [ "$CFG_GUI" = "no" ]; then
-    # WebKit requires QtGui
-    canBuildWebKit="no"
-fi
-
-if [ "$CFG_SHARED" = "no" ]; then
-    echo
-    echo "WARNING: Using static linking will disable the WebKit module."
-    echo
-    canBuildWebKit="no"
-fi
 
 CFG_CONCURRENT="yes"
 if [ "$canBuildQtConcurrent" = "no" ]; then
@@ -7882,21 +7817,8 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-if [ "$CFG_WEBKIT" != "no" ]; then
-    CFG_WEBKIT="$canBuildWebKit"
-fi
+QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 
-if [ "$CFG_WEBKIT" != "no" ]; then
-    # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/Source/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
-    # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
-    if [ "$CFG_WEBKIT" = "debug" ]; then
-        QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
-    fi
-else
-    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
-fi
 
 if [ "$CFG_SCRIPT" = "yes" -a "$canBuildQtScript" = "no" ]; then
     echo "Error: QtScript was requested, but it can't be built on this platform."
@@ -8911,15 +8833,6 @@ EOF
 *) ;;
 esac
 
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "no" ]  && [ "$CFG_WEBKIT" != "no" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    cat <<EOF
-        WARNING: DWARF2 debug symbols are not enabled. Linking webkit
-        in debug mode will run out of memory on systems with 2GB or less.
-        Install Xcode 2.4.1 or higher to enable DWARF2, or configure with
-         -no-webkit or -release to skip webkit debug.
-EOF
-fi
-
 echo
 if [ "$XPLATFORM" = "$PLATFORM" ]; then
     echo "Build type:    $PLATFORM"
@@ -8988,12 +8901,7 @@ echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
 echo "Phonon module .......... $CFG_PHONON"
 echo "Multimedia module ...... $CFG_MULTIMEDIA"
 echo "SVG module ............. $CFG_SVG"
-case "$CFG_WEBKIT" in
-    yes)   echo "WebKit module .......... yes" ;;
-    debug) echo "WebKit module .......... yes (debug)" ;;
-    no)    echo "WebKit module .......... no" ;;
-esac
-if [ "$CFG_WEBKIT" != "no" ] || [ "$CFG_SCRIPT" != "no" ]; then
+if [ "$CFG_SCRIPT" != "no" ]; then
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
         echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else
