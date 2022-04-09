@@ -104,6 +104,7 @@ public:
     {
         ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord()): op(o), rec(r) { clearGenerated(rec);}
         ModifiedRow(const ModifiedRow &other): op(other.op), rec(other.rec), primaryValues(other.primaryValues) {}
+        ModifiedRow& operator=(const QSqlTableModelPrivate::ModifiedRow&) = default;
         Op op;
         QSqlRecord rec;
 		QSqlRecord primaryValues;

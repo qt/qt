@@ -134,6 +134,7 @@ public:
     struct Change {
         Change() : first(-1), last(-1) {}
         Change(const Change &c) : parent(c.parent), first(c.first), last(c.last), needsAdjust(c.needsAdjust) {}
+        Change& operator=(const QAbstractItemModelPrivate::Change&) = default;
         Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l), needsAdjust(false) {}
         QModelIndex parent;
         int first, last;

@@ -67,7 +67,8 @@ public:
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(const QLatin1String &path);
     inline explicit QDBusObjectPath(const QString &path);
-    inline QDBusObjectPath &operator=(const QDBusObjectPath &path);
+    inline QDBusObjectPath(const QDBusObjectPath &path);
+    inline QDBusObjectPath &operator=(const QDBusObjectPath &path) = default;
 
     inline void setPath(const QString &path);
 
@@ -90,8 +91,9 @@ inline QDBusObjectPath::QDBusObjectPath(const QString &objectPath)
     : QString(objectPath)
 { check(); }
 
-inline QDBusObjectPath &QDBusObjectPath::operator=(const QDBusObjectPath &_path)
-{ QString::operator=(_path); check(); return *this; }
+inline QDBusObjectPath::QDBusObjectPath(const QDBusObjectPath &path)
+    : QString(path)
+{ check(); }
 
 inline void QDBusObjectPath::setPath(const QString &objectPath)
 { QString::operator=(objectPath); check(); }
@@ -117,7 +119,8 @@ public:
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(const QLatin1String &signature);
     inline explicit QDBusSignature(const QString &signature);
-    inline QDBusSignature &operator=(const QDBusSignature &signature);
+    inline QDBusSignature(const QDBusSignature &dbusSignature);
+    inline QDBusSignature &operator=(const QDBusSignature &signature) = default;
 
     inline void setSignature(const QString &signature);
 
@@ -140,8 +143,9 @@ inline QDBusSignature::QDBusSignature(const QString &dBusSignature)
     : QString(dBusSignature)
 { check(); }
 
-inline QDBusSignature &QDBusSignature::operator=(const QDBusSignature &dbusSignature)
-{ QString::operator=(dbusSignature); check(); return *this; }
+inline QDBusSignature::QDBusSignature(const QDBusSignature &dbusSignature)
+    : QString(dbusSignature)
+{ check(); }
 
 inline void QDBusSignature::setSignature(const QString &dBusSignature)
 { QString::operator=(dBusSignature); check(); }

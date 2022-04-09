@@ -103,6 +103,7 @@ public:
     QProcEnvKey() : hash(0) {}
     explicit QProcEnvKey(const QByteArray &other) : key(other), hash(qHash(key)) {}
     QProcEnvKey(const QProcEnvKey &other) { *this = other; }
+    QProcEnvKey& operator=(const QProcEnvKey&) = default;
     bool operator==(const QProcEnvKey &other) const { return key == other.key; }
 
     QByteArray key;
