@@ -79,7 +79,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool displayDepth  =  -1;
+static gint displayDepth  =  -1;
 Q_GLOBAL_STATIC(QGtkStyleUpdateScheduler, styleScheduler)
 
 Ptr_gtk_container_forall QGtkStylePrivate::gtk_container_forall = 0;
