@@ -63,6 +63,7 @@ static void connManager_cleanup()
     // this is not atomic or thread-safe!
     int shutdown = appShutdown.fetchAndStoreAcquire(1);
     Q_ASSERT(shutdown == 0);
+    Q_UNUSED(shutdown);
     if(connManager_ptr)
         connManager_ptr->cleanup();
     connManager_ptr = 0;
