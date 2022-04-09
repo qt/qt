@@ -138,6 +138,7 @@ public:
     inline ~QPolygonF() {}
     inline QPolygonF(int size);
     inline QPolygonF(const QPolygonF &a) : QVector<QPointF>(a) {}
+    inline QPolygonF& operator=(const QPolygonF&) = default;
     inline QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
     QPolygonF(const QRectF &r);
     QPolygonF(const QPolygon &a);

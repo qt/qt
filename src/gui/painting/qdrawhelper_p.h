@@ -755,6 +755,7 @@ public:
     inline qargb8565(quint32 v);
     inline explicit qargb8565(quint32p v);
     inline qargb8565(const qargb8565 &v);
+    inline qargb8565& operator=(const qargb8565&) = default;
     inline qargb8565(const qrgb565 &v);
 
     inline operator quint32() const;
@@ -987,6 +988,7 @@ public:
     inline qargb8555(quint32 v);
     inline explicit qargb8555(quint32p v);
     inline qargb8555(const qargb8555 &v);
+    inline qargb8555& operator=(const qargb8555&) = default;
     inline qargb8555(const qrgb555 &v);
 
     inline operator quint32() const;
@@ -1215,6 +1217,7 @@ public:
     inline qargb6666(quint32 v) { *this = qargb6666(quint32p(v)); }
     inline explicit qargb6666(quint32p v);
     inline qargb6666(const qargb6666 &v);
+    inline qargb6666& operator=(const qargb6666&) = default;
     inline qargb6666(const qrgb666 &v);
 
     inline operator quint32 () const;

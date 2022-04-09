@@ -220,6 +220,7 @@ public:
                 const QColor &dark, const QColor &mid, const QColor &text, const QColor &base)
         : QPalette(foreground, background, light, dark, mid, text, base) {}
     inline QColorGroup(const QColorGroup &cg) : QPalette(cg) {}
+    inline QColorGroup& operator=(const QColorGroup&) = default;
     inline QColorGroup(const QPalette &pal) : QPalette(pal) {}
     bool operator==(const QColorGroup &other) const;
     inline bool operator!=(const QColorGroup &other) const { return !(operator==(other)); }

@@ -133,7 +133,8 @@ public:
     QTransform &operator*=(const QTransform &);
     QTransform operator*(const QTransform &o) const;
 
-    QTransform &operator=(const QTransform &);
+    QTransform(const QTransform &);
+    QTransform &operator=(const QTransform &) = default;
 
     operator QVariant() const;
 

@@ -986,22 +986,14 @@ QTransform QTransform::operator*(const QTransform &m) const
 /*!
     Assigns the given \a matrix's values to this matrix.
 */
-QTransform & QTransform::operator=(const QTransform &matrix)
-{
-    affine._m11 = matrix.affine._m11;
-    affine._m12 = matrix.affine._m12;
-    affine._m21 = matrix.affine._m21;
-    affine._m22 = matrix.affine._m22;
-    affine._dx = matrix.affine._dx;
-    affine._dy = matrix.affine._dy;
-    m_13 = matrix.m_13;
-    m_23 = matrix.m_23;
-    m_33 = matrix.m_33;
-    m_type = matrix.m_type;
-    m_dirty = matrix.m_dirty;
-
-    return *this;
-}
+QTransform::QTransform(const QTransform &matrix) :
+    affine(matrix.affine),
+    m_13(matrix.m_13),
+    m_23(matrix.m_23),
+    m_33(matrix.m_33),
+    m_type(matrix.m_type),
+    m_dirty(matrix.m_dirty)
+{}
 
 /*!
     Resets the matrix to an identity matrix, i.e. all elements are set

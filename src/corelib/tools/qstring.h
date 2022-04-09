@@ -655,6 +655,7 @@ class Q_CORE_EXPORT QLatin1String
 {
 public:
     inline explicit QLatin1String(const char *s) : chars(s) {}
+    inline QLatin1String(const QLatin1String &other) : chars(other.chars) {}
     inline QLatin1String &operator=(const QLatin1String &other)
     { chars = other.chars; return *this; }
 

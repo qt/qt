@@ -459,6 +459,7 @@ public:
     inline int replacementLength() const { return replace_length; }
 
     QInputMethodEvent(const QInputMethodEvent &other);
+    QInputMethodEvent& operator=(const QInputMethodEvent&) = default;
 
 private:
     QString preedit;

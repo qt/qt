@@ -146,6 +146,7 @@ public:
 
     QStyleOptionFrameV2();
     QStyleOptionFrameV2(const QStyleOptionFrameV2 &other) : QStyleOptionFrame(Version) { *this = other; }
+    QStyleOptionFrameV2& operator=(const QStyleOptionFrameV2&) = default;
     QStyleOptionFrameV2(const QStyleOptionFrame &other);
     QStyleOptionFrameV2 &operator=(const QStyleOptionFrame &other);
 
@@ -165,6 +166,7 @@ public:
 
     QStyleOptionFrameV3();
     QStyleOptionFrameV3(const QStyleOptionFrameV3 &other) : QStyleOptionFrameV2(Version) { *this = other; }
+    QStyleOptionFrameV3& operator=(const QStyleOptionFrameV3&) = default;
     QStyleOptionFrameV3(const QStyleOptionFrame &other);
     QStyleOptionFrameV3 &operator=(const QStyleOptionFrame &other);
 
@@ -207,6 +209,7 @@ public:
     QStyleOptionTabWidgetFrameV2();
     QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrameV2 &other) :
             QStyleOptionTabWidgetFrame(Version) { *this = other; }
+    QStyleOptionTabWidgetFrameV2& operator=(const QStyleOptionTabWidgetFrameV2&) = default;
     QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrame &other);
     QStyleOptionTabWidgetFrameV2 &operator=(const QStyleOptionTabWidgetFrame &other);
 
@@ -243,6 +246,7 @@ public:
     bool documentMode;
     QStyleOptionTabBarBaseV2();
     QStyleOptionTabBarBaseV2(const QStyleOptionTabBarBaseV2 &other) : QStyleOptionTabBarBase(Version) { *this = other; }
+    QStyleOptionTabBarBaseV2& operator=(const QStyleOptionTabBarBaseV2&) = default;
     QStyleOptionTabBarBaseV2(const QStyleOptionTabBarBase &other);
     QStyleOptionTabBarBaseV2 &operator=(const QStyleOptionTabBarBase &other);
 
@@ -344,6 +348,7 @@ public:
     QSize iconSize;
     QStyleOptionTabV2();
     QStyleOptionTabV2(const QStyleOptionTabV2 &other) : QStyleOptionTab(Version) { *this = other; }
+    QStyleOptionTabV2& operator=(const QStyleOptionTabV2&) = default;
     QStyleOptionTabV2(const QStyleOptionTab &other);
     QStyleOptionTabV2 &operator=(const QStyleOptionTab &other);
 
@@ -360,6 +365,7 @@ public:
     QSize rightButtonSize;
     QStyleOptionTabV3();
     QStyleOptionTabV3(const QStyleOptionTabV3 &other) : QStyleOptionTabV2(Version) { *this = other; }
+    QStyleOptionTabV3& operator=(const QStyleOptionTabV3&) = default;
     QStyleOptionTabV3(const QStyleOptionTabV2 &other) : QStyleOptionTabV2(Version) { *this = other; }
     QStyleOptionTabV3(const QStyleOptionTab &other);
     QStyleOptionTabV3 &operator=(const QStyleOptionTab &other);
@@ -488,6 +494,7 @@ public:
 
     QStyleOptionQ3ListViewItem();
     QStyleOptionQ3ListViewItem(const QStyleOptionQ3ListViewItem &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionQ3ListViewItem& operator=(const QStyleOptionQ3ListViewItem&) = default;
 
 protected:
     QStyleOptionQ3ListViewItem(int version);
@@ -506,6 +513,7 @@ public:
 
     QStyleOptionQ3DockWindow();
     QStyleOptionQ3DockWindow(const QStyleOptionQ3DockWindow &other) : QStyleOption(Version, Type) { *this = other; }
+    QStyleOptionQ3DockWindow& operator=(const QStyleOptionQ3DockWindow&) = default;
 
 protected:
     QStyleOptionQ3DockWindow(int version);
@@ -540,6 +548,7 @@ public:
     QStyleOptionDockWidgetV2();
     QStyleOptionDockWidgetV2(const QStyleOptionDockWidgetV2 &other)
         : QStyleOptionDockWidget(Version) { *this = other; }
+    QStyleOptionDockWidgetV2& operator=(const QStyleOptionDockWidgetV2&) = default;
     QStyleOptionDockWidgetV2(const QStyleOptionDockWidget &other);
     QStyleOptionDockWidgetV2 &operator = (const QStyleOptionDockWidget &other);
 
@@ -590,6 +599,7 @@ public:
 
     QStyleOptionViewItemV2();
     QStyleOptionViewItemV2(const QStyleOptionViewItemV2 &other) : QStyleOptionViewItem(Version) { *this = other; }
+    QStyleOptionViewItemV2& operator=(const QStyleOptionViewItemV2&) = default;
     QStyleOptionViewItemV2(const QStyleOptionViewItem &other);
     QStyleOptionViewItemV2 &operator=(const QStyleOptionViewItem &other);
 
@@ -610,6 +620,7 @@ public:
     QStyleOptionViewItemV3();
     QStyleOptionViewItemV3(const QStyleOptionViewItemV3 &other)
         : QStyleOptionViewItemV2(Version) { *this = other; }
+    QStyleOptionViewItemV3& operator=(const QStyleOptionViewItemV3&) = default;
     QStyleOptionViewItemV3(const QStyleOptionViewItem &other);
     QStyleOptionViewItemV3 &operator = (const QStyleOptionViewItem &other);
 
@@ -634,6 +645,7 @@ public:
     QStyleOptionViewItemV4();
     QStyleOptionViewItemV4(const QStyleOptionViewItemV4 &other)
         : QStyleOptionViewItemV3(Version) { *this = other; }
+    QStyleOptionViewItemV4& operator=(const QStyleOptionViewItemV4&) = default;
     QStyleOptionViewItemV4(const QStyleOptionViewItem &other);
     QStyleOptionViewItemV4 &operator = (const QStyleOptionViewItem &other);
 
@@ -671,6 +683,7 @@ public:
 
     QStyleOptionToolBoxV2();
     QStyleOptionToolBoxV2(const QStyleOptionToolBoxV2 &other) : QStyleOptionToolBox(Version) { *this = other; }
+    QStyleOptionToolBoxV2& operator=(const QStyleOptionToolBoxV2&) = default;
     QStyleOptionToolBoxV2(const QStyleOptionToolBox &other);
     QStyleOptionToolBoxV2 &operator=(const QStyleOptionToolBox &other);
 
@@ -777,6 +790,7 @@ public:
 
     QStyleOptionQ3ListView();
     QStyleOptionQ3ListView(const QStyleOptionQ3ListView &other) : QStyleOptionComplex(Version, Type) { *this = other; }
+    QStyleOptionQ3ListView& operator=(const QStyleOptionQ3ListView&) = default;
 
 protected:
     QStyleOptionQ3ListView(int version);
