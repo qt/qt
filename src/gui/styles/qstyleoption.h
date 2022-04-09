@@ -441,6 +441,7 @@ public:
     QStyleOptionProgressBarV2();
     QStyleOptionProgressBarV2(const QStyleOptionProgressBar &other);
     QStyleOptionProgressBarV2(const QStyleOptionProgressBarV2 &other);
+    QStyleOptionProgressBarV2& operator=(const QStyleOptionProgressBarV2&) = default;
     QStyleOptionProgressBarV2 &operator=(const QStyleOptionProgressBar &other);
 
 protected:

@@ -91,6 +91,7 @@ private:
                                         parentFd(o.parentFd),
                                         isMonitored(o.isMonitored),
                                         files(o.files) {}
+        Directory& operator=(const QDnotifyFileSystemWatcherEngine::Directory&) = default;
         QString path;
         int fd;
         int parentFd;

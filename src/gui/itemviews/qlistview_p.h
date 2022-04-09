@@ -75,6 +75,7 @@ public:
     inline QListViewItem(const QListViewItem &other)
         : x(other.x), y(other.y), w(other.w), h(other.h),
           indexHint(other.indexHint), visited(other.visited) {}
+    inline QListViewItem& operator=(const QListViewItem&) = default;
     inline QListViewItem(QRect r, int i)
         : x(r.x()), y(r.y()), w(qMin(r.width(), SHRT_MAX)), h(qMin(r.height(), SHRT_MAX)),
           indexHint(i), visited(0xffff) {}
