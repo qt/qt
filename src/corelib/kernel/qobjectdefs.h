@@ -147,7 +147,7 @@ template <typename T1, typename T2>
 inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 #endif // QT_NO_QOBJECT_CHECK
 
-#if defined(Q_CC_INTEL)
+#if defined(Q_CC_INTEL) || defined(Q_CC_GNU)
 // Cannot redefine the visibility of a method in an exported class
 # define Q_DECL_HIDDEN_STATIC_METACALL
 #else
