@@ -500,7 +500,8 @@ void QVector<T>::realloc(int asize, int aalloc)
             if (QTypeInfo<T>::isComplex) {
                 x.d->size = 0;
             } else {
-                ::memcpy(x.p, p, sizeOfTypedData() + (qMin(aalloc, d->alloc) - 1) * sizeof(T));
+                ::memcpy(static_cast<void *>(x.p), static_cast<const void *>(p),
+                         sizeOfTypedData() + (qMin(aalloc, d->alloc) - 1) * sizeof(T));
                 x.d->size = d->size;
             }
         } else {
@@ -614,7 +615,7 @@ Q_TYPENAME QVector<T>::iterator QVector<T>::insert(iterator before, size_type n,
         } else {
             T *b = p->array + offset;
             T *i = b + n;
-            memmove(i, b, (d->size - offset) * sizeof(T));
+            memmove(static_cast<void *>(i), static_cast<const void *>(b), (d->size - offset) * sizeof(T));
             while (i != b)
                 new (--i) T(copy);
         }
@@ -639,7 +640,8 @@ Q_TYPENAME QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend
             i->~T();
         }
     } else {
-        memmove(p->array + f, p->array + l, (d->size-l)*sizeof(T));
+        memmove(static_cast<void *>(p->array + f), static_cast<const void *>(p->array + l),
+                (d->size-l)*sizeof(T));
     }
     d->size -= n;
     return p->array + f;
