@@ -3226,6 +3226,7 @@ static inline void formatTouchPoint(QDebug d, const QTouchEvent::TouchPoint &tp)
         break;
     case Qt::TouchPointStateMask: // Qt 4 only
         d << " stateMask";
+        break;
     case Qt::TouchPointPrimary:
         d << " primary";
         break;

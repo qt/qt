@@ -1129,7 +1129,7 @@ bool QToolBar::event(QEvent *event)
     case QEvent::Hide:
         if (!isHidden())
             break;
-        // fallthrough intended
+        // fall through
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
         emit visibilityChanged(event->type() == QEvent::Show);

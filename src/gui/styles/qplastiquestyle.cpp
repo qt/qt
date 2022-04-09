@@ -477,6 +477,7 @@ static void qBrushSetAlphaF(QBrush *brush, qreal alpha)
         default:
             qWarning("QPlastiqueStyle::qBrushLight() - unknown gradient type"
                      " - falling back to QLinearGradient");
+            // fall through
         case QGradient::LinearGradient: {
             QLinearGradient grad = *static_cast<const QLinearGradient *>(gradient);
             grad.setStops(stops);
@@ -540,6 +541,7 @@ static QBrush qBrushLight(QBrush brush, int light)
         default:
             qWarning("QPlastiqueStyle::qBrushLight() - unknown gradient type"
                      " - falling back to QLinearGradient");
+            // fall through
         case QGradient::LinearGradient: {
             QLinearGradient grad = *static_cast<const QLinearGradient *>(gradient);
             grad.setStops(stops);
@@ -602,6 +604,7 @@ static QBrush qBrushDark(QBrush brush, int dark)
         default:
             qWarning("QPlastiqueStyle::qBrushDark() - unknown gradient type"
                      " - falling back to QLinearGradient");
+            // fall through
         case QGradient::LinearGradient: {
             QLinearGradient grad = *static_cast<const QLinearGradient *>(gradient);
             grad.setStops(stops);
@@ -1396,6 +1399,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
             break;
         }
 #endif // QT_NO_LINEEDIT
+        // fall through
     case PE_FrameDockWidget:
     case PE_FrameMenu:
     case PE_FrameStatusBarItem: {
@@ -5300,11 +5304,13 @@ QRect QPlastiqueStyle::subControlRect(ComplexControl control, const QStyleOption
             case SC_TitleBarContextHelpButton:
                 if (tb->titleBarFlags & Qt::WindowContextHelpButtonHint)
                     offset += delta;
+                // fall through
             case SC_TitleBarMinButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMinButton)
                     break;
+                // fall through
             case SC_TitleBarNormalButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
@@ -5312,21 +5318,25 @@ QRect QPlastiqueStyle::subControlRect(ComplexControl control, const QStyleOption
                     offset += delta;
                 else if (sc == SC_TitleBarNormalButton)
                     break;
+                // fall through
             case SC_TitleBarMaxButton:
                 if (!isMaximized && (tb->titleBarFlags & Qt::WindowMaximizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMaxButton)
                     break;
+                // fall through
             case SC_TitleBarShadeButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarShadeButton)
                     break;
+                // fall through
             case SC_TitleBarUnshadeButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarUnshadeButton)
                     break;
+                // fall through
             case SC_TitleBarCloseButton:
                 if (tb->titleBarFlags & Qt::WindowSystemMenuHint)
                     offset += delta;
@@ -5529,6 +5539,7 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
             ret = size;
             break;
         }
+        // fall through
 #endif // QT_NO_SLIDER
     case PM_ScrollBarExtent:
         ret = 16;
@@ -5897,6 +5908,7 @@ int QPlastiqueStyle::layoutSpacingImplementation(QSizePolicy::ControlType contro
     case CT1(QSizePolicy::CheckBox):
         if (orientation == Qt::Vertical)
             return 2;
+        // fall through
     case CT1(QSizePolicy::RadioButton):
         if (orientation == Qt::Vertical)
             return 1;

@@ -592,6 +592,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                         if(status.eor == QChar::DirEN || dir == QChar::DirAN) {
                             eor = current; break;
                         }
+                        // fall through
                     case QChar::DirBN:
                     case QChar::DirB:
                     case QChar::DirS:
@@ -649,6 +650,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                     if(status.eor == QChar::DirAN) {
                         eor = current; break;
                     }
+                    // fall through
                 case QChar::DirES:
                 case QChar::DirET:
                 case QChar::DirBN:

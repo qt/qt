@@ -929,6 +929,7 @@ void QLineControl::parseInputMask(const QString &maskFields)
                 break;
             case '\\':
                 escape = true;
+                // fall through
             default:
                 s = true;
                 break;
@@ -1524,6 +1525,7 @@ bool QLineControl::processEvent(QEvent* ev)
             }
         }
 #endif
+        // fall through
         default:
             return false;
     }

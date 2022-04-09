@@ -959,6 +959,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             }
             break;
         }
+        // fall through
 
 #ifndef QT_NO_TABBAR
     case CE_TabBarTabShape:
@@ -1053,6 +1054,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             }
             break; }
 #endif // QT_NO_TABBAR
+        // fall through
     case CE_ProgressBarGroove:
         qDrawShadePanel(p, opt->rect, opt->palette, true, 2);
         break;
@@ -1114,6 +1116,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             p->setTransform(oldMatrix, false);
             break;
         }
+        // fall through
 
     case CE_MenuTearoff: {
         if(opt->state & State_Selected) {
@@ -1282,6 +1285,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                 proxy()->drawPrimitive(arrow, &arrowOpt, p, widget);
             }
             break; }
+        // fall through
 
     case CE_MenuBarItem:
         if (opt->state & State_Selected)  // active item
@@ -1773,6 +1777,7 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
                 }
             }
             break; }
+        // fall through
 
     default:
         QCommonStyle::drawComplexControl(cc, opt, p, widget);
@@ -1940,6 +1945,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
             }
             break; }
 #endif // QT_NO_SPINBOX
+        // fall through
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {

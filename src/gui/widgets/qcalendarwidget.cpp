@@ -3010,6 +3010,7 @@ bool QCalendarWidget::event(QEvent *event)
     switch (event->type()) {
         case QEvent::LayoutDirectionChange:
             d->updateButtonIcons();
+            // fall through
         case QEvent::LocaleChange:
             d->cachedSizeHint = QSize();
             d->updateMonthMenuNames();

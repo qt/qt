@@ -4279,7 +4279,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             break;
         }
 #endif
-    //fall tghought
+        // fall through
     case PE_PanelMenu:
     case PE_PanelStatusBar:
         if(rule.hasDrawable()) {
@@ -4815,7 +4815,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_ToolButton:
         if (rule.hasBox() || !rule.hasNativeBorder() || !rule.baseStyleCanDraw())
             sz += QSize(3, 3); // ### broken QToolButton
-        //fall thought
+        // fall through
     case CT_ComboBox:
     case CT_PushButton:
         if (rule.hasBox() || !rule.hasNativeBorder()) {

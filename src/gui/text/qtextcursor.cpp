@@ -451,9 +451,8 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
 
         if (relativePos < blockIt.length()-1)
             ++position;
-
-        // FALL THROUGH!
     }
+        // fall through
     case QTextCursor::PreviousWord:
     case QTextCursor::WordLeft:
         newPosition = priv->previousCursorPosition(position, QTextLayout::SkipWords);

@@ -2328,6 +2328,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 default:
                     break;
                 }
+                // fall through
             case Qt::TopToolBarArea :
                 switch(toolbar->positionWithinLine){
                 case QStyleOptionToolBar::Beginning:
@@ -3252,11 +3253,11 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz += QSize(QWindowsStylePrivate::windowsItemHMargin * 4, QWindowsStylePrivate::windowsItemVMargin * 2);
         break;
 #endif
-                // Otherwise, fall through
+        // fall through
     case CT_ToolButton:
         if (qstyleoption_cast<const QStyleOptionToolButton *>(opt))
             return sz += QSize(7, 6);
-        // Otherwise, fall through
+        // fall through
 
     default:
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);

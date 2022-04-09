@@ -1420,6 +1420,7 @@ static QString translateKeySym(KeySym keysym, uint xmodifiers,
 #if !defined(QT_NO_XIM)
             converted = keysymToUnicode(byte3, keysym & 0xff);
 #endif
+            // fall through
         case 0x20:
             // currency symbols
             if (keysym >= 0x20a0 && keysym <= 0x20ac) {

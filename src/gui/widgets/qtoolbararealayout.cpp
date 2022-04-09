@@ -603,15 +603,19 @@ int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
         case QInternal::LeftDock:
             if (pos.y() < rect.bottom())
                 return pos.x() - rect.right();
+            // fall through
         case QInternal::RightDock:
             if (pos.y() < rect.bottom())
                 return rect.left() - pos.x();
+            // fall through
         case QInternal::TopDock:
             if (pos.x() < rect.right())
                 return pos.y() - rect.bottom();
+            // fall through
         case QInternal::BottomDock:
             if (pos.x() < rect.right())
                 return rect.top() - pos.y();
+            // fall through
         default:
             break;
     }

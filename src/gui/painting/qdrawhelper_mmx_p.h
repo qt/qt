@@ -698,8 +698,11 @@ static void QT_FASTCALL rasterop_solid_SourceAndDestination(uint *dest,
         int n = (length64 + 3) / 4;
         switch (length64 & 0x3) {
         case 0: do { *dst64 = _mm_and_si64(*dst64, color64); ++dst64;
+            // fall through
         case 3:      *dst64 = _mm_and_si64(*dst64, color64); ++dst64;
+            // fall through
         case 2:      *dst64 = _mm_and_si64(*dst64, color64); ++dst64;
+            // fall through
         case 1:      *dst64 = _mm_and_si64(*dst64, color64); ++dst64;
         } while (--n > 0);
         }

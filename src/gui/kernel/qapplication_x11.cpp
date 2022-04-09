@@ -3232,7 +3232,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
     case ButtonPress:
         pressed_window = event->xbutton.window;
         X11->userTime = event->xbutton.time;
-        // fallthrough intended
+        // fall through
     case ButtonRelease:
         X11->time = event->xbutton.time;
         break;
@@ -3241,7 +3241,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
         break;
     case XKeyPress:
         X11->userTime = event->xkey.time;
-        // fallthrough intended
+        // fall through
     case XKeyRelease:
         X11->time = event->xkey.time;
         break;
@@ -3490,7 +3490,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
         if (!d->inPopupMode() && !QWidget::mouseGrabber() && pressed_window != widget->internalWinId()
             && (widget = (QETWidget*) QWidget::find((WId)pressed_window)) == 0)
             break;
-        // fall through intended
+        // fall through
     case ButtonPress:
         if (event->xbutton.root != RootWindow(X11->display, widget->x11Info().screen())
             && ! qt_xdnd_dragging) {
@@ -3500,7 +3500,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
         }
         if (event->type == ButtonPress)
             qt_net_update_user_time(widget->window(), X11->userTime);
-        // fall through intended
+        // fall through
     case MotionNotify:
 #if !defined(QT_NO_TABLET)
         if (!qt_tabletChokeMouse) {
@@ -3527,7 +3527,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
     case XKeyPress:                                // keyboard event
         qt_net_update_user_time(widget->window(), X11->userTime);
-        // fallthrough intended
+        // fall through
     case XKeyRelease:
         {
             if (keywidget && keywidget->isEnabled()) { // should always exist

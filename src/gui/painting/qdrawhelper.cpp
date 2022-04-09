@@ -7609,12 +7609,19 @@ inline void qt_memfill_template(DST *dest, SRC color, int count)
     switch (count & 0x07)
     {
     case 0: do { *dest++ = c;
+        // fall through
     case 7:      *dest++ = c;
+        // fall through
     case 6:      *dest++ = c;
+        // fall through
     case 5:      *dest++ = c;
+        // fall through
     case 4:      *dest++ = c;
+        // fall through
     case 3:      *dest++ = c;
+        // fall through
     case 2:      *dest++ = c;
+        // fall through
     case 1:      *dest++ = c;
     } while (--n > 0);
     }
@@ -7626,6 +7633,7 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
     if (count < 3) {
         switch (count) {
         case 2: *dest++ = value;
+            // fall through
         case 1: *dest = value;
         }
         return;

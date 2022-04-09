@@ -1515,6 +1515,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 default:
                     break;
                 }
+                // fall through
             case Qt::TopToolBarArea:
                 switch (toolbar->positionWithinLine) {
                 case QStyleOptionToolBar::Beginning:
@@ -4196,11 +4197,13 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
             case SC_TitleBarContextHelpButton:
                 if (tb->titleBarFlags & Qt::WindowContextHelpButtonHint)
                     offset += delta;
+                // fall through
             case SC_TitleBarMinButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMinButton)
                     break;
+                // fall through
             case SC_TitleBarNormalButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
@@ -4208,21 +4211,25 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
                     offset += delta;
                 else if (sc == SC_TitleBarNormalButton)
                     break;
+                // fall through
             case SC_TitleBarMaxButton:
                 if (!isMaximized && (tb->titleBarFlags & Qt::WindowMaximizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMaxButton)
                     break;
+                // fall through
             case SC_TitleBarShadeButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarShadeButton)
                     break;
+                // fall through
             case SC_TitleBarUnshadeButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarUnshadeButton)
                     break;
+                // fall through
             case SC_TitleBarCloseButton:
                 if (tb->titleBarFlags & Qt::WindowSystemMenuHint)
                     offset += delta;
@@ -4323,6 +4330,7 @@ int QCleanlooksStyle::styleHint(StyleHint hint, const QStyleOption *option, cons
             ret = option->palette.background().color().darker(120).rgb();
             break;
         }
+        // fall through
     case SH_ComboBox_Popup:
 #ifdef QT3_SUPPORT
         if (widget && widget->inherits("Q3ComboBox"))

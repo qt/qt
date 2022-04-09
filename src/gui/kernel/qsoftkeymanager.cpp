@@ -130,8 +130,9 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
 #endif
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
-    case MenuSoftKey: // FALL-THROUGH
+    case MenuSoftKey:
         QActionPrivate::get(action)->menuActionSoftkeys = true;
+        // fall through
     case OkSoftKey:
     case SelectSoftKey:
     case DoneSoftKey:

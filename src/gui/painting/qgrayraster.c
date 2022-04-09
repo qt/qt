@@ -1155,12 +1155,19 @@
           switch ( spans->len )
           {
           case 7: *q++ = (unsigned char)coverage;
+            // fall through
           case 6: *q++ = (unsigned char)coverage;
+            // fall through
           case 5: *q++ = (unsigned char)coverage;
+            // fall through
           case 4: *q++ = (unsigned char)coverage;
+            // fall through
           case 3: *q++ = (unsigned char)coverage;
+            // fall through
           case 2: *q++ = (unsigned char)coverage;
+            // fall through
           case 1: *q   = (unsigned char)coverage;
+            // fall through
           default:
             ;
           }

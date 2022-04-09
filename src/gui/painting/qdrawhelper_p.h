@@ -1923,6 +1923,7 @@ inline void qt_memconvert(DST *dest, const SRC *src, int count)
         switch (count & 0x07)
         {
         case 0: do { *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
+                // fall through
             case 7:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
                 // fall through
             case 6:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
