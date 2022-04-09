@@ -1949,7 +1949,7 @@ inline void qt_memconvert(DST *dest, const SRC *src, int count)
     template <> \
     inline void qt_memconvert(T *dest, const T *src, int count) \
     { \
-        memcpy(dest, src, count * sizeof(T)); \
+        memcpy(static_cast<void *>(dest), static_cast<const void *>(src), count * sizeof(T)); \
     }
 QT_TRIVIAL_MEMCONVERT_IMPL(quint32)
 QT_TRIVIAL_MEMCONVERT_IMPL(qrgb888)
