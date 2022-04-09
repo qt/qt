@@ -64,6 +64,7 @@ public:
     inline ~QPolygon() {}
     inline QPolygon(int size);
     inline QPolygon(const QPolygon &a) : QVector<QPoint>(a) {}
+    inline QPolygon& operator=(const QPolygon&) = default;
     inline QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);

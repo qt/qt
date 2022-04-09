@@ -62,6 +62,7 @@ public:
     inline QItemSelectionRange() {}
     inline QItemSelectionRange(const QItemSelectionRange &other)
         : tl(other.tl), br(other.br) {}
+    inline QItemSelectionRange& operator=(const QItemSelectionRange&) = default;
     inline QItemSelectionRange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     explicit inline QItemSelectionRange(const QModelIndex &index)
         { tl = index; br = tl; }
