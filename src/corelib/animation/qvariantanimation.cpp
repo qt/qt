@@ -440,8 +440,8 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
 #ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
 #endif
-        if (int(interpolationType) >= interpolators->count())
-            interpolators->resize(int(interpolationType) + 1);
+        if (interpolationType >= interpolators->count())
+            interpolators->resize(interpolationType + 1);
         interpolators->replace(interpolationType, func);
     }
 }
