@@ -7817,9 +7817,6 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
 fi
 
-QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
-
-
 if [ "$CFG_SCRIPT" = "yes" -a "$canBuildQtScript" = "no" ]; then
     echo "Error: QtScript was requested, but it can't be built on this platform."
     exit 1

@@ -3488,7 +3488,6 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
-        if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
         if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
         if (dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";

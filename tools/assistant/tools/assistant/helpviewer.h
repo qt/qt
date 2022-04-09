@@ -50,21 +50,13 @@
 #include <QtGui/QAction>
 #include <QtGui/QFont>
 
-#if defined(QT_NO_WEBKIT)
 #include <QtGui/QTextBrowser>
-#else
-#include <QtWebKit/QWebView>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class HelpEngineWrapper;
 
-#if !defined(QT_NO_WEBKIT)
-class HelpViewer : public QWebView
-#else
 class HelpViewer : public QTextBrowser
-#endif
 {
     Q_OBJECT
     class HelpViewerPrivate;
@@ -121,17 +113,9 @@ public slots:
 
 signals:
     void titleChanged();
-#if !defined(QT_NO_WEBKIT)
-    void copyAvailable(bool yes);
-    void sourceChanged(const QUrl &url);
-    void forwardAvailable(bool enabled);
-    void backwardAvailable(bool enabled);
-    void highlighted(const QString &link);
-    void printRequested();
-#else
+
     void loadStarted();
     void loadFinished(bool finished);
-#endif
 
 protected:
     void keyPressEvent(QKeyEvent *e);

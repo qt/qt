@@ -63,13 +63,7 @@ namespace {
     const QString LastPageKey(QLatin1String("LastTabPage"));
     const QString LastRegisterTime(QLatin1String("LastRegisterTime"));
     const QString LastShownPagesKey(QLatin1String("LastShownPages"));
-    const QString LastZoomFactorsKey(QLatin1String(
-#if !defined(QT_NO_WEBKIT)
-            "LastPagesZoomWebView"
-#else
-            "LastPagesZoomTextBrowser"
-#endif
-            ));
+    const QString LastZoomFactorsKey(QLatin1String("LastPagesZoomTextBrowser"));
     const QString WindowTitleKey(QLatin1String("WindowTitle"));
     const QString FullTextSearchFallbackKey(QLatin1String("FullTextSearchFallback"));
 } // anonymous namespace

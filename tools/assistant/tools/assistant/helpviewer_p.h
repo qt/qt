@@ -47,9 +47,7 @@
 #include "openpagesmanager.h"
 
 #include <QtCore/QObject>
-#ifdef QT_NO_WEBKIT
 #include <QtGui/QTextBrowser>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -58,19 +56,14 @@ class HelpViewer::HelpViewerPrivate : public QObject
     Q_OBJECT
 
 public:
-#ifdef QT_NO_WEBKIT
     HelpViewerPrivate(int zoom)
         : zoomCount(zoom)
         , forceFont(false)
         , lastAnchor(QString())
-#else
-    HelpViewerPrivate()
-#endif
     {
         m_loadFinished = false;
     }
 
-#ifdef QT_NO_WEBKIT
     bool hasAnchorAt(QTextBrowser *browser, const QPoint& pos)
     {
         lastAnchor = browser->anchorAt(pos);
@@ -112,7 +105,6 @@ public:
     int zoomCount;
     bool forceFont;
     QString lastAnchor;
-#endif // QT_NO_WEBKIT
 
 public:
     bool m_loadFinished;

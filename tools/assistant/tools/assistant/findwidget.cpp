@@ -165,31 +165,13 @@ void FindWidget::setTextWrappedVisible(bool visible)
 void FindWidget::hideEvent(QHideEvent* event)
 {
     TRACE_OBJ
-#if !defined(QT_NO_WEBKIT)
-    // TODO: remove this once webkit supports setting the palette
-    if (!event->spontaneous())
-        qApp->setPalette(appPalette);
-#else
     Q_UNUSED(event);
-#endif
 }
 
 void FindWidget::showEvent(QShowEvent* event)
 {
     TRACE_OBJ
-#if !defined(QT_NO_WEBKIT)
-    // TODO: remove this once webkit supports setting the palette
-    if (!event->spontaneous()) {
-        QPalette p = appPalette;
-        p.setColor(QPalette::Inactive, QPalette::Highlight,
-            p.color(QPalette::Active, QPalette::Highlight));
-        p.setColor(QPalette::Inactive, QPalette::HighlightedText,
-            p.color(QPalette::Active, QPalette::HighlightedText));
-        qApp->setPalette(p);
-    }
-#else
     Q_UNUSED(event);
-#endif
 }
 
 void FindWidget::updateButtons()
