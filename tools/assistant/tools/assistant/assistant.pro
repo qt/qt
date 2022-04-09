@@ -2,7 +2,6 @@ include(../../../shared/fontpanel/fontpanel.pri)
 TEMPLATE = app
 LANGUAGE = C++
 TARGET = assistant
-contains(QT_CONFIG, webkit):QT += webkit
 CONFIG += qt \
     warn_on \
     help
@@ -84,12 +83,8 @@ SOURCES += aboutdialog.cpp \
     globalactions.cpp \
     openpageswidget.cpp \
     openpagesmanager.cpp \
-    openpagesswitcher.cpp
-contains(QT_CONFIG, webkit) {
-    SOURCES += helpviewer_qwv.cpp
-} else {
-    SOURCES += helpviewer_qtb.cpp
-}
+    openpagesswitcher.cpp \
+    helpviewer_qtb.cpp
 
 FORMS += bookmarkdialog.ui \
     bookmarkmanagerwidget.ui \
