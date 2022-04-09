@@ -96,10 +96,6 @@ tst_examples::tst_examples()
         excludedDirs << shaderExample;
 #endif // QT_NO_OPENGL
 
-    excludedDirs << "examples/declarative/modelviews/webview"
-                 << "demos/declarative/webbrowser"
-                 << "doc/src/snippets/declarative/webview";
-
 #ifdef QT_NO_XMLPATTERNS
     excludedDirs << "examples/declarative/xml/xmldata"
                  << "demos/declarative/twitter"
