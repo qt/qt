@@ -84,7 +84,7 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
     default:
         return "";
     }
-};
+}
 
 /*!
   \relates QTest

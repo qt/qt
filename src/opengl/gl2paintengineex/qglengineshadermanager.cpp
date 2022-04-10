@@ -66,7 +66,7 @@ private:
     QThreadStorage<QGLContextGroupResource<QGLEngineSharedShaders> *> m_storage;
 };
 
-Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);
+Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage)
 
 QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLContext *context)
 {

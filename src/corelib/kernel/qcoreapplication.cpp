@@ -227,7 +227,7 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
-Q_GLOBAL_STATIC(QString, qmljs_debug_arguments);
+Q_GLOBAL_STATIC(QString, qmljs_debug_arguments)
 
 void QCoreApplicationPrivate::processCommandLineArguments()
 {

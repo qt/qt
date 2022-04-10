@@ -47,8 +47,8 @@
 
 struct QDBusItem;
 
-QT_FORWARD_DECLARE_CLASS(QDomDocument);
-QT_FORWARD_DECLARE_CLASS(QDomElement);
+QT_FORWARD_DECLARE_CLASS(QDomDocument)
+QT_FORWARD_DECLARE_CLASS(QDomElement)
 
 
 class QDBusModel: public QAbstractItemModel

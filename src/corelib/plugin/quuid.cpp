@@ -836,7 +836,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 
 #if !defined(QT_BOOTSTRAPPED) && defined(Q_OS_UNIX)
-Q_GLOBAL_STATIC(QThreadStorage<QFile *>, devUrandomStorage);
+Q_GLOBAL_STATIC(QThreadStorage<QFile *>, devUrandomStorage)
 #endif
 
 QUuid QUuid::createUuid()

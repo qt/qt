@@ -54,7 +54,7 @@ class QBlittablePrivate;
 
 class Q_GUI_EXPORT QBlittable
 {
-    Q_DECLARE_PRIVATE(QBlittable);
+    Q_DECLARE_PRIVATE(QBlittable)
 public:
     enum Capability {
 
@@ -68,7 +68,7 @@ public:
         // Internal ones
         OutlineCapability               = 0x0001000,
     };
-    Q_DECLARE_FLAGS (Capabilities, Capability);
+    Q_DECLARE_FLAGS (Capabilities, Capability)
 
     QBlittable(const QSize &size, Capabilities caps);
     virtual ~QBlittable();

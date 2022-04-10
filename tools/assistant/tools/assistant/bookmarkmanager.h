@@ -61,7 +61,7 @@ class BookmarkManager : public QObject
     class BookmarkWidget;
     class BookmarkTreeView;
     class BookmarkListView;
-    Q_DISABLE_COPY(BookmarkManager);
+    Q_DISABLE_COPY(BookmarkManager)
 
 public:
     static BookmarkManager* instance();

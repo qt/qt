@@ -689,7 +689,7 @@ bool QDesignerMenu::eventFilter(QObject *object, QEvent *event)
     }
 
     return false;
-};
+}
 
 int QDesignerMenu::findAction(const QPoint &pos) const
 {

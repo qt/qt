@@ -82,7 +82,7 @@ private:
     static QSet<QUrl> errors;
 };
 
-DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
+DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE)
 
 QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
 

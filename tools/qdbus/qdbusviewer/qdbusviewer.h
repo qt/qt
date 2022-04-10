@@ -45,9 +45,9 @@
 #include <QtGui/QtGui>
 #include <QtDBus/QtDBus>
 
-QT_FORWARD_DECLARE_CLASS(QTreeView);
-QT_FORWARD_DECLARE_CLASS(QDomDocument);
-QT_FORWARD_DECLARE_CLASS(QDomElement);
+QT_FORWARD_DECLARE_CLASS(QTreeView)
+QT_FORWARD_DECLARE_CLASS(QDomDocument)
+QT_FORWARD_DECLARE_CLASS(QDomElement)
 
 struct BusSignature
 {

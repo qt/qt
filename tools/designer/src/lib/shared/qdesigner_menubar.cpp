@@ -573,7 +573,7 @@ bool QDesignerMenuBar::eventFilter(QObject *object, QEvent *event)
     }
 
     return false;
-};
+}
 
 int QDesignerMenuBar::findAction(const QPoint &pos) const
 {

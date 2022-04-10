@@ -141,8 +141,8 @@ QTextCodec *JPTextCodecs::createForName(const QByteArray &name)
     return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(JPTextCodecs);
-Q_EXPORT_PLUGIN2(qjpcodecs, JPTextCodecs);
+Q_EXPORT_STATIC_PLUGIN(JPTextCodecs)
+Q_EXPORT_PLUGIN2(qjpcodecs, JPTextCodecs)
 
 QT_END_NAMESPACE
 

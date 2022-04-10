@@ -104,7 +104,7 @@ void QDeclarativeDebugTrace::setGlobalInstance(QDeclarativeDebugTrace *custom_in
 }
 
 #else // CUSTOM_DECLARATIVE_DEBUG_TRACE_INSTANCE
-Q_GLOBAL_STATIC(QDeclarativeDebugTrace, traceInstance);
+Q_GLOBAL_STATIC(QDeclarativeDebugTrace, traceInstance)
 #endif
 
 // convert to a QByteArray that can be sent to the debug client

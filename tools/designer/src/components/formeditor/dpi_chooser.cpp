@@ -77,7 +77,7 @@ const struct DPI_Entry dpiEntries[] = {
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(const struct qdesigner_internal::DPI_Entry*);
+Q_DECLARE_METATYPE(const struct qdesigner_internal::DPI_Entry*)
 
 QT_BEGIN_NAMESPACE
 

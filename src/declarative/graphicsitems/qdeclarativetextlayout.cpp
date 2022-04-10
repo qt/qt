@@ -245,7 +245,7 @@ struct InertTextPainter {
 };
 }
 
-Q_GLOBAL_STATIC(InertTextPainter, inertTextPainter);
+Q_GLOBAL_STATIC(InertTextPainter, inertTextPainter)
 
 /*!
 \class QDeclarativeTextLayout

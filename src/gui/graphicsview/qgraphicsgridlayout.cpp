@@ -105,7 +105,7 @@ public:
 #endif
 };
 
-Q_GLOBAL_STATIC(QWidget, globalStyleInfoWidget);
+Q_GLOBAL_STATIC(QWidget, globalStyleInfoWidget)
 
 QLayoutStyleInfo QGraphicsGridLayoutPrivate::styleInfo() const
 {

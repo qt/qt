@@ -711,7 +711,7 @@ static void setupLocaleMapper()
 }
 
 #ifndef QT_NO_THREAD
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive))
 #endif
 
 // textCodecsMutex need to be locked to enter this function

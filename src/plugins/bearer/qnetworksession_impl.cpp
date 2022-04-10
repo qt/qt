@@ -84,7 +84,7 @@ Q_SIGNALS:
 
 #include "qnetworksession_impl.moc"
 
-Q_GLOBAL_STATIC(QNetworkSessionManagerPrivate, sessionManager);
+Q_GLOBAL_STATIC(QNetworkSessionManagerPrivate, sessionManager)
 
 void QNetworkSessionPrivateImpl::syncStateWithInterface()
 {

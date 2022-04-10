@@ -208,7 +208,7 @@ typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QGtkStylePrivate*);
+Q_DECLARE_METATYPE(QGtkStylePrivate*)
 
 QT_BEGIN_NAMESPACE
 
