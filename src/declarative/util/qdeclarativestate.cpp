@@ -55,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
+DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG)
 
 QDeclarativeAction::QDeclarativeAction()
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), fromBinding(0), event(0),

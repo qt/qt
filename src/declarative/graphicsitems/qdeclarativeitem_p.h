@@ -603,7 +603,7 @@ private:
     static const SigMap sigMap[];
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeItemPrivate::ChangeTypes);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeItemPrivate::ChangeTypes)
 
 QT_END_NAMESPACE
 

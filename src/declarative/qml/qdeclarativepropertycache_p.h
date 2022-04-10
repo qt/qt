@@ -177,7 +177,7 @@ private:
     IdentifierCache identifierCache;
     AllowedRevisionCache allowedRevisionCache;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyCache::Data::Flags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyCache::Data::Flags)
   
 QDeclarativePropertyCache::Data::Data()
 : flags(0), propType(0), coreIndex(-1), notifyIndex(-1), overrideIndexIsProperty(false), overrideIndex(-1),

@@ -210,7 +210,7 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QD
     if (!isValid()) { d->object = 0; d->context = 0; d->engine = 0; }
 }
 
-Q_GLOBAL_STATIC(QDeclarativeValueTypeFactory, qmlValueTypes);
+Q_GLOBAL_STATIC(QDeclarativeValueTypeFactory, qmlValueTypes)
 
 void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name)
 {

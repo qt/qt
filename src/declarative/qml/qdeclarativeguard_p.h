@@ -195,7 +195,7 @@ template<class T>
 T *QDeclarativeGuard<T>::object() const 
 { 
     return static_cast<T *>(o); 
-};
+}
 
 template<class T>
 void QDeclarativeGuard<T>::setObject(T *g) 

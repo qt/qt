@@ -370,7 +370,7 @@ namespace QDeclarativeParser
     };
 }
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeParser::Object::ScriptBlock::Pragmas);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeParser::Object::ScriptBlock::Pragmas)
 
 QT_END_NAMESPACE
 

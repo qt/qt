@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QDeclarativeEngineDebugService, qmlEngineDebugService);
+Q_GLOBAL_STATIC(QDeclarativeEngineDebugService, qmlEngineDebugService)
 
 QDeclarativeEngineDebugService *QDeclarativeEngineDebugService::instance()
 {

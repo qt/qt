@@ -621,7 +621,7 @@ private:
     int m_unreferencedCost;
     int m_timerId;
 };
-Q_GLOBAL_STATIC(QDeclarativePixmapStore, pixmapStore);
+Q_GLOBAL_STATIC(QDeclarativePixmapStore, pixmapStore)
 
 QDeclarativePixmapStore::QDeclarativePixmapStore()
 : m_unreferencedPixmaps(0), m_lastUnreferencedPixmap(0), m_unreferencedCost(0), m_timerId(-1)
@@ -864,7 +864,7 @@ struct QDeclarativePixmapNull {
     QPixmap pixmap;
     QSize size;
 };
-Q_GLOBAL_STATIC(QDeclarativePixmapNull, nullPixmap);
+Q_GLOBAL_STATIC(QDeclarativePixmapNull, nullPixmap)
 
 QDeclarativePixmap::QDeclarativePixmap()
 : d(0)

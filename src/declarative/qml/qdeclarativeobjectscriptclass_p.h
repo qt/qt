@@ -158,7 +158,7 @@ private:
 
     QDeclarativeEngine *engine;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeObjectScriptClass::QueryHints);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeObjectScriptClass::QueryHints)
 
 QT_END_NAMESPACE
 

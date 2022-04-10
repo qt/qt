@@ -67,7 +67,7 @@ static bool greaterThan(const QString &s1, const QString &s2)
 }
 
 typedef QMap<QString, QString> StringStringMap;
-Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
+Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes) // stores the uri
 
 class QDeclarativeImportedNamespace 
 {
