@@ -2643,7 +2643,7 @@ void XSLTTokenizer::queueSorting(const bool oneSortRequired,
                 if(speciallyTreatWhitespace && isWhitespace())
                     continue;
 
-                if(QXmlStreamReader::Characters && whitespaceToSkip())
+                if(whitespaceToSkip())
                     continue;
 
                 /* We have an instruction which is a text node, we're done. */
