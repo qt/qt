@@ -201,6 +201,7 @@ namespace QDeclarativeParser
         struct DynamicProperty {
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
+            DynamicProperty& operator=(const DynamicProperty&) = default;
 
             enum Type { Variant, Int, Bool, Real, String, Url, Color, Time, Date, DateTime, Alias, Custom, CustomList };
 
