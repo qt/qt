@@ -73,6 +73,7 @@ class ProString {
 public:
     ProString();
     ProString(const ProString &other);
+    ProString& operator=(const ProString&) = default;
     ProString(const ProString &other, ProStringConstants::OmitPreHashing);
     explicit ProString(const QString &str);
     ProString(const QString &str, ProStringConstants::OmitPreHashing);

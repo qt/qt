@@ -66,6 +66,11 @@ class QDBusReply
 {
     typedef T Type;
 public:
+    inline QDBusReply(const QDBusReply &other) :
+        m_error(other.m_error),
+        m_data(other.m_data)
+    {
+    }
     inline QDBusReply(const QDBusMessage &reply)
     {
         *this = reply;
@@ -104,12 +109,7 @@ public:
         return *this;
     }
 
-    inline QDBusReply& operator=(const QDBusReply& other)
-    {
-        m_error = other.m_error;
-        m_data = other.m_data;
-        return *this;
-    }
+    inline QDBusReply& operator=(const QDBusReply& other) = default;
 
     inline bool isValid() const { return !m_error.isValid(); }
 

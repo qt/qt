@@ -405,13 +405,11 @@ QString QXmlName::toClarkName(const QXmlNamePool &namePool) const
 }
 
 /*!
-  Assigns \a other to \e this and returns \e this.
+  Assigns \a other to \e this.
  */
-QXmlName &QXmlName::operator=(const QXmlName &other)
-{
-    m_qNameCode = other.m_qNameCode;
-    return *this;
-}
+QXmlName::QXmlName(const QXmlName &other)
+    : m_qNameCode(other.m_qNameCode)
+{}
 
 /*!
  Returns true if \a candidate is an \c NCName. An \c NCName

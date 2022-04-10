@@ -84,6 +84,7 @@ public:
     typedef NamespaceCode LocalNameCode;
 
     QXmlName();
+    QXmlName(const QXmlName&);
 
     QXmlName(QXmlNamePool &namePool,
              const QString &localName,
@@ -96,7 +97,7 @@ public:
     QString toClarkName(const QXmlNamePool &query) const;
     bool operator==(const QXmlName &other) const;
     bool operator!=(const QXmlName &other) const;
-    QXmlName &operator=(const QXmlName &other);
+    QXmlName &operator=(const QXmlName&) = default;
     bool isNull() const;
     static bool isNCName(const QString &candidate);
     static QXmlName fromClarkName(const QString &clarkName,
