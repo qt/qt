@@ -71,7 +71,7 @@ public:
     QString pmcKey(const QSize &size, QIcon::Mode mode, QIcon::State state)
         { return QLatin1String("$qt_svgicon_")
                  + QString::number(serialNum, 16).append(QLatin1Char('_'))
-                 + QString::number((((((size.width()<<11)|size.height())<<11)|mode)<<4)|state, 16); }
+                 + QString::number((((((qint64(size.width()) << 11) | size.height()) << 11) | mode) << 4) | state, 16); }
 
     void stepSerialNum()
         { serialNum = lastSerialNum.fetchAndAddRelaxed(1); }
@@ -126,10 +126,13 @@ QSize QSvgIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
 void QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state)
 {
     QByteArray buf;
+    const QIcon::State oppositeState = state == QIcon::Off ? QIcon::On : QIcon::Off;
     if (svgBuffers) {
         buf = svgBuffers->value(hashKey(mode, state));
         if (buf.isEmpty())
-            buf = svgBuffers->value(hashKey(QIcon::Normal, QIcon::Off));
+            buf = svgBuffers->value(hashKey(QIcon::Normal, state));
+        if (buf.isEmpty())
+            buf = svgBuffers->value(hashKey(QIcon::Normal, oppositeState));
     }
     if (!buf.isEmpty()) {
 #ifndef QT_NO_COMPRESS
@@ -139,7 +142,9 @@ void QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIco
     } else {
         QString svgFile = svgFiles.value(hashKey(mode, state));
         if (svgFile.isEmpty())
-            svgFile = svgFiles.value(hashKey(QIcon::Normal, QIcon::Off));
+            svgFile = svgFiles.value(hashKey(QIcon::Normal, state));
+        if (svgFile.isEmpty())
+            svgFile = svgFiles.value(hashKey(QIcon::Normal, oppositeState));
         if (!svgFile.isEmpty())
             renderer->load(svgFile);
     }
@@ -255,8 +260,8 @@ bool QSvgIconEngine::read(QDataStream &in)
         in >> fileNames >> isCompressed >> *d->svgBuffers;
 #ifndef QT_NO_COMPRESS
         if (!isCompressed) {
-            foreach(int key, d->svgBuffers->keys())
-                d->svgBuffers->insert(key, qCompress(d->svgBuffers->value(key)));
+            for (auto it = d->svgBuffers->begin(), end = d->svgBuffers->end(); it != end; ++it)
+                it.value() = qCompress(it.value());
         }
 #else
         if (isCompressed) {
@@ -312,15 +317,15 @@ bool QSvgIconEngine::write(QDataStream &out) const
         QHash<int, QByteArray> svgBuffers;
         if (d->svgBuffers)
             svgBuffers = *d->svgBuffers;
-        foreach(int key, d->svgFiles.keys()) {
+        for (auto it = d->svgFiles.begin(), end = d->svgFiles.end(); it != end; ++it) {
             QByteArray buf;
-            QFile f(d->svgFiles.value(key));
+            QFile f(it.value());
             if (f.open(QIODevice::ReadOnly))
                 buf = f.readAll();
 #ifndef QT_NO_COMPRESS
             buf = qCompress(buf);
 #endif
-            svgBuffers.insert(key, buf);
+            svgBuffers.insert(it.key(), buf);
         }
         out << d->svgFiles << isCompressed << svgBuffers;
         if (d->addedPixmaps)
