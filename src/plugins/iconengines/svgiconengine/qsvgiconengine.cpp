@@ -87,11 +87,6 @@ public:
 
 QAtomicInt QSvgIconEnginePrivate::lastSerialNum;
 
-static inline int pmKey(const QSize &size, QIcon::Mode mode, QIcon::State state)
-{
-    return ((((((size.width()<<11)|size.height())<<11)|mode)<<4)|state);
-}
-
 QSvgIconEngine::QSvgIconEngine()
     : d(new QSvgIconEnginePrivate)
 {
@@ -173,6 +168,9 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     QSize actualSize = renderer.defaultSize();
     if (!actualSize.isNull())
         actualSize.scale(size, Qt::KeepAspectRatio);
+
+    if (actualSize.isEmpty())
+        return QPixmap();
 
     QImage img(actualSize, QImage::Format_ARGB32_Premultiplied);
     img.fill(0x00000000);
