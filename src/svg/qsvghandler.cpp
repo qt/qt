@@ -74,8 +74,6 @@ QT_BEGIN_NAMESPACE
 static const char *qt_inherit_text = "inherit";
 #define QT_INHERIT QLatin1String(qt_inherit_text)
 
-Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-
 // ======== duplicated from qcolor_p
 
 static inline int qsvg_h2i(char hex)
@@ -418,6 +416,7 @@ static const char * QSvgStyleSelector_nodeString[] = {
     "rect",
     "text",
     "textarea",
+    "tspan",
     "use",
     "video"
 };
@@ -636,8 +635,7 @@ static qreal toDouble(const QChar *&str)
         else
 #endif
         {
-            bool ok = false;
-            val = qstrtod(temp, 0, &ok);
+            val = QByteArray::fromRawData(temp, pos).toDouble();
             // Do not tolerate values too wild to be represented normally by floats
             if (fpclassify(float(val)) != FP_NORMAL)
                 val = 0;
@@ -2296,10 +2294,12 @@ static bool parseAnimateColorNode(QSvgNode *parent,
         QColor startColor, endColor;
         resolveColor(fromStr, startColor, handler);
         resolveColor(toStr, endColor, handler);
+        colors.reserve(2);
         colors.append(startColor);
         colors.append(endColor);
     } else {
         QStringList str = valuesStr.split(QLatin1Char(';'));
+        colors.reserve(str.count());
         QStringList::const_iterator itr;
         for (itr = str.constBegin(); itr != str.constEnd(); ++itr) {
             QColor color;
