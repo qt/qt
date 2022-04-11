@@ -85,9 +85,8 @@ void QSvgFillStyleProperty::revert(QPainter *, QSvgExtraStates &)
 
 
 QSvgQualityStyle::QSvgQualityStyle(int color)
-    : m_colorRendering(color)
 {
-
+    Q_UNUSED(color);
 }
 void QSvgQualityStyle::apply(QPainter *, const QSvgNode *, QSvgExtraStates &)
 {
@@ -640,10 +639,11 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
 
 QSvgAnimateTransform::QSvgAnimateTransform(int startMs, int endMs, int byMs )
     : QSvgStyleProperty(),
-      m_from(startMs), m_to(endMs), m_by(byMs),
+      m_from(startMs), m_to(endMs),
       m_type(Empty), m_additive(Replace), m_count(0), m_finished(false), m_transformApplied(false)
 {
     m_totalRunningTime = m_to - m_from;
+    Q_UNUSED(byMs);
 }
 
 void QSvgAnimateTransform::setArgs(TransformType type, Additive additive, const QVector<qreal> &args)
@@ -811,10 +811,11 @@ void QSvgAnimateTransform::setRepeatCount(qreal repeatCount)
 
 QSvgAnimateColor::QSvgAnimateColor(int startMs, int endMs, int byMs)
     : QSvgStyleProperty(),
-      m_from(startMs), m_to(endMs), m_by(byMs),
+      m_from(startMs), m_to(endMs),
       m_finished(false)
 {
     m_totalRunningTime = m_to - m_from;
+    Q_UNUSED(byMs);
 }
 
 void QSvgAnimateColor::setArgs(bool fill,

@@ -195,7 +195,7 @@ public:
 private:
     // color-render ing v 	v 	'auto' | 'optimizeSpeed' |
     //                                  'optimizeQuality' | 'inherit'
-    int m_colorRendering;
+    //int m_colorRendering;
 
     // shape-rendering v 	v 	'auto' | 'optimizeSpeed' | 'crispEdges' |
     //                                  'geometricPrecision' | 'inherit'
@@ -690,7 +690,7 @@ public:
 protected:
     void resolveMatrix(const QSvgNode *node);
 private:
-    qreal m_from, m_to, m_by;
+    qreal m_from, m_to;
     qreal m_totalRunningTime;
     TransformType m_type;
     Additive m_additive;
@@ -716,7 +716,7 @@ public:
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 private:
-    qreal m_from, m_to, m_by;
+    qreal m_from, m_to;
     qreal m_totalRunningTime;
     QList<QColor> m_colors;
     QBrush m_oldBrush;
