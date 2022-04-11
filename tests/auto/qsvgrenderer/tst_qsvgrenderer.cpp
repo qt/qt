@@ -1251,32 +1251,36 @@ void tst_QSvgRenderer::testStopOffsetOpacity()
 void tst_QSvgRenderer::testUseElement()
 {
     static const char *svgs[] = {
-        //Use referring to non group node (1)
+        // 0 - Use referring to non group node (1)
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon points=\"20,20 50,120 100,10 40,80 50,80\"/>"
         " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
         "</svg>",
+        // 1
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
         " <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
         "</svg>",
+        // 2
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
         " <g fill = \" red\" fill-opacity =\"0.2\">"
         "<use y = \"60\" xlink:href = \"#usedPolyline\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
         "</g>"
         "</svg>",
+        // 3
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
         " <g stroke-width = \"3\" stroke = \"yellow\">"
         "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill = \" red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\"/>"
         " </g>"
         "</svg>",
-        //Use referring to non group node (2)
+        // 4 - Use referring to non group node (2)
         "<svg viewBox = \"0 0 200 200\">"
         " <polygon points=\"20,20 50,120 100,10 40,80 50,80\" fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\"/>"
         " <polygon points=\"20,80 50,180 100,70 40,140 50,140\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\" stroke-dasharray = \"1,1,1,1\" stroke-offset = \"5\" stroke-miterlimit = \"3\" stroke-linecap = \"butt\" stroke-linejoin = \"square\"/>"
         "</svg>",
+        // 5
         "<svg viewBox = \"0 0 200 200\">"
         " <g fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\">"
         "  <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\" />"
@@ -1285,6 +1289,7 @@ void tst_QSvgRenderer::testUseElement()
         "  <use y = \"60\" xlink:href = \"#usedPolyline\"  fill-opacity = \"0.7\" fill= \"red\" stroke = \"blue\" fill-rule = \"evenodd\"/>"
         " </g>"
         "</svg>",
+        // 6
         "<svg viewBox = \"0 0 200 200\">"
         " <g fill = \"green\" fill-rule = \"nonzero\" stroke = \"purple\" stroke-width = \"4\" stroke-dasharray = \"1,1,3,1\" stroke-offset = \"3\" stroke-miterlimit = \"6\" stroke-linecap = \"butt\" stroke-linejoin = \"round\">"
         "  <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\" />"
@@ -1293,7 +1298,7 @@ void tst_QSvgRenderer::testUseElement()
         "  <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" />"
         " </g>"
         "</svg>",
-        //Use referring to group node
+        // 7 - Use referring to group node
         "<svg viewBox = \"0 0 200 200\">"
         " <g>"
         "  <circle cx=\"0\" cy=\"0\" r=\"100\" fill = \"red\" fill-opacity = \"0.6\"/>"
@@ -1301,6 +1306,7 @@ void tst_QSvgRenderer::testUseElement()
         "  <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" fill-opacity = \"0.5\"/>"
         " </g>"
         "</svg>",
+        // 8
         "<svg viewBox = \"0 0 200 200\">"
         " <defs>"
         "  <g id=\"usedG\">"
@@ -1311,6 +1317,7 @@ void tst_QSvgRenderer::testUseElement()
         " </defs>"
         " <use xlink:href =\"#usedG\" fill = \"red\" fill-opacity =\"0.5\"/>"
         "</svg>",
+        // 9
         "<svg viewBox = \"0 0 200 200\">"
         " <defs>"
         "  <g fill = \"blue\" fill-opacity = \"0.3\">"
@@ -1325,16 +1332,40 @@ void tst_QSvgRenderer::testUseElement()
         "  <use xlink:href =\"#usedG\" />"
         " </g>"
         "</svg>",
-        // Self referral, should be ignored
+        // 10 - Self referral, should be ignored
         "<svg><g id=\"0\"><use xlink:href=\"#0\" /></g></svg>",
+        // 11
         "<svg width=\"200\" height=\"200\">"
         "  <rect width=\"100\" height=\"50\"/>"
         "</svg>",
+        // 12
         "<svg width=\"200\" height=\"200\">"
         "  <g id=\"0\"><use xlink:href=\"#0\" /><rect width=\"100\" height=\"50\"/></g>"
         "</svg>",
+        // 13
         "<svg width=\"200\" height=\"200\">"
         "  <g id=\"0\"><g><use xlink:href=\"#0\" /><rect width=\"100\" height=\"50\"/></g></g>"
+        "</svg>",
+        // 14 (undefined)
+        "<svg width=\"200\" height=\"200\">"
+        "  <rect width=\"100\" height=\"50\"/>"
+        "  <use x=\"100\" y=\"100\" opacity=\"0.5\" xlink:href=\"#nosuch\" />"
+        "</svg>",
+        // 15 - Forward references
+        "<svg viewBox = \"0 0 200 200\">"
+        " <use y = \"60\" xlink:href = \"#usedPolyline\" fill= \"red\" stroke = \"blue\" fill-opacity = \"0.7\" fill-rule = \"evenodd\" stroke-width = \"3\"/>"
+        " <polygon id = \"usedPolyline\" points=\"20,20 50,120 100,10 40,80 50,80\"/>"
+        "</svg>",
+        // 16
+        "<svg viewBox = \"0 0 200 200\">"
+        " <use xlink:href =\"#usedG\" fill = \"red\" fill-opacity =\"0.5\"/>"
+        " <defs>"
+        "  <g id=\"usedG\">"
+        "   <circle cx=\"0\" cy=\"0\" r=\"100\" fill-opacity = \"0.6\"/>"
+        "   <rect x = \"10\" y = \"10\" width = \"30\" height = \"30\"/>"
+        "   <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" />"
+        "  </g>"
+        " </defs>"
         "</svg>"
     };
 
@@ -1363,8 +1394,12 @@ void tst_QSvgRenderer::testUseElement()
             }
         } else if (i > 7 && i < 10) {
             QCOMPARE(images[8], images[i]);
-        } else if (i > 11) {
+        } else if (i > 11 && i < 15) {
             QCOMPARE(images[11], images[i]);
+        } else if (i == 15) {
+            QCOMPARE(images[0], images[i]);
+        } else if (i == 16) {
+            QCOMPARE(images[8], images[i]);
         }
     }
 }

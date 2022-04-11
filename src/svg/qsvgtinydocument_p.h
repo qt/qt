@@ -144,10 +144,12 @@ private:
 
 inline QSize QSvgTinyDocument::size() const
 {
-    if (m_size.isEmpty()) {
+    if (m_size.isEmpty())
         return viewBox().size().toSize();
-    } else {
-        return m_size;
+     if (m_widthPercent || m_heightPercent) {
+        const int width = m_widthPercent ? qRound(0.01 * m_size.width() * viewBox().size().width()) : m_size.width();
+        const int height = m_heightPercent ? qRound(0.01 * m_size.height() * viewBox().size().height()) : m_size.height();
+        return QSize(width, height);
     }
 }
 

@@ -1262,6 +1262,49 @@ static void parsePen(QSvgNode *node,
     }
 }
 
+enum FontSizeSpec { XXSmall, XSmall, Small, Medium, Large, XLarge, XXLarge,
+                   FontSizeNone, FontSizeValue };
+
+static const qreal sizeTable[] =
+{ qreal(6.9), qreal(8.3), qreal(10.0), qreal(12.0), qreal(14.4), qreal(17.3), qreal(20.7) };
+
+static_assert(sizeof(sizeTable)/sizeof(sizeTable[0]) == FontSizeNone, "Wrong FontSizeNone");
+
+static FontSizeSpec fontSizeSpec(const QStringRef &spec)
+{
+    switch (spec.at(0).unicode()) {
+    case 'x':
+        if (spec == QLatin1String("xx-small"))
+            return XXSmall;
+        if (spec == QLatin1String("x-small"))
+            return XSmall;
+        if (spec == QLatin1String("x-large"))
+            return XLarge;
+        if (spec == QLatin1String("xx-large"))
+            return XXLarge;
+        break;
+    case 's':
+        if (spec == QLatin1String("small"))
+            return Small;
+        break;
+    case 'm':
+        if (spec == QLatin1String("medium"))
+            return Medium;
+        break;
+    case 'l':
+        if (spec == QLatin1String("large"))
+            return Large;
+        break;
+    case 'n':
+        if (spec == QLatin1String("none"))
+            return FontSizeNone;
+        break;
+    default:
+        break;
+    }
+    return FontSizeValue;
+}
+
 static void parseFont(QSvgNode *node,
                       const QSvgAttributes &attributes,
                       QSvgHandler *handler)
@@ -1285,38 +1328,19 @@ static void parseFont(QSvgNode *node,
 
     if (!attributes.fontSize.isEmpty() && attributes.fontSize != QT_INHERIT) {
         // TODO: Support relative sizes 'larger' and 'smaller'.
-        QSvgHandler::LengthType dummy; // should always be pixel size
-        qreal size = 0;
-        static const qreal sizeTable[] = { qreal(6.9), qreal(8.3), qreal(10.0), qreal(12.0), qreal(14.4), qreal(17.3), qreal(20.7) };
-        enum AbsFontSize { XXSmall, XSmall, Small, Medium, Large, XLarge, XXLarge };
-        switch (attributes.fontSize.at(0).unicode()) {
-        case 'x':
-            if (attributes.fontSize == QLatin1String("xx-small"))
-                size = sizeTable[XXSmall];
-            else if (attributes.fontSize == QLatin1String("x-small"))
-                size = sizeTable[XSmall];
-            else if (attributes.fontSize == QLatin1String("x-large"))
-                size = sizeTable[XLarge];
-            else if (attributes.fontSize == QLatin1String("xx-large"))
-                size = sizeTable[XXLarge];
+        const FontSizeSpec spec = fontSizeSpec(attributes.fontSize);
+        switch (spec) {
+        case FontSizeNone:
             break;
-        case 's':
-            if (attributes.fontSize == QLatin1String("small"))
-                size = sizeTable[Small];
-            break;
-        case 'm':
-            if (attributes.fontSize == QLatin1String("medium"))
-                size = sizeTable[Medium];
-            break;
-        case 'l':
-            if (attributes.fontSize == QLatin1String("large"))
-                size = sizeTable[Large];
+        case FontSizeValue: {
+            QSvgHandler::LengthType dummy; // should always be pixel size
+            fontStyle->setSize(parseLength(attributes.fontSize.toString(), dummy, handler));
+        }
             break;
         default:
-            size = parseLength(attributes.fontSize.toString(), dummy, handler);
+            fontStyle->setSize(sizeTable[spec]);
             break;
         }
-        fontStyle->setSize(size);
     }
 
     if (!attributes.fontStyle.isEmpty() && attributes.fontStyle != QT_INHERIT) {
@@ -3307,29 +3331,30 @@ static QSvgNode *createUseNode(QSvgNode *parent,
     }
 
     if (group) {
+        QPointF pt;
+        if (!xStr.isNull() || !yStr.isNull()) {
+            QSvgHandler::LengthType type;
+            qreal nx = parseLength(xStr, type, handler);
+            nx = convertToPixels(nx, true, type);
+
+            qreal ny = parseLength(yStr, type, handler);
+            ny = convertToPixels(ny, true, type);
+            pt = QPointF(nx, ny);
+        }
+
         QSvgNode *link = group->scopeNode(linkId);
         if (link) {
             if (parent->isDescendantOf(link))
                 qWarning("link #%s is recursive!", qPrintable(linkId));
-            QPointF pt;
-            if (!xStr.isNull() || !yStr.isNull()) {
-                QSvgHandler::LengthType type;
-                qreal nx = parseLength(xStr, type, handler);
-                nx = convertToPixels(nx, true, type);
 
-                qreal ny = parseLength(yStr, type, handler);
-                ny = convertToPixels(ny, true, type);
-                pt = QPointF(nx, ny);
-            }
-
-            //delay link resolving till the first draw call on
-            //use nodes, link 2might have not been created yet
-            QSvgUse *node = new QSvgUse(pt, parent, link);
-            return node;
+            return new QSvgUse(pt, parent, link);
         }
+
+        //delay link resolving, link might have not been created yet
+        return new QSvgUse(pt, parent, linkId);
     }
 
-    qWarning("link %s hasn't been detected!", qPrintable(linkId));
+    qWarning("<use> element %s in wrong context!", qPrintable(linkId));
     return 0;
 }
 
@@ -3592,7 +3617,7 @@ void QSvgHandler::parse()
             break;
         }
     }
-    resolveGradients(m_doc);
+    resolveNodes();
 }
 
 bool QSvgHandler::startElement(const QString &localName,
@@ -3689,6 +3714,9 @@ bool QSvgHandler::startElement(const QString &localName,
                     static_cast<QSvgText *>(node)->setWhitespaceMode(m_whitespaceMode.top());
                 } else if (node->type() == QSvgNode::TSPAN) {
                     static_cast<QSvgTspan *>(node)->setWhitespaceMode(m_whitespaceMode.top());
+                } else if (node->type() == QSvgNode::USE) {
+                    if (!static_cast<QSvgUse *>(node)->isResolved())
+                        m_resolveNodes.append(node);
                 }
             }
         }
@@ -3786,6 +3814,33 @@ void QSvgHandler::resolveGradients(QSvgNode *node)
 
         resolveGradients(*it);
     }
+}
+
+void QSvgHandler::resolveNodes()
+{
+    for (QSvgNode *node : m_resolveNodes) {
+        if (!node || !node->parent() || node->type() != QSvgNode::USE)
+            continue;
+        QSvgUse *useNode = static_cast<QSvgUse *>(node);
+        if (useNode->isResolved())
+            continue;
+        QSvgNode::Type t = useNode->parent()->type();
+        if (!(t == QSvgNode::DOC || t == QSvgNode::DEFS || t == QSvgNode::G || t == QSvgNode::SWITCH))
+            continue;
+
+        QSvgStructureNode *group = static_cast<QSvgStructureNode *>(useNode->parent());
+        QSvgNode *link = group->scopeNode(useNode->linkId());
+        if (!link) {
+            qWarning("link #%s is undefined!", qPrintable(useNode->linkId()));
+            continue;
+        }
+
+        if (useNode->parent()->isDescendantOf(link))
+            qWarning("link #%s is recursive!", qPrintable(useNode->linkId()));
+
+        useNode->setLink(link);
+    }
+    m_resolveNodes.clear();
 }
 
 bool QSvgHandler::characters(const QStringRef &str)

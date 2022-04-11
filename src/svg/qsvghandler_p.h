@@ -173,6 +173,7 @@ private:
     QCss::Parser m_cssParser;
     void parse();
     void resolveGradients(QSvgNode *node);
+    void resolveNodes();
 
     QPen m_defaultPen;
     /**

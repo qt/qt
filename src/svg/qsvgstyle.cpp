@@ -692,8 +692,8 @@ void QSvgAnimateTransform::resolveMatrix(const QSvgNode *node)
     }
 
     qreal currentPosition = percentOfAnimation * (m_count - 1);
-    int startElem = qFloor(currentPosition);
     int endElem   = qCeil(currentPosition);
+    int startElem = qMax(endElem - 1, 0);
 
     switch(m_type)
     {
