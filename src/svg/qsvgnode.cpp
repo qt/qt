@@ -210,7 +210,7 @@ QRectF QSvgNode::transformedBounds() const
     QPainter p(&dummy);
     QSvgExtraStates states;
 
-    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::SvgMiterJoin);
     pen.setMiterLimit(4);
     p.setPen(pen);
 

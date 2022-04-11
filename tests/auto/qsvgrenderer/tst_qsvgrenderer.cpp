@@ -623,9 +623,18 @@ void tst_QSvgRenderer::gradientRefs()
                 "<linearGradient id=\"gradient\" xlink:href=\"#gradient0\">"
                 "</linearGradient>"
             "</defs>"
+        "</svg>",
+        "<svg>"
+            "<defs>"
+                "<linearGradient xlink:href=\"#0\" id=\"0\">"
+                    "<stop offset=\"0\" stop-color=\"red\" stop-opacity=\"0\"/>"
+                    "<stop offset=\"1\" stop-color=\"blue\"/>"
+                "</linearGradient>"
+            "</defs>"
+            "<rect fill=\"url(#0)\" height=\"8\" width=\"256\" x=\"0\" y=\"0\"/>"
         "</svg>"
     };
-    for (int i = 0 ; i < sizeof(svgs) / sizeof(svgs[0]) ; ++i)
+    for (size_t i = 0 ; i < sizeof(svgs) / sizeof(svgs[0]) ; ++i)
     {
         QByteArray data = svgs[i];
         QSvgRenderer renderer(data);

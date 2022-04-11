@@ -240,7 +240,7 @@ void QSvgTinyDocument::draw(QPainter *p, const QRectF &bounds)
     //sets default style on the painter
     //### not the most optimal way
     mapSourceToTarget(p, bounds);
-    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::SvgMiterJoin);
     pen.setMiterLimit(4);
     p->setPen(pen);
     p->setBrush(Qt::black);
@@ -283,7 +283,7 @@ void QSvgTinyDocument::draw(QPainter *p, const QString &id,
     QTransform originalTransform = p->worldTransform();
 
     //XXX set default style on the painter
-    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::SvgMiterJoin);
     pen.setMiterLimit(4);
     p->setPen(pen);
     p->setBrush(Qt::black);

@@ -170,9 +170,11 @@ public:
     void updateState(const QPaintEngineState &state);
     void popGroup();
 
+    void drawEllipse(const QRectF &r) override;
     void drawPath(const QPainterPath &path);
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
     void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
+    void drawRects(const QRectF *rects, int rectCount) override;
     void drawTextItem(const QPointF &pt, const QTextItem &item);
     void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                    Qt::ImageConversionFlag = Qt::AutoColor);
@@ -398,6 +400,7 @@ public:
             qWarning("Unhandled cap style");
         }
         switch (spen.joinStyle()) {
+        case Qt::SvgMiterJoin:
         case Qt::MiterJoin:
             stream() << "stroke-linejoin=\"miter\" "
                         "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
@@ -407,10 +410,6 @@ public:
             break;
         case Qt::RoundJoin:
             stream() << "stroke-linejoin=\"round\" ";
-            break;
-        case Qt::SvgMiterJoin:
-            stream() << "stroke-linejoin=\"miter\" "
-                        "stroke-miterlimit=\""<<spen.miterLimit()<<"\" ";
             break;
         default:
             qWarning("Unhandled join style");
@@ -975,6 +974,23 @@ void QSvgPaintEngine::updateState(const QPaintEngineState &state)
     d->afterFirstUpdate = true;
 }
 
+void QSvgPaintEngine::drawEllipse(const QRectF &r)
+{
+    Q_D(QSvgPaintEngine);
+
+    const bool isCircle = r.width() == r.height();
+    *d->stream << '<' << (isCircle ? "circle" : "ellipse");
+    if (state->pen().isCosmetic())
+        *d->stream << " vector-effect=\"non-scaling-stroke\"";
+    const QPointF c = r.center();
+    *d->stream << " cx=\"" << c.x() << "\" cy=\"" << c.y();
+    if (isCircle)
+        *d->stream << "\" r=\"" << r.width() / qreal(2.0);
+    else
+        *d->stream << "\" rx=\"" << r.width() / qreal(2.0) << "\" ry=\"" << r.height() / qreal(2.0);
+    *d->stream << "\"/>" << endl;
+}
+
 void QSvgPaintEngine::drawPath(const QPainterPath &p)
 {
     Q_D(QSvgPaintEngine);
@@ -1045,6 +1061,21 @@ void QSvgPaintEngine::drawPolygon(const QPointF *points, int pointCount,
     }
 }
 
+void QSvgPaintEngine::drawRects(const QRectF *rects, int rectCount)
+{
+    Q_D(QSvgPaintEngine);
+
+    for (int i=0; i < rectCount; ++i) {
+        const QRectF &rect = rects[i];
+        *d->stream << "<rect";
+        if (state->pen().isCosmetic())
+            *d->stream << " vector-effect=\"non-scaling-stroke\"";
+        *d->stream << " x=\"" << rect.x() << "\" y=\"" << rect.y()
+                   << "\" width=\"" << rect.width() << "\" height=\"" << rect.height()
+                   << "\"/>" << endl;
+    }
+}
+
 void QSvgPaintEngine::drawTextItem(const QPointF &pt, const QTextItem &textItem)
 {
     Q_D(QSvgPaintEngine);
@@ -1052,6 +1083,8 @@ void QSvgPaintEngine::drawTextItem(const QPointF &pt, const QTextItem &textItem)
         return;
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+    if (ti.chars == 0)
+        QPaintEngine::drawTextItem(pt, ti); // Draw as path
     QString s = QString::fromRawData(ti.chars, ti.num_chars);
 
     *d->stream << "<text "
