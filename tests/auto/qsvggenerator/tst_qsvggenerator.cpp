@@ -439,5 +439,46 @@ void tst_QSvgGenerator::gradientInterpolation()
     QVERIFY(sqrImageDiff(image, refImage) < 2); // pixel error < 1.41 (L2-norm)
 }
 
+void tst_QSvgGenerator::patternBrush()
+{
+    { // Pattern brush should create mask and pattern used as fill
+        QSvgGenerator generator;
+        QByteArray byteArray;
+        QBuffer buffer(&byteArray);
+        generator.setOutputDevice(&buffer);
+        QPainter painter(&generator);
+        painter.setBrush(Qt::CrossPattern);
+        painter.drawRect(0, 0, 100, 100);
+        painter.end();
+
+        QVERIFY(byteArray.contains("<mask id=\"patternmask"));
+        QVERIFY(byteArray.contains("<pattern id=\"fillpattern"));
+        QVERIFY(byteArray.contains("<g fill=\"url(#fillpattern"));
+    }
+
+    { // Masks and patterns should be reused, not regenerated
+        QSvgGenerator generator;
+        QByteArray byteArray;
+        QBuffer buffer(&byteArray);
+        generator.setOutputDevice(&buffer);
+        QPainter painter(&generator);
+        painter.setBrush(QBrush(Qt::red, Qt::Dense3Pattern));
+        painter.drawRect(0, 0, 100, 100);
+        painter.drawEllipse(200, 50, 50, 50);
+        painter.setBrush(QBrush(Qt::green, Qt::Dense3Pattern));
+        painter.drawRoundedRect(0, 200, 100, 100, 10, 10);
+        painter.setBrush(QBrush(Qt::blue, Qt::Dense4Pattern));
+        painter.drawRect(200, 200, 100, 100);
+        painter.setBrush(QBrush(Qt::red, Qt::Dense3Pattern));
+        painter.drawRoundedRect(120, 120, 60, 60, 5, 5);
+        painter.end();
+
+        QCOMPARE(byteArray.count("<mask id=\"patternmask"), 2);
+        QCOMPARE(byteArray.count("<pattern id=\"fillpattern"), 3);
+        QVERIFY(byteArray.count("<g fill=\"url(#fillpattern") >= 4);
+    }
+
+}
+
 QTEST_MAIN(tst_QSvgGenerator)
 #include "tst_qsvggenerator.moc"

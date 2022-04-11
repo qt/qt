@@ -305,7 +305,7 @@ int QSvgRenderer::animationDuration() const
  */
 void QSvgRendererPrivate::callRepaintNeeded(QSvgRenderer *const q)
 {
-    q->repaintNeeded();
+    emit q->repaintNeeded();
 }
 
 template<typename TInputType>

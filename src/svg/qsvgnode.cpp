@@ -61,6 +61,17 @@ QSvgNode::~QSvgNode()
 
 }
 
+bool QSvgNode::isDescendantOf(const QSvgNode *parent) const
+{
+    const QSvgNode *n = this;
+    while (n) {
+        if (n == parent)
+            return true;
+        n = n->m_parent;
+    }
+    return false;
+}
+
 void QSvgNode::appendStyleProperty(QSvgStyleProperty *prop, const QString &id)
 {
     //qDebug()<<"appending "<<prop->type()<< " ("<< id <<") "<<"to "<<this<<this->type();

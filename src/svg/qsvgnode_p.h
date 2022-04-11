@@ -116,6 +116,7 @@ public:
     virtual void draw(QPainter *p, QSvgExtraStates &states) =0;
 
     QSvgNode *parent() const;
+    bool isDescendantOf(const QSvgNode *parent) const;
 
     void appendStyleProperty(QSvgStyleProperty *prop, const QString &id);
     void applyStyle(QPainter *p, QSvgExtraStates &states) const;

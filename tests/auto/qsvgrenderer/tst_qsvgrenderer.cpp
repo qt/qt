@@ -1324,6 +1324,17 @@ void tst_QSvgRenderer::testUseElement()
         " <g fill = \"red\" fill-opacity =\"0.5\">"
         "  <use xlink:href =\"#usedG\" />"
         " </g>"
+        "</svg>",
+        // Self referral, should be ignored
+        "<svg><g id=\"0\"><use xlink:href=\"#0\" /></g></svg>",
+        "<svg width=\"200\" height=\"200\">"
+        "  <rect width=\"100\" height=\"50\"/>"
+        "</svg>",
+        "<svg width=\"200\" height=\"200\">"
+        "  <g id=\"0\"><use xlink:href=\"#0\" /><rect width=\"100\" height=\"50\"/></g>"
+        "</svg>",
+        "<svg width=\"200\" height=\"200\">"
+        "  <g id=\"0\"><g><use xlink:href=\"#0\" /><rect width=\"100\" height=\"50\"/></g></g>"
         "</svg>"
     };
 
@@ -1350,8 +1361,10 @@ void tst_QSvgRenderer::testUseElement()
                 // For this reason an exact comparison will fail.
                 QCOMPARE(images[4], images[i]);
             }
-        } else if (i > 7) {
+        } else if (i > 7 && i < 10) {
             QCOMPARE(images[8], images[i]);
+        } else if (i > 11) {
+            QCOMPARE(images[11], images[i]);
         }
     }
 }

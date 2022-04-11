@@ -1117,9 +1117,9 @@ static QMatrix parseTransformationMatrix(const QStringRef &value)
         if(state == Matrix) {
             if(points.count() != 6)
                 goto error;
-            matrix = matrix * QMatrix(points[0], points[1],
-                                      points[2], points[3],
-                                      points[4], points[5]);
+            matrix = QMatrix(points[0], points[1],
+                             points[2], points[3],
+                             points[4], points[5]) * matrix;
         } else if (state == Translate) {
             if (points.count() == 1)
                 matrix.translate(points[0], 0);
@@ -1884,13 +1884,12 @@ static void parseCSStoXMLAttrs(const QVector<QCss::Declaration> &declarations,
             continue;
         QCss::Value val = decl.d->values.first();
         QString valueStr;
-        if (decl.d->values.count() != 1) {
-            for (int i=0; i<decl.d->values.count(); ++i) {
-                const QString &value = decl.d->values[i].toString();
-                if (value.isEmpty())
+        const int valCount = decl.d->values.count();
+        if (valCount != 1) {
+            for (int i = 0; i < valCount; ++i) {
+                valueStr += decl.d->values[i].toString();
+                if (i + 1 < valCount)
                     valueStr += QLatin1Char(',');
-                else
-                    valueStr += value;
             }
         } else {
             valueStr = val.toString();
@@ -2178,7 +2177,7 @@ static inline QSvgNode::DisplayMode displayStringToEnum(const QString &str)
         return QSvgNode::TableHeaderGroupMode;
     } else if (str == QLatin1String("table-footer-group")) {
         return QSvgNode::TableFooterGroupMode;
-    } else if (str == QLatin1String("table-row")) {
+    } else if (str == QLatin1String("table-row-group")) {
         return QSvgNode::TableRowMode;
     } else if (str == QLatin1String("table-column-group")) {
         return QSvgNode::TableColumnGroupMode;
@@ -2279,7 +2278,6 @@ static bool parseAnimateColorNode(QSvgNode *parent,
                                   const QXmlStreamAttributes &attributes,
                                   QSvgHandler *handler)
 {
-    QString typeStr    = attributes.value(QLatin1String("type")).toString();
     QStringRef fromStr    = attributes.value(QLatin1String("from"));
     QStringRef toStr      = attributes.value(QLatin1String("to"));
     QString valuesStr  = attributes.value(QLatin1String("values")).toString();
@@ -2364,7 +2362,6 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
     QString values     = attributes.value(QLatin1String("values")).toString();
     QString beginStr   = attributes.value(QLatin1String("begin")).toString();
     QString durStr     = attributes.value(QLatin1String("dur")).toString();
-    QString targetStr  = attributes.value(QLatin1String("attributeName")).toString();
     QString repeatStr  = attributes.value(QLatin1String("repeatCount")).toString();
     QString fillStr    = attributes.value(QLatin1String("fill")).toString();
     QString fromStr    = attributes.value(QLatin1String("from")).toString();
@@ -3312,6 +3309,8 @@ static QSvgNode *createUseNode(QSvgNode *parent,
     if (group) {
         QSvgNode *link = group->scopeNode(linkId);
         if (link) {
+            if (parent->isDescendantOf(link))
+                qWarning("link #%s is recursive!", qPrintable(linkId));
             QPointF pt;
             if (!xStr.isNull() || !yStr.isNull()) {
                 QSvgHandler::LengthType type;

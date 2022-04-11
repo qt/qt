@@ -54,6 +54,7 @@
 #include "qtextstream.h"
 #include "qbuffer.h"
 #include "qmath.h"
+#include "qbitmap.h"
 
 #include "qdebug.h"
 
@@ -130,6 +131,9 @@ public:
     QString currentGradientName;
     int numGradients;
 
+    QStringList savedPatternBrushes;
+    QStringList savedPatternMasks;
+
     struct _attributes {
         QString document_title;
         QString document_description;
@@ -147,11 +151,12 @@ static inline QPaintEngine::PaintEngineFeatures svgEngineFeatures()
 {
     return QPaintEngine::PaintEngineFeatures(
         QPaintEngine::AllFeatures
-        & ~QPaintEngine::PatternBrush
         & ~QPaintEngine::PerspectiveTransform
         & ~QPaintEngine::ConicalGradientFill
         & ~QPaintEngine::PorterDuff);
 }
+
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 class QSvgPaintEngine : public QPaintEngine
 {
@@ -214,6 +219,41 @@ public:
         Q_ASSERT(!isActive());
         d_func()->resolution = resolution;
     }
+
+    QString savePatternMask(Qt::BrushStyle style)
+    {
+        QString maskId = QString::fromLatin1("patternmask%1").arg(style);
+        if (!d_func()->savedPatternMasks.contains(maskId)) {
+            QImage img = qt_imageForBrush(style, true);
+            QRegion reg(QBitmap::fromData(img.size(), img.constBits()));
+            QString rct(QLatin1String("<rect x=\"%1\" y=\"%2\" width=\"%3\" height=\"%4\" />"));
+            QTextStream str(&d_func()->defs, QIODevice::Append);
+            str << "<mask id=\"" << maskId << "\" x=\"0\" y=\"0\" width=\"8\" height=\"8\" "
+                << "stroke=\"none\" fill=\"#ffffff\" patternUnits=\"userSpaceOnUse\" >" << endl;
+            const auto &rects = reg.rects();
+            for (const QRect &r : rects)
+                str << rct.arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()) << endl;
+            str << QLatin1String("</mask>") << endl << endl;
+            d_func()->savedPatternMasks.append(maskId);
+        }
+        return maskId;
+    }
+
+    QString savePatternBrush(const QString &color, const QBrush &brush)
+    {
+        QString patternId = QString::fromLatin1("fillpattern%1_").arg(brush.style()) + color.midRef(1);
+        if (!d_func()->savedPatternBrushes.contains(patternId)) {
+            QString maskId = savePatternMask(brush.style());
+            QString geo(QLatin1String("x=\"0\" y=\"0\" width=\"8\" height=\"8\""));
+            QTextStream str(&d_func()->defs, QIODevice::Append);
+            str << QString::fromLatin1("<pattern id=\"%1\" %2 patternUnits=\"userSpaceOnUse\" >").arg(patternId, geo) << endl;
+            str << QString::fromLatin1("<rect %1 stroke=\"none\" fill=\"%2\" mask=\"url(#%3);\" />").arg(geo, color, maskId) << endl;
+            str << QLatin1String("</pattern>") << endl << endl;
+            d_func()->savedPatternBrushes.append(patternId);
+        }
+        return patternId;
+    }
+
     void saveLinearGradientBrush(const QGradient *g)
     {
         QTextStream str(&d_func()->defs, QIODevice::Append);
@@ -244,7 +284,7 @@ public:
                 << QLatin1String("fx=\"") <<grad->focalPoint().x() << QLatin1String("\" ")
                 << QLatin1String("fy=\"") <<grad->focalPoint().y() << QLatin1String("\" ");
         }
-        str << QLatin1String("xml:id=\"") <<d_func()->generateGradientName()<< QLatin1String("\">\n");
+        str << QLatin1String("id=\"") <<d_func()->generateGradientName()<< QLatin1String("\">\n");
         saveGradientStops(str, g);
         str << QLatin1String("</radialGradient>") << endl;
     }
@@ -427,6 +467,28 @@ public:
             d_func()->attributes.fillOpacity = colorOpacity;
         }
             break;
+        case Qt::Dense1Pattern:
+        case Qt::Dense2Pattern:
+        case Qt::Dense3Pattern:
+        case Qt::Dense4Pattern:
+        case Qt::Dense5Pattern:
+        case Qt::Dense6Pattern:
+        case Qt::Dense7Pattern:
+        case Qt::HorPattern:
+        case Qt::VerPattern:
+        case Qt::CrossPattern:
+        case Qt::BDiagPattern:
+        case Qt::FDiagPattern:
+        case Qt::DiagCrossPattern: {
+            QString color, colorOpacity;
+            translate_color(sbrush.color(), &color, &colorOpacity);
+            QString patternId = savePatternBrush(color, sbrush);
+            QString patternRef = QString::fromLatin1("url(#%1)").arg(patternId);
+            stream() << "fill=\"" << patternRef << "\" fill-opacity=\"" << colorOpacity << "\" ";
+            d_func()->attributes.fill = patternRef;
+            d_func()->attributes.fillOpacity = colorOpacity;
+            break;
+        }
         case Qt::LinearGradientPattern:
             saveLinearGradientBrush(sbrush.gradient());
             d_func()->attributes.fill = QString::fromLatin1("url(#%1)").arg(d_func()->currentGradientName);
@@ -1064,7 +1126,7 @@ void QSvgPaintEngine::drawRects(const QRectF *rects, int rectCount)
     Q_D(QSvgPaintEngine);
 
     for (int i=0; i < rectCount; ++i) {
-        const QRectF &rect = rects[i];
+        const QRectF &rect = rects[i].normalized();
         *d->stream << "<rect";
         if (state->pen().isCosmetic())
             *d->stream << " vector-effect=\"non-scaling-stroke\"";

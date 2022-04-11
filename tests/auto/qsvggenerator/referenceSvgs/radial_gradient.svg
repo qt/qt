@@ -4,11 +4,11 @@
 <title>Qt Svg Document</title>
 <desc>Generated with Qt</desc>
 <defs>
-<radialGradient gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5" xml:id="gradient1">
+<radialGradient gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5" id="gradient1">
     <stop offset="0" stop-color="#ff0000" stop-opacity="1" />
     <stop offset="1" stop-color="#0000ff" stop-opacity="1" />
 </radialGradient>
-<radialGradient gradientUnits="userSpaceOnUse" cx="150" cy="50" r="50" fx="150" fy="50" xml:id="gradient2">
+<radialGradient gradientUnits="userSpaceOnUse" cx="150" cy="50" r="50" fx="150" fy="50" id="gradient2">
     <stop offset="0" stop-color="#ff0000" stop-opacity="1" />
     <stop offset="1" stop-color="#0000ff" stop-opacity="1" />
 </radialGradient>
