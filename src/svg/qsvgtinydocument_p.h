@@ -80,7 +80,7 @@ public:
 public:
     QSvgTinyDocument();
     ~QSvgTinyDocument();
-    Type type() const;
+    Type type() const override;
 
     QSize size() const;
     void setWidth(int len, bool percent);
@@ -95,7 +95,7 @@ public:
     QRectF viewBox() const;
     void setViewBox(const QRectF &rect);
 
-    virtual void draw(QPainter *p, QSvgExtraStates &);//from the QSvgNode
+    void draw(QPainter *p, QSvgExtraStates &) override;//from the QSvgNode
 
     void draw(QPainter *p);
     void draw(QPainter *p, const QRectF &bounds);

@@ -66,12 +66,12 @@ public:
 
     QSvgRenderer *renderer() const;
 
-    QSize sizeHint() const;
+    QSize sizeHint() const override;
 public Q_SLOTS:
     void load(const QString &file);
     void load(const QByteArray &contents);
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 private:
     Q_DISABLE_COPY(QSvgWidget)
     Q_DECLARE_PRIVATE(QSvgWidget)

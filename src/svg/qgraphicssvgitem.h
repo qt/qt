@@ -77,14 +77,14 @@ public:
     void setMaximumCacheSize(const QSize &size);
     QSize maximumCacheSize() const;
 
-    virtual QRectF boundingRect() const;
+    QRectF boundingRect() const override;
 
-    virtual void paint(QPainter *painter,
+    void paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
-                       QWidget *widget=0);
+                       QWidget *widget=0) override;
 
     enum { Type = 13 };
-    virtual int type() const;
+    int type() const override;
 
 private:
     Q_DISABLE_COPY(QGraphicsSvgItem)

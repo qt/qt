@@ -460,7 +460,7 @@ public:
         return st;
     }
 
-    virtual bool nodeNameEquals(NodePtr node, const QString& nodeName) const
+    bool nodeNameEquals(NodePtr node, const QString& nodeName) const override
     {
         QSvgNode *n = svgNode(node);
         if (!n)
@@ -468,7 +468,7 @@ public:
         QString name = nodeToName(n);
         return QString::compare(name, nodeName, Qt::CaseInsensitive) == 0;
     }
-    virtual QString attribute(NodePtr node, const QString &name) const
+    QString attribute(NodePtr node, const QString &name) const override
     {
         QSvgNode *n = svgNode(node);
         if ((!n->nodeId().isEmpty() && (name == QLatin1String("id") ||
@@ -478,14 +478,14 @@ public:
             return n->xmlClass();
         return QString();
     }
-    virtual bool hasAttributes(NodePtr node) const
+    bool hasAttributes(NodePtr node) const override
     {
         QSvgNode *n = svgNode(node);
         return (n &&
                 (!n->nodeId().isEmpty() || !n->xmlClass().isEmpty()));
     }
 
-    virtual QStringList nodeIds(NodePtr node) const
+    QStringList nodeIds(NodePtr node) const override
     {
         QSvgNode *n = svgNode(node);
         QString nid;
@@ -495,7 +495,7 @@ public:
         return lst;
     }
 
-    virtual QStringList nodeNames(NodePtr node) const
+    QStringList nodeNames(NodePtr node) const override
     {
         QSvgNode *n = svgNode(node);
         if (n)
@@ -503,12 +503,12 @@ public:
         return QStringList();
     }
 
-    virtual bool isNullNode(NodePtr node) const
+    bool isNullNode(NodePtr node) const override
     {
         return !node.ptr;
     }
 
-    virtual NodePtr parentNode(NodePtr node) const
+    NodePtr parentNode(NodePtr node) const override
     {
         QSvgNode *n = svgNode(node);
         NodePtr newNode;
@@ -522,7 +522,7 @@ public:
         }
         return newNode;
     }
-    virtual NodePtr previousSiblingNode(NodePtr node) const
+    NodePtr previousSiblingNode(NodePtr node) const override
     {
         NodePtr newNode;
         newNode.ptr = 0;
@@ -538,14 +538,14 @@ public:
         }
         return newNode;
     }
-    virtual NodePtr duplicateNode(NodePtr node) const
+    NodePtr duplicateNode(NodePtr node) const override
     {
         NodePtr n;
         n.ptr = node.ptr;
         n.id  = node.id;
         return n;
     }
-    virtual void freeNode(NodePtr node) const
+    void freeNode(NodePtr node) const override
     {
         Q_UNUSED(node);
     }
