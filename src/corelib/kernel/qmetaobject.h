@@ -77,7 +77,7 @@ public:
     bool invoke(QObject *object,
                 Qt::ConnectionType connectionType,
                 QGenericReturnArgument returnValue,
-                QGenericArgument val0 = QGenericArgument(0),
+                QGenericArgument val0 = QGenericArgument(nullptr),
                 QGenericArgument val1 = QGenericArgument(),
                 QGenericArgument val2 = QGenericArgument(),
                 QGenericArgument val3 = QGenericArgument(),
@@ -89,7 +89,7 @@ public:
                 QGenericArgument val9 = QGenericArgument()) const;
     inline bool invoke(QObject *object,
                        QGenericReturnArgument returnValue,
-                       QGenericArgument val0 = QGenericArgument(0),
+                       QGenericArgument val0 = QGenericArgument(nullptr),
                        QGenericArgument val1 = QGenericArgument(),
                        QGenericArgument val2 = QGenericArgument(),
                        QGenericArgument val3 = QGenericArgument(),
@@ -105,7 +105,7 @@ public:
     }
     inline bool invoke(QObject *object,
                        Qt::ConnectionType connectionType,
-                       QGenericArgument val0 = QGenericArgument(0),
+                       QGenericArgument val0 = QGenericArgument(nullptr),
                        QGenericArgument val1 = QGenericArgument(),
                        QGenericArgument val2 = QGenericArgument(),
                        QGenericArgument val3 = QGenericArgument(),
@@ -120,7 +120,7 @@ public:
                       val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
     inline bool invoke(QObject *object,
-                       QGenericArgument val0 = QGenericArgument(0),
+                       QGenericArgument val0 = QGenericArgument(nullptr),
                        QGenericArgument val1 = QGenericArgument(),
                        QGenericArgument val2 = QGenericArgument(),
                        QGenericArgument val3 = QGenericArgument(),

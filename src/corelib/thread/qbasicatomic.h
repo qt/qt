@@ -161,7 +161,7 @@ public:
 
     inline bool operator!() const
     {
-        return operator==(0);
+        return operator==(nullptr);
     }
 
     inline operator T *() const

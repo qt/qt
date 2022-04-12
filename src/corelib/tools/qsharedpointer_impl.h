@@ -577,22 +577,22 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-    inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
+    inline bool isNull() const { return d == nullptr || d->strongref == 0 || value == nullptr; }
 #ifndef Q_CC_NOKIAX86
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
 #else
-    inline operator bool() const { return isNull() ? 0 : &QWeakPointer::value; }
+    inline operator bool() const { return isNull() ? nullptr : &QWeakPointer::value; }
 #endif
     inline bool operator !() const { return isNull(); }
-    inline T *data() const { return d == 0 || d->strongref == 0 ? 0 : value; }
+    inline T *data() const { return d == nullptr || d->strongref == 0 ? nullptr : value; }
 
-    inline QWeakPointer() : d(0), value(0) { }
+    inline QWeakPointer() : d(nullptr), value(nullptr) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
 #ifndef QT_NO_QOBJECT
     // special constructor that is enabled only if X derives from QObject
     template <class X>
-    inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : 0), value(ptr)
+    inline QWeakPointer(X *ptr) : d(ptr ? Data::getAndRef(ptr) : nullptr), value(ptr)
     { }
 #endif
     template <class X>
@@ -616,7 +616,7 @@ public:
     }
 
     template <class X>
-    inline QWeakPointer(const QWeakPointer<X> &o) : d(0), value(0)
+    inline QWeakPointer(const QWeakPointer<X> &o) : d(nullptr), value(nullptr)
     { *this = o; }
 
     template <class X>
@@ -637,7 +637,7 @@ public:
     { return !(*this == o); }
 
     template <class X>
-    inline QWeakPointer(const QSharedPointer<X> &o) : d(0), value(0)
+    inline QWeakPointer(const QSharedPointer<X> &o) : d(nullptr), value(nullptr)
     { *this = o; }
 
     template <class X>

@@ -140,7 +140,7 @@ class Q_CORE_EXPORT QAnimationDriver : public QObject
     Q_DECLARE_PRIVATE(QAnimationDriver)
 
 public:
-    QAnimationDriver(QObject *parent = 0);
+    QAnimationDriver(QObject *parent = nullptr);
 
     void advance();
     void install();
@@ -151,7 +151,7 @@ protected:
     virtual void started() {};
     virtual void stopped() {};
 
-    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
+    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = nullptr);
 
 private:
     friend class QUnifiedTimer;

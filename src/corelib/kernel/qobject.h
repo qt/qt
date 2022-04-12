@@ -115,27 +115,27 @@ class Q_CORE_EXPORT QObject
     Q_DECLARE_PRIVATE(QObject)
 
 public:
-    Q_INVOKABLE explicit QObject(QObject *parent=0);
+    Q_INVOKABLE explicit QObject(QObject *parent=nullptr);
     virtual ~QObject();
 
     virtual bool event(QEvent *);
     virtual bool eventFilter(QObject *, QEvent *);
 
 #ifdef qdoc
-    static QString tr(const char *sourceText, const char *comment = 0, int n = -1);
-    static QString trUtf8(const char *sourceText, const char *comment = 0, int n = -1);
+    static QString tr(const char *sourceText, const char *comment = nullptr, int n = -1);
+    static QString trUtf8(const char *sourceText, const char *comment = nullptr, int n = -1);
     virtual const QMetaObject *metaObject() const;
     static const QMetaObject staticMetaObject;
 #endif
 #ifdef QT_NO_TRANSLATION
     static QString tr(const char *sourceText, const char *, int)
         { return QString::fromLatin1(sourceText); }
-    static QString tr(const char *sourceText, const char * = 0)
+    static QString tr(const char *sourceText, const char * = nullptr)
         { return QString::fromLatin1(sourceText); }
 #ifndef QT_NO_TEXTCODEC
     static QString trUtf8(const char *sourceText, const char *, int)
         { return QString::fromUtf8(sourceText); }
-    static QString trUtf8(const char *sourceText, const char * = 0)
+    static QString trUtf8(const char *sourceText, const char * = nullptr)
         { return QString::fromUtf8(sourceText); }
 #endif
 #endif //QT_NO_TRANSLATION
@@ -187,10 +187,10 @@ public:
 #endif
 
 #ifdef QT3_SUPPORT
-    QT3_SUPPORT QObject *child(const char *objName, const char *inheritsClass = 0,
+    QT3_SUPPORT QObject *child(const char *objName, const char *inheritsClass = nullptr,
                    bool recursiveSearch = true) const;
-    QT3_SUPPORT QObjectList queryList(const char *inheritsClass = 0,
-                          const char *objName = 0,
+    QT3_SUPPORT QObjectList queryList(const char *inheritsClass = nullptr,
+                          const char *objName = nullptr,
                           bool regexpMatch = true,
                           bool recursiveSearch = true) const;
 #endif
@@ -245,11 +245,11 @@ public:
                            const QObject *receiver, const char *member);
     static bool disconnect(const QObject *sender, const QMetaMethod &signal,
                            const QObject *receiver, const QMetaMethod &member);
-    inline bool disconnect(const char *signal = 0,
-                           const QObject *receiver = 0, const char *member = 0)
+    inline bool disconnect(const char *signal = nullptr,
+                           const QObject *receiver = nullptr, const char *member = nullptr)
         { return disconnect(this, signal, receiver, member); }
-    inline bool disconnect(const QObject *receiver, const char *member = 0)
-        { return disconnect(this, 0, receiver, member); }
+    inline bool disconnect(const QObject *receiver, const char *member = nullptr)
+        { return disconnect(this, nullptr, receiver, member); }
 
     void dumpObjectTree();
     void dumpObjectInfo();
@@ -267,13 +267,13 @@ public:
 #endif // QT_NO_USERDATA
 
 Q_SIGNALS:
-    void destroyed(QObject * = 0);
+    void destroyed(QObject * = nullptr);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }
 
     inline bool inherits(const char *classname) const
-        { return const_cast<QObject *>(this)->qt_metacast(classname) != 0; }
+        { return const_cast<QObject *>(this)->qt_metacast(classname) != nullptr; }
 
 public Q_SLOTS:
     void deleteLater();
@@ -296,7 +296,7 @@ public:
     inline QT3_SUPPORT void insertChild(QObject *o)
         { if (o) o->setParent(this); }
     inline QT3_SUPPORT void removeChild(QObject *o)
-        { if (o) o->setParent(0); }
+        { if (o) o->setParent(nullptr); }
     inline QT3_SUPPORT bool isA(const char *classname) const
         { return qstrcmp(classname, metaObject()->className()) == 0; }
     inline QT3_SUPPORT const char *className() const { return metaObject()->className(); }
@@ -314,7 +314,7 @@ protected:
 #endif
 
 protected:
-    QObject(QObjectPrivate &dd, QObject *parent = 0);
+    QObject(QObjectPrivate &dd, QObject *parent = nullptr);
 
 protected:
     QScopedPointer<QObjectData> d_ptr;

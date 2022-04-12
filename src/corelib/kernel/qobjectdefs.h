@@ -96,9 +96,9 @@ class QString;
 // full set of tr functions
 // ### Qt 5: merge overloads
 #  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0) \
+    static inline QString tr(const char *s, const char *c = nullptr) \
         { return staticMetaObject.tr(s, c); } \
-    static inline QString trUtf8(const char *s, const char *c = 0) \
+    static inline QString trUtf8(const char *s, const char *c = nullptr) \
         { return staticMetaObject.trUtf8(s, c); } \
     static inline QString tr(const char *s, const char *c, int n) \
         { return staticMetaObject.tr(s, c, n); } \
@@ -108,7 +108,7 @@ class QString;
 // no QTextCodec, no utf8
 // ### Qt 5: merge overloads
 #  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0) \
+    static inline QString tr(const char *s, const char *c = nullptr) \
         { return staticMetaObject.tr(s, c); } \
     static inline QString tr(const char *s, const char *c, int n) \
         { return staticMetaObject.tr(s, c, n); }
@@ -263,7 +263,7 @@ class QMetaClassInfo;
 class Q_CORE_EXPORT QGenericArgument
 {
 public:
-    inline QGenericArgument(const char *aName = 0, const void *aData = 0)
+    inline QGenericArgument(const char *aName = nullptr, const void *aData = nullptr)
         : _data(aData), _name(aName) {}
     inline void *data() const { return const_cast<void *>(_data); }
     inline const char *name() const { return _name; }
@@ -276,7 +276,7 @@ private:
 class Q_CORE_EXPORT QGenericReturnArgument: public QGenericArgument
 {
 public:
-    inline QGenericReturnArgument(const char *aName = 0, void *aData = 0)
+    inline QGenericReturnArgument(const char *aName = nullptr, void *aData = nullptr)
         : QGenericArgument(aName, aData)
         {}
 };
@@ -357,7 +357,7 @@ struct Q_CORE_EXPORT QMetaObject
     // internal index-based connect
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
-                        int type = 0, int *types = 0);
+                        int type = 0, int *types = nullptr);
     // internal index-based disconnect
     static bool disconnect(const QObject *sender, int signal_index,
                            const QObject *receiver, int method_index);
@@ -380,7 +380,7 @@ struct Q_CORE_EXPORT QMetaObject
     static bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType,
                              QGenericReturnArgument ret,
-                             QGenericArgument val0 = QGenericArgument(0),
+                             QGenericArgument val0 = QGenericArgument(nullptr),
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -393,7 +393,7 @@ struct Q_CORE_EXPORT QMetaObject
 
     static inline bool invokeMethod(QObject *obj, const char *member,
                              QGenericReturnArgument ret,
-                             QGenericArgument val0 = QGenericArgument(0),
+                             QGenericArgument val0 = QGenericArgument(nullptr),
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -410,7 +410,7 @@ struct Q_CORE_EXPORT QMetaObject
 
     static inline bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType type,
-                             QGenericArgument val0 = QGenericArgument(0),
+                             QGenericArgument val0 = QGenericArgument(nullptr),
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -426,7 +426,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     static inline bool invokeMethod(QObject *obj, const char *member,
-                             QGenericArgument val0 = QGenericArgument(0),
+                             QGenericArgument val0 = QGenericArgument(nullptr),
                              QGenericArgument val1 = QGenericArgument(),
                              QGenericArgument val2 = QGenericArgument(),
                              QGenericArgument val3 = QGenericArgument(),
@@ -441,7 +441,7 @@ struct Q_CORE_EXPORT QMetaObject
                 val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
 
-    QObject *newInstance(QGenericArgument val0 = QGenericArgument(0),
+    QObject *newInstance(QGenericArgument val0 = QGenericArgument(nullptr),
                          QGenericArgument val1 = QGenericArgument(),
                          QGenericArgument val2 = QGenericArgument(),
                          QGenericArgument val3 = QGenericArgument(),
@@ -503,7 +503,7 @@ inline const QMetaObject *QMetaObject::superClass() const
 
 #ifdef QT3_SUPPORT
 inline const char *QMetaObject::superClassName() const
-{ return d.superdata ? d.superdata->className() : 0; }
+{ return d.superdata ? d.superdata->className() : nullptr; }
 #endif
 
 QT_END_NAMESPACE

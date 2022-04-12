@@ -247,7 +247,7 @@ public:
     QT3_SUPPORT void setEncoding(Encoding encoding);
 #endif
     inline QT3_SUPPORT QString read() { return readAll(); }
-    inline QT3_SUPPORT void unsetDevice() { setDevice(0); }
+    inline QT3_SUPPORT void unsetDevice() { setDevice(nullptr); }
 #endif
 
 private:
@@ -274,8 +274,8 @@ typedef void (QTextStream::*QTSMFC)(QChar); // manipulator w/QChar argument
 class Q_CORE_EXPORT QTextStreamManipulator
 {
 public:
-    QTextStreamManipulator(QTSMFI m, int a) { mf = m; mc = 0; arg = a; }
-    QTextStreamManipulator(QTSMFC m, QChar c) { mf = 0; mc = m; ch = c; arg = -1; }
+    QTextStreamManipulator(QTSMFI m, int a) { mf = m; mc = nullptr; arg = a; }
+    QTextStreamManipulator(QTSMFC m, QChar c) { mf = nullptr; mc = m; ch = c; arg = -1; }
     void exec(QTextStream &s) { if (mf) { (s.*mf)(arg); } else { (s.*mc)(ch); } }
 
 private:

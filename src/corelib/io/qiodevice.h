@@ -150,7 +150,7 @@ protected:
 #ifdef QT_NO_QOBJECT
     QIODevice(QIODevicePrivate &dd);
 #else
-    QIODevice(QIODevicePrivate &dd, QObject *parent = 0);
+    QIODevice(QIODevicePrivate &dd, QObject *parent = nullptr);
 #endif
     virtual qint64 readData(char *data, qint64 maxlen) = 0;
     virtual qint64 readLineData(char *data, qint64 maxlen);

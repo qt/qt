@@ -101,7 +101,8 @@ public:
 
     struct Q_CORE_EXPORT ConverterState {
         ConverterState(ConversionFlags f = DefaultConversion)
-            : flags(f), remainingChars(0), invalidChars(0), d(0) { state_data[0] = state_data[1] = state_data[2] = 0; }
+            : flags(f), remainingChars(0), invalidChars(0), d(nullptr)
+        { state_data[0] = state_data[1] = state_data[2] = 0; }
         ~ConverterState();
         ConversionFlags flags;
         int remainingChars;
@@ -136,7 +137,7 @@ protected:
 
 public:
 #ifdef QT3_SUPPORT
-    static QT3_SUPPORT QTextCodec* codecForContent(const char*, int) { return 0; }
+    static QT3_SUPPORT QTextCodec* codecForContent(const char*, int) { return nullptr; }
     static QT3_SUPPORT const char* locale();
     static QT3_SUPPORT QTextCodec* codecForName(const char* hint, int) { return codecForName(QByteArray(hint)); }
     QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut) const;
@@ -152,9 +153,9 @@ private:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
 
-        inline QTextCodec* QTextCodec::codecForTr() { return validCodecs() ? cftr : 0; }
+        inline QTextCodec* QTextCodec::codecForTr() { return validCodecs() ? cftr : nullptr; }
 inline void QTextCodec::setCodecForTr(QTextCodec *c) { cftr = c; }
-inline QTextCodec* QTextCodec::codecForCStrings() { return validCodecs() ? QString::codecForCStrings : 0; }
+inline QTextCodec* QTextCodec::codecForCStrings() { return validCodecs() ? QString::codecForCStrings : nullptr; }
 inline void QTextCodec::setCodecForCStrings(QTextCodec *c) { QString::codecForCStrings = c; }
 
 class Q_CORE_EXPORT QTextEncoder {

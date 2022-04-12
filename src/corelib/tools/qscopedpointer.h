@@ -90,7 +90,7 @@ class QScopedPointer
     typedef T *QScopedPointer:: *RestrictedBool;
 #endif
 public:
-    explicit inline QScopedPointer(T *p = 0) : d(p)
+    explicit inline QScopedPointer(T *p = nullptr) : d(p)
     {
     }
 
@@ -98,7 +98,7 @@ public:
     {
         T *oldD = this->d;
         Cleanup::cleanup(oldD);
-        this->d = 0;
+        this->d = nullptr;
     }
 
     inline T &operator*() const
@@ -121,12 +121,12 @@ public:
 #if defined(Q_CC_NOKIAX86) || defined(Q_QDOC)
     inline operator bool() const
     {
-        return isNull() ? 0 : &QScopedPointer::d;
+        return isNull() ? nullptr : &QScopedPointer::d;
     }
 #else
     inline operator RestrictedBool() const
     {
-        return isNull() ? 0 : &QScopedPointer::d;
+        return isNull() ? nullptr : &QScopedPointer::d;
     }
 #endif
 

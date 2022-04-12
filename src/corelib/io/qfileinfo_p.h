@@ -73,7 +73,7 @@ public:
            CachedSize =0x08, CachedPerms=0x80 };
 
     inline QFileInfoPrivate()
-        : QSharedData(), fileEngine(0),
+        : QSharedData(), fileEngine(nullptr),
         cachedFlags(0),
         isDefaultConstructed(true),
         cache_enabled(true), fileFlags(0), fileSize(0)

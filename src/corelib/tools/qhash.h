@@ -496,7 +496,7 @@ public:
 private:
     void detach_helper();
     void freeData(QHashData *d);
-    Node **findNode(const Key &key, uint *hp = 0) const;
+    Node **findNode(const Key &key, uint *hp = nullptr) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
     static void deleteNode2(QHashData::Node *node);

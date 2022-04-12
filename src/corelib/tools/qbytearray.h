@@ -293,16 +293,16 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>=(const QString &s2) const;
 #endif
 
-    short toShort(bool *ok = 0, int base = 10) const;
-    ushort toUShort(bool *ok = 0, int base = 10) const;
-    int toInt(bool *ok = 0, int base = 10) const;
-    uint toUInt(bool *ok = 0, int base = 10) const;
-    long toLong(bool *ok = 0, int base = 10) const;
-    ulong toULong(bool *ok = 0, int base = 10) const;
-    qlonglong toLongLong(bool *ok = 0, int base = 10) const;
-    qulonglong toULongLong(bool *ok = 0, int base = 10) const;
-    float toFloat(bool *ok = 0) const;
-    double toDouble(bool *ok = 0) const;
+    short toShort(bool *ok = nullptr, int base = 10) const;
+    ushort toUShort(bool *ok = nullptr, int base = 10) const;
+    int toInt(bool *ok = nullptr, int base = 10) const;
+    uint toUInt(bool *ok = nullptr, int base = 10) const;
+    long toLong(bool *ok = nullptr, int base = 10) const;
+    ulong toULong(bool *ok = nullptr, int base = 10) const;
+    qlonglong toLongLong(bool *ok = nullptr, int base = 10) const;
+    qulonglong toULongLong(bool *ok = nullptr, int base = 10) const;
+    float toFloat(bool *ok = nullptr) const;
+    double toDouble(bool *ok = nullptr) const;
     QByteArray toBase64() const;
     QByteArray toHex() const;
     QByteArray toPercentEncoding(const QByteArray &exclude = QByteArray(),

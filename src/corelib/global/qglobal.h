@@ -2002,7 +2002,7 @@ Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
 #ifdef QT3_SUPPORT
 inline QT3_SUPPORT void qSuppressObsoleteWarnings(bool = true) {}
-inline QT3_SUPPORT void qObsolete(const char *, const char * = 0, const char * = 0) {}
+inline QT3_SUPPORT void qObsolete(const char *, const char * = nullptr, const char * = nullptr) {}
 #endif
 
 #if defined(QT_NO_THREAD)
@@ -2013,7 +2013,7 @@ class QGlobalStatic
 public:
     T *pointer;
     inline QGlobalStatic(T *p) : pointer(p) { }
-    inline ~QGlobalStatic() { pointer = 0; }
+    inline ~QGlobalStatic() { pointer = nullptr; }
 };
 
 #define Q_GLOBAL_STATIC(TYPE, NAME)                                  \
@@ -2071,14 +2071,14 @@ public:
     inline ~QGlobalStaticDeleter()
     {
         delete globalStatic.pointer;
-        globalStatic.pointer = 0;
+        globalStatic.pointer = nullptr;
         globalStatic.destroyed = true;
     }
 };
 
 #define Q_GLOBAL_STATIC_INIT(TYPE, NAME)                                      \
         static QGlobalStatic<TYPE > this_ ## NAME                             \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false }
+                            = { Q_BASIC_ATOMIC_INITIALIZER(nullptr), false }
 
 #define Q_GLOBAL_STATIC(TYPE, NAME)                                           \
     static TYPE *NAME()                                                       \
@@ -2086,7 +2086,7 @@ public:
         Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
         if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
             TYPE *x = new TYPE;                                               \
-            if (!this__StaticVar_.pointer.testAndSetOrdered(0, x))            \
+            if (!this__StaticVar_.pointer.testAndSetOrdered(nullptr, x))            \
                 delete x;                                                     \
             else                                                              \
                 static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \

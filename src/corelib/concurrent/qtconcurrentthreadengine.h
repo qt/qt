@@ -140,7 +140,7 @@ class ThreadEngine : public virtual ThreadEngineBase
 public:
     typedef T ResultType;
 
-    virtual T *result() { return 0; }
+    virtual T *result() { return nullptr; }
 
     QFutureInterface<T> *futureInterfaceTyped()
     {

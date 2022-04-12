@@ -73,7 +73,7 @@ public:
     int dayOfYear() const;
     int daysInMonth() const;
     int daysInYear() const;
-    int weekNumber(int *yearNum = 0) const;
+    int weekNumber(int *yearNum = nullptr) const;
 
 #ifndef QT_NO_TEXTDATE
 #ifdef QT3_SUPPORT
