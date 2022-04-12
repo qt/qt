@@ -128,6 +128,7 @@ private:
     bool   m_widthPercent;
     bool   m_heightPercent;
 
+    mutable bool m_implicitViewBox = true;
     mutable QRectF m_viewBox;
 
     QHash<QString, QSvgRefCounter<QSvgFont> > m_fonts;
@@ -175,8 +176,10 @@ inline bool QSvgTinyDocument::heightPercent() const
 
 inline QRectF QSvgTinyDocument::viewBox() const
 {
-    if (m_viewBox.isNull())
+    if (m_viewBox.isNull()) {
         m_viewBox = transformedBounds();
+        m_implicitViewBox = true;
+    }
 
     return m_viewBox;
 }

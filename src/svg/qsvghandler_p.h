@@ -124,7 +124,7 @@ public:
     void setAnimPeriod(int start, int end);
     int animationDuration() const;
 
-    void parseCSStoXMLAttrs(QString css, QVector<QSvgCssAttribute> *attributes);
+    void parseCSStoXMLAttrs(const QString &css, QVector<QSvgCssAttribute> *attributes);
 
     inline QPen defaultPen() const
     { return m_defaultPen; }

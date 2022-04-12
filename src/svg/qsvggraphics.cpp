@@ -45,11 +45,12 @@
 
 #include "qsvgfont_p.h"
 
-#include "qpainter.h"
-#include "qtextdocument.h"
-#include "qabstracttextdocumentlayout.h"
-#include "qtextcursor.h"
-#include "qdebug.h"
+#include <qabstracttextdocumentlayout.h>
+#include <qdebug.h>
+#include <qpainter.h>
+#include <qscopedvaluerollback.h>
+#include <qtextcursor.h>
+#include <qtextdocument.h>
 
 #include <math.h>
 #include <limits.h>
@@ -463,14 +464,14 @@ void QSvgText::addText(const QString &text)
 }
 
 QSvgUse::QSvgUse(const QPointF &start, QSvgNode *parent, QSvgNode *node)
-    : QSvgNode(parent), m_link(node), m_start(start)
+    : QSvgNode(parent), m_link(node), m_start(start), m_recursing(false)
 {
 
 }
 
 void QSvgUse::draw(QPainter *p, QSvgExtraStates &states)
 {
-    if (Q_UNLIKELY(!m_link || isDescendantOf(m_link)))
+    if (Q_UNLIKELY(!m_link || isDescendantOf(m_link) || m_recursing))
         return;
 
     applyStyle(p, states);
@@ -478,7 +479,11 @@ void QSvgUse::draw(QPainter *p, QSvgExtraStates &states)
     if (!m_start.isNull()) {
         p->translate(m_start);
     }
-    m_link->draw(p, states);
+    {
+        QScopedValueRollback<bool> guard(m_recursing);
+        m_recursing = true;
+        m_link->draw(p, states);
+    }
     if (!m_start.isNull()) {
         p->translate(-m_start);
     }
@@ -561,7 +566,9 @@ QSvgNode::Type QSvgVideo::type() const
 QRectF QSvgUse::bounds(QPainter *p, QSvgExtraStates &states) const
 {
     QRectF bounds;
-    if (Q_LIKELY(m_link && !isDescendantOf(m_link))) {
+    if (Q_LIKELY(m_link && !isDescendantOf(m_link) && !m_recursing)) {
+        QScopedValueRollback<bool> guard(m_recursing);
+        m_recursing = true;
         p->translate(m_start);
         bounds = m_link->transformedBounds(p, states);
         p->translate(-m_start);

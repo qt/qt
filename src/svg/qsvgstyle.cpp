@@ -130,7 +130,7 @@ void QSvgFillStyle::setFillStyle(QSvgFillStyleProperty* style)
 
 void QSvgFillStyle::setBrush(QBrush brush)
 {
-    m_fill = brush;
+    m_fill = std::move(brush);
     m_style = 0;
     m_fillSet = 1;
 }
@@ -937,13 +937,20 @@ void QSvgGradientStyle::setStopLink(const QString &link, QSvgTinyDocument *doc)
 
 void QSvgGradientStyle::resolveStops()
 {
+    QStringList visited;
+    resolveStops_helper(&visited);
+}
+
+void QSvgGradientStyle::resolveStops_helper(QStringList *visited)
+{
     if (!m_link.isEmpty() && m_doc) {
         QSvgStyleProperty *prop = m_doc->styleProperty(m_link);
-        if (prop && prop != this) {
+        if (prop && !visited->contains(m_link)) {
+            visited->append(m_link);
             if (prop->type() == QSvgStyleProperty::GRADIENT) {
                 QSvgGradientStyle *st =
                     static_cast<QSvgGradientStyle*>(prop);
-                st->resolveStops();
+                st->resolveStops_helper(visited);
                 m_gradient->setStops(st->qgradient()->stops());
                 m_gradientStopsSet = st->gradientStopsSet();
             }

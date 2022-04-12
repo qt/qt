@@ -345,7 +345,7 @@ QSvgNode::DisplayMode QSvgNode::displayMode() const
 
 qreal QSvgNode::strokeWidth(QPainter *p)
 {
-    QPen pen = p->pen();
+    const QPen &pen = p->pen();
     if (pen.style() == Qt::NoPen || pen.brush().style() == Qt::NoBrush || pen.isCosmetic())
         return 0;
     return pen.widthF();

@@ -81,6 +81,8 @@ private slots:
     void boundsOnElement() const;
     void gradientStops() const;
     void gradientRefs();
+    void recursiveRefs_data();
+    void recursiveRefs();
     void fillRule();
     void opacity();
     void paths();
@@ -248,6 +250,15 @@ void tst_QSvgRenderer::testMapViewBoxToTarget()
         QCOMPARE(picture.boundingRect(), QRect(125, 125, 250, 250));
     }
 
+    { // Viewport and viewBox specified -> scale 500x500 square to 1000x750 while preserving aspect ratio gives 750x750
+        data = "<svg width=\"1000\" height=\"750\" viewBox=\"-250 -250 500 500\"><g><rect x=\"0\" y=\"0\" width=\"500\" height=\"500\" /></g></svg>";
+        QPicture picture;
+        QPainter painter(&picture);
+        QSvgRenderer rend(data);
+        rend.render(&painter);
+        painter.end();
+        QCOMPARE(picture.boundingRect(), QRect(500, 375, 750, 750));
+    }
 }
 
 void tst_QSvgRenderer::testRenderElement()
@@ -654,6 +665,44 @@ void tst_QSvgRenderer::gradientRefs()
         QVERIFY((qAbs(qAlpha(mid) - 127) < 3) && (qAbs(qRed(mid) - 63) < 4) && (qGreen(mid) == 0) && (qAbs(qBlue(mid) - 63) < 4));
         QVERIFY((qAlpha(right) > 253) && (qRed(right) < 3) && (qGreen(right) == 0) && (qBlue(right) > 251));
     }
+}
+
+
+void tst_QSvgRenderer::recursiveRefs_data()
+{
+    QTest::addColumn<QByteArray>("svg");
+
+    QTest::newRow("single") << QByteArray("<svg>"
+                                          "<linearGradient id='0' xlink:href='#0'/>"
+                                          "<rect x='0' y='0' width='20' height='20' fill='url(#0)'/>"
+                                          "</svg>");
+
+    QTest::newRow("double") << QByteArray("<svg>"
+                                          "<linearGradient id='0' xlink:href='#1'/>"
+                                          "<linearGradient id='1' xlink:href='#0'/>"
+                                          "<rect x='0' y='0' width='20' height='20' fill='url(#0)'/>"
+                                          "</svg>");
+
+    QTest::newRow("triple") << QByteArray("<svg>"
+                                          "<linearGradient id='0' xlink:href='#1'/>"
+                                          "<linearGradient id='1' xlink:href='#2'/>"
+                                          "<linearGradient id='2' xlink:href='#0'/>"
+                                          "<rect x='0' y='0' width='20' height='20' fill='url(#0)'/>"
+                                          "</svg>");
+}
+
+void tst_QSvgRenderer::recursiveRefs()
+{
+    QFETCH(QByteArray, svg);
+
+    QImage image(20, 20, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::green);
+    QImage refImage = image.copy();
+
+    QSvgRenderer renderer(svg);
+    QPainter painter(&image);
+    renderer.render(&painter);
+    QCOMPARE(image, refImage);
 }
 
 
@@ -1366,6 +1415,16 @@ void tst_QSvgRenderer::testUseElement()
         "   <circle fill=\"#a6ce39\" cx=\"0\" cy=\"0\" r=\"33\" />"
         "  </g>"
         " </defs>"
+        "</svg>",
+        // 17 - Indirect self referral
+        "<svg>"
+        " <defs>"
+        "   <g id=\"g0\">"
+        "     <g id=\"g1\"><use href=\"#g2\"/></g>"
+        "     <g id=\"g2\"><use href=\"#g1\"/></g>"
+        "   </g>"
+        " </defs>"
+        " <use xlink:href=\"#g0\" fill=\"black\"/>"
         "</svg>"
     };
 

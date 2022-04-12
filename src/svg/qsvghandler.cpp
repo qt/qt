@@ -748,21 +748,31 @@ static QVector<qreal> parsePercentageList(const QChar *&str)
 
 static QString idFromUrl(const QString &url)
 {
+    // The form is url(<IRI>), where IRI can be
+    // just an ID on #<id> form.
     QString::const_iterator itr = url.constBegin();
     QString::const_iterator end = url.constEnd();
+    QString id;
     while (itr != end && (*itr).isSpace())
         ++itr;
     if (itr != end && (*itr) == QLatin1Char('('))
         ++itr;
+    else
+        return QString();
     while (itr != end && (*itr).isSpace())
         ++itr;
-    if (itr != end && (*itr) == QLatin1Char('#'))
+    if (itr != end && (*itr) == QLatin1Char('#')) {
+        id += *itr;
         ++itr;
-    QString id;
+    } else {
+        return QString();
+    }
     while (itr != end && (*itr) != QLatin1Char(')')) {
         id += *itr;
         ++itr;
     }
+    if (itr == end || (*itr) != QLatin1Char(')'))
+        return QString();
     return id;
 }
 
@@ -1947,7 +1957,7 @@ static void parseCSStoXMLAttrs(const QVector<QCss::Declaration> &declarations,
     }
 }
 
-void QSvgHandler::parseCSStoXMLAttrs(QString css, QVector<QSvgCssAttribute> *attributes)
+void QSvgHandler::parseCSStoXMLAttrs(const QString &css, QVector<QSvgCssAttribute> *attributes)
 {
     // preprocess (for unicode escapes), tokenize and remove comments
     m_cssParser.init(css);
@@ -2574,17 +2584,17 @@ static QSvgStyleProperty *createFontNode(QSvgNode *parent,
         parent = parent->parent();
     }
 
-    if (parent) {
+    if (parent && !myId.isEmpty()) {
         QSvgTinyDocument *doc = static_cast<QSvgTinyDocument*>(parent);
-        QSvgFont *font = new QSvgFont(horizAdvX);
-        font->setFamilyName(myId);
-        if (!font->familyName().isEmpty()) {
-            if (!doc->svgFont(font->familyName()))
-                doc->addSvgFont(font);
+        QSvgFont *font = doc->svgFont(myId);
+        if (!font) {
+            font = new QSvgFont(horizAdvX);
+            font->setFamilyName(myId);
+            doc->addSvgFont(font);
         }
         return new QSvgFontStyle(font, doc);
     }
-    return 0;
+    return nullptr;
 }
 
 static bool parseFontFaceNode(QSvgStyleProperty *parent,

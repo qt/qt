@@ -343,6 +343,7 @@ void QSvgTinyDocument::setHeight(int len, bool percent)
 void QSvgTinyDocument::setViewBox(const QRectF &rect)
 {
     m_viewBox = rect;
+    m_implicitViewBox = rect.isNull();
 }
 
 void QSvgTinyDocument::addSvgFont(QSvgFont *font)
@@ -367,7 +368,10 @@ QSvgNode *QSvgTinyDocument::namedNode(const QString &id) const
 
 void QSvgTinyDocument::addNamedStyle(const QString &id, QSvgFillStyleProperty *style)
 {
-    m_namedStyles.insert(id, style);
+    if (!m_namedStyles.contains(id))
+        m_namedStyles.insert(id, style);
+    else
+        qWarning() << "Duplicate unique style id:" << id;
 }
 
 QSvgFillStyleProperty *QSvgTinyDocument::namedStyle(const QString &id) const
@@ -421,14 +425,35 @@ void QSvgTinyDocument::mapSourceToTarget(QPainter *p, const QRectF &targetRect, 
         source = viewBox();
 
     if (source != target && !source.isNull()) {
-        QTransform transform;
-        transform.scale(target.width() / source.width(),
-                  target.height() / source.height());
-        QRectF c2 = transform.mapRect(source);
-        p->translate(target.x() - c2.x(),
-                     target.y() - c2.y());
-        p->scale(target.width() / source.width(),
-                 target.height() / source.height());
+        if (m_implicitViewBox) {
+            QTransform transform;
+            transform.scale(target.width() / source.width(),
+                            target.height() / source.height());
+            QRectF c2 = transform.mapRect(source);
+            p->translate(target.x() - c2.x(),
+                         target.y() - c2.y());
+            p->scale(target.width() / source.width(),
+                     target.height() / source.height());
+        } else {
+            // Code path used when a view box is specified and we're not rendering a specific element by id
+            // but the entire document. This attempts to emulate the default values of the <preserveAspectRatio>
+            // tag that's implicitly defined when <viewbox> is used.
+
+            // Scale the view box into the view port (target) by preserve the aspect ratio.
+            QSizeF viewBoxSize = source.size();
+            viewBoxSize.scale(target.width(), target.height(), Qt::KeepAspectRatio);
+
+            // Center the view box in the view port
+            p->translate((target.width() - viewBoxSize.width()) / 2,
+                         (target.height() - viewBoxSize.height()) / 2);
+
+            p->scale(viewBoxSize.width() / source.width(),
+                     viewBoxSize.height() / source.height());
+
+            // Apply the view box translation if specified.
+            p->translate(target.x() - source.x(),
+                         target.y() - source.y());
+        }
     }
 }
 

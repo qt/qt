@@ -255,6 +255,7 @@ private:
     QSvgNode *m_link;
     QPointF   m_start;
     QString   m_linkId;
+    mutable bool m_recursing;
 };
 
 class QSvgVideo : public QSvgNode
