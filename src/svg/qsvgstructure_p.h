@@ -81,6 +81,7 @@ protected:
     QList<QSvgNode*>          m_renderers;
     QHash<QString, QSvgNode*> m_scope;
     QList<QSvgStructureNode*> m_linkedScopes;
+    mutable bool              m_recursing = false;
 };
 
 class QSvgG : public QSvgStructureNode

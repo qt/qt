@@ -1499,13 +1499,19 @@ static void pathArc(QPainterPath &path,
                     qreal               y,
                     qreal curx, qreal cury)
 {
+    const qreal Pr1 = rx * rx;
+    const qreal Pr2 = ry * ry;
+
+    if (!Pr1 || !Pr2)
+        return;
+
     qreal sin_th, cos_th;
     qreal a00, a01, a10, a11;
     qreal x0, y0, x1, y1, xc, yc;
     qreal d, sfactor, sfactor_sq;
     qreal th0, th1, th_arc;
     int i, n_segs;
-    qreal dx, dy, dx1, dy1, Pr1, Pr2, Px, Py, check;
+    qreal dx, dy, dx1, dy1, Px, Py, check;
 
     rx = qAbs(rx);
     ry = qAbs(ry);
@@ -1517,8 +1523,6 @@ static void pathArc(QPainterPath &path,
     dy = (cury - y) / 2.0;
     dx1 =  cos_th * dx + sin_th * dy;
     dy1 = -sin_th * dx + cos_th * dy;
-    Pr1 = rx * rx;
-    Pr2 = ry * ry;
     Px = dx1 * dx1;
     Py = dy1 * dy1;
     /* Spec : check if radii are large enough */
@@ -1542,6 +1546,8 @@ static void pathArc(QPainterPath &path,
        The arc fits a unit-radius circle in this space.
     */
     d = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
+    if (!d)
+        return;
     sfactor_sq = 1.0 / d - 0.25;
     if (sfactor_sq < 0) sfactor_sq = 0;
     sfactor = qSqrt(sfactor_sq);
@@ -3031,17 +3037,27 @@ static QSvgNode *createRectNode(QSvgNode *parent,
     QString rx      = attributes.value(QLatin1String("rx")).toString();
     QString ry      = attributes.value(QLatin1String("ry")).toString();
 
+    bool ok = true;
     QSvgHandler::LengthType type;
-    qreal nwidth = parseLength(width, type, handler);
-    nwidth = convertToPixels(nwidth, true, type);
+    qreal nwidth = parseLength(width, type, handler, &ok);
+    if (!ok)
+        return nullptr;
 
-    qreal nheight = parseLength(height, type, handler);
+    qreal nheight = parseLength(height, type, handler, &ok);
+    if (!ok)
+        return nullptr;
     nheight = convertToPixels(nheight, true, type);
     qreal nrx = toDouble(rx);
     qreal nry = toDouble(ry);
 
-    QRectF bounds(toDouble(x), toDouble(y),
-                  nwidth, nheight);
+    QRectF bounds(toDouble(x), toDouble(y), nwidth, nheight);
+    if (bounds.isEmpty())
+        return nullptr;
+
+    if (!rx.isEmpty() && ry.isEmpty())
+        nry = nrx;
+    else if (!ry.isEmpty() && rx.isEmpty())
+        nrx = nry;
 
     //9.2 The 'rect'  element clearly specifies it
     // but the case might in fact be handled because
@@ -3050,11 +3066,6 @@ static QSvgNode *createRectNode(QSvgNode *parent,
         nrx = bounds.width()/2;
     if (nry > bounds.height()/2)
         nry = bounds.height()/2;
-
-    if (!rx.isEmpty() && ry.isEmpty())
-        nry = nrx;
-    else if (!ry.isEmpty() && rx.isEmpty())
-        nrx = nry;
 
     //we draw rounded rect from 0...99
     //svg from 0...bounds.width()/2 so we're adjusting the
@@ -3600,12 +3611,17 @@ void QSvgHandler::init()
     parse();
 }
 
+// Having too many unfinished elements will cause a stack overflow
+// in the dtor of QSvgTinyDocument, see oss-fuzz issue 24000.
+static const int unfinishedElementsLimit = 2048;
+
 void QSvgHandler::parse()
 {
     xml->setNamespaceProcessing(false);
     m_selector = new QSvgStyleSelector;
     m_inStyle = false;
     bool done = false;
+    int remainingUnfinishedElements = unfinishedElementsLimit;
     while (!xml->atEnd() && !done) {
         switch (xml->readNext()) {
         case QXmlStreamReader::StartElement:
@@ -3617,7 +3633,10 @@ void QSvgHandler::parse()
             // namespaceUri is empty. The only possible strategy at
             // this point is to do what everyone else seems to do and
             // ignore the reported namespaceUri completely.
-            if (!startElement(xml->name().toString(), xml->attributes())) {
+            if (remainingUnfinishedElements
+                    && startElement(xml->name().toString(), xml->attributes())) {
+                --remainingUnfinishedElements;
+            } else {
                 delete m_doc;
                 m_doc = 0;
                 return;
@@ -3625,6 +3644,7 @@ void QSvgHandler::parse()
             break;
         case QXmlStreamReader::EndElement:
             endElement(xml->name());
+            ++remainingUnfinishedElements;
             // if we are using somebody else's qxmlstreamreader
             // we should not read until the end of the stream
             done = !m_ownsReader && (xml->name() == QLatin1String("svg"));

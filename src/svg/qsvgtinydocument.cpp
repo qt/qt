@@ -143,8 +143,7 @@ QByteArray qt_inflateGZipDataFrom(QIODevice *device)
                     inflateEnd(&zlibStream);
                     qWarning("Error while inflating gzip file: %s",
                             (zlibStream.msg != NULL ? zlibStream.msg : "Unknown error"));
-                    destination.chop(zlibStream.avail_out);
-                    return destination;
+                    return QByteArray();;
                 }
             }
 
@@ -159,11 +158,8 @@ QByteArray qt_inflateGZipDataFrom(QIODevice *device)
         }
     }
 
-    // Chop off trailing space in the buffer
-    destination.chop(zlibStream.avail_out);
-
     inflateEnd(&zlibStream);
-    return destination;
+    return QByteArray();
 }
 #endif
 
@@ -202,7 +198,10 @@ QSvgTinyDocument * QSvgTinyDocument::load(const QByteArray &contents)
     // Check for gzip magic number and inflate if appropriate
     if (contents.startsWith("\x1f\x8b")) {
         QBuffer buffer(const_cast<QByteArray *>(&contents));
-        return load(qt_inflateGZipDataFrom(&buffer));
+        const QByteArray inflated = qt_inflateGZipDataFrom(&buffer);
+        if (inflated.isNull())
+            return nullptr;
+        return load(inflated);
     }
 #endif
 
@@ -222,7 +221,7 @@ QSvgTinyDocument * QSvgTinyDocument::load(QXmlStreamReader *contents)
 {
     QSvgHandler handler(contents);
 
-    QSvgTinyDocument *doc = 0;
+    QSvgTinyDocument *doc = nullptr;
     if (handler.ok()) {
         doc = handler.document();
         doc->m_animationDuration = handler.animationDuration();
@@ -407,11 +406,11 @@ void QSvgTinyDocument::draw(QPainter *p, QSvgExtraStates &)
 void QSvgTinyDocument::mapSourceToTarget(QPainter *p, const QRectF &targetRect, const QRectF &sourceRect)
 {
     QRectF target = targetRect;
-    if (target.isNull()) {
+    if (target.isEmpty()) {
         QPaintDevice *dev = p->device();
         QRectF deviceRect(0, 0, dev->width(), dev->height());
-        if (deviceRect.isNull()) {
-            if (sourceRect.isNull())
+        if (deviceRect.isEmpty()) {
+            if (sourceRect.isEmpty())
                 target = QRectF(QPointF(0, 0), size());
             else
                 target = QRectF(QPointF(0, 0), sourceRect.size());
@@ -421,11 +420,14 @@ void QSvgTinyDocument::mapSourceToTarget(QPainter *p, const QRectF &targetRect, 
     }
 
     QRectF source = sourceRect;
-    if (source.isNull())
+    if (source.isEmpty())
         source = viewBox();
 
-    if (source != target && !source.isNull()) {
-        if (m_implicitViewBox) {
+    if (source != target && !qFuzzyIsNull(source.width()) && !qFuzzyIsNull(source.height())) {
+        if (m_implicitViewBox || !sourceRect.isNull() || !targetRect.isNull()) {
+            // Code path used when no view box is set, or when an explicit source size is given which
+            // overrides it (which is the case when we're rendering only a specific element by id),
+            // or when user has given explicit target bounds that overrides viebox aspect ratio
             QTransform transform;
             transform.scale(target.width() / source.width(),
                             target.height() / source.height());
@@ -444,15 +446,14 @@ void QSvgTinyDocument::mapSourceToTarget(QPainter *p, const QRectF &targetRect, 
             viewBoxSize.scale(target.width(), target.height(), Qt::KeepAspectRatio);
 
             // Center the view box in the view port
-            p->translate((target.width() - viewBoxSize.width()) / 2,
-                         (target.height() - viewBoxSize.height()) / 2);
+            p->translate(target.x() + (target.width() - viewBoxSize.width()) / 2,
+                         target.y() + (target.height() - viewBoxSize.height()) / 2);
 
             p->scale(viewBoxSize.width() / source.width(),
                      viewBoxSize.height() / source.height());
 
             // Apply the view box translation if specified.
-            p->translate(target.x() - source.x(),
-                         target.y() - source.y());
+            p->translate(-source.x(), -source.y());
         }
     }
 }

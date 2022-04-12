@@ -402,10 +402,10 @@ void QSvgRenderer::render(QPainter *painter, const QString &elementId,
 }
 
 /*!
-    Renders the current document, or the current frame of an animated
-    document, using the given \a painter on the specified \a bounds within
-    the painter.  If the bounding rectangle is not specified
-    the SVG file is mapped to the whole paint device.
+    Renders the current document, or the current frame of an animated document,
+    using the given \a painter on the specified \a bounds within the painter.
+    If \a bounds is not empty, the output will be scaled to fill it, ignoring
+    any aspect ratio implied by the SVG.
 */
 void QSvgRenderer::render(QPainter *painter, const QRectF &bounds)
 {

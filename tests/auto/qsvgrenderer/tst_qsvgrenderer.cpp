@@ -73,6 +73,8 @@ private slots:
     void testStrokeWidth();
     void testMapViewBoxToTarget();
     void testRenderElement();
+    void testRenderElementToBounds();
+    void testRenderDocumentWithSizeToBounds();
     void constructorQXmlStreamReader() const;
     void loadQXmlStreamReader() const;
     void nestedQXmlStreamReader() const;
@@ -92,6 +94,8 @@ private slots:
     void testStopOffsetOpacity();
     void testUseElement();
     void smallFont();
+    void oss_fuzz_23731();
+    void oss_fuzz_24738();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -316,6 +320,71 @@ void tst_QSvgRenderer::testRenderElement()
         QCOMPARE(picture.boundingRect(), QRect(0, 0, 100, 100));
     }
 
+}
+
+void tst_QSvgRenderer::testRenderElementToBounds()
+{
+    // QTBUG-79933
+    QImage reference(400, 200, QImage::Format_ARGB32);
+    {
+        reference.fill(Qt::transparent);
+        QPainter p(&reference);
+        p.fillRect(  0,   0, 200, 100, Qt::blue);
+        p.fillRect(200, 100, 200, 100, Qt::blue);
+        p.fillRect(  0,   0, 100,  50, Qt::red);
+        p.fillRect(100,  50, 100,  50, Qt::red);
+        p.fillRect(200, 100, 100,  50, Qt::red);
+        p.fillRect(300, 150, 100,  50, Qt::red);
+    }
+
+    QImage rendering(400, 200, QImage::Format_ARGB32);
+    {
+        const char *const src =
+                "<svg viewBox=\"0 0 100 100\">" // Presence of a viewBox triggered QTBUG-79933
+                "<path id=\"el1\" d=\"M 80,10 H 0 V 0 h 40 v 20 h 40 z\" fill=\"red\" />"
+                "<path id=\"el2\" d=\"M 90,100 V 20 h 10 V 60 H 80 v 40 z\" fill=\"blue\" />"
+                "</svg>";
+        const QByteArray data(src);
+        QSvgRenderer rend(data);
+        rendering.fill(Qt::transparent);
+        QPainter p(&rendering);
+        rend.render(&p, "el1", QRectF(  0,   0, 200, 100));
+        rend.render(&p, "el2", QRectF(  0,   0, 200, 100));
+        rend.render(&p, "el1", QRectF(200, 100, 200, 100));
+        rend.render(&p, "el2", QRectF(200, 100, 200, 100));
+    }
+
+    QCOMPARE(reference, rendering);
+}
+
+void tst_QSvgRenderer::testRenderDocumentWithSizeToBounds()
+{
+    // QTBUG-80888
+    QImage reference(400, 200, QImage::Format_ARGB32);
+    {
+        reference.fill(Qt::transparent);
+        QPainter p(&reference);
+        p.fillRect(100, 100, 100,  50, Qt::blue);
+        p.fillRect(200,  50, 100,  50, Qt::blue);
+    }
+
+    QImage rendering(400, 200, QImage::Format_ARGB32);
+    {
+        const char *const src = R"src(
+        <svg width="20" height="80">
+            <g transform="translate(-100,-100)">
+                <path d="m 110,180 v -80 h 10 v 40 h -20 v 40 z" fill="blue" />
+            </g>
+        </svg>
+        )src";
+        const QByteArray data(src);
+        QSvgRenderer rend(data);
+        rendering.fill(Qt::transparent);
+        QPainter p(&rendering);
+        rend.render(&p, QRectF(100, 50, 200, 100));
+    }
+
+    QCOMPARE(reference, rendering);
 }
 
 void tst_QSvgRenderer::constructorQXmlStreamReader() const
@@ -750,10 +819,9 @@ void tst_QSvgRenderer::testGzHelper_data()
             "cbcfe70200a865327e040000001f8b08001c2a934800034b4a2ce20200e9b3a20404000000"))
         << QByteArray("foo\nbar\n");
 
-    // We should still get data of the first member if subsequent members are corrupt
     QTest::newRow("corruptedSecondMember") << QByteArray::fromHex(QByteArray("1f8b08001c2a934800034b"
             "cbcfe70200a865327e040000001f8c08001c2a934800034b4a2ce20200e9b3a20404000000"))
-        << QByteArray("foo\n");
+        << QByteArray();
 
 }
 
@@ -1484,6 +1552,20 @@ void tst_QSvgRenderer::smallFont()
         p.end();
     }
     QVERIFY(images[0] != images[1]);
+}
+
+void tst_QSvgRenderer::oss_fuzz_23731()
+{
+    // when configured with "-sanitize undefined", this resulted in:
+    // "runtime error: division by zero"
+    QSvgRenderer().load(QByteArray("<svg><path d=\"A4------\">"));
+}
+
+void tst_QSvgRenderer::oss_fuzz_24738()
+{
+    // when configured with "-sanitize undefined", this resulted in:
+    // "runtime error: division by zero"
+    QSvgRenderer().load(QByteArray("<svg><path d=\"a 2 1e-212.....\">"));
 }
 
 QTEST_MAIN(tst_QSvgRenderer)
