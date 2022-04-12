@@ -107,13 +107,13 @@ class QSvgImage : public QSvgNode
 {
 public:
     QSvgImage(QSvgNode *parent, const QImage &image,
-              const QRect &bounds);
+              const QRectF &bounds);
     void draw(QPainter *p, QSvgExtraStates &states) override;
     Type type() const override;
     QRectF bounds(QPainter *p, QSvgExtraStates &states) const override;
 private:
     QImage m_image;
-    QRect  m_bounds;
+    QRectF m_bounds;
 };
 
 class QSvgLine : public QSvgNode

@@ -125,14 +125,14 @@ void QSvgArc::draw(QPainter *p, QSvgExtraStates &states)
 }
 
 QSvgImage::QSvgImage(QSvgNode *parent, const QImage &image,
-                     const QRect &bounds)
+                     const QRectF &bounds)
     : QSvgNode(parent), m_image(image),
       m_bounds(bounds)
 {
-    if (m_bounds.width() == 0)
-        m_bounds.setWidth(m_image.width());
-    if (m_bounds.height() == 0)
-        m_bounds.setHeight(m_image.height());
+    if (m_bounds.width() == 0.0)
+        m_bounds.setWidth(static_cast<qreal>(m_image.width()));
+    if (m_bounds.height() == 0.0)
+        m_bounds.setHeight(static_cast<qreal>(m_image.height()));
 }
 
 void QSvgImage::draw(QPainter *p, QSvgExtraStates &states)

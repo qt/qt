@@ -61,6 +61,8 @@
 #include "qvector.h"
 #include "qfileinfo.h"
 #include "qfile.h"
+#include "qdir.h"
+#include "qurl.h"
 #include "qdebug.h"
 #include "qmath.h"
 #include "qnumeric.h"
@@ -1567,7 +1569,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
     const QChar *end = str + dataStr.size();
 
     while (str != end) {
-        while (str->isSpace())
+        while (str->isSpace() && (str + 1) != end)
             ++str;
         QChar pathElem = *str;
         ++str;
@@ -2732,17 +2734,27 @@ static QSvgNode *createImageNode(QSvgNode *parent,
         int idx = filename.lastIndexOf(QLatin1String("base64,"));
         if (idx != -1) {
             idx += 7;
-            QString dataStr = filename.mid(idx);
+            const QString dataStr = filename.mid(idx);
             QByteArray data = QByteArray::fromBase64(dataStr.toAscii());
             image = QImage::fromData(data);
         } else {
             qDebug()<<"QSvgHandler::createImageNode: Unrecognized inline image format!";
         }
-    } else
+    } else {
+        const auto *file = qobject_cast<QFile *>(handler->device());
+        if (file) {
+            QUrl url(filename);
+            if (url.isRelative()) {
+                QFileInfo info(file->fileName());
+                filename = info.absoluteDir().absoluteFilePath(filename);
+            }
+        }
         image = QImage(filename);
+    }
+
 
     if (image.isNull()) {
-        qDebug()<<"couldn't create image from "<<filename;
+        qDebug() << "Could not create image from " << filename;
         return 0;
     }
 
@@ -2751,10 +2763,10 @@ static QSvgNode *createImageNode(QSvgNode *parent,
 
     QSvgNode *img = new QSvgImage(parent,
                                   image,
-                                  QRect(int(nx),
-                                        int(ny),
-                                        int(nwidth),
-                                        int(nheight)));
+                                  QRectF(nx,
+                                        ny,
+                                        nwidth,
+                                        nheight));
     return img;
 }
 
@@ -3667,12 +3679,17 @@ bool QSvgHandler::startElement(const QString &localName,
             }
                 break;
             default:
+                qWarning("Could not add child element to parent element because the types are incorrect.");
+                delete node;
+                node = 0;
                 break;
             }
         }
-        parseCoreNode(node, attributes);
-        cssStyleLookup(node, this, m_selector);
-        parseStyle(node, attributes, this);
+         if (node) {
+            parseCoreNode(node, attributes);
+            cssStyleLookup(node, this, m_selector);
+            parseStyle(node, attributes, this);
+         }
     } else if (FactoryMethod method = findGraphicsFactory(localName)) {
         //rendering element
         Q_ASSERT(!m_nodes.isEmpty());
@@ -3861,6 +3878,11 @@ bool QSvgHandler::characters(const QStringRef &str)
     }
 
     return true;
+}
+
+QIODevice *QSvgHandler::device() const
+{
+    return xml->device();
 }
 
 QSvgTinyDocument * QSvgHandler::document() const
