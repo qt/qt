@@ -259,9 +259,13 @@ inline static bool isSupportedSvgFeature(const QString &str)
     };
 
     if (str.length() <= MAX_WORD_LENGTH && str.length() >= MIN_WORD_LENGTH) {
+        const char16_t unicode44 = str.at(44).unicode();
+        const char16_t unicode45 = str.at(45).unicode();
+        if (unicode44 >= sizeof(asso_values) || unicode45 >= sizeof(asso_values))
+            return false;
         const int key = str.length()
-                        + asso_values[str.at(45).unicode()]
-                        + asso_values[str.at(44).unicode()];
+                        + asso_values[unicode45]
+                        + asso_values[unicode44];
         if (key <= MAX_HASH_VALUE && key >= 0)
             return str == QLatin1String(wordlist[key]);
     }

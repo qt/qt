@@ -105,7 +105,7 @@ bool qsvg_get_hex_rgb(const char *name, QRgb *rgb)
     if(name[0] != '#')
         return false;
     name++;
-    int len = qstrlen(name);
+    const size_t len = qstrlen(name);
     int r, g, b;
     if (len == 12) {
         r = qsvg_hex2int(name);
@@ -191,6 +191,7 @@ struct QSvgAttributes
     QStringRef offset;
     QStringRef stopColor;
     QStringRef stopOpacity;
+    QStringRef imageRendering;
 
     QVector<QSvgCssAttribute> m_cssAttributes;
 };
@@ -240,6 +241,10 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
                     fontWeight = value;
                 else if (name == QLatin1String("font-variant"))
                     fontVariant = value;
+                break;
+            case 'i':
+                if (name == QLatin1String("image-rendering"))
+                    imageRendering = value;
                 break;
 
             case 'o':
@@ -340,6 +345,8 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
         case 'i':
             if (name == QLatin1String("id"))
                 id = value.toString();
+            else if (name == QLatin1String("image-rendering"))
+                imageRendering = value;
             break;
 
         case 'o':
@@ -1909,6 +1916,25 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
     return true;
 }
 
+static void parseRenderingHints(QSvgNode *node,
+                                const QSvgAttributes &attributes,
+                                QSvgHandler *)
+{
+    if (attributes.imageRendering.isEmpty())
+        return;
+
+    QString ir = attributes.imageRendering.toString().trimmed();
+    QSvgQualityStyle *p = new QSvgQualityStyle(0);
+    if (ir == QLatin1String("auto"))
+        p->setImageRendering(QSvgQualityStyle::ImageRenderingAuto);
+    else if (ir == QLatin1String("optimizeSpeed"))
+        p->setImageRendering(QSvgQualityStyle::ImageRenderingOptimizeSpeed);
+    else if (ir == QLatin1String("optimizeQuality"))
+        p->setImageRendering(QSvgQualityStyle::ImageRenderingOptimizeQuality);
+    node->appendStyleProperty(p, attributes.id);
+}
+
+
 static bool parseStyle(QSvgNode *node,
                        const QXmlStreamAttributes &attributes,
                        QSvgHandler *);
@@ -2262,6 +2288,7 @@ static bool parseStyle(QSvgNode *node,
     parseVisibility(node, attributes, handler);
     parseOpacity(node, attributes, handler);
     parseCompOp(node, attributes, handler);
+    parseRenderingHints(node, attributes, handler);
     parseOthers(node, attributes, handler);
 #if 0
     value = attributes.value("audio-level");
@@ -3017,7 +3044,7 @@ static QSvgStyleProperty *createRadialGradientNode(QSvgNode *node,
     if (!fy.isEmpty())
         nfy = toDouble(fy);
 
-    QRadialGradient *grad = new QRadialGradient(ncx, ncy, nr, nfx, nfy);
+    QRadialGradient *grad = new QRadialGradient(ncx, ncy, nr, nfx, nfy, 0);
     grad->setInterpolationMode(QGradient::ComponentInterpolation);
 
     QSvgGradientStyle *prop = new QSvgGradientStyle(grad);

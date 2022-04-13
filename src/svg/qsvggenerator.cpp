@@ -971,12 +971,19 @@ void QSvgPaintEngine::drawImage(const QRectF &r, const QImage &image,
 
     Q_UNUSED(sr);
     Q_UNUSED(flags);
+    QString quality;
+    if (state->renderHints() & QPainter::SmoothPixmapTransform) {
+        quality = QLatin1String("optimizeQuality");
+    } else {
+        quality = QLatin1String("optimizeSpeed");
+    }
     stream() << "<image ";
     stream() << "x=\""<<r.x()<<"\" "
                 "y=\""<<r.y()<<"\" "
                 "width=\""<<r.width()<<"\" "
                 "height=\""<<r.height()<<"\" "
-                "preserveAspectRatio=\"none\" ";
+                "preserveAspectRatio=\"none\" "
+                "image-rendering=\""<<quality<<"\" ";
 
     QByteArray data;
     QBuffer buffer(&data);

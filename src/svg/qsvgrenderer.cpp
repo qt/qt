@@ -315,6 +315,10 @@ static bool loadDocument(QSvgRenderer *const q,
 {
     delete d->render;
     d->render = QSvgTinyDocument::load(in);
+    if (d->render && !d->render->size().isValid()) {
+        delete d->render;
+        d->render = nullptr;
+    }
     if (d->render && d->render->animated() && d->fps > 0) {
         if (!d->timer)
             d->timer = new QTimer(q);

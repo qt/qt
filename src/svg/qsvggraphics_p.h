@@ -199,8 +199,10 @@ public:
     void addLineBreak() {m_tspans.append(LINEBREAK);}
     void setWhitespaceMode(WhitespaceMode mode) {m_mode = mode;}
 
-    //QRectF bounds(QPainter *p, QSvgExtraStates &states) const override;
+    QRectF bounds(QPainter *p, QSvgExtraStates &states) const override;
 private:
+    void draw_helper(QPainter *p, QSvgExtraStates &states, QRectF *boundingRect = nullptr) const;
+
     static QSvgTspan * const LINEBREAK;
 
     QPointF m_coord;

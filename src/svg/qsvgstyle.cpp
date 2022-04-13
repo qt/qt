@@ -65,7 +65,8 @@ QSvgExtraStates::QSvgExtraStates()
     , fontWeight(400)
     , fillRule(Qt::WindingFill)
     , strokeDashOffset(0)
-    , vectorEffect(false)
+    , vectorEffect(false),
+      imageRendering(QSvgQualityStyle::ImageRenderingAuto)
 {
 }
 
@@ -85,16 +86,46 @@ void QSvgFillStyleProperty::revert(QPainter *, QSvgExtraStates &)
 
 
 QSvgQualityStyle::QSvgQualityStyle(int color)
+    : m_imageRendering(QSvgQualityStyle::ImageRenderingAuto)
+    , m_oldImageRendering(QSvgQualityStyle::ImageRenderingAuto)
+    , m_imageRenderingSet(0)
 {
     Q_UNUSED(color);
 }
-void QSvgQualityStyle::apply(QPainter *, const QSvgNode *, QSvgExtraStates &)
-{
 
+void QSvgQualityStyle::setImageRendering(ImageRendering hint) {
+    m_imageRendering = hint;
+    m_imageRenderingSet = 1;
 }
-void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
-{
 
+void QSvgQualityStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states)
+{
+   m_oldImageRendering = states.imageRendering;
+   if (m_imageRenderingSet) {
+       states.imageRendering = m_imageRendering;
+   }
+   if (m_imageRenderingSet) {
+       bool smooth = false;
+       if (m_imageRendering == ImageRenderingAuto)
+           // auto (the spec says to prefer quality)
+           smooth = true;
+       else
+           smooth = (m_imageRendering == ImageRenderingOptimizeQuality);
+       p->setRenderHint(QPainter::SmoothPixmapTransform, smooth);
+   }
+}
+
+void QSvgQualityStyle::revert(QPainter *p, QSvgExtraStates &states)
+{
+    if (m_imageRenderingSet) {
+        states.imageRendering = m_oldImageRendering;
+        bool smooth = false;
+        if (m_oldImageRendering == ImageRenderingAuto)
+            smooth = true;
+        else
+            smooth = (m_oldImageRendering == ImageRenderingOptimizeQuality);
+        p->setRenderHint(QPainter::SmoothPixmapTransform, smooth);
+    }
 }
 
 QSvgFillStyle::QSvgFillStyle()
@@ -256,7 +287,9 @@ void QSvgFontStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states
         } else {
             states.fontWeight = m_weight;
         }
-        font.setWeight(SVGToQtWeight(states.fontWeight));
+        font.setWeight(SVGToQtWeight(qBound(100,
+                                            states.fontWeight,
+                                            900)));
     }
 
     p->setFont(font);

@@ -75,13 +75,15 @@ QSvgTinyDocument::~QSvgTinyDocument()
 }
 
 #ifndef QT_NO_COMPRESS
+static QByteArray qt_inflateSvgzDataFrom(QIODevice *device, bool doCheckContent = true);
 #   ifdef QT_BUILD_INTERNAL
-Q_AUTOTEST_EXPORT QByteArray qt_inflateGZipDataFrom(QIODevice *device);
-#   else
-static QByteArray qt_inflateGZipDataFrom(QIODevice *device);
+Q_AUTOTEST_EXPORT QByteArray qt_inflateGZipDataFrom(QIODevice *device)
+{
+    return qt_inflateSvgzDataFrom(device, false); // autotest wants unchecked result
+}
 #   endif
 
-QByteArray qt_inflateGZipDataFrom(QIODevice *device)
+static QByteArray qt_inflateSvgzDataFrom(QIODevice *device, bool doCheckContent)
 {
     if (!device)
         return QByteArray();
@@ -151,6 +153,17 @@ QByteArray qt_inflateGZipDataFrom(QIODevice *device)
         // it means we have to provide more data, so exit the loop here
         } while (!zlibStream.avail_out);
 
+        if (doCheckContent) {
+            // Quick format check, equivalent to QSvgIOHandler::canRead()
+            QByteArray buf = destination.left(8);
+            if (!buf.contains("<?xml") && !buf.contains("<svg") && !buf.contains("<!--")) {
+                inflateEnd(&zlibStream);
+                qWarning("Error while inflating gzip file: SVG format check failed");
+                return QByteArray();
+            }
+            doCheckContent = false; // Run only once, on first chunk
+        }
+
         if (zlibResult == Z_STREAM_END) {
             // Make sure there are no more members to process before exiting
             if (!(zlibStream.avail_in && inflateReset(&zlibStream) == Z_OK))
@@ -159,6 +172,11 @@ QByteArray qt_inflateGZipDataFrom(QIODevice *device)
     }
 
     inflateEnd(&zlibStream);
+    return QByteArray();
+}
+#else
+static QByteArray qt_inflateSvgzDataFrom(QIODevice *)
+{
     return QByteArray();
 }
 #endif
@@ -172,12 +190,10 @@ QSvgTinyDocument * QSvgTinyDocument::load(const QString &fileName)
         return 0;
     }
 
-#ifndef QT_NO_COMPRESS
     if (fileName.endsWith(QLatin1String(".svgz"), Qt::CaseInsensitive)
             || fileName.endsWith(QLatin1String(".svg.gz"), Qt::CaseInsensitive)) {
-        return load(qt_inflateGZipDataFrom(&file));
+        return load(qt_inflateSvgzDataFrom(&file));
     }
-#endif
 
     QSvgTinyDocument *doc = 0;
     QSvgHandler handler(&file);
@@ -194,18 +210,19 @@ QSvgTinyDocument * QSvgTinyDocument::load(const QString &fileName)
 
 QSvgTinyDocument * QSvgTinyDocument::load(const QByteArray &contents)
 {
-#ifndef QT_NO_COMPRESS
+    QByteArray svg;
     // Check for gzip magic number and inflate if appropriate
     if (contents.startsWith("\x1f\x8b")) {
-        QBuffer buffer(const_cast<QByteArray *>(&contents));
-        const QByteArray inflated = qt_inflateGZipDataFrom(&buffer);
-        if (inflated.isNull())
-            return nullptr;
-        return load(inflated);
+        QBuffer buffer;
+        buffer.setData(contents);
+        svg = qt_inflateSvgzDataFrom(&buffer);
+    } else {
+        svg = contents;
     }
-#endif
+    if (svg.isNull())
+        return nullptr;
 
-    QSvgHandler handler(contents);
+    QSvgHandler handler(svg);
 
     QSvgTinyDocument *doc = 0;
     if (handler.ok()) {
