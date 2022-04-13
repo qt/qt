@@ -113,9 +113,9 @@ public:
         Q_DISABLE_COPY(ConverterState)
     };
 
-    QString toUnicode(const char *in, int length, ConverterState *state = 0) const
+    QString toUnicode(const char *in, int length, ConverterState *state = nullptr) const
         { return convertToUnicode(in, length, state); }
-    QByteArray fromUnicode(const QChar *in, int length, ConverterState *state = 0) const
+    QByteArray fromUnicode(const QChar *in, int length, ConverterState *state = nullptr) const
         { return convertFromUnicode(in, length, state); }
 
     // ### Qt 5: merge these functions.

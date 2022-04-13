@@ -2433,7 +2433,7 @@ public:
     typedef Enum enum_type;
     Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
     Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = nullptr) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }

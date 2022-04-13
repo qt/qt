@@ -114,7 +114,7 @@ public:
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
-    QSharedDataPointer(QSharedDataPointer &&o) : d(o.d) { o.d = 0; }
+    QSharedDataPointer(QSharedDataPointer &&o) : d(o.d) { o.d = nullptr; }
     inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif
@@ -152,17 +152,17 @@ public:
         if(d && !d->ref.deref())
             delete d;
 
-        d = 0;
+        d = nullptr;
     }
 
-    inline operator bool () const { return d != 0; }
+    inline operator bool () const { return d != nullptr; }
 
     inline bool operator==(const QExplicitlySharedDataPointer<T> &other) const { return d == other.d; }
     inline bool operator!=(const QExplicitlySharedDataPointer<T> &other) const { return d != other.d; }
     inline bool operator==(const T *ptr) const { return d == ptr; }
     inline bool operator!=(const T *ptr) const { return d != ptr; }
 
-    inline QExplicitlySharedDataPointer() { d = 0; }
+    inline QExplicitlySharedDataPointer() { d = nullptr; }
     inline ~QExplicitlySharedDataPointer() { if (d && !d->ref.deref()) delete d; }
 
     explicit QExplicitlySharedDataPointer(T *data);
@@ -198,7 +198,7 @@ public:
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
-    inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) : d(o.d) { o.d = 0; }
+    inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) : d(o.d) { o.d = nullptr; }
     inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif

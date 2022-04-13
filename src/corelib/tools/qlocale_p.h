@@ -159,8 +159,8 @@ public:
     quint64 stringToUnsLongLong(const QString &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
 
 
-    static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = 0);
-    static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = 0);
+    static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = nullptr);
+    static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = nullptr);
     static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
 
     typedef QVarLengthArray<char, 256> CharBuff;

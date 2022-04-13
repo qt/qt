@@ -645,7 +645,7 @@ template <typename T> class QXmlStreamSimpleStack {
     T *data;
     int tos, cap;
 public:
-    inline QXmlStreamSimpleStack():data(0), tos(-1), cap(0){}
+    inline QXmlStreamSimpleStack():data(nullptr), tos(-1), cap(0){}
     inline ~QXmlStreamSimpleStack(){ if (data) qFree(data); }
 
     inline void reserve(int extraCapacity) {

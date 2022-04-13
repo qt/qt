@@ -340,14 +340,14 @@ public:
     inline QDomNode::NodeType nodeType() const { return DocumentNode; }
 
     // Qt extensions
-    bool setContent(const QByteArray& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(const QString& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(const QByteArray& text, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(const QString& text, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(QIODevice* dev, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
-    bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(const QByteArray& text, bool namespaceProcessing, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(const QString& text, bool namespaceProcessing, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(const QByteArray& text, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(const QString& text, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(QIODevice* dev, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
 
     // Qt extensions
     QString toString(int = 1) const;

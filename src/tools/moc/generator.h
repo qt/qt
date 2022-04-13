@@ -52,7 +52,7 @@ class Generator
     ClassDef *cdef;
     QVector<uint> meta_data;
 public:
-    Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile = 0);
+    Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile = nullptr);
     void generateCode();
     QMetaObject *generateMetaObject(bool ignoreProperties);
 private:

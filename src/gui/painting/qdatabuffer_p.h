@@ -66,7 +66,7 @@ public:
         if (res)
             buffer = (Type*) qMalloc(capacity * sizeof(Type));
         else
-            buffer = 0;
+            buffer = nullptr;
         siz = 0;
     }
 
