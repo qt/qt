@@ -88,6 +88,7 @@ private slots:
     void fillRule();
     void opacity();
     void paths();
+    void paths2();
     void displayMode();
     void strokeInherit();
     void testFillInheritance();
@@ -1025,6 +1026,19 @@ void tst_QSvgRenderer::paths()
             QCOMPARE(images[i], images[0]);
         }
     }
+}
+
+void tst_QSvgRenderer::paths2()
+{
+    const char *svg =
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\">"
+            "<path d=\"M 3 8 A 5 5 0 1013 8\" id=\"path1\"/>"
+        "</svg>";
+
+    QByteArray data(svg);
+    QSvgRenderer renderer(data);
+    QVERIFY(renderer.isValid());
+    QCOMPARE(renderer.boundsOnElement(QLatin1String("path1")).toRect(), QRect(3, 8, 10, 5));
 }
 
 void tst_QSvgRenderer::displayMode()

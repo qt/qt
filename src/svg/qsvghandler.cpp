@@ -701,15 +701,25 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
     return points;
 }
 
-static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
+static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points,
+                                     const char *pattern = nullptr)
 {
+    const size_t patternLen = qstrlen(pattern);
     while (str->isSpace())
         ++str;
     while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
            *str == QLatin1Char('.')) {
 
-        points.append(toDouble(str));
+        if (patternLen && pattern[points.size() % patternLen] == 'f') {
+            // flag expected, may only be 0 or 1
+            if (*str != QLatin1Char('0') && *str != QLatin1Char('1'))
+                return;
+            points.append(*str == QLatin1Char('0') ? 0.0 : 1.0);
+            ++str;
+        } else {
+            points.append(toDouble(str));
+        }
 
         while (str->isSpace())
             ++str;
@@ -1584,6 +1594,7 @@ static void pathArc(QPainterPath &path,
 
 static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
 {
+    const int maxElementCount = 0x7fff; // Assume file corruption if more path elements than this
     qreal x0 = 0, y0 = 0;              // starting point
     qreal x = 0, y = 0;                // current point
     char lastMode = 0;
@@ -1591,15 +1602,19 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
     const QChar *str = dataStr.constData();
     const QChar *end = str + dataStr.size();
 
-    while (str != end) {
+    bool ok = true;
+    while (ok && str != end) {
         while (str->isSpace() && (str + 1) != end)
             ++str;
         QChar pathElem = *str;
         ++str;
         QChar endc = *end;
         *const_cast<QChar *>(end) = 0; // parseNumbersArray requires 0-termination that QStringRef cannot guarantee
+        const char *pattern = nullptr;
+        if (pathElem == QLatin1Char('a') || pathElem == QLatin1Char('A'))
+            pattern = "rrrffrr";
         QVarLengthArray<qreal, 8> arg;
-        parseNumbersArray(str, arg);
+        parseNumbersArray(str, arg, pattern);
         *const_cast<QChar *>(end) = endc;
         if (pathElem == QLatin1Char('z') || pathElem == QLatin1Char('Z'))
             arg.append(0);//dummy
@@ -1611,8 +1626,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             switch (pathElem.unicode()) {
             case 'm': {
                 if (count < 2) {
-                    num++;
-                    count--;
+                    ok = false;
                     break;
                 }
                 x = x0 = num[0] + offsetX;
@@ -1629,8 +1643,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 break;
             case 'M': {
                 if (count < 2) {
-                    num++;
-                    count--;
+                    ok = false;
                     break;
                 }
                 x = x0 = num[0];
@@ -1656,8 +1669,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 break;
             case 'l': {
                 if (count < 2) {
-                    num++;
-                    count--;
+                    ok = false;
                     break;
                 }
                 x = num[0] + offsetX;
@@ -1670,8 +1682,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 break;
             case 'L': {
                 if (count < 2) {
-                    num++;
-                    count--;
+                    ok = false;
                     break;
                 }
                 x = num[0];
@@ -1711,8 +1722,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 break;
             case 'c': {
                 if (count < 6) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c1(num[0] + offsetX, num[1] + offsetY);
@@ -1728,8 +1738,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'C': {
                 if (count < 6) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c1(num[0], num[1]);
@@ -1745,8 +1754,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 's': {
                 if (count < 4) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c1;
@@ -1767,8 +1775,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'S': {
                 if (count < 4) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c1;
@@ -1789,8 +1796,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'q': {
                 if (count < 4) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c(num[0] + offsetX, num[1] + offsetY);
@@ -1805,8 +1811,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'Q': {
                 if (count < 4) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF c(num[0], num[1]);
@@ -1821,8 +1826,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 't': {
                 if (count < 2) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF e(num[0] + offsetX, num[1] + offsetY);
@@ -1842,8 +1846,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'T': {
                 if (count < 2) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 QPointF e(num[0], num[1]);
@@ -1863,8 +1866,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
             case 'a': {
                 if (count < 7) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 qreal rx = (*num++);
@@ -1886,8 +1888,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 break;
             case 'A': {
                 if (count < 7) {
-                    num += count;
-                    count = 0;
+                    ok = false;
                     break;
                 }
                 qreal rx = (*num++);
@@ -1908,12 +1909,15 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
                 break;
             default:
-                return false;
+                ok = false;
+                break;
             }
             lastMode = pathElem.toLatin1();
+            if (path.elementCount() > maxElementCount)
+                ok = false;
         }
     }
-    return true;
+    return ok;
 }
 
 static void parseRenderingHints(QSvgNode *node,
@@ -2343,6 +2347,27 @@ static bool parseAnimateNode(QSvgNode *parent,
     return true;
 }
 
+static int parseClockValue(QString str, bool *ok)
+{
+    int res = 0;
+    int ms = 1000;
+    str = str.trimmed();
+    if (str.endsWith(QLatin1String("ms"))) {
+        str.chop(2);
+        ms = 1;
+    } else if (str.endsWith(QLatin1String("s"))) {
+        str.chop(1);
+    }
+    double val = ms * toDouble(str, ok);
+    if (ok) {
+        if (val > std::numeric_limits<int>::min() && val < std::numeric_limits<int>::max())
+            res = static_cast<int>(val);
+        else
+            *ok = false;
+    }
+    return res;
+}
+
 static bool parseAnimateColorNode(QSvgNode *parent,
                                   const QXmlStreamAttributes &attributes,
                                   QSvgHandler *handler)
@@ -2376,23 +2401,14 @@ static bool parseAnimateColorNode(QSvgNode *parent,
         }
     }
 
-    int ms = 1000;
-    beginStr = beginStr.trimmed();
-    if (beginStr.endsWith(QLatin1String("ms"))) {
-        beginStr.chop(2);
-        ms = 1;
-    } else if (beginStr.endsWith(QLatin1String("s"))) {
-        beginStr.chop(1);
-    }
-    durStr = durStr.trimmed();
-    if (durStr.endsWith(QLatin1String("ms"))) {
-        durStr.chop(2);
-        ms = 1;
-    } else if (durStr.endsWith(QLatin1String("s"))) {
-        durStr.chop(1);
-    }
-    int begin = static_cast<int>(toDouble(beginStr) * ms);
-    int end   = static_cast<int>((toDouble(durStr) + begin) * ms);
+    bool ok = true;
+    int begin = parseClockValue(beginStr, &ok);
+    if (!ok)
+        return false;
+    int end = begin + parseClockValue(durStr, &ok);
+    if (!ok || end <= begin)
+        return false;
+
 
     QSvgAnimateColor *anim = new QSvgAnimateColor(begin, end, 0);
     anim->setArgs((targetStr == QLatin1String("fill")), colors);
@@ -2482,24 +2498,13 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
         }
     }
 
-    int ms = 1000;
-    beginStr = beginStr.trimmed();
-    if (beginStr.endsWith(QLatin1String("ms"))) {
-        beginStr.chop(2);
-        ms = 1;
-    } else if (beginStr.endsWith(QLatin1String("s"))) {
-        beginStr.chop(1);
-    }
-    int begin = static_cast<int>(toDouble(beginStr) * ms);
-    durStr = durStr.trimmed();
-    if (durStr.endsWith(QLatin1String("ms"))) {
-        durStr.chop(2);
-        ms = 1;
-    } else if (durStr.endsWith(QLatin1String("s"))) {
-        durStr.chop(1);
-        ms = 1000;
-    }
-    int end = static_cast<int>(toDouble(durStr)*ms) + begin;
+    bool ok = true;
+    int begin = parseClockValue(beginStr, &ok);
+    if (!ok)
+        return false;
+    int end = begin + parseClockValue(durStr, &ok);
+    if (!ok || end <= begin)
+        return false;
 
     QSvgAnimateTransform::TransformType type = QSvgAnimateTransform::Empty;
     if (typeStr == QLatin1String("translate")) {
@@ -2967,8 +2972,8 @@ static QSvgNode *createPathNode(QSvgNode *parent,
 
     QPainterPath qpath;
     qpath.setFillRule(Qt::WindingFill);
-    //XXX do error handling
-    parsePathDataFast(data, qpath);
+    if (!parsePathDataFast(data, qpath))
+        qWarning("Invalid path data; path truncated.");
 
     QSvgNode *path = new QSvgPath(parent, qpath);
     return path;
@@ -3672,9 +3677,7 @@ void QSvgHandler::parse()
         case QXmlStreamReader::EndElement:
             endElement(xml->name());
             ++remainingUnfinishedElements;
-            // if we are using somebody else's qxmlstreamreader
-            // we should not read until the end of the stream
-            done = !m_ownsReader && (xml->name() == QLatin1String("svg"));
+            done = (xml->name() == QLatin1String("svg"));
             break;
         case QXmlStreamReader::Characters:
             characters(xml->text());
