@@ -56,7 +56,6 @@
 #include <QtXmlPatterns/QXmlQuery>
 #include <QtXmlPatterns/QXmlSerializer>
 
-#include "private/qautoptr_p.h"
 #include "qapplicationargument_p.h"
 #include "qapplicationargumentparser_p.h"
 
@@ -66,6 +65,8 @@
 #include <io.h>
 #include <fcntl.h>
 #endif
+
+#include <memory>
 
 #include "main.h"
 
@@ -359,21 +360,21 @@ int main(int argc, char **argv)
 
     query.setQuery(effectiveURI);
 
-    const QPatternist::AutoPtr<QIODevice> outDevice(qvariant_cast<QIODevice *>(parser.value(output)));
+    const std::unique_ptr<QIODevice> outDevice(qvariant_cast<QIODevice *>(parser.value(output)));
     Q_ASSERT(outDevice);
     Q_ASSERT(outDevice->isWritable());
 
     if(query.isValid())
     {
-        typedef QPatternist::AutoPtr<QAbstractXmlReceiver> RecPtr;
+        typedef std::unique_ptr<QAbstractXmlReceiver> RecPtr;
         RecPtr receiver;
 
         if(parser.has(noformat))
-            receiver = RecPtr(new QXmlSerializer(query, outDevice.data()));
+            receiver = RecPtr(new QXmlSerializer(query, outDevice.get()));
         else
-            receiver = RecPtr(new QXmlFormatter(query, outDevice.data()));
+            receiver = RecPtr(new QXmlFormatter(query, outDevice.get()));
 
-        const bool success = query.evaluateTo(receiver.data());
+        const bool success = query.evaluateTo(receiver.get());
 
         if(success)
             return parser.exitCode();
