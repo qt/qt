@@ -3490,7 +3490,6 @@ void Configure::generateConfigfiles()
         if (dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
         if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
-        if (dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if (dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if (dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
         if (dictionary["SCRIPT"] == "no")            qconfigList += "QT_NO_SCRIPT";

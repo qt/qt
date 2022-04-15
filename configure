@@ -783,8 +783,6 @@ QT_DEFAULT_BUILD_PARTS="libs tools examples demos docs translations"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
-CFG_PHONON=auto
-CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
@@ -841,7 +839,6 @@ CFG_CUPS=auto
 CFG_ICONV=auto
 CFG_DBUS=auto
 CFG_GLIB=auto
-CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
 CFG_QS60STYLE=auto
 CFG_LARGEFILE=auto
@@ -959,10 +956,6 @@ QT_LIBS_DBUS=
 QT_CFLAGS_GLIB=
 QT_LIBS_GLIB=
 
-# flags for GStreamer (X11 only)
-QT_CFLAGS_GSTREAMER=
-QT_LIBS_GSTREAMER=
-
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
 
@@ -1066,9 +1059,8 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
         L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
     fi
 
-    echo "-no-multimedia -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
+    echo "-no-multimedia -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
     CFG_MULTIMEDIA=no
-    CFG_PHONON=no
     CFG_MULTIMEDIA=no
     CFG_MEDIASERVICES=no
     CFG_XMLPATTERNS=no
@@ -1129,7 +1121,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu|-alsa)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu|-alsa)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2103,13 +2095,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    gstreamer)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_GSTREAMER="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
@@ -2453,20 +2438,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     silent)
         CFG_SILENT="$VAL"
-        ;;
-    phonon)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_PHONON="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    phonon-backend)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_PHONON_BACKEND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     multimedia)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3845,7 +3816,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
+        [-no-multimedia] [-multimedia]
         [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg]
@@ -3996,12 +3967,6 @@ fi
 
     -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
  +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
-
-    -no-phonon ......... Do not build the Phonon module.
- +  -phonon ............ Build the Phonon module.
-                         Phonon is built if a decent C++ compiler is used.
-    -no-phonon-backend.. Do not build the platform phonon plugin.
- +  -phonon-backend..... Build the platform phonon plugin.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -5280,9 +5245,6 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     if [ "$CFG_LARGEFILE" = auto ]; then
         CFG_LARGEFILE=no
     fi
-    if [ "$CFG_PHONON" = auto ]; then
-        CFG_PHONON=yes
-    fi
 
     if test -z "$EPOCROOT"; then
         echo "Please export EPOCROOT. It should point to the sdk install dir"
@@ -5886,66 +5848,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
         fi
     fi
 
-    if [ "$CFG_GUI" = "no" ]; then
-        if [ "$CFG_PHONON" = "auto" ]; then
-            CFG_PHONON=no
-        fi
-        if [ "$CFG_PHONON" != "no" ]; then
-            echo "Phonon enabled, but GUI disabled."
-            echo " You might need to either enable the GUI or disable Phonon"
-            exit 1
-        fi
-    fi
-
-    # Auto-detect GStreamer support (needed for Phonon)
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-            if [ -n "$PKG_CONFIG" ]; then
-                QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-            fi
-            if compileTest unix/gstreamer "GStreamer" $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-                CFG_GSTREAMER=yes
-                QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-                QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-            else
-                if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                    echo "Gstreamer support cannot be enabled due to functionality tests!"
-                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                    echo " If you believe this message is in error you may use the continue"
-                    echo " switch (-continue) to $0 to continue."
-                    exit 101
-                else
-                    CFG_GSTREAMER=no
-                fi
-            fi
-        elif [ "$CFG_GLIB" = "no" ]; then
-            CFG_GSTREAMER=no
-        fi
-    else
-        CFG_GSTREAMER=no
-    fi
-
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
-            if [ "$CFG_GSTREAMER" = "yes" ]; then
-                CFG_PHONON=yes
-            else
-                if [ "$CFG_PHONON" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                    echo "Phonon support cannot be enabled due to functionality tests!"
-                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                    echo " If you believe this message is in error you may use the continue"
-                    echo " switch (-continue) to $0 to continue."
-                    exit 101
-                else
-                    CFG_PHONON=no
-                fi
-            fi
-        else
-            CFG_PHONON=yes
-        fi
-    fi
-
     # auto-detect icd support
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
@@ -6411,11 +6313,6 @@ fi # X11
 
 
 if [ "$PLATFORM_MAC" = "yes" ]; then
-    if [ "$CFG_PHONON" != "no" ]; then
-        # Always enable Phonon (unless it was explicitly disabled)
-        CFG_PHONON=yes
-    fi
-
     if [ "$CFG_COREWLAN" = "auto" ]; then
         if compileTest mac/corewlan "CoreWlan"; then
             CFG_COREWLAN=yes
@@ -6709,8 +6606,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 fi
-
-[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
 
 # freetype support
 [ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"
@@ -7227,16 +7122,6 @@ if [ "$CFG_QT3SUPPORT" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG qt3support"
 fi
 
-# enable Phonon
-if [ "$CFG_PHONON" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG phonon"
-    if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG phonon-backend"
-    fi
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PHONON"
-fi
-
 # disable accessibility
 if [ "$CFG_ACCESSIBILITY" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ACCESSIBILITY"
@@ -7520,7 +7405,6 @@ fi
 [ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
-[ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"
 [ "$CFG_DBUS" = "yes" ] && QT_CONFIG="$QT_CONFIG dbus"
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
 [ "$CFG_NAS" = "system" ] && QT_CONFIG="$QT_CONFIG nas"
@@ -8433,7 +8317,6 @@ if [ "$XPLATFORM_SYMBIAN" = "no" ]; then
     # Do not apply following negative X11/Unix/Mac only flags on Symbian, so that
     # configuration matches with the one generated by configure executable tool
     [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
-    [ "$CFG_GSTREAMER" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GSTREAMER"
     [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
     [ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
     [ "$CFG_GETADDRINFO" = "no" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETADDRINFO"
@@ -8895,7 +8778,6 @@ echo "QtGui module ........... $CFG_GUI"
 echo "QtScript module ........ $CFG_SCRIPT"
 echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
-echo "Phonon module .......... $CFG_PHONON"
 echo "Multimedia module ...... $CFG_MULTIMEDIA"
 echo "SVG module ............. $CFG_SVG"
 if [ "$CFG_SCRIPT" != "no" ]; then
@@ -8930,7 +8812,6 @@ echo "NIS support ............ $CFG_NIS"
 echo "CUPS support ........... $CFG_CUPS"
 echo "Iconv support .......... $CFG_ICONV"
 echo "Glib support ........... $CFG_GLIB"
-echo "GStreamer support ...... $CFG_GSTREAMER"
 echo "PulseAudio support ..... $CFG_PULSEAUDIO"
 echo "Large File support ..... $CFG_LARGEFILE"
 echo "GIF support ............ $CFG_GIF"

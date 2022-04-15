@@ -68,13 +68,6 @@
 
 #include <stdlib.h>
 
-#ifndef QT_NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-#ifdef HAVE_PHONON
-#include <phonon/phononnamespace.h>
-#endif
-
 #ifdef Q_WS_X11
 #include <QtGui/private/qt_x11_p.h>
 #endif
@@ -429,42 +422,8 @@ MainWindow::MainWindow()
     ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(tr("aRts")),
                                     tr("Experimental aRts support for GStreamer."),
                                     Qt::ToolTipRole);
-#ifdef HAVE_PHONON
-    ui->phononVersionLabel->setText(QLatin1String(Phonon::phononVersion()));
-#endif
-#ifndef QT_NO_GSTREAMER
-    if (gst_init_check(0, 0, 0)) {
-        gchar *versionString = gst_version_string();
-        ui->gstVersionLabel->setText(QLatin1String(versionString));
-        g_free(versionString);
-        GList *factoryList = gst_registry_get_feature_list(gst_registry_get_default(),
-                                                           GST_TYPE_ELEMENT_FACTORY);
-        QString name, klass, description;
-        for (GList *iter = g_list_first(factoryList) ; iter != NULL ; iter = g_list_next(iter)) {
-            GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
-            klass = QLatin1String(gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature)));
-            if (klass == QLatin1String("Sink/Audio")) {
-                name = QLatin1String(GST_PLUGIN_FEATURE_NAME(feature));
-                if (name == QLatin1String("sfsink"))
-                    continue; // useless to output audio to file when you cannot set the file path
-                else if (name == QLatin1String("autoaudiosink"))
-                    continue; //This is used implicitly from the auto setting
-                GstElement *sink = gst_element_factory_make (qPrintable(name), NULL);
-                if (sink) {
-                    description = QLatin1String(gst_element_factory_get_description(GST_ELEMENT_FACTORY(feature)));
-                    ui->audiosinkCombo->addItem(name, name);
-                    ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(name), description,
-                                                    Qt::ToolTipRole);
-                    gst_object_unref (sink);
-                }
-            }
-        }
-        g_list_free(factoryList);
-    }
-#else
     ui->phononTab->setEnabled(false);
     ui->phononLabel->setText(tr("Phonon GStreamer backend not available."));
-#endif
 
     ui->videomodeCombo->addItem(tr("Auto (default)"), QLatin1String("Auto"));
     ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("Auto (default)")),
