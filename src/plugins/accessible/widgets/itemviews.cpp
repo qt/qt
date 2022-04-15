@@ -834,9 +834,10 @@ QRect QAccessibleTable2Cell::rect(int child) const
     QRect r;
     r = view->visualRect(m_index);
 
-    if (!r.isNull())
+    if (!r.isNull()) {
         r.translate(view->viewport()->mapTo(view, QPoint(0,0)));
         r.translate(view->mapToGlobal(QPoint(0, 0)));
+    }
     return r;
 }
 

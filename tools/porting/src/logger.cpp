@@ -84,7 +84,7 @@ Logger *Logger::instance()
 {
     if(!theInstance)
         theInstance = new Logger();
-        return theInstance;
+    return theInstance;
 }
 
 void Logger::deleteInstance()

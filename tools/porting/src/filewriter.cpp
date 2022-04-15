@@ -55,7 +55,7 @@ FileWriter *FileWriter::instance()
      if(!theInstance)
         theInstance = new FileWriter();
 
-        return theInstance;
+    return theInstance;
 }
 
 void FileWriter::deleteInstance()

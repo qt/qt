@@ -482,10 +482,11 @@ static bool buildSpec(int* spec, const QGLFormat& f, QPaintDevice* paintDevice,
     }
 #endif
 
-    if (f.doubleBuffer())
+    if (f.doubleBuffer()) {
         spec[i++] = GLX_DOUBLEBUFFER;
         if (useFBConfig)
             spec[i++] = True;
+    }
     if (f.depth()) {
         spec[i++] = GLX_DEPTH_SIZE;
         spec[i++] = f.depthBufferSize() == -1 ? 1 : f.depthBufferSize();

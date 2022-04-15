@@ -307,12 +307,12 @@ void Semantic::parseDeclaration(AST *funSpec, AST *storageSpec, TypeSpecifierAST
     //Check if this is possibly a function call by searching for '(' and ')'
     const QByteArray declText = textOf(decl);
     if (declText.contains("(") && declText.contains(")")) {
-	if (decl->declarator() && decl->declarator()->subDeclarator()) {
+        if (decl->declarator() && decl->declarator()->subDeclarator()) {
 
-        NameAST * name = decl->declarator()->subDeclarator()->declaratorId();
-	if (name)
-            parseNameUse(name);
-	    return;	
+            NameAST * name = decl->declarator()->subDeclarator()->declaratorId();
+            if (name)
+               parseNameUse(name);
+            return;	
         } 
     }
 

@@ -1820,7 +1820,7 @@ void QTreeView::mousePressEvent(QMouseEvent *event)
     bool handled = false;
     if (style()->styleHint(QStyle::SH_Q3ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonPress)
         handled = d->expandOrCollapseItemAtPos(event->pos());
-	if (!handled && d->itemDecorationAt(event->pos()) == -1)
+    if (!handled && d->itemDecorationAt(event->pos()) == -1)
         QAbstractItemView::mousePressEvent(event);
 }
 
@@ -2526,7 +2526,7 @@ void QTreeView::columnCountChanged(int oldCount, int newCount)
 
     if (isVisible())
         updateGeometries();
-	viewport()->update();
+    viewport()->update();
 }
 
 /*!

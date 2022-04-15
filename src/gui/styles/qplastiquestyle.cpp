@@ -3271,13 +3271,13 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 } else
 #endif
                     r.setRect(titleRect.left(), titleRect.top(), titleRect.width(), titleRect.bottom());
-                    int nchunks = (r.width() / handle.width()) - 1;
-                    int indent = (r.width() - (nchunks * handle.width())) / 2;
-                    for (int i = 0; i < nchunks; ++i) {
-                        painter->drawImage(QPoint(r.left() + indent + i * handle.width(),
-                                                r.center().y() - handle.height() / 2),
-                                        handle);
-                    }
+                int nchunks = (r.width() / handle.width()) - 1;
+                int indent = (r.width() - (nchunks * handle.width())) / 2;
+                for (int i = 0; i < nchunks; ++i) {
+                    painter->drawImage(QPoint(r.left() + indent + i * handle.width(),
+                                            r.center().y() - handle.height() / 2),
+                                    handle);
+                }
             } else {
                 // Handle pattern to the left of the title
                 QRect leftSide(titleRect.left(), titleRect.top(),
