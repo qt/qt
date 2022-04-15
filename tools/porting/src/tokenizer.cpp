@@ -78,7 +78,7 @@ void Tokenizer::setupScanTable()
 {
     s_initialized = true;
 
-    memset(s_attr_table, 0, 256);
+    memset(s_attr_table, 0, 256*sizeof(int));
 
     for (int i=0; i<128; ++i) {
         switch (i) {

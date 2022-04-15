@@ -74,7 +74,7 @@ void CppLexer::setupScanTable()
     s_scan_keyword_table[15] = &CppLexer::scanKeyword0;
     s_scan_keyword_table[16] = &CppLexer::scanKeyword16;
 
-    memset(s_attr_table, 0, 256);
+    memset(s_attr_table, 0, 256*sizeof(int));
 
     for (int i=0; i<128; ++i) {
         switch (i) {
