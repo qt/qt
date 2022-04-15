@@ -75,7 +75,7 @@ std::unique_ptr<Collator> Collator::userDefault()
     } else
         return std::unique_ptr<Collator>(new Collator(""));
 #else
-    return std::unique_ptr<Collator>(new Collator(0));
+    return std::unique_ptr<Collator>(new Collator(nullptr));
 #endif
 }
 
