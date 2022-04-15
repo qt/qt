@@ -37,6 +37,9 @@
 
 /* COMPILER() - the compiler being used to build the project */
 #define COMPILER(WTF_FEATURE) (defined WTF_COMPILER_##WTF_FEATURE  && WTF_COMPILER_##WTF_FEATURE)
+/* COMPILER_SUPPORTS() - whether the compiler being used to build the project supports the given feature. */
+#define COMPILER_SUPPORTS(WTF_COMPILER_FEATURE) (defined WTF_COMPILER_SUPPORTS_##WTF_COMPILER_FEATURE  && WTF_COMPILER_SUPPORTS_##WTF_COMPILER_FEATURE)
+
 /* CPU() - the target CPU architecture */
 #define CPU(WTF_FEATURE) (defined WTF_CPU_##WTF_FEATURE  && WTF_CPU_##WTF_FEATURE)
 /* HAVE() - specific system features (headers, functions or similar) that are present or not */
@@ -57,6 +60,14 @@
 
 /* ==== COMPILER() - the compiler being used to build the project ==== */
 
+/* COMPILER(CLANG) - Clang  */
+#if defined(__clang__)
+#define WTF_COMPILER_CLANG 1
+
+#define WTF_COMPILER_SUPPORTS_C_STATIC_ASSERT __has_feature(c_static_assert)
+#define WTF_COMPILER_SUPPORTS_CXX_STATIC_ASSERT __has_feature(cxx_static_assert)
+#endif
+
 /* COMPILER(MSVC) Microsoft Visual C++ */
 /* COMPILER(MSVC7) Microsoft Visual C++ v7 or lower*/
 #if defined(_MSC_VER)
@@ -76,7 +87,28 @@
 #if defined(__GNUC__) && !COMPILER(RVCT)
 #define WTF_COMPILER_GCC 1
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#define GCC_VERSION_AT_LEAST(major, minor, patch) (GCC_VERSION >= (major * 10000 + minor * 100 + patch))
+#else
+/* Define this for !GCC compilers, just so we can write things like GCC_VERSION_AT_LEAST(4, 1, 0). */
+#define GCC_VERSION_AT_LEAST(major, minor, patch) 0
 #endif
+
+/* Specific compiler features */
+#if COMPILER(GCC) && !COMPILER(CLANG)
+#if GCC_VERSION_AT_LEAST(4, 8, 0)
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+/* C11 support */
+#define WTF_COMPILER_SUPPORTS_C_STATIC_ASSERT 1
+#endif
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(__cplusplus) && __cplusplus >= 201103L)
+/* C++11 support */
+#if GCC_VERSION_AT_LEAST(4, 3, 0)
+#define WTF_COMPILER_SUPPORTS_CXX_STATIC_ASSERT 1
+#endif
+#endif /* defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(__cplusplus) && __cplusplus >= 201103L) */
+#endif /* COMPILER(GCC) */
 
 /* COMPILER(MINGW) - MinGW GCC */
 /* COMPILER(MINGW64) - mingw-w64 GCC - only used as additional check to exclude mingw.org specific functions */
