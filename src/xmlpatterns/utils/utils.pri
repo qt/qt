@@ -1,5 +1,4 @@
-HEADERS += $$PWD/qautoptr_p.h                       \
-           $$PWD/qcommonnamespaces_p.h              \
+HEADERS += $$PWD/qcommonnamespaces_p.h              \
            $$PWD/qcppcastinghelper_p.h              \
            $$PWD/qdebug_p.h                         \
            $$PWD/qgenericnamespaceresolver_p.h      \

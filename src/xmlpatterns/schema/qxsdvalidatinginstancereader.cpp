@@ -188,7 +188,7 @@ void XsdValidatingInstanceReader::error(const QString &msg) const
 
 bool XsdValidatingInstanceReader::loadSchema(const QString &targetNamespace, const QUrl &location)
 {
-    const AutoPtr<QNetworkReply> reply(AccelTreeResourceLoader::load(location, m_context->networkAccessManager(),
+    const std::unique_ptr<QNetworkReply> reply(AccelTreeResourceLoader::load(location, m_context->networkAccessManager(),
                                                                      m_context, AccelTreeResourceLoader::ContinueOnError));
     if (!reply)
         return true;
@@ -198,7 +198,7 @@ bool XsdValidatingInstanceReader::loadSchema(const QString &targetNamespace, con
     context->m_schemaTypeFactory = m_context->m_schemaTypeFactory;
 
     QXmlSchemaPrivate schema(context);
-    schema.load(reply.data(), location, targetNamespace);
+    schema.load(reply.get(), location, targetNamespace);
     if (!schema.isValid()) {
         error(QtXmlPatterns::tr("Loaded schema file is invalid."));
         return false;

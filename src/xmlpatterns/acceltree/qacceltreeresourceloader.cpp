@@ -47,7 +47,6 @@
 #include <QtNetwork/QNetworkRequest>
 
 #include "qatomicstring_p.h"
-#include "qautoptr_p.h"
 #include "qcommonsequencetypes_p.h"
 
 #include "qacceltreeresourceloader_p.h"
@@ -73,13 +72,13 @@ bool AccelTreeResourceLoader::retrieveDocument(const QUrl &uri,
     Q_ASSERT(uri.isValid());
     AccelTreeBuilder<true> builder(uri, uri, m_namePool, context.data(), m_features);
 
-    const AutoPtr<QNetworkReply> reply(load(uri, m_networkAccessDelegator, context));
+    const std::unique_ptr<QNetworkReply> reply(load(uri, m_networkAccessDelegator, context));
 
     if(!reply)
         return false;
 
     bool success = false;
-    success = streamToReceiver(reply.data(), &builder, m_namePool, context, uri);
+    success = streamToReceiver(reply.get(), &builder, m_namePool, context, uri);
 
     m_loadedDocuments.insert(uri, builder.builtDocument());
     return success;
@@ -319,7 +318,7 @@ bool AccelTreeResourceLoader::retrieveUnparsedText(const QUrl &uri,
                                                    const ReportContext::Ptr &context,
                                                    const SourceLocationReflection *const where)
 {
-    const AutoPtr<QNetworkReply> reply(load(uri, m_networkAccessDelegator, context));
+    const std::unique_ptr<QNetworkReply> reply(load(uri, m_networkAccessDelegator, context));
 
     if(!reply)
         return false;

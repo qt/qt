@@ -65,7 +65,7 @@ Item ElementConstructor::evaluateSingleton(const DynamicContext::Ptr &context) c
     const Item name(m_operand1->evaluateSingleton(context));
 
     const NodeBuilder::Ptr nodeBuilder(context->nodeBuilder(m_staticBaseURI));
-    OutputValidator validator(nodeBuilder.data(), context, this, m_isXSLT);
+    OutputValidator validator(nodeBuilder.get(), context, this, m_isXSLT);
 
     const DynamicContext::Ptr receiverContext(context->createReceiverContext(&validator));
 

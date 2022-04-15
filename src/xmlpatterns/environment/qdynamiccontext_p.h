@@ -52,7 +52,6 @@
 #ifndef Patternist_DynamicContext_H
 #define Patternist_DynamicContext_H
 
-#include "qautoptr_p.h"
 #include "qcachecells_p.h"
 #include "qexternalvariableloader_p.h"
 #include "qitem_p.h"

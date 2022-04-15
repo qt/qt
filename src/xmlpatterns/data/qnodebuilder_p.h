@@ -54,7 +54,8 @@
 
 #include "qitem_p.h"
 #include "qabstractxmlreceiver.h"
-#include "qautoptr_p.h"
+
+#include <memory>
 
 QT_BEGIN_HEADER
 
@@ -72,7 +73,7 @@ namespace QPatternist
     class NodeBuilder : public QAbstractXmlReceiver
     {
     public:
-        typedef AutoPtr<NodeBuilder> Ptr;
+        typedef std::unique_ptr<NodeBuilder> Ptr;
 
         inline NodeBuilder()
         {

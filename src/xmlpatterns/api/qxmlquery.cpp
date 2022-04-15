@@ -481,7 +481,7 @@ void QXmlQuery::setQuery(const QUrl &queryURI, const QUrl &baseURI)
 
     d->queryURI = QPatternist::XPathHelper::normalizeQueryURI(baseURI.isEmpty() ? queryURI : baseURI);
 
-    QPatternist::AutoPtr<QIODevice> result;
+    std::unique_ptr<QIODevice> result;
 
     try
     {
@@ -495,7 +495,7 @@ void QXmlQuery::setQuery(const QUrl &queryURI, const QUrl &baseURI)
 
     if(result)
     {
-        setQuery(result.data(), d->queryURI);
+        setQuery(result.get(), d->queryURI);
         result->close();
     }
     else

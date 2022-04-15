@@ -43,7 +43,6 @@
 
 #include "private/qxmlutils_p.h"
 #include "qacceltreeresourceloader_p.h"
-#include "qautoptr_p.h"
 #include "qboolean_p.h"
 #include "qcommonnamespaces_p.h"
 #include "qderivedinteger_p.h"
@@ -600,11 +599,11 @@ void XsdSchemaParser::parseInclude()
     } else {
         m_includedSchemas.insert(url);
 
-        const AutoPtr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
+        const std::unique_ptr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
                                                                          XsdSchemaContext::Ptr(m_context), AccelTreeResourceLoader::ContinueOnError));
         if (reply) {
             // parse the included schema by a different parser but with the same context
-            XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.data());
+            XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.get());
             parser.setDocumentURI(url);
             parser.setTargetNamespaceExtended(m_targetNamespace);
             parser.setIncludedSchemas(m_includedSchemas);
@@ -696,11 +695,11 @@ void XsdSchemaParser::parseImport()
             // namespace we should add it as well
             m_importedSchemas.insert(importNamespace);
 
-            AutoPtr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
+            std::unique_ptr<QNetworkReply> reply(AccelTreeResourceLoader::load(url, m_context->networkAccessManager(),
                                                                        XsdSchemaContext::Ptr(m_context), AccelTreeResourceLoader::ContinueOnError));
             if (reply) {
                 // parse the included schema by a different parser but with the same context
-                XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.data());
+                XsdSchemaParser parser(XsdSchemaContext::Ptr(m_context), XsdSchemaParserContext::Ptr(m_parserContext), reply.get());
                 parser.setDocumentURI(url);
                 parser.setTargetNamespace(importNamespace);
                 parser.setIncludedSchemas(m_includedSchemas);
