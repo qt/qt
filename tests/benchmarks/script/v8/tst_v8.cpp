@@ -100,8 +100,8 @@ void tst_V8::cleanup()
 void tst_V8::benchmark_data()
 {
     QTest::addColumn<QString>("testName");
-    QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
-    foreach (QFileInfo tfi, testFileInfos) {
+    const QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    for (const QFileInfo &tfi : testFileInfos) {
         QString name = tfi.baseName();
         if (name == QString::fromLatin1("base")) {
             // base.js contains the benchmark library, it's not a test.

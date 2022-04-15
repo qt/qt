@@ -112,8 +112,8 @@ void tst_Context2D::newEnvironment()
 void tst_Context2D::singleExecution_data()
 {
     QTest::addColumn<QString>("testName");
-    QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
-    foreach (QFileInfo tfi, testFileInfos) {
+    const QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    for (const QFileInfo &tfi : testFileInfos) {
         QString name = tfi.baseName();
         QTest::newRow(name.toLatin1().constData()) << name;
     }
@@ -144,8 +144,8 @@ void tst_Context2D::repeatedExecution_data()
     // us to observe potential effects of profiling-based JIT optimizations.
     QTest::addColumn<QString>("testName");
     QTest::addColumn<QString>("script");
-    QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
-    foreach (QFileInfo tfi, testFileInfos) {
+    const QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    for (const QFileInfo &tfi : testFileInfos) {
         QString script = readFile(tfi.absoluteFilePath());
         QString name = tfi.baseName();
         newEnvironment();

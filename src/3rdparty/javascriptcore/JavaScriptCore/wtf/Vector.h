@@ -618,7 +618,7 @@ namespace WTF {
     QDataStream& operator<<(QDataStream& stream, const Vector<T>& data)
     {
         stream << qint64(data.size());
-        foreach (const T& i, data)
+        for (const T& i : data)
             stream << i;
         return stream;
     }

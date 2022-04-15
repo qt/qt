@@ -196,8 +196,8 @@ void tst_QScriptJSTestSuite::runTestFunction(int testIndex)
         QString suiteShellPath = testSuiteDir.absoluteFilePath("shell.js");
         QString suiteShellContents = readFile(suiteShellPath);
 
-        QFileInfoList testFileInfos = subSuiteDir.entryInfoList(QStringList() << "*.js", QDir::Files);
-        foreach (QFileInfo tfi, testFileInfos) {
+        const QFileInfoList testFileInfos = subSuiteDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+        for (const QFileInfo &tfi : testFileInfos) {
             if ((tfi.fileName() == "shell.js") || (tfi.fileName() == "browser.js"))
                 continue;
 
@@ -338,12 +338,12 @@ tst_QScriptJSTestSuite::tst_QScriptJSTestSuite()
 // don't execute any tests on slow machines
 #if !defined(Q_OS_IRIX)
     // do all the test suites
-    QFileInfoList testSuiteDirInfos = testsDir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-    foreach (QFileInfo tsdi, testSuiteDirInfos) {
+    const QFileInfoList testSuiteDirInfos = testsDir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo &tsdi : testSuiteDirInfos) {
         QDir testSuiteDir(tsdi.absoluteFilePath());
         // do all the dirs in the test suite
-        QFileInfoList subSuiteDirInfos = testSuiteDir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        foreach (QFileInfo ssdi, subSuiteDirInfos) {
+        const QFileInfoList subSuiteDirInfos = testSuiteDir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+        for (const QFileInfo &ssdi : subSuiteDirInfos) {
             subSuitePaths.append(ssdi.absoluteFilePath());
             QString function = QString::fromLatin1("%0/%1")
                                .arg(testSuiteDir.dirName()).arg(ssdi.fileName());

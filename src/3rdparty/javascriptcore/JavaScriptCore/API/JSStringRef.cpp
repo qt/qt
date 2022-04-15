@@ -67,18 +67,18 @@ void JSStringRelease(JSStringRef string)
 
 size_t JSStringGetLength(JSStringRef string)
 {
-    return string->length();
+    return string ? string->length() : 0;
 }
 
 const JSChar* JSStringGetCharactersPtr(JSStringRef string)
 {
-    return string->characters();
+    return string ? string->characters() : nullptr;
 }
 
 size_t JSStringGetMaximumUTF8CStringSize(JSStringRef string)
 {
     // Any UTF8 character > 3 bytes encodes as a UTF16 surrogate pair.
-    return string->length() * 3 + 1; // + 1 for terminating '\0'
+    return string ? string->length() * 3 + 1 : 1; // + 1 for terminating '\0'
 }
 
 size_t JSStringGetUTF8CString(JSStringRef string, char* buffer, size_t bufferSize)
@@ -86,9 +86,11 @@ size_t JSStringGetUTF8CString(JSStringRef string, char* buffer, size_t bufferSiz
     if (!bufferSize)
         return 0;
 
-    char* p = buffer;
-    const UChar* d = string->characters();
-    ConversionResult result = convertUTF16ToUTF8(&d, d + string->length(), &p, p + bufferSize - 1, true);
+    char* p = buffer;ConversionResult result = conversionOK;
+    if (string) {
+        const UChar* d = string->characters();
+        result = convertUTF16ToUTF8(&d, d + string->length(), &p, p + bufferSize - 1, true);
+    }
     *p++ = '\0';
     if (result != conversionOK && result != targetExhausted)
         return 0;
@@ -98,6 +100,10 @@ size_t JSStringGetUTF8CString(JSStringRef string, char* buffer, size_t bufferSiz
 
 bool JSStringIsEqual(JSStringRef a, JSStringRef b)
 {
+    if (!a)
+        return (!b || b->length() == 0);
+    if (!b)
+        return (!a || a->length() == 0);
     unsigned len = a->length();
     return len == b->length() && 0 == memcmp(a->characters(), b->characters(), len * sizeof(UChar));
 }

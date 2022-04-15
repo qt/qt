@@ -1762,7 +1762,7 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_call_NotJSFunction)
         CallFrame* previousCallFrame = stackFrame.callFrame;
         CallFrame* callFrame = CallFrame::create(previousCallFrame->registers() + registerOffset);
 
-        callFrame->init(0, static_cast<Instruction*>((STUB_RETURN_ADDRESS).value()), previousCallFrame->scopeChain(), previousCallFrame, 0, argCount, 0);
+        callFrame->init(0, static_cast<Instruction*>((STUB_RETURN_ADDRESS).value()), previousCallFrame->scopeChain(), previousCallFrame, 0, argCount, asObject(funcVal));
         stackFrame.callFrame = callFrame;
 
         Register* argv = stackFrame.callFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;

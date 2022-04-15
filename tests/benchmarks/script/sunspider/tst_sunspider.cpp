@@ -100,8 +100,8 @@ void tst_SunSpider::cleanup()
 void tst_SunSpider::benchmark_data()
 {
     QTest::addColumn<QString>("testName");
-    QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
-    foreach (QFileInfo tfi, testFileInfos) {
+    const QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    for (const QFileInfo &tfi : testFileInfos) {
         QString name = tfi.baseName();
         QTest::newRow(name.toLatin1().constData()) << name;
     }

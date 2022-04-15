@@ -2756,7 +2756,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
     JSC::CallFrame *newCallFrame = exec;
     if (callee == 0 //called from  public QScriptEngine::pushContext
         || exec->returnPC() == 0 || (contextFlags(exec) & NativeContext) //called from native-native call
-        || (exec->codeBlock() && exec->callee() != callee)) { //the interpreter did not build a frame for us.
+        || exec->callee() != callee) { //the interpreter did not build a frame for us.
         //We need to check if the Interpreter might have already created a frame for function called from JS.
         JSC::Interpreter *interp = exec->interpreter();
         JSC::Register *oldEnd = interp->registerFile().end();

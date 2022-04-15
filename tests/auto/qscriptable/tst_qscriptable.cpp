@@ -89,6 +89,9 @@ public slots:
     QScriptValue getArguments();
     int getArgumentCount();
 
+    QString toString() const;
+    int valueOf() const;
+
 signals:
     void sig(int);
 
@@ -188,6 +191,16 @@ bool MyScriptable::isBar()
     return str.contains(QLatin1Char('@'));
 }
 
+QString MyScriptable::toString() const
+{
+    return thisObject().property("objectName").toString();
+}
+
+int MyScriptable::valueOf() const
+{
+    return thisObject().property("baz").toInt32();
+}
+
 class tst_QScriptable : public QObject
 {
     Q_OBJECT
@@ -204,6 +217,8 @@ private slots:
     void thisObject();
     void arguments();
     void throwError();
+    void stringConstructor();
+    void numberConstructor();
 
 private:
     QScriptEngine m_engine;
@@ -400,6 +415,36 @@ void tst_QScriptable::throwError()
     QCOMPARE(m_scriptable.lastEngine(), &m_engine);
     QCOMPARE(ret.isError(), true);
     QCOMPARE(ret.toString(), QString("Error: MyScriptable.foo"));
+}
+
+void tst_QScriptable::stringConstructor()
+{
+    m_scriptable.setObjectName("TestObject");
+
+    m_engine.globalObject().setProperty("js_obj", m_engine.newObject());
+    m_engine.evaluate(
+        "js_obj.str = scriptable.toString();"
+        "js_obj.toString = function() { return this.str }");
+
+    QCOMPARE(m_engine.evaluate("String(scriptable)").toString(),
+             m_engine.evaluate("String(js_obj)").toString());
+
+    QCOMPARE(m_engine.evaluate("String(scriptable)").toString(),
+             m_engine.evaluate("scriptable.toString()").toString());
+}
+
+void tst_QScriptable::numberConstructor()
+{
+    m_engine.globalObject().setProperty("js_obj", m_engine.newObject());
+    m_engine.evaluate(
+        "js_obj.num = scriptable.valueOf();"
+        "js_obj.valueOf = function() { return this.num }");
+
+    QCOMPARE(m_engine.evaluate("Number(scriptable)").toInt32(),
+             m_engine.evaluate("Number(js_obj)").toInt32());
+
+    QCOMPARE(m_engine.evaluate("Number(scriptable)").toInt32(),
+             m_engine.evaluate("scriptable.valueOf()").toInt32());
 }
 
 QTEST_MAIN(tst_QScriptable)

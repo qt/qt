@@ -774,22 +774,30 @@ namespace JSC {
     // JSValue member functions.
     inline EncodedJSValue JSValue::encode(JSValue value)
     {
-        return reinterpret_cast<EncodedJSValue>(value.m_ptr);
+        EncodedJSValue r;
+        memcpy(&r, &value.m_ptr, sizeof(r));
+        return r;
     }
 
     inline JSValue JSValue::decode(EncodedJSValue ptr)
     {
-        return JSValue(reinterpret_cast<JSCell*>(ptr));
+        JSCell *cellPtr;
+        memcpy(&cellPtr, &ptr, sizeof(cellPtr));
+        return JSValue(cellPtr);
     }
 
     inline JSValue JSValue::makeImmediate(intptr_t value)
     {
-        return JSValue(reinterpret_cast<JSCell*>(value));
+        JSCell *cellPtr;
+        memcpy(&cellPtr, &value, sizeof(cellPtr));
+        return JSValue(cellPtr);
     }
 
     inline intptr_t JSValue::immediateValue()
     {
-        return reinterpret_cast<intptr_t>(m_ptr);
+        intptr_t v;
+        memcpy(&v, &m_ptr, sizeof(v));
+        return v;
     }
     
     // 0x0 can never occur naturally because it has a tag of 00, indicating a pointer value, but a payload of 0x0, which is in the (invalid) zero page.
