@@ -362,7 +362,8 @@ void QStackedLayout::setCurrentWidget(QWidget *widget)
 {
     int index = indexOf(widget);
     if (index == -1) {
-        qWarning("QStackedLayout::setCurrentWidget: Widget %p not contained in stack", widget);
+        qWarning("QStackedLayout::setCurrentWidget: Widget %p not contained in stack",
+                 static_cast<void*>(widget));
         return;
     }
     setCurrentIndex(index);

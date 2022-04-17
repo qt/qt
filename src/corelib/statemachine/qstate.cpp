@@ -399,7 +399,9 @@ void QState::removeTransition(QAbstractTransition *transition)
     if (transition->sourceState() != this) {
         qWarning("QState::removeTransition: transition %p's source state (%p)"
                  " is different from this state (%p)",
-                 transition, transition->sourceState(), this);
+                 static_cast<void*>(transition),
+                 static_cast<void*>(transition->sourceState()),
+                 static_cast<void*>(this));
         return;
     }
     QStateMachinePrivate *mach = QStateMachinePrivate::get(d->machine());
@@ -457,12 +459,12 @@ void QState::setInitialState(QAbstractState *state)
     Q_D(QState);
     if (d->childMode == QState::ParallelStates) {
         qWarning("QState::setInitialState: ignoring attempt to set initial state "
-                 "of parallel state group %p", this);
+                 "of parallel state group %p", static_cast<void*>(this));
         return;
     }
     if (state && (state->parentState() != this)) {
         qWarning("QState::setInitialState: state %p is not a child of this state (%p)",
-                 state, this);
+                 static_cast<void*>(state), static_cast<void*>(this));
         return;
     }
     d->initialState = state;

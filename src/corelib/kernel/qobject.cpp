@@ -719,11 +719,11 @@ static bool check_parent_thread(QObject *parent,
         qWarning("QObject: Cannot create children for a parent that is in a different thread.\n"
                  "(Parent is %s(%p), parent's thread is %s(%p), current thread is %s(%p)",
                  parent->metaObject()->className(),
-                 parent,
+                 static_cast<void*>(parent),
                  parentThread ? parentThread->metaObject()->className() : "QThread",
-                 parentThread,
+                 static_cast<void*>(parentThread),
                  currentThread ? currentThread->metaObject()->className() : "QThread",
-                 currentThread);
+                 static_cast<void*>(currentThread));
         return false;
     }
     return true;
@@ -1451,7 +1451,9 @@ void QObject::moveToThread(QThread *targetThread)
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread, d->threadData->thread, targetData->thread);
+                 static_cast<void*>(currentData->thread),
+                 static_cast<void*>(d->threadData->thread),
+                 static_cast<void*>(targetData->thread));
 
 #ifdef Q_WS_MAC
         qWarning("On Mac OS X, you might be loading two sets of Qt binaries into the same process. "
@@ -3521,8 +3523,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 if (receiverInSameThread) {
                     qWarning("Qt: Dead lock detected while activating a BlockingQueuedConnection: "
                     "Sender is %s(%p), receiver is %s(%p)",
-                    sender->metaObject()->className(), sender,
-                    receiver->metaObject()->className(), receiver);
+                    sender->metaObject()->className(),
+                    static_cast<void*>(sender),
+                    receiver->metaObject()->className(),
+                    static_cast<void*>(receiver));
                 }
                 QSemaphore semaphore;
                 QCoreApplication::postEvent(receiver, new QMetaCallEvent(c->method_offset, c->method_relative,

@@ -1810,7 +1810,7 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
             QString name = w->objectName();
             if (name.isEmpty()) {
                 qWarning("QMainWindow::saveState(): 'objectName' not set for QDockWidget %p '%s;",
-                         w, qPrintable(w->windowTitle()));
+                         static_cast<void*>(w), qPrintable(w->windowTitle()));
             }
             stream << name;
 

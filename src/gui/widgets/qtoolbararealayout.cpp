@@ -1273,7 +1273,8 @@ void QToolBarAreaLayout::saveState(QDataStream &stream) const
                 QString objectName = widget->objectName();
                 if (objectName.isEmpty()) {
                     qWarning("QMainWindow::saveState(): 'objectName' not set for QToolBar %p '%s'",
-                                widget, widget->windowTitle().toLocal8Bit().constData());
+                                static_cast<void*>(widget),
+                             widget->windowTitle().toLocal8Bit().constData());
                 }
                 stream << objectName;
                 // we store information as:

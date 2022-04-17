@@ -128,8 +128,8 @@ void **QThreadStorageData::get() const
 
     DEBUG_MSG("QThreadStorageData: Returning storage %d, data %p, for thread %p",
           id,
-          *v,
-          data->thread);
+          static_cast<void*>(*v),
+          static_cast<void*>(data->thread));
 
     return *v ? v : 0;
 }
@@ -150,8 +150,8 @@ void **QThreadStorageData::set(void *p)
     if (value != 0) {
         DEBUG_MSG("QThreadStorageData: Deleting previous storage %d, data %p, for thread %p",
                 id,
-                value,
-                data->thread);
+                static_cast<void*>(value),
+                static_cast<void*>(data->thread));
 
         QMutexLocker locker(mutex());
         DestructorMap *destr = destructors();
@@ -167,7 +167,10 @@ void **QThreadStorageData::set(void *p)
 
     // store new data
     value = p;
-    DEBUG_MSG("QThreadStorageData: Set storage %d for thread %p to %p", id, data->thread, p);
+    DEBUG_MSG("QThreadStorageData: Set storage %d for thread %p to %p",
+              id,
+              static_cast<void*>(data->thread),
+              static_cast<void*>(p));
     return &value;
 }
 
@@ -177,7 +180,7 @@ void QThreadStorageData::finish(void **p)
     if (!tls || tls->isEmpty() || !mutex())
         return; // nothing to do
 
-    DEBUG_MSG("QThreadStorageData: Destroying storage for thread %p", QThread::currentThread());
+    DEBUG_MSG("QThreadStorageData: Destroying storage for thread %p", static_cast<void*>(QThread::currentThread()));
     while (!tls->isEmpty()) {
         void *&value = tls->last();
         void *q = value;
@@ -197,7 +200,7 @@ void QThreadStorageData::finish(void **p)
         if (!destructor) {
             if (QThread::currentThread())
                 qWarning("QThreadStorage: Thread %p exited after QThreadStorage %d destroyed",
-                         QThread::currentThread(), i);
+                         static_cast<void*>(QThread::currentThread()), i);
             continue;
         }
         destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed

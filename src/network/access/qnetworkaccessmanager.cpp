@@ -1146,7 +1146,7 @@ QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProx
         proxies = proxyFactory->queryProxy(query);
         if (proxies.isEmpty()) {
             qWarning("QNetworkAccessManager: factory %p has returned an empty result set",
-                     proxyFactory);
+                     static_cast<void*>(proxyFactory));
             proxies << QNetworkProxy::NoProxy;
         }
     } else if (proxy.type() == QNetworkProxy::DefaultProxy) {

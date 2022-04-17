@@ -305,7 +305,7 @@ QClipboardINCRTransaction::QClipboardINCRTransaction(Window w, Atom p, Atom t, i
                                                      QByteArray d, unsigned int i)
     : window(w), property(p), target(t), format(f), data(d), increment(i), offset(0u)
 {
-    DEBUG("QClipboard: sending %d bytes (INCR transaction %p)", d.size(), this);
+    DEBUG("QClipboard: sending %d bytes (INCR transaction %p)", d.size(), static_cast<void*>(this));
 
     XSelectInput(X11->display, window, PropertyChangeMask);
 
@@ -320,7 +320,7 @@ QClipboardINCRTransaction::QClipboardINCRTransaction(Window w, Atom p, Atom t, i
 
 QClipboardINCRTransaction::~QClipboardINCRTransaction(void)
 {
-    VDEBUG("QClipboard: destroyed INCR transacton %p", this);
+    VDEBUG("QClipboard: destroyed INCR transacton %p", static_cast<void*>(this));
 
     XSelectInput(X11->display, window, NoEventMask);
 
@@ -354,7 +354,7 @@ int QClipboardINCRTransaction::x11Event(XEvent *event)
     if (bytes_left > 0) {
         unsigned int xfer = qMin(increment, bytes_left);
         VDEBUG("QClipboard: sending %d bytes, %d remaining (INCR transaction %p)",
-               xfer, bytes_left - xfer, this);
+               xfer, bytes_left - xfer, static_cast<void*>(this));
 
         XChangeProperty(X11->display, window, property, target, format,
                         PropModeReplace, (uchar *) data.data() + offset, xfer);

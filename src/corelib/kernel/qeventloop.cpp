@@ -181,7 +181,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         return -1;
 
     if (d->inExec) {
-        qWarning("QEventLoop::exec: instance %p has already called exec()", this);
+        qWarning("QEventLoop::exec: instance %p has already called exec()", static_cast<void*>(this));
         return -1;
     }
     d->inExec = true;

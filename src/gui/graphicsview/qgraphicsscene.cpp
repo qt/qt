@@ -733,7 +733,7 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
     Q_Q(QGraphicsScene);
     if (item && item->scene() != q) {
         qWarning("QGraphicsScene::setActivePanel: item %p must be part of this scene",
-                 item);
+                 static_cast<void*>(item));
         return;
     }
 

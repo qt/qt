@@ -1415,7 +1415,7 @@ QGraphicsItem::QGraphicsItem(QGraphicsItem *parent
     if (scene && parent && parent->scene() != scene) {
         qWarning("QGraphicsItem::QGraphicsItem: ignoring scene (%p), which is"
                  " different from parent's scene (%p)",
-                 scene, parent->scene());
+                 static_cast<void*>(scene), static_cast<void*>(parent->scene()));
         return;
     }
     if (scene && !parent)
@@ -1435,7 +1435,7 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
     if (scene && parent && parent->scene() != scene) {
         qWarning("QGraphicsItem::QGraphicsItem: ignoring scene (%p), which is"
                  " different from parent's scene (%p)",
-                 scene, parent->scene());
+                 static_cast<void*>(scene), static_cast<void*>(parent->scene()));
         return;
     }
     if (scene && !parent)
@@ -1708,7 +1708,8 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
 void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 {
     if (newParent == this) {
-        qWarning("QGraphicsItem::setParentItem: cannot assign %p as a parent of itself", this);
+        qWarning("QGraphicsItem::setParentItem: cannot assign %p as a parent of itself",
+                 static_cast<void*>(this));
         return;
     }
     if (newParent == d_ptr->parent)
@@ -3434,7 +3435,8 @@ void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
         }
         for (QGraphicsItem *f = item->focusProxy(); f != 0; f = f->focusProxy()) {
             if (f == this) {
-                qWarning("QGraphicsItem::setFocusProxy: %p is already in the focus proxy chain", item);
+                qWarning("QGraphicsItem::setFocusProxy: %p is already in the focus proxy chain",
+                         static_cast<void*>(item));
                 return;
             }
         }
@@ -4709,14 +4711,16 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
     if (sibling == this)
         return;
     if (!sibling || d_ptr->parent != sibling->parentItem()) {
-        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling",
+                 sibling);
         return;
     }
     QList<QGraphicsItem *> *siblings = d_ptr->parent
                                        ? &d_ptr->parent->d_ptr->children
                                        : (d_ptr->scene ? &d_ptr->scene->d_func()->topLevelItems : 0);
     if (!siblings) {
-        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling",
+                 sibling);
         return;
     }
 

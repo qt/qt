@@ -272,9 +272,15 @@ void QDBusAdaptorConnector::relaySlot(void **argv)
     } else {
         qWarning("QtDBus: cannot relay signals from parent %s(%p \"%s\") unless they are emitted in the object's thread %s(%p \"%s\"). "
                  "Current thread is %s(%p \"%s\").",
-                 parent()->metaObject()->className(), parent(), qPrintable(parent()->objectName()),
-                 parent()->thread()->metaObject()->className(), parent()->thread(), qPrintable(parent()->thread()->objectName()),
-                 QThread::currentThread()->metaObject()->className(), QThread::currentThread(), qPrintable(QThread::currentThread()->objectName()));
+                 parent()->metaObject()->className(),
+                 static_cast<void*>(parent()),
+                 qPrintable(parent()->objectName()),
+                 parent()->thread()->metaObject()->className(),
+                 static_cast<void*>(parent()->thread()),
+                 qPrintable(parent()->thread()->objectName()),
+                 QThread::currentThread()->metaObject()->className(),
+                 static_cast<void*>(QThread::currentThread()),
+                 qPrintable(QThread::currentThread()->objectName()));
     }
 }
 

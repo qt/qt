@@ -877,7 +877,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         err = FT_Load_Glyph(face, glyph, load_flags);
     }
     if (err != FT_Err_Ok)
-        qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
+        qWarning("load glyph failed err=%x face=%p, glyph=%d", err, static_cast<void*>(face), glyph);
 
     if (set->outline_drawing && fetchMetricsOnly)
         return 0;
@@ -903,7 +903,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         err = FT_Render_Glyph(slot, hsubpixel ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_LCD_V);
 
         if (err != FT_Err_Ok)
-            qWarning("render glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
+            qWarning("render glyph failed err=%x face=%p, glyph=%d", err, static_cast<void*>(face), glyph);
 
         FT_Library_SetLcdFilter(library, FT_LCD_FILTER_NONE);
 

@@ -1706,7 +1706,7 @@ bool QMetaMethod::invoke(QObject *object,
         if (currentThread == objectThread) {
             qWarning("QMetaMethod::invoke: Dead lock detected in "
                         "BlockingQueuedConnection: Receiver is %s(%p)",
-                        mobj->className(), object);
+                        mobj->className(), static_cast<void*>(object));
         }
 
         QSemaphore semaphore;

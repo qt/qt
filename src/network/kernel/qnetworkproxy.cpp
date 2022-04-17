@@ -331,7 +331,7 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
     result = applicationLevelProxyFactory->queryProxy(query);
     if (result.isEmpty()) {
         qWarning("QNetworkProxyFactory: factory %p has returned an empty result set",
-                 applicationLevelProxyFactory);
+                 static_cast<void*>(applicationLevelProxyFactory));
         result << QNetworkProxy(QNetworkProxy::NoProxy);
     }
     return result;

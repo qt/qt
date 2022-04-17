@@ -1838,7 +1838,9 @@ void QStateMachine::removeState(QAbstractState *state)
     if (QAbstractStatePrivate::get(state)->machine() != this) {
         qWarning("QStateMachine::removeState: state %p's machine (%p)"
                  " is different from this machine (%p)",
-                 state, QAbstractStatePrivate::get(state)->machine(), this);
+                 static_cast<void*>(state),
+                 static_cast<void*>(QAbstractStatePrivate::get(state)->machine()),
+                 static_cast<void*>(this));
         return;
     }
     state->setParent(0);

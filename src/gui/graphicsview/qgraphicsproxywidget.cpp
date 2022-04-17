@@ -641,7 +641,8 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         QWExtra *extra = newWidget->parentWidget()->d_func()->extra;
         if (!extra || !extra->proxyWidget)  {
             qWarning("QGraphicsProxyWidget::setWidget: cannot embed widget %p "
-                     "which is not a toplevel widget, and is not a child of an embedded widget", newWidget);
+                     "which is not a toplevel widget, and is not a child of an embedded widget",
+                     static_cast<void*>(newWidget));
             return;
         }
     }
@@ -657,7 +658,7 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (*proxyWidget) {
         if (*proxyWidget != q) {
             qWarning("QGraphicsProxyWidget::setWidget: cannot embed widget %p"
-                        "; already embedded", newWidget);
+                        "; already embedded", static_cast<void*>(newWidget));
         }
         return;
     }

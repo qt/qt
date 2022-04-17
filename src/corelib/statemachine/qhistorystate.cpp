@@ -177,7 +177,9 @@ void QHistoryState::setDefaultState(QAbstractState *state)
     Q_D(QHistoryState);
     if (state && state->parentState() != parentState()) {
         qWarning("QHistoryState::setDefaultState: state %p does not belong "
-                 "to this history state's group (%p)", state, parentState());
+                 "to this history state's group (%p)",
+                 static_cast<void*>(state),
+                 static_cast<void*>(parentState()));
         return;
     }
     d->defaultState = state;
