@@ -568,6 +568,8 @@ QImage ICOReader::iconAt(int index)
                 icoAttrib.h = iconEntry.bHeight;
                 if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
+                if (icoAttrib.w > 256 || icoAttrib.h > 256) // Max ico size
+                    return img;
 
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)
@@ -583,18 +585,21 @@ QImage ICOReader::iconAt(int index)
                     if (!image.isNull()) {
                         readBMP(image);
                         if (!image.isNull()) {
-                            QImage mask(image.width(), image.height(), QImage::Format_Mono);
-                            if (!mask.isNull()) {
-                                mask.setColorCount(2);
-                                mask.setColor(0, qRgba(255,255,255,0xff));
-                                mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
-                                read1BitBMP(mask);
+                            if (icoAttrib.depth == 32) {
+                                img = std::move(image).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+                            } else {
+                                QImage mask(image.width(), image.height(), QImage::Format_Mono);
                                 if (!mask.isNull()) {
-                                    img = QImage(image.width(), image.height(), QImage::Format_ARGB32 );
-                                    img = image;
-                                    img.setAlphaChannel(mask);
-                                    // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
-                                    // of partially transparent pixels in those icons that have that)
+                                    mask.setColorCount(2);
+                                    mask.setColor(0, qRgba(255,255,255,0xff));
+                                    mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
+                                    read1BitBMP(mask);
+                                    if (!mask.isNull()) {
+                                        img = image;
+                                        img.setAlphaChannel(mask);
+                                        // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
+                                        // of partially transparent pixels in those icons that have that)
+                                    }
                                 }
                             }
                         }
@@ -672,12 +677,7 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             QImage maskImage(image.width(), image.height(), QImage::Format_Mono);
             image = image.convertToFormat(QImage::Format_ARGB32);
 
-            if (image.hasAlphaChannel()) {
-                maskImage = image.createAlphaMask();
-            } else {
-                maskImage.fill(0xff);
-            }
-            maskImage = maskImage.convertToFormat(QImage::Format_Mono);
+            maskImage.fill(Qt::color1);
 
             int    nbits = 32;
             int    bpl_bmp = ((image.width()*nbits+31)/32)*4;
@@ -727,7 +727,7 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
                     *b++ = qRed(*p);
                     *b++ = qAlpha(*p);
                     if (qAlpha(*p) > 0)   // Even mostly transparent pixels must not be masked away
-                        maskImage.setPixel(x, y, Qt::color1);  // (i.e. createAlphaMask() takes away too much)
+                        maskImage.setPixel(x, y, 0);
                     p++;
                     x++;
                 }
@@ -735,7 +735,6 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             }
             delete[] buf;
 
-            maskImage.invertPixels();   // seems as though it needs this
             // NOTE! !! The mask is only flipped vertically - not horizontally !!
             for (y = maskImage.height() - 1; y >= 0; y--)
                 buffer.write((char*)maskImage.scanLine(y), maskImage.bytesPerLine());

@@ -513,14 +513,14 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
 }
 
 
-static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQuality)
+static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
+                                JSAMPROW *row_pointer,
+                                const QImage &image,
+                                QIODevice *device,
+                                int sourceQuality)
 {
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
-
-    struct jpeg_compress_struct cinfo;
-    JSAMPROW row_pointer[1];
-    row_pointer[0] = 0;
 
     struct my_jpeg_destination_mgr *iod_dest = new my_jpeg_destination_mgr(device);
     struct my_error_mgr jerr;
@@ -677,6 +677,22 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQ
     }
 
     delete iod_dest;
+    return success;
+}
+
+static bool write_jpeg_image(const QImage &image,
+                             QIODevice *device,
+                             int sourceQuality)
+{
+    // protect these objects from the setjmp/longjmp pair inside
+    // do_write_jpeg_image (by making them non-local).
+    struct jpeg_compress_struct cinfo;
+    JSAMPROW row_pointer[1];
+    row_pointer[0] = 0;
+
+    const bool success = do_write_jpeg_image(cinfo, row_pointer,
+                                             image, device,
+                                             sourceQuality);
     delete [] row_pointer[0];
     return success;
 }
