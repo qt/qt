@@ -1428,7 +1428,6 @@ QByteArray QFontSubset::toTruetype() const
 
 
 
-    uint sumAdvances = 0;
     for (int i = 0; i < nGlyphs(); ++i) {
         glyph_t g = glyph_indices.at(i);
         QPainterPath path;
@@ -1450,9 +1449,6 @@ QByteArray QFontSubset::toTruetype() const
 
         font.maxp.maxPoints = qMax(font.maxp.maxPoints, glyph.numPoints);
         font.maxp.maxContours = qMax(font.maxp.maxContours, glyph.numContours);
-
-        if (glyph.xMax > glyph.xMin)
-            sumAdvances += glyph.xMax - glyph.xMin;
 
 //         qDebug("adding glyph %d size=%d", glyph.index, glyph.data.size());
         glyphs.append(glyph);

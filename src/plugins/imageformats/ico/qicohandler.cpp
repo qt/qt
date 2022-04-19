@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -271,9 +271,7 @@ bool ICOReader::canRead(QIODevice *iodev)
 
         ICONDIR ikonDir;
         if (readIconDir(iodev, &ikonDir)) {
-            qint64 readBytes = ICONDIR_SIZE;
             if (readIconDirEntry(iodev, &ikonDir.idEntries[0])) {
-                readBytes += ICONDIRENTRY_SIZE;
                 // ICO format does not have a magic identifier, so we read 6 different values, which will hopefully be enough to identify the file.
                 if (   ikonDir.idReserved == 0
                     && ikonDir.idType == 1
@@ -529,7 +527,9 @@ QImage ICOReader::iconAt(int index)
 
             static const uchar pngMagicData[] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 
-            iod->seek(iconEntry.dwImageOffset);
+            if (!iod->seek(iconEntry.dwImageOffset)
+                || iconEntry.dwBytesInRes > iod->bytesAvailable())
+                return img;
 
             const QByteArray pngMagic = QByteArray::fromRawData((char*)pngMagicData, sizeof(pngMagicData));
             const bool isPngImage = (iod->read(pngMagic.size()) == pngMagic);
@@ -553,8 +553,12 @@ QImage ICOReader::iconAt(int index)
                 case 4:
                     icoAttrib.depth = 8;
                     break;
-                default:
+                case 1:
                     icoAttrib.depth = 1;
+                    break;
+                default:
+                    return img;
+                    break;
                 }
                 if (icoAttrib.depth == 32)                // there's no colormap
                     icoAttrib.ncolors = 0;
