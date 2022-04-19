@@ -4348,7 +4348,7 @@ void DomWidget::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QLatin1String("native")) {
-            setAttributeNative((attribute.value().toString() == QLatin1String("true") ? true : false));
+            setAttributeNative(attribute.value().toString() == QLatin1String("true"));
             continue;
         }
         reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
@@ -4462,7 +4462,7 @@ void DomWidget::read(const QDomElement &node)
     if (node.hasAttribute(QLatin1String("name")))
         setAttributeName(node.attribute(QLatin1String("name")));
     if (node.hasAttribute(QLatin1String("native")))
-        setAttributeNative((node.attribute(QLatin1String("native")) == QLatin1String("true") ? true : false));
+        setAttributeNative(node.attribute(QLatin1String("native")) == QLatin1String("true"));
 
     for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
         if (!n.isElement())
@@ -6088,23 +6088,23 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QLatin1String("italic")) {
-                setElementItalic((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementItalic(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("bold")) {
-                setElementBold((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementBold(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("underline")) {
-                setElementUnderline((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementUnderline(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("strikeout")) {
-                setElementStrikeOut((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementStrikeOut(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("antialiasing")) {
-                setElementAntialiasing((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementAntialiasing(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("stylestrategy")) {
@@ -6112,7 +6112,7 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QLatin1String("kerning")) {
-                setElementKerning((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementKerning(reader.readElementText() == QLatin1String("true"));
                 continue;
             }
             reader.raiseError(QLatin1String("Unexpected element ") + tag);
@@ -6152,23 +6152,23 @@ void DomFont::read(const QDomElement &node)
                 continue;
             }
             if (tag == QLatin1String("italic")) {
-                setElementItalic((e.text() == QLatin1String("true") ? true : false));
+                setElementItalic(e.text() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("bold")) {
-                setElementBold((e.text() == QLatin1String("true") ? true : false));
+                setElementBold(e.text() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("underline")) {
-                setElementUnderline((e.text() == QLatin1String("true") ? true : false));
+                setElementUnderline(e.text() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("strikeout")) {
-                setElementStrikeOut((e.text() == QLatin1String("true") ? true : false));
+                setElementStrikeOut(e.text() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("antialiasing")) {
-                setElementAntialiasing((e.text() == QLatin1String("true") ? true : false));
+                setElementAntialiasing(e.text() == QLatin1String("true"));
                 continue;
             }
             if (tag == QLatin1String("stylestrategy")) {
@@ -6176,7 +6176,7 @@ void DomFont::read(const QDomElement &node)
                 continue;
             }
             if (tag == QLatin1String("kerning")) {
-                setElementKerning((e.text() == QLatin1String("true") ? true : false));
+                setElementKerning(e.text() == QLatin1String("true"));
                 continue;
             }
     }

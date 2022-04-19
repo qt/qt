@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 typedef struct
 {
     quint8  bWidth;               // Width of the image
-    quint8  bHeight;              // Height of the image (times 2)
+    quint8  bHeight;              // Height of the image (actual height, not times 2)
     quint8  bColorCount;          // Number of colors in image (0 if >=8bpp) [ not ture ]
     quint8  bReserved;            // Reserved
     quint16 wPlanes;              // Color Planes
@@ -104,13 +104,14 @@ public:
     QImage iconAt(int index);
     static bool canRead(QIODevice *iodev);
 
-    static QList<QImage> read(QIODevice * device);
+    static QVector<QImage> read(QIODevice *device);
 
-    static bool write(QIODevice * device, const QList<QImage> & images);
+    static bool write(QIODevice *device, const QVector<QImage> &images);
+
+    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
 
 private:
     bool readHeader();
-    bool readIconEntry(int index, ICONDIRENTRY * iconEntry);
 
     bool readBMPHeader(quint32 imageOffset, BMP_INFOHDR * header);
     void findColorInfo(QImage & image);
@@ -171,7 +172,7 @@ static bool writeIconDirEntry(QIODevice *iodev, const ICONDIRENTRY &iconEntry)
         qToLittleEndian<quint16>(iconEntry.wBitCount, &tmp[6]);
         qToLittleEndian<quint32>(iconEntry.dwBytesInRes, &tmp[8]);
         qToLittleEndian<quint32>(iconEntry.dwImageOffset, &tmp[12]);
-        return (iodev->write((char*)tmp,  ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE) ? true : false;
+        return iodev->write((char*)tmp,  ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE;
     }
 
     return false;
@@ -198,7 +199,7 @@ static bool writeIconDir(QIODevice *iodev, const ICONDIR &iconDir)
         qToLittleEndian(iconDir.idReserved, tmp);
         qToLittleEndian(iconDir.idType, &tmp[2]);
         qToLittleEndian(iconDir.idCount, &tmp[4]);
-        return (iodev->write((char*)tmp,  6) == 6) ? true : false;
+        return iodev->write((char*)tmp,  6) == 6;
     }
     return false;
 }
@@ -241,7 +242,7 @@ static bool writeBMPInfoHeader(QIODevice *iodev, const BMP_INFOHDR &header)
         qToLittleEndian<quint32>(header.biClrUsed, &tmp[32]);
         qToLittleEndian<quint32>(header.biClrImportant, &tmp[36]);
 
-        return (iodev->write((char*)tmp, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE) ? true : false;
+        return iodev->write((char*)tmp, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE;
     }
     return false;
 }
@@ -349,7 +350,7 @@ bool ICOReader::readHeader()
 
 bool ICOReader::readIconEntry(int index, ICONDIRENTRY *iconEntry)
 {
-    if (iod) {
+    if (readHeader()) {
         if (iod->seek(startpos + ICONDIR_SIZE + (index * ICONDIRENTRY_SIZE))) {
             return readIconDirEntry(iod, iconEntry);
         }
@@ -562,10 +563,10 @@ QImage ICOReader::iconAt(int index)
                 if (icoAttrib.ncolors > 256) //color table can't be more than 256
                     return img;
                 icoAttrib.w = iconEntry.bWidth;
-                if (icoAttrib.w == 0)
+                if (icoAttrib.w == 0) // means 256 pixels
                     icoAttrib.w = header.biWidth;
                 icoAttrib.h = iconEntry.bHeight;
-                if (icoAttrib.h == 0)
+                if (icoAttrib.h == 0) // means 256 pixels
                     icoAttrib.h = header.biHeight/2;
 
                 QImage::Format format = QImage::Format_ARGB32;
@@ -616,12 +617,14 @@ QImage ICOReader::iconAt(int index)
 
     \sa write()
 */
-QList<QImage> ICOReader::read(QIODevice * device)
+QVector<QImage> ICOReader::read(QIODevice *device)
 {
-    QList<QImage> images;
+    QVector<QImage> images;
 
     ICOReader reader(device);
-    for (int i = 0; i < reader.count(); i++)
+    const int N = reader.count();
+    images.reserve(N);
+    for (int i = 0; i < N; i++)
         images += reader.iconAt(i);
 
     return images;
@@ -640,7 +643,7 @@ QList<QImage> ICOReader::read(QIODevice * device)
 
     \sa read()
 */
-bool ICOReader::write(QIODevice * device, const QList<QImage> & images)
+bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
 {
     bool retValue = false;
 
@@ -660,10 +663,11 @@ bool ICOReader::write(QIODevice * device, const QList<QImage> & images)
         for (int i=0; i<id.idCount; i++) {
 
             QImage image = images[i];
-            // Scale down the image if it is larger than 128 pixels in either width or height
-            if (image.width() > 128 || image.height() > 128)
+            // Scale down the image if it is larger than 256 pixels in either width or height
+            // because this is a maximum size of image in the ICO file.
+            if (image.width() > 256 || image.height() > 256)
             {
-                image = image.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                image = image.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             }
             QImage maskImage(image.width(), image.height(), QImage::Format_Mono);
             image = image.convertToFormat(QImage::Format_ARGB32);
@@ -681,8 +685,8 @@ bool ICOReader::write(QIODevice * device, const QList<QImage> & images)
             entries[i].bColorCount = 0;
             entries[i].bReserved = 0;
             entries[i].wBitCount = nbits;
-            entries[i].bHeight = image.height();
-            entries[i].bWidth = image.width();
+            entries[i].bHeight = image.height() < 256 ? image.height() : 0;  // 0 means 256
+            entries[i].bWidth = image.width() < 256 ? image.width() : 0;     // 0 means 256
             entries[i].dwBytesInRes = BMP_INFOHDR_SIZE + (bpl_bmp * image.height())
                 + (maskImage.bytesPerLine() * maskImage.height());
             entries[i].wPlanes = 1;
@@ -696,11 +700,11 @@ bool ICOReader::write(QIODevice * device, const QList<QImage> & images)
             bmpHeaders[i].biClrImportant = 0;
             bmpHeaders[i].biClrUsed = entries[i].bColorCount;
             bmpHeaders[i].biCompression = 0;
-            bmpHeaders[i].biHeight = entries[i].bHeight * 2; // 2 is for the mask
+            bmpHeaders[i].biHeight = entries[i].bHeight ? entries[i].bHeight * 2 : 256 * 2; // 2 is for the mask
             bmpHeaders[i].biPlanes = entries[i].wPlanes;
             bmpHeaders[i].biSize = BMP_INFOHDR_SIZE;
             bmpHeaders[i].biSizeImage = entries[i].dwBytesInRes - BMP_INFOHDR_SIZE;
-            bmpHeaders[i].biWidth = entries[i].bWidth;
+            bmpHeaders[i].biWidth = entries[i].bWidth ? entries[i].bWidth : 256;
             bmpHeaders[i].biXPelsPerMeter = 0;
             bmpHeaders[i].biYPelsPerMeter = 0;
 
@@ -781,17 +785,11 @@ QtIcoHandler::~QtIcoHandler()
 QVariant QtIcoHandler::option(ImageOption option) const
 {
     if (option == Size) {
-        QIODevice *device = QImageIOHandler::device();
-        qint64 oldPos = device->pos();
         ICONDIRENTRY iconEntry;
-        if (device->seek(oldPos + ICONDIR_SIZE + (m_currentIconIndex * ICONDIRENTRY_SIZE))) {
-            if (readIconDirEntry(device, &iconEntry)) {
-                device->seek(oldPos);
-                return QSize(iconEntry.bWidth, iconEntry.bHeight);
-            }
+        if (m_pICOReader->readIconEntry(m_currentIconIndex, &iconEntry)) {
+                return QSize(iconEntry.bWidth ? iconEntry.bWidth : 256,
+                            iconEntry.bHeight ? iconEntry.bHeight : 256);
         }
-        if (!device->isSequential())
-            device->seek(oldPos);
     }
     return QVariant();
 }
@@ -853,7 +851,7 @@ bool QtIcoHandler::read(QImage *image)
 bool QtIcoHandler::write(const QImage &image)
 {
     QIODevice *device = QImageIOHandler::device();
-    QList<QImage> imgs;
+    QVector<QImage> imgs;
     imgs.append(image);
     return ICOReader::write(device, imgs);
 }
@@ -883,9 +881,10 @@ bool QtIcoHandler::jumpToImage(int imageNumber)
 {
     if (imageNumber < imageCount()) {
         m_currentIconIndex = imageNumber;
+        return true;
     }
 
-    return (imageNumber < imageCount()) ? true : false;
+    return false;
 }
 
 /*! \reimp
