@@ -137,7 +137,7 @@ class QGLDefaultOverlayFormat: public QGLFormat
 public:
     inline QGLDefaultOverlayFormat()
     {
-        setOption(QGL::FormatOption(0xffff << 16)); // turn off all options
+        setOption(QGL::FormatOption(0xffffU << 16)); // turn off all options
         setOption(QGL::DirectRendering);
         setPlane(1);
     }
@@ -148,7 +148,7 @@ Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
     QGLSignalProxy *proxy = theSignalProxy();
-    if (proxy && proxy->thread() != qApp->thread()) {
+    if (proxy && qApp && proxy->thread() != qApp->thread()) {
         if (proxy->thread() == QThread::currentThread())
             proxy->moveToThread(qApp->thread());
     }
@@ -1867,7 +1867,9 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
 {
     QWriteLocker locker(&m_lock);
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
-    m_cache.insert(cacheKey, texture, cost);
+    const bool inserted = m_cache.insert(cacheKey, texture, cost);
+    Q_UNUSED(inserted) Q_ASSERT(inserted);
+
 }
 
 void QGLTextureCache::remove(qint64 key)
@@ -2229,7 +2231,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
         qreal sy = target_height / qreal(img.height());
 
         quint32 *dest = (quint32 *) dst.scanLine(0); // NB! avoid detach here
-        uchar *srcPixels = (uchar *) img.scanLine(img.height() - 1);
+        const uchar *srcPixels = img.constScanLine(img.height() - 1);
         int sbpl = img.bytesPerLine();
         int dbpl = dst.bytesPerLine();
 
@@ -2687,7 +2689,19 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
             volatileImage.endDataAccess(true);
         }
 #else
-        QImage image = pixmap.toImage();
+        QImage image;
+        QPaintEngine* paintEngine = pixmap.paintEngine();
+        if (!paintEngine || paintEngine->type() != QPaintEngine::Raster)
+            image = pixmap.toImage();
+        else {
+            // QRasterPixmapData::toImage() will deep-copy the backing QImage if there's an active QPainter on it.
+            // For performance reasons, we don't want that here, so we temporarily redirect the paint engine.
+            QPaintDevice* currentPaintDevice = paintEngine->paintDevice();
+            paintEngine->setPaintDevice(0);
+            image = pixmap.toImage();
+            paintEngine->setPaintDevice(currentPaintDevice);
+        }
+
         // If the system depth is 16 and the pixmap doesn't have an alpha channel
         // then we convert it to RGB16 in the hope that it gets uploaded as a 16
         // bit texture which is much faster to access than a 32-bit one.

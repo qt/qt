@@ -311,23 +311,27 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
             for (int x = 0; x < maskWidth; ++x)
                 src[x] = -src[x]; // convert 0 and 1 into 0 and 255
         }
-    } else if (mask.format() == QImage::Format_RGB32) {
+    } else if (mask.depth() == 32) {
         // Make the alpha component equal to the average of the RGB values.
         // This is needed when drawing sub-pixel antialiased text on translucent targets.
         for (int y = 0; y < maskHeight; ++y) {
             quint32 *src = (quint32 *) mask.scanLine(y);
             for (int x = 0; x < maskWidth; ++x) {
-                uchar r = src[x] >> 16;
-                uchar g = src[x] >> 8;
-                uchar b = src[x];
-                quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
+                int r = qRed(src[x]);
+                int g = qGreen(src[x]);
+                int b = qBlue(src[x]);
+                int avg;
+                if (mask.format() == QImage::Format_RGB32)
+                    avg = (r + g + b + 1) / 3; // "+1" for rounding.
+                else // Format_ARGB_Premultiplied
+                    avg = qAlpha(src[x]);
                 src[x] = (src[x] & 0x00ffffff) | (avg << 24);
             }
         }
     }
 
     glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
-    if (mask.format() == QImage::Format_RGB32) {
+    if (mask.depth() == 32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
         // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is

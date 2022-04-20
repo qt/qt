@@ -127,6 +127,7 @@ void QGLPaintDevice::endPaint()
 {
     // Make sure the FBO bound at beginPaint is re-bound again here:
     QGLContext *ctx = context();
+    ctx->makeCurrent();
     if (m_previousFBO != ctx->d_func()->current_fbo) {
         ctx->d_ptr->current_fbo = m_previousFBO;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_previousFBO);
