@@ -152,6 +152,7 @@ inline QSize QSvgTinyDocument::size() const
         const int height = m_heightPercent ? qRound(0.01 * m_size.height() * viewBox().size().height()) : m_size.height();
         return QSize(width, height);
     }
+    return m_size;
 }
 
 inline int QSvgTinyDocument::width() const
