@@ -202,14 +202,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
         idx = indexOfConstructor(norm.constData());
     }
     if (idx < 0)
-        return 0;
+        return nullptr;
 
     QVariant ret(QMetaType::QObjectStar, (void*)0);
     void *param[] = {ret.data(), val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
                      val5.data(), val6.data(), val7.data(), val8.data(), val9.data()};
 
     if (static_metacall(CreateInstance, idx, param) >= 0)
-        return 0;
+        return nullptr;
     return *reinterpret_cast<QObject**>(param[0]);
 }
 
@@ -222,7 +222,7 @@ int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
     if (priv(d.data)->revision >= 6) {
         if (!extra || !extra->static_metacall)
             return 0;
-        extra->static_metacall(0, cl, idx, argv);
+        extra->static_metacall(nullptr, cl, idx, argv);
         return -1;
     } else if (priv(d.data)->revision >= 2) {
         if (!extra || !extra->static_metacall)
@@ -1657,7 +1657,7 @@ bool QMetaMethod::invoke(QObject *object,
     int idx_offset =  mobj->methodOffset();
     QObjectPrivate::StaticMetaCallFunction callFunction =
         (QMetaObjectPrivate::get(mobj)->revision >= 6 && mobj->d.extradata)
-        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
+        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : nullptr;
 
     if (connectionType == Qt::DirectConnection) {
         if (callFunction) {
