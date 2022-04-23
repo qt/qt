@@ -1350,10 +1350,12 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     \sa {QML Animation and Transitions}, {declarative/animation/basics}{Animation basics example}
 */
-QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
+QVariant _q_interpolateShortestRotation(const void* pf, const void* pt, double progress)
 {
-    qreal newt = t;
-    qreal diff = t-f;
+    double t = *static_cast<const double*>(pt);
+    double f = *static_cast<const double*>(pf);
+    double newt = t;
+    double diff = t-f;
     while(diff > 180.0){
         newt -= 360.0;
         diff -= 360.0;
@@ -1365,8 +1367,10 @@ QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
     return QVariant(f + (newt - f) * progress);
 }
 
-QVariant _q_interpolateClockwiseRotation(qreal &f, qreal &t, qreal progress)
+QVariant _q_interpolateClockwiseRotation(const void* pf, const void* pt, double progress)
 {
+    double t = *static_cast<const double*>(pt);
+    double f = *static_cast<const double*>(pf);
     qreal newt = t;
     qreal diff = t-f;
     while(diff < 0.0){
@@ -1376,8 +1380,10 @@ QVariant _q_interpolateClockwiseRotation(qreal &f, qreal &t, qreal progress)
     return QVariant(f + (newt - f) * progress);
 }
 
-QVariant _q_interpolateCounterclockwiseRotation(qreal &f, qreal &t, qreal progress)
+QVariant _q_interpolateCounterclockwiseRotation(const void* pf, const void* pt, double progress)
 {
+    double t = *static_cast<const double*>(pt);
+    double f = *static_cast<const double*>(pf);
     qreal newt = t;
     qreal diff = t-f;
     while(diff > 0.0){
