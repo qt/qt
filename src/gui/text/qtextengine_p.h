@@ -246,14 +246,14 @@ struct QGlyphLayout
             last = numGlyphs;
         if (first == 0 && last == numGlyphs
             && reinterpret_cast<char *>(offsets + numGlyphs) == reinterpret_cast<char *>(glyphs)) {
-            memset(offsets, 0, spaceNeededForGlyphLayout(numGlyphs));
+            memset(static_cast<void *>(offsets), 0, spaceNeededForGlyphLayout(numGlyphs));
         } else {
             const int num = last - first;
-            memset(offsets + first, 0, num * sizeof(QFixedPoint));
+            memset(static_cast<void *>(offsets + first), 0, num * sizeof(QFixedPoint));
             memset(glyphs + first, 0, num * sizeof(HB_Glyph));
-            memset(advances_x + first, 0, num * sizeof(QFixed));
-            memset(advances_y + first, 0, num * sizeof(QFixed));
-            memset(justifications + first, 0, num * sizeof(QGlyphJustification));
+            memset(static_cast<void *>(advances_x + first), 0, num * sizeof(QFixed));
+            memset(static_cast<void *>(advances_y + first), 0, num * sizeof(QFixed));
+            memset(static_cast<void *>(justifications + first), 0, num * sizeof(QGlyphJustification));
             memset(attributes + first, 0, num * sizeof(HB_GlyphAttributes));
         }
     }
