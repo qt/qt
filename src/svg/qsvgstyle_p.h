@@ -224,7 +224,7 @@ private:
     //QSvgImageRendering m_imageRendering;
     qint32 m_imageRendering: 4;
     qint32 m_oldImageRendering: 4;
-    qint32 m_imageRenderingSet: 1;
+    quint32 m_imageRenderingSet: 1;
 };
 
 

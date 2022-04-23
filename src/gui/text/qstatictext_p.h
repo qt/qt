@@ -143,8 +143,8 @@ public:
     int numChars;                                // 4 bytes per item
     QFont font;                                  // 8 bytes per item
     QColor color;                                // 10 bytes per item
-    char useBackendOptimizations : 1;            // 1 byte per item
-    char userDataNeedsUpdate : 1;                //
+    unsigned char useBackendOptimizations : 1;   // 1 byte per item
+    unsigned char userDataNeedsUpdate : 1;       //
                                                  // ================
                                                  // 51 bytes per item
 

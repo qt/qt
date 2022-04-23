@@ -413,10 +413,10 @@ public:
 
     QPaintBufferPrivate *buffer;
 
-    mutable int m_begin_detected : 1;
-    mutable int m_save_detected : 1;
-    mutable int m_stream_raw_text_items : 1;
-    mutable int m_unused : 29;
+    mutable unsigned int m_begin_detected : 1;
+    mutable unsigned int m_save_detected : 1;
+    mutable unsigned int m_stream_raw_text_items : 1;
+    mutable unsigned int m_unused : 29;
 
     mutable QPainterState *m_created_state;
 };

@@ -296,11 +296,11 @@ struct QGLWindowSurfacePrivate
     GLuint tex_id;
     GLuint pb_tex_id;
 
-    int tried_fbo : 1;
-    int tried_pb : 1;
-    int destructive_swap_buffers : 1;
-    int geometry_updated : 1;
-    int did_paint : 1;
+    unsigned int tried_fbo : 1;
+    unsigned int tried_pb : 1;
+    unsigned int destructive_swap_buffers : 1;
+    unsigned int geometry_updated : 1;
+    unsigned int did_paint : 1;
 
     QGLContext *ctx;
 
