@@ -1126,7 +1126,7 @@ static void qgl_use_font(QFontEngineFT *engine, int first, int count, int listBa
             ua_glyph = new uchar[sz];
 
         // convert to GL format
-        for (int y = 0; y < bm.rows; ++y) {
+        for (unsigned int y = 0; y < bm.rows; ++y) {
             for (int x = 0; x < bm.pitch; ++x) {
                 int c1 = y*bm.pitch + x;
                 int c2 = (bm.rows - y - 1) > 0 ? (bm.rows-y-1)*bm.pitch + x : x;

@@ -1055,7 +1055,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 while (h--) {
                     uint *dd = (uint *)dst;
                     *dd++ = 0;
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (unsigned int x = 0; x < slot->bitmap.width; x++) {
                         uint a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xffffff : 0x000000);
                         *dd++ = a;
                     }
@@ -1066,7 +1066,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
             } else if (vfactor != 1) {
                 while (h--) {
                     uint *dd = (uint *)dst;
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (unsigned int x = 0; x < slot->bitmap.width; x++) {
                         uint a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xffffff : 0x000000);
                         *dd++ = a;
                     }
@@ -1075,7 +1075,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 }
             } else {
                 while (h--) {
-                    for (int x = 0; x < slot->bitmap.width; x++) {
+                    for (unsigned int x = 0; x < slot->bitmap.width; x++) {
                         unsigned char a = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xff : 0x00);
                         dst[x] = a;
                     }
