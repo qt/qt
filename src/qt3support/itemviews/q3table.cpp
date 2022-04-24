@@ -5302,7 +5302,7 @@ void Q3Table::repaintSelections(Q3TableSelection *oldSelection,
     }
 
     if (updateHorizontal && numCols() > 0 && left >= 0 && !isRowSelection(selectionMode())) {
-        register int *s = &topHeader->states.data()[left];
+        int *s = &topHeader->states.data()[left];
         for (i = left; i <= right; ++i) {
             if (!isColumnSelected(i))
                 *s = Q3TableHeader::Normal;
@@ -5316,7 +5316,7 @@ void Q3Table::repaintSelections(Q3TableSelection *oldSelection,
     }
 
     if (updateVertical && numRows() > 0 && top >= 0) {
-        register int *s = &leftHeader->states.data()[top];
+        int *s = &leftHeader->states.data()[top];
         for (i = top; i <= bottom; ++i) {
             if (!isRowSelected(i))
                 *s = Q3TableHeader::Normal;
@@ -6595,7 +6595,7 @@ void Q3TableHeader::setSectionStateToAll(SectionState state)
     if (isRowSelection(table->selectionMode()) && orientation() == Horizontal)
         return;
 
-    register int *d = (int *) states.data();
+    int *d = (int *) states.data();
     int n = count();
 
     while (n >= 4) {
@@ -7010,7 +7010,7 @@ void Q3TableHeader::updateSelections()
     int b = sectionAt(endPos);
     int start = QMIN(a, b);
     int end = QMAX(a, b);
-    register int *s = states.data();
+    int *s = states.data();
     for (int i = 0; i < count(); ++i) {
         if (i < start || i > end)
             *s = oldStates.data()[ i ];
@@ -7036,8 +7036,8 @@ void Q3TableHeader::updateSelections()
 void Q3TableHeader::saveStates()
 {
     oldStates.resize(count());
-    register int *s = states.data();
-    register int *s2 = oldStates.data();
+    int *s = states.data();
+    int *s2 = oldStates.data();
     for (int i = 0; i < count(); ++i) {
         *s2 = *s;
         ++s2;
