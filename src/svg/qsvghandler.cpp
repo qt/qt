@@ -2857,7 +2857,7 @@ static void parseBaseGradient(QSvgNode *node,
 
     QMatrix matrix;
     QGradient *grad = gradProp->qgradient();
-    if (!link.isEmpty()) {
+    if (node && !link.isEmpty()) {
         QSvgStyleProperty *prop = node->styleProperty(link);
         //qDebug()<<"inherited "<<prop<<" ("<<link<<")";
         if (prop && prop->type() == QSvgStyleProperty::GRADIENT) {
