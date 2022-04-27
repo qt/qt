@@ -53,7 +53,6 @@ contains(DEFINES, QT_NO_GESTURES): SUBDIRS -= gestures
 
 contains(QT_CONFIG, script): SUBDIRS += script
 
-contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 embedded:SUBDIRS += qws
 !wince*:!symbian: {
     !contains(QT_EDITION, Console):!contains(QT_CONFIG, no-gui):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
