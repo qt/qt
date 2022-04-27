@@ -16,7 +16,6 @@ win32:SRC_SUBDIRS += src_activeqt
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
-contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
@@ -61,8 +60,6 @@ src_openvg.subdir = $$QT_SOURCE_TREE/src/openvg
 src_openvg.target = sub-openvg
 src_qt3support.subdir = $$QT_SOURCE_TREE/src/qt3support
 src_qt3support.target = sub-qt3support
-src_phonon.subdir = $$QT_SOURCE_TREE/src/phonon
-src_phonon.target = sub-phonon
 src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia
 src_multimedia.target = sub-multimedia
 src_activeqt.subdir = $$QT_SOURCE_TREE/src/activeqt
@@ -95,7 +92,6 @@ src_declarative.target = sub-declarative
    src_qt3support.depends = src_gui src_xml src_network src_sql
    src_tools_idc.depends = src_corelib             # target defined in tools.pro
    src_tools_uic3.depends = src_qt3support src_xml # target defined in tools.pro
-   src_phonon.depends = src_gui
    src_multimedia.depends = src_gui
    contains(QT_CONFIG, opengl):src_multimedia.depends += src_opengl
    src_activeqt.depends = src_tools_idc src_gui
@@ -109,7 +105,6 @@ src_declarative.target = sub-declarative
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{
       src_plugins.depends += src_dbus
-      src_phonon.depends +=  src_dbus
    }
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
       src_plugins.depends += src_opengl

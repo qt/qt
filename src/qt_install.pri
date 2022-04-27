@@ -15,15 +15,12 @@ qt_install_headers {
                           $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH/arch
     }
 
-    equals(TARGET, phonon) {
-        class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
-    } else {
-        flat_headers.files = $$INSTALL_HEADERS
-        flat_headers.path = $$[QT_INSTALL_HEADERS]/Qt
-        INSTALLS += flat_headers
+    flat_headers.files = $$INSTALL_HEADERS
+    flat_headers.path = $$[QT_INSTALL_HEADERS]/Qt
+    INSTALLS += flat_headers
 
-        class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
-    }
+    class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
+
     class_headers.files = $$SYNCQT.HEADER_CLASSES
     INSTALLS += class_headers
 
