@@ -370,7 +370,7 @@ protected:
 class Q_CORE_EXPORT QCustomEvent : public QEvent
 {
 public:
-    QT3_SUPPORT_CONSTRUCTOR QCustomEvent(int type, void *data = 0);
+    QT3_SUPPORT_CONSTRUCTOR QCustomEvent(int type, void *data = nullptr);
     ~QCustomEvent();
     QT3_SUPPORT void *data()  const { return d; }
     QT3_SUPPORT void setData(void* aData) { d = reinterpret_cast<QEventPrivate *>(aData); }

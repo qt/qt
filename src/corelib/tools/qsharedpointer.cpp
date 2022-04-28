@@ -1262,7 +1262,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
     x->strongref = -1;
     x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
-    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+    if (!d->sharedRefcount.testAndSetRelease(nullptr, x)) {
         delete x;
         d->sharedRefcount->weakref.ref();
     }
@@ -1431,7 +1431,7 @@ void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile 
 
     //qDebug("Adding d=%p value=%p", d_ptr, ptr);
 
-    const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
+    const void *other_d_ptr = kp->dataPointers.value(ptr, nullptr);
     if (other_d_ptr) {
 #  ifdef BACKTRACE_SUPPORTED
         printBacktrace(knownPointers()->dPointers.value(other_d_ptr).backtrace);
