@@ -142,9 +142,9 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 {
     if (a == b)
         return (ae - be);
-    if (a == 0)
+    if (a == nullptr)
         return 1;
-    if (b == 0)
+    if (b == nullptr)
         return -1;
 
     const ushort *e = ae;
@@ -174,12 +174,12 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 // Case-insensitive comparison between a Unicode string and a QLatin1String
 static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
 {
-    if (a == 0) {
-        if (b == 0)
+    if (a == nullptr) {
+        if (b == nullptr)
             return 0;
         return 1;
     }
-    if (b == 0)
+    if (b == nullptr)
         return -1;
 
     while (a < ae && *b) {
@@ -3459,8 +3459,8 @@ QString QString::mid(int position, int n) const
 */
 bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(),
-                          s.isNull() ? 0 : s.unicode(), s.size(), cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(),
+                          s.isNull() ? nullptr : s.unicode(), s.size(), cs);
 }
 
 /*!
@@ -3468,7 +3468,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
  */
 bool QString::startsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(), s, cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(), s, cs);
 }
 
 /*!
@@ -3498,8 +3498,8 @@ bool QString::startsWith(const QChar &c, Qt::CaseSensitivity cs) const
 */
 bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(),
-                          s.isNull() ? 0 : s.unicode(), s.size(), cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(),
+                          s.isNull() ? nullptr : s.unicode(), s.size(), cs);
 }
 
 /*!
@@ -3515,8 +3515,8 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 */
 bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(),
-                        s.isNull() ? 0 : s.unicode(), s.size(), cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(),
+                        s.isNull() ? nullptr : s.unicode(), s.size(), cs);
     }
 
 /*!
@@ -3532,8 +3532,8 @@ bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
 */
 bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(),
-                        s.isNull() ? 0 : s.unicode(), s.size(), cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(),
+                        s.isNull() ? nullptr : s.unicode(), s.size(), cs);
 }
 
 
@@ -3542,7 +3542,7 @@ bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 */
 bool QString::endsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(), s, cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(), s, cs);
 }
 
 /*!
@@ -3793,7 +3793,7 @@ QByteArray QString::toUtf8() const
     if (isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(constData(), length(), 0);
+    return QUtf8::convertFromUnicode(constData(), length(), nullptr);
 }
 
 /*!
@@ -4020,7 +4020,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    return QUtf8::convertToUnicode(str, size, 0);
+    return QUtf8::convertToUnicode(str, size, nullptr);
 }
 
 /*!
@@ -4049,7 +4049,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
+    return QUtf16::convertToUnicode((const char *)unicode, size*2, nullptr);
 }
 
 
@@ -4073,7 +4073,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
+    return QUtf32::convertToUnicode((const char *)unicode, size*4, nullptr);
 }
 
 /*!
@@ -5595,7 +5595,7 @@ qint64 QString::toLongLong(bool *ok, int base) const
     QLocale def_locale;
     qint64 result = def_locale.d()->stringToLongLong(*this, base, &my_ok, QLocalePrivate::FailOnGroupSeparators);
     if (my_ok) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = true;
         return result;
     }
@@ -5636,7 +5636,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
     QLocale def_locale;
     quint64 result = def_locale.d()->stringToUnsLongLong(*this, base, &my_ok, QLocalePrivate::FailOnGroupSeparators);
     if (my_ok) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = true;
         return result;
     }
@@ -5872,7 +5872,7 @@ double QString::toDouble(bool *ok) const
     QLocale def_locale;
     double result = def_locale.d()->stringToDouble(*this, &my_ok, QLocalePrivate::FailOnGroupSeparators);
     if (my_ok) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = true;
         return result;
     }
@@ -5901,11 +5901,11 @@ float QString::toFloat(bool *ok) const
     bool myOk;
     double d = toDouble(&myOk);
     if (!myOk || d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
         return 0.0;
     }
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
     return (float) d;
 }
@@ -6337,7 +6337,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         version = UNICODE_DATA_VERSION;
     } else if (version != UNICODE_DATA_VERSION) {
         const QString &s = *data;
-        QChar *d = 0;
+        QChar *d = nullptr;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
@@ -8717,8 +8717,8 @@ int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::startsWith(const QString &str, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(),
-                          str.isNull() ? 0 : str.unicode(), str.size(), cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(),
+                          str.isNull() ? nullptr : str.unicode(), str.size(), cs);
 }
 
 /*!
@@ -8728,7 +8728,7 @@ bool QStringRef::startsWith(const QString &str, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::startsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(), str, cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(), str, cs);
 }
 
 /*!
@@ -8738,8 +8738,8 @@ bool QStringRef::startsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::startsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    return qt_starts_with(isNull() ? 0 : unicode(), size(),
-                          str.isNull() ? 0 : str.unicode(), str.size(), cs);
+    return qt_starts_with(isNull() ? nullptr : unicode(), size(),
+                          str.isNull() ? nullptr : str.unicode(), str.size(), cs);
 }
 
 /*!
@@ -8778,8 +8778,8 @@ bool QStringRef::startsWith(QChar ch, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::endsWith(const QString &str, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(),
-                        str.isNull() ? 0 : str.unicode(), str.size(), cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(),
+                        str.isNull() ? nullptr : str.unicode(), str.size(), cs);
 }
 
 /*!
@@ -8814,7 +8814,7 @@ bool QStringRef::endsWith(QChar ch, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::endsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(), str, cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(), str, cs);
 }
 
 /*!
@@ -8824,8 +8824,8 @@ bool QStringRef::endsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
-    return qt_ends_with(isNull() ? 0 : unicode(), size(),
-                        str.isNull() ? 0 : str.unicode(), str.size(), cs);
+    return qt_ends_with(isNull() ? nullptr : unicode(), size(),
+                        str.isNull() ? nullptr : str.unicode(), str.size(), cs);
 }
 
 
@@ -9147,7 +9147,7 @@ QByteArray QStringRef::toUtf8() const
     if (isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(constData(), length(), 0);
+    return QUtf8::convertFromUnicode(constData(), length(), nullptr);
 }
 
 /*!

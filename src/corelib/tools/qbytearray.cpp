@@ -111,7 +111,7 @@ int qAllocMore(int alloc, int extra)
 char *qstrdup(const char *src)
 {
     if (!src)
-        return 0;
+        return nullptr;
     char *dst = new char[strlen(src) + 1];
     return qstrcpy(dst, src);
 }
@@ -131,14 +131,14 @@ char *qstrdup(const char *src)
 char *qstrcpy(char *dst, const char *src)
 {
     if (!src)
-        return 0;
+        return nullptr;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
     int len = qstrlen(src);
 	// This is actually not secure!!! It will be fixed
 	// properly in a later release!
     if (len >= 0 && strcpy_s(dst, len+1, src) == 0)
 	    return dst;
-    return 0;
+    return nullptr;
 #else
     return strcpy(dst, src);
 #endif
@@ -166,7 +166,7 @@ char *qstrcpy(char *dst, const char *src)
 char *qstrncpy(char *dst, const char *src, uint len)
 {
     if (!src || !dst)
-        return 0;
+        return nullptr;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 	strncpy_s(dst, len, src, len-1);
 #else
@@ -1705,7 +1705,7 @@ static inline QByteArray &qbytearray_insert(QByteArray *ba,
 {
     Q_ASSERT(pos >= 0);
 
-    if (pos < 0 || len <= 0 || arr == 0)
+    if (pos < 0 || len <= 0 || arr == nullptr)
         return *ba;
 
     int oldsize = ba->size();
@@ -4135,7 +4135,7 @@ static void q_toPercentEncoding(QByteArray *ba, const char *dontEncode, const ch
     QByteArray input = *ba;
     int len = input.count();
     const char *inputData = input.constData();
-    char *output = 0;
+    char *output = nullptr;
     int length = 0;
 
     for (int i = 0; i < len; ++i) {
@@ -4175,7 +4175,7 @@ void q_toPercentEncoding(QByteArray *ba, const char *exclude, const char *includ
 void q_normalizePercentEncoding(QByteArray *ba, const char *exclude)
 {
     q_fromPercentEncoding(ba, '%');
-    q_toPercentEncoding(ba, exclude, 0, '%');
+    q_toPercentEncoding(ba, exclude, nullptr, '%');
 }
 
 /*!

@@ -90,7 +90,7 @@ QFile::EncoderFn QFilePrivate::encoder = locale_encode;
 QFile::DecoderFn QFilePrivate::decoder = locale_decode;
 
 QFilePrivate::QFilePrivate()
-    : fileEngine(0), lastWasWrite(false),
+    : fileEngine(nullptr), lastWasWrite(false),
       writeBuffer(QFILE_WRITEBUFFER_SIZE), error(QFile::NoError),
       cachedSize(0)
 {
@@ -99,7 +99,7 @@ QFilePrivate::QFilePrivate()
 QFilePrivate::~QFilePrivate()
 {
     delete fileEngine;
-    fileEngine = 0;
+    fileEngine = nullptr;
 }
 
 bool
@@ -111,7 +111,7 @@ QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleF
     return false;
 #else
     delete fileEngine;
-    fileEngine = 0;
+    fileEngine = nullptr;
     QFSFileEngine *fe = new QFSFileEngine;
     fileEngine = fe;
     return fe->open(QIODevice::OpenMode(flags), fd, handleFlags);
@@ -127,7 +127,7 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
     return false;
 #else
     delete fileEngine;
-    fileEngine = 0;
+    fileEngine = nullptr;
     QFSFileEngine *fe = new QFSFileEngine;
     fileEngine = fe;
     return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
@@ -486,7 +486,7 @@ QFile::setFileName(const QString &name)
     }
     if(d->fileEngine) { //get a new file engine later
         delete d->fileEngine;
-        d->fileEngine = 0;
+        d->fileEngine = nullptr;
     }
     d->fileName = name;
 }
@@ -1390,11 +1390,11 @@ uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
             && d->fileEngine->supportsExtension(QAbstractFileEngine::MapExtension)) {
         unsetError();
         uchar *address = d->fileEngine->map(offset, size, flags);
-        if (address == 0)
+        if (address == nullptr)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return address;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

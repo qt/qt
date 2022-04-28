@@ -945,7 +945,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
 {
     *length = 0;
     if (ucs4 > UNICODE_LAST_CODEPOINT)
-        return 0;
+        return nullptr;
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         int SIndex = ucs4 - Hangul_SBase;
         buffer[0] = Hangul_LBase + SIndex / Hangul_NCount; // L
@@ -958,7 +958,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
 
     const unsigned short index = GET_DECOMPOSITION_INDEX(ucs4);
     if (index == 0xffff)
-        return 0;
+        return nullptr;
     const unsigned short *decomposition = uc_decomposition_map+index;
     *tag = (*decomposition) & 0xff;
     *length = (*decomposition) >> 8;

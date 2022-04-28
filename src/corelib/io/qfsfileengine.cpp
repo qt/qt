@@ -119,7 +119,7 @@ void QFSFileEnginePrivate::init()
 #endif
     openMode = QIODevice::NotOpen;
     fd = -1;
-    fh = 0;
+    fh = nullptr;
 #if defined (Q_OS_SYMBIAN)
     symbianFilePos = 0;
 #if !defined(QT_SYMBIAN_USE_NATIVE_FILEMAP)
@@ -221,7 +221,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode)
     d->openMode = openMode;
     d->lastFlushFailed = false;
     d->tried_stat = 0;
-    d->fh = 0;
+    d->fh = nullptr;
     d->fd = -1;
 
     return d->nativeOpen(openMode);
@@ -287,7 +287,7 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
                         qt_error_string(int(errno)));
 
             this->openMode = QIODevice::NotOpen;
-            this->fh = 0;
+            this->fh = nullptr;
 
             return false;
         }
@@ -329,7 +329,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandle
     d->lastFlushFailed = false;
     d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
     d->fileEntry.clear();
-    d->fh = 0;
+    d->fh = nullptr;
     d->fd = -1;
     d->tried_stat = 0;
 
@@ -345,7 +345,7 @@ bool QFSFileEnginePrivate::openFd(QIODevice::OpenMode openMode, int fd)
 {
     Q_Q(QFSFileEngine);
     this->fd = fd;
-    fh = 0;
+    fh = nullptr;
 
     // Seek to the end when in Append mode.
     if (openMode & QFile::Append) {
@@ -428,7 +428,7 @@ bool QFSFileEnginePrivate::closeFdFh()
 
         // We must reset these guys regardless; calling close again after a
         // failed close causes crashes on some systems.
-        fh = 0;
+        fh = nullptr;
         fd = -1;
         closed = (ret == 0);
     }
@@ -791,7 +791,7 @@ QAbstractFileEngine::Iterator *QFSFileEngine::beginEntryList(QDir::Filters filte
 */
 QAbstractFileEngine::Iterator *QFSFileEngine::endEntryList()
 {
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -839,7 +839,7 @@ bool QFSFileEngine::extension(Extension extension, const ExtensionOption *option
         const MapExtensionOption *options = (MapExtensionOption*)(option);
         MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
-        return (returnValue->address != 0);
+        return (returnValue->address != nullptr);
     }
     if (extension == UnMapExtension) {
         UnMapExtensionOption *options = (UnMapExtensionOption*)option;

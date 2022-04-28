@@ -2165,7 +2165,7 @@ Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n)
 void *qMemCopy(void *dest, const void *src, size_t n) { return memcpy(dest, src, n); }
 void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 
-static QtMsgHandler handler = 0;                // pointer to debug handler
+static QtMsgHandler handler = nullptr;                // pointer to debug handler
 
 #if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
 extern bool qt_is_gui_used;
@@ -2256,7 +2256,7 @@ namespace {
 
 QString qt_error_string(int errorCode)
 {
-    const char *s = 0;
+    const char *s = nullptr;
     QString ret;
     if (errorCode == -1) {
 #if defined(Q_OS_WIN)

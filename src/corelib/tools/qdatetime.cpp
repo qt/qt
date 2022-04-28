@@ -178,7 +178,7 @@ static const char * const qt_shortMonthNames[] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 #endif
 #ifndef QT_NO_DATESTRING
-static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* dd = 0);
+static QString fmtDateTime(const QString& f, const QTime* dt = nullptr, const QDate* dd = nullptr);
 #endif
 
 /*****************************************************************************
@@ -341,7 +341,7 @@ bool QDate::isValid() const
 int QDate::year() const
 {
     int y;
-    getDateFromJulianDay(jd, &y, 0, 0);
+    getDateFromJulianDay(jd, &y, nullptr, nullptr);
     return y;
 }
 
@@ -370,7 +370,7 @@ int QDate::year() const
 int QDate::month() const
 {
     int m;
-    getDateFromJulianDay(jd, 0, &m, 0);
+    getDateFromJulianDay(jd, nullptr, &m, nullptr);
     return m;
 }
 
@@ -383,7 +383,7 @@ int QDate::month() const
 int QDate::day() const
 {
     int d;
-    getDateFromJulianDay(jd, 0, 0, &d);
+    getDateFromJulianDay(jd, nullptr, nullptr, &d);
     return d;
 }
 
@@ -482,7 +482,7 @@ int QDate::weekNumber(int *yearNumber) const
         Q_ASSERT(week == 53 || week == 1);
     }
 
-    if (yearNumber != 0)
+    if (yearNumber != nullptr)
         *yearNumber = year;
     return week;
 }
@@ -856,7 +856,7 @@ QString QDate::toString(const QString& format) const
 {
     if (year() > 9999)
         return QString();
-    return fmtDateTime(format, 0, this);
+    return fmtDateTime(format, nullptr, this);
 }
 #endif //QT_NO_DATESTRING
 
@@ -1604,7 +1604,7 @@ QString QTime::toString(Qt::DateFormat format) const
 */
 QString QTime::toString(const QString& format) const
 {
-    return fmtDateTime(format, this, 0);
+    return fmtDateTime(format, this, nullptr);
 }
 #endif //QT_NO_DATESTRING
 /*!
@@ -3054,7 +3054,7 @@ QDate QDate::currentDate()
     // posix compliant system
     time_t ltime;
     time(&ltime);
-    struct tm *t = 0;
+    struct tm *t = nullptr;
 
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
@@ -3074,9 +3074,9 @@ QTime QTime::currentTime()
     QTime ct;
     // posix compliant system
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     time_t ltime = tv.tv_sec;
-    struct tm *t = 0;
+    struct tm *t = nullptr;
 
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
@@ -3097,9 +3097,9 @@ QDateTime QDateTime::currentDateTime()
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     time_t ltime = tv.tv_sec;
-    struct tm *t = 0;
+    struct tm *t = nullptr;
 
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
@@ -3125,9 +3125,9 @@ QDateTime QDateTime::currentDateTimeUtc()
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     time_t ltime = tv.tv_sec;
-    struct tm *t = 0;
+    struct tm *t = nullptr;
 
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
@@ -3150,7 +3150,7 @@ qint64 QDateTime::currentMSecsSinceEpoch()
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
 }
 
@@ -3771,7 +3771,7 @@ static bool hasUnquotedAP(const QString &f)
 *****************************************************************************/
 
 // Replaces tokens by their value. See QDateTime::toString() for a list of valid tokens
-static QString getFmtString(const QString& f, const QTime* dt = 0, const QDate* dd = 0, bool am_pm = false)
+static QString getFmtString(const QString& f, const QTime* dt = nullptr, const QDate* dd = nullptr, bool am_pm = false)
 {
     if (f.isEmpty())
         return QString();
@@ -3979,7 +3979,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
 
     // won't overflow because of fakeDate
     time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000;
-    tm *brokenDown = 0;
+    tm *brokenDown = nullptr;
 
 #if defined(Q_OS_WINCE)
     tm res;
@@ -4094,7 +4094,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     }
 #endif
 #endif
-    tm *brokenDown = 0;
+    tm *brokenDown = nullptr;
 #if defined(Q_OS_WINCE)
     tm res;
     FILETIME localTime = time_tToFt(secsSince1Jan1970UTC);

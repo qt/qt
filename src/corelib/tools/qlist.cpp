@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     the number of elements in the list.
 */
 
-QListData::Data QListData::shared_null = { Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, 0, true, { 0 } };
+QListData::Data QListData::shared_null = { Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, 0, true, { nullptr } };
 
 static int grow(int size)
 {
@@ -135,7 +135,7 @@ QListData::Data *QListData::detach()
     qSwap(d, x);
     if (!x->ref.deref())
         return x;
-    return 0;
+    return nullptr;
 }
 
 /*!

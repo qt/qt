@@ -67,7 +67,7 @@ void *qRealloc(void *ptr, size_t size)
 
 void *qMallocAligned(size_t size, size_t alignment)
 {
-    return qReallocAligned(0, size, 0, alignment);
+    return qReallocAligned(nullptr, size, 0, alignment);
 }
 
 void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t alignment)
@@ -75,12 +75,12 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // fake an aligned allocation
     Q_UNUSED(oldsize);
 
-    void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
+    void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : nullptr;
     if (alignment <= sizeof(void*)) {
         // special, fast case
         void **newptr = static_cast<void **>(qRealloc(actualptr, newsize + sizeof(void*)));
         if (!newptr)
-            return 0;
+            return nullptr;
         if (newptr == actualptr) {
             // realloc succeeded without reallocating
             return oldptr;
@@ -100,7 +100,7 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
 
     void *real = qRealloc(actualptr, newsize + alignment);
     if (!real)
-        return 0;
+        return nullptr;
 
     quintptr faked = reinterpret_cast<quintptr>(real) + alignment;
     faked &= ~(alignment - 1);

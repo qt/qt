@@ -166,7 +166,7 @@ static int countBits(int hint)
 const int MinNumBits = 4;
 
 QHashData QHashData::shared_null = {
-    0, 0, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true, false, 0
+    nullptr, nullptr, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true, false, 0
 };
 
 void *QHashData::allocateNode()
@@ -191,7 +191,7 @@ void QHashData::freeNode(void *node)
 
 QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize)
 {
-    return detach_helper2( node_duplicate, 0, nodeSize, 0 );
+    return detach_helper2( node_duplicate, nullptr, nodeSize, 0 );
 }
 
 QHashData *QHashData::detach_helper2(void (*node_duplicate)(Node *, void *),
@@ -204,8 +204,8 @@ QHashData *QHashData::detach_helper2(void (*node_duplicate)(Node *, void *),
         Node *e;
     };
     d = new QHashData;
-    d->fakeNext = 0;
-    d->buckets = 0;
+    d->fakeNext = nullptr;
+    d->buckets = nullptr;
     d->ref = 1;
     d->size = size;
     d->nodeSize = nodeSize;
@@ -394,7 +394,7 @@ void QHashData::rehash(int hint)
 
 void QHashData::destroyAndFree()
 {
-    free_helper(0);
+    free_helper(nullptr);
 }
 
 #ifdef QT_QHASH_DEBUG

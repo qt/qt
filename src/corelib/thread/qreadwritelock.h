@@ -210,7 +210,7 @@ public:
 
     static inline void unlock() { }
     static inline void relock() { }
-    static inline QReadWriteLock *readWriteLock() { return 0; }
+    static inline QReadWriteLock *readWriteLock() { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QReadLocker)
@@ -224,7 +224,7 @@ public:
 
     static inline void unlock() { }
     static inline void relock() { }
-    static inline QReadWriteLock *readWriteLock() { return 0; }
+    static inline QReadWriteLock *readWriteLock() { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QWriteLocker)

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
 template <typename T>
-inline T *v_cast(const QVariant::Private *nd, T * = 0)
+inline T *v_cast(const QVariant::Private *nd, T * = nullptr)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(nd);
     return ((sizeof(T) > sizeof(QVariant::Private::Data))
@@ -75,7 +75,7 @@ inline T *v_cast(const QVariant::Private *nd, T * = 0)
 #else // every other compiler in this world
 
 template <typename T>
-inline const T *v_cast(const QVariant::Private *d, T * = 0)
+inline const T *v_cast(const QVariant::Private *d, T * = nullptr)
 {
     return ((sizeof(T) > sizeof(QVariant::Private::Data))
             ? static_cast<const T *>(d->data.shared->ptr)
@@ -83,7 +83,7 @@ inline const T *v_cast(const QVariant::Private *d, T * = 0)
 }
 
 template <typename T>
-inline T *v_cast(QVariant::Private *d, T * = 0)
+inline T *v_cast(QVariant::Private *d, T * = nullptr)
 {
     return ((sizeof(T) > sizeof(QVariant::Private::Data))
             ? static_cast<T *>(d->data.shared->ptr)
@@ -106,7 +106,7 @@ private:
 
 // constructs a new variant if copy is 0, otherwise copy-constructs
 template <class T>
-inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
+inline void v_construct(QVariant::Private *x, const void *copy, T * = nullptr)
 {
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {
         x->data.shared = copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T *>(copy))
@@ -133,7 +133,7 @@ inline void v_construct(QVariant::Private *x, const T &t)
 
 // deletes the internal structures
 template <class T>
-inline void v_clear(QVariant::Private *d, T* = 0)
+inline void v_clear(QVariant::Private *d, T* = nullptr)
 {
     
     if (sizeof(T) > sizeof(QVariant::Private::Data)) {

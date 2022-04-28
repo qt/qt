@@ -325,7 +325,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     // let QMetaTypeId2 figure out the type at compile time
     QT_ADD_STATIC_METATYPE("qreal", QMetaTypeId2<qreal>::MetaType),
 
-    {0, 0, QMetaType::Void}
+    {nullptr, 0, QMetaType::Void}
 };
 
 struct QMetaTypeGuiHelper
@@ -337,12 +337,12 @@ struct QMetaTypeGuiHelper
     QMetaType::LoadOperator loadOp;
 #endif
 };
-Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper = 0;
+Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper = nullptr;
 
 class QCustomTypeInfo
 {
 public:
-    QCustomTypeInfo() : typeName(), constr(0), destr(0)
+    QCustomTypeInfo() : typeName(), constr(nullptr), destr(nullptr)
 #ifndef QT_NO_DATASTREAM
     , saveOp(0), loadOp(0)
 #endif
@@ -415,7 +415,7 @@ const char *QMetaType::typeName(int type)
                 : static_cast<const char *>(0);
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*! \internal
@@ -527,8 +527,8 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     QCustomTypeInfo inf;
     inf.typeName = normalizedTypeName;
     inf.alias = aliasId;
-    inf.constr = 0;
-    inf.destr = 0;
+    inf.constr = nullptr;
+    inf.destr = nullptr;
     ct->append(inf);
     return aliasId;
 }
@@ -556,8 +556,8 @@ void QMetaType::unregisterType(const char *typeName)
         if (ct->at(v).typeName == typeName) {
             QCustomTypeInfo &inf = (*ct)[v];
             inf.typeName.clear();
-            inf.constr = 0;
-            inf.destr = 0;
+            inf.constr = nullptr;
+            inf.destr = nullptr;
             inf.alias = -1;
         }
     }
@@ -1116,7 +1116,7 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
 #endif
         case QMetaType::Void:
-            return 0;
+            return nullptr;
         default:
             ;
         }
@@ -1213,24 +1213,24 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QEasingCurve);
 #endif
         case QMetaType::Void:
-            return 0;
+            return nullptr;
         default:
             ;
         }
     }
 
-    Constructor constr = 0;
+    Constructor constr = nullptr;
     if (type >= FirstGuiType && type <= LastGuiType) {
         if (!qMetaTypeGuiHelper)
-            return 0;
+            return nullptr;
         constr = qMetaTypeGuiHelper[type - FirstGuiType].constr;
     } else {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         QReadLocker locker(customTypesLock());
         if (type < User || !ct || ct->count() <= type - User)
-            return 0;
+            return nullptr;
         if (ct->at(type - User).typeName.isEmpty())
-            return 0;
+            return nullptr;
         constr = ct->at(type - User).constr;
     }
 
@@ -1379,7 +1379,7 @@ void QMetaType::destroy(int type, void *data)
         break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        Destructor destr = 0;
+        Destructor destr = nullptr;
         if (type >= FirstGuiType && type <= LastGuiType) {
             Q_ASSERT(qMetaTypeGuiHelper);
 

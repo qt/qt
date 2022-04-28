@@ -282,7 +282,7 @@ bool QTemporaryFileEngine::isReallyOpen()
 {
     Q_D(QFSFileEngine);
 
-    if (!((0 == d->fh) && (-1 == d->fd)
+    if (!((nullptr == d->fh) && (-1 == d->fd)
 #if defined (Q_OS_SYMBIAN)
                 && (0 == d->symbianFile.SubSessionHandle())
 #endif
@@ -710,7 +710,7 @@ QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
 {
     if (QAbstractFileEngine *engine = file.fileEngine()) {
         if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
-            return 0; //local already
+            return nullptr; //local already
         //cache
         bool wasOpen = file.isOpen();
         qint64 old_off = 0;
@@ -738,7 +738,7 @@ QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
         //done
         return ret;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

@@ -315,7 +315,7 @@ qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
     qulonglong qbase, cutoff;
     int any, cutlim;
 
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
 
     /*
@@ -326,9 +326,9 @@ qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
         c = *s++;
     } while (isspace(c));
     if (c == '-') {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
-        if (endptr != 0)
+        if (endptr != nullptr)
             *endptr = s - 1;
         return 0;
     } else {
@@ -366,14 +366,14 @@ qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
         }
     }
     if (any == 0) {
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
     } else if (any < 0) {
         acc = ULLONG_MAX;
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
     }
-    if (endptr != 0)
+    if (endptr != nullptr)
         *endptr = (any ? s - 1 : nptr);
     return acc;
 }
@@ -465,15 +465,15 @@ qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok)
     }
     if (any < 0) {
         acc = neg ? LLONG_MIN : LLONG_MAX;
-        if (ok != 0)
+        if (ok != nullptr)
             *ok = false;
     } else if (neg) {
         acc = (~acc) + 1;
     }
-    if (endptr != 0)
+    if (endptr != nullptr)
         *endptr = (any >= 0 ? s - 1 : nptr);
 
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = any > 0;
 
     return acc;
@@ -1123,7 +1123,7 @@ static Bigint *pow5mult(Bigint *b, int k)
         /* first time */
         static p5s_deleter deleter;
         p5 = p5s = i2b(625);
-        p5->next = 0;
+        p5->next = nullptr;
     }
     for(;;) {
         if (k & 1) {
@@ -1135,7 +1135,7 @@ static Bigint *pow5mult(Bigint *b, int k)
             break;
         if (!(p51 = p5->next)) {
             p51 = p5->next = mult(p5,p5);
-            p51->next = 0;
+            p51->next = nullptr;
         }
         p5 = p51;
     }
@@ -1584,7 +1584,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
       #else
       const char decimal_point = '.';
       #endif */
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
 
     const char decimal_point = '.';
@@ -1720,7 +1720,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
     rv = tens[k - 9] * rv + z;
 #endif
 
-    bd0 = 0;
+    bd0 = nullptr;
     if (nd <= DBL_DIG
 #ifndef RND_PRODQUOT
         && FLT_ROUNDS == 1
@@ -1779,7 +1779,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
             if (e1 > DBL_MAX_10_EXP) {
             ovfl:
                 //                                errno = ERANGE;
-                if (ok != 0)
+                if (ok != nullptr)
                     *ok = false;
 #ifdef __STDC__
                 rv = HUGE_VAL;
@@ -1842,7 +1842,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
                         undfl:
                             rv = 0.;
                             //                                        errno = ERANGE;
-                            if (ok != 0)
+                            if (ok != nullptr)
                                 *ok = false;
                             if (bd0)
                                 goto retfree;
@@ -2575,7 +2575,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         eps = ieps*d + 7.;
         setWord0(&eps, getWord0(eps) - (P-1)*Exp_msk1);
         if (ilim == 0) {
-            S = mhi = 0;
+            S = mhi = nullptr;
             d -= 5.;
             if (d > eps)
                 goto one_digit;
@@ -2644,7 +2644,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         /* Yes. */
         ds = tens[k];
         if (ndigits < 0 && ilim <= 0) {
-            S = mhi = 0;
+            S = mhi = nullptr;
             if (ilim < 0 || d <= 5*ds)
                 goto no_digits;
             goto one_digit;
@@ -2682,7 +2682,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
 
     m2 = b2;
     m5 = b5;
-    mhi = mlo = 0;
+    mhi = mlo = nullptr;
     if (leftright) {
         if (mode < 2) {
             i =

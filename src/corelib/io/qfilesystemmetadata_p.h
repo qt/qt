@@ -186,7 +186,7 @@ public:
 
     void clear()
     {
-        knownFlagsMask = 0;
+        knownFlagsMask = nullptr;
     }
 
     void clearFlags(MetaDataFlags flags = AllMetaDataFlags)

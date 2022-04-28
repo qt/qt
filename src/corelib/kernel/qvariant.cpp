@@ -170,7 +170,7 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
         break;
     case QMetaType::QObjectStar:
-        x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
+        x->data.o = copy ? *static_cast<QObject *const*>(copy) : nullptr;
         break;
     case QVariant::LongLong:
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
@@ -1179,11 +1179,11 @@ const QVariant::Handler qt_kernel_variant_handler = {
 #endif
     compare,
     convert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
     streamDebug
 #else
-    0
+    nullptr
 #endif
 };
 
@@ -1669,7 +1669,7 @@ QVariant::QVariant(const char *val)
  */
 
 QVariant::QVariant(Type type)
-{ create(type, 0); }
+{ create(type, nullptr); }
 QVariant::QVariant(int typeOrUserType, const void *copy)
 { create(typeOrUserType, copy); d.is_null = false; }
 
@@ -1888,7 +1888,7 @@ void QVariant::clear()
 const char *QVariant::typeToName(Type typ)
 {
     if (typ == Invalid)
-        return 0;
+        return nullptr;
     if (typ == UserType)
         return "UserType";
 
@@ -2110,13 +2110,13 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 
 template <typename T>
 inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t,
-                          const QVariant::Handler *handler, T * = 0)
+                          const QVariant::Handler *handler, T * = nullptr)
 {
     if (d.type == t)
         return *v_cast<T>(&d);
 
     T ret;
-    handler->convert(&d, t, &ret, 0);
+    handler->convert(&d, t, &ret, nullptr);
     return ret;
 }
 
@@ -2527,7 +2527,7 @@ bool QVariant::toBool() const
         return d.data.b;
 
     bool res = false;
-    handler->convert(&d, Bool, &res, 0);
+    handler->convert(&d, Bool, &res, nullptr);
 
     return res;
 }
@@ -2800,7 +2800,7 @@ bool QVariant::convert(Type t)
     if (!oldValue.canConvert(t))
         return false;
 
-    create(t, 0);
+    create(t, nullptr);
     if (oldValue.isNull())
         return false;
 
