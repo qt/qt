@@ -320,7 +320,11 @@ void Stringifier::appendQuotedString(StringBuilder& builder, const UString& valu
             default:
                 static const char hexDigits[] = "0123456789abcdef";
                 UChar ch = data[i];
-                UChar hex[] = { '\\', 'u', hexDigits[(ch >> 12) & 0xF], hexDigits[(ch >> 8) & 0xF], hexDigits[(ch >> 4) & 0xF], hexDigits[ch & 0xF] };
+                UChar hex[] = { '\\', 'u',
+                    static_cast<UChar>(hexDigits[(ch >> 12) & 0xF]),
+                    static_cast<UChar>(hexDigits[(ch >> 8) & 0xF]),
+                    static_cast<UChar>(hexDigits[(ch >> 4) & 0xF]),
+                    static_cast<UChar>(hexDigits[ch & 0xF]) };
                 builder.append(hex, sizeof(hex) / sizeof(UChar));
                 break;
         }

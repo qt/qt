@@ -176,7 +176,7 @@ namespace JSC {
             // Node::emitCode assumes that dst, if provided, is either a local or a referenced temporary.
             ASSERT(!dst || dst == ignoredResult() || !dst->isTemporary() || dst->refCount());
             if (!m_codeBlock->numberOfLineInfos() || m_codeBlock->lastLineInfo().lineNumber != n->lineNo()) {
-                LineInfo info = { instructions().size(), n->lineNo() };
+                LineInfo info = { static_cast<uint32_t>(instructions().size()), n->lineNo() };
                 m_codeBlock->addLineInfo(info);
             }
             if (m_emitNodeDepth >= s_maxEmitNodeDepth)
@@ -195,7 +195,7 @@ namespace JSC {
         void emitNodeInConditionContext(ExpressionNode* n, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue)
         {
             if (!m_codeBlock->numberOfLineInfos() || m_codeBlock->lastLineInfo().lineNumber != n->lineNo()) {
-                LineInfo info = { instructions().size(), n->lineNo() };
+                LineInfo info = {  static_cast<uint32_t>(instructions().size()), n->lineNo() };
                 m_codeBlock->addLineInfo(info);
             }
             if (m_emitNodeDepth >= s_maxEmitNodeDepth)

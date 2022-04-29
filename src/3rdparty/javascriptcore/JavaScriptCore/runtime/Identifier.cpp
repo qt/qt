@@ -195,7 +195,7 @@ PassRefPtr<UString::Rep> Identifier::add(JSGlobalData* globalData, const UChar* 
         UString::Rep::empty().hash();
         return &UString::Rep::empty();
     }
-    UCharBuffer buf = {s, length}; 
+    UCharBuffer buf = {s, static_cast<unsigned int>(length)}; 
     pair<HashSet<UString::Rep*>::iterator, bool> addResult = globalData->identifierTable->add<UCharBuffer, UCharBufferTranslator>(buf);
 
     // If the string is newly-translated, then we need to adopt it.
