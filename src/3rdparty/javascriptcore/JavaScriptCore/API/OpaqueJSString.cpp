@@ -41,14 +41,14 @@ PassRefPtr<OpaqueJSString> OpaqueJSString::create(const UString& ustring)
 
 UString OpaqueJSString::ustring() const
 {
-    if (this && m_characters)
+    if (m_characters)
         return UString(m_characters, m_length);
     return UString::null();
 }
 
 Identifier OpaqueJSString::identifier(JSGlobalData* globalData) const
 {
-    if (!this || !m_characters)
+    if (!m_characters)
         return Identifier(globalData, static_cast<const char*>(0));
 
     return Identifier(globalData, m_characters, m_length);
