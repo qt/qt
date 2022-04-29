@@ -104,8 +104,8 @@ inline void rotate_right_mirror_horizontal(QImage *const image)// rotate right->
     const int height = image->height();
     const int width = image->width();
     QImage generated(/* width = */ height, /* height = */ width, image->format());
-    const uint32 *originalPixel = reinterpret_cast<const uint32*>(image->bits());
-    uint32 *const generatedPixels = reinterpret_cast<uint32*>(generated.bits());
+    const uint32_t *originalPixel = reinterpret_cast<const uint32_t*>(image->bits());
+    uint32_t *const generatedPixels = reinterpret_cast<uint32_t*>(generated.bits());
     for (int row=0; row < height; ++row) {
         for (int col=0; col < width; ++col) {
             int idx = col * height + row;
@@ -123,8 +123,8 @@ inline void rotate_right_mirror_vertical(QImage *const image) // rotate right->m
     QImage generated(/* width = */ height, /* height = */ width, image->format());
     const int lastCol = width - 1;
     const int lastRow = height - 1;
-    const uint32 *pixel = reinterpret_cast<const uint32*>(image->bits());
-    uint32 *const generatedBits = reinterpret_cast<uint32*>(generated.bits());
+    const uint32_t *pixel = reinterpret_cast<const uint32_t*>(image->bits());
+    uint32_t *const generatedBits = reinterpret_cast<uint32_t*>(generated.bits());
     for (int row=0; row < height; ++row) {
         for (int col=0; col < width; ++col) {
             int idx = (lastCol - col) * height + (lastRow - row);
@@ -188,9 +188,9 @@ bool QTiffHandler::read(QImage *image)
     if (!tiff) {
         return false;
     }
-    uint32 width;
-    uint32 height;
-    uint16 photometric;
+    uint32_t width;
+    uint32_t height;
+    uint16_t photometric;
     if (!TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width)
         || !TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height)
         || !TIFFGetField(tiff, TIFFTAG_PHOTOMETRIC, &photometric)) {
@@ -199,10 +199,10 @@ bool QTiffHandler::read(QImage *image)
     }
 
     // BitsPerSample defaults to 1 according to the TIFF spec.
-    uint16 bitPerSample;
+    uint16_t bitPerSample;
     if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample))
         bitPerSample = 1;
-    uint16 samplesPerPixel; // they may be e.g. grayscale with 2 samples per pixel
+    uint16_t samplesPerPixel; // they may be e.g. grayscale with 2 samples per pixel
     if (!TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel))
         samplesPerPixel = 1;
 
@@ -221,7 +221,7 @@ bool QTiffHandler::read(QImage *image)
         image->setColorTable(colortable);
 
         if (!image->isNull()) {
-            for (uint32 y=0; y<height; ++y) {
+            for (uint32_t y=0; y<height; ++y) {
                 if (TIFFReadScanline(tiff, image->scanLine(y), y, 0) < 0) {
                     TIFFClose(tiff);
                     return false;
@@ -233,7 +233,7 @@ bool QTiffHandler::read(QImage *image)
             if (image->size() != QSize(width, height) || image->format() != QImage::Format_Indexed8)
                 *image = QImage(width, height, QImage::Format_Indexed8);
             if (!image->isNull()) {
-                const uint16 tableSize = 256;
+                const uint16_t tableSize = 256;
                 QVector<QRgb> qtColorTable(tableSize);
                 if (grayscale) {
                     for (int i = 0; i<tableSize; ++i) {
@@ -242,9 +242,9 @@ bool QTiffHandler::read(QImage *image)
                     }
                 } else {
                     // create the color table
-                    uint16 *redTable = 0;
-                    uint16 *greenTable = 0;
-                    uint16 *blueTable = 0;
+                    uint16_t *redTable = 0;
+                    uint16_t *greenTable = 0;
+                    uint16_t *blueTable = 0;
                     if (!TIFFGetField(tiff, TIFFTAG_COLORMAP, &redTable, &greenTable, &blueTable)) {
                         TIFFClose(tiff);
                         return false;
@@ -263,7 +263,7 @@ bool QTiffHandler::read(QImage *image)
                 }
 
                 image->setColorTable(qtColorTable);
-                for (uint32 y=0; y<height; ++y) {
+                for (uint32_t y=0; y<height; ++y) {
                     if (TIFFReadScanline(tiff, image->scanLine(y), y, 0) < 0) {
                         TIFFClose(tiff);
                         return false;
@@ -277,8 +277,8 @@ bool QTiffHandler::read(QImage *image)
                 *image = QImage(width, height, QImage::Format_ARGB32);
             if (!image->isNull()) {
                 const int stopOnError = 1;
-                if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32 *>(image->bits()), ORIENTATION_TOPLEFT, stopOnError)) {
-                    for (uint32 y=0; y<height; ++y)
+                if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32_t *>(image->bits()), ORIENTATION_TOPLEFT, stopOnError)) {
+                    for (uint32_t y=0; y<height; ++y)
                         convert32BitOrder(image->scanLine(y), width);
                 } else {
                     TIFFClose(tiff);
@@ -295,7 +295,7 @@ bool QTiffHandler::read(QImage *image)
 
     float resX = 0;
     float resY = 0;
-    uint16 resUnit;
+    uint16_t resUnit;
     if (!TIFFGetField(tiff, TIFFTAG_RESOLUTIONUNIT, &resUnit))
         resUnit = RESUNIT_INCH;
 
@@ -318,7 +318,7 @@ bool QTiffHandler::read(QImage *image)
     }
 
     // rotate the image if the orientation is defined in the file
-    uint16 orientationTag;
+    uint16_t orientationTag;
     if (TIFFGetField(tiff, TIFFTAG_ORIENTATION, &orientationTag)) {
         if (image->format() == QImage::Format_ARGB32) {
             // TIFFReadRGBAImageOriented() flip the image but does not rotate them
@@ -452,7 +452,7 @@ bool QTiffHandler::write(const QImage &image)
     // configure image depth
     const QImage::Format format = image.format();
     if (format == QImage::Format_Mono || format == QImage::Format_MonoLSB) {
-        uint16 photometric = PHOTOMETRIC_MINISBLACK;
+        uint16_t photometric = PHOTOMETRIC_MINISBLACK;
         if (image.colorTable().at(0) == 0xffffffff)
             photometric = PHOTOMETRIC_MINISWHITE;
         if (!TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, photometric)
@@ -473,7 +473,7 @@ bool QTiffHandler::write(const QImage &image)
             int chunkStart = y;
             int chunkEnd = y + chunk.height();
             while (y < chunkEnd) {
-                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32 *>(chunk.scanLine(y - chunkStart)), y) != 1) {
+                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32_t *>(chunk.scanLine(y - chunkStart)), y) != 1) {
                     TIFFClose(tiff);
                     return false;
                 }
@@ -485,7 +485,7 @@ bool QTiffHandler::write(const QImage &image)
         const QVector<QRgb> colorTable = image.colorTable();
         bool isGrayscale = checkGrayscale(colorTable);
         if (isGrayscale) {
-            uint16 photometric = PHOTOMETRIC_MINISBLACK;
+            uint16_t photometric = PHOTOMETRIC_MINISBLACK;
             if (image.colorTable().at(0) == 0xffffffff)
                 photometric = PHOTOMETRIC_MINISWHITE;
             if (!TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, photometric)
@@ -503,9 +503,9 @@ bool QTiffHandler::write(const QImage &image)
             }
             //// write the color table
             // allocate the color tables
-            uint16 *redTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
-            uint16 *greenTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
-            uint16 *blueTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
+            uint16_t *redTable = static_cast<uint16_t *>(qMalloc(256 * sizeof(uint16_t)));
+            uint16_t *greenTable = static_cast<uint16_t *>(qMalloc(256 * sizeof(uint16_t)));
+            uint16_t *blueTable = static_cast<uint16_t *>(qMalloc(256 * sizeof(uint16_t)));
             if (!redTable || !greenTable || !blueTable) {
                 qFree(redTable);
                 qFree(greenTable);
@@ -548,7 +548,7 @@ bool QTiffHandler::write(const QImage &image)
             int chunkStart = y;
             int chunkEnd = y + chunk.height();
             while (y < chunkEnd) {
-                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32 *>(chunk.scanLine(y - chunkStart)), y) != 1) {
+                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32_t *>(chunk.scanLine(y - chunkStart)), y) != 1) {
                     TIFFClose(tiff);
                     return false;
                 }
@@ -581,7 +581,7 @@ bool QTiffHandler::write(const QImage &image)
                 else
                     convert32BitOrderBigEndian(chunk.scanLine(y - chunkStart), width);
 
-                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32 *>(chunk.scanLine(y - chunkStart)), y) != 1) {
+                if (TIFFWriteScanline(tiff, reinterpret_cast<uint32_t *>(chunk.scanLine(y - chunkStart)), y) != 1) {
                     TIFFClose(tiff);
                     return false;
                 }
@@ -616,8 +616,8 @@ QVariant QTiffHandler::option(ImageOption option) const
                                     qtiffUnmapProc);
 
         if (tiff) {
-            uint32 width = 0;
-            uint32 height = 0;
+            uint32_t width = 0;
+            uint32_t height = 0;
             TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width);
             TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height);
             imageSize = QSize(width, height);
@@ -649,9 +649,9 @@ bool QTiffHandler::supportsOption(ImageOption option) const
 
 void QTiffHandler::convert32BitOrder(void *buffer, int width)
 {
-    uint32 *target = reinterpret_cast<uint32 *>(buffer);
-    for (int32 x=0; x<width; ++x) {
-        uint32 p = target[x];
+    uint32_t *target = reinterpret_cast<uint32_t *>(buffer);
+    for (int32_t x=0; x<width; ++x) {
+        uint32_t p = target[x];
         // convert between ARGB and ABGR
         target[x] = (p & 0xff000000)
                     | ((p & 0x00ff0000) >> 16)
@@ -662,9 +662,9 @@ void QTiffHandler::convert32BitOrder(void *buffer, int width)
 
 void QTiffHandler::convert32BitOrderBigEndian(void *buffer, int width)
 {
-    uint32 *target = reinterpret_cast<uint32 *>(buffer);
-    for (int32 x=0; x<width; ++x) {
-        uint32 p = target[x];
+    uint32_t *target = reinterpret_cast<uint32_t *>(buffer);
+    for (int32_t x=0; x<width; ++x) {
+        uint32_t p = target[x];
         target[x] = (p & 0xff000000) >> 24
                     | (p & 0x00ff0000) << 8
                     | (p & 0x0000ff00) << 8
