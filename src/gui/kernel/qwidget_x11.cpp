@@ -1059,7 +1059,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         setAttribute(Qt::WA_WState_Created, false);
         QObjectList childList = children();
         for (int i = 0; i < childList.size(); ++i) { // destroy all widget children
-            register QObject *obj = childList.at(i);
+            QObject *obj = childList.at(i);
             if (obj->isWidgetType())
                 static_cast<QWidget*>(obj)->destroy(destroySubWindows,
                                                     destroySubWindows);
@@ -2752,7 +2752,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     if (!valid_rect && !children.isEmpty()) {        // scroll children
         QPoint pd(dx, dy);
         for (int i = 0; i < children.size(); ++i) { // move all children
-            register QObject *object = children.at(i);
+            QObject *object = children.at(i);
             if (object->isWidgetType()) {
                 QWidget *w = static_cast<QWidget *>(object);
                 if (!w->isWindow())

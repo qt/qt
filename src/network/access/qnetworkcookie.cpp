@@ -371,7 +371,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
 
     // parse the first part, before the equal sign
     for (i = position; i < length; ++i) {
-        register char c = text.at(i);
+        char c = text.at(i);
         if (c == ';' || c == '=')
             break;
     }
@@ -401,7 +401,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
             second += '"';
         ++i;
         while (i < length) {
-            register char c = text.at(i);
+            char c = text.at(i);
             if (c == '"') {
                 // end of quoted text
                 if (isNameValue)
@@ -422,7 +422,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         }
 
         for ( ; i < length; ++i) {
-            register char c = text.at(i);
+            char c = text.at(i);
             if (c == ';')
                 break;
         }
@@ -431,7 +431,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // no quote, we found format (2)
         position = i;
         for ( ; i < length; ++i) {
-            register char c = text.at(i);
+            char c = text.at(i);
             // for name value pairs, we want to parse until reaching the next ';'
             // and not break when reaching a space char
             if (c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))

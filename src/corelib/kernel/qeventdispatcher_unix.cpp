@@ -432,7 +432,7 @@ void QTimerInfoList::timerInsert(QTimerInfo *ti)
 {
     int index = size();
     while (index--) {
-        register const QTimerInfo * const t = at(index);
+        const QTimerInfo * const t = at(index);
         if (!(ti->timeout < t->timeout))
             break;
     }
@@ -446,7 +446,7 @@ void QTimerInfoList::timerRepair(const timeval &diff)
 {
     // repair all timers
     for (int i = 0; i < size(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         t->timeout = t->timeout + diff;
     }
 }
@@ -501,7 +501,7 @@ bool QTimerInfoList::unregisterTimer(int timerId)
 {
     // set timer inactive
     for (int i = 0; i < count(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         if (t->id == timerId) {
             // found it
             removeAt(i);
@@ -527,7 +527,7 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
     if (isEmpty())
         return false;
     for (int i = 0; i < count(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         if (t->obj == object) {
             // object found
             removeAt(i);
@@ -552,7 +552,7 @@ QList<QPair<int, int> > QTimerInfoList::registeredTimers(QObject *object) const
 {
     QList<QPair<int, int> > list;
     for (int i = 0; i < count(); ++i) {
-        register const QTimerInfo * const t = at(i);
+        const QTimerInfo * const t = at(i);
         if (t->obj == object)
             list << QPair<int, int>(t->id, t->interval.tv_sec * 1000 + t->interval.tv_usec / 1000);
     }

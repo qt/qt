@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkProxy;
 
-static inline bool isSeparator(register char c)
+static inline bool isSeparator(char c)
 {
     static const char separators[] = "()<>@,;:\\\"/[]?={}";
     return isLWS(c) || strchr(separators, c) != 0;
@@ -122,7 +122,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
                 // quoted-pair    = "\" CHAR
                 ++pos;
                 while (pos < header.length()) {
-                    register char c = header.at(pos);
+                    char c = header.at(pos);
                     if (c == '"') {
                         // end of quoted text
                         break;
@@ -140,7 +140,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
             } else {
                 // case: token
                 while (pos < header.length()) {
-                    register char c = header.at(pos);
+                    char c = header.at(pos);
                     if (isSeparator(c))
                         break;
                     value += c;

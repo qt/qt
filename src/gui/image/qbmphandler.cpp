@@ -660,7 +660,7 @@ bool qt_write_dib(QDataStream &s, QImage image)
 
     uchar *buf        = new uchar[bpl_bmp];
     uchar *b, *end;
-    register uchar *p;
+    uchar *p;
 
     memset(buf, 0, bpl_bmp);
     for (y=image.height()-1; y>=0; y--) {        // write the image bits

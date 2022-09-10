@@ -177,14 +177,14 @@ in this Software without prior written authorization from The Open Group.
 
 */
 static int
-qt_XTranslateKey(register QXCoreDesc *dpy,
+qt_XTranslateKey(QXCoreDesc *dpy,
                  KeyCode keycode,
-                 register unsigned int modifiers,
+                 unsigned int modifiers,
                  unsigned int *modifiers_return,
                  KeySym *keysym_return)
 {
     int per;
-    register KeySym *syms;
+    KeySym *syms;
     KeySym sym, lsym, usym;
 
     if (! dpy->keysyms)
