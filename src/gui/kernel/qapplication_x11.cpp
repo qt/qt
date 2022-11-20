@@ -819,6 +819,27 @@ static Bool qt_sync_request_scanner(Display*, XEvent *event, XPointer arg)
 #endif
 #endif // QT_NO_XSYNC
 
+struct qt_configure_event_data
+{
+    WId window;
+    WId parent;
+};
+
+static Bool qt_configure_event_scanner(Display*, XEvent *event, XPointer arg)
+{
+    qt_configure_event_data *data =
+        reinterpret_cast<qt_configure_event_data*>(arg);
+    if (event->type == ConfigureNotify &&
+        event->xconfigure.window == data->window) {
+        return true;
+    } else if (event->type == ReparentNotify &&
+               event->xreparent.window == data->window) {
+        data->parent = event->xreparent.parent;
+    }
+
+    return false;
+}
+
 static void qt_x11_create_intern_atoms()
 {
     const char *names[QX11Data::NAtoms];
@@ -5310,8 +5331,11 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         if (d->extra->compress_events) {
             // ConfigureNotify compression for faster opaque resizing
             XEvent otherEvent;
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), ConfigureNotify,
-                                          &otherEvent)) {
+            qt_configure_event_data configureData;
+            configureData.window = internalWinId();
+            configureData.parent = d->topData()->parentWinId;
+            while (XCheckIfEvent(X11->display, &otherEvent,
+                                 &qt_configure_event_scanner, (XPointer)&configureData)) {
                 if (qt_x11EventFilter(&otherEvent))
                     continue;
 
@@ -5324,13 +5348,19 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                 newSize.setWidth(otherEvent.xconfigure.width);
                 newSize.setHeight(otherEvent.xconfigure.height);
 
+                trust = isVisible()
+                        && (configureData.parent == XNone ||
+                            configureData.parent == QX11Info::appRootWindow());
+
                 if (otherEvent.xconfigure.send_event || trust) {
                     newCPos.rx() = otherEvent.xconfigure.x +
                                    otherEvent.xconfigure.border_width;
                     newCPos.ry() = otherEvent.xconfigure.y +
                                    otherEvent.xconfigure.border_width;
                     isCPos = true;
-                }
+                } else {
+                    isCPos = false;
+               }
             }
 #ifndef QT_NO_XSYNC
             qt_sync_request_event_data sync_event;
@@ -5343,9 +5373,14 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         }
 
         if (!isCPos) {
-            // we didn't get an updated position of the toplevel.
-            // either we haven't moved or there is a bug in the window manager.
-            // anyway, let's query the position to be certain.
+            // If the last configure event didn't have a trustable position,
+            // it's necessary to query, see ICCCM 4.24:
+            //
+            //  Any real ConfigureNotify event on a top-level window implies
+            //  that the window’s position on the root may have changed, even
+            //  though the event reports that the window’s position in its
+            //  parent is unchanged because the window may have been reparented.
+
             int x, y;
             Window child;
             XTranslateCoordinates(X11->display, internalWinId(),
