@@ -2924,7 +2924,7 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 
     QWidgetList all = allWidgets();
     for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-        register QWidget *w = *it;
+        QWidget *w = *it;
         if ((w->testAttribute(Qt::WA_SetCursor) || w->isWindow()) && (w->windowType() != Qt::Desktop))
             qt_x11_enforce_cursor(w);
     }
@@ -2940,7 +2940,7 @@ void QApplication::restoreOverrideCursor()
     if (QWidgetPrivate::mapper != 0 && !closingDown()) {
         QWidgetList all = allWidgets();
         for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-            register QWidget *w = *it;
+            QWidget *w = *it;
             if ((w->testAttribute(Qt::WA_SetCursor) || w->isWindow()) && (w->windowType() != Qt::Desktop))
                 qt_x11_enforce_cursor(w);
         }
