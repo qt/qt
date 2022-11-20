@@ -1172,7 +1172,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // destroyed when emitting the child remove event below. See QWorkspace.
     if (wasCreated && old_winid) {
         XUnmapWindow(X11->display, old_winid);
-        if (!old_xinfo.screen() != xinfo.screen())
+        if (old_xinfo.screen() != xinfo.screen())
             XReparentWindow(X11->display, old_winid, RootWindow(X11->display, xinfo.screen()), 0, 0);
     }
     if (topData) {
