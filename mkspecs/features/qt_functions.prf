@@ -72,7 +72,7 @@ defineTest(qtAddLibrary) {
     }
     isEmpty(LINKAGE) {
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-           win32:LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}d
+           win32:LINKAGE = -l$${LIB_NAME}d$${QT_LIBINFIX}
            mac:LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}_debug
        }
        isEmpty(LINKAGE):LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}
