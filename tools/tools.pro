@@ -11,7 +11,6 @@ TEMPLATE        = subdirs
         } else {
             SUBDIRS = assistant \
                       pixeltool \
-                      porting \
                       qtestlib \
                       qttracereplay
             contains(QT_EDITION, Console) {
