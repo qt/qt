@@ -922,7 +922,7 @@ void QGraphicsScenePrivate::grabMouse(QGraphicsItem *item, bool implicit)
             }
         } else {
             qWarning("QGraphicsItem::grabMouse: already blocked by mouse grabber: %p",
-                     mouseGrabberItems.last());
+                     (void*)mouseGrabberItems.last());
         }
         return;
     }
@@ -1015,7 +1015,7 @@ void QGraphicsScenePrivate::grabKeyboard(QGraphicsItem *item)
             qWarning("QGraphicsItem::grabKeyboard: already a keyboard grabber");
         else
             qWarning("QGraphicsItem::grabKeyboard: already blocked by keyboard grabber: %p",
-                     keyboardGrabberItems.last());
+                     (void*)keyboardGrabberItems.last());
         return;
     }
 
@@ -2966,7 +2966,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     if (item->scene() != this) {
         qWarning("QGraphicsScene::removeItem: item %p's scene (%p)"
                  " is different from this scene (%p)",
-                 item, item->scene(), this);
+                 (void*)item, (void*)item->scene(), (void*)this);
         return;
     }
 
@@ -5708,7 +5708,7 @@ void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
 {
     if (widget && widget->scene() != this) {
         qWarning("QGraphicsScene::setActiveWindow: widget %p must be part of this scene",
-                 widget);
+                 (void*)widget);
         return;
     }
 
@@ -5759,7 +5759,7 @@ bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
     if (item->scene() != this) {
         qWarning("QGraphicsScene::sendEvent: item %p's scene (%p)"
                  " is different from this scene (%p)",
-                 item, item->scene(), this);
+                 (void*)item, (void*)item->scene(), (void*)this);
         return false;
     }
     return d->sendEvent(item, event);

@@ -227,7 +227,7 @@ void QtFullToolBarManagerPrivate::saveState(QDataStream &stream) const
         if (tb->objectName().isEmpty()) {
             qWarning("QtToolBarManager::saveState(): 'objectName' not set for QToolBar "
                 "%p '%s', using 'windowTitle' instead",
-            tb, tb->windowTitle().toLocal8Bit().constData());
+            (void*)tb, tb->windowTitle().toLocal8Bit().constData());
             stream << tb->windowTitle();
         } else {
             stream << tb->objectName();
@@ -242,7 +242,7 @@ void QtFullToolBarManagerPrivate::saveState(QDataStream &stream) const
                 if (action->objectName().isEmpty()) {
                     qWarning("QtToolBarManager::saveState(): 'objectName' not set for QAction "
                                 "%p '%s', using 'text' instead",
-                            action, action->text().toLocal8Bit().constData());
+                            (void*)action, action->text().toLocal8Bit().constData());
                     stream << action->text();
                 } else {
                     stream << action->objectName();
@@ -273,7 +273,7 @@ void QtFullToolBarManagerPrivate::saveState(QDataStream &stream) const
                     if (action->objectName().isEmpty()) {
                         qWarning("QtToolBarManager::saveState(): 'objectName' not set for QAction "
                                     "%p '%s', using 'text' instead",
-                                action, action->text().toLocal8Bit().constData());
+                                (void*)action, action->text().toLocal8Bit().constData());
                         stream << action->text();
                     } else {
                         stream << action->objectName();

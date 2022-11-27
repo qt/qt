@@ -2125,7 +2125,7 @@ void QGraphicsWidget::setTabOrder(QGraphicsWidget *first, QGraphicsWidget *secon
     }
     if ((first && second) && first->scene() != second->scene()) {
         qWarning("QGraphicsWidget::setTabOrder: scenes %p and %p are different",
-                 first->scene(), second->scene());
+                 (void*)first->scene(), (void*)second->scene());
         return;
     }
     QGraphicsScene *scene = first ? first->scene() : second->scene();

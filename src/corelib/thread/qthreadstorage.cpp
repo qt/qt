@@ -91,7 +91,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
          */
         QThreadData *data = QThreadData::current();
         id = data->tls.count();
-        DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, func);
+        DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, (void*)func);
         return;
     }
     for (id = 0; id < destr->count(); id++) {
@@ -103,7 +103,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
     } else {
         (*destr)[id] = func;
     }
-    DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p", id, func);
+    DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p", id, (void*)func);
 }
 
 QThreadStorageData::~QThreadStorageData()

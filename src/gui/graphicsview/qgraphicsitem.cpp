@@ -4712,7 +4712,7 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
         return;
     if (!sibling || d_ptr->parent != sibling->parentItem()) {
         qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling",
-                 sibling);
+                 (void*)sibling);
         return;
     }
     QList<QGraphicsItem *> *siblings = d_ptr->parent
@@ -4720,7 +4720,7 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
                                        : (d_ptr->scene ? &d_ptr->scene->d_func()->topLevelItems : 0);
     if (!siblings) {
         qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling",
-                 sibling);
+                 (void*)sibling);
         return;
     }
 
