@@ -151,10 +151,12 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004, // ### Qt 5: remove me
-        MiddleButton     = MidButton,
-        XButton1         = 0x00000008,
-        XButton2         = 0x00000010,
+        MiddleButton     = 0x00000004,
+        MidButton        = MiddleButton, // ### Qt 5: remove me
+        BackButton       = 0x00000008,
+        XButton1         = BackButton,
+        ForwardButton    = 0x00000010,
+        XButton2         = ForwardButton,
         MouseButtonMask  = 0x000000ff
     };
     Q_DECLARE_FLAGS(MouseButtons, MouseButton)
