@@ -753,7 +753,7 @@ CFG_XFIXES=runtime
 CFG_ZLIB=auto
 CFG_SYMBIAN_DEFFILES=auto
 CFG_S60=auto
-CFG_SQLITE=qt
+CFG_SQLITE=auto
 CFG_GIF=auto
 CFG_TIFF=auto
 CFG_LIBTIFF=auto
@@ -1973,8 +1973,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     sqlite)
-        if [ "$VAL" = "system" ]; then
-            CFG_SQLITE=system
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SQLITE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3804,7 +3804,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-debug-and-release] [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
-        [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
+        [-plugin-sql-<driver>] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
@@ -3951,8 +3951,6 @@ fi
 
                          Possible values for <driver>:
                          [ $CFG_SQL_AVAILABLE ]
-
-    -system-sqlite ..... Use sqlite from the operating system.
 
     -no-qt3support ..... Disables the Qt 3 support functionality.
  *  -qt3support ........ Enables the Qt 3 support functionality.
@@ -5681,27 +5679,15 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             fi
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
-                if [ "$CFG_SQLITE" = "system" ]; then
-                    if [ -n "$PKG_CONFIG" ]; then
-                        QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
-                        QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
-                    else
-                        QT_CFLAGS_SQLITE=
-                        QT_LFLAGS_SQLITE="-lsqlite3 -lz"
-                    fi
-                    if compileTest unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $QT_CFLAGS_SQLITE; then
-                        if [ "$CFG_SQL_sqlite" = "auto" ]; then
-                            CFG_SQL_sqlite=plugin
-                        fi
-                        QMAKE_CONFIG="$QMAKE_CONFIG system-sqlite"
-                    else
-                        SQLITE_AUTODETECT_FAILED="yes"
-                        CFG_SQL_sqlite=no
-                    fi
-                elif [ -f "$relpath/src/3rdparty/sqlite/sqlite3.h" ]; then
+                if [ -n "$PKG_CONFIG" ]; then
+                    QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
+                    QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
+                fi
+                if compileTest unix/sqlite "SQLite" $QT_LFLAGS_SQLITE $QT_CFLAGS_SQLITE; then
                     if [ "$CFG_SQL_sqlite" = "auto" ]; then
-                            CFG_SQL_sqlite=plugin
+                        CFG_SQL_sqlite=plugin
                     fi
+                    QMAKE_CONFIG="$QMAKE_CONFIG system-sqlite"
                 else
                     SQLITE_AUTODETECT_FAILED="yes"
                     CFG_SQL_sqlite=no
