@@ -67,9 +67,10 @@ template <typename T>
 inline T *v_cast(const QVariant::Private *nd, T * = nullptr)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(nd);
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
-            ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data))
+        return static_cast<T *>(d->data.shared->ptr);
+    else
+        return static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #else // every other compiler in this world
@@ -77,17 +78,19 @@ inline T *v_cast(const QVariant::Private *nd, T * = nullptr)
 template <typename T>
 inline const T *v_cast(const QVariant::Private *d, T * = nullptr)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
-            ? static_cast<const T *>(d->data.shared->ptr)
-            : static_cast<const T *>(static_cast<const void *>(&d->data.c)));
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data))
+        return static_cast<const T *>(d->data.shared->ptr);
+    else
+        return static_cast<const T *>(static_cast<const void *>(&d->data.c));
 }
 
 template <typename T>
 inline T *v_cast(QVariant::Private *d, T * = nullptr)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
-            ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data))
+        return static_cast<T *>(d->data.shared->ptr);
+    else
+        return static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #endif
@@ -108,7 +111,7 @@ private:
 template <class T>
 inline void v_construct(QVariant::Private *x, const void *copy, T * = nullptr)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data)) {
         x->data.shared = copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T *>(copy))
                               : new QVariantPrivateSharedEx<T>;
         x->is_shared = true;
@@ -123,7 +126,7 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = nullptr)
 template <class T>
 inline void v_construct(QVariant::Private *x, const T &t)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data)) {
         x->data.shared = new QVariantPrivateSharedEx<T>(t);
         x->is_shared = true;
     } else {
@@ -136,7 +139,7 @@ template <class T>
 inline void v_clear(QVariant::Private *d, T* = nullptr)
 {
     
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if constexpr (sizeof(T) > sizeof(QVariant::Private::Data)) {
         //now we need to cast
         //because QVariant::PrivateShared doesn't have a virtual destructor
         delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
