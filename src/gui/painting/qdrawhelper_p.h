@@ -2077,66 +2077,6 @@ template <> void qt_rectconvert(qrgb *dest, const quint16 *src,
                                 int dstStride, int srcStride);
 #endif // QT_QWS_DEPTH_GENERIC
 
-#define QT_MEMFILL_UINT(dest, length, color)            \
-    qt_memfill<quint32>(dest, color, length);
-
-#define QT_MEMFILL_USHORT(dest, length, color) \
-    qt_memfill<quint16>(dest, color, length);
-
-#define QT_MEMCPY_REV_UINT(dest, src, length) \
-do {                                          \
-    /* Duff's device */                       \
-    uint *_d = (uint*)(dest) + length;         \
-    const uint *_s = (uint*)(src) + length;    \
-    int n = ((length) + 7) / 8;               \
-    switch ((length) & 0x07)                  \
-    {                                         \
-    case 0: do { *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 7:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 6:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 5:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 4:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 3:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 2:      *--_d = *--_s;                 \
-        /* fall through */                      \
-    case 1:      *--_d = *--_s;                 \
-    } while (--n > 0);                        \
-    }                                         \
-} while (0)
-
-#define QT_MEMCPY_USHORT(dest, src, length) \
-do {                                          \
-    /* Duff's device */                       \
-    ushort *_d = (ushort*)(dest);         \
-    const ushort *_s = (ushort*)(src);    \
-    int n = ((length) + 7) / 8;               \
-    switch ((length) & 0x07)                  \
-    {                                         \
-    case 0: do { *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 7:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 6:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 5:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 4:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 3:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 2:      *_d++ = *_s++;                 \
-        /* fall through */                      \
-    case 1:      *_d++ = *_s++;                 \
-    } while (--n > 0);                        \
-    }                                         \
-} while (0)
-
 #if defined(Q_CC_RVCT)
 #  pragma push
 #  pragma arm

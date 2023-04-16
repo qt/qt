@@ -1360,7 +1360,7 @@ static const uint * QT_FASTCALL qt_fetch_linear_gradient(uint *buffer, const Ope
     const uint *end = buffer + length;
     if (affine) {
         if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
-            QT_MEMFILL_UINT(buffer, length, qt_gradient_pixel_fixed(&data->gradient, int(t * FIXPT_SIZE)));
+            qt_memfill(buffer, qt_gradient_pixel_fixed(&data->gradient, int(t * FIXPT_SIZE)), length);
         } else {
             if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
                 t+inc*length > qreal(INT_MIN >> (FIXPT_BITS + 1))) {
@@ -1561,7 +1561,7 @@ static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
 #define comp_func_Clear_impl(dest, length, const_alpha)\
 {\
     if (const_alpha == 255) {\
-        QT_MEMFILL_UINT(dest, length, 0);\
+        qt_memfill<quint32>(dest, 0, length);\
     } else {\
         int ialpha = 255 - const_alpha;\
         PRELOAD_INIT(dest)\
@@ -1589,7 +1589,7 @@ void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, uint cons
 void QT_FASTCALL comp_func_solid_Source(uint *dest, int length, uint color, uint const_alpha)
 {
     if (const_alpha == 255) {
-        QT_MEMFILL_UINT(dest, length, color);
+        qt_memfill(dest, color, length);
     } else {
         int ialpha = 255 - const_alpha;
         color = BYTE_MUL(color, const_alpha);
@@ -1632,7 +1632,7 @@ void QT_FASTCALL comp_func_Destination(uint *, const uint *, int, uint)
 void QT_FASTCALL comp_func_solid_SourceOver(uint *dest, int length, uint color, uint const_alpha)
 {
     if ((const_alpha & qAlpha(color)) == 255) {
-        QT_MEMFILL_UINT(dest, length, color);
+        qt_memfill(dest, color, length);
     } else {
         if (const_alpha != 255)
             color = BYTE_MUL(color, const_alpha);
@@ -3346,7 +3346,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
         while (count--) {
             uint *target = ((uint *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
-                QT_MEMFILL_UINT(target, spans->len, data->solid.color);
+                qt_memfill(target, data->solid.color, spans->len);
             } else {
                 uint c = BYTE_MUL(data->solid.color, spans->coverage);
                 int ialpha = 255 - spans->coverage;
@@ -3434,7 +3434,7 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
         while (count--) {
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
-                QT_MEMFILL_USHORT(target, spans->len, c);
+                qt_memfill(target, c, spans->len);
             } else {
                 ushort color = BYTE_MUL_RGB16(c, spans->coverage);
                 int ialpha = 255 - spans->coverage;
