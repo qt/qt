@@ -145,14 +145,6 @@ Qt has various support for different rendering and painting methods.
 \o \l{Printing with Qt} - A guide to producing printed output with Qt's paint system and widgets
 \endlist
 
-\keyword qt-webkit
-\section2 QtWebKit Module
-Web applications are increasing in importance and abundance and Qt has
-\l{WebKit Open Source Project}{WebKit} support.
-\list
-\o \l{WebKit in Qt} - WebKit Module
-\endlist
-
 \keyword qt-utilities
 \section2 Utilities
 Qt supports many utilities that work on multiple platforms.
