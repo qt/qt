@@ -78,7 +78,6 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
         srcVectorPrevLoaded = srcVectorLastLoaded;\
     }
 
-
 // Basically blend src over dst with the const alpha defined as constAlphaVector.
 // nullVector, half, one, colorMask are constant across the whole image/texture, and should be defined as:
 //const __m128i nullVector = _mm_set1_epi32(0);
@@ -103,7 +102,7 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
     if (!minusOffsetToAlignSrcOn16Bytes) {\
         /* src is aligned, usual algorithm but with aligned operations.\
            See the SSE2 version for more documentation on the algorithm itself. */\
-        const __m128i alphaShuffleMask = _mm_set_epi8(0xff,15,0xff,15,0xff,11,0xff,11,0xff,7,0xff,7,0xff,3,0xff,3);\
+        const __m128i alphaShuffleMask = _mm_set_epi8(0xff_c,15,0xff_c,15,0xff_c,11,0xff_c,11,0xff_c,7,0xff_c,7,0xff_c,3,0xff_c,3);\
         for (; x < length-3; x += 4) { \
             const __m128i srcVector = _mm_load_si128((__m128i *)&src[x]); \
             const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask); \
@@ -124,7 +123,7 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
         __m128i srcVectorPrevLoaded = _mm_load_si128((__m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);\
         const int palignrOffset = minusOffsetToAlignSrcOn16Bytes << 2;\
 \
-        const __m128i alphaShuffleMask = _mm_set_epi8(0xff,15,0xff,15,0xff,11,0xff,11,0xff,7,0xff,7,0xff,3,0xff,3);\
+        const __m128i alphaShuffleMask = _mm_set_epi8(0xff_c,15,0xff_c,15,0xff_c,11,0xff_c,11,0xff_c,7,0xff_c,7,0xff_c,3,0xff_c,3);\
         switch (palignrOffset) {\
         case 4:\
             BLENDING_LOOP(4, length)\
