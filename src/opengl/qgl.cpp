@@ -1261,14 +1261,19 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             switch (versionString[2].toAscii()) {
             case '5':
                 versionFlags |= QGLFormat::OpenGL_Version_1_5;
+                [[fallthrough]];
             case '4':
                 versionFlags |= QGLFormat::OpenGL_Version_1_4;
+                [[fallthrough]];
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_1_3;
+                [[fallthrough]];
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_1_2;
+                [[fallthrough]];
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_1_1;
+                [[fallthrough]];
             default:
                 break;
             }
@@ -1293,10 +1298,13 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             switch (versionString[2].toAscii()) {
             case '3':
                 versionFlags |= QGLFormat::OpenGL_Version_3_3;
+                [[fallthrough]];
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_3_2;
+                [[fallthrough]];
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_3_1;
+                [[fallthrough]];
             case '0':
                 break;
             default:

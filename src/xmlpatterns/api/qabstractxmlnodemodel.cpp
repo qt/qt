@@ -678,7 +678,7 @@ QAbstractXmlNodeModel::iterate(const QXmlNodeModelIndex &ni,
                 }
             }
 
-            /* Else, fallthrough to AxisChild. */
+            [[fallthrough]];
         }
         case QXmlNodeModelIndex::AxisChild:
         {
@@ -704,7 +704,7 @@ QAbstractXmlNodeModel::iterate(const QXmlNodeModelIndex &ni,
             if(kind(ni) == QXmlNodeModelIndex::Attribute && nextFromSimpleAxis(Parent, ni).isNull())
                 return makeSingletonIterator(ni);
 
-            /* Else, fallthrough to AxisAttribute. */
+            [[fallthrough]];
         }
         case QXmlNodeModelIndex::AxisAttribute:
             return makeVectorIterator(attributes(ni));
@@ -1045,7 +1045,7 @@ bool QAbstractXmlNodeModel::isDeepEqual(const QXmlNodeModelIndex &n1,
                 node = atts1->next();
             }
 
-            /* Fallthrough, so we check the children. */
+            [[fallthrough]]; /* so we check the children. */
         }
         case QXmlNodeModelIndex::Document:
         {
@@ -1075,11 +1075,8 @@ bool QAbstractXmlNodeModel::isDeepEqual(const QXmlNodeModelIndex &n1,
             return true;
         }
         case QXmlNodeModelIndex::Attribute:
-        /* Fallthrough */
         case QXmlNodeModelIndex::ProcessingInstruction:
-        /* Fallthrough. */
         case QXmlNodeModelIndex::Text:
-        /* Fallthrough. */
         case QXmlNodeModelIndex::Comment:
             return n1.stringValue() == n2.stringValue();
         case QXmlNodeModelIndex::Namespace:

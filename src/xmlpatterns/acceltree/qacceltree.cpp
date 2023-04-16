@@ -277,7 +277,7 @@ QXmlNodeModelIndex::Iterator::Ptr AccelTree::iterate(const QXmlNodeModelIndex &n
                         /* Do nothing. */;
                 }
             }
-            /* Else, fallthrough to AxisChild. */
+            [[fallthrough]];
         }
         case QXmlNodeModelIndex::AxisChild:
         {
@@ -322,7 +322,7 @@ QXmlNodeModelIndex::Iterator::Ptr AccelTree::iterate(const QXmlNodeModelIndex &n
         {
             if(!hasParent(preNumber) && kind(preNumber) == QXmlNodeModelIndex::Attribute)
                 return makeSingletonIterator(ni);
-            /* Else, falthrough to AxisAttribute. */
+            [[fallthrough]];
         }
         case QXmlNodeModelIndex::AxisAttribute:
         {
@@ -528,12 +528,10 @@ QString AccelTree::stringValue(const QXmlNodeModelIndex &ni) const
         {
             if(isCompressed(preNumber))
                 return CompressedWhitespace::decompress(data.value(preNumber));
-            /* Else, fallthrough. It's not compressed so use it as it is. */
+            [[fallthrough]]; /* It's not compressed so use it as it is. */
         }
         case QXmlNodeModelIndex::Attribute:
-        /* Fallthrough */
         case QXmlNodeModelIndex::ProcessingInstruction:
-        /* Fallthrough */
         case QXmlNodeModelIndex::Comment:
             return data.value(preNumber);
         case QXmlNodeModelIndex::Document:

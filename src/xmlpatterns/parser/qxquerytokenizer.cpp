@@ -106,7 +106,7 @@ int XQueryTokenizer::peekForColonColon() const
             {
                 if(peekAhead((pos - m_pos) + 1) == ':')
                     return pos - m_pos;
-                /* Fallthrough. */
+                [[fallthrough]];
             }
             default:
                 return -1;
@@ -168,7 +168,7 @@ QString XQueryTokenizer::normalizeEOL(const QString &input,
                 if(i + 1 < len && input.at(i + 1) == QLatin1Char('\n'))
                     ++i;
 
-                /* Else, fallthrough. */
+               [[fallthrough]];
             }
             case '\n':
             {
@@ -838,7 +838,6 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 case ';':
                     return tokenAndChangeState(SEMI_COLON, Default);
                 case '\'':
-                /* Fallthrough. */
                 case '\"':
                     return tokenizeStringLiteral();
             }
@@ -866,7 +865,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 setState(AfterAxisSeparator);
                 return Token(COLONCOLON);
             }
-            /* Fallthrough. */
+            [[fallthrough]];
         }
         case AfterAxisSeparator:
         /* Fallthrough. */
@@ -998,7 +997,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                                 pushState(Operator);
                                 return tokenAndChangeState(COMMENT_START, XMLComment);
                             }
-                            /* Fallthrough. It's a syntax error, and this is a good way to report it. */
+                            [[fallthrough]]; /* It's a syntax error, and this is a good way to report it. */
                         }
                         default:
                         {
@@ -1771,7 +1770,6 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                             }
                         }
                         case 0xA:
-                        /* Fallthrough. */
                         case 0x9:
                         {
                             result.append(QLatin1Char(' '));
@@ -1922,7 +1920,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                         /* We want to translate \r\n into \n. */
                         if(peekAhead(-1) == '\r')
                             break;
-                        /* else, fallthrough. */
+                        [[fallthrough]];
                     }
                     case '\r':
                     {

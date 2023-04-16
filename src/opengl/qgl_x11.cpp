@@ -549,7 +549,7 @@ static bool buildSpec(int* spec, const QGLFormat& f, QPaintDevice* paintDevice,
             break;
         default:
             qWarning("QGLContext: Unknown paint device type %d", paintDevice->devType());
-            // Fall-through & assume it's a window
+            [[fallthrough]]; // assume it's a window
         case QInternal::Widget:
             spec[i++] = GLX_WINDOW_BIT;
             break;
