@@ -1745,7 +1745,7 @@ Q3TextStream &Q3TextStream::output_int( int format, ulong n, bool neg )
     static const char hexdigits_upper[] = "0123456789ABCDEF";
     CHECK_STREAM_PRECOND
     char buf[76];
-    register char *p;
+    char *p;
     int	  len;
     const char *hexdigits;
 
@@ -1958,7 +1958,7 @@ Q3TextStream &Q3TextStream::operator<<( double f )
 	f_char = (flags() & uppercase) ? 'E' : 'e';
     else
 	f_char = (flags() & uppercase) ? 'G' : 'g';
-    register char *fs = format;			// generate format string
+    char *fs = format;			// generate format string
     *fs++ = '%';				//   "%.<prec>l<f_char>"
     *fs++ = '.';
     int prec = precision();

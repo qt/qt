@@ -4163,7 +4163,7 @@ Q3TextParagraph::~Q3TextParagraph()
 {
     delete str;
     if (hasdoc) {
-        register Q3TextDocument *doc = document();
+        Q3TextDocument *doc = document();
         if (this == doc->minwParag) {
             doc->minwParag = 0;
             doc->minw = 0;

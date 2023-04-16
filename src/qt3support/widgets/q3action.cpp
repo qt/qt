@@ -623,7 +623,7 @@ Q3Action::~Q3Action()
 */
 void Q3Action::setIconSet(const QIcon& icon)
 {
-    register QIcon *i = d->icon;
+    QIcon *i = d->icon;
     if (!icon.isNull())
         d->icon = new QIcon(icon);
     else

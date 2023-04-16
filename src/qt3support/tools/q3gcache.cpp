@@ -590,7 +590,7 @@ bool Q3GCache::makeRoomFor(int cost, int priority)
 	return false;				//   than maximum cost
     if (priority == -1)
 	priority = 32767;
-    register Q3CacheItem *ci = lruList->last();
+    Q3CacheItem *ci = lruList->last();
     int cntCost = 0;
     int dumps	= 0;				// number of items to dump
     while (cntCost < cost && ci && ci->skipPriority <= priority) {

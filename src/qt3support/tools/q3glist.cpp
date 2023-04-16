@@ -329,7 +329,7 @@ Q3LNode *Q3GList::locate( uint index )
 	curNode	 = firstNode;
 	curIndex = 0;
     }
-    register Q3LNode *node;
+    Q3LNode *node;
     int	 distance = index - curIndex;		// node distance to cur node
     bool forward;				// direction to traverse
 
@@ -371,7 +371,7 @@ Q3LNode *Q3GList::locate( uint index )
 void Q3GList::inSort( Q3PtrCollection::Item d )
 {
     int index = 0;
-    register Q3LNode *n = firstNode;
+    Q3LNode *n = firstNode;
     while ( n && compareItems(n->data,d) < 0 ){ // find position in list
 	n = n->next;
 	index++;
@@ -386,7 +386,7 @@ void Q3GList::inSort( Q3PtrCollection::Item d )
 
 void Q3GList::prepend( Q3PtrCollection::Item d )
 {
-    register Q3LNode *n = new Q3LNode( newItem(d) );
+    Q3LNode *n = new Q3LNode( newItem(d) );
     Q_CHECK_PTR( n );
     n->prev = 0;
     if ( (n->next = firstNode) )		// list is not empty
@@ -405,7 +405,7 @@ void Q3GList::prepend( Q3PtrCollection::Item d )
 
 void Q3GList::append( Q3PtrCollection::Item d )
 {
-    register Q3LNode *n = new Q3LNode( newItem(d) );
+    Q3LNode *n = new Q3LNode( newItem(d) );
     Q_CHECK_PTR( n );
     n->next = 0;
     if ( (n->prev = lastNode) )			// list is not empty
@@ -435,7 +435,7 @@ bool Q3GList::insertAt( uint index, Q3PtrCollection::Item d )
     if ( !nextNode )
 	return false;
     Q3LNode *prevNode = nextNode->prev;
-    register Q3LNode *n = new Q3LNode( newItem(d) );
+    Q3LNode *n = new Q3LNode( newItem(d) );
     Q_CHECK_PTR( n );
     nextNode->prev = n;
     prevNode->next = n;
@@ -476,7 +476,7 @@ Q3LNode *Q3GList::unlink()
 {
     if ( curNode == 0 )				// null current node
 	return 0;
-    register Q3LNode *n = curNode;		// unlink this node
+    Q3LNode *n = curNode;		// unlink this node
     if ( n == firstNode ) {			// removing first node ?
 	if ( (firstNode = n->next) ) {
 	    firstNode->prev = 0;
@@ -691,7 +691,7 @@ Q3PtrCollection::Item Q3GList::takeLast()
 
 void Q3GList::clear()
 {
-    register Q3LNode *n = firstNode;
+    Q3LNode *n = firstNode;
 
     firstNode = lastNode = curNode = 0;		// initialize list
     numNodes = 0;
@@ -717,7 +717,7 @@ void Q3GList::clear()
 
 int Q3GList::findRef( Q3PtrCollection::Item d, bool fromStart )
 {
-    register Q3LNode *n;
+    Q3LNode *n;
     int	     index;
     if ( fromStart ) {				// start from first node
 	n = firstNode;
@@ -743,7 +743,7 @@ int Q3GList::findRef( Q3PtrCollection::Item d, bool fromStart )
 
 int Q3GList::find( Q3PtrCollection::Item d, bool fromStart )
 {
-    register Q3LNode *n;
+    Q3LNode *n;
     int	     index;
     if ( fromStart ) {				// start from first node
 	n = firstNode;
@@ -768,7 +768,7 @@ int Q3GList::find( Q3PtrCollection::Item d, bool fromStart )
 
 uint Q3GList::containsRef( Q3PtrCollection::Item d ) const
 {
-    register Q3LNode *n = firstNode;
+    Q3LNode *n = firstNode;
     uint     count = 0;
     while ( n ) {				// for all nodes...
 	if ( n->data == d )			// count # exact matches
@@ -785,7 +785,7 @@ uint Q3GList::containsRef( Q3PtrCollection::Item d ) const
 
 uint Q3GList::contains( Q3PtrCollection::Item d ) const
 {
-    register Q3LNode *n = firstNode;
+    Q3LNode *n = firstNode;
     uint     count = 0;
     Q3GList  *that = (Q3GList*)this;		// mutable for compareItems()
     while ( n ) {				// for all nodes...
@@ -907,7 +907,7 @@ void Q3GList::toVector( Q3GVector *vector ) const
     vector->clear();
     if ( !vector->resize( count() ) )
 	return;
-    register Q3LNode *n = firstNode;
+    Q3LNode *n = firstNode;
     uint i = 0;
     while ( n ) {
 	vector->insert( i, n->data );

@@ -684,7 +684,7 @@ Q3CString &Q3CString::setNum(long n)
 {
     data();
     char buf[20];
-    register char *p = &buf[19];
+    char *p = &buf[19];
     bool neg;
     if (n < 0) {
         neg = true;
@@ -776,7 +776,7 @@ Q3CString &Q3CString::setNum(double n, char f, int prec)
         qWarning("Q3CString::setNum: Invalid format char '%c'", f);
 #endif
     char format[20];
-    register char *fs = format;                        // generate format string
+    char *fs = format;                        // generate format string
     *fs++ = '%';                                //   "%.<prec>l<f>"
     if (prec > 99)
         prec = 99;
