@@ -100,7 +100,7 @@ struct QFontDef
     uint ignorePitch : 1;
     uint hintingPreference : 2;
     uint fixedPitchComputed : 1; // for Mac OS X only
-    int reserved   : 14; // for future extensions
+    uint reserved   : 14; // for future extensions
 
     bool exactMatch(const QFontDef &other) const;
     bool operator==(const QFontDef &other) const
