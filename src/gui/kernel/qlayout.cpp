@@ -743,7 +743,7 @@ void QLayout::widgetEvent(QEvent *e)
         break;
     case QEvent::LayoutHint:
         d->activated = false;
-        // fall through
+        [[fallthrough]];
 #endif
     case QEvent::LayoutRequest:
         if (static_cast<QWidget *>(parent())->isVisible())

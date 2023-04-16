@@ -8576,7 +8576,7 @@ bool QWidget::event(QEvent *event)
                             0, this);
                 break;
             }
-            // fall through
+            [[fallthrough]];
 #endif
         default:
             event->ignore();
@@ -8852,7 +8852,7 @@ bool QWidget::event(QEvent *event)
                 d->extra->customDpiY = value;
             d->updateFont(d->data.fnt);
         }
-        // fall through
+        [[fallthrough]];
     }
 #endif
     default:

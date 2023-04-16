@@ -2726,7 +2726,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Space:
         if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
             break;
-        // fall through
+        [[fallthrough]];
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Select:
 #endif

@@ -627,6 +627,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                     }
                 break;
             }
+            [[fallthrough]];
         case QChar::DirAN:
             hasBidi = true;
             dirCurrent = QChar::DirAN;

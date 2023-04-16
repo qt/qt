@@ -4717,7 +4717,7 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
         return 2;
 #else
         mcount = 7;
-        // fall through
+        [[fallthrough]];
 #endif
     case MonthSection:
         if (count <= 2)

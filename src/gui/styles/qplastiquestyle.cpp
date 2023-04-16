@@ -5539,7 +5539,7 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
             ret = size;
             break;
         }
-        // fall through
+        [[fallthrough]];
 #endif // QT_NO_SLIDER
     case PM_ScrollBarExtent:
         ret = 16;

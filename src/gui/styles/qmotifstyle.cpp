@@ -959,7 +959,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
             }
             break;
         }
-        // fall through
+        [[fallthrough]];
 
 #ifndef QT_NO_TABBAR
     case CE_TabBarTabShape:
@@ -1945,7 +1945,7 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
             }
             break; }
 #endif // QT_NO_SPINBOX
-        // fall through
+        [[fallthrough]];
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
