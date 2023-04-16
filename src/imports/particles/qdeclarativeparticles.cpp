@@ -594,14 +594,14 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
         } else {
             p.opacity = 1.0;
             p.state = QDeclarativeParticle::Solid;
-            // Fall through
+            [[fallthrough]];
         }
     case QDeclarativeParticle::Solid:
         if (age <= p.fadeOutAge) {
             break;
         } else {
             p.state = QDeclarativeParticle::FadeOut;
-            // Fall through
+            [[fallthrough]];
         }
     case QDeclarativeParticle::FadeOut:
         p.opacity = qreal(p.lifeSpan - age) / fadeOutDur;
