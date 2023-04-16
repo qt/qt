@@ -239,7 +239,7 @@ private:
 
 class QBlitterPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
-    Q_DECLARE_PUBLIC(QBlitterPaintEngine);
+    Q_DECLARE_PUBLIC(QBlitterPaintEngine)
 public:
     QBlitterPaintEnginePrivate(QBlittablePixmapData *p)
         : QRasterPaintEnginePrivate()
