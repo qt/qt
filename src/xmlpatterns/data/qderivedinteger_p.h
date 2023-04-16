@@ -604,7 +604,7 @@ namespace QPatternist
                 case TypeShort:
                     Q_ASSERT_X(false, Q_FUNC_INFO,
                                "It makes no sense to call this function, see Numeric::toUnsignedInteger().");
-                /* Fallthrough all these. */
+                    [[fallthrough]];
                 case TypeUnsignedByte:
                 case TypeUnsignedInt:
                 case TypeUnsignedLong:

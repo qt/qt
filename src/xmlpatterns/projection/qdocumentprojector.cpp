@@ -67,7 +67,7 @@ void DocumentProjector::startElement(const QXmlName name)
         case ProjectedExpression::KeepSubtree:
         {
             m_receiver->startElement(name);
-            /* Fallthrough. */
+            [[fallthrough]];
         }
         case ProjectedExpression::Skip:
         {

@@ -1239,7 +1239,6 @@ void XSLTTokenizer::insideChoose(TokenSource::Queue *const to)
                 break;
             }
             case QXmlStreamReader::Comment:
-            /* Fallthrough. */
             case QXmlStreamReader::ProcessingInstruction:
                 continue;
             case QXmlStreamReader::Characters:
@@ -1248,7 +1247,7 @@ void XSLTTokenizer::insideChoose(TokenSource::Queue *const to)
                  * 4.2 Stripping Whitespace from the Stylesheet. */
                 if(isWhitespace())
                     continue;
-                /* Fallthrough. */
+                [[fallthrough]];
             }
             default:
                 /* Fallthrough. */
@@ -2167,7 +2166,6 @@ void XSLTTokenizer::queueWithParams(const XSLTTokenLookup::NodeName parentName,
                     continue;
             }
             case QXmlStreamReader::ProcessingInstruction:
-            /* Fallthrough. */
             case QXmlStreamReader::Comment:
                 continue;
             case QXmlStreamReader::Characters:
@@ -2332,13 +2330,12 @@ void XSLTTokenizer::insideAttributeSet()
             case QXmlStreamReader::EndElement:
                 return;
             case QXmlStreamReader::ProcessingInstruction:
-            /* Fallthrough. */
             case QXmlStreamReader::Comment:
                 continue;
             case QXmlStreamReader::Characters:
                 if(whitespaceToSkip())
                     continue;
-                /* Fallthrough. */
+                [[fallthrough]];
             default:
                 unexpectedContent();
         }
