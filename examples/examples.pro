@@ -29,8 +29,6 @@ SUBDIRS       = \
                 gestures
 }
 
-contains(QT_CONFIG, webkit):SUBDIRS += webkit
-
 symbian: SUBDIRS = \
                 graphicsview \
                 itemviews \
