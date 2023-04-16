@@ -2449,7 +2449,7 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
 {
 #if !defined(QT_NO_EXCEPTIONS)
-    if (std::uncaught_exception()) {
+    if (std::uncaught_exceptions() > 0) {
         qEmergencyOut(msgType, msg, ap);
         return;
     }
