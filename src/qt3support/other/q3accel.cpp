@@ -557,7 +557,7 @@ Q3AccelPrivate::~Q3AccelPrivate()
 
 static Q3AccelItem *find_id(Q3AccelList &list, int id)
 {
-    register Q3AccelItem *item = list.first();
+    Q3AccelItem *item = list.first();
     while (item && item->id != id)
         item = list.next();
     return item;
@@ -565,7 +565,7 @@ static Q3AccelItem *find_id(Q3AccelList &list, int id)
 
 static Q3AccelItem *find_key(Q3AccelList &list, const QKeySequence &key)
 {
-    register Q3AccelItem *item = list.first();
+    Q3AccelItem *item = list.first();
     while (item && !(item->key == key))
         item = list.next();
     return item;

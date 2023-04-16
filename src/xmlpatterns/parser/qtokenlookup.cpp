@@ -16,12 +16,11 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 or version 3 as published by the Free
-** Software Foundation and appearing in the file LICENSE.LGPLv21 and
-** LICENSE.LGPLv3 included in the packaging of this file. Please review the
-** following information to ensure the GNU Lesser General Public License
-** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** As a special exception, The Qt Company gives you certain additional
 ** rights. These rights are described in The Qt Company LGPL Exception
@@ -35,10 +34,11 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-/* C++ code produced by gperf version 3.0.3 */
+/* C++ code produced by gperf version 3.1 */
 /* Command-line: gperf TokenLookup.gperf  */
 /* Computed positions: -k'1,3,$' */
 
@@ -66,7 +66,7 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 #line 107 "TokenLookup.gperf"
@@ -93,13 +93,13 @@ struct TokenMap
 class TokenLookup
 {
 private:
-  static inline unsigned int hash (const char *str, unsigned int len);
+  static inline unsigned int hash (const char *str, size_t len);
 public:
-  static const struct TokenMap *value (const char *str, unsigned int len);
+  static const struct TokenMap *value (const char *str, size_t len);
 };
 
 inline unsigned int
-TokenLookup::hash (register const char *str, register unsigned int len)
+TokenLookup::hash (const char *str, size_t len)
 {
   static const unsigned char asso_values[] =
     {
@@ -130,23 +130,23 @@ TokenLookup::hash (register const char *str, register unsigned int len)
       230, 230, 230, 230, 230, 230, 230, 230, 230, 230,
       230, 230, 230, 230, 230, 230
     };
-  register int hval = len;
+  unsigned int hval = len;
 
   switch (hval)
     {
       default:
-        hval += asso_values[(unsigned char)str[2]];
+        hval += asso_values[static_cast<unsigned char>(str[2])];
       /*FALLTHROUGH*/
       case 2:
       case 1:
-        hval += asso_values[(unsigned char)str[0]];
+        hval += asso_values[static_cast<unsigned char>(str[0])];
         break;
     }
-  return hval + asso_values[(unsigned char)str[len - 1]];
+  return hval + asso_values[static_cast<unsigned char>(str[len - 1])];
 }
 
 const struct TokenMap *
-TokenLookup::value (register const char *str, register unsigned int len)
+TokenLookup::value (const char *str, size_t len)
 {
   enum
     {
@@ -424,11 +424,11 @@ TokenLookup::value (register const char *str, register unsigned int len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      register int key = hash (str, len);
+      unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE && key >= 0)
+      if (key <= MAX_HASH_VALUE)
         {
-          register const char *s = wordlist[key].name;
+          const char *s = wordlist[key].name;
 
           if (*str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];
