@@ -1870,21 +1870,21 @@ inline void qt_memfill(T *dest, T value, int count)
     switch (count & 0x07)
     {
     case 0: do { *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 7:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 6:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 5:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 4:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 3:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 2:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     case 1:      *dest++ = value;
-        // fall through
+        [[fallthrough]];
     } while (--n > 0);
     }
 }
@@ -1926,19 +1926,19 @@ inline void qt_memconvert(DST *dest, const SRC *src, int count)
         switch (count & 0x07)
         {
         case 0: do { *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 7:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 6:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 5:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 4:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 3:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 2:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-                // fall through
+                [[fallthrough]];
             case 1:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
             } while (--n > 0);
         }
@@ -1971,7 +1971,7 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     if (count < 3) {
         switch (count) {
         case 2: *dest++ = qrgb666(*src++);
-            // fall through
+            [[fallthrough]];
         case 1: *dest = qrgb666(*src);
         }
         return;
@@ -1980,9 +1980,9 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     const int align = (quintptr(dest) & 3);
     switch (align) {
     case 1: *dest++ = qrgb666(*src++); --count;
-        // fall through
+        [[fallthrough]];
     case 2: *dest++ = qrgb666(*src++); --count;
-        // fall through
+        [[fallthrough]];
     case 3: *dest++ = qrgb666(*src++); --count;
     }
 
@@ -2010,9 +2010,9 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
     dest = reinterpret_cast<qrgb666*>(dest32);
     switch (count & 3) {
     case 3: *dest++ = qrgb666(*src++);
-        // fall through
+        [[fallthrough]];
     case 2: *dest++ = qrgb666(*src++);
-        // fall through
+        [[fallthrough]];
     case 1: *dest = qrgb666(*src);
     }
 }

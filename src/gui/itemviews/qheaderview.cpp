@@ -2320,7 +2320,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
             int section = logicalIndexAt(pos);
             updateSection(section);
         }
-        // fall through
+        [[fallthrough]];
     case QHeaderViewPrivate::NoState:
         if (d->clickableSections) {
             int section = logicalIndexAt(pos);

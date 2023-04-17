@@ -704,7 +704,7 @@ bool QGraphicsSceneBspTreeIndex::event(QEvent *event)
                     d->_q_updateIndex();
                 }
             }
-     // Fallthrough intended - support timers in subclasses.
+            [[fallthrough]]; //support timers in subclasses.
     default:
         return QObject::event(event);
     }

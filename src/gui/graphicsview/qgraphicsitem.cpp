@@ -9556,7 +9556,7 @@ public:
                 shape = qt_regionToPath(QRegion(mask).translated(offset.toPoint()));
                 break;
             }
-            // FALL THROUGH
+            [[fallthrough]];
         }
         case QGraphicsPixmapItem::BoundingRectShape:
             shape.addRect(QRectF(offset.x(), offset.y(), pixmap.width(), pixmap.height()));
