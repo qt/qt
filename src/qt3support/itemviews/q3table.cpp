@@ -61,7 +61,6 @@
 #include <qevent.h>
 #include <q3listbox.h>
 #include <qstyle.h>
-#include <q3datatable.h>
 #include <qvalidator.h>
 #include <q3button.h>
 
