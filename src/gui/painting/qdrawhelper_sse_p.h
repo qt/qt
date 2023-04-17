@@ -143,12 +143,12 @@ inline void qt_bitmapblit16_sse_template(QRasterBuffer *rasterBuffer,
 #ifdef Q_CC_MSVC
 #  pragma warning(disable: 4309) // truncation of constant value
 #endif
-    const __m64 maskmask1 = _mm_set_pi16(0x1010, 0x2020, 0x4040, 0x8080);
-    const __m64 maskadd1 = _mm_set_pi16(0x7070, 0x6060, 0x4040, 0x0000);
+    const __m64 maskmask1 = _mm_set_pi16(0x1010_s, 0x2020_s, 0x4040_s, 0x8080_s);
+    const __m64 maskadd1 = _mm_set_pi16(0x7070_s, 0x6060_s, 0x4040_s, 0x0000_s);
 
     if (width > 4) {
-        const __m64 maskmask2 = _mm_set_pi16(0x0101, 0x0202, 0x0404, 0x0808);
-        const __m64 maskadd2 = _mm_set_pi16(0x7f7f, 0x7e7e, 0x7c7c, 0x7878);
+        const __m64 maskmask2 = _mm_set_pi16(0x0101_s, 0x0202_s, 0x0404_s, 0x0808_s);
+        const __m64 maskadd2 = _mm_set_pi16(0x7f7f_s, 0x7e7e_s, 0x7c7c_s, 0x7878_s);
 
         while (height--) {
             for (int x = 0; x < width; x += 8) {
