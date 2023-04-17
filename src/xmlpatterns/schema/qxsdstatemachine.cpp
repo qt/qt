@@ -111,7 +111,7 @@ void XsdStateMachine<TransitionType>::reset()
         }
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
 }
 
 template <typename TransitionType>
@@ -211,7 +211,7 @@ typename XsdStateMachine<TransitionType>::StateId XsdStateMachine<TransitionType
             return it.key();
     }
 
-    Q_ASSERT(false); // should never be reached
+    Q_UNREACHABLE(); // should never be reached
     return -1;
 }
 

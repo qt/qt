@@ -582,20 +582,20 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
 
 void QFontEngineMacMulti::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
 {
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     Q_UNUSED(glyphs);
     Q_UNUSED(flags);
 }
 
 void QFontEngineMacMulti::doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const
 {
-    //Q_ASSERT(false);
+    //Q_UNREACHABLE();
 }
 
 void QFontEngineMacMulti::loadEngine(int /*at*/)
 {
     // should never be called!
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
 }
 
 bool QFontEngineMacMulti::canRender(const QChar *string, int len)
@@ -1016,7 +1016,7 @@ QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, co
 
 bool QFontEngineMac::canRender(const QChar *string, int len)
 {
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     Q_UNUSED(string);
     Q_UNUSED(len);
     return false;

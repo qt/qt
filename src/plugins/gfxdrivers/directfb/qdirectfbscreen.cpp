@@ -869,7 +869,7 @@ int QDirectFBScreen::depth(QImage::Format format)
     switch(format) {
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
         depth = 1;

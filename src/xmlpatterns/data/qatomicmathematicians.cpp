@@ -127,7 +127,7 @@ Item DecimalMathematician::calculate(const Item &o1,
             return toItem(Decimal::fromValue(o1.as<Numeric>()->toDecimal() + o2.as<Numeric>()->toDecimal()));
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return Item(); /* GCC unbarfer. */
 }
 
@@ -176,7 +176,7 @@ Item IntegerMathematician::calculate(const Item &o1,
             return Integer::fromValue(o1.as<Numeric>()->toInteger() + o2.as<Numeric>()->toInteger());
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return Item(); /* GCC unbarfer. */
 }
 
@@ -258,7 +258,7 @@ Item DurationNumericMathematician::calculate(const Item &o1,
         }
         default:
         {
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             return Item(); /* Silence warning. */
         }
     }
@@ -282,7 +282,7 @@ Item DurationDurationMathematician::calculate(const Item &o1,
             return duration->fromValue(duration->value() + op2);
         default:
         {
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             return Item(); /* Silence warning. */
         }
     }

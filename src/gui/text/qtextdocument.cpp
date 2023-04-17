@@ -2395,7 +2395,7 @@ void QTextHtmlExporter::emitBorderStyle(QTextFrameFormat::BorderStyle style)
         html += QLatin1String("outset");
         break;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
     };
 

@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
 QScriptContext::QScriptContext()
 {
     //QScriptContext doesn't exist,  pointer to QScriptContext are just pointer to  JSC::CallFrame
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
 }
 
 /*!
@@ -231,7 +231,7 @@ QScriptValue QScriptContext::throwError(const QString &text)
 QScriptContext::~QScriptContext()
 {
     //QScriptContext doesn't exist,  pointer to QScriptContext are just pointer to JSC::CallFrame
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
 }
 
 /*!

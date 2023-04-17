@@ -1050,7 +1050,7 @@ static void convertPath(const QPainterPath &path, QList<TTF_POINT> *points, QLis
             break;
         }
         case QPainterPath::CurveToDataElement:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             break;
         }
 //         qDebug() << "   appending oncurve point " << QPoint(p.x, p.y);

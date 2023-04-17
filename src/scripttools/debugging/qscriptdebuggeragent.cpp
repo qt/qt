@@ -666,7 +666,7 @@ void QScriptDebuggerAgent::positionChange(qint64 scriptId,
     case QScriptDebuggerAgentPrivate::ReachedLocationState:
     case QScriptDebuggerAgentPrivate::InterruptedState:
 // ### deal with the case when code is evaluated while we're already paused
-//        Q_ASSERT(false);
+//        Q_UNREACHABLE();
         break;
     }
 }

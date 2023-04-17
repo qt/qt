@@ -593,7 +593,7 @@ void QX11PixmapData::fromImage(const QImage &img,
         }
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
 
         if ((xi->byte_order == MSBFirst) != (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {

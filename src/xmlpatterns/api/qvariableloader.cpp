@@ -215,7 +215,7 @@ bool VariableLoader::isSameType(const QVariant &v1,
 
     if(i1.isNode())
     {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return false;
     }
     else if(i2.isAtomicValue())

@@ -1971,6 +1971,12 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
+#ifdef __GNUC__
+#  define Q_UNREACHABLE() __builtin_unreachable()
+#else
+#  define Q_UNREACHABLE() Q_ASSERT(false);
+#endif
+
 #if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
 #  define Q_FUNC_INFO __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)

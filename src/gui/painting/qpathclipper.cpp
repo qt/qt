@@ -987,7 +987,7 @@ void QPathSegments::addPath(const QPainterPath &path)
             i += 2;
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             break;
         }
     }
@@ -1787,7 +1787,7 @@ static bool bool_op(bool a, bool b, QPathClipper::Operation op)
     case QPathClipper::BoolSub:
         return a && !b;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return false;
     }
 }

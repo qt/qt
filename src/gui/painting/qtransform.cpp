@@ -1590,7 +1590,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
             last = path.elementAt(i);
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
     }
 

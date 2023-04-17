@@ -3292,7 +3292,7 @@ int QTreeViewPrivate::coordinateForItem(int item) const
                 ++viewItemIndex;
             }
             // below the last item in the view
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             return viewItemCoordinate;
         } else {
             // search the area above the viewport (used for editor widgets)

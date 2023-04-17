@@ -2820,7 +2820,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             depth = 32;
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             depth = 0;
         };
 
@@ -2849,7 +2849,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 pitch = glyph->width * 4;
                 break;
             default:
-                Q_ASSERT(false);
+                Q_UNREACHABLE();
                 pitch = 0;
             };
 

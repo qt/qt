@@ -435,7 +435,7 @@ void QScriptDebuggerPrivate::handleResponse(
                 breakpointsModel->removeBreakpoint(breakpointId);
             }   break;
             default:
-                Q_ASSERT(false);
+                Q_UNREACHABLE();
             }
         }
     } else if (response.async()) {
@@ -492,7 +492,7 @@ bool QScriptDebuggerPrivate::debuggerEvent(const QScriptDebuggerEvent &event)
     case QScriptDebuggerEvent::None:
     case QScriptDebuggerEvent::UserEvent:
     case QScriptDebuggerEvent::MaxUserEvent:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
 
     case QScriptDebuggerEvent::Trace:

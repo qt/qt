@@ -169,7 +169,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
                                         d_ptr->name.toUtf8());
         break;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
     }
 

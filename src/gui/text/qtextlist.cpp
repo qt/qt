@@ -267,7 +267,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
 	    }
 	    break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
     }
     if (blockIt.textDirection() == Qt::RightToLeft)
         return numberSuffix + result + numberPrefix;

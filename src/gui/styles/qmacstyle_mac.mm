@@ -3326,7 +3326,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
                         break; }
                     default:
-                        Q_ASSERT(false);
+                        Q_UNREACHABLE();
                         break;
                     }
 

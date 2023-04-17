@@ -1290,7 +1290,7 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 GrafPtr qd = 0;
                 CGContextRef cg = 0;
                 if(GetEventParameter(event, kEventParamCGContextRef, typeCGContextRef, 0, sizeof(cg), 0, &cg) != noErr) {
-                    Q_ASSERT(false);
+                    Q_UNREACHABLE();
                 }
                 widget->d_func()->hd = cg;
                 widget->d_func()->qd_hd = qd;

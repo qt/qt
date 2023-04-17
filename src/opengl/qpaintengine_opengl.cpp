@@ -2544,7 +2544,7 @@ void QOpenGLPaintEngine::updateCompositionMode(QPainter::CompositionMode composi
             d->fragment_composition_mode = d->high_quality_antialiasing ? COMPOSITION_MODES_EXCLUSION : COMPOSITION_MODES_EXCLUSION_NOMASK;
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
 
     switch(composition_mode) {
@@ -2929,7 +2929,7 @@ void QGLMaskTextureCache::quadtreeClear(int channel, const QRect &rect, int node
         }
 
         // if we don't find the key there's an error in the quadtree
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
 found:
         Q_ASSERT(occupied_quadtree[channel][node].key == 0);
     } else if (occupied_quadtree[channel][node].largest_available_block < current_block_size) {

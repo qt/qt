@@ -427,14 +427,14 @@ protected:
 
 private:
     // force compile error, prevent QVariant(bool) to be called
-    inline QVariant(void *) { Q_ASSERT(false); }
+    inline QVariant(void *) { Q_UNREACHABLE(); }
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
-    inline QVariant(const char *) { Q_ASSERT(false); }
+    inline QVariant(const char *) { Q_UNREACHABLE(); }
 #endif
 #ifndef QT3_SUPPORT
     // force compile error, prevent QVariant(QVariant::Type, int) to be called
-    inline QVariant(bool, int) { Q_ASSERT(false); }
+    inline QVariant(bool, int) { Q_UNREACHABLE(); }
 #endif
 public:
     typedef Private DataPtr;

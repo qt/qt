@@ -335,7 +335,7 @@ public:
 
     virtual QString description() const
     {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return QString();
     }
 

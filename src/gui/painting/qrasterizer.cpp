@@ -1284,7 +1284,7 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
                 break;
             }
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             break;
         }
     }

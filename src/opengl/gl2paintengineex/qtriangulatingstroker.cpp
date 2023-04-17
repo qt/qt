@@ -214,7 +214,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
                 types+=3;
                 break;
             default:
-                Q_ASSERT(false);
+                Q_UNREACHABLE();
                 break;
             }
         }

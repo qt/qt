@@ -128,7 +128,7 @@ bool GeneralComparison::evaluateEBV(const DynamicContext::Ptr &context) const
                 return true;
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return false;
 }
 

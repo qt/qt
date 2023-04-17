@@ -478,7 +478,7 @@ int QTessellatorPrivate::Scanline::findEdge(int edge) const
         if (item_edge == edge)
             return i;
     }
-    //Q_ASSERT(false);
+    //Q_UNREACHABLE();
     return -1;
 }
 

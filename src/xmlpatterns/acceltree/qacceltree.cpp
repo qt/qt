@@ -358,7 +358,7 @@ QXmlNodeModelIndex::Iterator::Ptr AccelTree::iterate(const QXmlNodeModelIndex &n
             return makeEmptyIterator<QXmlNodeModelIndex>();
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return QXmlNodeModelIndex::Iterator::Ptr();
 }
 

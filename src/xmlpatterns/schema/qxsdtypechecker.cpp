@@ -96,7 +96,7 @@ static AnySimpleType::Ptr comparableType(const AnySimpleType::Ptr &type)
         }
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return AnySimpleType::Ptr();
 }
 

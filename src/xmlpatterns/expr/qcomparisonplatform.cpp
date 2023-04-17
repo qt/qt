@@ -127,7 +127,7 @@ compare(const Item &oand1,
     }
 
     /* GCC unbarfer, this line should never be reached. */
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return false;
 }
 

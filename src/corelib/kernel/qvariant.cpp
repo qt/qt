@@ -521,7 +521,7 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
     case QVariant::Double:
         return qRound64(d->data.d);
     }
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return 0;
 }
 
@@ -539,7 +539,7 @@ static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
     case QMetaType::ULong:
         return qulonglong(*static_cast<ulong *>(d->data.shared->ptr));
     }
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return 0;
 }
 

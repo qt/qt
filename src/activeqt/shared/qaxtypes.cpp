@@ -1330,7 +1330,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
 
             void *pElement = 0;
             switch(vt) {
-            case VT_BSTR: Q_ASSERT(false); break; // already covered
+            case VT_BSTR: Q_UNREACHABLE(); break; // already covered
             case VT_BOOL: pElement = &variant.boolVal; break;
             case VT_I1: pElement = &variant.cVal; break;
             case VT_I2: pElement = &variant.iVal; break;
@@ -1340,7 +1340,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
             case VT_UI8: pElement = &variant.ullVal; break;
 #endif
             case VT_INT: pElement = &variant.intVal; break;
-            case VT_UI1: Q_ASSERT(false); break; // already covered
+            case VT_UI1: Q_UNREACHABLE(); break; // already covered
             case VT_UI2: pElement = &variant.uiVal; break;
             case VT_UI4: pElement = &variant.ulVal; break;
             case VT_UINT: pElement = &variant.uintVal; break;
@@ -1348,7 +1348,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
             case VT_R4: pElement = &variant.fltVal; break;
             case VT_R8: pElement = &variant.dblVal; break;
             case VT_DATE: pElement = &variant.date; break;
-            case VT_VARIANT: Q_ASSERT(false); break; // already covered
+            case VT_VARIANT: Q_UNREACHABLE(); break; // already covered
             default:
                 break;
             }

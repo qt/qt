@@ -94,7 +94,7 @@ static QColor qcolorFromCGColor(CGColorRef cgcolor)
     } else {
         // Colorspace we can't deal with.
         qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
     return pc;
 }

@@ -494,7 +494,7 @@ void qt_getArabicProperties(const unsigned short *chars, int len, QArabicPropert
             break;
 
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
 
         lastGroup = ArabicNone;
@@ -542,7 +542,7 @@ void qt_getArabicProperties(const unsigned short *chars, int len, QArabicPropert
             lastGroup = Noon;
             break;
         case ArabicGroupsEnd:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
 
         lastPos = i;

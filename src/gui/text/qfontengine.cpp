@@ -1790,7 +1790,7 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)
 {
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return QImage();
 }
 

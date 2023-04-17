@@ -2306,7 +2306,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_Q3CheckListIndicator:
     case PE_Q3DockWindowSeparator:
     case PE_Q3Separator:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
     case PE_Frame:
         break;

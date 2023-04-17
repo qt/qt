@@ -1094,7 +1094,7 @@ public:
         case 3:
             return l->lastModified() < r->lastModified();
         }
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return false;
     }
 

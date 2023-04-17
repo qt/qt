@@ -1440,7 +1440,7 @@ void QSymbianControl::doDraw(const TRect& controlRect) const
             };
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
     }
 

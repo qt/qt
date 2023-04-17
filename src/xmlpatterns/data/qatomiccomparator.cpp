@@ -111,7 +111,7 @@ QString AtomicComparator::displayName(const AtomicComparator::Operator op,
             return QLatin1String("ne");
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return QString(); /* GCC unbarfer. */
 }
 

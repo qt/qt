@@ -233,7 +233,7 @@ XsdStateMachine<XsdTerm::Ptr>::StateId XsdStateMachineBuilder::buildTerm(const X
         }
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return 0;
 }
 

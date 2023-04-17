@@ -2268,7 +2268,7 @@ void QX11PaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         break;
 #endif
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
 }
 

@@ -1145,7 +1145,7 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 //static
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     Q_UNUSED(source)
     Q_UNUSED(target)
     Q_UNUSED(error)

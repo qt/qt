@@ -224,7 +224,7 @@ static StrokeLine strokeLine(int strokeSelection)
         stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixelARGB32, Dasher>;
         break;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         stroke = 0;
     }
     return stroke;

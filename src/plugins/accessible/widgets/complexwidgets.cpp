@@ -474,7 +474,7 @@ QAbstractItemView::CursorAction QAccessibleItemRow::toCursorAction(
     case QAccessible::Right:
         return QAbstractItemView::MoveRight;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
     // should never be reached.
     return QAbstractItemView::MoveRight;
@@ -1475,7 +1475,7 @@ QAbstractButton *QAccessibleTabBar::button(int child) const
         return tabBarPrivate->leftB;
     if (child - tabBar()->count() == 2)
         return tabBarPrivate->rightB;
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return 0;
 }
 

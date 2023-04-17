@@ -535,7 +535,7 @@ void XSLTTokenizer::unexpectedContent(const ReportContext::ErrorCode code) const
             break;
         }
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
     }
 
     error(message, effectiveCode);

@@ -4270,7 +4270,7 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
         break;
     case Format_Invalid:
     case NImageFormats:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
 }
 
@@ -4832,7 +4832,7 @@ inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool ve
         do_mirror_data<quint8>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
         break;
     default:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
     }
 
@@ -4937,7 +4937,7 @@ QImage QImage::rgbSwapped() const
     switch (d->format) {
     case Format_Invalid:
     case NImageFormats:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         break;
     case Format_Mono:
     case Format_MonoLSB:

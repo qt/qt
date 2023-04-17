@@ -827,7 +827,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
             else
                 return id;
 
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case NamespaceDecl:
         {
@@ -854,7 +854,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
             else
                 return nc;
 
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case Axis:
         {
@@ -1439,8 +1439,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 }
             }
 
-            Q_ASSERT(false);
-
+            Q_UNREACHABLE();
         }
         case VarName:
         {
@@ -1449,7 +1448,6 @@ Tokenizer::Token XQueryTokenizer::nextToken()
 
             setState(Operator);
             return tokenizeNCNameOrQName();
-            Q_ASSERT(false);
         }
         case ItemType:
         {
@@ -1486,7 +1484,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                     return name;
                 }
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case KindTest:
         {
@@ -1532,7 +1530,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
             }
             else
                 return nc;
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case KindTestForPI:
         {
@@ -1550,7 +1548,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 default:
                     return tokenizeNCName();
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case OccurrenceIndicator:
         {
@@ -1568,7 +1566,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                     return nextToken();
                 }
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case XQueryVersion:
         {
@@ -1592,7 +1590,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 return tokenAndChangeState(keyword->token, Default);
             else
                 return id;
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case StartTag:
         {
@@ -1642,7 +1640,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 default:
                     return tokenizeNCNameOrQName();
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case AposAttributeContent:
         /* Fallthrough. */
@@ -1782,7 +1780,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
 
                 ++m_pos;
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case ElementContent:
         {
@@ -1935,7 +1933,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 }
                 ++m_pos;
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case ProcessingInstructionName:
         {
@@ -1954,7 +1952,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                                                ProcessingInstructionContent);
                 }
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case ProcessingInstructionContent:
         {
@@ -1973,7 +1971,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 popState();
                 return Token(PI_CONTENT, normalizeEOL(m_data.mid(start, len), CharacterSkips()));
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case EndTag:
         {
@@ -1987,7 +1985,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
             }
             else
                 return tokenizeNCNameOrQName();
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case XMLComment:
         {
@@ -2009,7 +2007,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 else
                     return error();
             }
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
         case Pragma:
         {
@@ -2048,11 +2046,10 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                 return Token(END_OF_FILE);
 
             return Token(STRING_LITERAL, m_data.mid(start, len));
-            Q_ASSERT(false);
         }
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return error();
 }
 

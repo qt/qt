@@ -184,7 +184,7 @@ void QPrinterPrivate::createDefaultEngines()
         paintEngine = qwsEngine;
         printEngine = qwsEngine;
 #elif defined (Q_OS_UNIX)
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
 #endif
         }
         break;

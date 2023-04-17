@@ -91,7 +91,7 @@ Item AbstractFloatMathematician<isDouble>::calculate(const Item &o1,
             return toItem(AbstractFloat<isDouble>::fromValue(num1->toDouble() + num2->toDouble()));
     }
 
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
     return Item(); /* GCC unbarfer. */
 }
 

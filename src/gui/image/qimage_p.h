@@ -119,7 +119,7 @@ inline int qt_depthForFormat(QImage::Format format)
     switch(format) {
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         // fall through
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:

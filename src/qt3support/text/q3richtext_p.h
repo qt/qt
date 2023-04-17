@@ -159,7 +159,7 @@ public:
     void setAnchor(const QString& name, const QString& href);
 
     Q3TextStringChar(const Q3TextStringChar &) {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
 private:
     Q3TextStringChar &operator=(const Q3TextStringChar &) {

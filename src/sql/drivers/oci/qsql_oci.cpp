@@ -138,7 +138,7 @@ public:
     OCIRowid *id;
 
 private:
-    QOCIRowId(const QOCIRowId &other): QSharedData(other) { Q_ASSERT(false); }
+    QOCIRowId(const QOCIRowId &other): QSharedData(other) { Q_UNREACHABLE(); }
 };
 
 QOCIRowId::QOCIRowId(OCIEnv *env)

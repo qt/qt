@@ -385,7 +385,7 @@ namespace QPatternist
                 case TypeUnsignedShort:         return BuiltinTypes::xsUnsignedShort;
             }
 
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
             return ItemType::Ptr();
         }
 

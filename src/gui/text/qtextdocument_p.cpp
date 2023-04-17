@@ -993,7 +993,7 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             editPos = -1;
 	    break;
 	default:
-	    Q_ASSERT(false);
+	    Q_UNREACHABLE();
         }
 
         if (resetBlockRevision >= 0) {
@@ -1507,7 +1507,7 @@ void QTextDocumentPrivate::scan_frames(int pos, int charsRemoved, int charsAdded
             frame->d_func()->parentFrame = f;
             f->d_func()->childFrames.append(frame);
         } else {
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
     }
     Q_ASSERT(f == rtFrame);

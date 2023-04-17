@@ -403,7 +403,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
 void QCoreTextFontEngineMulti::loadEngine(int)
 {
     // Do nothing
-    Q_ASSERT(false);
+    Q_UNREACHABLE();
 }
 
 extern int qt_antialiasing_threshold; // from qapplication.cpp

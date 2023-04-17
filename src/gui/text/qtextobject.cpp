@@ -539,7 +539,7 @@ void QTextFramePrivate::fragmentAdded(const QChar &type, uint fragment)
         fragment_start = fragment;
         fragment_end = fragment;
     } else {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
 }
 
@@ -558,7 +558,7 @@ void QTextFramePrivate::fragmentRemoved(const QChar &type, uint fragment)
         fragment_start = 0;
         fragment_end = 0;
     } else {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
     remove_me();
 }
