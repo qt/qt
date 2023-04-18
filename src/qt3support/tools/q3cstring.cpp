@@ -714,7 +714,7 @@ Q3CString &Q3CString::setNum(ulong n)
 {
     data();
     char buf[20];
-    register char *p = &buf[19];
+    char *p = &buf[19];
     *p = '\0';
     do {
         *--p = ((int)(n%10)) + '0';
