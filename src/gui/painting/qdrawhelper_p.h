@@ -1884,7 +1884,6 @@ inline void qt_memfill(T *dest, T value, int count)
     case 2:      *dest++ = value;
         [[fallthrough]];
     case 1:      *dest++ = value;
-        [[fallthrough]];
     } while (--n > 0);
     }
 }
