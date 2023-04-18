@@ -310,13 +310,13 @@ SegmentTree::SegmentTree(QPathSegments &segments)
     TreeNode root = buildTree(0, m_index.size(), 0, m_bounds);
     m_tree[0] = root;
 }
-
+#if 0
 QRectF SegmentTree::boundingRect() const
 {
     return QRectF(QPointF(m_bounds.x1, m_bounds.y1),
                   QPointF(m_bounds.x2, m_bounds.y2));
 }
-
+#endif
 static inline qreal coordinate(const QPointF &pos, int axis)
 {
     return axis == 0 ? pos.x() : pos.y();

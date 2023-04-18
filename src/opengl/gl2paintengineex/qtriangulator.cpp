@@ -341,7 +341,7 @@ static inline bool qPointIsLeftOfLine(const QPodPoint &p, const QPodPoint &v1, c
 {
     return QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(p, v1, v2) < 0;
 }
-
+#if 0
 // Return:
 // -1 if u < v
 //  0 if u == v
@@ -358,7 +358,7 @@ static int comparePoints(const QPodPoint &u, const QPodPoint &v)
         return 1;
     return 0;
 }
-
+#endif
 //============================================================================//
 //                             QIntersectionPoint                             //
 //============================================================================//
