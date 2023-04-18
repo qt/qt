@@ -2746,7 +2746,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 */
 int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = qstrlen(str.latin1());
+    const uint sl = qstrlen(str.latin1());
     if (sl == 1)
         return lastIndexOf(QLatin1Char(str.latin1()[0]), from, cs);
 
@@ -2762,7 +2762,7 @@ int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity
         from = delta;
 
     QVarLengthArray<ushort> s(sl);
-    for (int i = 0; i < sl; ++i)
+    for (uint i = 0; i < sl; ++i)
         s[i] = str.latin1()[i];
 
     return lastIndexOfHelper(d->data, from, s.data(), sl, cs);
