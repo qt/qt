@@ -1521,20 +1521,6 @@ void QGridLayout::addItem(QLayoutItem *item, int row, int column, int rowSpan, i
     invalidate();
 }
 
-/*
-  Returns true if the widget \a w can be added to the layout \a l;
-  otherwise returns false.
-*/
-static bool checkWidget(QLayout *l, QWidget *w)
-{
-    if (!w) {
-        qWarning("QLayout: Cannot add null widget to %s/%s", l->metaObject()->className(),
-                  l->objectName().toLocal8Bit().data());
-        return false;
-    }
-    return true;
-}
-
 /*!
     Adds the given \a widget to the cell grid at \a row, \a column. The
     top-left position is (0, 0) by default.
@@ -1545,7 +1531,8 @@ static bool checkWidget(QLayout *l, QWidget *w)
 */
 void QGridLayout::addWidget(QWidget *widget, int row, int column, Qt::Alignment alignment)
 {
-    if (!checkWidget(this, widget))
+    Q_D(QGridLayout);
+    if (!d->checkWidget(widget))
         return;
     if (row < 0 || column < 0) {
         qWarning("QGridLayout: Cannot add %s/%s to %s/%s at row %d column %d",
@@ -1574,7 +1561,7 @@ void QGridLayout::addWidget(QWidget *widget, int fromRow, int fromColumn,
                             int rowSpan, int columnSpan, Qt::Alignment alignment)
 {
     Q_D(QGridLayout);
-    if (!checkWidget(this, widget))
+    if (!d->checkWidget(widget))
         return;
     int toRow = (rowSpan < 0) ? -1 : fromRow + rowSpan - 1;
     int toColumn = (columnSpan < 0) ? -1 : fromColumn + columnSpan - 1;
@@ -1609,6 +1596,8 @@ void QGridLayout::addWidget(QWidget *widget, int fromRow, int fromColumn,
 void QGridLayout::addLayout(QLayout *layout, int row, int column, Qt::Alignment alignment)
 {
     Q_D(QGridLayout);
+    if (!d->checkLayout(layout))
+        return;
     if (!adoptLayout(layout))
         return;
     QGridBox *b = new QGridBox(layout);
@@ -1629,6 +1618,8 @@ void QGridLayout::addLayout(QLayout *layout, int row, int column,
                                       int rowSpan, int columnSpan, Qt::Alignment alignment)
 {
     Q_D(QGridLayout);
+    if (!d->checkLayout(layout))
+        return;
     if (!adoptLayout(layout))
         return;
     QGridBox *b = new QGridBox(layout);
