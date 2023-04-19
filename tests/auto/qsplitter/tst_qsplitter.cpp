@@ -54,6 +54,8 @@
 #include <qtextedit.h>
 #include <qtreeview.h>
 #include <qlabel.h>
+#include <qdialog.h>
+#include <qscreen.h>
 #include <qdebug.h> // for file error messages
 #include "../../shared/util.h"
 
@@ -104,6 +106,7 @@ private slots:
     void task169702_sizes();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget_data();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget();
+    void autoAdd();
 
 private:
     void removeThirdWidget();
@@ -1437,6 +1440,29 @@ void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
         delete l;
     QTest::qWait(100);
     QVERIFY(s.sizes().at(0) > 0);
+}
+
+void tst_QSplitter::autoAdd()
+{
+    QSplitter splitter;
+    splitter.setWindowTitle("autoAdd");
+    splitter.setMinimumSize(QSize(200, 200));
+    splitter.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
+    splitter.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&splitter));
+    // Constructing a child widget on the splitter should
+    // automatically add and show it.
+    QWidget *childWidget = new QWidget(&splitter);
+    QCOMPARE(splitter.count(), 1);
+    QTRY_VERIFY(childWidget->isVisible());
+    // Deleting should automatically remove it
+    delete childWidget;
+    QCOMPARE(splitter.count(), 0);
+    // QTBUG-40132, top level windows should not be affected by this.
+    QDialog *dialog = new QDialog(&splitter);
+    QCOMPARE(splitter.count(), 0);
+    QCoreApplication::processEvents();
+    QVERIFY(!dialog->isVisible());
 }
 
 QTEST_MAIN(tst_QSplitter)

@@ -286,14 +286,15 @@ void QPlainTextDocumentLayoutPrivate::relayout()
 
 /*! \reimp
  */
-void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, int charsAdded)
+void QPlainTextDocumentLayout::documentChanged(int from, int charsRemoved, int charsAdded)
 {
     Q_D(QPlainTextDocumentLayout);
     QTextDocument *doc = document();
     int newBlockCount = doc->blockCount();
+    int charsChanged = qMax(charsRemoved, charsAdded);
 
     QTextBlock changeStartBlock = doc->findBlock(from);
-    QTextBlock changeEndBlock = doc->findBlock(qMax(0, from + charsAdded - 1));
+    QTextBlock changeEndBlock = doc->findBlock(qMax(0, from + charsChanged - 1));
 
     if (changeStartBlock == changeEndBlock && newBlockCount == d->blockCount) {
         QTextBlock block = changeStartBlock;
@@ -995,7 +996,8 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
 
     } else {
         vmax = qMax(0, doc->lineCount() - 1);
-        vSliderLength = viewport->height() / q->fontMetrics().lineSpacing();
+        int lineSpacing = q->fontMetrics().lineSpacing();
+        vSliderLength = lineSpacing != 0 ? viewport->height() / lineSpacing : 0;
     }
 
 

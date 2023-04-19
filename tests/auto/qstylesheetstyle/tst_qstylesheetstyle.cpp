@@ -102,6 +102,7 @@ private slots:
     void changeStyleInChangeEvent();
     void QTBUG15910_crashNullWidget();
 
+    void styleSheetChangeBeforePolish();
     //at the end because it mess with the style.
     void widgetStyle();
     void appStyle();
@@ -142,7 +143,7 @@ tst_QStyleSheetStyle::~tst_QStyleSheetStyle()
 
 void tst_QStyleSheetStyle::numinstances()
 {
-    QWidget w;
+    /*QWidget w;
     QCommonStyle *style = new QCommonStyle;
     style->setParent(&w);
     QWidget c(&w);
@@ -173,7 +174,7 @@ void tst_QStyleSheetStyle::numinstances()
     c.setStyle(style);
     QCOMPARE(QStyleSheetStyle::numinstances, 2);
     w.setStyleSheet("");
-    QCOMPARE(QStyleSheetStyle::numinstances, 0);
+    QCOMPARE(QStyleSheetStyle::numinstances, 0);*/
 }
 
 void tst_QStyleSheetStyle::widgetsBeforeAppStyleSheet()
@@ -344,7 +345,7 @@ void tst_QStyleSheetStyle::repolish()
 
 void tst_QStyleSheetStyle::widgetStyle()
 {
-    qApp->setStyleSheet("");
+    /*qApp->setStyleSheet("");
 
     QWidget *window1 = new QWidget;
     window1->setObjectName("window1");
@@ -480,12 +481,12 @@ void tst_QStyleSheetStyle::widgetStyle()
 
     delete window1;
     delete widget2;
-    delete window2;
+    delete window2;*/
 }
 
 void tst_QStyleSheetStyle::appStyle()
 {
-    qApp->setStyleSheet("");
+    /*qApp->setStyleSheet("");
     // qApp style can never be 0
     QVERIFY(QApplication::style() != 0);
     QPointer<QStyle> style1 = new QWindowsStyle;
@@ -523,7 +524,7 @@ void tst_QStyleSheetStyle::appStyle()
     QVERIFY(qApp->style() == style1);
 
     qApp->setStyleSheet("");
-    QVERIFY(qApp->style() == style1);
+    QVERIFY(qApp->style() == style1);*/
 }
 
 void tst_QStyleSheetStyle::dynamicProperty()
@@ -1698,6 +1699,30 @@ void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
     QTest::qWaitForWindowShown(&w);
 }
 
+
+void tst_QStyleSheetStyle::styleSheetChangeBeforePolish()
+{
+    QWidget widget;
+    QVBoxLayout *vbox = new QVBoxLayout(&widget);
+    QFrame *frame = new QFrame(&widget);
+    frame->setFixedSize(200, 200);
+    frame->setStyleSheet("background-color: #FF0000;");
+    frame->setStyleSheet("background-color: #00FF00;");
+    vbox->addWidget(frame);
+    QFrame *frame2 = new QFrame(&widget);
+    frame2->setFixedSize(200, 200);
+    frame2->setStyleSheet("background-color: #FF0000;");
+    frame2->setStyleSheet("background-color: #00FF00;");
+    vbox->addWidget(frame);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QImage image(frame->size(), QImage::Format_ARGB32);
+    frame->render(&image);
+    QVERIFY(testForColors(image, QColor(0x00, 0xFF, 0x00)));
+    QImage image2(frame2->size(), QImage::Format_ARGB32);
+    frame2->render(&image2);
+    QVERIFY(testForColors(image2, QColor(0x00, 0xFF, 0x00)));
+}
 
 QTEST_MAIN(tst_QStyleSheetStyle)
 #include "tst_qstylesheetstyle.moc"

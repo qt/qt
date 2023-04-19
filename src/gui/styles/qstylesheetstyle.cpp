@@ -2683,6 +2683,7 @@ void QStyleSheetStyle::polish(QWidget *w)
         styleSheetCaches->styleRulesCache.remove(w);
         styleSheetCaches->hasStyleRuleCache.remove(w);
         styleSheetCaches->renderRulesCache.remove(w);
+        styleSheetCaches->styleSheetCache.remove(w);
     }
     setGeometry(w);
     setProperties(w);

@@ -90,7 +90,7 @@ public:
     int dyMax;
     Qt::Corner m_corner;
     bool gotMousePress;
-    QWidget *tlw;
+    QPointer<QWidget> tlw;
 #ifdef Q_WS_MAC
     void updateMacSizer(bool hide) const;
 #endif
