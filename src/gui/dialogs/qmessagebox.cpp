@@ -2441,8 +2441,12 @@ void QMessageBox::setDetailedText(const QString &text)
             grid->addWidget(d->detailsText, grid->rowCount(), 0, 1, grid->columnCount());
         d->detailsText->hide();
     }
-    if (!d->detailsButton)
+    if (!d->detailsButton) {
+        const bool autoAddOkButton = d->autoAddOkButton; // QTBUG-39334, addButton() clears the flag.
         d->detailsButton = new DetailButton(this);
+        addButton(d->detailsButton, QMessageBox::ActionRole);
+        d->autoAddOkButton = autoAddOkButton;
+    }
     d->detailsText->setText(text);
 }
 #endif // QT_NO_TEXTEDIT
