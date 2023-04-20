@@ -758,11 +758,11 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
     }
 }
 
-inline static void iniChopTrailingSpaces(QString &str)
+inline static void iniChopTrailingSpaces(QString &str, int limit)
 {
     int n = str.size() - 1;
     QChar ch;
-    while (n >= 0 && ((ch = str.at(n)) == QLatin1Char(' ') || ch == QLatin1Char('\t')))
+    while (n >= limit && ((ch = str.at(n)) == QLatin1Char(' ') || ch == QLatin1Char('\t')))
         str.truncate(n--);
 }
 
@@ -825,6 +825,7 @@ StSkipSpaces:
     // fallthrough
 
 StNormal:
+    int chopLimit = stringResult.length();
     while (i < to) {
         switch (str.at(i)) {
         case '\\':
@@ -862,6 +863,7 @@ StNormal:
             } else {
                 // the character is skipped
             }
+            chopLimit = stringResult.length();
             break;
         case '"':
             ++i;
@@ -873,7 +875,7 @@ StNormal:
         case ',':
             if (!inQuotedString) {
                 if (!currentValueIsQuoted)
-                    iniChopTrailingSpaces(stringResult);
+                    iniChopTrailingSpaces(stringResult, chopLimit);
                 if (!isStringList) {
                     isStringList = true;
                     stringListResult.clear();
@@ -911,6 +913,8 @@ StNormal:
         }
         }
     }
+    if (!currentValueIsQuoted)
+        iniChopTrailingSpaces(stringResult, chopLimit);
     goto end;
 
 StHexEscape:
@@ -950,8 +954,6 @@ StOctEscape:
     }
 
 end:
-    if (!currentValueIsQuoted)
-        iniChopTrailingSpaces(stringResult);
     if (isStringList)
         stringListResult.append(stringResult);
     return isStringList;

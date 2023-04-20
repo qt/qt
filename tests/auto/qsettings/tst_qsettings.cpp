@@ -116,6 +116,7 @@ private slots:
     void testNormalizedKey();
     void testEmptyData();
     void testResourceFiles();
+    void trailingWhitespace();
     void fileName();
     void isWritable_data();
     void isWritable();
@@ -2008,6 +2009,23 @@ void tst_QSettings::testResourceFiles()
     settings.sync();
     QVERIFY(settings.status() == QSettings::AccessError);
     QCOMPARE(settings.value("Field 1/Bottom").toInt(), 90);
+}
+
+void tst_QSettings::trailingWhitespace()
+{
+    {
+        QSettings s("tst_QSettings_trailingWhitespace");
+        s.setValue("trailingSpace", "x  ");
+        s.setValue("trailingTab", "x\t");
+        s.setValue("trailingNewline", "x\n");
+    }
+    {
+        QSettings s("tst_QSettings_trailingWhitespace");
+        QCOMPARE(s.value("trailingSpace").toString(), QLatin1String("x  "));
+        QCOMPARE(s.value("trailingTab").toString(), QLatin1String("x\t"));
+        QCOMPARE(s.value("trailingNewline").toString(), QLatin1String("x\n"));
+        s.clear();
+    }
 }
 
 void tst_QSettings::fromFile_data()

@@ -1444,7 +1444,7 @@ void QObject::moveToThread(QThread *targetThread)
     }
 
     QThreadData *currentData = QThreadData::current();
-    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : new QThreadData(0);
+    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
     if (d->threadData->thread == 0 && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
@@ -1453,7 +1453,7 @@ void QObject::moveToThread(QThread *targetThread)
                  "Cannot move to target thread (%p)\n",
                  static_cast<void*>(currentData->thread),
                  static_cast<void*>(d->threadData->thread),
-                 static_cast<void*>(targetData->thread));
+                 targetData ? static_cast<void*>(targetData->thread) : nullptr);
 
 #ifdef Q_WS_MAC
         qWarning("On Mac OS X, you might be loading two sets of Qt binaries into the same process. "
@@ -1466,6 +1466,9 @@ void QObject::moveToThread(QThread *targetThread)
 
     // prepare to move
     d->moveToThread_helper();
+
+    if (!targetData)
+        targetData = new QThreadData(0);
 
     QOrderedMutexLocker locker(&currentData->postEventList.mutex,
                                &targetData->postEventList.mutex);
