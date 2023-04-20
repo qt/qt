@@ -70,8 +70,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool isDebugging;
-#define qDBusDebug              if (!::isDebugging); else qDebug
+static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
+#define qDBusDebug              if (::isDebugging == 0); else qDebug
 
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, orgFreedesktopDBusString, (QLatin1String(DBUS_SERVICE_DBUS)))
 
@@ -977,17 +977,16 @@ extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     : QObject(p), ref(1), capabilities(0), mode(InvalidMode), connection(0), server(0), busService(0),
-      watchAndTimeoutLock(QMutex::Recursive),
+      watchAndTimeoutLock(QMutex::Recursive), dispatchLock(QMutex::Recursive),
       rootNode(QString(QLatin1Char('/')))
 {
     static const bool threads = q_dbus_threads_init_default();
-    static const int debugging = qgetenv("QDBUS_DEBUG").toInt();
-    ::isDebugging = debugging;
+    if (::isDebugging == -1)
+       ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
     Q_UNUSED(threads)
-    Q_UNUSED(debugging)
 
 #ifdef QDBUS_THREAD_DEBUG
-    if (debugging > 1)
+    if (::isDebugging > 1)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
 #endif
 
@@ -1056,6 +1055,8 @@ void QDBusConnectionPrivate::closeConnection()
                 ;
         }
     }
+
+    qDeleteAll(pendingCalls);
 }
 
 void QDBusConnectionPrivate::checkThread()
@@ -1223,7 +1224,10 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     //qDBusDebug() << "Emitting signal" << message;
     //qDBusDebug() << "for paths:";
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
-    huntAndEmit(connection, msg, obj, rootNode, isScriptable, isAdaptor);
+    {
+        QDBusDispatchLocker locker(HuntAndEmitAction, this);
+        huntAndEmit(connection, msg, obj, rootNode, isScriptable, isAdaptor);
+    }
     q_dbus_message_unref(msg);
 }
 
@@ -1797,6 +1801,8 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
 
     QMutexLocker locker(&call->mutex);
 
+    connection->pendingCalls.removeOne(call);
+
     QDBusMessage &msg = call->replyMessage;
     if (call->pending) {
         // decode the message
@@ -1877,7 +1883,11 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
 
     qDBusDebug() << this << "sending message (no reply):" << message;
     checkThread();
-    bool isOk = q_dbus_connection_send(connection, msg, 0);
+    bool isOk;
+    {
+        QDBusDispatchLocker locker(SendMessageAction, this);
+        isOk = q_dbus_connection_send(connection, msg, 0);
+    }
     int serial = 0;
     if (isOk)
         serial = q_dbus_message_get_serial(msg);
@@ -1909,7 +1919,11 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
         qDBusDebug() << this << "sending message (blocking):" << message;
         QDBusErrorInternal error;
-        DBusMessage *reply = q_dbus_connection_send_with_reply_and_block(connection, msg, timeout, error);
+        DBusMessage *reply;
+        {
+            QDBusDispatchLocker locker(SendWithReplyAndBlockAction, this);
+            reply = q_dbus_connection_send_with_reply_and_block(connection, msg, timeout, error);
+        }
 
         q_dbus_message_unref(msg);
 
@@ -2056,6 +2070,10 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
 
             pcall->pending = pending;
             q_dbus_pending_call_set_notify(pending, qDBusResultReceived, pcall, 0);
+
+            // DBus won't notify us when a peer disconnects so we need to track these ourselves
+            if (mode == QDBusConnectionPrivate::PeerMode)
+                pendingCalls.append(pcall);
 
             return pcall;
         } else {
@@ -2435,12 +2453,15 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
     serviceNames.removeAll(serviceName);
 }
 
-bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
+bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName)
 {
     if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
-    QStringList copy = serviceNames;
-    return copy.contains(serviceName);
+    if (serviceName == dbusServiceString())
+        return false;
+
+    QDBusReadLocker locker(UnregisterServiceAction, this);
+    return serviceNames.contains(serviceName);
 }
 
 void QDBusConnectionPrivate::postEventToThread(int action, QObject *object, QEvent *ev)
