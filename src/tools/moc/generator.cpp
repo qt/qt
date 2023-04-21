@@ -476,12 +476,6 @@ void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype
             flags |= AccessPublic;
         else if (f.access == FunctionDef::Protected)
             flags |= AccessProtected;
-        if (f.access == FunctionDef::Private)
-            flags |= AccessPrivate;
-        else if (f.access == FunctionDef::Public)
-            flags |= AccessPublic;
-        else if (f.access == FunctionDef::Protected)
-            flags |= AccessProtected;
         if (f.isCompat)
             flags |= MethodCompatibility;
         if (f.wasCloned)

@@ -753,7 +753,7 @@ void Moc::parse()
 
 
             if (!def.hasQObject && !def.hasQGadget)
-                error("Class declarations lacks Q_OBJECT macro.");
+                error("Class declaration lacks Q_OBJECT macro.");
 
             checkSuperClasses(&def);
             checkProperties(&def);

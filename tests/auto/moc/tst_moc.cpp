@@ -1608,6 +1608,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    QTest::newRow("Class declaration lacks Q_OBJECT macro.")
+        << QByteArray("class X : public QObject \n { \n public slots: \n void foo() {} \n };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
 }
 
 void tst_Moc::warnings()
