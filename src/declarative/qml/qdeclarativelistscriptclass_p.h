@@ -69,10 +69,10 @@ public:
     QScriptValue newList(const QDeclarativeListProperty<QObject> &, int);
 
 protected:
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-    virtual Value property(Object *, const Identifier &);
-    virtual QVariant toVariant(Object *, bool *ok);
+    QScriptClass::QueryFlags queryProperty(Object *, const Identifier &,
+                                                   QScriptClass::QueryFlags flags) override;
+    Value property(Object *, const Identifier &) override;
+    QVariant toVariant(Object *, bool *ok) override;
 
 private:
     PersistentIdentifier m_lengthId;

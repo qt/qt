@@ -69,12 +69,12 @@ public:
     QScriptValue newObject(QObject *object, int coreIndex, QDeclarativeValueType *);
     QScriptValue newObject(const QVariant &, QDeclarativeValueType *);
 
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-    virtual Value property(Object *, const Identifier &);
-    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+    QScriptClass::QueryFlags queryProperty(Object *, const Identifier &,
+                                                   QScriptClass::QueryFlags flags) override;
+    Value property(Object *, const Identifier &) override;
+    void setProperty(Object *, const Identifier &name, const QScriptValue &) override;
 
-    virtual QVariant toVariant(Object *, bool *ok = 0);
+    QVariant toVariant(Object *, bool *ok = 0) override;
     QVariant toVariant(const QScriptValue &);
 private:
     QDeclarativeEngine *engine;

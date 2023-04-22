@@ -73,11 +73,11 @@ public:
     QScriptValue newObject(QObject *, QDeclarativeTypeNameCache *, TypeNameMode = IncludeEnums);
 
 protected:
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
+    QScriptClass::QueryFlags queryProperty(Object *, const Identifier &,
+                                                   QScriptClass::QueryFlags flags) override;
 
-    virtual Value property(Object *, const Identifier &);
-    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+     Value property(Object *, const Identifier &) override;
+    void setProperty(Object *, const Identifier &name, const QScriptValue &) override;
 
 private:
     QDeclarativeEngine *engine;
