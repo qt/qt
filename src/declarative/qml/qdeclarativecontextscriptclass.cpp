@@ -300,7 +300,7 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
             QDeclarativeContextPrivate *cp = bindContext->asQDeclarativeContextPrivate();
             const QVariant &value = cp->propertyValues.at(lastPropertyIndex);
             if (value.userType() == qMetaTypeId<QList<QObject*> >()) {
-                rv = ep->listClass->newList(QDeclarativeListProperty<QObject>(bindContext->asQDeclarativeContext(), (void*)lastPropertyIndex, 0, QDeclarativeContextPrivate::context_count, QDeclarativeContextPrivate::context_at), qMetaTypeId<QDeclarativeListProperty<QObject> >());
+                rv = ep->listClass->newList(QDeclarativeListProperty<QObject>(bindContext->asQDeclarativeContext(), (void*)(intptr_t)lastPropertyIndex, nullptr, QDeclarativeContextPrivate::context_count, QDeclarativeContextPrivate::context_at), qMetaTypeId<QDeclarativeListProperty<QObject> >());
             } else {
                 rv = ep->scriptValueFromVariant(value);
             }
