@@ -191,7 +191,7 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
 */
 
 QDockWidgetLayout::QDockWidgetLayout(QWidget *parent)
-    : QLayout(parent), verticalTitleBar(false), item_list(RoleCount, 0)
+    : QLayout(parent), verticalTitleBar(false), item_list(RoleCount, nullptr)
 {
 }
 
@@ -211,7 +211,7 @@ bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
     Q_UNUSED(floating);
     return false;
 #else
-    return floating && item_list[QDockWidgetLayout::TitleBar] == 0;
+    return floating && item_list[QDockWidgetLayout::TitleBar] == nullptr;
 #endif
 }
 
@@ -227,12 +227,12 @@ QLayoutItem *QDockWidgetLayout::itemAt(int index) const
     int cnt = 0;
     for (int i = 0; i < item_list.count(); ++i) {
         QLayoutItem *item = item_list.at(i);
-        if (item == 0)
+        if (item == nullptr)
             continue;
         if (index == cnt++)
             return item;
     }
-    return 0;
+    return nullptr;
 }
 
 QLayoutItem *QDockWidgetLayout::takeAt(int index)
@@ -240,7 +240,7 @@ QLayoutItem *QDockWidgetLayout::takeAt(int index)
     int j = 0;
     for (int i = 0; i < item_list.count(); ++i) {
         QLayoutItem *item = item_list.at(i);
-        if (item == 0)
+        if (item == nullptr)
             continue;
         if (index == j) {
             item_list[i] = 0;
@@ -249,7 +249,7 @@ QLayoutItem *QDockWidgetLayout::takeAt(int index)
         }
         ++j;
     }
-    return 0;
+    return nullptr;
 }
 
 int QDockWidgetLayout::count() const
@@ -356,7 +356,7 @@ QSize QDockWidgetLayout::minimumSize() const
     QDockWidget *w = qobject_cast<QDockWidget*>(parentWidget());
 
     QSize content(0, 0);
-    if (item_list[Content] != 0)
+    if (item_list[Content] != nullptr)
         content = item_list[Content]->minimumSize();
 
     return sizeFromContent(content, w->isFloating());
@@ -365,7 +365,7 @@ QSize QDockWidgetLayout::minimumSize() const
 QWidget *QDockWidgetLayout::widgetForRole(Role r) const
 {
     QLayoutItem *item = item_list.at(r);
-    return item == 0 ? 0 : item->widget();
+    return item == nullptr ? nullptr : item->widget();
 }
 
 QLayoutItem *QDockWidgetLayout::itemForRole(Role r) const
@@ -376,17 +376,17 @@ QLayoutItem *QDockWidgetLayout::itemForRole(Role r) const
 void QDockWidgetLayout::setWidgetForRole(Role r, QWidget *w)
 {
     QWidget *old = widgetForRole(r);
-    if (old != 0) {
+    if (old != nullptr) {
         old->hide();
         removeWidget(old);
     }
 
-    if (w != 0) {
+    if (w != nullptr) {
         addChildWidget(w);
         item_list[r] = new QWidgetItemV2(w);
         w->show();
     } else {
-        item_list[r] = 0;
+        item_list[r] = nullptr;
     }
 
     invalidate();
@@ -726,7 +726,7 @@ void QDockWidgetPrivate::startDrag()
         return;
 
     QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
-    Q_ASSERT(layout != 0);
+    Q_ASSERT(layout != nullptr);
 
     state->widgetItem = layout->unplug(q);
     if (state->widgetItem == 0) {
