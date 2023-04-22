@@ -109,10 +109,10 @@ class Q_AUTOTEST_EXPORT QDeclarativePointFValueType : public QDeclarativeValueTy
 public:
     QDeclarativePointFValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal x() const;
     qreal y() const;
@@ -131,10 +131,10 @@ class Q_AUTOTEST_EXPORT QDeclarativePointValueType : public QDeclarativeValueTyp
 public:
     QDeclarativePointValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     int x() const;
     int y() const;
@@ -153,10 +153,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeSizeFValueType : public QDeclarativeValueTyp
 public:
     QDeclarativeSizeFValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal width() const;
     qreal height() const;
@@ -175,10 +175,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeSizeValueType : public QDeclarativeValueType
 public:
     QDeclarativeSizeValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     int width() const;
     int height() const;
@@ -199,10 +199,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeRectFValueType : public QDeclarativeValueTyp
 public:
     QDeclarativeRectFValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal x() const;
     qreal y() const;
@@ -228,10 +228,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeRectValueType : public QDeclarativeValueType
 public:
     QDeclarativeRectValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     int x() const;
     int y() const;
@@ -255,10 +255,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeVector2DValueType : public QDeclarativeValue
 public:
     QDeclarativeVector2DValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal x() const;
     qreal y() const;
@@ -278,10 +278,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeVector3DValueType : public QDeclarativeValue
 public:
     QDeclarativeVector3DValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal x() const;
     qreal y() const;
@@ -304,10 +304,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeVector4DValueType : public QDeclarativeValue
 public:
     QDeclarativeVector4DValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal x() const;
     qreal y() const;
@@ -332,10 +332,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeQuaternionValueType : public QDeclarativeVal
 public:
     QDeclarativeQuaternionValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal scalar() const;
     qreal x() const;
@@ -372,10 +372,10 @@ class Q_AUTOTEST_EXPORT QDeclarativeMatrix4x4ValueType : public QDeclarativeValu
 public:
     QDeclarativeMatrix4x4ValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     qreal m11() const { return matrix(0, 0); }
     qreal m12() const { return matrix(0, 1); }
@@ -453,10 +453,10 @@ public:
 
     QDeclarativeEasingValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     Type type() const;
     qreal amplitude() const;
@@ -504,10 +504,10 @@ public:
 
     QDeclarativeFontValueType(QObject *parent = 0);
 
-    virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
-    virtual QVariant value();
-    virtual void setValue(QVariant value);
+    void read(QObject *, int) override;
+    void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags) override;
+    QVariant value() override;
+    void setValue(QVariant value) override;
 
     QString family() const;
     void setFamily(const QString &);

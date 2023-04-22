@@ -154,7 +154,7 @@ public:
     static Data *property(QDeclarativeEngine *, QObject *, const QString &, Data &);
 
 protected:
-    virtual void clear();
+    void clear() override;
 
 private:
     friend class QDeclarativeEnginePrivate;

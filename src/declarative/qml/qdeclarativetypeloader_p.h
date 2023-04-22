@@ -267,10 +267,10 @@ public:
     void unregisterCallback(TypeDataCallback *);
 
 protected:
-    virtual void done();
-    virtual void dataReceived(const QByteArray &);
-    virtual void allDependenciesDone();
-    virtual void downloadProgressChanged(qreal);
+    void done() override;
+    void dataReceived(const QByteArray &) override;
+    void allDependenciesDone() override;
+    void downloadProgressChanged(qreal) override;
 
 private:
     void resolveTypes();
@@ -305,7 +305,7 @@ public:
     QString scriptSource() const;
 
 protected:
-    virtual void dataReceived(const QByteArray &);
+    void dataReceived(const QByteArray &) override;
 
 private:
     QDeclarativeParser::Object::ScriptBlock::Pragmas m_pragmas;
@@ -320,7 +320,7 @@ public:
     const QDeclarativeDirComponents &dirComponents() const;
 
 protected:
-    virtual void dataReceived(const QByteArray &);
+    void dataReceived(const QByteArray &) override;
 
 private:
     QDeclarativeDirComponents m_components;

@@ -197,7 +197,7 @@ Q_SIGNALS:
     void unixSignal(int);
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) override;
 
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 

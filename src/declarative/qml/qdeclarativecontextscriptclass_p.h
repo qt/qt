@@ -78,10 +78,10 @@ public:
     QObject *setOverrideObject(QScriptValue &, QObject *);
 
 protected:
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-    virtual Value property(Object *, const Identifier &);
-    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+    QScriptClass::QueryFlags queryProperty(Object *, const Identifier &,
+                                                   QScriptClass::QueryFlags flags) override;
+    Value property(Object *, const Identifier &) override;
+    void setProperty(Object *, const Identifier &name, const QScriptValue &) override;
 
 private:
     QScriptClass::QueryFlags queryProperty(QDeclarativeContextData *, QObject *scopeObject, 

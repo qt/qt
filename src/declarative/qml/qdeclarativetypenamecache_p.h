@@ -84,7 +84,7 @@ public:
     inline Data *data(const QScriptDeclarativeClass::Identifier &id) const;
 
 protected:
-    virtual void clear();
+    void clear() override;
 
 private:
     struct RData : public Data { 

@@ -106,8 +106,8 @@ public:
     virtual void abort() = 0;
 
     // reimplemented from QIODevice
-    virtual void close();
-    virtual bool isSequential() const;
+    void close() override;
+    bool isSequential() const override;
 
     // like QAbstractSocket:
     qint64 readBufferSize() const;
@@ -158,7 +158,7 @@ Q_SIGNALS:
 protected:
     QNetworkReply(QObject *parent = 0);
     QNetworkReply(QNetworkReplyPrivate &dd, QObject *parent);
-    virtual qint64 writeData(const char *data, qint64 len);
+    qint64 writeData(const char *data, qint64 len) override;
 
     void setOperation(QNetworkAccessManager::Operation operation);
     void setRequest(const QNetworkRequest &request);
