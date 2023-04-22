@@ -216,7 +216,7 @@ namespace QtSharedPointer {
             : destroyer(d)
         { }
 
-        inline bool destroy() { destroyer(this); return true; }
+        inline bool destroy() override { destroyer(this); return true; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
         inline void operator delete(void *, void *) { }
     };

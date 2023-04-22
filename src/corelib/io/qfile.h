@@ -149,9 +149,9 @@ public:
     bool copy(const QString &newName);
     static bool copy(const QString &fileName, const QString &newName);
 
-    bool isSequential() const;
+    bool isSequential() const override;
 
-    bool open(OpenMode flags);
+    bool open(OpenMode flags) override;
     bool open(FILE *f, OpenMode flags);
     bool open(int fd, OpenMode flags);
 #ifdef Q_OS_SYMBIAN
@@ -159,12 +159,12 @@ public:
 #endif
     bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags);
     bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags);
-    virtual void close();
+    void close() override;
 
-    qint64 size() const;
-    qint64 pos() const;
-    bool seek(qint64 offset);
-    bool atEnd() const;
+    qint64 size() const override;
+    qint64 pos() const override;
+    bool seek(qint64 offset) override;
+    bool atEnd() const override;
     bool flush();
 
     bool resize(qint64 sz);
@@ -201,9 +201,9 @@ protected:
     QFile(QFilePrivate &dd, QObject *parent = nullptr);
 #endif
 
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
-    qint64 readLineData(char *data, qint64 maxlen);
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 writeData(const char *data, qint64 len) override;
+    qint64 readLineData(char *data, qint64 maxlen) override;
 
 private:
     Q_DISABLE_COPY(QFile)

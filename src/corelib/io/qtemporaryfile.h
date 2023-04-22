@@ -89,10 +89,10 @@ public:
         { QFile file(fileName); return createLocalFile(file); }
     static QTemporaryFile *createLocalFile(QFile &file);
 
-    virtual QAbstractFileEngine *fileEngine() const;
+    QAbstractFileEngine *fileEngine() const override;
 
 protected:
-    bool open(OpenMode flags);
+    bool open(OpenMode flags) override;
 
 private:
     friend class QFile;
