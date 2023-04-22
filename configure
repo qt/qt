@@ -253,7 +253,7 @@ UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
 UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
 
 # detect the "echo without newline" style. usage: echo $ECHO_N "<string>$ECHO_C"
-if echo '\c' | grep '\c' >/dev/null; then
+if echo '\c' | grep '\c' 2&>/dev/null; then
     ECHO_N=-n
 else
     ECHO_C='\c'
