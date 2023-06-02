@@ -1,6 +1,6 @@
 TARGET	   = Qt3Support
 QPRO_PWD   = $$PWD
-QT         = core gui network sql
+QT         = core gui network 
 DEFINES   += QT_BUILD_COMPAT_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x60000000
@@ -11,7 +11,6 @@ DEFINES -= QT_ASCII_CAST_WARNINGS
 PRECOMPILED_HEADER = other/qt_compat_pch.h
 
 include(tools/tools.pri)
-include(sql/sql.pri)
 include(other/other.pri)
 include(itemviews/itemviews.pri)
 include(widgets/widgets.pri)
@@ -23,7 +22,7 @@ include(painting/painting.pri)
 
 unix|win32-g++* {
    QMAKE_PKGCONFIG_CFLAGS += -DQT3_SUPPORT
-   QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork QtSql
+   QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
 }
 mac:LIBS_PRIVATE += -framework Carbon
 
