@@ -10,8 +10,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
-     symmake.o symmake_abld.o symmake_sbsv2.o \
-     registry.o epocroot.o gbuild.o
+     registry.o gbuild.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -74,7 +73,7 @@ CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
 	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
 	   -I$(SOURCE_PATH)/tools/shared \
 	   -DQT_NO_PCRE \
-	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT \
+	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_STL \
 	   -DQT_NO_COMPRESS -I$(QMAKESPEC) -DHAVE_QCONFIG_CPP -DQT_NO_THREAD -DQT_NO_QOBJECT \
            -DQT_NO_GEOM_VARIANT -DQT_NO_DEPRECATED $(OPENSOURCE_CXXFLAGS)

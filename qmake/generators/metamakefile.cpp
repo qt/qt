@@ -445,8 +445,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "borland_bmake.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
-#include "symmake_abld.h"
-#include "symmake_sbsv2.h"
 #include "gbuild.h"
 QT_END_INCLUDE_NAMESPACE
 

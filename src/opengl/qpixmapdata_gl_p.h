@@ -59,13 +59,6 @@
 #include "private/qpixmapdata_p.h"
 #include "private/qglpaintdevice_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "private/qvolatileimage_p.h"
-#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
-#  include <sgresource/sgimage.h>
-#endif
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
@@ -73,9 +66,6 @@ class QGLFramebufferObject;
 class QGLFramebufferObjectFormat;
 class QGLPixmapData;
 
-#ifdef Q_OS_SYMBIAN
-class QNativeImageHandleProvider;
-#else
 class QGLFramebufferObjectPool
 {
 public:
@@ -104,7 +94,6 @@ public:
 private:
     QGLPixmapData *data;
 };
-#endif
 
 class Q_OPENGL_EXPORT QGLPixmapData : public QPixmapData
 {
@@ -139,31 +128,6 @@ public:
     GLuint bind(bool copyBack = true) const;
     QGLTexture *texture() const;
 
-#ifdef Q_OS_SYMBIAN
-    void destroyTexture();
-    // Detach this image from the image pool.
-    void detachTextureFromPool();
-    // Release the GL resources associated with this pixmap and copy
-    // the pixmap's contents out of the GPU back into main memory.
-    // The GL resource will be automatically recreated the next time
-    // ensureCreated() is called.  Does nothing if the pixmap cannot be
-    // hibernated for some reason (e.g. texture is shared with another
-    // process via a SgImage).
-    void hibernate();
-    // Called when the QGLTexturePool wants to reclaim this pixmap's
-    // texture objects to reuse storage.
-    void reclaimTexture();
-    void forceToImage();
-
-    QVolatileImage toVolatileImage() const { return m_source; }
-    QImage::Format idealFormat(QImage &image, Qt::ImageConversionFlags flags);
-    void* toNativeType(NativeType type);
-    void fromNativeType(void* pixmap, NativeType type);
-    bool initFromNativeImageHandle(void *handle, const QString &type);
-    void createFromNativeImageHandleProvider();
-    void releaseNativeImageHandle();
-#endif
-
 private:
     bool isValid() const;
 
@@ -191,17 +155,7 @@ private:
     mutable QGLFramebufferObject *m_renderFbo;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
-#ifdef Q_OS_SYMBIAN
-    mutable QVolatileImage m_source;
-    mutable QNativeImageHandleProvider *nativeImageHandleProvider;
-    void *nativeImageHandle;
-    QString nativeImageType;
-#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
-    RSgImage *m_sgImage;
-#endif
-#else
     mutable QImage m_source;
-#endif
     mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image
@@ -213,9 +167,7 @@ private:
     mutable bool m_hasFillColor;
 
     mutable bool m_hasAlpha;
-#ifndef Q_OS_SYMBIAN
     mutable QGLPixmapGLPaintDevice m_glDevice;
-#endif
     friend class QGLPixmapGLPaintDevice;
     friend class QMeeGoPixmapData;
     friend class QMeeGoLivePixmapData;

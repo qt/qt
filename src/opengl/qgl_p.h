@@ -64,12 +64,6 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "qgltexturepool_p.h"
-
-class QGLPixmapData;
-#endif
-
 #ifndef QT_NO_EGL
 #include <QtGui/private/qegl_p.h>
 #endif
@@ -104,10 +98,6 @@ class QMacWindowChangeEvent;
 
 #ifdef Q_WS_QWS
 class QWSGLWindowSurface;
-#endif
-
-#ifdef Q_OS_SYMBIAN
-extern bool qt_initializing_gl_share_widget();
 #endif
 
 #ifndef QT_NO_EGL
@@ -181,16 +171,8 @@ public:
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
                        , eglSurfaceWindowId(0)
 #endif
-#if defined(Q_OS_SYMBIAN)
-                       , eglSurfaceWindowId(0)
-                       , surfaceSizeInitialized(false)
-#endif
     {
         isGLWidget = 1;
-#if defined(Q_OS_SYMBIAN)
-        if (qt_initializing_gl_share_widget())
-            isGLGlobalShareWidget = 1;
-#endif
     }
 
     ~QGLWidgetPrivate() {}
@@ -229,11 +211,6 @@ public:
     void updatePaintDevice();
 #elif defined(Q_WS_QWS)
     QWSGLWindowSurface *wsurf;
-#endif
-#ifdef Q_OS_SYMBIAN
-    void recreateEglSurface();
-    WId eglSurfaceWindowId;
-    bool surfaceSizeInitialized : 1;
 #endif
 };
 
@@ -467,7 +444,7 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN) 
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     static Q_OPENGL_EXPORT QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif
@@ -579,21 +556,10 @@ public:
           options(opt)
 #if defined(Q_WS_X11)
         , boundPixmap(0)
-#elif defined(Q_OS_SYMBIAN)
-        , boundPixmap(0)
-        , boundKey(0)
-        , nextLRU(0)
-        , prevLRU(0)
-        , inLRU(false)
-        , failedToAlloc(false)
-        , inTexturePool(false)
 #endif
     {}
 
     ~QGLTexture() {
-#ifdef Q_OS_SYMBIAN
-        freeTexture();
-#else
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
 #if !defined(Q_WS_X11)
@@ -601,7 +567,6 @@ public:
 #endif
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
-#endif
     }
 
     QGLContext *context;
@@ -622,19 +587,6 @@ public:
         (const char *buf, int len, const char *format = 0);
     QSize bindCompressedTextureDDS(const char *buf, int len);
     QSize bindCompressedTexturePVR(const char *buf, int len);
-
-#ifdef Q_OS_SYMBIAN
-    void freeTexture();
-
-    QGLPixmapData* boundPixmap;
-    qint64 boundKey;
-
-    QGLTexture *nextLRU;
-    QGLTexture *prevLRU;
-    mutable bool inLRU;
-    mutable bool failedToAlloc;
-    mutable bool inTexturePool;
-#endif
 };
 
 struct QGLTextureCacheKey {

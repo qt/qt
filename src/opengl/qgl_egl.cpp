@@ -50,10 +50,6 @@
 #include <QtGui/private/qpixmap_x11_p.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <QtGui/private/qgraphicssystemex_symbian_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 QEglProperties *QGLContextPrivate::extraWindowSurfaceCreationProps = NULL;
@@ -69,10 +65,6 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
     int sampleCount = glFormat.samples();
 
     bool prefer32Bit = false;
-#ifdef Q_OS_SYMBIAN
-    // on Symbian we prefer 32-bit configs, unless we're using the low memory GPU
-    prefer32Bit = !QSymbianGraphicsSystemEx::hasBCM2727();
-#endif
 
     if (prefer32Bit) {
         if (glFormat.alpha() && alphaSize <= 0)
@@ -296,7 +288,7 @@ void QGLContext::swapBuffers() const
 void QGLContextPrivate::destroyEglSurfaceForDevice()
 {
     if (eglSurface != EGL_NO_SURFACE) {
-#if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11)
         // Make sure we don't call eglDestroySurface on a surface which
         // was created for a different winId. This applies only to QGLWidget
         // paint device, so make sure this is the one we're operating on

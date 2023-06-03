@@ -192,14 +192,6 @@ public:
         if (!init && !widget && !cleanedUp) {
             init = true;
             widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
-#ifdef Q_OS_SYMBIAN
-            if (!widget->context()->isValid()) {
-                delete widget;
-                widget = 0;
-                init = false;
-                return 0;
-            }
-#endif
 
             widget->resize(1, 1);
 
@@ -381,12 +373,6 @@ QGLWindowSurface::~QGLWindowSurface()
 
     if (QGLGlobalShareWidget::cleanedUp)
         return;
-
-#ifdef Q_OS_SYMBIAN
-    // Destroy the context if necessary.
-    if (qt_gl_share_widget() && !qt_gl_share_context()->isSharing())
-        qt_destroy_gl_share_widget();
-#endif
 }
 
 void QGLWindowSurface::deleted(QObject *object)
@@ -435,12 +421,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         ctx = new QGLContext(surfaceFormat, widget);
 
     ctx->create(qt_gl_share_context());
-#ifdef Q_OS_SYMBIAN
-    if (!ctx->isValid()) {
-        delete ctx;
-        return;
-    }
-#endif
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
     static bool haveNOKSwapRegion = false;
@@ -474,9 +454,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     voidPtrPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtrPtr;
 
-#ifndef Q_OS_SYMBIAN
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
-#endif
 }
 
 QGLContext *QGLWindowSurface::context() const
@@ -488,10 +466,6 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 {
     updateGeometry();
 
-#ifdef Q_OS_SYMBIAN
-    // On symbian we always return glDevice, even if it's invalid
-    return &d_ptr->glDevice;
-#else
     if (d_ptr->pb)
         return d_ptr->pb;
 
@@ -503,7 +477,6 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 
     Q_ASSERT(d_ptr->fbo);
     return d_ptr->fbo;
-#endif
 }
 
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &src = QRectF());
@@ -595,17 +568,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
 
-#ifdef Q_OS_SYMBIAN
-    if (window() != widget) {
-        // For performance reasons we don't support
-        // flushing native child widgets on Symbian.
-        // It breaks overlapping native child widget
-        // rendering in some cases but we prefer performance.
-        return;
-    }
-#endif
-
-
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
@@ -687,10 +649,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
-#ifdef Q_OS_SYMBIAN
-            if (!ctx)
-                return;
-#endif
 
             if (widget != window()) {
                 if (initializeOffscreenTexture(window()->size()))
@@ -723,10 +681,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     QGLContext *previous_ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
-#ifdef Q_OS_SYMBIAN
-    if (!ctx)
-        return;
-#endif
 
     // QPainter::end() should have unbound the fbo, otherwise something is very wrong...
     Q_ASSERT(!d_ptr->fbo || !d_ptr->fbo->isBound());
@@ -770,7 +724,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
         } else {
-#ifndef Q_OS_SYMBIAN // We don't have FBO pool on Symbian
             // can't do sub-region blits with multisample FBOs
             QGLFramebufferObject *temp = qgl_fbo_pool()->acquire(d_ptr->fbo->size(), QGLFramebufferObjectFormat());
 
@@ -793,7 +746,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
 
             qgl_fbo_pool()->release(temp);
-#endif // Q_OS_SYMBIAN
         }
 
         ctx->d_ptr->current_fbo = 0;
@@ -881,44 +833,6 @@ void QGLWindowSurface::updateGeometry() {
     bool hijack(true);
     QWidgetPrivate *wd = window()->d_func();
     if (wd->extraData() && wd->extraData()->glContext) {
-#ifdef Q_OS_SYMBIAN // Symbian needs to recreate the context when native window size changes
-        if (d_ptr->size != geometry().size()) {
-            QGLContext *ctx = reinterpret_cast<QGLContext *>(wd->extraData()->glContext);
-
-            if (ctx == QGLContext::currentContext())
-                 ctx->doneCurrent();
-
-            ctx->d_func()->destroyEglSurfaceForDevice();
-
-            // Delete other contexts (shouldn't happen too often, if at all)
-            while (d_ptr->contexts.size()) {
-                QGLContext **ctxPtrPtr = d_ptr->contexts.takeFirst();
-                if ((*ctxPtrPtr) != ctx)
-                    delete *ctxPtrPtr;
-            }
-            union { QGLContext **ctxPtrPtr; void **voidPtrPtr; };
-            voidPtrPtr = &wd->extraData()->glContext;
-            d_ptr->contexts << ctxPtrPtr;
-
-            ctx->d_func()->eglSurface = ctx->d_func()->eglContext->createSurface(window());
-
-            // Swap behaviour has been checked already in previous hijackWindow call.
-            // Reset swap behaviour based on that flag.
-            if (d_ptr->destructive_swap_buffers) {
-                eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurfaceForDevice(),
-                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
-
-                if (eglGetError() != EGL_SUCCESS)
-                    qWarning("QGLWindowSurface::updateGeometry() - could not re-enable destroyed swap behaviour");
-            } else {
-                eglSurfaceAttrib(QEgl::display(), ctx->d_func()->eglSurfaceForDevice(),
-                                    EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-
-                if (eglGetError() != EGL_SUCCESS)
-                    qWarning("QGLWindowSurface::updateGeometry() - could not re-enable preserved swap behaviour");                
-            }
-        }
-#endif
         hijack = false; // we already have gl context for widget
     }
 
@@ -926,10 +840,6 @@ void QGLWindowSurface::updateGeometry() {
         hijackWindow(window());
 
     QGLContext *ctx = reinterpret_cast<QGLContext *>(wd->extraData()->glContext);
-#ifdef Q_OS_SYMBIAN
-    if (!ctx)
-        return;
-#endif
 #ifdef Q_WS_MAC
     ctx->updatePaintDevice();
 #endif
@@ -1031,9 +941,7 @@ void QGLWindowSurface::updateGeometry() {
     if (d_ptr->destructive_swap_buffers)
         initializeOffscreenTexture(surfSize);
 #endif
-#ifndef Q_OS_SYMBIAN
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;
-#endif
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
 }

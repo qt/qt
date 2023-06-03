@@ -25,7 +25,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
 		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
 		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
-		-DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT
+		-DQT_BOOTSTRAPPED
 CXXFLAGS    =   $(CFLAGS)
 LFLAGS      = -static-libgcc -s
 LIBS	    = -lole32 -luuid -ladvapi32 -lkernel32
@@ -38,8 +38,8 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
-              msvc_objectmodel.o msbuild_objectmodel.o symmake.o  \
-              symmake_abld.o symmake_sbsv2.o registry.o epocroot.o gbuild.o
+              msvc_objectmodel.o msbuild_objectmodel.o  \
+              registry.o gbuild.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION

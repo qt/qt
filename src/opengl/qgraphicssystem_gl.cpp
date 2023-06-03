@@ -53,11 +53,6 @@
 #include "private/qwindowsurface_x11gl_p.h"
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <QtGui/private/qapplication_p.h>
-#include "private/qgltexturepool_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern QGLWidget *qt_gl_getShareWidget();
@@ -91,27 +86,7 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
     }
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    if (!QApplicationPrivate::instance()->useTranslucentEGLSurfaces) {
-        QWidgetPrivate *d = qt_widget_private(widget);
-        if (!d->isOpaque && widget->testAttribute(Qt::WA_TranslucentBackground))
-            return d->createDefaultWindowSurface_sys();
-    }
-#endif
-
     return new QGLWindowSurface(widget);
 }
-#ifdef Q_OS_SYMBIAN
-void QGLGraphicsSystem::releaseCachedGpuResources()
-{
-    QGLTexturePool::instance()->hibernate();
-}
-
-QGraphicsSystemEx* QGLGraphicsSystem::platformExtension()
-{
-    return this;
-}
-#endif
-
 QT_END_NAMESPACE
 

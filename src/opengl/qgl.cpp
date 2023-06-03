@@ -101,16 +101,11 @@
 #include <EGL/egl.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <private/qgltexturepool_p.h>
-#include <private/qeglcontext_p.h>
-#endif
-
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
@@ -2315,7 +2310,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
 {
     return qt_extensionFuncs;
@@ -2559,19 +2554,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
-#ifdef Q_OS_SYMBIAN
-    // On Symbian we always use texture pool to reserve the texture
-    QGLTexturePool::instance()->createPermanentTexture(tx_id,
-                                                        target,
-                                                        0, internalFormat,
-                                                        img.width(), img.height(),
-                                                        externalFormat,
-                                                        pixel_type,
-                                                        constRef.bits());
-#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
-#endif
 
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
@@ -2595,15 +2579,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int cost = img.width()*img.height()*4/1024;
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
-
-#ifdef Q_OS_SYMBIAN
-    // Store the key so that QGLTexturePool
-    // is able to release this texture when needed.
-    texture->boundKey = key;
-    // And append to LRU list
-    QGLTexturePool::instance()->useTexture(texture);
-#endif
-    return texture;
+texture;
 }
 
 QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum target)
@@ -2683,20 +2659,6 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #endif
 
     if (!texture) {
-#ifdef Q_OS_SYMBIAN
-        // On Symbian pixmaps are backed up by native CFbsBitmap
-        // which can be shared across processes. QVolatileImage wraps
-        // it and provides locking mechanism to pixel access.
-        QVolatileImage volatileImage = pd->toVolatileImage();
-        if (volatileImage.isNull()) { // TODO: raster graphics system don't provide volatile image (yet)
-            // NOTE! On Symbian raster graphics system QPixmap::toImage() makes deep copy
-            texture = bindTexture(pixmap.toImage(), target, format, key, options);
-        } else {
-            volatileImage.beginDataAccess();
-            texture = bindTexture(volatileImage.imageRef(), target, format, key, options);
-            volatileImage.endDataAccess(true);
-        }
-#else
         QImage image;
         QPaintEngine* paintEngine = pixmap.paintEngine();
         if (!paintEngine || paintEngine->type() != QPaintEngine::Raster)
@@ -2716,7 +2678,6 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
         if (pixmap.depth() == 16 && !image.hasAlphaChannel() )
             image = image.convertToFormat(QImage::Format_RGB16);
         texture = bindTexture(image, target, format, key, options);
-#endif
     }
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
@@ -3457,22 +3418,6 @@ const QGLContext* QGLContext::currentContext()
 #else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (threadContext) {
-#ifdef Q_OS_SYMBIAN
-        // Query the current context and return null if it is different.
-        // This is needed to support mixed VG-GL rendering.
-        // QtOpenVG is free to make a QEglContext current at any time and
-        // QGLContext gets no notification that its underlying QEglContext is
-        // not current anymore. We query directly from EGL to be thread-safe.
-        // QEglContext does not store all the contexts per-thread.
-        if (threadContext->context) {
-            QEglContext *eglcontext = threadContext->context->d_func()->eglContext;
-            if (eglcontext) {
-                EGLContext ctx = eglcontext->context();
-                if (ctx != eglGetCurrentContext())
-                    return 0;
-            }
-        }
-#endif
         return threadContext->context;
     }
     return 0;
@@ -4393,37 +4338,6 @@ bool QGLWidget::event(QEvent *e)
         d->glcx->d_ptr->clearDrawable();
 #  endif
     }
-#elif defined(Q_OS_SYMBIAN)
-    // prevents errors on some systems, where we get a flush to a
-    // hidden widget
-    if (e->type() == QEvent::Hide) {
-        makeCurrent();
-        glFinish();
-        doneCurrent();
-    } else if (e->type() == QEvent::ParentChange) {
-        // if we've reparented a window that has the current context
-        // bound, we need to rebind that context to the new window id
-        if (d->glcx == QGLContext::currentContext())
-            makeCurrent(); // Shouldn't happen but keep it here just for sure
-
-        if (testAttribute(Qt::WA_TranslucentBackground))
-            setContext(new QGLContext(d->glcx->requestedFormat(), this));
-    }
-
-    // A re-parent is likely to destroy the Symbian window and re-create it. It is important
-    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
-    if (e->type() == QEvent::ParentAboutToChange) {
-        if (d->glcx == QGLContext::currentContext())
-            d->glcx->doneCurrent();
-        d->glcx->d_func()->destroyEglSurfaceForDevice();
-    }
-
-    if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
-        // The window may have been re-created during re-parent or state change - if so, the EGL
-        // surface will need to be re-created.
-        d->recreateEglSurface();
-    }
-
 #endif
 
     return QWidget::event(e);
@@ -4631,11 +4545,6 @@ void QGLWidget::glDraw()
     Q_D(QGLWidget);
     if (!isValid())
         return;
-#ifdef Q_OS_SYMBIAN
-    // Crashes on Symbian if trying to render to invisible surfaces
-    if (!isVisible() && d->glcx->device()->devType() == QInternal::Widget)
-        return;
-#endif
     makeCurrent();
 #ifndef QT_OPENGL_ES
     if (d->glcx->deviceIsPixmap())
@@ -6140,28 +6049,5 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
 }
 
 #undef ctx
-
-#ifdef Q_OS_SYMBIAN
-void QGLTexture::freeTexture()
-{
-    if (!id)
-        return;
-
-    if (inTexturePool)
-        QGLTexturePool::instance()->detachTexture(this);
-
-    if (boundPixmap)
-        boundPixmap->releaseNativeImageHandle();
-
-    if (options & QGLContext::MemoryManagedBindOption) {
-        Q_ASSERT(context);
-        context->d_ptr->texture_destroyer->emitFreeTexture(context, 0, id);
-    }
-
-    id = 0;
-    boundPixmap = 0;
-    boundKey = 0;
-}
-#endif
 
 QT_END_NAMESPACE

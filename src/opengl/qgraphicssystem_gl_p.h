@@ -55,19 +55,11 @@
 
 #include "private/qgraphicssystem_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "private/qgraphicssystemex_symbian_p.h"
-#endif
-
 #include <QMap>
 
 QT_BEGIN_NAMESPACE
 
 class Q_OPENGL_EXPORT QGLGraphicsSystem : public QGraphicsSystem
-#ifdef Q_OS_SYMBIAN
-    , public QSymbianGraphicsSystemEx
-#endif
-
 {
 public:
     QGLGraphicsSystem(bool useX11GL);
@@ -75,10 +67,6 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
 
-#ifdef Q_OS_SYMBIAN
-    void releaseCachedGpuResources();
-    QGraphicsSystemEx* platformExtension();
-#endif
 private:
     bool m_useX11GL;
 };

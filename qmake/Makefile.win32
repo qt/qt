@@ -40,8 +40,7 @@ CFLAGS_BARE = -c -Fo./ \
               -I$(SOURCE_PATH)\tools\shared \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL -DQT_NO_STL \
               -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP -DQT_BUILD_QMAKE -DQT_NO_THREAD \
-              -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM -DQT_NO_PCRE -DQT_BOOTSTRAPPED \
-              -DQLIBRARYINFO_EPOCROOT
+              -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM -DQT_NO_PCRE -DQT_BOOTSTRAPPED
 CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)
@@ -61,8 +60,8 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
-              msvc_objectmodel.obj msbuild_objectmodel.obj symmake.obj \
-              symmake_abld.obj symmake_sbsv2.obj registry.obj epocroot.obj \
+              msvc_objectmodel.obj msbuild_objectmodel.obj \
+              registry.obj \
               gbuild.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
