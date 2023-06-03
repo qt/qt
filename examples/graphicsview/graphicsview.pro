@@ -5,7 +5,7 @@ SUBDIRS       = \
               padnavigator \
 	      basicgraphicslayouts
 
-!symbian: SUBDIRS += \
+SUBDIRS += \
               diagramscene \
               dragdroprobot \
               flowlayout \

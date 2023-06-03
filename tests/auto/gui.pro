@@ -229,7 +229,3 @@ win32:SUBDIRS -= qtextpiecetable
     qtipc \
     qtoolbar \
     qtreeview \
-
-symbian:SUBDIRS -= \
-    qsystemtrayicon \
-

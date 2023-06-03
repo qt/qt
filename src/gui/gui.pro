@@ -5,7 +5,7 @@ DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-!win32:!embedded:!qpa:!mac:!symbian:CONFIG      += x11
+!win32:!embedded:!qpa:!mac:CONFIG      += x11
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
@@ -18,10 +18,6 @@ x11:include(kernel/x11.pri)
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
 embedded:include(embedded/embedded.pri)
-symbian {
-    include(kernel/symbian.pri)
-    include(s60framework/s60framework.pri)
-}
 
 #modules
 include(animation/animation.pri)
@@ -52,13 +48,6 @@ contains(DEFINES,QT_EVAL):include($$QT_SOURCE_TREE/src/corelib/eval.pri)
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
 
 DEFINES += Q_INTERNAL_QAPP_SRC
-symbian {
-    TARGET.UID3=0x2001B2DD
-
-    # ro-section in gui can exceed default allocated space, so move rw-section a little further
-    QMAKE_LFLAGS.ARMCC += --rw-base 0x800000
-    QMAKE_LFLAGS.GCCE += -Tdata 0x800000
-}
 
 neon:if(*-g++*|*-qcc*) {
     DEFINES += QT_HAVE_NEON

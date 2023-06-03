@@ -92,7 +92,6 @@ else:blackberry {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_blackberry.cpp
     HEADERS += tools/qlocale_blackberry.h
 }
-else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp tools/qlocale_symbian.cpp
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
 else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
@@ -124,10 +123,4 @@ INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4
 
 # Note: libm should be present by default becaue this is C++
-!macx-icc:!vxworks:!symbian:unix:LIBS_PRIVATE += -lm
-
-symbian {
-    # QLocale Symbian implementation needs this
-    LIBS += -lnumberconversion
-}
-
+!macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm

@@ -20,5 +20,3 @@ CONFIG -= app_bundle
 
 SOURCES = main.cpp
 HEADERS = main.h
-
-symbian: TARGET.UID3 = 0xA000D7CA

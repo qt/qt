@@ -18,8 +18,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.jpg
 sources.path = $$[QT_INSTALL_DEMOS]/affine
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-
 wince*: {
     DEPLOYMENT_PLUGIN += qjpeg
 }

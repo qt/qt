@@ -14,7 +14,6 @@ win32:SUBDIRS += generic
 win32:!wince*:SUBDIRS += nativewifi
 macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
 macx:SUBDIRS += generic
-symbian:SUBDIRS += symbian
 blackberry:SUBDIRS += blackberry
 
 isEmpty(SUBDIRS):SUBDIRS = generic

@@ -27,6 +27,3 @@ SOURCES = main.cpp                          \
 HEADERS = main.h                            \
           qapplicationargument.cpp          \
           qapplicationargumentparser.cpp    
-
-symbian: TARGET.UID3 = 0xA000D7C9
-

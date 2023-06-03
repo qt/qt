@@ -61,7 +61,7 @@ win32 {
     !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
 }
 
-!mac:!embedded:!symbian:unix|qpa {
+!mac:!embedded:unix|qpa {
         HEADERS += dialogs/qpagesetupdialog_unix_p.h
 	SOURCES += dialogs/qprintdialog_unix.cpp \
 		   dialogs/qpagesetupdialog_unix.cpp
@@ -86,7 +86,7 @@ embedded {
         }
 }
 
-wince*|symbian: FORMS += dialogs/qfiledialog_embedded.ui
+wince*: FORMS += dialogs/qfiledialog_embedded.ui
 else: FORMS += dialogs/qfiledialog.ui
 
 INCLUDEPATH += $$PWD
@@ -108,15 +108,6 @@ SOURCES += \
 	dialogs/qwizard.cpp \
         dialogs/qprintpreviewdialog.cpp
 
-symbian:contains(QT_CONFIG, s60) {
-    LIBS += -lcommondialogs
-    SOURCES += dialogs/qfiledialog_symbian.cpp \
-               dialogs/qcolordialog_symbian.cpp
-}
-
 FORMS += dialogs/qpagesetupwidget.ui
 RESOURCES += dialogs/qprintdialog.qrc
 RESOURCES += dialogs/qmessagebox.qrc
-
-# Compensate for lack of platform defines in Symbian3
-symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))

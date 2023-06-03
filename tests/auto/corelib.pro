@@ -108,11 +108,3 @@ SUBDIRS=\
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
    qfileinfo \
    qfilesystementry \
-
-symbian:SUBDIRS -= \
-   qtconcurrentfilter \
-   qtconcurrentiteratekernel \
-   qtconcurrentmap \
-   qtconcurrentrun \
-   qtconcurrentthreadengine \
-

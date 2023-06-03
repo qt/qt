@@ -51,11 +51,6 @@ embedded:!wince* {
                qmultiscreen
 }
 
-symbian {
-    SUBDIRS += qsoftkeymanager \
-               qs60mainapplication
-}
-
 !win32-msvc*:!wince*:SUBDIRS += exceptionsafety_objects
 
 # Following tests depends on private API

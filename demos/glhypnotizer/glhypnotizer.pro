@@ -17,5 +17,3 @@ target.path = $$[QT_INSTALL_DEMOS]/glhypnotizer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.pro *.svg
 sources.path = $$[QT_INSTALL_DEMOS]/glhypnotizer
 INSTALLS += target sources
-
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

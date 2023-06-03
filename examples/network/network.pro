@@ -31,8 +31,6 @@ SUBDIRS       = \
     contains(QT_CONFIG, openssl-linked):SUBDIRS += securesocketclient
 }
 
-symbian: SUBDIRS = qftp
-
 # install
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/network

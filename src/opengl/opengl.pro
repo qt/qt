@@ -11,7 +11,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
-!win32:!embedded:!mac:!symbian:!qpa:CONFIG	   += x11
+!win32:!embedded:!mac:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
@@ -154,28 +154,6 @@ embedded {
     } else {
        DEFINES *= QT_NO_FREETYPE
     }
-}
-
-symbian {
-    DEFINES += QGL_NO_PRESERVED_SWAP
-    SOURCES -= qpixmapdata_gl.cpp
-    SOURCES += qgl_symbian.cpp \
-               qpixmapdata_symbiangl.cpp \
-               qglpixelbuffer_egl.cpp \
-               qgl_egl.cpp \
-               qgltexturepool.cpp
-
-    HEADERS += qgl_egl_p.h \
-               qgltexturepool_p.h
-
-    contains(QT_CONFIG, freetype) {
-        DEFINES += QT_NO_FONTCONFIG
-        INCLUDEPATH += \
-            ../3rdparty/freetype/src \
-            ../3rdparty/freetype/include
-    }
-
-    symbian:TARGET.UID3 = 0x2002131A
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src

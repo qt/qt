@@ -31,8 +31,3 @@ sources.path = $$[QT_INSTALL_DEMOS]/shared
 INSTALLS += sources
 
 !cross_compile:INSTALLS += target
-
-symbian {
-    TARGET.UID3 = 0xA000A63C
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-}

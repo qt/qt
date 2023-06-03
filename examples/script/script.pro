@@ -6,8 +6,6 @@ SUBDIRS = customclass
 !wince*:SUBDIRS *= marshal
 !wince*:!cross_compile:!contains(QT_CONFIG, no-gui):SUBDIRS += calculator qstetrix
 
-symbian: SUBDIRS = context2d
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/script
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS script.pro README

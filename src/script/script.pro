@@ -87,20 +87,6 @@ INCLUDEPATH += $$PWD
 
 include(script.pri)
 
-symbian {
-    TARGET.UID3=0x2001B2E1
-}
-
-symbian {
-    symbian-abld|symbian-sbsv2 {
-        MMP_RULES += ALWAYS_BUILD_AS_ARM
-    }  else {
-        QMAKE_CFLAGS -= --thumb
-        QMAKE_CXXFLAGS -= --thumb
-    }
-    QMAKE_CXXFLAGS.ARMCC += -OTime -O3
-}
-
 integrity {
     CFLAGS += --diag_remark=236,82
 }

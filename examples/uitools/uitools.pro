@@ -1,7 +1,7 @@
 TEMPLATE      = subdirs
 SUBDIRS       = multipleinheritance
 
-!wince*:!symbian:contains(QT_BUILD_PARTS, tools): SUBDIRS += textfinder
+!wince*:contains(QT_BUILD_PARTS, tools): SUBDIRS += textfinder
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/uitools

@@ -76,18 +76,8 @@ else:mac {
     HEADERS += image/qpixmap_mac_p.h
     SOURCES += image/qpixmap_mac.cpp
 }
-else:symbian {
-    HEADERS += image/qpixmap_raster_symbian_p.h
-    SOURCES += image/qpixmap_raster_symbian.cpp
-}
 
-!symbian|contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2) {
-    SOURCES += image/qvolatileimagedata.cpp
-}
-else {
-    SOURCES += image/qvolatileimagedata_symbian.cpp
-}
-
+SOURCES += image/qvolatileimagedata.cpp
 # Built-in image format support
 HEADERS += \
         image/qbmphandler_p.h \

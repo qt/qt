@@ -71,8 +71,6 @@ ICON = qtdemo.icns
 QMAKE_INFO_PLIST = Info_mac.plist
 }
 
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-
 # install
 target.path = $$[QT_INSTALL_BINS]
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES qtdemo.pro images xml *.ico *.icns *.rc *.plist

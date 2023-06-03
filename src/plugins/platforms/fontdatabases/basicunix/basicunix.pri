@@ -59,15 +59,10 @@ contains(QT_CONFIG, freetype) {
                $$QT_SOURCE_TREE/src/3rdparty/freetype/src/autofit/afloader.c\
                $$QT_SOURCE_TREE/src/3rdparty/freetype/src/autofit/autofit.c
 
-               symbian {
-                   SOURCES += \
-                              $$QT_SOURCE_TREE/src/3rdparty/freetype/src/base/ftsystem.c
-               } else {
-                   SOURCES += \
-                              $$QT_SOURCE_TREE/src/3rdparty/freetype/builds/unix/ftsystem.c
-                  INCLUDEPATH += \
-                              $$QT_SOURCE_TREE/src/3rdparty/freetype/builds/unix
-               }
+               SOURCES += \
+                            $$QT_SOURCE_TREE/src/3rdparty/freetype/builds/unix/ftsystem.c
+               INCLUDEPATH += \
+                            $$QT_SOURCE_TREE/src/3rdparty/freetype/builds/unix
 
                INCLUDEPATH += \
                    $$QT_SOURCE_TREE/src/3rdparty/freetype/src \

@@ -98,7 +98,6 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac: OBJECTIVE_SOURCES += ../../corelib/tools/qlocale_mac.mm
-else:symbian:SOURCES += ../../corelib/tools/qlocale_symbian.cpp
 else:unix:SOURCES += ../../corelib/tools/qlocale_unix.cpp
 else:win32:SOURCES += ../../corelib/tools/qlocale_win.cpp
 

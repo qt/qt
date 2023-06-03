@@ -36,7 +36,7 @@ unix {
                 HEADERS += codecs/qiconvcodec_p.h
                 SOURCES += codecs/qiconvcodec.cpp
                 DEFINES += GNU_LIBICONV
-        } else:!symbian {
+        } else {
                 # no iconv, so we put all plugins in the library
                 HEADERS += \
                         ../plugins/codecs/cn/qgb18030codec.h \
@@ -57,4 +57,3 @@ unix {
                         ../plugins/codecs/jp/qfontjpcodec.cpp
         }
 }
-symbian:LIBS += -lcharconv

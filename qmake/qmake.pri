@@ -3,7 +3,7 @@ CONFIG += depend_includepath
 QMAKE_INCREMENTAL =
 SKIP_DEPENDS += qconfig.h qmodules.h
 DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_STL QT_NO_COMPRESS QT_NO_UNICODETABLES \
-           QT_NO_GEOM_VARIANT QT_NO_DATASTREAM QLIBRARYINFO_EPOCROOT
+           QT_NO_GEOM_VARIANT QT_NO_DATASTREAM
 
 #qmake code
 SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \

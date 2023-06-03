@@ -40,6 +40,4 @@ SOURCES += \
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
 
-symbian:TARGET.UID3=0x2001B2E2
-
 include(../3rdparty/zlib_dependency.pri)

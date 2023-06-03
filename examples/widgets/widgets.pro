@@ -25,17 +25,6 @@ SUBDIRS       = analogclock \
                 wiggly \
                 windowflags \
 
-symbian: SUBDIRS = \
-                analogclock \
-                calculator \
-                calendarwidget \
-                lineedits \
-                shapedclock \
-		symbianvibration \
-                tetrix \
-                wiggly \
-                softkeys
-
 maemo5: SUBDIRS += maemovibration
 
 contains(styles, motif): SUBDIRS += styles

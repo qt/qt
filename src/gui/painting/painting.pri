@@ -166,14 +166,14 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac:!symbian|qpa {
+unix:!mac|qpa {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|embedded|qpa|symbian {
+win32|x11|mac|embedded|qpa {
         SOURCES += painting/qbackingstore.cpp
         HEADERS += painting/qbackingstore_p.h
 }
@@ -194,18 +194,6 @@ qpa {
         SOURCES += \
                 painting/qcolormap_qpa.cpp \
                 painting/qpaintdevice_qpa.cpp
-}
-
-symbian {
-        SOURCES += \
-		painting/qpaintengine_raster_symbian.cpp \
-                painting/qregion_s60.cpp \
-                painting/qcolormap_s60.cpp \
-                painting/qgraphicssystemhelper_symbian.cpp
-
-        HEADERS += \
-                painting/qpaintengine_raster_symbian_p.h \
-                painting/qgraphicssystemhelper_symbian.h
 }
 
 x11|embedded|qpa {
@@ -251,23 +239,6 @@ embedded {
 }
 
 
-
-symbian {
-        HEADERS += painting/qwindowsurface_s60_p.h \
-                    painting/qdrawhelper_arm_simd_p.h \
-                    painting/qgraphicssystemex_symbian_p.h
-        SOURCES += painting/qwindowsurface_s60.cpp \
-                    painting/qgraphicssystemex_symbian.cpp
-        armccIfdefBlock = \
-        "$${LITERAL_HASH}if defined(ARMV6)" \
-        "MACRO QT_HAVE_ARM_SIMD" \
-        "SOURCEPATH 	painting" \
-        "SOURCE			qdrawhelper_arm_simd.cpp" \
-        "$${LITERAL_HASH}endif"
-
-        MMP_RULES += armccIfdefBlock
-        QMAKE_CXXFLAGS.ARMCC *= -O3
-}
 
 NEON_SOURCES += painting/qdrawhelper_neon.cpp
 NEON_HEADERS += painting/qdrawhelper_neon_p.h

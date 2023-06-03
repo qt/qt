@@ -134,4 +134,4 @@ include(parser/parser.pri)
 include(rewriter/rewriter.pri)
 
 # mirrors logic in corelib/kernel/kernel.pri
-unix:!symbian: contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+unix: contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)

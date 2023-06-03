@@ -109,7 +109,7 @@ embedded:DEPENDPATH += ;$$EMBEDDED_H
 #install directives
 include(qt_install.pri)
 
-unix|win32-g++*:!symbian {
+unix|win32-g++* {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS]
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
@@ -124,7 +124,7 @@ unix|win32-g++*:!symbian {
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
 }
 
-unix:!symbian {
+unix {
    CONFIG += create_libtool explicitlib
    QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS]
    QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS]

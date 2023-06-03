@@ -29,20 +29,6 @@ SUBDIRS       = \
                 gestures
 }
 
-symbian: SUBDIRS = \
-                graphicsview \
-                itemviews \
-                network \
-                painting \
-                widgets \
-                draganddrop \
-                mainwindows \
-                sql \
-                uitools \
-                animation \
-                gestures \
-                xml
-
 contains(DEFINES, QT_NO_GESTURES): SUBDIRS -= gestures
 
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, multimedia) {
@@ -52,7 +38,7 @@ contains(DEFINES, QT_NO_GESTURES): SUBDIRS -= gestures
 contains(QT_CONFIG, script): SUBDIRS += script
 
 embedded:SUBDIRS += qws
-!wince*:!symbian: {
+!wince*: {
     !contains(QT_EDITION, Console):!contains(QT_CONFIG, no-gui):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
     contains(QT_BUILD_PARTS, tools):!contains(QT_CONFIG, no-gui):SUBDIRS += qtestlib help
 } else {

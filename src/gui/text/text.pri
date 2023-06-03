@@ -152,26 +152,6 @@ qpa {
         DEFINES += QT_NO_FREETYPE
 }
 
-symbian {
-	SOURCES += \
-		text/qfont_s60.cpp
-	contains(QT_CONFIG, freetype) {
-		SOURCES += \
-                        text/qfontengine_ft.cpp \
-                        text/qrawfont_ft.cpp
-		HEADERS += \
-			text/qfontengine_ft_p.h
-		DEFINES += \
-			QT_NO_FONTCONFIG
-	} else {
-		SOURCES += \
-			text/qfontengine_s60.cpp
-		HEADERS += \
-			text/qfontengine_s60_p.h
-	}
-	LIBS += -lfntstr -lecom
-}
-
 !qpa {
 contains(QT_CONFIG, freetype) {
     SOURCES += \
@@ -219,15 +199,10 @@ contains(QT_CONFIG, freetype) {
           ../3rdparty/freetype/src/autofit/afloader.c\
           ../3rdparty/freetype/src/autofit/autofit.c
 
-    symbian {
-        SOURCES += \
-            ../3rdparty/freetype/src/base/ftsystem.c
-    } else {
-        SOURCES += \
-            ../3rdparty/freetype/builds/unix/ftsystem.c
-        INCLUDEPATH += \
-            ../3rdparty/freetype/builds/unix
-    }
+    SOURCES += \
+        ../3rdparty/freetype/builds/unix/ftsystem.c
+    INCLUDEPATH += \
+        ../3rdparty/freetype/builds/unix
 
     INCLUDEPATH += \
 	../3rdparty/freetype/src \

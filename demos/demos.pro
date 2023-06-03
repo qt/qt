@@ -18,12 +18,6 @@ SUBDIRS     = \
             demos_undo \
             demos_sub-attaq
 
-symbian: SUBDIRS = \
-            demos_shared \
-            demos_deform \
-            demos_pathstroke
-
-
 wince*:  SUBDIRS = \
             demos_shared \
             demos_deform \
@@ -49,7 +43,7 @@ SUBDIRS += demos_glhypnotizer
 }
 
 mac* && !qpa: SUBDIRS += demos_macmainwindow
-wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
+wince*|embedded|x11: SUBDIRS += demos_embedded
 
 !contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin
 
@@ -60,7 +54,7 @@ wince*:SUBDIRS += demos_sqlbrowser
 }
 }
 contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer
-contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):!symbian:SUBDIRS += demos_browser
+contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):SUBDIRS += demos_browser
 contains(QT_CONFIG, declarative):SUBDIRS += demos_declarative demos_helper
 contains(QT_CONFIG, multimedia):!static:SUBDIRS += demos_spectrum
 
@@ -68,8 +62,6 @@ contains(QT_CONFIG, multimedia):!static:SUBDIRS += demos_spectrum
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_DEMOS]
 INSTALLS += sources
-
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 demos_chip.subdir = chip
 demos_embeddeddialogs.subdir = embeddeddialogs

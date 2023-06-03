@@ -10,7 +10,3 @@ include(../qbase.pri)
 
 include(audio/audio.pri)
 include(video/video.pri)
-
-symbian: {
-    TARGET.UID3 = 0x2001E627
-}

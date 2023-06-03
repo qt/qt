@@ -31,16 +31,8 @@ contains(QT_CONFIG, egl): {
 	        qpa {
 	            SOURCES += egl/qegl_qpa.cpp
 	        } else {
-	            symbian {
-	                SOURCES += egl/qegl_symbian.cpp
-	            } else {
-	                SOURCES += egl/qegl_x11.cpp
-	            }
+                SOURCES += egl/qegl_x11.cpp
 	        }
 	    }
 	}
-} else:symbian {
-	DEFINES += QT_NO_EGL
-	SOURCES += egl/qegl_stub.cpp
-	SOURCES += egl/qeglproperties_stub.cpp
 }

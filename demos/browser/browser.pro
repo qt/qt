@@ -99,8 +99,3 @@ target.path = $$[QT_INSTALL_DEMOS]/browser
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.plist *.icns *.ico *.rc *.pro *.html *.doc images htmls data
 sources.path = $$[QT_INSTALL_DEMOS]/browser
 INSTALLS += target sources
-
-symbian {
-    TARGET.UID3 = 0xA000CF70
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-}

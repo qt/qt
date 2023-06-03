@@ -9,8 +9,6 @@ SUBDIRS       = htmlinfo \
                 streambookmarks
 }
 
-symbian: SUBDIRS = htmlinfo saxbookmarks
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/xml
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS xml.pro README

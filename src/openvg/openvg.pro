@@ -34,23 +34,9 @@ contains(QT_CONFIG, egl) {
         qwindowsurface_vgegl.cpp
 }
 
-symbian {
-    DEFINES += QVG_RECREATE_ON_SIZE_CHANGE QVG_BUFFER_SCROLLING QVG_SCISSOR_CLIP
-    SOURCES += \
-        qvg_symbian.cpp
-
-    contains(QT_CONFIG, freetype) {
-        DEFINES += QT_NO_FONTCONFIG
-        INCLUDEPATH += \
-            ../3rdparty/freetype/src \
-            ../3rdparty/freetype/include
-    }
-}
-
 include(../qbase.pri)
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
-symbian:TARGET.UID3 = 0x2001E62F
 
 !isEmpty(QMAKE_INCDIR_OPENVG): INCLUDEPATH += $$QMAKE_INCDIR_OPENVG
 !isEmpty(QMAKE_LIBDIR_OPENVG): LIBS_PRIVATE += -L$$QMAKE_LIBDIR_OPENVG

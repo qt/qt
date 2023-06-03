@@ -41,21 +41,3 @@ embedded|qpa {
 !embedded:!qpa:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
-
-symbian {
-    LIBS += -letext -lplatformenv
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
-        LIBS += -lsendas2 -lapmime
-        contains(QT_CONFIG, s60) {
-            contains(CONFIG, is_using_gnupoc) {
-                LIBS += -lcommonui
-            } else {
-                LIBS += -lCommonUI
-            }
-        }
-    } else {
-        DEFINES += USE_SCHEMEHANDLER
-    }
-
-    LIBS += -ldirectorylocalizer
-}

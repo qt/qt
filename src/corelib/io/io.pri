@@ -77,15 +77,9 @@ win32 {
         SOURCES += io/qfilesystemiterator_win.cpp
 } else:unix {
         SOURCES += io/qfsfileengine_unix.cpp
-        symbian {
-            SOURCES += io/qfilesystemengine_symbian.cpp
-            SOURCES += io/qprocess_symbian.cpp
-            SOURCES += io/qfilesystemiterator_symbian.cpp
-        } else {
-            SOURCES += io/qfilesystemengine_unix.cpp
-            SOURCES += io/qprocess_unix.cpp
-            SOURCES += io/qfilesystemiterator_unix.cpp
-        }
+        SOURCES += io/qfilesystemengine_unix.cpp
+        SOURCES += io/qprocess_unix.cpp
+        SOURCES += io/qfilesystemiterator_unix.cpp
         !nacl:macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
@@ -96,7 +90,7 @@ win32 {
             HEADERS += io/qfilesystemwatcher_inotify_p.h
         }
 
-        linux-*:!symbian {
+        linux-* {
             SOURCES += \
                     io/qfilesystemwatcher_inotify.cpp \
                     io/qfilesystemwatcher_dnotify.cpp
@@ -111,13 +105,6 @@ win32 {
                 SOURCES += io/qfilesystemwatcher_kqueue.cpp
                 HEADERS += io/qfilesystemwatcher_kqueue_p.h
             }
-        }
-
-        symbian {
-            SOURCES += io/qfilesystemwatcher_symbian.cpp
-            HEADERS += io/qfilesystemwatcher_symbian_p.h
-            INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
-            LIBS += -lplatformenv -lesock
         }
 }
 integrity {

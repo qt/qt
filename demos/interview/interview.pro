@@ -15,5 +15,3 @@ target.path = $$[QT_INSTALL_DEMOS]/interview
 sources.files = $$SOURCES $$HEADERS $$RESOURCES README *.pro images
 sources.path = $$[QT_INSTALL_DEMOS]/interview
 INSTALLS += target sources
-
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
