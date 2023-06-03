@@ -31,7 +31,7 @@ CFLAGS_EXTRA      = /MP
 CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O2 \
               $(CFLAGS_EXTRA) \
-              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian -Igenerators\integrity \
+              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\integrity \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
               -I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
@@ -61,8 +61,8 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
-              msvc_objectmodel.obj msbuild_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
-              symmake_abld.obj symmake_sbsv2.obj symbiancommon.obj registry.obj epocroot.obj \
+              msvc_objectmodel.obj msbuild_objectmodel.obj symmake.obj \
+              symmake_abld.obj symmake_sbsv2.obj registry.obj epocroot.obj \
               gbuild.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
@@ -165,9 +165,6 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\qmake\generators\mac}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
-{$(SOURCE_PATH)\qmake\generators\symbian}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
 {$(SOURCE_PATH)\qmake\generators\integrity}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
@@ -205,9 +202,6 @@ qmake_pch.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\src\corelib\xml}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
-{$(SOURCE_PATH)\tools\shared\symbian}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::

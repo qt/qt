@@ -1981,17 +1981,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if (inputs.isEmpty())
                 continue;
 
-            QString cmd;
-            if (isForSymbianSbsv2()) {
-                // In sbsv2 the command inputs and outputs need to use absolute paths
-                QStringList absoluteInputs;
-                for (int i = 0; i < inputs.size(); ++i)
-                    absoluteInputs.append(escapeFilePath(outputDir.absoluteFilePath(inputs.at(i))));
-                cmd = replaceExtraCompilerVariables(tmp_cmd, absoluteInputs,
-                    QStringList(outputDir.absoluteFilePath(tmp_out)));
-            } else {
-                cmd = replaceExtraCompilerVariables(tmp_cmd, escapeFilePaths(inputs), QStringList(tmp_out));
-            }
+            QString cmd = replaceExtraCompilerVariables(tmp_cmd, escapeFilePaths(inputs), QStringList(tmp_out));
 
             t << escapeDependencyPath(tmp_out) << ":";
             project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(tmp_out);
@@ -2018,15 +2008,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                    deps += replaceExtraCompilerVariables(pre_deps.at(i), (*input), out);
             }
             QString cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
-            // NOTE: The var -> QMAKE_COMP_var replace feature is unsupported, do not use!
-            if (isForSymbianSbsv2()) {
-                // In sbsv2 the command inputs and outputs need to use absolute paths
-                cmd = replaceExtraCompilerVariables(tmp_cmd,
-                    outputDir.absoluteFilePath(*input),
-                    outputDir.absoluteFilePath(out));
-            } else {
-                cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
-            }
+
             for(QStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {

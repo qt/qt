@@ -182,11 +182,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isEmpty("QMAKE_IPHONEOS_DEPLOYMENT_TARGET"))
         t << "export IPHONEOS_DEPLOYMENT_TARGET = " //exported to children processes
 		<< project->first("QMAKE_IPHONEOS_DEPLOYMENT_TARGET") << endl;
-	
-    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-        t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(":") << endl;
-        t << "vpath %.lib " << project->values("QMAKE_LIBDIR").join(":") << endl;
-    }
 
     t << endl;
 
@@ -244,8 +239,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             t << "TARGETD       = " << escapeFilePath(var("TARGET_x.y")) << endl;
             t << "TARGET0       = " << escapeFilePath(var("TARGET_")) << endl;
-        } else if(!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-            t << "TARGETD       = " << escapeFilePath(var("TARGET")) << endl;
         } else if(project->isEmpty("QMAKE_HPUX_SHLIB")) {
             t << "TARGETD       = " << escapeFilePath(var("TARGET_x.y.z")) << endl;
             t << "TARGET0       = " << escapeFilePath(var("TARGET_")) << endl;
@@ -556,17 +549,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << "-$(DEL_FILE) " << destdir << "Versions/Current" << "\n\t"
               << varGlue("QMAKE_LN_SHLIB","-"," ", " " + project->first("QMAKE_FRAMEWORK_VERSION") +
                          " " + destdir + "Versions/Current") << "\n\t";
-            if(!project->isEmpty("QMAKE_POST_LINK"))
-                t << "\n\t" << var("QMAKE_POST_LINK");
-            t << endl << endl;
-        } else if(!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-            t << "\n\t"
-              << "-$(DEL_FILE) $(TARGET)" << "\n\t"
-              << var("QMAKE_LINK_SHLIB_CMD");
-            if(!destdir.isEmpty())
-                t << "\n\t"
-                  << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
-                  << "-$(MOVE) $(TARGET) " << destdir;
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -916,8 +898,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     } else if(!project->isActiveConfig("staticlib") && project->values("QMAKE_APP_FLAG").isEmpty() &&
        !project->isActiveConfig("plugin")) {
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET)" << " " << endl;
-        if (project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
-            t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
+        t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
               << destdir << "$(TARGET2) $(TARGETA)" << endl;
     } else {
         t << "\t-$(DEL_FILE) " << "$(TARGET)" << " " << endl;
@@ -1123,10 +1104,6 @@ void UnixMakefileGenerator::init2()
                                                             project->first("VER_PAT"));
             }
             project->values("TARGET") = project->values("TARGET_x.y.z");
-        } else if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-            project->values("TARGET_").append(project->first("TARGET") + "." +
-                                                   project->first("QMAKE_EXTENSION_SHLIB"));
-            project->values("TARGET") = project->values("TARGET_");
         } else {
             project->values("TARGET_").append("lib" + project->first("TARGET") + "." +
                                                    project->first("QMAKE_EXTENSION_SHLIB"));

@@ -15,14 +15,8 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/win32/msvc_vcproj.cpp \
            generators/win32/msvc_vcxproj.cpp \
            generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp \
-           generators/symbian/symbiancommon.cpp \
-           generators/symbian/symmake.cpp \
-           generators/symbian/symmake_abld.cpp \
-           generators/symbian/symmake_sbsv2.cpp \
-           generators/symbian/initprojectdeploy_symbian.cpp \
            generators/integrity/gbuild.cpp \
            windows/registry.cpp \
-           symbian/epocroot.cpp \
            generators/integrity/gbuild.cpp
 
 HEADERS += project.h property.h generators/makefile.h \
@@ -33,14 +27,8 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/win32/msvc_vcproj.h \
            generators/win32/msvc_vcxproj.h \
            generators/win32/msvc_objectmodel.h generators/win32/msbuild_objectmodel.h \
-           generators/symbian/symbiancommon.h \
-           generators/symbian/symmake.h \
-           generators/symbian/symmake_abld.h \
-           generators/symbian/symmake_sbsv2.h \
-           generators/symbian/initprojectdeploy_symbian.h \
            generators/integrity/gbuild.h \
            windows/registry_p.h \
-           symbian/epocroot_p.h \
            generators/integrity/gbuild.h
 
 contains(QT_EDITION, OpenSource) {

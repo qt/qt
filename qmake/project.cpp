@@ -63,9 +63,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Included from tools/shared
-#include <symbian/epocroot_p.h>
-
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
 #define QT_PCLOSE _pclose
@@ -548,9 +545,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             break;
         case Option::TARG_WIN_MODE:
             concat << base_concat + QDir::separator() + "win32";
-            break;
-        case Option::TARG_SYMBIAN_MODE:
-            concat << base_concat + QDir::separator() + "symbian";
             break;
         }
         concat << base_concat;
@@ -1512,8 +1506,6 @@ void QMakeProject::validateModes()
                         Option::target_mode = Option::TARG_UNIX_MODE;
                     else if (os == "macx")
                         Option::target_mode = Option::TARG_MACX_MODE;
-                    else if (os == "symbian")
-                        Option::target_mode = Option::TARG_SYMBIAN_MODE;
                     else if (os == "win32")
                         Option::target_mode = Option::TARG_WIN_MODE;
                     else
@@ -1542,14 +1534,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     if (x == "unix") {
         validateModes();
         return Option::target_mode == Option::TARG_UNIX_MODE
-               || Option::target_mode == Option::TARG_MACX_MODE
-               || Option::target_mode == Option::TARG_SYMBIAN_MODE;
+               || Option::target_mode == Option::TARG_MACX_MODE;
     } else if (x == "macx" || x == "mac") {
         validateModes();
         return Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "symbian") {
-        validateModes();
-        return Option::target_mode == Option::TARG_SYMBIAN_MODE;
     } else if (x == "win32") {
         validateModes();
         return Option::target_mode == Option::TARG_WIN_MODE;
@@ -1796,9 +1784,6 @@ QMakeProject::doProjectExpand(QString func, QStringList args,
     }
     return doProjectExpand(func, args_list, place);
 }
-
-// defined in symbian generator
-extern QString generate_test_uid(const QString& target);
 
 QStringList
 QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,

@@ -3,14 +3,13 @@ TEMPLATE = subdirs
 # this order is important
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
-symbian:SRC_SUBDIRS += src_s60main
 SRC_SUBDIRS += src_corelib src_xml src_network src_sql src_testlib
 nacl: SRC_SUBDIRS -= src_network src_testlib
-!symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
+contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
-!wince*:!symbian:!vxworks:!integrity:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+!wince*:!vxworks:!integrity:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
 
-!wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+!wince*:include(tools/tools.pro)
 win32:SRC_SUBDIRS += src_activeqt
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
@@ -24,14 +23,6 @@ contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 SRC_SUBDIRS += src_plugins
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
 
-# s60installs need to be at the end, because projects.pro does an ordered build,
-# and s60installs depends on all the others.
-symbian:SRC_SUBDIRS += src_s60installs
-
-src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
-src_s60main.target = sub-s60main
-src_s60installs.subdir = $$QT_SOURCE_TREE/src/s60installs
-src_s60installs.target = sub-s60installs
 src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_corelib.subdir = $$QT_SOURCE_TREE/src/corelib
@@ -74,7 +65,7 @@ src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
 
 #CONFIG += ordered
-!wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
+!wince*:!ordered {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib src_tools_uic
    embedded: src_gui.depends += src_network
@@ -99,8 +90,6 @@ src_declarative.target = sub-declarative
    src_plugins.depends = src_gui src_sql src_svg
    contains(QT_CONFIG, multimedia):src_plugins.depends += src_multimedia
    contains(QT_CONFIG, declarative):src_plugins.depends += src_declarative
-   src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
-   src_s60installs.depends -= src_s60installs
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{
@@ -165,13 +154,5 @@ for(subname, SRC_SUBDIRS) {
 debug.depends = $$EXTRA_DEBUG_TARGETS
 release.depends = $$EXTRA_RELEASE_TARGETS
 QMAKE_EXTRA_TARGETS += debug release
-
-# This gives us a top-level runonphone target, which installs Qt.
-contains(CONFIG, run_on_phone) {
-    src_runonphone_target.target = runonphone
-    src_runonphone_target.commands = $(MAKE) -C $$QT_BUILD_TREE/src/s60installs runonphone
-    src_runonphone_target.depends = first
-    QMAKE_EXTRA_TARGETS += src_runonphone_target
-}
 
 SUBDIRS += $$SRC_SUBDIRS
