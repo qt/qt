@@ -4,9 +4,7 @@ TEMPLATE        = subdirs
     no-png {
         message("Some graphics-related tools are unavailable without PNG support")
     } else {
-        symbian {
-            SUBDIRS = designer
-        } else:wince* {
+        wince* {
             SUBDIRS = qtestlib designer
         } else {
             SUBDIRS = assistant \
@@ -19,16 +17,16 @@ TEMPLATE        = subdirs
                 SUBDIRS += designer
             }
         }
-        unix:!symbian:!mac:!embedded:!qpa:SUBDIRS += qtconfig
+        unix:!mac:!embedded:!qpa:SUBDIRS += qtconfig
         win32:!wince*:SUBDIRS += activeqt
     }
     contains(QT_CONFIG, declarative) {
         SUBDIRS += qml
-        !wince*:!symbian: SUBDIRS += qmlplugindump
+        !wince*: SUBDIRS += qmlplugindump
     }
 }
 
-!wince*:!symbian:SUBDIRS += linguist
+!wince*:SUBDIRS += linguist
 
 mac {
     SUBDIRS += macdeployqt
@@ -38,7 +36,7 @@ embedded:SUBDIRS += kmap2qmap
 
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 # We don't need these command line utilities on embedded platforms.
-!wince*:!symbian:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
+!wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf
 
 !wince*:!cross_compile:SUBDIRS += qdoc3
@@ -46,6 +44,6 @@ embedded: SUBDIRS += makeqpf
 CONFIG+=ordered
 QTDIR_build:REQUIRES = "contains(QT_CONFIG, full-config)"
 
-!win32:!embedded:!mac:!symbian:CONFIG += x11
+!win32:!embedded:!mac:CONFIG += x11
 
 x11:contains(QT_CONFIG, opengles2):contains(QT_CONFIG, egl):SUBDIRS += qmeegographicssystemhelper
