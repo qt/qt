@@ -47,6 +47,8 @@
 #include "private/qdeclarativelistscriptclass_p.h"
 #include "private/qdeclarativeguard_p.h"
 
+#include <cstdint>
+
 QT_BEGIN_NAMESPACE
 
 struct ContextData : public QScriptDeclarativeClass::Object {
