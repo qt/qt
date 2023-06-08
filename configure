@@ -781,7 +781,6 @@ QT_DEFAULT_BUILD_PARTS="libs tools examples demos docs translations"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
-CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_DECLARATIVE=auto
@@ -1051,9 +1050,7 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
         L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
     fi
 
-    echo "-no-multimedia -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
-    CFG_MULTIMEDIA=no
-    CFG_MULTIMEDIA=no
+    echo " -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
     CFG_MEDIASERVICES=no
     CFG_XMLPATTERNS=no
     CFG_SCRIPT=no
@@ -1113,7 +1110,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-usedeffiles|-icu|-alsa)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-usedeffiles|-icu|-alsa)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2397,13 +2394,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     silent)
         CFG_SILENT="$VAL"
-        ;;
-    multimedia)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_MULTIMEDIA="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     dont-process)
         CFG_NOPROCESS=yes
@@ -3744,7 +3734,6 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-multimedia] [-multimedia]
         [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg]
@@ -3887,12 +3876,6 @@ fi
  +  -xmlpatterns ....... Build the QtXmlPatterns module.
                          QtXmlPatterns is built if a decent C++ compiler
                          is used and exceptions are enabled.
-
-    -no-multimedia ..... Do not build the QtMultimedia module.
- +  -multimedia ........ Build the QtMultimedia module.
-
-    -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
- +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -5616,15 +5599,6 @@ if [ "$CFG_DBUS" != "no" ]; then
             exit 101
         fi
     fi
-fi
-
-if [ "$CFG_MULTIMEDIA" = "auto" ]; then
-    CFG_MULTIMEDIA="$CFG_GUI"
-fi
-
-if [ "$CFG_MULTIMEDIA" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
-    echo "QtMultimedia requested, but it can't be built without QtGui"
-    exit 1
 fi
 
 # Generate a CRC of the namespace for using in constants for the Carbon port.
@@ -7435,11 +7409,7 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
 fi
 
-if [ "$CFG_MULTIMEDIA" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
-else
-    QT_CONFIG="$QT_CONFIG multimedia"
-fi
+QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
@@ -8494,7 +8464,6 @@ echo "QtGui module ........... $CFG_GUI"
 echo "QtScript module ........ $CFG_SCRIPT"
 echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
-echo "Multimedia module ...... $CFG_MULTIMEDIA"
 echo "SVG module ............. $CFG_SVG"
 if [ "$CFG_SCRIPT" != "no" ]; then
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
