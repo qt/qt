@@ -11,6 +11,5 @@ unix {
 embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
 !win32:!embedded:!mac:!contains(QT_CONFIG, no-gui):SUBDIRS *= inputmethods
 contains(QT_CONFIG, no-gui):SUBDIRS += accessible
-contains(QT_CONFIG, phonon): SUBDIRS *= phonon
 qpa:SUBDIRS += platforms
 contains(QT_CONFIG, declarative): SUBDIRS *= qmltooling
