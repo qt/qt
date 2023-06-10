@@ -205,7 +205,6 @@ int runMoc(int _argc, char **_argv)
     argv.resize(_argc - 1);
     for (int n = 1; n < _argc; ++n)
         argv[n - 1] = _argv[n];
-    int argc = argv.count();
 
     for (int n = 0; n < argv.count(); ++n) {
         if (argv.at(n).startsWith('@')) {
@@ -225,7 +224,7 @@ int runMoc(int _argc, char **_argv)
         }
     }
 
-    argc = argv.count();
+    int argc = argv.count();
 
     for (int n = 0; n < argc; ++n) {
         QByteArray arg(argv[n]);
