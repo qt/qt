@@ -909,10 +909,10 @@ static ALWAYS_INLINE void d2b(BigInt& b, U* d, int* e, int* bits)
             z >>= k;
         } else
             x[0] = y;
-            if (z) {
-                b.resize(2);
-                x[1] = z;
-            }
+        if (z) {
+            b.resize(2);
+            x[1] = z;
+        }
 
 #ifndef Sudden_Underflow
         i = b.size();
