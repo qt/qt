@@ -16,7 +16,6 @@ include(itemviews/itemviews.pri)
 include(widgets/widgets.pri)
 include(text/text.pri)
 include(network/network.pri)
-include(painting/painting.pri)
 
 unix|win32-g++* {
    QMAKE_PKGCONFIG_CFLAGS += -DQT3_SUPPORT
