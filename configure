@@ -1952,7 +1952,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     libjpeg)
         [ "$VAL" = "yes" ] && VAL=qt
-        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+        if [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3726,7 +3726,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
-        [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
+        [-system-libmng] [-no-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
@@ -3958,7 +3958,6 @@ Third Party Libraries:
                          See http://www.libmng.com
 
     -no-libjpeg ........ Do not compile JPEG support.
-    -qt-libjpeg ........ Use the libjpeg bundled with Qt.
  +  -system-libjpeg .... Use libjpeg from the operating system.
                          See http://www.ijg.org
 
@@ -5215,7 +5214,7 @@ if [ "$CFG_LIBJPEG" = "auto" ]; then
     if compileTest unix/libjpeg "libjpeg"; then
        CFG_LIBJPEG=system
     else
-       CFG_LIBJPEG=qt
+       CFG_LIBJPEG=no
     fi
 fi
 
@@ -8503,11 +8502,7 @@ if [ "$CFG_TIFF" = "no" ]; then
 else
     echo "TIFF support ........... $CFG_TIFF ($CFG_LIBTIFF)"
 fi
-if [ "$CFG_JPEG" = "no" ]; then
-    echo "JPEG support ........... $CFG_JPEG"
-else
-    echo "JPEG support ........... $CFG_JPEG ($CFG_LIBJPEG)"
-fi
+echo "JPEG support ........... $CFG_JPEG"
 if [ "$CFG_PNG" = "no" ]; then
     echo "PNG support ............ $CFG_PNG"
 else
