@@ -84,7 +84,6 @@ my %modules = ( # path to module name map
         "QtDesigner" => "$basedir/tools/designer/src/lib",
         "QtUiTools" => "$basedir/tools/designer/src/uitools",
         "QtDBus" => "$basedir/src/dbus",
-        "QtMultimedia" => "$basedir/src/multimedia",
         "QtMeeGoGraphicsSystemHelper" => "$basedir/tools/qmeegographicssystemhelper",
 );
 my %moduleheaders = ( # restrict the module headers to those found in relative path
