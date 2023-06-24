@@ -16,7 +16,6 @@ include(itemviews/itemviews.pri)
 include(widgets/widgets.pri)
 include(dialogs/dialogs.pri)
 include(text/text.pri)
-include(canvas/canvas.pri)
 include(network/network.pri)
 include(painting/painting.pri)
 
