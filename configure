@@ -1951,7 +1951,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     libjpeg)
-        [ "$VAL" = "yes" ] && VAL=qt
+        [ "$VAL" = "yes" ] && VAL=system
         if [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
         else
@@ -1967,8 +1967,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     libtiff)
-        [ "$VAL" = "yes" ] && VAL=qt
-        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+        [ "$VAL" = "yes" ] && VAL=system
+        if [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBTIFF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3724,7 +3724,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
+        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
@@ -3943,7 +3943,6 @@ Third Party Libraries:
     -no-gif ............ Do not compile GIF reading support.
 
     -no-libtiff ........ Do not compile TIFF support.
-    -qt-libtiff ........ Use the libtiff bundled with Qt.
  +  -system-libtiff .... Use libtiff from the operating system.
                          See http://www.libtiff.org
 
@@ -5241,7 +5240,7 @@ if [ "$CFG_LIBTIFF" = "auto" ]; then
     if compileTest unix/libtiff "libtiff"; then
         CFG_LIBTIFF=system
     else
-        CFG_LIBTIFF=qt
+        CFG_LIBTIFF=no
     fi
 fi
 
@@ -8497,11 +8496,7 @@ echo "Glib support ........... $CFG_GLIB"
 echo "PulseAudio support ..... $CFG_PULSEAUDIO"
 echo "Large File support ..... $CFG_LARGEFILE"
 echo "GIF support ............ $CFG_GIF"
-if [ "$CFG_TIFF" = "no" ]; then
-    echo "TIFF support ........... $CFG_TIFF"
-else
-    echo "TIFF support ........... $CFG_TIFF ($CFG_LIBTIFF)"
-fi
+echo "TIFF support ........... $CFG_TIFF"
 echo "JPEG support ........... $CFG_JPEG"
 if [ "$CFG_PNG" = "no" ]; then
     echo "PNG support ............ $CFG_PNG"
