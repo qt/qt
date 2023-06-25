@@ -304,6 +304,7 @@ Tokenizer::TokenType XQueryTokenizer::consumeWhitespace()
                     else
                         return comment;
                 }
+                [[fallthrough]];
             }
             default:
                 return SUCCESS;
@@ -1766,6 +1767,7 @@ Tokenizer::Token XQueryTokenizer::nextToken()
                                 ++m_pos;
                                 break;
                             }
+                            [[fallthrough]];
                         }
                         case 0xA:
                         case 0x9:

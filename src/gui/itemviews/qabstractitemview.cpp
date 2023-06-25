@@ -2383,6 +2383,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             selectAll();
             break;
         }
+        [[fallthrough]];
     default: {
 #ifdef Q_WS_MAC
         if (event->key() == Qt::Key_O && event->modifiers() & Qt::ControlModifier && currentIndex().isValid()) {
@@ -3855,6 +3856,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             switch (static_cast<const QKeyEvent*>(event)->key()) {
             case Qt::Key_Backtab:
                 modifiers = modifiers & ~Qt::ShiftModifier; // special case for backtab
+                [[fallthrough]];
             case Qt::Key_Down:
             case Qt::Key_Up:
             case Qt::Key_Left:

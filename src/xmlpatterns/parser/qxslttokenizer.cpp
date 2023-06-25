@@ -2157,6 +2157,7 @@ void XSLTTokenizer::queueWithParams(const XSLTTokenLookup::NodeName parentName,
                 }
                 else
                     unexpectedContent();
+                [[fallthrough]];
             }
             case QXmlStreamReader::EndElement:
             {
