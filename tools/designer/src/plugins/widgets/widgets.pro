@@ -17,7 +17,6 @@ DEPENDPATH += q3iconview \
               q3mainwindow \
               q3toolbar \
               q3widgetstack \
-              q3wizard \
               q3listbox \
               q3table \
               q3textedit \
@@ -29,7 +28,6 @@ INCLUDEPATH += . \
                q3mainwindow \
                q3toolbar \
                q3widgetstack \
-               q3wizard \
                q3listbox \
                q3table \
                q3textedit \
@@ -50,8 +48,6 @@ HEADERS += q3iconview/q3iconview_extrainfo.h \
            q3widgetstack/q3widgetstack_container.h \
            q3widgetstack/q3widgetstack_plugin.h \
            q3widgetstack/qdesigner_q3widgetstack_p.h \
-           q3wizard/q3wizard_container.h \
-           q3wizard/q3wizard_plugin.h \
            q3listbox/q3listbox_extrainfo.h \
            q3listbox/q3listbox_plugin.h \
            q3table/q3table_extrainfo.h \
@@ -71,8 +67,6 @@ SOURCES += q3iconview/q3iconview_extrainfo.cpp \
            q3widgetstack/q3widgetstack_container.cpp \
            q3widgetstack/q3widgetstack_plugin.cpp \
            q3widgetstack/qdesigner_q3widgetstack.cpp \
-           q3wizard/q3wizard_container.cpp \
-           q3wizard/q3wizard_plugin.cpp \
            q3listbox/q3listbox_extrainfo.cpp \
            q3listbox/q3listbox_plugin.cpp \
            q3table/q3table_extrainfo.cpp \
