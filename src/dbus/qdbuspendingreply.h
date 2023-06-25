@@ -191,9 +191,13 @@ private:
     inline void calculateMetaTypes()
     {
         if (!d) return;
-        int typeIds[Count > 0 ? Count : 1]; // use at least one since zero-sized arrays aren't valid
-        ForEach::fillMetaTypes(typeIds);
-        setMetaTypes(Count, typeIds);
+        if constexpr (Count == 0) {
+            setMetaTypes(0, nullptr);
+        } else {
+            int typeIds[Count];
+            ForEach::fillMetaTypes(typeIds);
+            setMetaTypes(Count, typeIds);
+        }
     }
 
     inline void assign(const QDBusPendingCall &call)
