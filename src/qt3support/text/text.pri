@@ -8,7 +8,8 @@ HEADERS += \
 	text/q3richtext_p.h \
 	text/q3simplerichtext.h \
 	text/q3stylesheet.h \
-	text/q3textstream.h
+    text/q3textstream.h \
+	text/q3paintdevicemetrics.h
 
 SOURCES += \
 	text/q3syntaxhighlighter.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
 	text/q3richtext_p.cpp \
 	text/q3simplerichtext.cpp \
 	text/q3stylesheet.cpp \
-	text/q3textstream.cpp
+    text/q3textstream.cpp \
+	text/q3paintdevicemetrics.cpp
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
