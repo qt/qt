@@ -1438,7 +1438,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
     */
     QFile file(confFile->name);
     bool createFile = !file.exists();
-    if (!readOnly && confFile->isWritable())
+    if ((!readOnly && confFile->isWritable()) || createFile)
         file.open(QFile::ReadWrite);
     if (!file.isOpen())
         file.open(QFile::ReadOnly);
