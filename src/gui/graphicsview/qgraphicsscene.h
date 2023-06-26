@@ -108,7 +108,6 @@ class Q_GUI_EXPORT QGraphicsScene : public QObject
     Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
     Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(bool sortCacheEnabled READ isSortCacheEnabled WRITE setSortCacheEnabled)
     Q_PROPERTY(bool stickyFocus READ stickyFocus WRITE setStickyFocus)
 
 public:
