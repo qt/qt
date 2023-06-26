@@ -13,5 +13,5 @@ The file qurltlds_p.h was last generated Wednesday,
 November 9th 12:20 2011 CET.
 
 ----
-[1] list: http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1
+[1] list: https://publicsuffix.org/list/public_suffix_list.dat
 [2] homepage: http://publicsuffix.org/
