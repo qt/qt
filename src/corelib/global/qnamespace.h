@@ -157,6 +157,8 @@ public:
         XButton1         = BackButton,
         ForwardButton    = 0x00000010,
         XButton2         = ForwardButton,
+        TaskButton       = 0x00000020,
+        MaxMouseButton   = TaskButton,
         MouseButtonMask  = 0x000000ff
     };
     Q_DECLARE_FLAGS(MouseButtons, MouseButton)

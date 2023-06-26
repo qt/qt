@@ -677,9 +677,9 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
             qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
             mousePressButton = Qt::NoButton;
     }
-    else { // check to see if a new button has been pressed/released
+    else { // Check to see if a new button has been pressed/released
         for (int check = Qt::LeftButton;
-             check <= Qt::XButton2;
+             check <= Qt::MaxMouseButton;
              check = check << 1) {
             if (check & stateChange) {
                 button = Qt::MouseButton(check);

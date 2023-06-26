@@ -216,6 +216,8 @@ void QXlibWindow::handleMouseEvent(QEvent::Type type, XButtonEvent *e)
             }
             return;
         }
+        case 8: button = Qt::BackButton; break;      // Also known as Qt::ExtraButton1
+        case 9: button = Qt::ForwardButton; break;   // Also known as Qt::ExtraButton2
         default: break;
         }
     }

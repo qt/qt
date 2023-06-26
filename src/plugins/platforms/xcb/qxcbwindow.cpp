@@ -623,14 +623,13 @@ static Qt::MouseButtons translateMouseButtons(int s)
 static Qt::MouseButton translateMouseButton(xcb_button_t s)
 {
     switch (s) {
-    case 1:
-        return Qt::LeftButton;
-    case 2:
-        return Qt::MidButton;
-    case 3:
-        return Qt::RightButton;
-    default:
-        return Qt::NoButton;
+    case 1: return Qt::LeftButton;
+    case 2: return Qt::MidButton;
+    case 3: return Qt::RightButton;
+    // Button values 4-7 were already handled as Wheel events, and won't occur here.
+    case 8: return Qt::BackButton;      // Also known as Qt::ExtraButton1
+    case 9: return Qt::ForwardButton;   // Also known as Qt::ExtraButton2
+    default: return Qt::NoButton;
     }
 }
 
