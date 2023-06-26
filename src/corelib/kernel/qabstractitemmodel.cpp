@@ -589,12 +589,16 @@ void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
          it != persistent_moved.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
         QModelIndex old = data->index;
-        persistent.indexes.erase(persistent.indexes.find(old));
+        auto iter = persistent.indexes.find(old);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = q_func()->index(old.row() + count, old.column(), parent);
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << ',' << old.column() << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << ','
+                << old.column() << ") in model" << q_func();
         }
     }
 }
@@ -682,7 +686,10 @@ void QAbstractItemModelPrivate::movePersistentIndexes(QVector<QPersistentModelIn
         else
             column += change;
 
-        persistent.indexes.erase(persistent.indexes.find(data->index));
+        auto iter = persistent.indexes.find(data->index);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = q_func()->index(row, column, parent);
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
@@ -749,7 +756,10 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
          it != persistent_moved.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
         QModelIndex old = data->index;
-        persistent.indexes.erase(persistent.indexes.find(old));
+        auto iter = persistent.indexes.find(old);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = q_func()->index(old.row() - count, old.column(), parent);
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
@@ -761,7 +771,10 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
     for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
-        persistent.indexes.erase(persistent.indexes.find(data->index));
+        auto iter = persistent.indexes.find(data->index);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = QModelIndex();
         data->model = 0;
     }
@@ -794,7 +807,10 @@ void QAbstractItemModelPrivate::columnsInserted(const QModelIndex &parent,
          it != persistent_moved.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
         QModelIndex old = data->index;
-        persistent.indexes.erase(persistent.indexes.find(old));
+        auto iter = persistent.indexes.find(old);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = q_func()->index(old.row(), old.column() + count, parent);
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
@@ -844,19 +860,26 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
          it != persistent_moved.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
         QModelIndex old = data->index;
-        persistent.indexes.erase(persistent.indexes.find(old));
+        auto iter = persistent.indexes.find(old);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = q_func()->index(old.row(), old.column() - count, parent);
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << ',' << old.column() - count << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << ','
+                << old.column() - count << ") in model" << q_func();
         }
     }
     QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();
     for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
-        persistent.indexes.erase(persistent.indexes.find(data->index));
+        auto iter = persistent.indexes.find(data->index);
+        if (iter != persistent.indexes.end()) {
+            persistent.indexes.erase(iter);
+        }
         data->index = QModelIndex();
         data->model = 0;
     }
