@@ -1099,7 +1099,7 @@ void QRenderRule::fixupBorder(int nativeWidth)
                     bd->borders[i] = nativeWidth;
                 // intentional fall through
             default:
-                if (!bd->colors[i].style() != Qt::NoBrush) // auto-acquire 'color'
+                if (bd->colors[i].style() == Qt::NoBrush) // auto-acquire 'color'
                     bd->colors[i] = color;
                 break;
             }
