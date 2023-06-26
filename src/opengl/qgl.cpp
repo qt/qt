@@ -2579,7 +2579,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int cost = img.width()*img.height()*4/1024;
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
-texture;
+
+    return texture;
 }
 
 QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum target)
