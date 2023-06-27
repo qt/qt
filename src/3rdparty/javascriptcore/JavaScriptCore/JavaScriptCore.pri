@@ -13,12 +13,6 @@ CONFIG(debug, debug|release) {
     OBJECTS_DIR = obj/release
 }
 
-symbian: {
-    # Need to guarantee this comes before system includes of /epoc32/include
-    MMP_RULES += "USERINCLUDE ../JavaScriptCore/profiler"
-    LIBS += -lhal
-}
-
 INCLUDEPATH = \
     $$PWD \
     $$PWD/.. \

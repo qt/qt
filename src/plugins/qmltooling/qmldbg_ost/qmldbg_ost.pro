@@ -17,5 +17,3 @@ HEADERS += \
 
 target.path += $$[QT_INSTALL_PLUGINS]/qmltooling
 INSTALLS += target
-
-symbian:TARGET.UID3=0x20031E92

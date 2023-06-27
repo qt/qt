@@ -27,12 +27,4 @@ target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
-symbian:{
-    TARGET.UID3 = 0x20034907
-    isEmpty(DESTDIR):importFiles.sources = qmlparticlesplugin$${QT_LIBINFIX}.dll qmldir
-    else:importFiles.sources = $$DESTDIR/qmlparticlesplugin$${QT_LIBINFIX}.dll qmldir
-    importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
-    DEPLOYMENT += importFiles
-}
-
 INSTALLS += target qmldir
