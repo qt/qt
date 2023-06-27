@@ -41,7 +41,6 @@
 
 #include "q3toolbar/q3toolbar_plugin.h"
 #include "q3iconview/q3iconview_plugin.h"
-#include "q3wizard/q3wizard_plugin.h"
 #include "q3mainwindow/q3mainwindow_plugin.h"
 #include "q3widgetstack/q3widgetstack_plugin.h"
 #include "q3listview/q3listview_plugin.h"
@@ -79,7 +78,6 @@ Qt3SupportWidgets::Qt3SupportWidgets(QObject *parent)
     m_plugins.append(new Q3IconViewPlugin(qt3Icon, this));
     m_plugins.append(new Q3GroupBoxPlugin(qt3Icon, this));
     m_plugins.append(new Q3FramePlugin(qt3Icon, this));
-    m_plugins.append(new Q3WizardPlugin(qt3Icon, this));
     m_plugins.append(new Q3MainWindowPlugin(qt3Icon, this));
     m_plugins.append(new Q3WidgetStackPlugin(qt3Icon, this));
     m_plugins.append(new Q3ButtonGroupPlugin(qt3Icon, this));
