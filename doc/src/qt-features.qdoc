@@ -145,12 +145,6 @@
     \l{QMatrix4x4}{matrix multiplication}, \l{QQuaternion}{quaternions}, and an
     API for \l{QGLShader}{vertex and fragment shaders}.
 
-    Two APIs are provided for multimedia. The
-    \l{Phonon Overview}{Phonon Multimedia Framework} has traditionally been
-    used on desktop platforms. A set of
-    \l{QtMultimedia Module}{multimedia services} provides low-level access to
-    the system's audio system and is often used on mobile devices.
-
     \clearfloat
     \section1 Infrastructure
 
