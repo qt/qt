@@ -204,13 +204,13 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
     if (idx < 0)
         return nullptr;
 
-    QVariant ret(QMetaType::QObjectStar, (void*)0);
-    void *param[] = {ret.data(), val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
+    QObject *returnValue = nullptr;
+    void *param[] = {&returnValue, val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
                      val5.data(), val6.data(), val7.data(), val8.data(), val9.data()};
 
     if (static_metacall(CreateInstance, idx, param) >= 0)
         return nullptr;
-    return *reinterpret_cast<QObject**>(param[0]);
+    return returnValue;
 }
 
 /*!
@@ -705,7 +705,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = d->enumeratorCount - 1; i >= 0; --i) {
             const char *prop = m->d.stringdata + m->d.data[d->enumeratorData + 4*i];
-            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+            if (strcmp(name, prop) == 0) {
                 i += m->enumeratorOffset();
                 return i;
             }
@@ -728,7 +728,7 @@ int QMetaObject::indexOfProperty(const char *name) const
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = d->propertyCount-1; i >= 0; --i) {
             const char *prop = m->d.stringdata + m->d.data[d->propertyData + 3*i];
-            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+            if (strcmp(name, prop) == 0) {
                 i += m->propertyOffset();
                 return i;
             }
@@ -1164,18 +1164,19 @@ bool QMetaObject::invokeMethod(QObject *obj,
         sig[sig.size() - 1] = ')';
     sig.append('\0');
 
-    int idx = obj->metaObject()->indexOfMethod(sig.constData());
+    const QMetaObject *meta = obj->metaObject();
+    int idx = meta->indexOfMethod(sig.constData());
     if (idx < 0) {
         QByteArray norm = QMetaObject::normalizedSignature(sig.constData());
-        idx = obj->metaObject()->indexOfMethod(norm.constData());
+        idx = meta->indexOfMethod(norm.constData());
     }
 
-    if (idx < 0 || idx >= obj->metaObject()->methodCount()) {
+    if (idx < 0 || idx >= meta->methodCount()) {
         qWarning("QMetaObject::invokeMethod: No such method %s::%s",
-                 obj->metaObject()->className(), sig.constData());
+                 meta->className(), sig.constData());
         return false;
     }
-    QMetaMethod method = obj->metaObject()->method(idx);
+    QMetaMethod method = meta->method(idx);
     return method.invoke(obj, type, ret,
                          val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
 }
