@@ -51,6 +51,8 @@
 #include <QtCore/QLocale>
 #include <QtCore/QStack>
 
+#include <algorithm>
+
 #include <QtXml/QDomDocument>
 
 QT_BEGIN_NAMESPACE
@@ -487,7 +489,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                                             child,
                                                             language,
                                                             country,
-                                                            RCCFileInfo::NoFlags,
+                                                            child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
                                                             compressLevel,
                                                             compressThreshold)
                                                 );
@@ -505,7 +507,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
         const QString msg = QString::fromUtf8("RCC: Warning: No resources in '%1'.\n").arg(fname);
         m_errorDevice->write(msg.toUtf8());
         if (!ignoreErrors && m_format == Binary) {
-            // create dummy entry, otherwise loading qith QResource will crash
+            // create dummy entry, otherwise loading with QResource will crash
             m_root = new RCCFileInfo(QString(), QFileInfo(),
                     QLocale::C, QLocale::AnyCountry, RCCFileInfo::Directory);
         }
@@ -687,7 +689,7 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &errorDevice)
 
 void RCCResourceLibrary::writeHex(quint8 tmp)
 {
-    const char * const digits = "0123456789abcdef";
+    const char digits[] = "0123456789abcdef";
     writeChar('0');
     writeChar('x');
     if (tmp < 16) {
@@ -771,8 +773,10 @@ bool RCCResourceLibrary::writeDataBlobs()
                 pending.push(child);
             else {
                 offset = child->writeDataBlob(*this, offset, &errorMessage);
-                if (offset == 0)
+                if (offset == 0) {
                     m_errorDevice->write(errorMessage.toUtf8());
+                    return false;
+                }
             }
         }
     }
@@ -841,7 +845,7 @@ bool RCCResourceLibrary::writeDataStructure()
 
         //sort by hash value for binary lookup
         QList<RCCFileInfo*> m_children = file->m_children.values();
-        qSort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
+        std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
 
         //write out the actual data now
         for (int i = 0; i < m_children.size(); ++i) {
@@ -860,7 +864,7 @@ bool RCCResourceLibrary::writeDataStructure()
 
         //sort by hash value for binary lookup
         QList<RCCFileInfo*> m_children = file->m_children.values();
-        qSort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
+        std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
 
         //write out the actual data now
         for (int i = 0; i < m_children.size(); ++i) {
@@ -902,11 +906,12 @@ bool RCCResourceLibrary::writeInitializer()
 {
     if (m_format == C_Code) {
         //write("\nQT_BEGIN_NAMESPACE\n");
-        QString initName = m_initName;
-        if (!initName.isEmpty()) {
-            initName.prepend(QLatin1Char('_'));
-            initName.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
+        QString initNameStr = m_initName;
+        if (!initNameStr.isEmpty()) {
+            initNameStr.prepend(QLatin1Char('_'));
+            initNameStr.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
         }
+        QByteArray initName = initNameStr.toLatin1();
 
         //init
         if (m_useNameSpace)
@@ -921,10 +926,10 @@ bool RCCResourceLibrary::writeInitializer()
         }
         if (m_useNameSpace)
             writeString("QT_END_NAMESPACE\n\n\n");
-        QString initResources = QLatin1String("qInitResources");
+        QByteArray initResources = "qInitResources";
         initResources += initName;
         writeString("int ");
-        writeMangleNamespaceFunction(initResources.toLatin1());
+        writeMangleNamespaceFunction(initResources);
         writeString("()\n{\n");
 
         if (m_root) {
@@ -936,14 +941,14 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
         writeString("Q_CONSTRUCTOR_FUNCTION(");
-        writeMangleNamespaceFunction(initResources.toLatin1());
+        writeMangleNamespaceFunction(initResources);
         writeString(")\n\n");
 
         //cleanup
-        QString cleanResources = QLatin1String("qCleanupResources");
+        QByteArray cleanResources = "qCleanupResources";
         cleanResources += initName;
         writeString("int ");
-        writeMangleNamespaceFunction(cleanResources.toLatin1());
+        writeMangleNamespaceFunction(cleanResources);
         writeString("()\n{\n");
         if (m_root) {
             writeString("    ");
@@ -954,7 +959,7 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
         writeString("Q_DESTRUCTOR_FUNCTION(");
-        writeMangleNamespaceFunction(cleanResources.toLatin1());
+        writeMangleNamespaceFunction(cleanResources);
         writeString(")\n\n");
     } else if (m_format == Binary) {
         int i = 4;
