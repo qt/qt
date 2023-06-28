@@ -74,9 +74,9 @@ void showHelp(const QString &argv0, const QString &error)
 
 void dumpRecursive(const QDir &dir, QTextStream &out)
 {
-    QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
+    const QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot
                                               | QDir::NoSymLinks);
-    foreach (QFileInfo entry, entries) {
+    for (QFileInfo entry : entries) {
         if (entry.isDir()) {
             dumpRecursive(entry.filePath(), out);
         } else {
@@ -235,7 +235,7 @@ int runRcc(int argc, char *argv[])
     } else {
         out.setFileName(outFilename);
         if (!out.open(mode)) {
-            const QString msg = QString::fromUtf8("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
+            const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
@@ -251,7 +251,13 @@ int runRcc(int argc, char *argv[])
         return 0;
     } 
 
-    return library.output(out, errorDevice) ? 0 : 1;
+    bool success = library.output(out, errorDevice);
+    if (!success) {
+        // erase the output file if we failed
+        out.remove();
+        return 1;
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE
