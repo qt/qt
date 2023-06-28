@@ -154,18 +154,11 @@ inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 # define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
 #endif
 
-#ifdef Q_NO_DATA_RELOCATION
-#define Q_OBJECT_GETSTATICMETAOBJECT static const QMetaObject &getStaticMetaObject();
-#else
-#define Q_OBJECT_GETSTATICMETAOBJECT
-#endif
-
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
     Q_OBJECT_CHECK \
     static const QMetaObject staticMetaObject; \
-    Q_OBJECT_GETSTATICMETAOBJECT \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
@@ -180,7 +173,6 @@ private: \
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
-    Q_OBJECT_GETSTATICMETAOBJECT \
 private:
 #else // Q_MOC_RUN
 #define slots slots
@@ -484,11 +476,7 @@ typedef const QMetaObject& (*QMetaObjectAccessor)();
 
 struct QMetaObjectExtraData
 {
-#ifdef Q_NO_DATA_RELOCATION
-    const QMetaObjectAccessor *objects;
-#else
     const QMetaObject **objects;
-#endif
 
     typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **); //from revision 6
     //typedef int (*StaticMetaCall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5
