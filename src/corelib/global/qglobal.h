@@ -148,7 +148,6 @@ namespace QT_NAMESPACE {}
    The operating system, must be one of: (Q_OS_x)
 
      DARWIN   - Darwin OS (synonym for Q_OS_MAC)
-     SYMBIAN  - Symbian
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
@@ -186,10 +185,6 @@ namespace QT_NAMESPACE {}
 #  else
 #    define Q_OS_DARWIN32
 #  endif
-#elif defined(__SYMBIAN32__) || defined(SYMBIAN)
-#  define Q_OS_SYMBIAN
-#  define Q_NO_POSIX_SIGNALS
-#  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
 #elif defined(MSDOS) || defined(_MSDOS)
@@ -402,9 +397,7 @@ namespace QT_NAMESPACE {}
      HIGHC    - MetaWare High C/C++
      PGI      - Portland Group C++
      GHS      - Green Hills Optimizing C++ Compilers
-     GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
-     NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
      CLANG    - C++ front-end for the LLVM compiler
 
 
@@ -439,9 +432,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__MWERKS__)
 #  define Q_CC_MWERKS
-#  if defined(__EMU_SYMBIAN_OS__)
-#    define Q_CC_NOKIAX86
-#  endif
 /* "explicit" recognized since 4.0d1 */
 
 #elif defined(_MSC_VER)
@@ -474,14 +464,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-
-/* Symbian GCCE */
-#elif defined(__GCCE__)
-#  define Q_CC_GCCE
-#  define QT_VISIBILITY_AVAILABLE
-#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
-#    define QT_HAVE_ARMV6
-#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
@@ -986,7 +968,6 @@ namespace QT_NAMESPACE {}
      QWS      - Qt for Embedded Linux
      WIN32    - Windows
      X11      - X Window System
-     S60      - Symbian S60
      PM       - unsupported
      WIN16    - unsupported
 */
@@ -1018,10 +999,6 @@ namespace QT_NAMESPACE {}
 #      define Q_WS_MAC64
 #    elif defined(Q_OS_MAC32)
 #      define Q_WS_MAC32
-#    endif
-#  elif defined(Q_OS_SYMBIAN)
-#    if !defined(QT_NO_S60)
-#      define Q_WS_S60
 #    endif
 #  elif !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_X11
@@ -1065,7 +1042,7 @@ typedef quint64 qulonglong;
 #ifndef QT_POINTER_SIZE
 #  if defined(Q_OS_WIN64)
 #   define QT_POINTER_SIZE 8
-#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #   define QT_POINTER_SIZE 4
 #  endif
 #endif
@@ -1117,14 +1094,6 @@ QT_END_INCLUDE_NAMESPACE
 */
 
 #ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-/* Symbian OS defines TRUE = 1 and FALSE = 0,
-redefine to built-in booleans to make autotests work properly */
-#ifdef Q_OS_SYMBIAN
-    #include <e32def.h> /* Symbian OS defines */
-
-    #undef TRUE
-    #undef FALSE
-#endif
 #  ifndef TRUE
 #   define TRUE true
 #   define FALSE false
@@ -1298,7 +1267,7 @@ typedef int QNoImplicitBoolCast;
 // This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
-#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE)
 typedef float qreal;
 #else
 typedef double qreal;
@@ -1314,7 +1283,7 @@ Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 Q_DECL_CONSTEXPR inline int qRound(qreal d)
 { return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1); }
 
-#if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+#if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE)
 Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
@@ -1418,10 +1387,10 @@ class QDataStream;
 
 
 /*
-   Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
+   Create Qt DLL if QT_DLL is defined (Windows only)
 */
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #  if defined(QT_NODLL)
 #    undef QT_MAKEDLL
 #    undef QT_DLL
@@ -1611,11 +1580,11 @@ class QDataStream;
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
-#if defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_MAKEDLL)
+#if defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN)) && defined(QT_MAKEDLL)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
-#elif defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_DLL)
+#elif defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN)) && defined(QT_DLL)
 #    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
-#elif defined(QT_BUILD_INTERNAL) && !(defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_SHARED)
+#elif defined(QT_BUILD_INTERNAL) && !(defined(Q_OS_WIN)) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
 #else
 #    define Q_AUTOTEST_EXPORT
@@ -1760,37 +1729,6 @@ public:
     };
     static const MacVersion MacintoshVersion;
 #endif
-#ifdef Q_OS_SYMBIAN
-    enum SymbianVersion {
-        SV_Unknown = 1000000, // Assume unknown is something newer than what is supported
-        //These are the Symbian Ltd versions 9.2-9.4
-        SV_9_2 = 10,
-        SV_9_3 = 20,
-        SV_9_4 = 30,
-        //Following values are the symbian foundation versions, i.e. Symbian^1 == SV_SF_1
-        SV_SF_1 = SV_9_4,
-        SV_SF_2 = 40,
-        SV_SF_3 = 50,
-        SV_SF_4 = 60,  // Deprecated
-        SV_API_5_3 = 70,
-        SV_API_5_4 = 80,
-        SV_API_5_5 = 90
-    };
-    static SymbianVersion symbianVersion();
-    enum S60Version {
-        SV_S60_None = 0,
-        SV_S60_Unknown = SV_Unknown,
-        SV_S60_3_1 = SV_9_2,
-        SV_S60_3_2 = SV_9_3,
-        SV_S60_5_0 = SV_9_4,
-        SV_S60_5_1 = SV_SF_2,  // Deprecated
-        SV_S60_5_2 = SV_SF_3,
-        SV_S60_5_3 = SV_API_5_3,
-        SV_S60_5_4 = SV_API_5_4,
-        SV_S60_5_5 = SV_API_5_5
-    };
-    static S60Version s60Version();
-#endif
 };
 
 Q_CORE_EXPORT const char *qVersion();
@@ -1847,15 +1785,6 @@ inline void qUnused(T &x) { (void)x; }
 /*
    Debugging and error handling
 */
-
-/*
-   On Symbian we do not know beforehand whether we are compiling in
-   release or debug mode, so check the Symbian build define here,
-   and set the QT_NO_DEBUG define appropriately.
-*/
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
-#  define QT_NO_DEBUG
-#endif
 
 #if !defined(QT_NO_DEBUG) && !defined(QT_DEBUG)
 #  define QT_DEBUG
@@ -1982,7 +1911,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #elif defined(_MSC_VER)
 #  define Q_FUNC_INFO __FUNCSIG__
 #else
-#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN) || defined(Q_OS_INTEGRITY)
+#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
 #   else
         /* These two macros makes it possible to turn the builtin line expander into a
@@ -2687,87 +2616,6 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathData();
 QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathTranslations();
 QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
-
-#if defined(Q_OS_SYMBIAN)
-
-#ifdef SYMBIAN_BUILD_GCE
-#define Q_SYMBIAN_SUPPORTS_SURFACES
-//RWsPointerCursor is fixed, so don't use low performance sprites
-#define Q_SYMBIAN_FIXED_POINTER_CURSORS
-#define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
-#define Q_SYMBIAN_WINDOW_SIZE_CACHE
-#define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-
-//enabling new graphics resources
-#ifdef SYMBIAN_GRAPHICS_EGL_SGIMAGELITE
-#  define QT_SYMBIAN_SUPPORTS_SGIMAGE
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_SET_SURFACE_TRANSPARENCY_AVAILABLE
-#  define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
-#  define Q_SYMBIAN_TRANSITION_EFFECTS
-#endif
-#endif
-
-#ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
-#define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
-#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
-#endif
-
-//Symbian does not support data imports from a DLL
-#define Q_NO_DATA_RELOCATION
-
-// Winscw compiler is unable to compile QtConcurrent.
-#ifdef Q_CC_NOKIAX86
-#ifndef QT_NO_CONCURRENT
-#define QT_NO_CONCURRENT
-#endif
-#ifndef QT_NO_QFUTURE
-#define QT_NO_QFUTURE
-#endif
-#endif
-
-QT_END_NAMESPACE
-// forward declare std::exception
-#ifdef __cplusplus
-namespace std { class exception; }
-#endif
-QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_symbian_throwIfError(int error);
-Q_CORE_EXPORT void qt_symbian_exception2LeaveL(const std::exception& ex);
-Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
-
-#define QT_TRAP_THROWING(_f)                        \
-    {                                               \
-        TInt ____error;                             \
-        TRAP(____error, _f);                        \
-        qt_symbian_throwIfError(____error);                 \
-     }
-
-#define QT_TRYCATCH_ERROR(_err, _f)                         \
-    {                                                       \
-        _err = KErrNone;                                    \
-        try {                                               \
-            _f;                                             \
-        } catch (const std::exception &____ex) {            \
-            _err = qt_symbian_exception2Error(____ex);       \
-        }                                                   \
-    }
-
-#define QT_TRYCATCH_LEAVING(_f)                         \
-    {                                                   \
-    TInt ____err;                                       \
-    QT_TRYCATCH_ERROR(____err, _f)                      \
-    User::LeaveIfError(____err);                        \
-    }
-#endif
-
 
 /*
    This gives us the possibility to check which modules the user can
