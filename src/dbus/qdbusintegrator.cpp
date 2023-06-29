@@ -891,7 +891,8 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         if (id == QDBusMetaTypeId::message)
             break;
 
-        const QVariant &arg = msg.arguments().at(i - 1);
+        const QList<QVariant> args = msg.arguments();
+        const QVariant &arg = args.at(i - 1);
         if (arg.userType() == id)
             // no conversion needed
             params.append(const_cast<void *>(arg.constData()));
