@@ -57,6 +57,9 @@
 #include "private/qobject_p.h"
 #include "private/qmetaobject_p.h"
 
+// for normalizeTypeInternal
+#include "private/qmetaobject_moc_p.h"
+
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
@@ -1304,25 +1307,10 @@ const char *QMetaMethod::signature() const
 */
 QList<QByteArray> QMetaMethod::parameterTypes() const
 {
-    QList<QByteArray> list;
     if (!mobj)
-        return list;
-    const char *signature = mobj->d.stringdata + mobj->d.data[handle];
-    while (*signature && *signature != '(')
-        ++signature;
-    while (*signature && *signature != ')' && *++signature != ')') {
-        const char *begin = signature;
-        int level = 0;
-        while (*signature && (level > 0 || *signature != ',') && *signature != ')') {
-            if (*signature == '<')
-                ++level;
-            else if (*signature == '>')
-                --level;
-            ++signature;
-        }
-        list += QByteArray(begin, signature - begin);
-    }
-    return list;
+        return QList<QByteArray>();
+    return QMetaObjectPrivate::parameterTypeNamesFromSignature(
+            mobj->d.stringdata + mobj->d.data[handle]);
 }
 
 /*!
@@ -2803,6 +2791,30 @@ int QMetaObjectPrivate::originalClone(const QMetaObject *mobj, int local_method_
         local_method_index--;
     }
     return local_method_index;
+}
+
+/*!
+    \internal
+    Returns the parameter type names extracted from the given \a signature.
+*/
+QList<QByteArray> QMetaObjectPrivate::parameterTypeNamesFromSignature(const char *signature)
+{
+    QList<QByteArray> list;
+    while (*signature && *signature != '(')
+        ++signature;
+    while (*signature && *signature != ')' && *++signature != ')') {
+        const char *begin = signature;
+        int level = 0;
+        while (*signature && (level > 0 || *signature != ',') && *signature != ')') {
+            if (*signature == '<')
+                ++level;
+            else if (*signature == '>')
+                --level;
+            ++signature;
+        }
+        list += QByteArray(begin, signature - begin);
+    }
+    return list;
 }
 
 QT_END_NAMESPACE

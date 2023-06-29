@@ -11,6 +11,7 @@ HEADERS += \
         kernel/qcoreapplication.h \
         kernel/qcoreevent.h \
         kernel/qmetaobject.h \
+        kernel/qmetaobject_moc_p.h \
         kernel/qmetatype.h \
         kernel/qmimedata.h \
         kernel/qobject.h \
