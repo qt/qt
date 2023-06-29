@@ -274,7 +274,7 @@ public:
 
     // Variables
     QAtomicInt ref;
-    QHash<QString, QDomNodePrivate *> map;
+    QMultiHash<QString, QDomNodePrivate *> map;
     QDomNodePrivate* parent;
     bool readonly;
     bool appendToParent;
@@ -3071,7 +3071,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
-    QHash<QString, QDomNodePrivate*>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     for (; it != map.constEnd(); ++it) {
         QDomNodePrivate *new_node = (*it)->cloneNode();
         new_node->setParent(p);
@@ -3087,7 +3087,7 @@ void QDomNamedNodeMapPrivate::clearMap()
 {
     // Dereference all of our children if we took references
     if (!appendToParent) {
-        QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+        auto it = map.constBegin();
         for (; it != map.constEnd(); ++it)
             if (!(*it)->ref.deref())
                 delete *it;
@@ -3097,13 +3097,13 @@ void QDomNamedNodeMapPrivate::clearMap()
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItem(const QString& name) const
 {
-    QDomNodePrivate* p = map[name];
-    return p;
+    auto it = map.constFind(name);
+    return it == map.constEnd() ? nullptr : *it;
 }
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, const QString& localName) const
 {
-    QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     QDomNodePrivate *n;
     for (; it != map.constEnd(); ++it) {
         n = *it;
@@ -3127,7 +3127,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItem(QDomNodePrivate* arg)
     QDomNodePrivate *n = map.value(arg->nodeName());
     // We take a reference
     arg->ref.ref();
-    map.insertMulti(arg->nodeName(), arg);
+    map.insert(arg->nodeName(), arg);
     return n;
 }
 
@@ -3144,7 +3144,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItemNS(QDomNodePrivate* arg)
         QDomNodePrivate *n = namedItemNS(arg->namespaceURI, arg->name);
         // We take a reference
         arg->ref.ref();
-        map.insertMulti(arg->nodeName(), arg);
+        map.insert(arg->nodeName(), arg);
         return n;
     } else {
         // ### check the following code if it is ok
@@ -3488,10 +3488,10 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
     while (p) {
         if (p->isEntity())
             // Don't use normal insert function since we would create infinite recursion
-            entities->map.insertMulti(p->nodeName(), p);
+            entities->map.insert(p->nodeName(), p);
         if (p->isNotation())
             // Don't use normal insert function since we would create infinite recursion
-            notations->map.insertMulti(p->nodeName(), p);
+            notations->map.insert(p->nodeName(), p);
         p = p->next;
     }
 }
@@ -3535,9 +3535,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild
     QDomNodePrivate* p = QDomNodePrivate::insertBefore(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
-        entities->map.insertMulti(p->nodeName(), p);
+        entities->map.insert(p->nodeName(), p);
     else if (p && p->isNotation())
-        notations->map.insertMulti(p->nodeName(), p);
+        notations->map.insert(p->nodeName(), p);
 
     return p;
 }
@@ -3548,9 +3548,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild,
     QDomNodePrivate* p = QDomNodePrivate::insertAfter(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
-        entities->map.insertMulti(p->nodeName(), p);
+        entities->map.insert(p->nodeName(), p);
     else if (p && p->isNotation())
-        notations->map.insertMulti(p->nodeName(), p);
+        notations->map.insert(p->nodeName(), p);
 
     return p;
 }
@@ -3567,9 +3567,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild
             notations->map.remove(oldChild->nodeName());
 
         if (p->isEntity())
-            entities->map.insertMulti(p->nodeName(), p);
+            entities->map.insert(p->nodeName(), p);
         else if (p->isNotation())
-            notations->map.insertMulti(p->nodeName(), p);
+            notations->map.insert(p->nodeName(), p);
     }
 
     return p;
@@ -3620,11 +3620,11 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     if (entities->length()>0 || notations->length()>0) {
         s << " [" << endl;
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it2 = notations->map.constBegin();
+        auto it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
             (*it2)->save(s, 0, indent);
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it = entities->map.constBegin();
+        auto it = entities->map.constBegin();
         for (; it != entities->map.constEnd(); ++it)
             (*it)->save(s, 0, indent);
 
@@ -4610,7 +4610,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
-        QHash<QString, QDomNodePrivate *>::const_iterator it = m_attr->map.constBegin();
+        auto it = m_attr->map.constBegin();
         for (; it != m_attr->map.constEnd(); ++it) {
             s << ' ';
             if (it.value()->namespaceURI.isNull()) {

@@ -65,11 +65,8 @@ enum {
 };
 
 
-#define writeString(s) write(s, sizeof(s))
-
 void RCCResourceLibrary::write(const char *str, int len)
 {
-    --len; // trailing \0 on string literals...
     int n = m_out.size();
     m_out.resize(n + len);
     memcpy(m_out.data() + n, str, len);
@@ -123,7 +120,7 @@ public:
     QLocale::Country m_country;
     QFileInfo m_fileInfo;
     RCCFileInfo *m_parent;
-    QHash<QString, RCCFileInfo*> m_children;
+    QMultiHash<QString, RCCFileInfo*> m_children;
     int m_compressLevel;
     int m_compressThreshold;
 
@@ -446,14 +443,35 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         if (QDir::isRelativePath(absFileName))
                             absFileName.prepend(currentPath);
                         QFileInfo file(absFileName);
-                        if (!file.exists()) {
-                            m_failedResources.push_back(absFileName);
-                            const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n").arg(fname).arg(fileName);
-                            m_errorDevice->write(msg.toUtf8());
-                            if (ignoreErrors)
-                                continue;
-                            else
-                                return false;
+                        if (file.isDir()) {
+                            QDir dir(file.filePath());
+                            if (!alias.endsWith(slash))
+                                alias += slash;
+
+                            QStringList filePaths;
+                            QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
+                            while (it.hasNext()) {
+                                it.next();
+                                if (it.fileName() == QLatin1String(".")
+                                    || it.fileName() == QLatin1String(".."))
+                                    continue;
+                                filePaths.append(it.filePath());
+                            }
+
+                            // make rcc output deterministic
+                            std::sort(filePaths.begin(), filePaths.end());
+
+                            for (const QString &filePath : filePaths) {
+                                QFileInfo child(filePath);
+                                const bool arc =
+                                        addFile(alias + child.fileName(),
+                                                RCCFileInfo(child.fileName(), child, language, country,
+                                                            child.isDir() ? RCCFileInfo::Directory
+                                                                        : RCCFileInfo::NoFlags,
+                                                            compressLevel, compressThreshold));
+                                if (!arc)
+                                    m_failedResources.push_back(child.fileName());
+                            }
                         } else if (file.isFile()) {
                             const bool arc =
                                 addFile(alias,
@@ -467,37 +485,20 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                         );
                             if (!arc)
                                 m_failedResources.push_back(absFileName);
+                        } else if (file.exists()) {
+                            m_failedResources.push_back(absFileName);
+                            const QString msg = QString::fromLatin1("RCC: Error in '%1': Entry '%2' is neither a file nor a directory\n")
+                                                .arg(fname, fileName);
+                            m_errorDevice->write(msg.toUtf8());
+                            return false;
                         } else {
-                            QDir dir;
-                            if (file.isDir()) {
-                                dir.setPath(file.filePath());
-                            } else {
-                                dir.setPath(file.path());
-                                dir.setNameFilters(QStringList(file.fileName()));
-                                if (alias.endsWith(file.fileName()))
-                                    alias = alias.left(alias.length()-file.fileName().length());
-                            }
-                            if (!alias.endsWith(slash))
-                                alias += slash;
-                            QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
-                            while (it.hasNext()) {
-                                it.next();
-                                QFileInfo child(it.fileInfo());
-                                if (child.fileName() != QLatin1String(".") && child.fileName() != QLatin1String("..")) {
-                                    const bool arc =
-                                        addFile(alias + child.fileName(),
-                                                RCCFileInfo(child.fileName(),
-                                                            child,
-                                                            language,
-                                                            country,
-                                                            child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
-                                                            compressLevel,
-                                                            compressThreshold)
-                                                );
-                                    if (!arc)
-                                        m_failedResources.push_back(child.fileName());
-                                }
-                            }
+                            m_failedResources.push_back(absFileName);
+                            const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n")
+                                                .arg(fname, fileName);
+                            m_errorDevice->write(msg.toUtf8());
+                            if (ignoreErrors)
+                                continue;
+                            return false;
                         }
                     }
                 }
@@ -540,7 +541,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
             parent->m_children.insert(node, s);
             parent = s;
         } else {
-            parent = parent->m_children[node];
+            parent = *parent->m_children.constFind(node);
         }
     }
 
@@ -552,7 +553,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
             qWarning("%s: Warning: potential duplicate alias detected: '%s'",
                      qPrintable(fileName), qPrintable(filename));
         }
-    parent->m_children.insertMulti(filename, s);
+    parent->m_children.insert(filename, s);
     return true;
 }
 
@@ -618,7 +619,7 @@ QStringList RCCResourceLibrary::dataFiles() const
     pending.push(m_root);
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
+        for (auto it = file->m_children.begin();
             it != file->m_children.end(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
@@ -633,10 +634,9 @@ QStringList RCCResourceLibrary::dataFiles() const
 // Determine map of resource identifier (':/newPrefix/images/p1.png') to file via recursion
 static void resourceDataFileMapRecursion(const RCCFileInfo *m_root, const QString &path, RCCResourceLibrary::ResourceDataFileMap &m)
 {
-    typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
     const QChar slash = QLatin1Char('/');
-    const ChildConstIterator cend = m_root->m_children.constEnd();
-    for (ChildConstIterator it = m_root->m_children.constBegin(); it != cend; ++it) {
+    const auto cend = m_root->m_children.constEnd();
+    for (auto it = m_root->m_children.constBegin(); it != cend; ++it) {
         const RCCFileInfo *child = it.value();
         QString childName = path;
         childName += slash;
@@ -768,8 +768,7 @@ bool RCCResourceLibrary::writeDataBlobs()
     QString errorMessage;
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
-            it != file->m_children.end(); ++it) {
+        for (auto it = file->m_children.constBegin(); it != file->m_children.constEnd(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
@@ -804,8 +803,7 @@ bool RCCResourceLibrary::writeDataNames()
     qint64 offset = 0;
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
-            it != file->m_children.end(); ++it) {
+        for (auto it = file->m_children.constBegin(); it != file->m_children.constEnd(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);

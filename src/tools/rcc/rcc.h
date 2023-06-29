@@ -129,6 +129,7 @@ private:
     void writeChar(char c) { m_out.append(c); }
     void writeByteArray(const QByteArray &);
     void write(const char *, int len);
+    void writeString(const char *s) { write(s, static_cast<int>(strlen(s))); }
 
     const Strings m_strings;
     RCCFileInfo *m_root;
