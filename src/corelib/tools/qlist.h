@@ -105,7 +105,8 @@ struct Q_CORE_EXPORT QListData {
 template <typename T>
 class QList
 {
-    struct Node { void *v;
+    struct Node {
+        void *v;
 #if defined(Q_CC_BOR)
         Q_INLINE_TEMPLATE T &t();
 #else
