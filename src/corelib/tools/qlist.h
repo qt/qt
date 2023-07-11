@@ -110,8 +110,12 @@ class QList
         Q_INLINE_TEMPLATE T &t();
 #else
         Q_INLINE_TEMPLATE T &t()
-        { return *reinterpret_cast<T*>(QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic
-                                       ? v : this); }
+        {
+            if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic)
+                return *reinterpret_cast<T*>(v);
+            else
+                return *reinterpret_cast<T*>(this);
+        }
 #endif
     };
 
@@ -371,8 +375,8 @@ Q_INLINE_TEMPLATE T &QList<T>::Node::t()
 template <typename T>
 Q_INLINE_TEMPLATE void QList<T>::node_construct(Node *n, const T &t)
 {
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) n->v = new T(t);
-    else if (QTypeInfo<T>::isComplex) new (n) T(t);
+    if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) n->v = new T(t);
+    else if constexpr (QTypeInfo<T>::isComplex) new (n) T(t);
 #if (defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__IBMCPP__)) && !defined(__OPTIMIZE__)
     // This violates pointer aliasing rules, but it is known to be safe (and silent)
     // in unoptimized GCC builds (-fno-strict-aliasing). The other compilers which
@@ -387,15 +391,15 @@ Q_INLINE_TEMPLATE void QList<T>::node_construct(Node *n, const T &t)
 template <typename T>
 Q_INLINE_TEMPLATE void QList<T>::node_destruct(Node *n)
 {
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) delete reinterpret_cast<T*>(n->v);
-    else if (QTypeInfo<T>::isComplex) reinterpret_cast<T*>(n)->~T();
+    if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) delete reinterpret_cast<T*>(n->v);
+    else if constexpr (QTypeInfo<T>::isComplex) reinterpret_cast<T*>(n)->~T();
 }
 
 template <typename T>
 Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
 {
     Node *current = from;
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+    if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
         QT_TRY {
             while(current != to) {
                 current->v = new T(*reinterpret_cast<T*>(src->v));
@@ -408,7 +412,7 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
             QT_RETHROW;
         }
 
-    } else if (QTypeInfo<T>::isComplex) {
+    } else if constexpr (QTypeInfo<T>::isComplex) {
         QT_TRY {
             while(current != to) {
                 new (current) T(*reinterpret_cast<T*>(src));
@@ -429,9 +433,9 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
 template <typename T>
 Q_INLINE_TEMPLATE void QList<T>::node_destruct(Node *from, Node *to)
 {
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic)
+    if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic)
         while(from != to) --to, delete reinterpret_cast<T*>(to->v);
-    else if (QTypeInfo<T>::isComplex)
+    else if constexpr (QTypeInfo<T>::isComplex)
         while (from != to) --to, reinterpret_cast<T*>(to)->~T();
 }
 
@@ -517,7 +521,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             QT_RETHROW;
         }
     } else {
-        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+        if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
             Node *n = reinterpret_cast<Node *>(p.append());
             QT_TRY {
                 node_construct(n, t);
@@ -551,7 +555,7 @@ inline void QList<T>::prepend(const T &t)
             QT_RETHROW;
         }
     } else {
-        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+        if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
             Node *n = reinterpret_cast<Node *>(p.prepend());
             QT_TRY {
                 node_construct(n, t);
@@ -585,7 +589,7 @@ inline void QList<T>::insert(int i, const T &t)
             QT_RETHROW;
         }
     } else {
-        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+        if constexpr (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
             Node *n = reinterpret_cast<Node *>(p.insert(i));
             QT_TRY {
                 node_construct(n, t);
