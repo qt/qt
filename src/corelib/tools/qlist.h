@@ -529,7 +529,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             Node *n, copy;
             node_construct(&copy, t); // t might be a reference to an object in the array
             QT_TRY {
-                n = reinterpret_cast<Node *>(p.append());;
+                n = reinterpret_cast<Node *>(p.append());
             } QT_CATCH(...) {
                 node_destruct(&copy);
                 QT_RETHROW;
