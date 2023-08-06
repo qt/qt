@@ -55,18 +55,6 @@ QT_BEGIN_NAMESPACE
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU) && __GNUC__ == 3 && __GNUC__ < 4 && QT_POINTER_SIZE == 8
-#define Q_IRIX_GCC3_3_WORKAROUND
-//
-// work around http://gcc.gnu.org/bugzilla/show_bug.cgi?id=14484
-//
-static uint gccBug(uint value) __attribute__((noinline));
-static uint gccBug(uint value)
-{
-    return value;
-}
-#endif
-
 /*
   constants and structures
 */
@@ -293,7 +281,6 @@ StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
 };
 
 typedef uint (QT_FASTCALL *FetchPixelFunc)(const uchar *src, int index);
-typedef void (QT_FASTCALL *StorePixelFunc)(uchar *dest, int index, uint pixel);
 
 FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
     0, // BPPNone
@@ -304,17 +291,6 @@ FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
     fetchPixel<QPixelLayout::BPP24>, // BPP24
     fetchPixel<QPixelLayout::BPP32> // BPP32
 };
-
-StorePixelFunc qStorePixel[QPixelLayout::BPPCount] = {
-    0, // BPPNone
-    storePixel<QPixelLayout::BPP1MSB>, // BPP1MSB
-    storePixel<QPixelLayout::BPP1LSB>, // BPP1LSB
-    storePixel<QPixelLayout::BPP8>, // BPP8
-    storePixel<QPixelLayout::BPP16>, // BPP16
-    storePixel<QPixelLayout::BPP24>, // BPP24
-    storePixel<QPixelLayout::BPP32> // BPP32
-};
-
 
 /*
   Destination fetch. This is simple as we don't have to do bounds checks or
@@ -3695,6 +3671,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
             // don't clear dest_fetch as it sets up the pointer correctly to save one copy
             break;
         default: {
+            if (data->type == QSpanData::Texture && data->texture.const_alpha != 256)
+                break;
             const QSpan *lastSpan = spans + spanCount;
             bool alphaSpans = false;
             while (spans < lastSpan) {
@@ -4771,7 +4749,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
     }
 }
 
-void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
+static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
@@ -4893,7 +4871,7 @@ void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
     }
 }
 
-void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *userData)
+static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData*>(userData);
     QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
