@@ -531,4 +531,10 @@ MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3] =
     { 0, 0, 0 }       // Format_ARGB4444_Premultiplied,
 };
 
+void Q_GUI_EXPORT qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
+                                    quint32 *dest, int dstStride)
+{
+    qt_memrotate90_template(src, srcWidth, srcHeight, srcStride, dest, dstStride);
+}
+
 QT_END_NAMESPACE

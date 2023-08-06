@@ -62,6 +62,20 @@
 
 QT_BEGIN_NAMESPACE
 
+template <class T>
+inline void qt_rectcopy(T *dest, const T *src,
+                        int x, int y, int width, int height,
+                        int dstStride, int srcStride)
+{
+    char *d = (char*)(dest + x) + y * dstStride;
+    const char *s = (char*)(src);
+    for (int i = 0; i < height; ++i) {
+        ::memcpy(d, s, width * sizeof(T));
+        d += dstStride;
+        s += srcStride;
+    }
+}
+
 // qpixmapfilter.cpp
 Q_GUI_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
 Q_GUI_EXPORT QImage qt_halfScaled(const QImage &source);
