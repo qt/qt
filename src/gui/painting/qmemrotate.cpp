@@ -423,7 +423,6 @@ inline void qt_memrotate270_template(const T *src, int srcWidth, int srcHeight, 
 }
 
 template <>
-Q_STATIC_TEMPLATE_SPECIALIZATION
 inline void qt_memrotate90_template<quint24>(const quint24 *src, int srcWidth, int srcHeight,
                                              int srcStride, quint24 *dest, int dstStride)
 {
@@ -530,11 +529,5 @@ MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3] =
     { 0, 0, 0 },      // Format_RGB444,
     { 0, 0, 0 }       // Format_ARGB4444_Premultiplied,
 };
-
-void Q_GUI_EXPORT qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
-                                    quint32 *dest, int dstStride)
-{
-    qt_memrotate90_template(src, srcWidth, srcHeight, srcStride, dest, dstStride);
-}
 
 QT_END_NAMESPACE

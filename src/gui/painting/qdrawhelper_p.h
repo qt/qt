@@ -71,19 +71,19 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CC_MSVC) && _MSCVER <= 1300 && !defined(Q_CC_INTEL)
-#define Q_STATIC_TEMPLATE_SPECIALIZATION static
-#else
-#define Q_STATIC_TEMPLATE_SPECIALIZATION
-#endif
-
 #if defined(Q_CC_RVCT)
 // RVCT doesn't like static template functions
 #  define Q_STATIC_TEMPLATE_FUNCTION
 #  define Q_STATIC_INLINE_FUNCTION static __forceinline
+#  define Q_DECL_RESTRICT
+#elif defined(Q_CC_GNU)
+#  define Q_STATIC_TEMPLATE_FUNCTION static __attribute__((always_inline))
+#  define Q_STATIC_INLINE_FUNCTION static inline __attribute__((always_inline))
+#  define Q_DECL_RESTRICT __restrict__
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_STATIC_INLINE_FUNCTION static inline
+#  define Q_DECL_RESTRICT
 #endif
 
 static const uint AMASK = 0xff000000;
@@ -176,7 +176,7 @@ extern DrawHelper qDrawHelperCallback[QImage::NImageFormats];
 void qBlendTextureCallback(int count, const QSpan *spans, void *userData);
 #endif
 
-typedef void (QT_FASTCALL *CompositionFunction)(uint *dest, const uint *src, int length, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
 
 struct LinearGradientValues
