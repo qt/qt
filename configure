@@ -1918,8 +1918,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     freetype)
-        [ "$VAL" = "qt" ] && VAL=yes
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+        [ "$VAL" = "yes" ] && VAL=system
+        if [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_QWS_FREETYPE="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -4323,7 +4323,6 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
                           endianness will be used.
 
     -no-freetype ........ Do not compile in Freetype2 support.
-    -qt-freetype ........ Use the libfreetype bundled with Qt.
  *  -system-freetype .... Use libfreetype from the operating system.
                           See http://www.freetype.org/
 
