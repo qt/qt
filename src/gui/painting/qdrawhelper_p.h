@@ -74,15 +74,15 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_CC_RVCT)
 // RVCT doesn't like static template functions
 #  define Q_STATIC_TEMPLATE_FUNCTION
-#  define Q_STATIC_INLINE_FUNCTION static __forceinline
+#  define Q_ALWAYS_INLINE __forceinline
 #  define Q_DECL_RESTRICT
 #elif defined(Q_CC_GNU)
-#  define Q_STATIC_TEMPLATE_FUNCTION static __attribute__((always_inline))
-#  define Q_STATIC_INLINE_FUNCTION static inline __attribute__((always_inline))
+#  define Q_STATIC_TEMPLATE_FUNCTION static
+#  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #  define Q_DECL_RESTRICT __restrict__
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
-#  define Q_STATIC_INLINE_FUNCTION static inline
+#  define Q_ALWAYS_INLINE inline
 #  define Q_DECL_RESTRICT
 #endif
 
@@ -386,7 +386,7 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
-template <class RadialFetchFunc>
+template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
                                                            int y, int x, int length)
 {
@@ -566,7 +566,7 @@ public:
 #  pragma push
 #  pragma arm
 #endif
-Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
+Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     uint t = (x & 0xff00ff) * a + (y & 0xff00ff) * b;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
     t &= 0xff00ff;
@@ -583,7 +583,7 @@ Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint
 
 #if QT_POINTER_SIZE == 8 // 64-bit versions
 
-Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
+Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t += (((quint64(y)) | ((quint64(y)) << 24)) & 0x00ff00ff00ff00ff) * b;
     t >>= 8;
@@ -591,14 +591,14 @@ Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint
     return (uint(t)) | (uint(t >> 24));
 }
 
-Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
+Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080) >> 8;
     t &= 0x00ff00ff00ff00ff;
     return (uint(t)) | (uint(t >> 24));
 }
 
-Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
+Q_ALWAYS_INLINE uint PREMUL(uint x) {
     uint a = x >> 24;
     quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080) >> 8;
@@ -608,7 +608,7 @@ Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
 
 #else // 32-bit versions
 
-Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
+Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     uint t = (x & 0xff00ff) * a + (y & 0xff00ff) * b;
     t >>= 8;
     t &= 0xff00ff;
@@ -623,7 +623,7 @@ Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint
 #  pragma push
 #  pragma arm
 #endif
-Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
+Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     uint t = (x & 0xff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
     t &= 0xff00ff;
@@ -638,7 +638,7 @@ Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
 #  pragma pop
 #endif
 
-Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
+Q_ALWAYS_INLINE uint PREMUL(uint x) {
     uint a = x >> 24;
     uint t = (x & 0xff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
@@ -653,25 +653,29 @@ Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
 #endif
 
 
-Q_STATIC_INLINE_FUNCTION uint BYTE_MUL_RGB16(uint x, uint a) {
+Q_ALWAYS_INLINE uint BYTE_MUL_RGB16(uint x, uint a) {
     a += 1;
     uint t = (((x & 0x07e0)*a) >> 8) & 0x07e0;
     t |= (((x & 0xf81f)*(a>>2)) >> 6) & 0xf81f;
     return t;
 }
 
-Q_STATIC_INLINE_FUNCTION uint BYTE_MUL_RGB16_32(uint x, uint a) {
+Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     uint t = (((x & 0xf81f07e0) >> 5)*a) & 0xf81f07e0;
     t |= (((x & 0x07e0f81f)*a) >> 5) & 0x07e0f81f;
     return t;
 }
 
-#define INV_PREMUL(p)                                   \
-    (qAlpha(p) == 0 ? 0 :                               \
-    ((qAlpha(p) << 24)                                  \
-     | (((255*qRed(p))/ qAlpha(p)) << 16)               \
-     | (((255*qGreen(p)) / qAlpha(p))  << 8)            \
-     | ((255*qBlue(p)) / qAlpha(p))))
+static Q_ALWAYS_INLINE uint INV_PREMUL(uint p) {
+    const uint alpha = qAlpha(p);
+    if (alpha == 255)
+        return p;
+    if (alpha == 0)
+        return 0;
+    // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
+    const uint invAlpha = 0x00ff00ffU / alpha;
+    return qRgba((qRed(p)*invAlpha)>>16, (qGreen(p)*invAlpha)>>16, (qBlue(p)*invAlpha)>>16, alpha);
+}
 
 struct quint24 {
     quint24(uint value);
@@ -691,7 +695,7 @@ inline quint24::operator uint() const
     return data[0] | (data[1] << 8) | (data[2] << 16);
 }
 
-template <class T>
+template <class T> Q_STATIC_TEMPLATE_FUNCTION
 void qt_memfill(T *dest, T value, int count);
 
 template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
@@ -739,7 +743,7 @@ inline void qt_memfill(T *dest, T value, int count)
     }
 }
 
-template <class T>
+template <class T> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_rectfill(T *dest, T value,
                         int x, int y, int width, int height, int stride)
 {
@@ -759,7 +763,7 @@ inline void qt_rectfill(T *dest, T value,
 #  pragma push
 #  pragma arm
 #endif
-Q_STATIC_INLINE_FUNCTION int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
 #if defined(Q_CC_RVCT)
 #  pragma pop
 #endif

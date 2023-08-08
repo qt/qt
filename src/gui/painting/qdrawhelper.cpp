@@ -224,7 +224,7 @@ static const uint *QT_FASTCALL convertFromARGB32PM(uint *buffer, const uint *src
 
     if (!layout->premultiplied) {
         for (int i = 0; i < count; ++i)
-            buffer[i] = qAlpha(src[i]) == 255 ? src[i] : INV_PREMUL(src[i]);
+            buffer[i] = INV_PREMUL(src[i]);
         src = buffer;
     }
     for (int i = 0; i < count; ++i) {
@@ -4784,13 +4784,15 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                 int l = qMin(length, buffer_size);
                 const uint *end = buffer + l;
                 uint *b = buffer;
-                while (b < end) {
-                    int px = x >> 16;
-                    int py = y >> 16;
-                    px %= image_width;
-                    py %= image_height;
-                    if (px < 0) px += image_width;
-                    if (py < 0) py += image_height;
+                int px16 = x % (image_width << 16);
+                int py16 = y % (image_height << 16);
+                int px_delta = fdx % (image_width << 16);
+                int py_delta = fdy % (image_height << 16);
+                while (b < end) { 
+                    if (px16 < 0) px16 += image_width << 16;
+                    if (py16 < 0) py16 += image_height << 16;                   
+                    int px = px16 >> 16;
+                    int py = py16 >> 16;
                     int y_offset = py * scanline_offset;
 
                     Q_ASSERT(px >= 0 && px < image_width);
@@ -4799,6 +4801,12 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                     *b = image_bits[y_offset + px];
                     x += fdx;
                     y += fdy;
+                    px16 += px_delta;
+                    if (px16 >= image_width << 16)
+                        px16 -= image_width << 16;
+                    py16 += py_delta;
+                    if (py16 >= image_height << 16)
+                        py16 -= image_height << 16;
                     ++b;
                 }
                 func(target, buffer, l, coverage);
@@ -5267,7 +5275,7 @@ void qBlendTextureCallback(int count, const QSpan *spans, void *userData)
 }
 #endif // QT_NO_RASTERCALLBACKS
 
-template <class DST>
+template <class DST> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
                                    int x, int y, DST color,
                                    const uchar *map,
