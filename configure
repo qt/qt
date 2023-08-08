@@ -1959,8 +1959,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     libmng)
-        [ "$VAL" = "yes" ] && VAL=qt
-        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+        [ "$VAL" = "yes" ] && VAL=system
+        if [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBMNG="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3725,7 +3725,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-plugin-sql-<driver>] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-system-libtiff]
-        [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
+        [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng]
         [-system-libmng] [-no-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
@@ -3952,7 +3952,6 @@ Third Party Libraries:
                          See http://www.libpng.org/pub/png
 
     -no-libmng ......... Do not compile MNG support.
-    -qt-libmng ......... Use the libmng bundled with Qt.
  +  -system-libmng ..... Use libmng from the operating system.
                          See http://www.libmng.com
 
@@ -5257,7 +5256,7 @@ if [ "$CFG_LIBMNG" = "auto" ]; then
     if compileTest unix/libmng "libmng"; then
        CFG_LIBMNG=system
     else
-       CFG_LIBMNG=qt
+       CFG_LIBMNG=no
     fi
 fi
 
@@ -7061,8 +7060,6 @@ if [ "$CFG_INOTIFY" = "yes" ]; then
 fi
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
-elif [ "$CFG_LIBJPEG" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-jpeg"
@@ -7071,8 +7068,6 @@ elif [ "$CFG_JPEG" = "yes" ]; then
 fi
 if [ "$CFG_LIBMNG" = "no" ]; then
     CFG_MNG="no"
-elif [ "$CFG_LIBMNG" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-mng"
 fi
 if [ "$CFG_MNG" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-mng"
@@ -7621,8 +7616,8 @@ esac
 #
 # Things that do not affect the Qt API/ABI:
 #     stl
-#     system-jpeg no-jpeg jpeg
-#     system-mng no-mng mng
+#     no-jpeg jpeg
+#     no-mng mng
 #     system-png no-png png
 #     system-zlib no-zlib zlib
 #     system-libtiff no-libtiff
