@@ -61,6 +61,8 @@
 #include <link.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -101,6 +103,18 @@ QT_BEGIN_NAMESPACE
     compiling host has installed, but the symbols are resolved at run-time,
     possibly with a different version of OpenSSL.
 */
+
+namespace {
+void qsslSocketUnresolvedSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot call unresolved function %s", functionName);
+}
+
+void qsslSocketCannotResolveSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot resolve %s", functionName);
+}
+}
 
 #ifdef SSLEAY_MACROS
 DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return 0, return)
@@ -315,20 +329,14 @@ DEFINEFUNC(ASN1_TIME *, X509_get_notBefore, X509 *x, x, return 0, return)
 DEFINEFUNC4(void, DSA_get0_pqg, const DSA *d, d, const BIGNUM **p, p, const BIGNUM **q, q, const BIGNUM **g, g, return, return)
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#define RESOLVEFUNC(func, ordinal, lib) \
-    if (!(_q_##func = _q_PTR_##func(lib->resolve(#ordinal)))) \
-        qWarning("QSslSocket: cannot resolve "#func);
-#else
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#func)))) \
-        qWarning("QSslSocket: cannot resolve "#func);
+        qsslSocketCannotResolveSymbolWarning(#func);
 #define RESOLVE_RENAMED_FUNC(func, funcname) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#funcname)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#funcname)))) \
-        qWarning("QSslSocket: cannot resolve "#funcname);
-#endif
+        qsslSocketCannotResolveSymbolWarning(#funcname);
 
 #if !defined QT_LINKED_OPENSSL
 
@@ -430,7 +438,7 @@ static QStringList findAllLibSsl()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libssl.*"), QDir::Files);
 
-        qSort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
         foreach (const QString &entry, entryList)
             foundSsls << path + QLatin1Char('/') + entry;
     }
@@ -447,7 +455,7 @@ static QStringList findAllLibCrypto()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libcrypto.*"), QDir::Files);
 
-        qSort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
         foreach (const QString &entry, entryList)
             foundCryptos << path + QLatin1Char('/') + entry;
     }
@@ -460,8 +468,6 @@ static QStringList findAllLibCrypto()
 static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 {
     QPair<QSystemLibrary*,QSystemLibrary*> pair;
-    pair.first = 0;
-    pair.second = 0;
 
     QSystemLibrary *ssleay32 = new QSystemLibrary(QLatin1String("ssleay32"));
     if (!ssleay32->load(false)) {
@@ -486,8 +492,6 @@ static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 {
     QPair<QLibrary*,QLibrary*> pair;
-    pair.first = 0;
-    pair.second = 0;
 
 # if defined(Q_OS_SYMBIAN)
      QLibrary *libssl = new QLibrary(QLatin1String("libssl"));
