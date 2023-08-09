@@ -176,7 +176,7 @@ void *QHashData::allocateNode()
 
 void *QHashData::allocateNode(int nodeAlign)
 {
-    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : qMalloc(nodeSize);
+    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : malloc(nodeSize);
     Q_CHECK_PTR(ptr);
     return ptr;
 }
@@ -186,7 +186,7 @@ void QHashData::freeNode(void *node)
     if (strictAlignment)
         qFreeAligned(node);
     else
-        qFree(node);
+        free(node);
 }
 
 QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize)

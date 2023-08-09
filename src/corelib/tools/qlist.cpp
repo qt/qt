@@ -42,7 +42,9 @@
 #include <new>
 #include "qlist.h"
 #include "qtools_p.h"
+
 #include <string.h>
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +84,7 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
     int l = x->end - x->begin;
     int nl = l + num;
     int alloc = grow(nl);
-    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref = 1;
@@ -118,7 +120,7 @@ QListData::Data *QListData::detach_grow(int *idx, int num)
 #endif
 QListData::Data *QListData::detach()
 {
-    Data *x = static_cast<Data *>(qMalloc(DataHeaderSize + d->alloc * sizeof(void *)));
+    Data *x = static_cast<Data *>(::malloc(DataHeaderSize + d->alloc * sizeof(void *)));
     Q_CHECK_PTR(x);
 
     x->ref = 1;
@@ -151,7 +153,7 @@ QListData::Data *QListData::detach()
 QListData::Data *QListData::detach2()
 {
     Data *x = d;
-    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + x->alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     ::memcpy(t, d, DataHeaderSize + d->alloc * sizeof(void *));
@@ -182,7 +184,7 @@ QListData::Data *QListData::detach2()
 QListData::Data *QListData::detach(int alloc)
 {
     Data *x = d;
-    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(::malloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref = 1;
@@ -218,7 +220,7 @@ QListData::Data *QListData::detach3()
 void QListData::realloc(int alloc)
 {
     Q_ASSERT(d->ref == 1);
-    Data *x = static_cast<Data *>(qRealloc(d, DataHeaderSize + alloc * sizeof(void *)));
+    Data *x = static_cast<Data *>(::realloc(d, DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(x);
 
     d = x;

@@ -712,8 +712,8 @@ void QGL2PaintEngineExPrivate::cleanupVectorPath(QPaintEngineEx *engine, void *d
         d->unusedIBOSToClean << c->ibo;
 #else
     Q_UNUSED(engine);
-    qFree(c->vertices);
-    qFree(c->indices);
+    free(c->vertices);
+    free(c->indices);
 #endif
     delete c;
 }
@@ -758,7 +758,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                         cache->vbo = 0;
                         Q_ASSERT(cache->ibo == 0);
 #else
-                        qFree(cache->vertices);
+                        free(cache->vertices);
                         Q_ASSERT(cache->indices == 0);
 #endif
                         updateCache = true;
@@ -786,7 +786,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
                 cache->ibo = 0;
 #else
-                cache->vertices = (float *) qMalloc(floatSizeInBytes);
+                cache->vertices = (float *) malloc(floatSizeInBytes);
                 memcpy(cache->vertices, vertexCoordinateArray.data(), floatSizeInBytes);
                 cache->indices = 0;
 #endif
@@ -838,8 +838,8 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                         glDeleteBuffers(1, &cache->vbo);
                         glDeleteBuffers(1, &cache->ibo);
 #else
-                        qFree(cache->vertices);
-                        qFree(cache->indices);
+                        free(cache->vertices);
+                        free(cache->indices);
 #endif
                         updateCache = true;
                     }
@@ -873,12 +873,12 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                     vertices[i] = float(inverseScale * polys.vertices.at(i));
                 glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 #else
-                cache->vertices = (float *) qMalloc(sizeof(float) * polys.vertices.size());
+                cache->vertices = (float *) malloc(sizeof(float) * polys.vertices.size());
                 if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
-                    cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
+                    cache->indices = (quint32 *) malloc(sizeof(quint32) * polys.indices.size());
                     memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
                 } else {
-                    cache->indices = (quint16 *) qMalloc(sizeof(quint16) * polys.indices.size());
+                    cache->indices = (quint16 *) malloc(sizeof(quint16) * polys.indices.size());
                     memcpy(cache->indices, polys.indices.data(), sizeof(quint16) * polys.indices.size());
                 }
                 for (int i = 0; i < polys.vertices.size(); ++i)
