@@ -136,11 +136,7 @@ DEFINEFUNC(void, CRYPTO_set_locking_callback, void (*a)(int, int, const char *, 
 DEFINEFUNC(void, CRYPTO_set_id_callback, unsigned long (*a)(), a, return, DUMMYARG)
 DEFINEFUNC(void, OPENSSL_free, void *a, a, return, DUMMYARG)
 DEFINEFUNC(void, DSA_free, DSA *a, a, return, DUMMYARG)
-#if  OPENSSL_VERSION_NUMBER < 0x00908000L
-DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, unsigned char **b, b, long c, c, return 0, return)
-#else // 0.9.8 broke SC and BC by changing this signature.
 DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, const unsigned char **b, b, long c, c, return 0, return)
-#endif
 DEFINEFUNC2(char *, ERR_error_string, unsigned long a, a, char *b, b, return 0, return)
 DEFINEFUNC(unsigned long, ERR_get_error, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const EVP_CIPHER *, EVP_des_ede3_cbc, DUMMYARG, DUMMYARG, return 0, return)
@@ -184,12 +180,7 @@ DEFINEFUNC(int, SSL_accept, SSL *a, a, return -1, return)
 DEFINEFUNC(int, SSL_clear, SSL *a, a, return -1, return)
 DEFINEFUNC3(char *, SSL_CIPHER_description, SSL_CIPHER *a, a, char *b, b, int c, c, return 0, return)
 DEFINEFUNC(int, SSL_connect, SSL *a, a, return -1, return)
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 DEFINEFUNC(int, SSL_CTX_check_private_key, const SSL_CTX *a, a, return -1, return)
-#else
-DEFINEFUNC(int, SSL_CTX_check_private_key, SSL_CTX *a, a, return -1, return)
-#endif
 DEFINEFUNC4(long, SSL_CTX_ctrl, SSL_CTX *a, a, int b, b, long c, c, void *d, d, return -1, return)
 DEFINEFUNC(void, SSL_CTX_free, SSL_CTX *a, a, return, DUMMYARG)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
@@ -207,12 +198,7 @@ DEFINEFUNC2(int, SSL_CTX_use_PrivateKey, SSL_CTX *a, a, EVP_PKEY *b, b, return -
 DEFINEFUNC2(int, SSL_CTX_use_RSAPrivateKey, SSL_CTX *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC3(int, SSL_CTX_use_PrivateKey_file, SSL_CTX *a, a, const char *b, b, int c, c, return -1, return)
 DEFINEFUNC(void, SSL_free, SSL *a, a, return, DUMMYARG)
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 DEFINEFUNC(STACK_OF(SSL_CIPHER) *, SSL_get_ciphers, const SSL *a, a, return 0, return)
-#else
-DEFINEFUNC(STACK_OF(SSL_CIPHER) *, SSL_get_ciphers, SSL *a, a, return 0, return)
-#endif
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return 0, return)
 #else
@@ -221,18 +207,11 @@ DEFINEFUNC(SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return 0, return)
 DEFINEFUNC2(int, SSL_get_error, SSL *a, a, int b, b, return -1, return)
 DEFINEFUNC(STACK_OF(X509) *, SSL_get_peer_cert_chain, SSL *a, a, return 0, return)
 DEFINEFUNC(X509 *, SSL_get_peer_certificate, SSL *a, a, return 0, return)
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-// 0.9.8 broke SC and BC by changing this function's signature.
 DEFINEFUNC(long, SSL_get_verify_result, const SSL *a, a, return -1, return)
-#else
-DEFINEFUNC(long, SSL_get_verify_result, SSL *a, a, return -1, return)
-#endif
 DEFINEFUNC(int, SSL_library_init, void, DUMMYARG, return -1, return)
 DEFINEFUNC(void, SSL_load_error_strings, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return 0, return)
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
 DEFINEFUNC4(long, SSL_ctrl, SSL *a, a, int cmd, cmd, long larg, larg, void *parg, parg, return -1, return)
-#endif
 DEFINEFUNC3(int, SSL_read, SSL *a, a, void *b, b, int c, c, return -1, return)
 DEFINEFUNC3(void, SSL_set_bio, SSL *a, a, BIO *b, b, BIO *c, c, return, DUMMYARG)
 DEFINEFUNC(void, SSL_set_accept_state, SSL *a, a, return, DUMMYARG)
@@ -713,9 +692,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_library_init, 137, libs.first )
     RESOLVEFUNC(SSL_load_error_strings, 139, libs.first )
     RESOLVEFUNC(SSL_new, 140, libs.first )
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     RESOLVEFUNC(SSL_ctrl, 95, libs.first )
-#endif
     RESOLVEFUNC(SSL_read, 143, libs.first )
     RESOLVEFUNC(SSL_set_accept_state, 148, libs.first )
     RESOLVEFUNC(SSL_set_bio, 149, libs.first )
@@ -851,9 +828,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_library_init)
     RESOLVEFUNC(SSL_load_error_strings)
     RESOLVEFUNC(SSL_new)
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     RESOLVEFUNC(SSL_ctrl)
-#endif
     RESOLVEFUNC(SSL_read)
     RESOLVEFUNC(SSL_set_accept_state)
     RESOLVEFUNC(SSL_set_bio)

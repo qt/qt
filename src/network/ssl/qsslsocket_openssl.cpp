@@ -65,11 +65,8 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-// Symbian does not seem to have the symbol for SNI defined
 #ifndef SSL_CTRL_SET_TLSEXT_HOSTNAME
 #define SSL_CTRL_SET_TLSEXT_HOSTNAME 55
-#endif
 #endif
 QT_BEGIN_NAMESPACE
 
@@ -462,7 +459,6 @@ init_context:
         return false;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     if ((configuration.protocol == QSsl::TlsV1SslV3 ||
         configuration.protocol == QSsl::TlsV1_0 ||
         configuration.protocol == QSsl::TlsV1_1 ||
@@ -483,7 +479,6 @@ init_context:
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
-#endif
 
     // Clear the session.
     q_SSL_clear(ssl);
