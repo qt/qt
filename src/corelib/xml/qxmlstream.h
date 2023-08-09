@@ -193,12 +193,7 @@ public:
         return !value(namespaceUri, name).isNull();
     }
 
-#if !defined(Q_NO_USING_KEYWORD)
     using QVector<QXmlStreamAttribute>::append;
-#else
-    inline void append(const QXmlStreamAttribute &attribute)
-        { QVector<QXmlStreamAttribute>::append(attribute); }
-#endif
 };
 
 class Q_XMLSTREAM_EXPORT QXmlStreamNamespaceDeclaration {

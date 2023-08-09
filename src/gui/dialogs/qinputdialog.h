@@ -153,13 +153,8 @@ public:
     void setCancelButtonText(const QString &text);
     QString cancelButtonText() const;
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
+
     void open(QObject *receiver, const char *member);
 
     QSize minimumSizeHint() const;

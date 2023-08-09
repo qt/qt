@@ -100,15 +100,8 @@ public:
     inline int indexOf(QRegExp &rx, int from = 0) const;
     inline int lastIndexOf(QRegExp &rx, int from = -1) const;
 #endif
-#if !defined(Q_NO_USING_KEYWORD)
     using QList<QString>::indexOf;
     using QList<QString>::lastIndexOf;
-#else
-    inline int indexOf(const QString &str, int from = 0) const
-    { return QList<QString>::indexOf(str, from); }
-    inline int lastIndexOf(const QString &str, int from = -1) const
-    { return QList<QString>::lastIndexOf(str, from); }
-#endif
 #ifdef QT3_SUPPORT
     static inline QT3_SUPPORT QStringList split(const QString &sep, const QString &str, bool allowEmptyEntries = false);
     static inline QT3_SUPPORT QStringList split(const QChar &sep, const QString &str, bool allowEmptyEntries = false);

@@ -71,12 +71,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CC_RVCT)
-// RVCT doesn't like static template functions
-#  define Q_STATIC_TEMPLATE_FUNCTION
-#  define Q_ALWAYS_INLINE __forceinline
-#  define Q_DECL_RESTRICT
-#elif defined(Q_CC_GNU)
+#if defined(Q_CC_GNU)
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #  define Q_DECL_RESTRICT __restrict__
@@ -562,10 +557,6 @@ public:
     }
 };
 
-#if defined(Q_CC_RVCT)
-#  pragma push
-#  pragma arm
-#endif
 Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     uint t = (x & 0xff00ff) * a + (y & 0xff00ff) * b;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
@@ -577,9 +568,6 @@ Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     x |= t;
     return x;
 }
-#if defined(Q_CC_RVCT)
-#  pragma pop
-#endif
 
 #if QT_POINTER_SIZE == 8 // 64-bit versions
 
@@ -619,10 +607,6 @@ Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     return x;
 }
 
-#if defined(Q_CC_RVCT)
-#  pragma push
-#  pragma arm
-#endif
 Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     uint t = (x & 0xff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
@@ -634,9 +618,6 @@ Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     x |= t;
     return x;
 }
-#if defined(Q_CC_RVCT)
-#  pragma pop
-#endif
 
 Q_ALWAYS_INLINE uint PREMUL(uint x) {
     uint a = x >> 24;
@@ -759,14 +740,7 @@ inline void qt_rectfill(T *dest, T value,
     }
 }
 
-#if defined(Q_CC_RVCT)
-#  pragma push
-#  pragma arm
-#endif
 Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
-#if defined(Q_CC_RVCT)
-#  pragma pop
-#endif
 
 inline ushort qConvertRgb32To16(uint c)
 {

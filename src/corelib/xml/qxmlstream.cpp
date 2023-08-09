@@ -1342,7 +1342,7 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
                 putChar(c);
                 return n;
             }
-            // fall through
+            [[fallthrough]];
         default:
             textBuffer += QChar(c);
             ++n;
@@ -2416,15 +2416,6 @@ QXmlStreamAttribute& QXmlStreamAttribute::operator=(const QXmlStreamAttribute &o
 
     \ingroup xml-tools
 */
-
-/*!
-    \fn void QXmlStreamAttributes::append(const QXmlStreamAttribute &attribute)
-
-    Appends the given \a attribute to the end of the vector.
-
-    \sa QVector::append()
-*/
-
 
 /*!
     \typedef QXmlStreamNotationDeclarations

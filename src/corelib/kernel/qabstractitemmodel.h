@@ -224,11 +224,7 @@ public:
 
     const QHash<int,QByteArray> &roleNames() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline QObject *parent() const { return QObject::parent(); }
-#else
     using QObject::parent;
-#endif
 
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);

@@ -172,12 +172,7 @@ public:
     void dumpFocusChain();
 #endif
 
-    // ### Qt 5: Disambiguate
-#ifdef Q_NO_USING_KEYWORD
-    const QObjectList &children() const { return QObject::children(); }
-#else
     using QObject::children;
-#endif
 
 Q_SIGNALS:
     void geometryChanged();

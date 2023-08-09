@@ -1940,16 +1940,6 @@ void QColorDialog::open(QObject *receiver, const char *member)
     QDialog::open();
 }
 
-/*!
-    \fn QColorDialog::open()
-
-    \since 4.5
-    Shows the dialog as a \l{QDialog#Modal Dialogs}{window modal dialog},
-    returning immediately.
-
-    \sa QDialog::open()
-*/
-
 /*
     For Symbian color dialogs
 */

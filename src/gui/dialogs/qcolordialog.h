@@ -86,11 +86,8 @@ public:
     void setOptions(ColorDialogOptions options);
     ColorDialogOptions options() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    void open() { QDialog::open(); }
-#else
     using QDialog::open;
-#endif
+
     void open(QObject *receiver, const char *member);
 
     void setVisible(bool visible);

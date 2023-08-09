@@ -2881,12 +2881,6 @@ void QStandardItemModel::sort(int column, Qt::SortOrder order)
 }
 
 /*!
-  \fn QObject *QStandardItemModel::parent() const
-  \internal
-*/
-
-
-/*!
   \reimp
 */
 QStringList QStandardItemModel::mimeTypes() const

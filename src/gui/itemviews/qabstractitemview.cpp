@@ -570,11 +570,6 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
 */
 
 /*!
-    \fn void QAbstractItemView::update()
-    \internal
-*/
-
-/*!
     Constructs an abstract item view with the given \a parent.
 */
 QAbstractItemView::QAbstractItemView(QWidget *parent)

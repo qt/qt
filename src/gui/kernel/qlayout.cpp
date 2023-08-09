@@ -366,14 +366,6 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 }
 
 /*!
-    \fn void QLayout::setAlignment(Qt::Alignment alignment)
-
-    Sets the alignment of this item to \a alignment.
-
-    \sa QLayoutItem::setAlignment()
-*/
-
-/*!
     \fn bool QLayout::isTopLevel() const
 
     Returns true if this layout is a top-level layout, i.e. not a

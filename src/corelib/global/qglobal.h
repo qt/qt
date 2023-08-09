@@ -428,7 +428,6 @@ namespace QT_NAMESPACE {}
 #  if defined(__SC__) && __SC__ < 0x750
 #    define Q_NO_EXPLICIT_KEYWORD
 #  endif
-#  define Q_NO_USING_KEYWORD
 
 #elif defined(__MWERKS__)
 #  define Q_CC_MWERKS
@@ -460,7 +459,6 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_BOOL_TYPE
 #    define Q_NO_EXPLICIT_KEYWORD
 #  endif
-#  define Q_NO_USING_KEYWORD
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
@@ -503,7 +501,6 @@ namespace QT_NAMESPACE {}
 #  endif
 /* GCC 2.95 knows "using" but does not support it correctly */
 #  if __GNUC__ == 2 && __GNUC_MINOR__ <= 95
-#    define Q_NO_USING_KEYWORD
 #    define QT_NO_STL_WCHAR
 #  endif
 #  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
@@ -563,7 +560,6 @@ namespace QT_NAMESPACE {}
 #  if __xlC__ < 0x400
 #    define Q_NO_BOOL_TYPE
 #    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
 #    define Q_TYPENAME
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
@@ -593,8 +589,6 @@ namespace QT_NAMESPACE {}
 #  if !defined(_BOOL_EXISTS)
 #    define Q_NO_BOOL_TYPE
 #  endif
-/* Spurious (?) error messages observed on Compaq C++ V6.5-014. */
-#  define Q_NO_USING_KEYWORD
 /* Apply to all versions prior to Compaq C++ V6.0-000 - observed on
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
@@ -641,7 +635,6 @@ namespace QT_NAMESPACE {}
    compiler is using its own set of rules. Forget it. */
 #  elif defined(__KCC)
 #    define Q_CC_KAI
-#    define Q_NO_USING_KEYWORD
 
 /* Using the `using' keyword avoids Intel C++ for Linux warnings */
 #  elif defined(__INTEL_COMPILER)
@@ -665,23 +658,19 @@ namespace QT_NAMESPACE {}
 #    if !defined(__SCO_VERSION__) || (__SCO_VERSION__ < 302200010)
 #      define Q_OUTOFLINE_TEMPLATE inline
 #    endif
-#    define Q_NO_USING_KEYWORD /* ### check "using" status */
 
 /* Never tested! */
 #  elif defined(CENTERLINE_CLPP) || defined(OBJECTCENTER)
 #    define Q_CC_OC
-#    define Q_NO_USING_KEYWORD
 
 /* CDS++ defines __EDG__ although this is not documented in the Reliant
    documentation. It also follows conventions like _BOOL and this documented */
 #  elif defined(sinix)
 #    define Q_CC_CDS
-#    define Q_NO_USING_KEYWORD
 
 /* The MIPSpro compiler defines __EDG */
 #  elif defined(__sgi)
 #    define Q_CC_MIPS
-#    define Q_NO_USING_KEYWORD /* ### check "using" status */
 #    define Q_NO_TEMPLATE_FRIENDS
 #    if defined(_COMPILER_VERSION) && (_COMPILER_VERSION >= 740)
 #      define Q_OUTOFLINE_TEMPLATE inline
@@ -723,15 +712,11 @@ namespace QT_NAMESPACE {}
 #    if !defined(_BOOL)
 #      define Q_NO_BOOL_TYPE
 #    endif
-#    if defined(__SUNPRO_CC_COMPAT) && (__SUNPRO_CC_COMPAT <= 4)
-#      define Q_NO_USING_KEYWORD
-#    endif
 #    define Q_C_CALLBACKS
 /* 4.2 compiler or older */
 #  else
 #    define Q_NO_BOOL_TYPE
 #    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
 #  endif
 
 /* CDS++ does not seem to define __EDG__ or __EDG according to Reliant
@@ -769,7 +754,6 @@ namespace QT_NAMESPACE {}
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_NO_EXPLICIT_KEYWORD
 #  endif
-#  define Q_NO_USING_KEYWORD /* ### check "using" status */
 
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
@@ -1773,14 +1757,7 @@ inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 /*
    Avoid "unused parameter" warnings
 */
-
-#if defined(Q_CC_RVCT)
-template <typename T>
-inline void qUnused(T &x) { (void)x; }
-#  define Q_UNUSED(x) qUnused(x);
-#else
-#  define Q_UNUSED(x) (void)x;
-#endif
+#define Q_UNUSED(x) (void)x;
 
 /*
    Debugging and error handling
@@ -2417,7 +2394,7 @@ typedef uint Flags;
 
 #endif /* Q_NO_TYPESAFE_FLAGS */
 
-#if defined(Q_CC_GNU) && !defined(Q_CC_RVCT)
+#if defined(Q_CC_GNU)
 /* make use of typeof-extension */
 template <typename T>
 class QForeachContainer {

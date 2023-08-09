@@ -1819,12 +1819,6 @@ void QHashData::checkSanity()
 */
 
 /*!
-    \fn bool QMultiHash::contains(const Key &key) const
-    \overload
-    \sa QHash::contains()
-*/
-
-/*!
     \fn int QMultiHash::remove(const Key &key, const T &value)
     \since 4.3
 
@@ -1835,29 +1829,11 @@ void QHashData::checkSanity()
 */
 
 /*!
-    \fn int QMultiHash::remove(const Key &key)
-    \overload
-    \sa QHash::remove()
-*/
-
-/*!
     \fn int QMultiHash::count(const Key &key, const T &value) const
     \since 4.3
 
     Returns the number of items with the \a key and \a value.
 
-    \sa QHash::count()
-*/
-
-/*!
-    \fn int QMultiHash::count(const Key &key) const
-    \overload
-    \sa QHash::count()
-*/
-
-/*!
-    \fn int QMultiHash::count() const
-    \overload
     \sa QHash::count()
 */
 
@@ -1875,21 +1851,9 @@ void QHashData::checkSanity()
 */
 
 /*!
-    \fn typename QHash<Key, T>::iterator QMultiHash::find(const Key &key)
-    \overload
-    \sa QHash::find()
-*/
-
-/*!
     \fn typename QHash<Key, T>::const_iterator QMultiHash::find(const Key &key, const T &value) const
     \since 4.3
     \overload
-*/
-
-/*!
-    \fn typename QHash<Key, T>::const_iterator QMultiHash::find(const Key &key) const
-    \overload
-    \sa QHash::find()
 */
 
 /*!
@@ -1902,12 +1866,6 @@ void QHashData::checkSanity()
     If the hash contains no such item, the function returns
     constEnd().
 
-    \sa QHash::constFind()
-*/
-
-/*!
-    \fn typename QHash<Key, T>::const_iterator QMultiHash::constFind(const Key &key) const
-    \overload
     \sa QHash::constFind()
 */
 

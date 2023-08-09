@@ -111,13 +111,8 @@ public:
     void setVisible(bool visible);
 #endif
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
     using QDialog::open;
-#endif
+
     void open(QObject *receiver, const char *member);
 
 #ifdef qdoc
@@ -129,13 +124,7 @@ public:
     bool eventFilter(QObject *, QEvent *);
 #endif
 
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void accepted() { QDialog::accepted(); }
-#endif
-#else
     using QDialog::accepted;
-#endif
 
 Q_SIGNALS:
     void accepted(QPrinter *printer);
