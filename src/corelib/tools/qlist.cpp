@@ -256,27 +256,15 @@ void **QListData::append()
 }
 
 // ensures that enough space is available to append the list
-#if QT_VERSION >= 0x050000
-#  error "Remove QListData::append(), it is only required for binary compatibility up to 4.5.x"
-#endif
 void **QListData::append(const QListData& l)
 {
-    Q_ASSERT(d->ref == 1);
-    int e = d->end;
-    int n = l.d->end - l.d->begin;
-    if (n) {
-        if (e + n > d->alloc)
-            realloc(grow(e + n));
-        ::memcpy(d->array + d->end, l.d->array + l.d->begin, n*sizeof(void*));
-        d->end += n;
-    }
-    return d->array + e;
+    return append(l.d->end - l.d->begin);
 }
 
 // ensures that enough space is available to append the list
 void **QListData::append2(const QListData& l)
 {
-    return append(l.d->end - l.d->begin);
+    return append(l);
 }
 
 void **QListData::prepend()

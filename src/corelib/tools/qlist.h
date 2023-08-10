@@ -79,9 +79,9 @@ struct Q_CORE_EXPORT QListData {
 
     Data *detach(int alloc);
     Data *detach_grow(int *i, int n);
-    Data *detach(); // remove in 5.0
-    Data *detach2(); // remove in 5.0
-    Data *detach3(); // remove in 5.0
+    Q_DECL_DEPRECATED Data *detach(); // remove in 5.0
+    Q_DECL_DEPRECATED Data *detach2(); // remove in 5.0
+    Q_DECL_DEPRECATED Data *detach3(); // remove in 5.0
     void realloc(int alloc);
     static Data shared_null;
     Data *d;
@@ -89,7 +89,7 @@ struct Q_CORE_EXPORT QListData {
     void **append(int n);
     void **append();
     void **append(const QListData &l);
-    void **append2(const QListData &l); // remove in 5.0
+    Q_DECL_DEPRECATED void **append2(const QListData &l); // remove in 5.0
     void **prepend();
     void **insert(int i);
     void remove(int i);
@@ -830,7 +830,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
         } else {
             Node *n = (d->ref != 1)
                       ? detach_helper_grow(INT_MAX, l.size())
-                      : reinterpret_cast<Node *>(p.append2(l.p));
+                      : reinterpret_cast<Node *>(p.append(l.p));
             QT_TRY {
                 node_copy(n, reinterpret_cast<Node *>(p.end()),
                           reinterpret_cast<Node *>(l.p.begin()));
