@@ -248,7 +248,7 @@ public:
         return *this;
     }
 
-    int refCount() const { return d->ref; }
+    int refCount() const { return d->ref.load(); }
 private:
     RefCountingClassData *d;
 };

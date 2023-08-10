@@ -53,97 +53,29 @@
 #undef wakeup
 #endif
 
-#if defined(Q_OS_MAC)
-# include <mach/mach.h>
-# include <mach/task.h>
-#elif defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
-# include <linux/futex.h>
-# include <sys/syscall.h>
-# include <unistd.h>
-# include <QtCore/qelapsedtimer.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_OS_LINUX) || defined(QT_LINUXBASE)
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
         qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
 }
-#endif
-
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
+    : recursive(mode == QMutex::Recursive), wakeup(false)
 {
-#if !defined(Q_OS_LINUX) || defined(QT_LINUXBASE)
-    wakeup = false;
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
-#endif
 }
 
 QMutexPrivate::~QMutexPrivate()
 {
-#if !defined(Q_OS_LINUX) || defined(QT_LINUXBASE)
     report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
     report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
-#endif
-}
-
-#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
-
-static inline int _q_futex(volatile int *addr, int op, int val, const struct timespec *timeout, int *addr2, int val2)
-{
-    return syscall(SYS_futex, addr, op, val, timeout, addr2, val2);
 }
 
 bool QMutexPrivate::wait(int timeout)
 {
-    struct timespec ts, *pts = 0;
-    QElapsedTimer timer;
-    if (timeout >= 0) {
-        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
-        ts.tv_sec = (timeout / 1000);
-        pts = &ts;
-        timer.start();
-    }
-    while (contenders.fetchAndStoreAcquire(2) > 0) {
-        int r = _q_futex(&contenders._q_value, FUTEX_WAIT, 2, pts, 0, 0);
-        if (r != 0 && errno == ETIMEDOUT)
-            return false;
-
-        if (pts) {
-            // recalculate the timeout
-            qint64 xtimeout = timeout * 1000 * 1000;
-            xtimeout -= timer.nsecsElapsed();
-            if (xtimeout < 0) {
-                // timer expired after we returned
-                return false;
-            }
-
-            ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
-            ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
-        }
-    }
-    return true;
-}
-
-void QMutexPrivate::wakeUp()
-{
-    (void) contenders.fetchAndStoreRelease(0);
-    (void) _q_futex(&contenders._q_value, FUTEX_WAKE, 1, 0, 0, 0);
-}
-
-#else // !Q_OS_LINUX || QT_LINUXBASE
-
-bool QMutexPrivate::wait(int timeout)
-{
-    if (contenders.fetchAndAddAcquire(1) == 0) {
-        // lock acquired without waiting
-        return true;
-    }
     report_error(pthread_mutex_lock(&mutex), "QMutex::lock", "mutex lock");
     int errorCode = 0;
     while (!wakeup) {
@@ -169,10 +101,12 @@ bool QMutexPrivate::wait(int timeout)
             report_error(errorCode, "QMutex::lock()", "cv wait");
         }
     }
+    bool ret = wakeup;
     wakeup = false;
     report_error(pthread_mutex_unlock(&mutex), "QMutex::lock", "mutex unlock");
     contenders.deref();
     return errorCode == 0;
+    return ret;
 }
 
 void QMutexPrivate::wakeUp()
@@ -182,8 +116,6 @@ void QMutexPrivate::wakeUp()
     report_error(pthread_cond_signal(&cond), "QMutex::unlock", "cv signal");
     report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
 }
-
-#endif // !Q_OS_LINUX || QT_LINUXBASE
 
 QT_END_NAMESPACE
 

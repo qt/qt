@@ -272,7 +272,7 @@ QRegion::QRegion(const QPolygon &pa, bool winding)
 
 void QRegion::detach()
 {
-    if (d->ref != 1)
+    if (d->ref.load() != 1)
         *this = copy();
 #if defined(Q_WS_X11)
     else if (d->xrectangles) {
@@ -3839,7 +3839,7 @@ QRegion::QRegion(const QRect &r, RegionType t)
         d->ref.ref();
     } else {
         d = new QRegionData;
-        d->ref = 1;
+        d->ref.store(1);
 #if defined(Q_WS_X11)
         d->rgn = 0;
         d->xrectangles = 0;
@@ -3864,7 +3864,7 @@ QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
                                                fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
         if (qt_rgn) {
             d =  new QRegionData;
-            d->ref = 1;
+            d->ref.store(1);
 #if defined(Q_WS_X11)
             d->rgn = 0;
             d->xrectangles = 0;
@@ -3896,7 +3896,7 @@ QRegion::QRegion(const QBitmap &bm)
         d->ref.ref();
     } else {
         d = new QRegionData;
-        d->ref = 1;
+        d->ref.store(1);
 #if defined(Q_WS_X11)
         d->rgn = 0;
         d->xrectangles = 0;
@@ -3946,7 +3946,7 @@ QRegion QRegion::copy() const
 {
     QRegion r;
     QScopedPointer<QRegionData> x(new QRegionData);
-    x->ref = 1;
+    x->ref.store(1);
 #if defined(Q_WS_X11)
     x->rgn = 0;
     x->xrectangles = 0;

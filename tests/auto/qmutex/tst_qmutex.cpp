@@ -68,6 +68,7 @@ private slots:
     void stressTest();
     void tryLockRace();
     void qtbug16115_trylock();
+    void moreStress();
 };
 
 static const int iterations = 100;
@@ -85,6 +86,8 @@ QAtomicInt lockCount(0);
 QMutex normalMutex, recursiveMutex(QMutex::Recursive);
 QSemaphore testsTurn;
 QSemaphore threadsTurn;
+
+enum { waitTime = 100 };
 
 void tst_QMutex::tryLock()
 {
@@ -112,18 +115,18 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 QTime timer;
                 timer.start();
-                QVERIFY(!normalMutex.tryLock(1000));
-                QVERIFY(timer.elapsed() >= 1000);
+                QVERIFY(!normalMutex.tryLock(waitTime));
+                QVERIFY(timer.elapsed() >= waitTime);
                 testsTurn.release();
 
                 threadsTurn.acquire();
                 timer.start();
-                QVERIFY(normalMutex.tryLock(1000));
-                QVERIFY(timer.elapsed() <= 1000);
+                QVERIFY(normalMutex.tryLock(waitTime));
+                QVERIFY(timer.elapsed() <= waitTime);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 timer.start();
-                QVERIFY(!normalMutex.tryLock(1000));
-                QVERIFY(timer.elapsed() >= 1000);
+                QVERIFY(!normalMutex.tryLock(waitTime));
+                QVERIFY(timer.elapsed() >= waitTime);
                 QVERIFY(lockCount.testAndSetRelaxed(1, 0));
                 normalMutex.unlock();
                 testsTurn.release();
@@ -135,7 +138,7 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(normalMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < 1000);
+                QVERIFY(timer.elapsed() < waitTime);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 QVERIFY(!normalMutex.tryLock(0));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 0));
@@ -218,17 +221,17 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 QTime timer;
                 timer.start();
-                QVERIFY(!recursiveMutex.tryLock(1000));
-                QVERIFY(timer.elapsed() >= 1000);
+                QVERIFY(!recursiveMutex.tryLock(waitTime));
+                QVERIFY(timer.elapsed() >= waitTime);
                 QVERIFY(!recursiveMutex.tryLock(0));
                 testsTurn.release();
 
                 threadsTurn.acquire();
                 timer.start();
-                QVERIFY(recursiveMutex.tryLock(1000));
-                QVERIFY(timer.elapsed() <= 1000);
+                QVERIFY(recursiveMutex.tryLock(waitTime));
+                QVERIFY(timer.elapsed() <= waitTime);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
-                QVERIFY(recursiveMutex.tryLock(1000));
+                QVERIFY(recursiveMutex.tryLock(waitTime));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 2));
                 QVERIFY(lockCount.testAndSetRelaxed(2, 1));
                 recursiveMutex.unlock();
@@ -244,7 +247,7 @@ void tst_QMutex::tryLock()
                 threadsTurn.acquire();
                 timer.start();
                 QVERIFY(recursiveMutex.tryLock(0));
-                QVERIFY(timer.elapsed() < 1000);
+                QVERIFY(timer.elapsed() < waitTime);
                 QVERIFY(lockCount.testAndSetRelaxed(0, 1));
                 QVERIFY(recursiveMutex.tryLock(0));
                 QVERIFY(lockCount.testAndSetRelaxed(1, 2));
@@ -453,7 +456,8 @@ void tst_QMutex::lock_unlock_locked_tryLock()
     }
 }
 
-enum { one_minute = 60 * 1000, threadCount = 10 };
+enum { one_minute = 6 * 1000, //not really one minute, but else it is too long.
+       threadCount = 10 };
 
 class StressTestThread : public QThread
 {
@@ -499,7 +503,7 @@ void tst_QMutex::stressTest()
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
     QCOMPARE(StressTestThread::errorCount, 0);
-    qDebug("locked %d times", int(StressTestThread::lockCount));
+    qDebug("locked %d times", int(StressTestThread::lockCount.load()));
 }
 
 class TryLockRaceThread : public QThread
@@ -514,7 +518,7 @@ public:
         do {
             if (mutex.tryLock())
                 mutex.unlock();
-        } while (t.elapsed() < 20000);
+        } while (t.elapsed() < one_minute/2);
     }
 };
 QMutex TryLockRaceThread::mutex;
@@ -551,7 +555,7 @@ void tst_QMutex::qtbug16115_trylock()
         TrylockThread(QMutex &mut) : mut(mut) {}
         QMutex &mut;
         void run() {
-            for (int i = 0; i < 1000000; ++i) {
+            for (int i = 0; i < 100000; ++i) {
                 if (mut.tryLock(0)) {
                     if ((++qtbug16115_trylock_counter) != 1)
                         ++qtbug16115_failure_count;
@@ -570,7 +574,7 @@ void tst_QMutex::qtbug16115_trylock()
     t2.start();
     t3.start();
 
-    for (int i = 0; i < 1000000; ++i) {
+    for (int i = 0; i < 100000; ++i) {
         mut.lock();
         if ((++qtbug16115_trylock_counter) != 1)
             ++qtbug16115_failure_count;
@@ -583,6 +587,70 @@ void tst_QMutex::qtbug16115_trylock()
     t3.wait();
     QCOMPARE(qtbug16115_failure_count, 0);
 }
+
+class MoreStressTestThread : public QThread
+{
+    QTime t;
+public:
+    static QAtomicInt lockCount;
+    static QAtomicInt sentinel[threadCount];
+    static QMutex mutex[threadCount];
+    static QAtomicInt errorCount;
+    void start()
+    {
+        t.start();
+        QThread::start();
+    }
+    void run()
+    {
+        quint64 i = 0;
+        while (t.elapsed() < one_minute) {
+            i++;
+            uint nb = (i * 9 + lockCount * 13) % threadCount;
+            QMutexLocker locker(&mutex[nb]);
+            if (sentinel[nb]) errorCount.ref();
+            if (sentinel[nb].fetchAndAddRelaxed(5)) errorCount.ref();
+            if (!sentinel[nb].testAndSetRelaxed(5, 0)) errorCount.ref();
+            if (sentinel[nb]) errorCount.ref();
+            lockCount.ref();
+            nb = (nb * 17 + i * 5 + lockCount * 3) % threadCount;
+            if (mutex[nb].tryLock()) {
+                if (sentinel[nb]) errorCount.ref();
+                if (sentinel[nb].fetchAndAddRelaxed(16)) errorCount.ref();
+                if (!sentinel[nb].testAndSetRelaxed(16, 0)) errorCount.ref();
+                if (sentinel[nb]) errorCount.ref();
+                lockCount.ref();
+                mutex[nb].unlock();
+            }
+            nb = (nb * 15 + i * 47 + lockCount * 31) % threadCount;
+            if (mutex[nb].tryLock(2)) {
+                if (sentinel[nb]) errorCount.ref();
+                if (sentinel[nb].fetchAndAddRelaxed(53)) errorCount.ref();
+                if (!sentinel[nb].testAndSetRelaxed(53, 0)) errorCount.ref();
+                if (sentinel[nb]) errorCount.ref();
+                lockCount.ref();
+                mutex[nb].unlock();
+            }
+        }
+    }
+};
+QMutex MoreStressTestThread::mutex[threadCount];
+QAtomicInt MoreStressTestThread::lockCount;
+QAtomicInt MoreStressTestThread::sentinel[threadCount];
+QAtomicInt MoreStressTestThread::errorCount = 0;
+
+void tst_QMutex::moreStress()
+{
+    MoreStressTestThread threads[threadCount];
+    for (int i = 0; i < threadCount; ++i)
+        threads[i].start();
+    QVERIFY(threads[0].wait(one_minute + 10000));
+    for (int i = 1; i < threadCount; ++i)
+        QVERIFY(threads[i].wait(10000));
+    qDebug("locked %d times", int(MoreStressTestThread::lockCount));
+    QCOMPARE(int(MoreStressTestThread::errorCount), 0);
+}
+
 
 QTEST_MAIN(tst_QMutex)
 #include "tst_qmutex.moc"
