@@ -130,29 +130,29 @@ public:
     QCharRef operator[](uint i);
 
     QString arg(qlonglong a, int fieldwidth=0, int base=10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(qulonglong a, int fieldwidth=0, int base=10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(long a, int fieldwidth=0, int base=10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(ulong a, int fieldwidth=0, int base=10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(int a, int fieldWidth = 0, int base = 10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(uint a, int fieldWidth = 0, int base = 10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(short a, int fieldWidth = 0, int base = 10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(ushort a, int fieldWidth = 0, int base = 10,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(double a, int fieldWidth = 0, char fmt = 'g', int prec = -1,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(char a, int fieldWidth = 0,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(QChar a, int fieldWidth = 0,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(const QString &a, int fieldWidth = 0,
-                const QChar &fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(const QString &a1, const QString &a2) const Q_REQUIRED_RESULT;
     QString arg(const QString &a1, const QString &a2, const QString &a3) const Q_REQUIRED_RESULT;
     QString arg(const QString &a1, const QString &a2, const QString &a3,
@@ -234,11 +234,11 @@ public:
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(const QLatin1String &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    bool startsWith(const QChar &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QLatin1String &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    bool endsWith(const QChar &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     QString leftJustified(int width, QChar fill = QLatin1Char(' '), bool trunc = false) const Q_REQUIRED_RESULT;
     QString rightJustified(int width, QChar fill = QLatin1Char(' '), bool trunc = false) const Q_REQUIRED_RESULT;
@@ -300,7 +300,7 @@ public:
 
     QStringList split(const QString &sep, SplitBehavior behavior = KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_REQUIRED_RESULT;
-    QStringList split(const QChar &sep, SplitBehavior behavior = KeepEmptyParts,
+    QStringList split(QChar sep, SplitBehavior behavior = KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_REQUIRED_RESULT;
 #ifndef QT_NO_REGEXP
     QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
@@ -617,9 +617,7 @@ private:
     static Data shared_empty;
     Data *d;
     QString(Data *dd, int /*dummy*/) : d(dd) {}
-#ifndef QT_NO_TEXTCODEC
-    static QTextCodec *codecForCStrings;
-#endif
+
     static int grow(int);
     static void free(Data *);
     void realloc();
@@ -741,17 +739,17 @@ inline QString &QString::setNum(ulong n, int base)
 { return setNum(qulonglong(n), base); }
 inline QString &QString::setNum(float n, char f, int prec)
 { return setNum(double(n),f,prec); }
-inline QString QString::arg(int a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(int a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
-inline QString QString::arg(uint a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(uint a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
-inline QString QString::arg(long a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(long a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
-inline QString QString::arg(ulong a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
-inline QString QString::arg(short a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
-inline QString QString::arg(ushort a, int fieldWidth, int base, const QChar &fillChar) const
+inline QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
 inline QString QString::arg(const QString &a1, const QString &a2) const
 { const QString *args[2] = { &a1, &a2 }; return multiArg(2, args); }
@@ -795,10 +793,10 @@ public:
 
     // all this is not documented: We just say "like QChar" and let it be.
     inline operator QChar() const
-        { return i < s.d->size ? s.d->data[i] : 0; }
-    inline QCharRef &operator=(const QChar &c)
-        { if (i >= s.d->size) s.expand(i); else s.detach();
-          s.d->data[i] = c.unicode();  return *this; }
+    { return i < s.d->size ? s.d->data[i] : 0; }
+    inline QCharRef &operator=(QChar c)
+    { if (i >= s.d->size) s.expand(i); else s.detach();
+      s.d->data[i] = c.unicode(); return *this; }
 
     // An operator= for each QChar cast constructors
 #ifndef QT_NO_CAST_FROM_ASCII
@@ -905,9 +903,6 @@ inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
 #ifndef QT_NO_CAST_FROM_ASCII
 inline bool qStringComparisonHelper(const QString &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 inline bool QString::operator==(const char *s) const
@@ -1217,9 +1212,6 @@ inline bool operator>=(const QStringRef &s1, const QStringRef &s2)
 
 inline bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 

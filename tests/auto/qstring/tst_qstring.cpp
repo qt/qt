@@ -813,9 +813,7 @@ void tst_QString::constructorQByteArray()
     QCOMPARE(str1.length(), expected.length());
     QCOMPARE( str1, expected );
 
-    QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
     QString strBA(src);
-    QTextCodec::setCodecForCStrings( 0 );
 
     QCOMPARE( strBA, expected );
 }
@@ -972,12 +970,7 @@ void tst_QString::sprintf()
     QCOMPARE(a.sprintf("%-5.5s", "Hello" ),(QString)"Hello");
 
     // Check utf8 conversion for %s
-    QCOMPARE(a.sprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString("\366\344\374\326\304\334\370\346\345\330\306\305"));
-
-    // Check codecForCStrings is used to read non-modifier sequences in the format string
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-    QCOMPARE(a.sprintf("\303\251\303\250\303\240 %s", "\303\251\303\250\303\240"), QString("\303\251\303\250\303\240 \303\251\303\250\303\240"));
-    QTextCodec::setCodecForCStrings(0);
+    QCOMPARE(a.sprintf("%s", "\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205"), QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305"));
 
     int n1;
     a.sprintf("%s%n%s", "hello", &n1, "goodbye");
@@ -1851,9 +1844,7 @@ void tst_QString::append_bytearray()
 	QFETCH( QString, str );
 	QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
 	str.append( ba );
-	QTextCodec::setCodecForCStrings( 0 );
 
 	QTEST( str, "res" );
     }
@@ -1878,9 +1869,7 @@ void tst_QString::operator_pluseq_bytearray()
 	QFETCH( QString, str );
 	QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
 	str += ba;
-	QTextCodec::setCodecForCStrings( 0 );
 
 	QTEST( str, "res" );
     }
@@ -1964,9 +1953,7 @@ void tst_QString::prepend_bytearray()
 	QFETCH( QString, str );
 	QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
 	str.prepend( ba );
-	QTextCodec::setCodecForCStrings( 0 );
 
 	QTEST( str, "res" );
     }
@@ -3213,7 +3200,7 @@ void tst_QString::utf8()
     QFETCH( QByteArray, utf8 );
     QFETCH( QString, res );
 
-    QCOMPARE( utf8, QByteArray(res.toUtf8()) );
+    QCOMPARE(res.toUtf8(), utf8);
 }
 
 void tst_QString::stringRef_utf8_data()

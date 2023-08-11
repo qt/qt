@@ -73,12 +73,6 @@ public:
     static QTextCodec* codecForLocale();
     static void setCodecForLocale(QTextCodec *c);
 
-    static QTextCodec* codecForTr();
-    static void setCodecForTr(QTextCodec *c);
-
-    static QTextCodec* codecForCStrings();
-    static void setCodecForCStrings(QTextCodec *c);
-
     static QTextCodec *codecForHtml(const QByteArray &ba);
     static QTextCodec *codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec);
 
@@ -148,15 +142,9 @@ public:
 
 private:
     friend class QTextCodecCleanup;
-    static QTextCodec *cftr;
     static bool validCodecs();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
-
-        inline QTextCodec* QTextCodec::codecForTr() { return validCodecs() ? cftr : nullptr; }
-inline void QTextCodec::setCodecForTr(QTextCodec *c) { cftr = c; }
-inline QTextCodec* QTextCodec::codecForCStrings() { return validCodecs() ? QString::codecForCStrings : nullptr; }
-inline void QTextCodec::setCodecForCStrings(QTextCodec *c) { QString::codecForCStrings = c; }
 
 class Q_CORE_EXPORT QTextEncoder {
     Q_DISABLE_COPY(QTextEncoder)

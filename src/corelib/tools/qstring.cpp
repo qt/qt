@@ -99,10 +99,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
-QTextCodec *QString::codecForCStrings;
-#endif
-
 #ifdef QT3_SUPPORT
 static QHash<void *, QByteArray> *asciiCache = 0;
 Q_GLOBAL_STATIC(QMutex, asciiCacheMutex)
@@ -119,13 +115,13 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 int qFindStringBoyerMoore(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
                                    int from, Qt::CaseSensitivity cs);
 static inline int qt_string_count(const QChar *haystack, int haystackLen,
                                   const QChar *needle, int needleLen,
                                   Qt::CaseSensitivity cs);
 static inline int qt_string_count(const QChar *haystack, int haystackLen,
-                                  const QChar &needle, Qt::CaseSensitivity cs);
+                                  QChar needle, Qt::CaseSensitivity cs);
 static inline int qt_find_latin1_string(const QChar *hay, int size, const QLatin1String &needle,
                                         int from, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
@@ -475,9 +471,8 @@ const QString::Null QString::null = { };
     \snippet doc/src/snippets/qstring/main.cpp 0
 
     QString converts the \c{const char *} data into Unicode using the
-    fromAscii() function. By default, fromAscii() treats character
-    above 128 as Latin-1 characters, but this can be changed by
-    calling QTextCodec::setCodecForCStrings().
+    fromAscii() function. fromAscii() treats ordinals above 128 as Latin-1
+    characters.
 
     In all of the QString functions that take \c{const char *}
     parameters, the \c{const char *} is interpreted as a classic
@@ -615,9 +610,7 @@ const QString::Null QString::null = { };
     toLatin1(), toUtf8(), and toLocal8Bit().
 
     \list
-    \o toAscii() returns an 8-bit string encoded using the codec
-       specified by QTextCodec::codecForCStrings (by default, that is
-       Latin 1).
+    \o toAscii() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toLatin1() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toUtf8() returns a UTF-8 encoded 8-bit string. UTF-8 is a
        superset of US-ASCII (ANSI X3.4-1986) that supports the entire
@@ -3477,7 +3470,7 @@ bool QString::startsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
   Returns true if the string starts with \a c; otherwise returns
   false.
 */
-bool QString::startsWith(const QChar &c, Qt::CaseSensitivity cs) const
+bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
 {
     return d->size
            && (cs == Qt::CaseSensitive
@@ -3551,7 +3544,7 @@ bool QString::endsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 
   \overload endsWith()
  */
-bool QString::endsWith(const QChar &c, Qt::CaseSensitivity cs) const
+bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 {
     return d->size
            && (cs == Qt::CaseSensitive
@@ -3715,9 +3708,7 @@ QByteArray QString::toLatin1() const
 /*!
     Returns an 8-bit representation of the string as a QByteArray.
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert Unicode to 8-bit char; otherwise this
-    function does the same as toLatin1().
+    This function does the same as toLatin1().
 
     Note that, despite the name, this function does not necessarily return an US-ASCII
     (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
@@ -3726,10 +3717,6 @@ QByteArray QString::toLatin1() const
 */
 QByteArray QString::toAscii() const
 {
-#ifndef QT_NO_TEXTCODEC
-    if (codecForCStrings)
-        return codecForCStrings->fromUnicode(*this);
-#endif // QT_NO_TEXTCODEC
     return toLatin1();
 }
 
@@ -3864,25 +3851,6 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
 
 QString::Data *QString::fromAscii_helper(const char *str, int size)
 {
-#ifndef QT_NO_TEXTCODEC
-    if (codecForCStrings) {
-        Data *d;
-        if (!str) {
-            d = &shared_null;
-            d->ref.ref();
-        } else if (size == 0 || (!*str && size < 0)) {
-            d = &shared_empty;
-            d->ref.ref();
-        } else {
-            if (size < 0)
-                size = qstrlen(str);
-            QString s = codecForCStrings->toUnicode(str, size);
-            d = s.d;
-            d->ref.ref();
-        }
-        return d;
-    }
-#endif
     return fromLatin1_helper(str, size);
 }
 
@@ -3975,11 +3943,7 @@ QString QString::fromLocal8Bit(const char *str, int size)
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
 
-    Note that, despite the name, this function actually uses the codec
-    defined by QTextCodec::setCodecForCStrings() to convert \a str to
-    Unicode. Depending on the codec, it may not accept valid US-ASCII (ANSI
-    X3.4-1986) input. If no codec has been set, this function does the same
-    as fromLatin1().
+    This function does the same as fromLatin1().
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
@@ -5238,19 +5202,8 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     const char *c = cformat;
     for (;;) {
         // Copy non-escape chars to result
-#ifndef QT_NO_TEXTCODEC
-        int i = 0;
-        while (*(c + i) != '\0' && *(c + i) != '%')
-            ++i;
-        if (codecForCStrings)
-            result.append(codecForCStrings->toUnicode(c, i));
-        else
-            result.append(fromLatin1(c, i));
-        c += i;
-#else
         while (*c != '\0' && *c != '%')
             result.append(QLatin1Char(*c++));
-#endif
 
         if (*c == '\0')
             break;
@@ -6166,7 +6119,7 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 /*!
     \overload
 */
-QStringList QString::split(const QChar &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     QStringList list;
     int start = 0;
@@ -6445,7 +6398,7 @@ static ArgEscapeData findArgEscapes(const QString &s)
 }
 
 static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int field_width,
-                                 const QString &arg, const QString &larg, const QChar &fillChar = QLatin1Char(' '))
+                                 const QString &arg, const QString &larg, QChar fillChar = QLatin1Char(' '))
 {
     const QChar *uc_begin = s.unicode();
     const QChar *uc_end = uc_begin + s.length();
@@ -6567,7 +6520,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
   is output and the result is undefined. Place marker numbers must be
   in the range 1 to 99.
 */
-QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6656,7 +6609,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   a7, \a a8, and \a a9 are replaced in one pass.
 */
 
-/*! \fn QString QString::arg(int a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(int a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a a argument is expressed in base \a base, which is 10 by
@@ -6682,7 +6635,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(uint a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(uint a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a base argument specifies the base to use when converting the
@@ -6693,7 +6646,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(long a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(long a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6719,7 +6672,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(ulong a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6752,7 +6705,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   used. For negative numbers, zero padding might appear before the
   minus sign.
 */
-QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillChar) const
+QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6796,7 +6749,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillCha
   used. For negative numbers, zero padding might appear before the
   minus sign.
 */
-QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillChar) const
+QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6827,7 +6780,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 /*!
   \overload arg()
 
-  \fn QString QString::arg(short a, int fieldWidth, int base, const QChar &fillChar) const
+  \fn QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) const
 
   \a fieldWidth specifies the minimum amount of space that \a a is
   padded to and filled with the character \a fillChar. A positive
@@ -6844,7 +6797,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 */
 
 /*!
-  \fn QString QString::arg(ushort a, int fieldWidth, int base, const QChar &fillChar) const
+  \fn QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6864,7 +6817,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 /*!
     \overload arg()
 */
-QString QString::arg(QChar a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(QChar a, int fieldWidth, QChar fillChar) const
 {
     QString c;
     c += a;
@@ -6876,7 +6829,7 @@ QString QString::arg(QChar a, int fieldWidth, const QChar &fillChar) const
 
   The \a a argument is interpreted as a Latin-1 character.
 */
-QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 {
     QString c;
     c += QLatin1Char(a);
@@ -6884,7 +6837,7 @@ QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
 }
 
 /*!
-  \fn QString QString::arg(double a, int fieldWidth, char format, int precision, const QChar &fillChar) const
+  \fn QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
   \overload arg()
 
   Argument \a a is formatted according to the specified \a format and
@@ -6908,7 +6861,7 @@ QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
 
   \sa QLocale::toString()
 */
-QString QString::arg(double a, int fieldWidth, char fmt, int prec, const QChar &fillChar) const
+QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -7171,8 +7124,7 @@ bool QString::isRightToLeft() const
     This operator is mostly useful to pass a QString to a function
     that accepts a std::string object.
 
-    If the QString contains Unicode characters that the
-    QTextCodec::codecForCStrings() codec cannot handle, using this operator
+    If the QString contains non-Latin1 Unicode characters, using this
     can lead to loss of information.
 
     This operator is only available if Qt is configured with STL
@@ -8876,7 +8828,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
                                    int from, Qt::CaseSensitivity cs)
 {
     ushort c = needle.unicode();
@@ -8920,7 +8872,7 @@ static inline int qt_string_count(const QChar *haystack, int haystackLen,
     return num;
 }
 
-static inline int qt_string_count(const QChar *unicode, int size, const QChar &ch,
+static inline int qt_string_count(const QChar *unicode, int size, QChar ch,
                                   Qt::CaseSensitivity cs)
 {
     ushort c = ch.unicode();
@@ -9076,9 +9028,7 @@ QByteArray QStringRef::toLatin1() const
 
     Returns an 8-bit representation of the string as a QByteArray.
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert Unicode to 8-bit char; otherwise this
-    function does the same as toLatin1().
+    This function does the same as toLatin1().
 
     Note that, despite the name, this function does not necessarily return an US-ASCII
     (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
@@ -9087,10 +9037,6 @@ QByteArray QStringRef::toLatin1() const
 */
 QByteArray QStringRef::toAscii() const
 {
-#ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings)
-        return QString::codecForCStrings->fromUnicode(unicode(), length());
-#endif // QT_NO_TEXTCODEC
     return toLatin1();
 }
 

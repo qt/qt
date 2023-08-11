@@ -82,21 +82,11 @@ protected:
     static void convertToAscii(const QChar *a, int len, char *&out);
     static inline void convertFromAscii(char a, QChar *&out)
     {
-#ifndef QT_NO_TEXTCODEC
-        if (QString::codecForCStrings)
-            *out++ = QChar::fromAscii(a);
-        else
-#endif
             *out++ = QLatin1Char(a);
     }
 
     static inline void convertToAscii(QChar a, char *&out)
     {
-#ifndef QT_NO_TEXTCODEC
-        if (QString::codecForCStrings)
-            *out++ = a.toAscii(); //###
-        else
-#endif
             convertToLatin1(a, out);
     }
 

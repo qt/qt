@@ -68,8 +68,8 @@ class Q_CORE_EXPORT QChar {
 public:
     QChar();
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QChar(char c);
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QChar(uchar c);
+    QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
+    QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
 #endif
     QChar(QLatin1Char ch);
     QChar(uchar c, uchar r);
@@ -236,7 +236,7 @@ public:
 
     UnicodeVersion unicodeVersion() const;
 
-    char toAscii() const;
+    inline char toAscii() const;
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
 #ifdef Q_NO_PACKED_REFERENCE
@@ -245,8 +245,8 @@ public:
     inline ushort &unicode() { return ucs; }
 #endif
 
-    static QChar fromAscii(char c);
-    static QChar fromLatin1(char c);
+    static inline QChar fromAscii(char c);
+    static inline QChar fromLatin1(char c);
 
     inline bool isNull() const { return ucs == 0; }
     bool isPrint() const;
@@ -373,8 +373,10 @@ Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
 inline QChar::QChar() : ucs(0) {}
 
+inline char QChar::toAscii() const { return ucs > 0xff ? 0 : char(ucs); }
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
+inline QChar QChar::fromAscii(char c) { return QChar(ushort(uchar(c))); }
 
 inline QChar::QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}
 inline QChar::QChar(short rc) : ucs(ushort(rc)){}
@@ -396,7 +398,7 @@ inline bool operator<(QChar c1, QChar c2) { return c1.unicode() < c2.unicode(); 
 inline bool operator>(QChar c1, QChar c2) { return c1.unicode() > c2.unicode(); }
 
 #ifndef QT_NO_DATASTREAM
-Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QChar &);
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QChar &);
 #endif
 
