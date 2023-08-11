@@ -848,28 +848,17 @@ public:
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const char toAscii() const { return QChar(*this).toAscii(); }
-    const char toLatin1() const { return QChar(*this).toLatin1(); }
-    const ushort unicode() const { return QChar(*this).unicode(); }
-#else
     char toAscii() const { return QChar(*this).toAscii(); }
     char toLatin1() const { return QChar(*this).toLatin1(); }
     ushort unicode() const { return QChar(*this).unicode(); }
-#endif
     ushort& unicode() { return s.data()[i].unicode(); }
 
 #ifdef QT3_SUPPORT
     inline QT3_SUPPORT bool mirrored() const { return hasMirrored(); }
     inline QT3_SUPPORT QChar lower() const { return QChar(*this).toLower(); }
     inline QT3_SUPPORT QChar upper() const { return QChar(*this).toUpper(); }
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const QT3_SUPPORT char latin1() const { return QChar(*this).toLatin1(); }
-    const QT3_SUPPORT char ascii() const { return QChar(*this).toAscii(); }
-#else
     QT3_SUPPORT char latin1() const { return QChar(*this).toLatin1(); }
     QT3_SUPPORT char ascii() const { return QChar(*this).toAscii(); }
-#endif
 #endif
 };
 

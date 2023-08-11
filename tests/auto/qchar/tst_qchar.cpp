@@ -73,9 +73,17 @@ private slots:
     void toLower();
     void toTitle();
     void toCaseFolded();
+    void isDigit_data();
+    void isDigit();
+    void isLetter_data();
+    void isLetter();
+    void isLetterOrNumber_data();
+    void isLetterOrNumber();
     void isPrint();
     void isUpper();
     void isLower();
+    void isSpace_data();
+    void isSpace();
     void isTitle();
     void category();
     void direction();
@@ -224,6 +232,74 @@ void tst_QChar::toCaseFolded()
     QVERIFY(QChar::toCaseFolded((ushort)0xb5) == 0x3bc);
 }
 
+void tst_QChar::isDigit_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isDigit = (ucs <= '9' && ucs >= '0');
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isDigit;
+    }
+}
+
+void tst_QChar::isDigit()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isDigit(), expected);
+}
+
+static bool isExpectedLetter(ushort ucs)
+{
+    return (ucs >= 'a' && ucs <= 'z') || (ucs >= 'A' && ucs <= 'Z')
+            || ucs == 0xAA || ucs == 0xB5 || ucs == 0xBA
+            || (ucs >= 0xC0 && ucs <= 0xD6)
+            || (ucs >= 0xD8 && ucs <= 0xF6)
+            || (ucs >= 0xF8 && ucs <= 0xFF);
+}
+
+void tst_QChar::isLetter_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isExpectedLetter(ucs);
+    }
+}
+
+void tst_QChar::isLetter()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isLetter(), expected);
+}
+
+void tst_QChar::isLetterOrNumber_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isLetterOrNumber = isExpectedLetter(ucs)
+                || (ucs >= '0' && ucs <= '9')
+                || ucs == 0xB2 || ucs == 0xB3 || ucs == 0xB9
+                || (ucs >= 0xBC && ucs <= 0xBE);
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isLetterOrNumber;
+    }
+}
+
+void tst_QChar::isLetterOrNumber()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isLetterOrNumber(), expected);
+}
+
 void tst_QChar::isPrint()
 {
     // noncharacters, reserved (General_Gategory =Cn)
@@ -317,6 +393,25 @@ void tst_QChar::isLower()
         if (QChar::category(codepoint) == QChar::Letter_Lowercase)
             QVERIFY(codepoint == QChar::toLower(codepoint));
     }
+}
+
+void tst_QChar::isSpace_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isSpace = (ucs <= 0x0D && ucs >= 0x09) || ucs == 0x20 || ucs == 0xA0;
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isSpace;
+    }
+}
+
+void tst_QChar::isSpace()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isSpace(), expected);
 }
 
 void tst_QChar::isTitle()

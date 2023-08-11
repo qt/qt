@@ -545,17 +545,22 @@ bool QChar::isPrint() const
 }
 
 /*!
+    \fn bool QChar::isSpace() const
+
     Returns true if the character is a separator character
     (Separator_* categories); otherwise returns false.
 */
-bool QChar::isSpace() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isSpace(ushort ucs2)
 {
-    if(ucs >= 9 && ucs <=13)
-        return true;
     const int test = FLAG(Separator_Space) |
                      FLAG(Separator_Line) |
                      FLAG(Separator_Paragraph);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!
@@ -589,17 +594,25 @@ bool QChar::isPunct() const
 }
 
 /*!
+    \fn bool QChar::isLetter() const
+
     Returns true if the character is a letter (Letter_* categories);
     otherwise returns false.
 */
-bool QChar::isLetter() const
+
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isLetter(ushort ucs2)
 {
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
                      FLAG(Letter_Titlecase) |
                      FLAG(Letter_Modifier) |
                      FLAG(Letter_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!
@@ -617,10 +630,18 @@ bool QChar::isNumber() const
 }
 
 /*!
+    \fn bool QChar::isLetterOrNumber() const
+
     Returns true if the character is a letter or number (Letter_* or
     Number_* categories); otherwise returns false.
 */
-bool QChar::isLetterOrNumber() const
+
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isLetterOrNumber(ushort ucs2)
 {
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
@@ -630,17 +651,24 @@ bool QChar::isLetterOrNumber() const
                      FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
                      FLAG(Number_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 
 /*!
+    \fn bool QChar::isDigit() const
+
     Returns true if the character is a decimal digit
     (Number_DecimalDigit); otherwise returns false.
 */
-bool QChar::isDigit() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isDigit(ushort ucs2)
 {
-    return (qGetProp(ucs)->category == Number_DecimalDigit);
+    return (qGetProp(ucs2)->category == Number_DecimalDigit);
 }
 
 
@@ -1305,11 +1333,7 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
     \sa toLatin1(), unicode(), QTextCodec::codecForCStrings()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const char QChar::toAscii() const
-#else
 char QChar::toAscii() const
-#endif
 {
 #ifndef QT_NO_CODEC_FOR_C_STRINGS
     if (QTextCodec::codecForCStrings())

@@ -56,13 +56,8 @@ struct QLatin1Char
 {
 public:
     inline explicit QLatin1Char(char c) : ch(c) {}
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    inline const char toLatin1() const { return ch; }
-    inline const ushort unicode() const { return ushort(uchar(ch)); }
-#else
     inline char toLatin1() const { return ch; }
     inline ushort unicode() const { return ushort(uchar(ch)); }
-#endif
 
 private:
     char ch;
@@ -241,15 +236,9 @@ public:
 
     UnicodeVersion unicodeVersion() const;
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const char toAscii() const;
-    inline const char toLatin1() const;
-    inline const ushort unicode() const { return ucs; }
-#else
     char toAscii() const;
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
-#endif
 #ifdef Q_NO_PACKED_REFERENCE
     inline ushort &unicode() { return const_cast<ushort&>(ucs); }
 #else
@@ -262,12 +251,26 @@ public:
     inline bool isNull() const { return ucs == 0; }
     bool isPrint() const;
     bool isPunct() const;
-    bool isSpace() const;
+    inline bool isSpace() const {
+        return ucs == 0x20 || (ucs <= 0x0D && ucs >= 0x09)
+                || (ucs > 127 && isSpace(ucs));
+    }
     bool isMark() const;
-    bool isLetter() const;
+    inline bool isLetter() const {
+        return (ucs >= 'a' && ucs <= 'z')
+                || (ucs <= 'Z' && ucs >= 'A')
+                || (ucs > 127 && isLetter(ucs));
+    }
     bool isNumber() const;
-    bool isLetterOrNumber() const;
-    bool isDigit() const;
+    inline bool isLetterOrNumber() const
+    {
+        return (ucs >= 'a' && ucs <= 'z')
+                || (ucs <= 'Z' && ucs >= 'A')
+                || (ucs <= '9' && ucs >= '0')
+                || (ucs > 127 && isLetterOrNumber(ucs));
+    }
+    inline bool isDigit() const
+    { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isDigit(ucs)); }
     bool isSymbol() const;
     inline bool isLower() const { return category() == Letter_Lowercase; }
     inline bool isUpper() const { return category() == Letter_Uppercase; }
@@ -345,16 +348,16 @@ public:
     static inline QT3_SUPPORT bool networkOrdered() {
         return QSysInfo::ByteOrder == QSysInfo::BigEndian;
     }
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    inline QT3_SUPPORT const char latin1() const { return toLatin1(); }
-    inline QT3_SUPPORT const char ascii() const { return toAscii(); }
-#else
     inline QT3_SUPPORT char latin1() const { return toLatin1(); }
     inline QT3_SUPPORT char ascii() const { return toAscii(); }
 #endif
-#endif
 
 private:
+    static bool QT_FASTCALL isDigit(ushort ucs2);
+    static bool QT_FASTCALL isLetter(ushort ucs2);
+    static bool QT_FASTCALL isLetterOrNumber(ushort ucs2);
+    static bool QT_FASTCALL isSpace(ushort ucs2);
+
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);
     QChar(uchar c);
@@ -370,11 +373,7 @@ Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
 inline QChar::QChar() : ucs(0) {}
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-inline const char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-#else
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-#endif
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
 
 inline QChar::QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}
