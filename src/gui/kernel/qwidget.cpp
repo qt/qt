@@ -1765,10 +1765,6 @@ void QWidgetPrivate::createTLExtra()
         static int count = 0;
         qDebug() << "tlextra" << ++count;
 #endif
-#if defined(Q_WS_QPA)
-        x->window = 0;
-        x->screenIndex = 0;
-#endif
     }
 }
 

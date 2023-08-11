@@ -43,7 +43,7 @@
 #define QXCBWINDOW_H
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 #include <QtGui/QImage>
 
 #include <xcb/xcb.h>
@@ -56,7 +56,7 @@ class QXcbScreen;
 class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
 public:
-    QXcbWindow(QWidget *tlw);
+    QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
     void setGeometry(const QRect &rect);
@@ -74,7 +74,7 @@ public:
 
     QPlatformGLContext *glContext() const;
 
-    xcb_window_t window() const { return m_window; }
+    xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
 
