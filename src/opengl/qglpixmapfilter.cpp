@@ -439,9 +439,6 @@ static inline uint nextMultiple(uint x, uint multiplier)
     return x + multiplier - mod;
 }
 
-Q_GUI_EXPORT void qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
-                       quint32 *dest, int dstStride);
-
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
 {
     if (radius() < 1) {
@@ -484,10 +481,10 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
             QImage prepadded = qt_halfScaled(src.toImage()).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
             // byte-swap and memrotates in one go
-            qt_memrotate90_gl(reinterpret_cast<const quint32*>(prepadded.bits()),
-                              prepadded.width(), prepadded.height(), prepadded.bytesPerLine(),
-                              reinterpret_cast<quint32*>(padded.scanLine(padding / 2)) + padding / 2,
-                              padded.bytesPerLine());
+            qt_memrotate90(reinterpret_cast<const quint32*>(prepadded.bits()),
+                           prepadded.width(), prepadded.height(), prepadded.bytesPerLine(),
+                           reinterpret_cast<quint32*>(padded.scanLine(padding / 2)) + padding / 2,
+                           padded.bytesPerLine());
         }
 
         delete info;
