@@ -813,9 +813,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     QCoreApplication::Encoding encoding = QCoreApplication::UnicodeUTF8;
     if (args.size() > 3) {
         JSC::UString encStr = args.at(3).toString(exec);
-        if (encStr == "CodecForTr")
-            encoding = QCoreApplication::CodecForTr;
-        else if (encStr == "UnicodeUTF8")
+        if (encStr == "UnicodeUTF8")
             encoding = QCoreApplication::UnicodeUTF8;
         else
             return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%0'").arg(encStr));

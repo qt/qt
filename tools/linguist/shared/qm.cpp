@@ -748,11 +748,11 @@ bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
     if (missingIds)
         cd.appendError(QCoreApplication::translate("LRelease",
             "Dropped %n message(s) which had no ID.", 0,
-            QCoreApplication::CodecForTr, missingIds));
+            QCoreApplication::Latin1, missingIds));
     if (droppedData)
         cd.appendError(QCoreApplication::translate("LRelease",
             "Excess context/disambiguation dropped from %n message(s).", 0,
-            QCoreApplication::CodecForTr, droppedData));
+            QCoreApplication::Latin1, droppedData));
 
     releaser.squeeze(cd.m_saveMode);
     bool saved = releaser.save(&dev);
@@ -760,11 +760,11 @@ bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
         int generatedCount = finished + unfinished;
         cd.appendError(QCoreApplication::translate("LRelease",
             "    Generated %n translation(s) (%1 finished and %2 unfinished)", 0,
-            QCoreApplication::CodecForTr, generatedCount).arg(finished).arg(unfinished));
+            QCoreApplication::Latin1, generatedCount).arg(finished).arg(unfinished));
         if (untranslated)
             cd.appendError(QCoreApplication::translate("LRelease",
                 "    Ignored %n untranslated source text(s)", 0,
-                QCoreApplication::CodecForTr, untranslated));
+                QCoreApplication::Latin1, untranslated));
     }
     return saved;
 }

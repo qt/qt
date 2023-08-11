@@ -61,9 +61,9 @@ public:
 };
 class QCoreApplication : public QObject {
 public:
-    enum Encoding { CodecForTr };
+    enum Encoding { Latin1 };
     static QString translate(const char *, const char *sourceText, const char * = 0,
-                             Encoding = CodecForTr, int n = -1)
+                             Encoding = Latin1, int n = -1)
         { return tr(sourceText, 0, n); }
 };
 #endif

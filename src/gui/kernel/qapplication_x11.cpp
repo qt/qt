@@ -1021,7 +1021,7 @@ bool QApplicationPrivate::x11_apply_settings()
         QApplication::setColorSpec(QApplication::ManyColor);
     else if (colorspec != QLatin1String("default"))
         colorspec = QLatin1String("default");
-
+/*
     QString defaultcodec = settings.value(QLatin1String("defaultCodec"),
                                           QVariant(QLatin1String("none"))).toString();
     if (defaultcodec != QLatin1String("none")) {
@@ -1029,7 +1029,7 @@ bool QApplicationPrivate::x11_apply_settings()
         if (codec)
             QTextCodec::setCodecForTr(codec);
     }
-
+*/
     int w = settings.value(QLatin1String("globalStrut/width")).toInt();
     int h = settings.value(QLatin1String("globalStrut/height")).toInt();
     QSize strut(w, h);
@@ -2653,7 +2653,7 @@ void qt_init(QApplicationPrivate *priv, int,
                 while (it != pathlist.constEnd())
                     QApplication::addLibraryPath(*it++);
             }
-
+/*
             QString defaultcodec = settings.value(QLatin1String("defaultCodec"),
                                                   QVariant(QLatin1String("none"))).toString();
             if (defaultcodec != QLatin1String("none")) {
@@ -2661,7 +2661,7 @@ void qt_init(QApplicationPrivate *priv, int,
                 if (codec)
                     QTextCodec::setCodecForTr(codec);
             }
-
+*/
             settings.endGroup(); // Qt
         }
     }
