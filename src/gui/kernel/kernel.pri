@@ -180,7 +180,7 @@ embedded {
 
 qpa {
 	HEADERS += \
-		kernel/qgenericpluginfactory_qpa.h \
+                kernel/qgenericpluginfactory_qpa.h \
                 kernel/qgenericplugin_qpa.h \
                 kernel/qeventdispatcher_qpa_p.h \
                 kernel/qwindowsysteminterface_qpa.h \
@@ -190,23 +190,24 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
-                kernel/qplatformwindowformat_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qdesktopwidget_qpa_p.h \
                 kernel/qplatformeventloopintegration_qpa.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
-                kernel/qplatformnativeinterface_qpa.h
+                kernel/qplatformnativeinterface_qpa.h \
+                kernel/qwindowformat_qpa.h \
+                kernel/qwindow_qpa.h
 
 	SOURCES += \
-		kernel/qapplication_qpa.cpp \
-		kernel/qclipboard_qpa.cpp \
-		kernel/qcursor_qpa.cpp \
-		kernel/qdnd_qws.cpp \
-		kernel/qdesktopwidget_qpa.cpp \
-		kernel/qgenericpluginfactory_qpa.cpp \
-		kernel/qgenericplugin_qpa.cpp \
-		kernel/qkeymapper_qws.cpp \
+                kernel/qapplication_qpa.cpp \
+                kernel/qclipboard_qpa.cpp \
+                kernel/qcursor_qpa.cpp \
+                kernel/qdnd_qws.cpp \
+                kernel/qdesktopwidget_qpa.cpp \
+                kernel/qgenericpluginfactory_qpa.cpp \
+                kernel/qgenericplugin_qpa.cpp \
+                kernel/qkeymapper_qws.cpp \
                 kernel/qwidget_qpa.cpp \
                 kernel/qeventdispatcher_qpa.cpp \
                 kernel/qwindowsysteminterface_qpa.cpp \
@@ -215,13 +216,14 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa.cpp \
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
-                kernel/qplatformwindowformat_qpa.cpp \
                 kernel/qplatformeventloopintegration_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \
-                kernel/qsessionmanager_qpa.cpp
+                kernel/qsessionmanager_qpa.cpp \
+                kernel/qwindowformat_qpa.cpp \
+                kernel/qwindow_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

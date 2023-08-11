@@ -103,7 +103,7 @@ class QWSManager;
 class QCoreGraphicsPaintEnginePrivate;
 #endif
 #if defined(Q_WS_QPA)
-class QPlatformWindow;
+class QWindow;
 #endif
 class QPaintEngine;
 class QPixmap;
@@ -235,8 +235,7 @@ struct QTLWExtra {
     uint forcedToRaster : 1;
     uint noSystemRotationDisabled : 1;
 #elif defined(Q_WS_QPA)
-    QPlatformWindow *platformWindow;
-    QPlatformWindowFormat platformWindowFormat;
+    QWindow *window;
     quint32 screenIndex; // index in qplatformscreenlist
 #endif
 };
