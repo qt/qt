@@ -183,7 +183,7 @@ static int calcMergeScore(const DataModel *one, const DataModel *two)
         if (ContextItem *c = one->findContext(oc->context())) {
             for (int j = 0; j < oc->messageCount(); ++j) {
                 MessageItem *m = oc->messageItem(j);
-                if (c->findMessage(m->text(), m->comment()) >= 0)
+                if (m && c->findMessage(m->text(), m->comment()) )
                     ++inBoth;
             }
         }
